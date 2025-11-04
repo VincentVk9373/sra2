@@ -1,6 +1,8 @@
-# Foundry Vite Project
+# Foundry Vite Project with TypeScript
 
 This README outlines the steps needed to set up and run the Foundry Vite project locally. Ensure you follow the installation instructions closely to get everything up and running without issues.
+
+**🎯 This project now uses TypeScript for better type safety and developer experience!**
 
 ## Prerequisites
 
@@ -43,19 +45,33 @@ This will launch a Vite development server that is configured to intercept calls
 
 If you need to build the project for production, use:
 
-```
+```bash
 npx vite build
 ```
 
-This command compiles your JavaScript and assets into static files ready for production deployment. These files are in `./dist` directory.
+This command compiles your TypeScript and assets into static files ready for production deployment. These files are in `./dist` directory.
+
+### Type Checking
+
+To verify TypeScript types without building:
+
+```bash
+npm run typecheck
+```
+
+To check types AND build:
+
+```bash
+npm run build:check
+```
 
 ## Foundry Configuration
 
-Ensure Foundry is running locally on port 30000 to allow seamless interaction between the Vite server and Foundry.
+Ensure Foundry VTT v13 is running locally on port 30000 to allow seamless interaction between the Vite server and Foundry.
 
-```
-# Start Foundry command (Example)
-node resources/app/main.js --dataPath=<path_to_foundry_data>/foundrydata --port=30000
+```bash
+# Start Foundry v13 command (Example)
+node main.js --dataPath=<path_to_foundry_data>/foundrydata --port=30000
 ```
 
 You need to link `<foundrydata>/systems/sra2` to the `public` directory of your repository.
@@ -67,6 +83,49 @@ When you connect to Foundry from a browser (frontend), Vite will intercept all r
 ## Note on Vite Server and Foundry Interaction
 
 The Vite server is configured to handle specific API calls (e.g., to **systems/sra2**) directly, enhancing development efficiency. All other requests are forwarded to the local Foundry server, ensuring that the environment replicates the production setup as closely as possible.
+
+## TypeScript
+
+This project uses TypeScript for enhanced development experience. See [TYPESCRIPT.md](./TYPESCRIPT.md) for detailed information about:
+
+- TypeScript configuration
+- Type checking scripts
+- Migration from JavaScript
+- Creating typed models and documents
+- Extending Foundry VTT types
+
+### Quick Start
+
+All source files use TypeScript (`.ts` extension). The build process automatically compiles them to JavaScript.
+
+Key files:
+- `tsconfig.json` - TypeScript configuration
+- `src/types/foundry.d.ts` - Foundry VTT type definitions
+- `src/types/global.d.ts` - Custom global type extensions
+- `src/module/models/example.ts` - Example TypeScript code
+
+## SCSS Support
+
+This project includes full SCSS/SASS support for styling:
+
+- **Main styles**: `src/styles/global.scss` - Global styles imported in `src/start.ts`
+- **Auto-compilation**: SCSS files are automatically compiled to CSS during build
+- **Hot reload**: Style changes are instantly reflected in development mode
+- **Sourcemaps**: CSS sourcemaps are generated for easier debugging
+
+### Using SCSS
+
+Simply import SCSS files in your TypeScript modules:
+
+```typescript
+import "./styles/my-styles.scss";
+```
+
+Or add styles to `src/styles/global.scss` which is already imported in the main entry point.
+
+### Advanced Configuration
+
+The Vite configuration (`vite.config.ts`) includes SCSS preprocessor options. You can add global variables or mixins by uncommenting and modifying the `additionalData` option in the CSS configuration.
 
 ## Compendiums management
 
@@ -83,5 +142,6 @@ Extract compendiums from the dist folder (for example, after changing the conten
 ```bash
 node ./tools/unpackCompendiumsFromDist.mjs
 ```
+
 
 

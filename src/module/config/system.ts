@@ -1,6 +1,20 @@
 const SYSTEM_ID = 'sra2';
 
-export const SYSTEM = {
+export interface SystemConfig {
+  id: string;
+  LOG: {
+    HEAD: string;
+  };
+  SOCKET: string;
+  PATH: {
+    ROOT: string;
+    STYLE: string;
+    TEMPLATES: string;
+    ASSETS: string;
+  };
+}
+
+export const SYSTEM: SystemConfig = {
   id: SYSTEM_ID,
   LOG: {
     HEAD: `${SYSTEM_ID} | `
@@ -12,4 +26,5 @@ export const SYSTEM = {
     TEMPLATES: `systems/${SYSTEM_ID}/templates`,
     ASSETS: `systems/${SYSTEM_ID}/assets`,
   }
-}
+};
+

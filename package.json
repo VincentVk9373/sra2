@@ -1,7 +1,9 @@
 {
   "scripts": {
     "build": "npx vite build",
-    "run": "npx vite serve",
+    "dev": "npx vite serve",
+    "typecheck": "tsc --noEmit",
+    "build:check": "npm run typecheck && npm run build",
     "packCompendiumsToDist": "node ./tools/packCompendiumsToDist.mjs",
     "packCompendiumsToPublic": "node ./tools/packCompendiumsToPublic.mjs",
     "unpackCompendiumsFromPublic": "node ./tools/unpackCompendiumsFromPublic.mjs"
@@ -9,8 +11,10 @@
   "devDependencies": {
     "@foundryvtt/foundryvtt-cli": "^2.0.0",
     "@league-of-foundry-developers/foundry-vtt-types": "^v13.345.1",
+    "@types/node": "^24.10.0",
     "nodemon": "^3.1.10",
     "sass": "^1.91.0",
+    "typescript": "^5.9.3",
     "vite": "^7.1.4"
   },
   "dependencies": {

@@ -21,10 +21,21 @@ const config: UserConfig = {
         sourcemap: true,
         lib: {
             name: 'sra2',
-            entry: 'src/start.mjs',
+            entry: 'src/start.ts',
             formats: ['es'],
             fileName: 'index',
         },
+    },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                // Add global SCSS variables/mixins here if needed
+                // additionalData: `@import "./src/styles/variables.scss";`
+            }
+        }
+    },
+    resolve: {
+        extensions: ['.ts', '.mjs', '.js', '.json', '.scss']
     },
     plugins: [
         visualizer({
