@@ -1,5 +1,8 @@
 // Export all models here
-// Example: export { MyModel } from './MyModel';
-
-export {};
+export { CharacterDataModel } from './actor-character';
+export { NpcDataModel } from './actor-npc';
+export { SkillDataModel } from './item-skill';
+export { FeatDataModel } from './item-feat';
+export { SpecializationDataModel } from './item-specialization';
+export { MetatypeDataModel } from './item-metatype';
 

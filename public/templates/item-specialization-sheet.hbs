@@ -1,0 +1,78 @@
+<form class="{{cssClass}} sra2-item-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+    <div class="header-fields">
+      <h1 class="item-name"><input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'SRA2.SPECIALIZATIONS.NAME'}}"/></h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+    <!-- Linked Skill -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SPECIALIZATIONS.LINKED_SKILL"}}</label>
+      
+      <!-- Drop Zone for Skills -->
+      <div class="linked-skill-drop-zone" data-drop-zone="skill">
+        {{#if linkedSkillName}}
+          <div class="linked-skill-display {{#if linkedSkillNotFound}}warning{{/if}}">
+            {{#if linkedSkillNotFound}}
+              <i class="fas fa-exclamation-triangle"></i>
+            {{else}}
+              <i class="fas fa-link"></i>
+            {{/if}}
+            <span class="skill-name">{{linkedSkillName}}</span>
+            {{#if linkedSkillNotFound}}
+              <span class="warning-badge" title="{{localize 'SRA2.SPECIALIZATIONS.SKILL_NOT_ON_ACTOR'}}">⚠️</span>
+            {{/if}}
+            <a class="clear-link" data-action="clear-linked-skill" title="{{localize 'SRA2.SPECIALIZATIONS.CLEAR_LINK'}}">
+              <i class="fas fa-times"></i>
+            </a>
+          </div>
+        {{else}}
+          <div class="drop-zone-hint">
+            <i class="fas fa-hand-pointer"></i>
+            <p>{{localize "SRA2.SPECIALIZATIONS.DROP_SKILL_HERE"}}</p>
+          </div>
+        {{/if}}
+      </div>
+      
+      <!-- Alternative: Select dropdown if owned by actor -->
+      {{#if skills}}
+        <div class="manual-select">
+          <label class="sub-label">{{localize "SRA2.SPECIALIZATIONS.OR_SELECT"}}</label>
+          <select name="system.linkedSkill">
+            <option value="">{{localize "SRA2.SPECIALIZATIONS.SELECT_SKILL"}}</option>
+            {{#each skills}}
+              <option value="{{this.name}}" {{#if (eq ../system.linkedSkill this.name)}}selected{{/if}}>{{this.name}}</option>
+            {{/each}}
+          </select>
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- Linked Attribute -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SPECIALIZATIONS.LINKED_ATTRIBUTE"}}</label>
+      <select name="system.linkedAttribute">
+        <option value="strength" {{#if (eq system.linkedAttribute "strength")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</option>
+        <option value="agility" {{#if (eq system.linkedAttribute "agility")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</option>
+        <option value="willpower" {{#if (eq system.linkedAttribute "willpower")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</option>
+        <option value="logic" {{#if (eq system.linkedAttribute "logic")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</option>
+        <option value="charisma" {{#if (eq system.linkedAttribute "charisma")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</option>
+      </select>
+    </div>
+
+    <!-- Cost Info -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SPECIALIZATIONS.COST"}}</label>
+      <div class="cost-display">2500 {{localize "SRA2.RESOURCES.YENS"}}</div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SPECIALIZATIONS.DESCRIPTION"}}</label>
+      <div class="editor-content">{{editor system.description target="system.description" button=true engine="prosemirror" collaborate=false}}</div>
+    </div>
+  </section>
+</form>
+

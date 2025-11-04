@@ -4,6 +4,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 const config: UserConfig = {
     publicDir: 'public',
     base: '/systems/sra2/',
+    root: '.',
     server: {
         port: 30001,
         open: true,
@@ -25,6 +26,18 @@ const config: UserConfig = {
             formats: ['es'],
             fileName: 'index',
         },
+        rollupOptions: {
+            output: {
+                assetFileNames: 'style/sra2.css'
+            }
+        },
+        minify: 'terser',
+        terserOptions: {
+            mangle: {
+                keep_classnames: true,
+                keep_fnames: true
+            }
+        } as any
     },
     css: {
         preprocessorOptions: {

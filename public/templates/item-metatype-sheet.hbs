@@ -1,0 +1,61 @@
+<form class="{{cssClass}} sra2-item-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+    <div class="header-fields">
+      <h1 class="item-name"><input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'SRA2.METATYPES.NAME'}}"/></h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+    <!-- Attribute Maximums -->
+    <div class="form-group">
+      <label class="section-label">{{localize "SRA2.METATYPES.ATTRIBUTE_MAXIMUMS"}}</label>
+      
+      <div class="attribute-max-grid">
+        <!-- Strength -->
+        <div class="attribute-max-item">
+          <label>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</label>
+          <input type="number" name="system.maxStrength" value="{{system.maxStrength}}" min="1" max="10" />
+        </div>
+        
+        <!-- Agility -->
+        <div class="attribute-max-item">
+          <label>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</label>
+          <input type="number" name="system.maxAgility" value="{{system.maxAgility}}" min="1" max="10" />
+        </div>
+        
+        <!-- Willpower -->
+        <div class="attribute-max-item">
+          <label>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</label>
+          <input type="number" name="system.maxWillpower" value="{{system.maxWillpower}}" min="1" max="10" />
+        </div>
+        
+        <!-- Logic -->
+        <div class="attribute-max-item">
+          <label>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</label>
+          <input type="number" name="system.maxLogic" value="{{system.maxLogic}}" min="1" max="10" />
+        </div>
+        
+        <!-- Charisma -->
+        <div class="attribute-max-item">
+          <label>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</label>
+          <input type="number" name="system.maxCharisma" value="{{system.maxCharisma}}" min="1" max="10" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Anarchy Bonus -->
+    <div class="form-group">
+      <label>{{localize "SRA2.METATYPES.ANARCHY_BONUS"}}</label>
+      <input type="number" name="system.anarchyBonus" value="{{system.anarchyBonus}}" min="0" max="10" />
+      <p class="field-hint">{{localize "SRA2.METATYPES.ANARCHY_BONUS_HINT"}}</p>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>{{localize "SRA2.METATYPES.DESCRIPTION"}}</label>
+      <div class="editor-content">{{editor system.description target="system.description" button=true engine="prosemirror" collaborate=false}}</div>
+    </div>
+  </section>
+</form>
+

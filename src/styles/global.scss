@@ -1,0 +1,226 @@
+/* Import character sheet styles */
+@use 'character-sheet.scss';
+
+/* Import item sheet styles */
+@use 'item-sheet.scss';
+
+
+select {
+  height: 36px;
+}
+
+/* Dice Roll Results in Chat */
+.sra2-skill-roll {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  
+  .dice-pool {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    
+    .risk-label {
+      color: #7b1fa2;
+      font-weight: bold;
+    }
+    
+    .rr-label {
+      color: #4caf50;
+      font-weight: bold;
+      background: rgba(76, 175, 80, 0.15);
+      padding: 0.125rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.85rem;
+    }
+  }
+  
+  .dice-results {
+    margin-bottom: 0.5rem;
+    line-height: 2.2;
+    
+    &.risk {
+      background: rgba(123, 31, 162, 0.1);
+      padding: 0.5rem;
+      border-radius: 4px;
+      border-left: 3px solid #7b1fa2;
+    }
+    
+    .mini-success {
+      margin-left: 0.5rem;
+      font-size: 0.85rem;
+      color: #999;
+    }
+    
+    .die {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      margin: 0 0.25rem;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 1rem;
+      
+      &.normal {
+        &.success {
+          background: #4caf50;
+          color: #fff;
+          box-shadow: 0 2px 4px rgba(76, 175, 80, 0.4);
+        }
+        
+        &.failure {
+          background: #666;
+          color: #ccc;
+        }
+      }
+      
+      &.risk {
+        border: 2px solid #4a148c;
+        
+        &.success {
+          background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+          color: #fff;
+          box-shadow: 0 2px 4px rgba(74, 20, 140, 0.6);
+          position: relative;
+          
+          // Add a small badge to indicate double success
+          &::after {
+            content: '×2';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #fff;
+            color: #7b1fa2;
+            font-size: 0.6rem;
+            padding: 1px 3px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+          }
+        }
+        
+        &.critical {
+          background: linear-gradient(135deg, #1a0029 0%, #000000 100%);
+          color: #fff;
+          box-shadow: 0 2px 4px rgba(26, 0, 41, 0.8), 0 0 8px rgba(244, 67, 54, 0.4);
+          animation: pulse-critical 0.5s ease-in-out;
+          border-color: #f44336;
+        }
+        
+        &.failure {
+          background: #424242;
+          color: #ccc;
+        }
+      }
+    }
+  }
+  
+  .successes {
+    font-size: 1.1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    
+    &.has-success {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+      font-weight: bold;
+    }
+    
+    &.no-success {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+  }
+  
+  .critical-failures {
+    font-size: 1.1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+    background: rgba(244, 67, 54, 0.3);
+    color: #f44336;
+    font-weight: bold;
+    border: 2px solid #f44336;
+    
+    .calculation {
+      font-size: 0.9rem;
+      color: #222;
+      margin-right: 0.25rem;
+    }
+    
+    .final-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    
+    &.reduced-to-zero {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+      border-color: #4caf50;
+      
+      .calculation {
+        color: #81c784;
+        text-decoration: line-through;
+      }
+      
+      .final-value {
+        color: #4caf50;
+      }
+    }
+  }
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Roll Dialog Styles */
+.sra2-roll-dialog {
+  .dice-breakdown {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid #4a9eff;
+    font-size: 0.95rem;
+    
+    strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    
+    #normal-dice-display {
+      color: #4caf50;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    #risk-dice-display {
+      color: #7b1fa2;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+  }
+  
+  #risk-dice-max {
+    font-size: 0.85rem;
+    color: #999;
+    font-style: italic;
+  }
+  
+  .notes {
+    font-size: 0.8rem;
+    color: #999;
+    font-style: italic;
+    margin: 0.25rem 0 0;
+  }
+}
+

@@ -1,0 +1,35 @@
+<form class="{{cssClass}} sra2-item-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+    <div class="header-fields">
+      <h1 class="item-name"><input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'SRA2.SKILLS.NAME'}}"/></h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+    <!-- Rating -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SKILLS.RATING"}}</label>
+      <input type="number" name="system.rating" value="{{system.rating}}" min="0" max="8" />
+    </div>
+
+    <!-- Linked Attribute -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SKILLS.LINKED_ATTRIBUTE"}}</label>
+      <select name="system.linkedAttribute">
+        <option value="strength" {{#if (eq system.linkedAttribute "strength")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</option>
+        <option value="agility" {{#if (eq system.linkedAttribute "agility")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</option>
+        <option value="willpower" {{#if (eq system.linkedAttribute "willpower")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</option>
+        <option value="logic" {{#if (eq system.linkedAttribute "logic")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</option>
+        <option value="charisma" {{#if (eq system.linkedAttribute "charisma")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</option>
+      </select>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>{{localize "SRA2.SKILLS.DESCRIPTION"}}</label>
+      <div class="editor-content">{{editor system.description target="system.description" button=true engine="prosemirror" collaborate=false}}</div>
+    </div>
+  </section>
+</form>
+

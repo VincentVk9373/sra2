@@ -1,7 +1,9 @@
 {
   "scripts": {
     "build": "npx vite build",
-    "dev": "npx vite serve",
+    "build:public": "npx vite build --outDir public --emptyOutDir false",
+    "dev": "npx vite build --outDir public --emptyOutDir false --watch",
+    "dev:server": "npx vite serve",
     "typecheck": "tsc --noEmit",
     "build:check": "npm run typecheck && npm run build",
     "packCompendiumsToDist": "node ./tools/packCompendiumsToDist.mjs",

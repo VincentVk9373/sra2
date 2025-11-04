@@ -29,22 +29,156 @@ export class SRA2System {
       };
     }
     
-    // @ts-expect-error - Setting to undefined is intentional for system initialization
-    CONFIG.Actor.documentClass = undefined;
-    CONFIG.Actor.dataModels = {};
+    // Register custom Actor document class
+    CONFIG.Actor.documentClass = documents.SRA2Actor;
     
-    // @ts-expect-error - Setting to undefined is intentional for system initialization
-    CONFIG.Item.documentClass = undefined;
-    CONFIG.Item.dataModels = {};
+    // Register Actor data models
+    CONFIG.Actor.dataModels = {
+      character: models.CharacterDataModel,
+      npc: models.NpcDataModel,
+    };
     
-    Actors.unregisterSheet("core", ActorSheet);
-    Items.unregisterSheet("core", ItemSheet);
+    // Register Item data models
+    CONFIG.Item.dataModels = {
+      skill: models.SkillDataModel,
+      feat: models.FeatDataModel,
+      specialization: models.SpecializationDataModel,
+      metatype: models.MetatypeDataModel,
+    };
+    
+    // Register character sheet
+    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
+      types: ["character"],
+      makeDefault: true,
+      label: "SRA2.SHEET.CHARACTER"
+    });
+    
+    // Register feat sheet
+    DocumentSheetConfig.registerSheet(Item, "sra2", applications.FeatSheet, {
+      types: ["feat"],
+      makeDefault: true,
+      label: "SRA2.SHEET.FEAT"
+    });
+    
+    // Register skill sheet
+    DocumentSheetConfig.registerSheet(Item, "sra2", applications.SkillSheet, {
+      types: ["skill"],
+      makeDefault: true,
+      label: "SRA2.SHEET.SKILL"
+    });
+    
+    // Register specialization sheet
+    DocumentSheetConfig.registerSheet(Item, "sra2", applications.SpecializationSheet, {
+      types: ["specialization"],
+      makeDefault: true,
+      label: "SRA2.SHEET.SPECIALIZATION"
+    });
+    
+    // Register metatype sheet
+    DocumentSheetConfig.registerSheet(Item, "sra2", applications.MetatypeSheet, {
+      types: ["metatype"],
+      makeDefault: true,
+      label: "SRA2.SHEET.METATYPE"
+    });
+    
+    // Register Handlebars helpers
+    Handlebars.registerHelper('add', function(a: number, b: number) {
+      return a + b;
+    });
+    
+    Handlebars.registerHelper('eq', function(a: any, b: any) {
+      return a === b;
+    });
     
     Hooks.once("ready", () => this.onReady());
   }
 
-  onReady(): void {
+  async onReady(): Promise<void> {
     console.log(SYSTEM.LOG.HEAD + 'SRA2System.onReady');
+    
+    // Migrate old feat data to new array format
+    await this.migrateFeatsToArrayFormat();
+  }
+  
+  /**
+   * Migrate old feat data (single rrType/rrValue/rrTarget) to new array format
+   */
+  async migrateFeatsToArrayFormat(): Promise<void> {
+    const featsToUpdate: any[] = [];
+    
+    // Check all feats in the world
+    for (const item of game.items! as any) {
+      if ((item as any).type === 'feat') {
+        const system = (item as any).system as any;
+        let needsUpdate = false;
+        const updates: any = { _id: (item as any).id };
+        
+        // Check if rrType is not an array (old format)
+        if (system.rrType !== undefined && !Array.isArray(system.rrType)) {
+          needsUpdate = true;
+          // Convert single value to array (only if not "none")
+          if (system.rrType !== 'none') {
+            updates['system.rrType'] = [system.rrType];
+            updates['system.rrValue'] = [system.rrValue || 0];
+            updates['system.rrTarget'] = [system.rrTarget || ''];
+          } else {
+            updates['system.rrType'] = [];
+            updates['system.rrValue'] = [];
+            updates['system.rrTarget'] = [];
+          }
+        }
+        
+        if (needsUpdate) {
+          featsToUpdate.push(updates);
+        }
+      }
+    }
+    
+    // Check all feats on actors
+    for (const actor of game.actors! as any) {
+      const actorUpdates: any[] = [];
+      
+      for (const item of (actor as any).items) {
+        if ((item as any).type === 'feat') {
+          const system = (item as any).system as any;
+          let needsUpdate = false;
+          const updates: any = { _id: (item as any).id };
+          
+          // Check if rrType is not an array (old format)
+          if (system.rrType !== undefined && !Array.isArray(system.rrType)) {
+            needsUpdate = true;
+            // Convert single value to array (only if not "none")
+            if (system.rrType !== 'none') {
+              updates['system.rrType'] = [system.rrType];
+              updates['system.rrValue'] = [system.rrValue || 0];
+              updates['system.rrTarget'] = [system.rrTarget || ''];
+            } else {
+              updates['system.rrType'] = [];
+              updates['system.rrValue'] = [];
+              updates['system.rrTarget'] = [];
+            }
+          }
+          
+          if (needsUpdate) {
+            actorUpdates.push(updates);
+          }
+        }
+      }
+      
+      if (actorUpdates.length > 0) {
+        console.log(`${SYSTEM.LOG.HEAD} Migrating ${actorUpdates.length} feats on actor ${(actor as any).name}`);
+        await (actor as any).updateEmbeddedDocuments('Item', actorUpdates);
+      }
+    }
+    
+    if (featsToUpdate.length > 0) {
+      console.log(`${SYSTEM.LOG.HEAD} Migrating ${featsToUpdate.length} world feats`);
+      await Item.updateDocuments(featsToUpdate);
+    }
+    
+    if (featsToUpdate.length > 0 || (game.actors! as any).some((a: any) => a.items.some((i: any) => i.type === 'feat'))) {
+      console.log(`${SYSTEM.LOG.HEAD} Feat migration to array format complete`);
+    }
   }
 }
 

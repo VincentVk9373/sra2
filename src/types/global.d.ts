@@ -1,12 +1,12 @@
+
 import type { SystemConfig } from "../module/config/system.ts";
 import type { SRA2System } from "../module/sra2-system.ts";
 import type * as models from "../module/models/_module.ts";
 import type * as documents from "../module/documents/_module.ts";
 import type * as applications from "../module/applications/_module.ts";
-
 declare global {
   var SYSTEM: SystemConfig;
-  
+
   interface System {
     sra2?: SRA2System;
     api?: {
@@ -15,5 +15,16 @@ declare global {
       documents: typeof documents;
     };
   }
-}
 
+  interface DataModelConfig {
+    Item: {
+      feat: models.FeatDataModel;
+      skill: models.SkillDataModel;
+      specialization: models.SpecializationDataModel;
+    };
+    Actor: {
+      character: models.CharacterDataModel;
+      npc: models.NpcDataModel;
+    };
+  }
+}

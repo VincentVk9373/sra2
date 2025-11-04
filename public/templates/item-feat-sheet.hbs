@@ -1,0 +1,272 @@
+<form class="{{cssClass}} sra2-item-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+    <div class="header-fields">
+      <h1 class="item-name"><input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'SRA2.FEATS.NAME'}}"/></h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+    <!-- Rating -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.RATING"}}</label>
+      <input type="number" name="system.rating" value="{{system.rating}}" min="0" />
+    </div>
+
+    <!-- Feat Type -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.FEAT_TYPE.LABEL"}}</label>
+      <select name="system.featType">
+        <option value="equipment" {{#if (eq system.featType "equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</option>
+        <option value="cyberware" {{#if (eq system.featType "cyberware")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</option>
+        <option value="cyberdeck" {{#if (eq system.featType "cyberdeck")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</option>
+        <option value="vehicle" {{#if (eq system.featType "vehicle")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}</option>
+        <option value="weapons-spells" {{#if (eq system.featType "weapons-spells")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}</option>
+      </select>
+    </div>
+
+    <!-- Cost -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.COST.LABEL"}}</label>
+      <select name="system.cost">
+        <option value="free-equipment" {{#if (eq system.cost "free-equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.FREE_EQUIPMENT"}}</option>
+        <option value="equipment" {{#if (eq system.cost "equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.EQUIPMENT"}}</option>
+        <option value="specialized-equipment" {{#if (eq system.cost "specialized-equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.SPECIALIZED_EQUIPMENT"}}</option>
+        <option value="feat" {{#if (eq system.cost "feat")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.FEAT"}}</option>
+      </select>
+    </div>
+
+    <!-- Active -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.ACTIVE"}}</label>
+      <input type="checkbox" name="system.active" {{checked system.active}} />
+    </div>
+
+    <!-- Bonus Light Damage -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.BONUS_LIGHT_DAMAGE"}}</label>
+      <input type="number" name="system.bonusLightDamage" value="{{system.bonusLightDamage}}" min="0" />
+    </div>
+
+    <!-- Bonus Severe Damage -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.BONUS_SEVERE_DAMAGE"}}</label>
+      <input type="number" name="system.bonusSevereDamage" value="{{system.bonusSevereDamage}}" min="0" />
+    </div>
+
+    <!-- Essence Cost (Cyberware/Bioware only) -->
+    {{#if (eq system.featType "cyberware")}}
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.ESSENCE_COST"}}</label>
+      <input type="number" name="system.essenceCost" value="{{system.essenceCost}}" min="0" />
+    </div>
+    {{/if}}
+
+    <!-- Risk Reduction Entries -->
+    <div class="rr-entries-section">
+      <h3>{{localize "SRA2.FEATS.RR_ENTRIES"}}</h3>
+      <button type="button" data-action="add-rr-entry" title="{{localize 'SRA2.FEATS.ADD_RR_ENTRY'}}" class="add-entry-button">
+        <i class="fas fa-plus"></i> {{localize "SRA2.FEATS.ADD_RR_ENTRY"}}
+      </button>
+      
+      <div class="rr-entries-container">
+        {{#if rrEntries}}
+          {{#each rrEntries}}
+          <div class="rr-entry" data-rr-index="{{index}}">
+            <div class="rr-entry-header">
+              <span class="entry-number">{{localize "SRA2.FEATS.RR_ENTRY_NUMBER"}} {{add index 1}}</span>
+              <button type="button" data-action="remove-rr-entry" data-index="{{index}}" title="{{localize 'SRA2.FEATS.REMOVE_RR_ENTRY'}}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            
+            <!-- RR Type -->
+            <div class="form-group">
+              <label>{{localize "SRA2.FEATS.RR_TYPE.LABEL"}}</label>
+              <select name="system.rrType.{{index}}">
+                <option value="skill" {{#if (eq rrType "skill")}}selected{{/if}}>{{localize "SRA2.FEATS.RR_TYPE.SKILL"}}</option>
+                <option value="attribute" {{#if (eq rrType "attribute")}}selected{{/if}}>{{localize "SRA2.FEATS.RR_TYPE.ATTRIBUTE"}}</option>
+                <option value="specialization" {{#if (eq rrType "specialization")}}selected{{/if}}>{{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}}</option>
+              </select>
+            </div>
+
+            <!-- RR Value -->
+            <div class="form-group">
+              <label>{{localize "SRA2.FEATS.RR_VALUE"}}</label>
+              <input type="number" name="system.rrValue.{{index}}" value="{{rrValue}}" min="0" max="3" />
+            </div>
+
+            <!-- RR Target -->
+            <div class="form-group">
+              <label>{{localize "SRA2.FEATS.RR_TARGET"}}</label>
+              {{#if (eq rrType "attribute")}}
+                <select name="system.rrTarget.{{index}}">
+                  <option value="">{{localize "SRA2.FEATS.RR_TARGET_SELECT"}}</option>
+                  <option value="strength" {{#if (eq rrTarget "strength")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</option>
+                  <option value="agility" {{#if (eq rrTarget "agility")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</option>
+                  <option value="willpower" {{#if (eq rrTarget "willpower")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</option>
+                  <option value="logic" {{#if (eq rrTarget "logic")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</option>
+                  <option value="charisma" {{#if (eq rrTarget "charisma")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</option>
+                </select>
+              {{else}}
+                <!-- Hidden input to preserve rrTarget value for non-attribute types -->
+                <input type="hidden" name="system.rrTarget.{{index}}" value="{{rrTarget}}" />
+                <!-- Drop Zone for Skills/Specializations -->
+                <div class="rr-target-drop-zone" data-rr-index="{{index}}">
+                  {{#if rrTargetName}}
+                    <div class="rr-target-display {{#if rrTargetNotFound}}warning{{/if}}">
+                      {{#if rrTargetNotFound}}
+                        <i class="fas fa-exclamation-triangle"></i>
+                      {{else}}
+                        <i class="fas fa-link"></i>
+                      {{/if}}
+                      <span class="target-name">{{rrTargetName}}</span>
+                      <span class="target-type">({{rrTargetType}})</span>
+                      {{#if rrTargetNotFound}}
+                        <span class="warning-badge" title="{{localize 'SRA2.FEATS.TARGET_NOT_FOUND_ON_ACTOR'}}">⚠️</span>
+                      {{/if}}
+                      <a class="clear-link" data-action="clear-rr-target" data-index="{{index}}" title="{{localize 'SRA2.FEATS.CLEAR_RR_TARGET'}}">
+                        <i class="fas fa-times"></i>
+                      </a>
+                    </div>
+                  {{else}}
+                    <div class="drop-zone-hint">
+                      <i class="fas fa-hand-pointer"></i>
+                      <p>{{localize "SRA2.FEATS.DROP_TARGET_HERE"}}</p>
+                    </div>
+                  {{/if}}
+                </div>
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        {{else}}
+          <p class="no-entries">{{localize "SRA2.FEATS.NO_RR_ENTRIES"}}</p>
+        {{/if}}
+      </div>
+    </div>
+
+    <!-- Weapon/Spell Specific Fields -->
+    {{#if (eq system.featType "weapons-spells")}}
+    <div class="weapon-fields-section">
+      <h3>{{localize "SRA2.FEATS.WEAPON.SECTION_TITLE"}}</h3>
+      
+      <!-- Damage Value (VD) -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE"}}</label>
+        <input type="number" name="system.damageValue" value="{{system.damageValue}}" min="0" />
+      </div>
+
+      <!-- Ranges -->
+      <div class="form-group ranges-group">
+        <label>{{localize "SRA2.FEATS.WEAPON.RANGES"}}</label>
+        
+        <div class="range-row">
+          <span class="range-label">{{localize "SRA2.FEATS.WEAPON.MELEE_RANGE"}}</span>
+          <select name="system.meleeRange">
+            <option value="none" {{#if (eq system.meleeRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
+            <option value="ok" {{#if (eq system.meleeRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
+            <option value="dice" {{#if (eq system.meleeRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+          </select>
+        </div>
+
+        <div class="range-row">
+          <span class="range-label">{{localize "SRA2.FEATS.WEAPON.SHORT_RANGE"}}</span>
+          <select name="system.shortRange">
+            <option value="none" {{#if (eq system.shortRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
+            <option value="ok" {{#if (eq system.shortRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
+            <option value="dice" {{#if (eq system.shortRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+          </select>
+        </div>
+
+        <div class="range-row">
+          <span class="range-label">{{localize "SRA2.FEATS.WEAPON.MEDIUM_RANGE"}}</span>
+          <select name="system.mediumRange">
+            <option value="none" {{#if (eq system.mediumRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
+            <option value="ok" {{#if (eq system.mediumRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
+            <option value="dice" {{#if (eq system.mediumRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+          </select>
+        </div>
+
+        <div class="range-row">
+          <span class="range-label">{{localize "SRA2.FEATS.WEAPON.LONG_RANGE"}}</span>
+          <select name="system.longRange">
+            <option value="none" {{#if (eq system.longRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
+            <option value="ok" {{#if (eq system.longRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
+            <option value="dice" {{#if (eq system.longRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Vehicle/Drone Specific Fields -->
+    {{#if (eq system.featType "vehicle")}}
+    <div class="vehicle-fields-section">
+      <h3>{{localize "SRA2.FEATS.VEHICLE.SECTION_TITLE"}}</h3>
+      
+      <!-- Autopilot -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT"}}</label>
+        <input type="number" name="system.autopilot" value="{{system.autopilot}}" min="0" />
+      </div>
+
+      <!-- Structure -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.STRUCTURE"}}</label>
+        <input type="number" name="system.structure" value="{{system.structure}}" min="0" />
+      </div>
+
+      <!-- Handling -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.HANDLING"}}</label>
+        <input type="number" name="system.handling" value="{{system.handling}}" min="0" />
+      </div>
+
+      <!-- Speed -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.SPEED"}}</label>
+        <input type="number" name="system.speed" value="{{system.speed}}" min="0" />
+      </div>
+
+      <!-- Armor -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.ARMOR"}}</label>
+        <input type="number" name="system.armor" value="{{system.armor}}" min="0" />
+      </div>
+
+      <!-- Weapon Info -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.WEAPON_INFO"}}</label>
+        <input type="text" name="system.weaponInfo" value="{{system.weaponInfo}}" placeholder="{{localize 'SRA2.FEATS.VEHICLE.WEAPON_INFO_PLACEHOLDER'}}" />
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Cyberdeck Specific Fields -->
+    {{#if (eq system.featType "cyberdeck")}}
+    <div class="cyberdeck-fields-section">
+      <h3>{{localize "SRA2.FEATS.CYBERDECK.SECTION_TITLE"}}</h3>
+      
+      <!-- Firewall -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.CYBERDECK.FIREWALL"}}</label>
+        <input type="number" name="system.firewall" value="{{system.firewall}}" min="0" />
+      </div>
+
+      <!-- Attack -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.CYBERDECK.ATTACK"}}</label>
+        <input type="number" name="system.attack" value="{{system.attack}}" min="0" />
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.DESCRIPTION"}}</label>
+      <div class="editor-content">{{editor system.description target="system.description" button=true engine="prosemirror" collaborate=false}}</div>
+    </div>
+  </section>
+</form>
+

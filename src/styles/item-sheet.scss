@@ -1,0 +1,369 @@
+/* Item Sheet Styles */
+.sra2-item-sheet {
+  .sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 2px solid #333;
+    margin-bottom: 1rem;
+    
+    .profile-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid #666;
+      
+      &:hover {
+        border-color: #999;
+      }
+    }
+    
+    .header-fields {
+      flex: 1;
+      
+      .item-name {
+        margin: 0;
+        
+        input {
+          width: 100%;
+          font-size: 1.3rem;
+          font-weight: bold;
+          border: none;
+          background: transparent;
+          
+          &:focus {
+            outline: 1px solid #666;
+            padding: 0.25rem;
+          }
+        }
+      }
+    }
+  }
+  
+  .sheet-body {
+    padding: 0 1rem 1rem;
+    
+    .form-group {
+      margin-bottom: 1rem;
+      
+      label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        color: #999;
+        font-weight: bold;
+      }
+      
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #666;
+        background: rgba(0, 0, 0, 0.2);
+        
+        &:focus {
+          outline: none;
+          border-color: #999;
+        }
+      }
+      
+      input[type="number"] {
+        width: 100px;
+      }
+      
+      select {
+        cursor: pointer;
+        
+        option {
+          background: #1a1a1a;
+          color: #fff;
+        }
+      }
+      
+      input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+      
+      .editor-content {
+        min-height: 200px;
+        border: 1px solid #666;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0.5rem;
+        
+        .editor {
+          min-height: 180px;
+        }
+      }
+      
+      .field-hint {
+        margin: 0.25rem 0 0;
+        font-size: 0.8rem;
+        color: #888;
+        font-style: italic;
+      }
+      
+      .cost-display {
+        padding: 0.5rem;
+        border: 1px solid #666;
+        background: rgba(0, 0, 0, 0.2);
+        font-weight: bold;
+        color: #ffd700;
+      }
+      
+      /* Linked Skill Drop Zone */
+      .linked-skill-drop-zone {
+        min-height: 60px;
+        padding: 0.75rem;
+        border: 2px dashed #666;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+        
+        &:hover {
+          border-color: #999;
+          background: rgba(0, 0, 0, 0.15);
+        }
+        
+        .drop-zone-hint {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #888;
+          text-align: center;
+          
+          i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+          }
+          
+          p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-style: italic;
+          }
+        }
+        
+        .linked-skill-display {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.5rem;
+          background: rgba(100, 200, 255, 0.1);
+          border: 1px solid #4a9eff;
+          border-radius: 4px;
+          
+          i.fa-link {
+            color: #4a9eff;
+            font-size: 1.2rem;
+          }
+          
+          .skill-name {
+            flex: 1;
+            font-weight: bold;
+            color: #333;
+            font-size: 1rem;
+          }
+          
+          .clear-link {
+            color: #888;
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: all 0.2s;
+            
+            &:hover {
+              color: #ff6b6b;
+              transform: scale(1.1);
+            }
+          }
+        }
+      }
+      
+      /* Risk Reduction Entries Section */
+      &.rr-entries-section {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.1);
+        border: 1px solid #555;
+        border-radius: 6px;
+        
+        .no-entries {
+          text-align: center;
+          padding: 2rem;
+          color: #888;
+          font-style: italic;
+          font-size: 0.95rem;
+        }
+      }
+      /* RR Target Drop Zone (for Feats) */
+      .rr-target-drop-zone {
+        min-height: 60px;
+        padding: 0.75rem;
+        border: 2px dashed #666;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+        
+        &:hover {
+          border-color: #999;
+          background: rgba(0, 0, 0, 0.15);
+        }
+        
+        .drop-zone-hint {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #888;
+          text-align: center;
+          
+          i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+          }
+          
+          p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-style: italic;
+          }
+        }
+        
+        .rr-target-display {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.5rem;
+          background: rgba(100, 200, 255, 0.1);
+          border: 1px solid #4a9eff;
+          border-radius: 4px;
+          
+          &.invalid {
+            background: rgba(255, 100, 100, 0.1);
+            border-color: #ff6b6b;
+            
+            i.fa-unlink {
+              color: #ff6b6b;
+            }
+            
+            .target-name.error {
+              color: #ff6b6b;
+            }
+          }
+          
+          &.warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-color: #ffc107;
+            
+            i.fa-exclamation-triangle {
+              color: #ffc107;
+              font-size: 1.2rem;
+            }
+          }
+          
+          i.fa-link {
+            color: #4a9eff;
+            font-size: 1.2rem;
+          }
+          
+          .target-name {
+            flex: 1;
+            font-weight: bold;
+            color: #333;
+            font-size: 1rem;
+          }
+          
+          .target-type {
+            font-size: 0.85rem;
+            color: #888;
+            font-style: italic;
+          }
+          
+          .warning-badge {
+            font-size: 1rem;
+            margin-left: 0.25rem;
+          }
+          
+          .clear-link {
+            color: #888;
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: all 0.2s;
+            
+            &:hover {
+              color: #ff6b6b;
+              transform: scale(1.1);
+            }
+          }
+        }
+      }
+      
+      .manual-select {
+        margin-top: 0.75rem;
+        
+        .sub-label {
+          display: block;
+          font-size: 0.85rem;
+          margin-bottom: 0.25rem;
+          color: #888;
+          font-weight: normal;
+        }
+        
+        select {
+          width: 100%;
+        }
+      }
+      
+      /* Metatype Sheet - Attribute Maximums Grid */
+      .section-label {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #ccc;
+        margin-bottom: 0.5rem;
+      }
+      
+      .attribute-max-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        
+        .attribute-max-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          
+          label {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: normal;
+          }
+          
+          input[type="number"] {
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 0.5rem;
+            border: 1px solid #666;
+            background: rgba(0, 0, 0, 0.3);
+            
+            &:focus {
+              border-color: #4a9eff;
+              background: rgba(74, 158, 255, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

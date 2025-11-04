@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // Compilation Options
-    "target": "ES2022",
+    "target": "ESNext",
     "module": "ESNext",
     "lib": ["ES2022", "DOM"],
     "moduleResolution": "bundler",
@@ -39,7 +39,7 @@
     "forceConsistentCasingInFileNames": true,
     
     // Type roots
-    "types": [],
+    "types": [""],
     "typeRoots": ["./node_modules/@types"]
   },
   "include": [

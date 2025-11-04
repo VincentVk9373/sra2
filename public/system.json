@@ -35,8 +35,8 @@
   "flags": {
     "allowBugReporter": true,
     "hotReload": {
-      "extensions": ["css", "hbs", "html"],
-      "paths": ["style/", "templates/"]
+      "extensions": ["css", "hbs", "html", "mjs", "js"],
+      "paths": ["index.mjs", "style/", "templates/"]
     }
   },
   "license": "LICENSE.md",
@@ -72,5 +72,17 @@
     "distance": 1,
     "units": "m"
   },
-  "primaryTokenAttribute": "state.health"
+  "primaryTokenAttribute": "state.health",
+  "documentTypes": {
+    "Actor": {
+      "character": {},
+      "npc": {}
+    },
+    "Item": {
+      "skill": {},
+      "feat": {},
+      "specialization": {},
+      "metatype": {}
+    }
+  }
 }

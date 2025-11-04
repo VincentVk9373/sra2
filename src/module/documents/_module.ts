@@ -1,5 +1,3 @@
 // Export all documents here
-// Example: export { MyDocument } from './MyDocument';
-
-export {};
+export { SRA2Actor } from './actor';
 

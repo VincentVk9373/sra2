@@ -13,14 +13,16 @@ export class Migration {
     await game.actors.forEach(async (actor) => {
       const actorItemUpdates = computeUpdates(actor.items);
       if (actorItemUpdates.length > 0) {
-        console.log(SYSTEM.LOG.HEAD, this.code, `Applying updates on actor ${actor.name} items`, actorItemUpdates);
+        const message = game.i18n.format('SRA2.MIGRATION.APPLYING_ACTOR_ITEMS', { name: actor.name });
+        console.log(SYSTEM.LOG.HEAD, this.code, message, actorItemUpdates);
         await actor.updateEmbeddedDocuments('Item', actorItemUpdates);
       }
     })
 
     const itemUpdates = computeUpdates(game.items);
     if (itemUpdates.length > 0) {
-      console.log(SYSTEM.LOG.HEAD, this.code, 'Applying updates on items', itemUpdates);
+      const message = game.i18n.localize('SRA2.MIGRATION.APPLYING_ITEMS');
+      console.log(SYSTEM.LOG.HEAD, this.code, message, itemUpdates);
       await Item.updateDocuments(itemUpdates);
     }
   }
@@ -33,7 +35,7 @@ export class Migrations {
     // ))
 
     game.settings.register(SYSTEM.id, CURRENT_SYSTEM_VERSION, {
-      name: "Current System Version",
+      name: "SRA2.MIGRATION.SETTING_NAME",
       scope: "world",
       config: false,
       type: String,
@@ -54,18 +56,22 @@ export class Migrations {
       if (migrations.length > 0) {
         migrations.sort((a, b) => foundry.utils.isNewerVersion(a.version, b.version) ? 1 : foundry.utils.isNewerVersion(b.version, a.version) ? -1 : 0)
         migrations.forEach(async m => {
-          this.$notify(`Executing migration ${m.code}: version ${currentVersion} is lower than ${m.version}`);
+          const message = game.i18n.format('SRA2.MIGRATION.EXECUTING', { code: m.code, currentVersion: currentVersion, targetVersion: m.version });
+          this.$notify(message);
           await m.migrate()
         })
-        this.$notify(`Migrations done, system version will change to ${game.system.version}`)
+        const message = game.i18n.format('SRA2.MIGRATION.DONE', { version: game.system.version });
+        this.$notify(message)
       }
       else {
-        console.log(SYSTEM.LOG.HEAD + `No migration needeed, system version will change to ${game.system.version}`)
+        const message = game.i18n.format('SRA2.MIGRATION.NOT_NEEDED', { version: game.system.version });
+        console.log(SYSTEM.LOG.HEAD + message)
       }
       game.settings.set(SYSTEM.id, CURRENT_SYSTEM_VERSION, game.system.version)
     }
     else {
-      console.log(SYSTEM.LOG.HEAD + `System version not changed`)
+      const message = game.i18n.localize('SRA2.MIGRATION.VERSION_UNCHANGED');
+      console.log(SYSTEM.LOG.HEAD + message)
     }
   }
 
