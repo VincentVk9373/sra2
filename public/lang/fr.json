@@ -235,7 +235,15 @@
             "SUCCESSES": "Succès",
             "SUCCESSES_SHORT": "succès",
             "TOTAL_SUCCESSES": "Succès total",
-            "CRITICAL_FAILURES": "Échecs critiques"
+            "CRITICAL_FAILURES": "Échecs critiques",
+            "SEARCH_PLACEHOLDER": "Rechercher une compétence...",
+            "SEARCH_NO_RESULTS": "Aucune compétence trouvée",
+            "ADD_SKILL": "Ajouter",
+            "WORLD_ITEMS": "Items du monde",
+            "CREATE_SKILL": "Créer cette compétence",
+            "CREATE": "Créer",
+            "CREATE_NEW": "Nouvelle compétence",
+            "SKILL_CREATED": "{name} a été créée"
         },
         "ITEMS": {
             "LABEL": "Objets"

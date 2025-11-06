@@ -235,7 +235,15 @@
             "SUCCESSES": "Successes",
             "SUCCESSES_SHORT": "successes",
             "TOTAL_SUCCESSES": "Total Successes",
-            "CRITICAL_FAILURES": "Critical Failures"
+            "CRITICAL_FAILURES": "Critical Failures",
+            "SEARCH_PLACEHOLDER": "Search for a skill...",
+            "SEARCH_NO_RESULTS": "No skills found",
+            "ADD_SKILL": "Add",
+            "WORLD_ITEMS": "World Items",
+            "CREATE_SKILL": "Create this skill",
+            "CREATE": "Create",
+            "CREATE_NEW": "New skill",
+            "SKILL_CREATED": "{name} has been created"
         },
         "ITEMS": {
             "LABEL": "Items"

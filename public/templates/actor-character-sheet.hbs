@@ -222,6 +222,13 @@
     <!-- Skills Section -->
     <div class="skills-section">
       <h2>{{localize "SRA2.SKILLS.LABEL"}}</h2>
+      
+      <!-- Skill Search -->
+      <div class="skill-search-container">
+        <input type="text" class="skill-search-input" placeholder="{{localize 'SRA2.SKILLS.SEARCH_PLACEHOLDER'}}" data-action="search-skill" />
+        <div class="skill-search-results" style="display: none;"></div>
+      </div>
+      
       <div class="skills-list" data-drop-zone="skill">
         {{#each skills}}
         <div class="skill-item" data-item-id="{{this._id}}" draggable="true">

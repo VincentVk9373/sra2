@@ -229,6 +229,11 @@ export class CharacterSheet extends ActorSheet {
     // Handle rating changes
     html.find('.rating-input').on('change', this._onRatingChange.bind(this));
 
+    // Skill search
+    html.find('.skill-search-input').on('input', this._onSkillSearch.bind(this));
+    html.find('.skill-search-input').on('focus', this._onSkillSearchFocus.bind(this));
+    html.find('.skill-search-input').on('blur', this._onSkillSearchBlur.bind(this));
+
     // Make feat items draggable
     html.find('.feat-item').each((_index, item) => {
       item.setAttribute('draggable', 'true');
@@ -1014,6 +1019,320 @@ export class CharacterSheet extends ActorSheet {
     }
 
     return super._onDrop(event);
+  }
+
+  /**
+   * Handle skill search input
+   */
+  private searchTimeout: any = null;
+  
+  private async _onSkillSearch(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = input.value.trim().toLowerCase();
+    const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+    
+    // Clear previous timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    
+    // If search term is empty, hide results
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Debounce search
+    this.searchTimeout = setTimeout(async () => {
+      await this._performSkillSearch(searchTerm, resultsDiv);
+    }, 300);
+  }
+
+  /**
+   * Perform the actual skill search in compendiums and world items
+   */
+  private async _performSkillSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
+    const results: any[] = [];
+    
+    // Store search term for potential creation
+    this.lastSearchTerm = searchTerm;
+    
+    // Search in world items first
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === 'skill' && item.name.toLowerCase().includes(searchTerm)) {
+          // Check if skill already exists on actor
+          const existingSkill = this.actor.items.find((i: any) => 
+            i.type === 'skill' && i.name === item.name
+          );
+          
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            pack: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
+            exists: !!existingSkill
+          });
+        }
+      }
+    }
+    
+    // Search in all compendiums
+    for (const pack of game.packs as any) {
+      // Only search in Item compendiums
+      if (pack.documentName !== 'Item') continue;
+      
+      // Get all documents from the pack
+      const documents = await pack.getDocuments();
+      
+      // Filter for skills that match the search term
+      for (const doc of documents) {
+        if (doc.type === 'skill' && doc.name.toLowerCase().includes(searchTerm)) {
+          // Check if skill already exists on actor
+          const existingSkill = this.actor.items.find((i: any) => 
+            i.type === 'skill' && i.name === doc.name
+          );
+          
+          results.push({
+            name: doc.name,
+            uuid: doc.uuid,
+            pack: pack.title,
+            exists: !!existingSkill
+          });
+        }
+      }
+    }
+    
+    // Display results
+    this._displaySkillSearchResults(results, resultsDiv);
+  }
+
+  /**
+   * Display skill search results
+   */
+  private lastSearchTerm: string = '';
+  
+  private _displaySkillSearchResults(results: any[], resultsDiv: HTMLElement): void {
+    // Check if exact match exists on the actor
+    const formattedSearchTerm = this.lastSearchTerm
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    const exactMatchOnActor = this.actor.items.find((i: any) => 
+      i.type === 'skill' && i.name.toLowerCase() === this.lastSearchTerm.toLowerCase()
+    );
+    
+    let html = '';
+    
+    // If no results at all, show only the create button with message
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results-create">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.SKILLS.SEARCH_NO_RESULTS')}
+          </div>
+          <button class="create-skill-btn" data-skill-name="${this.lastSearchTerm}">
+            <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.SKILLS.CREATE_SKILL')}
+          </button>
+        </div>
+      `;
+    } else {
+      // Display search results
+      for (const result of results) {
+        const disabledClass = result.exists ? 'disabled' : '';
+        const buttonText = result.exists ? '✓' : game.i18n!.localize('SRA2.SKILLS.ADD_SKILL');
+        
+        html += `
+          <div class="search-result-item ${disabledClass}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.pack}</span>
+            </div>
+            <button class="add-skill-btn" data-uuid="${result.uuid}" ${result.exists ? 'disabled' : ''}>
+              ${buttonText}
+            </button>
+          </div>
+        `;
+      }
+      
+      // Add create button if exact match doesn't exist on actor
+      if (!exactMatchOnActor) {
+        html += `
+          <div class="search-result-item create-new-item">
+            <div class="result-info">
+              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
+              <span class="result-pack">${game.i18n!.localize('SRA2.SKILLS.CREATE_NEW')}</span>
+            </div>
+            <button class="create-skill-btn-inline" data-skill-name="${this.lastSearchTerm}">
+              ${game.i18n!.localize('SRA2.SKILLS.CREATE')}
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Attach click handlers to buttons
+    $(resultsDiv).find('.add-skill-btn').on('click', this._onAddSkillFromSearch.bind(this));
+    $(resultsDiv).find('.create-skill-btn, .create-skill-btn-inline').on('click', this._onCreateNewSkill.bind(this));
+    
+    // Make entire result items clickable (except disabled ones and create button)
+    $(resultsDiv).find('.search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)').on('click', (event) => {
+      // Don't trigger if clicking directly on the button
+      if ($(event.target).closest('.add-skill-btn').length > 0) return;
+      
+      // Find the button in this item and trigger its click
+      const button = $(event.currentTarget).find('.add-skill-btn')[0] as HTMLButtonElement;
+      if (button && !button.disabled) {
+        $(button).trigger('click');
+      }
+    });
+    
+    // Make create items clickable on the entire row
+    $(resultsDiv).find('.search-result-item.create-new-item').on('click', (event) => {
+      // Don't trigger if clicking directly on the button
+      if ($(event.target).closest('.create-skill-btn-inline').length > 0) return;
+      
+      // Find the button and trigger its click
+      const button = $(event.currentTarget).find('.create-skill-btn-inline')[0];
+      if (button) {
+        $(button).trigger('click');
+      }
+    });
+  }
+
+  /**
+   * Handle adding a skill from search results
+   */
+  private async _onAddSkillFromSearch(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const uuid = button.dataset.uuid;
+    
+    if (!uuid) return;
+    
+    // Get the skill from the compendium
+    const skill = await fromUuid(uuid as any) as any;
+    
+    if (!skill) {
+      ui.notifications?.error('Skill not found');
+      return;
+    }
+    
+    // Check if skill already exists
+    const existingSkill = this.actor.items.find((i: any) => 
+      i.type === 'skill' && i.name === skill.name
+    );
+    
+    if (existingSkill) {
+      ui.notifications?.warn(game.i18n!.format('SRA2.SKILLS.ALREADY_EXISTS', { name: skill.name }));
+      return;
+    }
+    
+    // Add the skill to the actor
+    await this.actor.createEmbeddedDocuments('Item', [skill.toObject()]);
+    
+    // Mark button as added
+    button.textContent = '✓';
+    button.disabled = true;
+    button.closest('.search-result-item')?.classList.add('disabled');
+    
+    ui.notifications?.info(`${skill.name} ${game.i18n!.localize('SRA2.SKILLS.ADD_SKILL')}`);
+  }
+
+  /**
+   * Handle skill search focus
+   */
+  private _onSkillSearchFocus(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // If there's already content and results, show them
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = 'block';
+      }
+    }
+    
+    return Promise.resolve();
+  }
+
+  /**
+   * Handle skill search blur
+   */
+  private _onSkillSearchBlur(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // Delay hiding to allow clicking on results
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        resultsDiv.style.display = 'none';
+      }
+    }, 200);
+    
+    return Promise.resolve();
+  }
+
+  /**
+   * Handle creating a new skill from search
+   */
+  private async _onCreateNewSkill(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const skillName = button.dataset.skillName;
+    
+    if (!skillName) return;
+    
+    // Capitalize first letter of each word
+    const formattedName = skillName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    // Create the new skill with default values
+    const skillData = {
+      name: formattedName,
+      type: 'skill',
+      system: {
+        rating: 1,
+        linkedAttribute: 'strength',
+        description: ''
+      }
+    } as any;
+    
+    // Add the skill to the actor
+    const createdItems = await this.actor.createEmbeddedDocuments('Item', [skillData]) as any;
+    
+    if (createdItems && createdItems.length > 0) {
+      const newSkill = createdItems[0] as any;
+      
+      // Clear the search input and hide results
+      const searchInput = this.element.find('.skill-search-input')[0] as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = '';
+      }
+      
+      const resultsDiv = this.element.find('.skill-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        resultsDiv.style.display = 'none';
+      }
+      
+      // Open the skill sheet for editing
+      if (newSkill && newSkill.sheet) {
+        setTimeout(() => {
+          newSkill.sheet.render(true);
+        }, 100);
+      }
+      
+      ui.notifications?.info(game.i18n!.format('SRA2.SKILLS.SKILL_CREATED', { name: formattedName }));
+    }
   }
 }
 
