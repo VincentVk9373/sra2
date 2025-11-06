@@ -78,6 +78,25 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.BONUS_SEVERE_DAMAGE"
       }),
+      bonusPhysicalThreshold: new fields.NumberField({
+        required: true,
+        initial: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD"
+      }),
+      bonusMentalThreshold: new fields.NumberField({
+        required: true,
+        initial: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
+      }),
+      bonusAnarchy: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_ANARCHY"
+      }),
       essenceCost: new fields.NumberField({
         required: true,
         initial: 0,
@@ -89,6 +108,10 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: "equipment",
         choices: {
+          "trait": "SRA2.FEATS.FEAT_TYPE.TRAIT",
+          "contact": "SRA2.FEATS.FEAT_TYPE.CONTACT",
+          "awakened": "SRA2.FEATS.FEAT_TYPE.AWAKENED",
+          "adept-power": "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER",
           "equipment": "SRA2.FEATS.FEAT_TYPE.EQUIPMENT",
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
@@ -200,6 +223,38 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         min: 0,
         integer: true,
         label: "SRA2.FEATS.CYBERDECK.ATTACK"
+      }),
+      // Contact specific fields
+      contactName: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.CONTACT.NAME"
+      }),
+      // Awakened specific fields
+      astralPerception: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"
+      }),
+      astralProjection: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"
+      }),
+      sorcery: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.SORCERY"
+      }),
+      conjuration: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.CONJURATION"
+      }),
+      adept: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ADEPT"
       })
     };
   }

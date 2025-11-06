@@ -105,6 +105,10 @@
             "RR_EFFECT": "Effet de Réduction de Risque",
             "FEAT_TYPE": {
                 "LABEL": "Type d'Atout",
+                "TRAIT": "Trait",
+                "CONTACT": "Contact",
+                "AWAKENED": "Éveillé",
+                "ADEPT_POWER": "Pouvoir d'Adepte",
                 "EQUIPMENT": "Équipement",
                 "CYBERWARE": "Cyberware / Bioware",
                 "CYBERDECK": "Cyberdeck",
@@ -125,6 +129,15 @@
             "DROP_IN_RR_ZONE": "Glissez l'item dans la zone de dépôt d'un RR spécifique",
             "BONUS_LIGHT_DAMAGE": "Bonus Blessures Légères",
             "BONUS_SEVERE_DAMAGE": "Bonus Blessures Graves",
+            "BONUS_PHYSICAL_THRESHOLD": "Bonus Seuil Physique",
+            "BONUS_PHYSICAL_THRESHOLD_SHORT": "Seuil Phys.",
+            "BONUS_PHYSICAL_THRESHOLD_HINT": "Bonus aux seuils de dégâts physiques (positif ou négatif)",
+            "BONUS_MENTAL_THRESHOLD": "Bonus Seuil Mental",
+            "BONUS_MENTAL_THRESHOLD_SHORT": "Seuil Ment.",
+            "BONUS_MENTAL_THRESHOLD_HINT": "Bonus aux seuils de dégâts mentaux (positif ou négatif)",
+            "BONUS_ANARCHY": "Bonus Anarchie",
+            "BONUS_ANARCHY_SHORT": "Anarchie",
+            "BONUS_ANARCHY_HINT": "Points d'anarchie supplémentaires accordés par cet atout",
             "ESSENCE_COST": "Coût en Essence",
             "RR_ENTRIES": "Entrées de Réduction de Risque",
             "ADD_RR_ENTRY": "Ajouter une entrée RR",
@@ -171,6 +184,19 @@
                 "FIREWALL_SHORT": "Pare-feu",
                 "ATTACK": "Attaque",
                 "ATTACK_SHORT": "Attaque"
+            },
+            "CONTACT": {
+                "SECTION_TITLE": "Informations du Contact",
+                "NAME": "Nom du Contact",
+                "NAME_PLACEHOLDER": "Entrez le nom du contact"
+            },
+            "AWAKENED": {
+                "SECTION_TITLE": "Capacités Éveillées",
+                "ASTRAL_PERCEPTION": "Perception astrale",
+                "ASTRAL_PROJECTION": "Projection astrale",
+                "SORCERY": "Sorcellerie",
+                "CONJURATION": "Conjuration",
+                "ADEPT": "Adepte"
             }
         },
         "SKILLS": {

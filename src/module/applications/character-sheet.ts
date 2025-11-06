@@ -58,6 +58,10 @@ export class CharacterSheet extends ActorSheet {
     
     // Group feats by type
     context.featsByType = {
+      trait: allFeats.filter((feat: any) => feat.system.featType === 'trait'),
+      contact: allFeats.filter((feat: any) => feat.system.featType === 'contact'),
+      awakened: allFeats.filter((feat: any) => feat.system.featType === 'awakened'),
+      adeptPower: allFeats.filter((feat: any) => feat.system.featType === 'adept-power'),
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck'),

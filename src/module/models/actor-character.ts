@@ -149,13 +149,12 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     
     (this as any).attributeMaxes = attributeMaxes;
     
-    // Calculate total anarchy (base 3 + metatype bonus)
-    (this as any).totalAnarchy = 3 + anarchyBonus;
-    (this as any).anarchyBonus = anarchyBonus;
-    
-    // Calculate damage boxes and essence cost from active feats
+    // Calculate damage boxes, thresholds bonuses, essence cost, and anarchy bonus from active feats
     let bonusLightDamage = 0;
     let bonusSevereDamage = 0;
+    let bonusPhysicalThreshold = 0;
+    let bonusMentalThreshold = 0;
+    let bonusAnarchy = 0;
     let totalEssenceCost = 0;
     
     if (parent && parent.items) {
@@ -166,9 +165,17 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       activeFeats.forEach((feat: any) => {
         bonusLightDamage += feat.system.bonusLightDamage || 0;
         bonusSevereDamage += feat.system.bonusSevereDamage || 0;
+        bonusPhysicalThreshold += feat.system.bonusPhysicalThreshold || 0;
+        bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
+        bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
       });
     }
+    
+    // Calculate total anarchy (base 3 + metatype bonus + feats bonus)
+    (this as any).totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
+    (this as any).anarchyBonus = anarchyBonus;
+    (this as any).featsAnarchyBonus = bonusAnarchy;
     
     // Base: 2 light, 1 severe, 1 incapacitating
     const totalLightBoxes = 2 + bonusLightDamage;
@@ -203,7 +210,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).totalSevereBoxes = totalSevereBoxes;
     
     // Adjust anarchy nimbus array to match total anarchy
-    const totalAnarchy = 3 + anarchyBonus;
+    const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
     const anarchyNimbus = (this as any).anarchyNimbus || [];
     
     if (!Array.isArray(anarchyNimbus)) {
@@ -220,25 +227,25 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     const armorLevel = (this as any).armorLevel || 0;
     (this as any).armorCost = armorLevel * 2500;
     
-    // Calculate damage thresholds
+    // Calculate damage thresholds (with bonuses from feats)
     const strength = (this as any).attributes?.strength || 1;
     const willpower = (this as any).attributes?.willpower || 1;
     
     (this as any).damageThresholds = {
       withoutArmor: {
-        light: strength,
-        moderate: strength + 3,
-        severe: strength + 6
+        light: strength + bonusPhysicalThreshold,
+        moderate: strength + bonusPhysicalThreshold + 3,
+        severe: strength + bonusPhysicalThreshold + 6
       },
       withArmor: {
-        light: strength + armorLevel,
-        moderate: strength + armorLevel + 3,
-        severe: strength + armorLevel + 6
+        light: strength + armorLevel + bonusPhysicalThreshold,
+        moderate: strength + armorLevel + bonusPhysicalThreshold + 3,
+        severe: strength + armorLevel + bonusPhysicalThreshold + 6
       },
       mental: {
-        light: willpower,
-        moderate: willpower + 3,
-        severe: willpower + 6
+        light: willpower + bonusMentalThreshold,
+        moderate: willpower + bonusMentalThreshold + 3,
+        severe: willpower + bonusMentalThreshold + 6
       }
     };
     

@@ -330,6 +330,200 @@
     </div>
     {{/unless}}
 
+    <!-- Traits Section -->
+    {{#if featsByType.trait}}
+    <div class="feats-section traits-section">
+      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.TRAIT"}}</h2>
+      <div class="feats-list" data-drop-zone="feat">
+        {{#each featsByType.trait}}
+          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+            <div class="feat-header">
+              <div class="feat-title">
+                <h4>{{this.name}}
+                  {{#if this.rrEntries}}
+                    {{#each this.rrEntries}}
+                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                        {{#if (eq rrType "attribute")}}
+                          [RR {{rrValue}} → {{rrTargetLabel}}]
+                        {{else if (eq rrType "skill")}}
+                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                        {{else if (eq rrType "specialization")}}
+                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                        {{/if}}
+                      </span>
+                    {{/each}}
+                  {{/if}}
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                      [
+                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
+                      ]
+                    </span>
+                  {{/if}}
+                </h4>
+                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+              </div>
+              <div class="feat-controls">
+                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            {{#if this.system.description}}
+            <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+          </div>
+          {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Contacts Section -->
+    {{#if featsByType.contact}}
+    <div class="feats-section contacts-section">
+      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}</h2>
+      <div class="feats-list" data-drop-zone="feat">
+        {{#each featsByType.contact}}
+          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+            <div class="feat-header">
+              <div class="feat-title">
+                <h4>{{this.name}}
+                  {{#if this.system.contactName}}
+                    <span class="contact-name-badge">{{this.system.contactName}}</span>
+                  {{/if}}
+                </h4>
+                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+              </div>
+              <div class="feat-controls">
+                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            {{#if this.system.description}}
+            <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+          </div>
+          {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Awakened Section -->
+    {{#if featsByType.awakened}}
+    <div class="feats-section awakened-section">
+      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}</h2>
+      <div class="feats-list" data-drop-zone="feat">
+        {{#each featsByType.awakened}}
+          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+            <div class="feat-header">
+              <div class="feat-title">
+                <h4>{{this.name}}</h4>
+                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+              </div>
+              <div class="feat-controls">
+                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            <!-- Awakened Abilities -->
+            <div class="awakened-abilities">
+              {{#if this.system.astralPerception}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}</span>{{/if}}
+              {{#if this.system.astralProjection}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"}}</span>{{/if}}
+              {{#if this.system.sorcery}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.SORCERY"}}</span>{{/if}}
+              {{#if this.system.conjuration}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.CONJURATION"}}</span>{{/if}}
+              {{#if this.system.adept}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ADEPT"}}</span>{{/if}}
+            </div>
+            {{#if this.system.description}}
+            <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+          </div>
+          {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Adept Powers Section -->
+    {{#if featsByType.adeptPower}}
+    <div class="feats-section adept-powers-section">
+      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</h2>
+      <div class="feats-list" data-drop-zone="feat">
+        {{#each featsByType.adeptPower}}
+          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+            <div class="feat-header">
+              <div class="feat-title">
+                <h4>{{this.name}}
+                  {{#if this.rrEntries}}
+                    {{#each this.rrEntries}}
+                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                        {{#if (eq rrType "attribute")}}
+                          [RR {{rrValue}} → {{rrTargetLabel}}]
+                        {{else if (eq rrType "skill")}}
+                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                        {{else if (eq rrType "specialization")}}
+                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                        {{/if}}
+                      </span>
+                    {{/each}}
+                  {{/if}}
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                      [
+                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
+                      ]
+                    </span>
+                  {{/if}}
+                </h4>
+                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+              </div>
+              <div class="feat-controls">
+                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            {{#if this.system.description}}
+            <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+          </div>
+          {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
     <!-- Weapons & Spells Section -->
     {{#if featsByType.weaponsSpells}}
     <div class="feats-section weapons-spells-section">
@@ -353,12 +547,18 @@
                       </span>
                     {{/each}}
                   {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}}">
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
                       [
                       {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}} / {{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
                       {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
                       ]
                     </span>
                   {{/if}}
@@ -443,12 +643,18 @@
                       </span>
                     {{/each}}
                   {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}}">
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
                       [
                       {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}} / {{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
                       {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
                       ]
                     </span>
                   {{/if}}
@@ -497,12 +703,18 @@
                       </span>
                     {{/each}}
                   {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}}">
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
                       [
                       {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}} / {{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
                       {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
                       ]
                     </span>
                   {{/if}}
@@ -554,12 +766,18 @@
                       </span>
                     {{/each}}
                   {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}}">
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
                       [
                       {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}} / {{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
                       {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
                       ]
                     </span>
                   {{/if}}
@@ -619,12 +837,18 @@
                       </span>
                     {{/each}}
                   {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}}">
+                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
                       [
                       {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0))}} / {{/if}}
+                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
                       {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
                       ]
                     </span>
                   {{/if}}

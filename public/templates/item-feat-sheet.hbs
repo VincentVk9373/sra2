@@ -17,6 +17,10 @@
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.FEAT_TYPE.LABEL"}}</label>
       <select name="system.featType">
+        <option value="trait" {{#if (eq system.featType "trait")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.TRAIT"}}</option>
+        <option value="contact" {{#if (eq system.featType "contact")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}</option>
+        <option value="awakened" {{#if (eq system.featType "awakened")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}</option>
+        <option value="adept-power" {{#if (eq system.featType "adept-power")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</option>
         <option value="equipment" {{#if (eq system.featType "equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</option>
         <option value="cyberware" {{#if (eq system.featType "cyberware")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</option>
         <option value="cyberdeck" {{#if (eq system.featType "cyberdeck")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</option>
@@ -52,6 +56,27 @@
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.BONUS_SEVERE_DAMAGE"}}</label>
       <input type="number" name="system.bonusSevereDamage" value="{{system.bonusSevereDamage}}" min="0" />
+    </div>
+
+    <!-- Bonus Physical Threshold -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD"}}</label>
+      <input type="number" name="system.bonusPhysicalThreshold" value="{{system.bonusPhysicalThreshold}}" />
+      <p class="notes">{{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_HINT"}}</p>
+    </div>
+
+    <!-- Bonus Mental Threshold -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"}}</label>
+      <input type="number" name="system.bonusMentalThreshold" value="{{system.bonusMentalThreshold}}" />
+      <p class="notes">{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_HINT"}}</p>
+    </div>
+
+    <!-- Bonus Anarchy -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.BONUS_ANARCHY"}}</label>
+      <input type="number" name="system.bonusAnarchy" value="{{system.bonusAnarchy}}" min="0" />
+      <p class="notes">{{localize "SRA2.FEATS.BONUS_ANARCHY_HINT"}}</p>
     </div>
 
     <!-- Essence Cost (Cyberware/Bioware only) -->
@@ -258,6 +283,66 @@
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.CYBERDECK.ATTACK"}}</label>
         <input type="number" name="system.attack" value="{{system.attack}}" min="0" />
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Contact Specific Fields -->
+    {{#if (eq system.featType "contact")}}
+    <div class="contact-fields-section">
+      <h3>{{localize "SRA2.FEATS.CONTACT.SECTION_TITLE"}}</h3>
+      
+      <!-- Contact Name -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.CONTACT.NAME"}}</label>
+        <input type="text" name="system.contactName" value="{{system.contactName}}" placeholder="{{localize 'SRA2.FEATS.CONTACT.NAME_PLACEHOLDER'}}" />
+      </div>
+    </div>
+    {{/if}}
+
+    <!-- Awakened Specific Fields -->
+    {{#if (eq system.featType "awakened")}}
+    <div class="awakened-fields-section">
+      <h3>{{localize "SRA2.FEATS.AWAKENED.SECTION_TITLE"}}</h3>
+      
+      <!-- Astral Perception -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.astralPerception" {{checked system.astralPerception}} />
+          {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}
+        </label>
+      </div>
+
+      <!-- Astral Projection -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.astralProjection" {{checked system.astralProjection}} />
+          {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"}}
+        </label>
+      </div>
+
+      <!-- Sorcery -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.sorcery" {{checked system.sorcery}} />
+          {{localize "SRA2.FEATS.AWAKENED.SORCERY"}}
+        </label>
+      </div>
+
+      <!-- Conjuration -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.conjuration" {{checked system.conjuration}} />
+          {{localize "SRA2.FEATS.AWAKENED.CONJURATION"}}
+        </label>
+      </div>
+
+      <!-- Adept -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.adept" {{checked system.adept}} />
+          {{localize "SRA2.FEATS.AWAKENED.ADEPT"}}
+        </label>
       </div>
     </div>
     {{/if}}

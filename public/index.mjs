@@ -153,10 +153,11 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       }
     }
     this.attributeMaxes = attributeMaxes;
-    this.totalAnarchy = 3 + anarchyBonus;
-    this.anarchyBonus = anarchyBonus;
     let bonusLightDamage = 0;
     let bonusSevereDamage = 0;
+    let bonusPhysicalThreshold = 0;
+    let bonusMentalThreshold = 0;
+    let bonusAnarchy = 0;
     let totalEssenceCost = 0;
     if (parent && parent.items) {
       const activeFeats = parent.items.filter(
@@ -165,9 +166,15 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       activeFeats.forEach((feat) => {
         bonusLightDamage += feat.system.bonusLightDamage || 0;
         bonusSevereDamage += feat.system.bonusSevereDamage || 0;
+        bonusPhysicalThreshold += feat.system.bonusPhysicalThreshold || 0;
+        bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
+        bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
       });
     }
+    this.totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
+    this.anarchyBonus = anarchyBonus;
+    this.featsAnarchyBonus = bonusAnarchy;
     const totalLightBoxes = 2 + bonusLightDamage;
     const totalSevereBoxes = 1 + bonusSevereDamage;
     const damage = this.damage || {};
@@ -191,7 +198,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     }
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
-    const totalAnarchy = 3 + anarchyBonus;
+    const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
     const anarchyNimbus = this.anarchyNimbus || [];
     if (!Array.isArray(anarchyNimbus)) {
       this.anarchyNimbus = [];
@@ -208,19 +215,19 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     const willpower = this.attributes?.willpower || 1;
     this.damageThresholds = {
       withoutArmor: {
-        light: strength,
-        moderate: strength + 3,
-        severe: strength + 6
+        light: strength + bonusPhysicalThreshold,
+        moderate: strength + bonusPhysicalThreshold + 3,
+        severe: strength + bonusPhysicalThreshold + 6
       },
       withArmor: {
-        light: strength + armorLevel,
-        moderate: strength + armorLevel + 3,
-        severe: strength + armorLevel + 6
+        light: strength + armorLevel + bonusPhysicalThreshold,
+        moderate: strength + armorLevel + bonusPhysicalThreshold + 3,
+        severe: strength + armorLevel + bonusPhysicalThreshold + 6
       },
       mental: {
-        light: willpower,
-        moderate: willpower + 3,
-        severe: willpower + 6
+        light: willpower + bonusMentalThreshold,
+        moderate: willpower + bonusMentalThreshold + 3,
+        severe: willpower + bonusMentalThreshold + 6
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -411,6 +418,25 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.BONUS_SEVERE_DAMAGE"
       }),
+      bonusPhysicalThreshold: new fields.NumberField({
+        required: true,
+        initial: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD"
+      }),
+      bonusMentalThreshold: new fields.NumberField({
+        required: true,
+        initial: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
+      }),
+      bonusAnarchy: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_ANARCHY"
+      }),
       essenceCost: new fields.NumberField({
         required: true,
         initial: 0,
@@ -422,6 +448,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: "equipment",
         choices: {
+          "trait": "SRA2.FEATS.FEAT_TYPE.TRAIT",
+          "contact": "SRA2.FEATS.FEAT_TYPE.CONTACT",
+          "awakened": "SRA2.FEATS.FEAT_TYPE.AWAKENED",
+          "adept-power": "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER",
           "equipment": "SRA2.FEATS.FEAT_TYPE.EQUIPMENT",
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
@@ -533,6 +563,38 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         min: 0,
         integer: true,
         label: "SRA2.FEATS.CYBERDECK.ATTACK"
+      }),
+      // Contact specific fields
+      contactName: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.CONTACT.NAME"
+      }),
+      // Awakened specific fields
+      astralPerception: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"
+      }),
+      astralProjection: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"
+      }),
+      sorcery: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.SORCERY"
+      }),
+      conjuration: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.CONJURATION"
+      }),
+      adept: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ADEPT"
       })
     };
   }
@@ -710,6 +772,10 @@ class CharacterSheet extends ActorSheet {
       return feat;
     });
     context.featsByType = {
+      trait: allFeats.filter((feat) => feat.system.featType === "trait"),
+      contact: allFeats.filter((feat) => feat.system.featType === "contact"),
+      awakened: allFeats.filter((feat) => feat.system.featType === "awakened"),
+      adeptPower: allFeats.filter((feat) => feat.system.featType === "adept-power"),
       equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
       cyberdeck: allFeats.filter((feat) => feat.system.featType === "cyberdeck"),

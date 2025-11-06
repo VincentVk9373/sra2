@@ -105,6 +105,10 @@
             "RR_EFFECT": "Risk Reduction Effect",
             "FEAT_TYPE": {
                 "LABEL": "Feat Type",
+                "TRAIT": "Trait",
+                "CONTACT": "Contact",
+                "AWAKENED": "Awakened",
+                "ADEPT_POWER": "Adept Power",
                 "EQUIPMENT": "Equipment",
                 "CYBERWARE": "Cyberware / Bioware",
                 "CYBERDECK": "Cyberdeck",
@@ -125,6 +129,15 @@
             "DROP_IN_RR_ZONE": "Drop the item in a specific RR drop zone",
             "BONUS_LIGHT_DAMAGE": "Light Damage Bonus",
             "BONUS_SEVERE_DAMAGE": "Severe Damage Bonus",
+            "BONUS_PHYSICAL_THRESHOLD": "Physical Threshold Bonus",
+            "BONUS_PHYSICAL_THRESHOLD_SHORT": "Phys. Threshold",
+            "BONUS_PHYSICAL_THRESHOLD_HINT": "Bonus to physical damage thresholds (positive or negative)",
+            "BONUS_MENTAL_THRESHOLD": "Mental Threshold Bonus",
+            "BONUS_MENTAL_THRESHOLD_SHORT": "Ment. Threshold",
+            "BONUS_MENTAL_THRESHOLD_HINT": "Bonus to mental damage thresholds (positive or negative)",
+            "BONUS_ANARCHY": "Anarchy Bonus",
+            "BONUS_ANARCHY_SHORT": "Anarchy",
+            "BONUS_ANARCHY_HINT": "Additional anarchy points granted by this feat",
             "ESSENCE_COST": "Essence Cost",
             "RR_ENTRIES": "Risk Reduction Entries",
             "ADD_RR_ENTRY": "Add RR Entry",
@@ -171,6 +184,19 @@
                 "FIREWALL_SHORT": "Firewall",
                 "ATTACK": "Attack",
                 "ATTACK_SHORT": "Attack"
+            },
+            "CONTACT": {
+                "SECTION_TITLE": "Contact Information",
+                "NAME": "Contact Name",
+                "NAME_PLACEHOLDER": "Enter contact name"
+            },
+            "AWAKENED": {
+                "SECTION_TITLE": "Awakened Abilities",
+                "ASTRAL_PERCEPTION": "Astral Perception",
+                "ASTRAL_PROJECTION": "Astral Projection",
+                "SORCERY": "Sorcery",
+                "CONJURATION": "Conjuration",
+                "ADEPT": "Adept"
             }
         },
         "SKILLS": {
