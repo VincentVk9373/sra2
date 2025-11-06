@@ -500,7 +500,7 @@
         }
       }
       
-      .anarchy-nimbus-section {
+      .anarchy-spent-section {
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -510,14 +510,14 @@
         border-radius: 6px;
         margin-top: 1rem;
         
-        .anarchy-nimbus-label {
+        .anarchy-spent-label {
           font-size: 0.95rem;
           font-weight: 600;
           color: #222;
           white-space: nowrap;
         }
         
-        .anarchy-nimbus-checkboxes {
+        .anarchy-spent-checkboxes {
           display: flex;
           align-items: center;
           gap: 0.5rem;

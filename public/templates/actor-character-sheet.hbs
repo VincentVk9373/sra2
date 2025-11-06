@@ -144,11 +144,11 @@
           <input type="number" name="system.resources.yens" value="{{system.resources.yens}}" min="0"/>
         </div>
       </div>
-      <div class="anarchy-nimbus-section">
-        <label class="anarchy-nimbus-label">{{localize "SRA2.RESOURCES.ANARCHY_NIMBUS"}}</label>
-        <div class="anarchy-nimbus-checkboxes">
-          {{#each system.anarchyNimbus}}
-            <input type="checkbox" name="system.anarchyNimbus.{{@index}}" {{#if this}}checked{{/if}} />
+      <div class="anarchy-spent-section">
+        <label class="anarchy-spent-label">{{localize "SRA2.RESOURCES.ANARCHY_SPENT"}}</label>
+        <div class="anarchy-spent-checkboxes">
+          {{#each system.anarchySpent}}
+            <input type="checkbox" name="system.anarchySpent.{{@index}}" {{#if this}}checked{{/if}} />
           {{/each}}
         </div>
       </div>

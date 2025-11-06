@@ -85,7 +85,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
           initial: false
         })
       }),
-      anarchyNimbus: new fields.ArrayField(new fields.BooleanField({
+      anarchySpent: new fields.ArrayField(new fields.BooleanField({
         required: true,
         initial: false
       }), {
@@ -209,18 +209,18 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).totalLightBoxes = totalLightBoxes;
     (this as any).totalSevereBoxes = totalSevereBoxes;
     
-    // Adjust anarchy nimbus array to match total anarchy
+    // Adjust anarchy spent array to match total anarchy
     const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
-    const anarchyNimbus = (this as any).anarchyNimbus || [];
+    const anarchySpent = (this as any).anarchySpent || [];
     
-    if (!Array.isArray(anarchyNimbus)) {
-      (this as any).anarchyNimbus = [];
+    if (!Array.isArray(anarchySpent)) {
+      (this as any).anarchySpent = [];
     }
-    while ((this as any).anarchyNimbus.length < totalAnarchy) {
-      (this as any).anarchyNimbus.push(false);
+    while ((this as any).anarchySpent.length < totalAnarchy) {
+      (this as any).anarchySpent.push(false);
     }
-    while ((this as any).anarchyNimbus.length > totalAnarchy) {
-      (this as any).anarchyNimbus.pop();
+    while ((this as any).anarchySpent.length > totalAnarchy) {
+      (this as any).anarchySpent.pop();
     }
     
     // Calculate armor cost (2500 per level)

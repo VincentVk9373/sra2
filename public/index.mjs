@@ -95,7 +95,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
           initial: false
         })
       }),
-      anarchyNimbus: new fields.ArrayField(new fields.BooleanField({
+      anarchySpent: new fields.ArrayField(new fields.BooleanField({
         required: true,
         initial: false
       }), {
@@ -199,15 +199,15 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
     const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
-    const anarchyNimbus = this.anarchyNimbus || [];
-    if (!Array.isArray(anarchyNimbus)) {
-      this.anarchyNimbus = [];
+    const anarchySpent = this.anarchySpent || [];
+    if (!Array.isArray(anarchySpent)) {
+      this.anarchySpent = [];
     }
-    while (this.anarchyNimbus.length < totalAnarchy) {
-      this.anarchyNimbus.push(false);
+    while (this.anarchySpent.length < totalAnarchy) {
+      this.anarchySpent.push(false);
     }
-    while (this.anarchyNimbus.length > totalAnarchy) {
-      this.anarchyNimbus.pop();
+    while (this.anarchySpent.length > totalAnarchy) {
+      this.anarchySpent.pop();
     }
     const armorLevel = this.armorLevel || 0;
     this.armorCost = armorLevel * 2500;
@@ -1833,6 +1833,7 @@ class SRA2System {
   async onReady() {
     console.log(SYSTEM.LOG.HEAD + "SRA2System.onReady");
     await this.migrateFeatsToArrayFormat();
+    await this.migrateAnarchyNimbusToSpent();
   }
   /**
    * Migrate old feat data (single rrType/rrValue/rrTarget) to new array format
@@ -1896,6 +1897,28 @@ class SRA2System {
     }
     if (featsToUpdate.length > 0 || game.actors.some((a) => a.items.some((i) => i.type === "feat"))) {
       console.log(`${SYSTEM.LOG.HEAD} Feat migration to array format complete`);
+    }
+  }
+  /**
+   * Migrate anarchyNimbus to anarchySpent
+   */
+  async migrateAnarchyNimbusToSpent() {
+    const actorsToUpdate = [];
+    for (const actor of game.actors) {
+      if (actor.type === "character") {
+        const system = actor.system;
+        if (system.anarchyNimbus !== void 0 && system.anarchySpent === void 0) {
+          actorsToUpdate.push({
+            _id: actor.id,
+            "system.anarchySpent": system.anarchyNimbus
+          });
+        }
+      }
+    }
+    if (actorsToUpdate.length > 0) {
+      console.log(`${SYSTEM.LOG.HEAD} Migrating anarchyNimbus to anarchySpent for ${actorsToUpdate.length} actors`);
+      await Actor.updateDocuments(actorsToUpdate);
+      console.log(`${SYSTEM.LOG.HEAD} anarchyNimbus to anarchySpent migration complete`);
     }
   }
 }

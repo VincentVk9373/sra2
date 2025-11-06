@@ -98,6 +98,9 @@ export class SRA2System {
     
     // Migrate old feat data to new array format
     await this.migrateFeatsToArrayFormat();
+    
+    // Migrate anarchyNimbus to anarchySpent
+    await this.migrateAnarchyNimbusToSpent();
   }
   
   /**
@@ -178,6 +181,34 @@ export class SRA2System {
     
     if (featsToUpdate.length > 0 || (game.actors! as any).some((a: any) => a.items.some((i: any) => i.type === 'feat'))) {
       console.log(`${SYSTEM.LOG.HEAD} Feat migration to array format complete`);
+    }
+  }
+  
+  /**
+   * Migrate anarchyNimbus to anarchySpent
+   */
+  async migrateAnarchyNimbusToSpent(): Promise<void> {
+    const actorsToUpdate: any[] = [];
+    
+    // Check all character actors in the world
+    for (const actor of game.actors! as any) {
+      if ((actor as any).type === 'character') {
+        const system = (actor as any).system as any;
+        
+        // Check if the old anarchyNimbus field exists
+        if (system.anarchyNimbus !== undefined && system.anarchySpent === undefined) {
+          actorsToUpdate.push({
+            _id: (actor as any).id,
+            'system.anarchySpent': system.anarchyNimbus
+          });
+        }
+      }
+    }
+    
+    if (actorsToUpdate.length > 0) {
+      console.log(`${SYSTEM.LOG.HEAD} Migrating anarchyNimbus to anarchySpent for ${actorsToUpdate.length} actors`);
+      await Actor.updateDocuments(actorsToUpdate);
+      console.log(`${SYSTEM.LOG.HEAD} anarchyNimbus to anarchySpent migration complete`);
     }
   }
 }
