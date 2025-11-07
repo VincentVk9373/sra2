@@ -82,6 +82,13 @@
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} est déjà sur ce personnage",
             "ONLY_FEATS": "Seuls les atouts peuvent être déposés dans la section des atouts",
+            "SEARCH_PLACEHOLDER": "Rechercher un atout...",
+            "SEARCH_NO_RESULTS": "Aucun atout trouvé",
+            "ADD_FEAT": "Ajouter",
+            "WORLD_ITEMS": "Items du monde",
+            "CREATE": "Créer",
+            "CREATE_NEW": "Nouvel atout",
+            "FEAT_CREATED": "{name} a été créé",
             "COST": {
                 "LABEL": "Coût",
                 "FREE_EQUIPMENT": "Equipement gratuit",

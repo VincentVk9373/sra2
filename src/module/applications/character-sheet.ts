@@ -184,6 +184,13 @@ export class CharacterSheet extends ActorSheet {
     return context;
   }
 
+  override async close(options?: Application.CloseOptions): Promise<void> {
+    // Clean up document-level event listeners
+    $(document).off('click.skill-search');
+    $(document).off('click.feat-search');
+    return super.close(options);
+  }
+
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
@@ -233,6 +240,29 @@ export class CharacterSheet extends ActorSheet {
     html.find('.skill-search-input').on('input', this._onSkillSearch.bind(this));
     html.find('.skill-search-input').on('focus', this._onSkillSearchFocus.bind(this));
     html.find('.skill-search-input').on('blur', this._onSkillSearchBlur.bind(this));
+    
+    // Close skill search results when clicking outside
+    $(document).on('click.skill-search', (event) => {
+      const target = event.target as unknown as HTMLElement;
+      const skillSearchContainer = html.find('.skill-search-container')[0] as HTMLElement;
+      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
+        html.find('.skill-search-results').hide();
+      }
+    });
+
+    // Feat search
+    html.find('.feat-search-input').on('input', this._onFeatSearch.bind(this));
+    html.find('.feat-search-input').on('focus', this._onFeatSearchFocus.bind(this));
+    html.find('.feat-search-input').on('blur', this._onFeatSearchBlur.bind(this));
+    
+    // Close feat search results when clicking outside
+    $(document).on('click.feat-search', (event) => {
+      const target = event.target as unknown as HTMLElement;
+      const featSearchContainer = html.find('.feat-search-container')[0] as HTMLElement;
+      if (featSearchContainer && !featSearchContainer.contains(target)) {
+        html.find('.feat-search-results').hide();
+      }
+    });
 
     // Make feat items draggable
     html.find('.feat-item').each((_index, item) => {
@@ -1266,11 +1296,26 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onSkillSearchBlur(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
+    const blurEvent = event as FocusEvent;
     
-    // Delay hiding to allow clicking on results
+    // Check if the new focus target is within the results div
     setTimeout(() => {
       const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
       if (resultsDiv) {
+        // Check if the related target (where focus is going) is inside the results div
+        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          // Don't hide if focus is moving to an element within the results
+          return;
+        }
+        
+        // Also check if any element in the results is focused
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          // Don't hide if an element in results is active
+          return;
+        }
+        
         resultsDiv.style.display = 'none';
       }
     }, 200);
@@ -1332,6 +1377,380 @@ export class CharacterSheet extends ActorSheet {
       }
       
       ui.notifications?.info(game.i18n!.format('SRA2.SKILLS.SKILL_CREATED', { name: formattedName }));
+    }
+  }
+
+  /**
+   * FEAT SEARCH FUNCTIONS
+   */
+  
+  private featSearchTimeout: any = null;
+  private lastFeatSearchTerm: string = '';
+  
+  /**
+   * Handle feat search input
+   */
+  private async _onFeatSearch(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = input.value.trim().toLowerCase();
+    const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
+    
+    // Clear previous timeout
+    if (this.featSearchTimeout) {
+      clearTimeout(this.featSearchTimeout);
+    }
+    
+    // If search term is empty, hide results
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Debounce search
+    this.featSearchTimeout = setTimeout(async () => {
+      await this._performFeatSearch(searchTerm, resultsDiv);
+    }, 300);
+  }
+
+  /**
+   * Perform the actual feat search in compendiums and world items
+   */
+  private async _performFeatSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
+    const results: any[] = [];
+    
+    // Store search term for potential creation
+    this.lastFeatSearchTerm = searchTerm;
+    
+    // Search in world items first
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === 'feat' && item.name.toLowerCase().includes(searchTerm)) {
+          // Check if feat already exists on actor
+          const existingFeat = this.actor.items.find((i: any) => 
+            i.type === 'feat' && i.name === item.name
+          );
+          
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            pack: game.i18n!.localize('SRA2.FEATS.WORLD_ITEMS'),
+            featType: item.system.featType,
+            exists: !!existingFeat
+          });
+        }
+      }
+    }
+    
+    // Search in all compendiums
+    for (const pack of game.packs as any) {
+      // Only search in Item compendiums
+      if (pack.documentName !== 'Item') continue;
+      
+      // Get all documents from the pack
+      const documents = await pack.getDocuments();
+      
+      // Filter for feats that match the search term
+      for (const doc of documents) {
+        if (doc.type === 'feat' && doc.name.toLowerCase().includes(searchTerm)) {
+          // Check if feat already exists on actor
+          const existingFeat = this.actor.items.find((i: any) => 
+            i.type === 'feat' && i.name === doc.name
+          );
+          
+          results.push({
+            name: doc.name,
+            uuid: doc.uuid,
+            pack: pack.title,
+            featType: doc.system.featType,
+            exists: !!existingFeat
+          });
+        }
+      }
+    }
+    
+    // Display results
+    this._displayFeatSearchResults(results, resultsDiv);
+  }
+
+  /**
+   * Display feat search results
+   */
+  private _displayFeatSearchResults(results: any[], resultsDiv: HTMLElement): Promise<void> {
+    // Check if exact match exists on the actor
+    const formattedSearchTerm = this.lastFeatSearchTerm
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    const exactMatchOnActor = this.actor.items.find((i: any) => 
+      i.type === 'feat' && i.name.toLowerCase() === this.lastFeatSearchTerm.toLowerCase()
+    );
+    
+    let html = '';
+    
+    // If no results at all, show only the create button with message and type selector
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results-create">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.FEATS.SEARCH_NO_RESULTS')}
+          </div>
+          <select class="feat-type-selector">
+            <option value="equipment">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.EQUIPMENT')}</option>
+            <option value="trait">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.TRAIT')}</option>
+            <option value="contact">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONTACT')}</option>
+            <option value="awakened">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.AWAKENED')}</option>
+            <option value="adept-power">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.ADEPT_POWER')}</option>
+            <option value="cyberware">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERWARE')}</option>
+            <option value="cyberdeck">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERDECK')}</option>
+            <option value="vehicle">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.VEHICLE')}</option>
+            <option value="weapons-spells">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS')}</option>
+          </select>
+          <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
+            <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.FEATS.CREATE')}
+          </button>
+        </div>
+      `;
+    } else {
+      // Display search results
+      for (const result of results) {
+        const disabledClass = result.exists ? 'disabled' : '';
+        const buttonText = result.exists ? '✓' : game.i18n!.localize('SRA2.FEATS.ADD_FEAT');
+        const featTypeLabel = game.i18n!.localize(`SRA2.FEATS.FEAT_TYPE.${result.featType.toUpperCase().replace('-', '_')}`);
+        
+        html += `
+          <div class="search-result-item ${disabledClass}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.pack} - ${featTypeLabel}</span>
+            </div>
+            <button class="add-feat-btn" data-uuid="${result.uuid}" ${result.exists ? 'disabled' : ''}>
+              ${buttonText}
+            </button>
+          </div>
+        `;
+      }
+      
+      // Add create button if exact match doesn't exist on actor
+      if (!exactMatchOnActor) {
+        html += `
+          <div class="search-result-item create-new-item">
+            <div class="result-info">
+              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
+              <span class="result-pack">${game.i18n!.localize('SRA2.FEATS.CREATE_NEW')}</span>
+            </div>
+            <select class="feat-type-selector-inline">
+              <option value="equipment">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.EQUIPMENT')}</option>
+              <option value="trait">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.TRAIT')}</option>
+              <option value="contact">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONTACT')}</option>
+              <option value="awakened">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.AWAKENED')}</option>
+              <option value="adept-power">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.ADEPT_POWER')}</option>
+              <option value="cyberware">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERWARE')}</option>
+              <option value="cyberdeck">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERDECK')}</option>
+              <option value="vehicle">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.VEHICLE')}</option>
+              <option value="weapons-spells">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS')}</option>
+            </select>
+            <button class="create-feat-btn-inline" data-feat-name="${this.lastFeatSearchTerm}">
+              ${game.i18n!.localize('SRA2.FEATS.CREATE')}
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Attach click handlers
+    $(resultsDiv).find('.add-feat-btn').on('click', this._onAddFeatFromSearch.bind(this));
+    $(resultsDiv).find('.create-feat-btn, .create-feat-btn-inline').on('click', this._onCreateNewFeat.bind(this));
+    
+    // Make entire result items clickable (except disabled ones and create button)
+    $(resultsDiv).find('.search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)').on('click', (event) => {
+      // Don't trigger if clicking directly on the button
+      if ($(event.target).closest('.add-feat-btn').length > 0) return;
+      
+      // Find the button in this item and trigger its click
+      const button = $(event.currentTarget).find('.add-feat-btn')[0] as HTMLButtonElement;
+      if (button && !button.disabled) {
+        $(button).trigger('click');
+      }
+    });
+    
+    // Make create items clickable on the entire row
+    $(resultsDiv).find('.search-result-item.create-new-item').on('click', (event) => {
+      // Don't trigger if clicking directly on the button or select
+      if ($(event.target).closest('.create-feat-btn-inline, .feat-type-selector-inline').length > 0) return;
+      
+      // Find the button and trigger its click
+      const button = $(event.currentTarget).find('.create-feat-btn-inline')[0];
+      if (button) {
+        $(button).trigger('click');
+      }
+    });
+    
+    return Promise.resolve();
+  }
+
+  /**
+   * Handle adding a feat from search results
+   */
+  private async _onAddFeatFromSearch(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const uuid = button.dataset.uuid;
+    
+    if (!uuid) return;
+    
+    // Get the feat from the compendium
+    const feat = await fromUuid(uuid as any) as any;
+    
+    if (!feat) {
+      ui.notifications?.error('Feat not found');
+      return;
+    }
+    
+    // Check if feat already exists
+    const existingFeat = this.actor.items.find((i: any) => 
+      i.type === 'feat' && i.name === feat.name
+    );
+    
+    if (existingFeat) {
+      ui.notifications?.warn(game.i18n!.format('SRA2.FEATS.ALREADY_EXISTS', { name: feat.name }));
+      return;
+    }
+    
+    // Add the feat to the actor
+    await this.actor.createEmbeddedDocuments('Item', [feat.toObject()]);
+    
+    // Mark button as added
+    button.textContent = '✓';
+    button.disabled = true;
+    button.closest('.search-result-item')?.classList.add('disabled');
+    
+    ui.notifications?.info(`${feat.name} ${game.i18n!.localize('SRA2.FEATS.ADD_FEAT')}`);
+  }
+
+  /**
+   * Handle feat search focus
+   */
+  private _onFeatSearchFocus(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // If there's already content and results, show them
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = 'block';
+      }
+    }
+    
+    return Promise.resolve();
+  }
+
+  /**
+   * Handle feat search blur
+   */
+  private _onFeatSearchBlur(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const blurEvent = event as FocusEvent;
+    
+    // Check if the new focus target is within the results div
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        // Check if the related target (where focus is going) is inside the results div
+        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          // Don't hide if focus is moving to an element within the results
+          return;
+        }
+        
+        // Also check if any select element in the results is focused
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          // Don't hide if a select or other element in results is active
+          return;
+        }
+        
+        resultsDiv.style.display = 'none';
+      }
+    }, 200);
+    
+    return Promise.resolve();
+  }
+
+  /**
+   * Handle creating a new feat from search
+   */
+  private async _onCreateNewFeat(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const featName = button.dataset.featName;
+    
+    if (!featName) return;
+    
+    // Get the feat type from the selector
+    const selector = $(button).siblings('.feat-type-selector, .feat-type-selector-inline')[0] as HTMLSelectElement;
+    const featType = selector ? selector.value : 'equipment';
+    
+    // Capitalize first letter of each word
+    const formattedName = featName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    // Create the new feat with default values
+    const featData = {
+      name: formattedName,
+      type: 'feat',
+      system: {
+        description: '',
+        rating: 0,
+        cost: 'free-equipment',
+        active: true,
+        featType: featType,
+        rrType: [],
+        rrValue: [],
+        rrTarget: [],
+        bonusLightDamage: 0,
+        bonusSevereDamage: 0,
+        bonusPhysicalThreshold: 0,
+        bonusMentalThreshold: 0,
+        bonusAnarchy: 0,
+        essenceCost: 0
+      }
+    } as any;
+    
+    // Add the feat to the actor
+    const createdItems = await this.actor.createEmbeddedDocuments('Item', [featData]) as any;
+    
+    if (createdItems && createdItems.length > 0) {
+      const newFeat = createdItems[0] as any;
+      
+      // Clear the search input and hide results
+      const searchInput = this.element.find('.feat-search-input')[0] as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = '';
+      }
+      
+      const resultsDiv = this.element.find('.feat-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        resultsDiv.style.display = 'none';
+      }
+      
+      // Open the feat sheet for editing
+      if (newFeat && newFeat.sheet) {
+        setTimeout(() => {
+          newFeat.sheet.render(true);
+        }, 100);
+      }
+      
+      ui.notifications?.info(game.i18n!.format('SRA2.FEATS.FEAT_CREATED', { name: formattedName }));
     }
   }
 }

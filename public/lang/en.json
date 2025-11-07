@@ -82,6 +82,13 @@
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} is already on this character",
             "ONLY_FEATS": "Only feat items can be dropped in the feats section",
+            "SEARCH_PLACEHOLDER": "Search for a feat...",
+            "SEARCH_NO_RESULTS": "No feats found",
+            "ADD_FEAT": "Add",
+            "WORLD_ITEMS": "World Items",
+            "CREATE": "Create",
+            "CREATE_NEW": "New feat",
+            "FEAT_CREATED": "{name} has been created",
             "COST": {
                 "LABEL": "Cost",
                 "FREE_EQUIPMENT": "Free Equipment",

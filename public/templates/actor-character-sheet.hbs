@@ -325,10 +325,20 @@
       </div>
     </div>
 
+    <!-- Feats Search Section -->
+    <div class="feats-search-section">
+      <h2>{{localize "SRA2.FEATS.LABEL"}}</h2>
+      
+      <!-- Feat Search -->
+      <div class="feat-search-container">
+        <input type="text" class="feat-search-input" placeholder="{{localize 'SRA2.FEATS.SEARCH_PLACEHOLDER'}}" data-action="search-feat" />
+        <div class="feat-search-results" style="display: none;"></div>
+      </div>
+    </div>
+
     <!-- Feats Drop Zone (shown when no feats exist) -->
     {{#unless feats}}
     <div class="feats-section empty-feats-section">
-      <h2>{{localize "SRA2.FEATS.LABEL"}}</h2>
       <div class="feats-list" data-drop-zone="feat">
         <div class="empty-feats">
           <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
