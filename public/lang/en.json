@@ -280,7 +280,15 @@
             "SKILL_NOT_ON_ACTOR": "This skill is not on the character",
             "ONLY_SKILLS_CAN_BE_LINKED": "Only skills can be linked to specializations",
             "MUST_BE_ON_ACTOR": "The specialization must be on a character to link skills",
-            "BONUS": "specialization bonus"
+            "BONUS": "specialization bonus",
+            "SEARCH_SKILL_PLACEHOLDER": "Search for a skill...",
+            "SEARCH_NO_RESULTS": "No skills found",
+            "LINK_SKILL": "Link",
+            "CREATE_SKILL": "Create",
+            "CREATE_NEW_SKILL": "New skill",
+            "SKILL_CREATED_AND_LINKED": "{name} has been created and linked",
+            "SKILL_LINKED": "{name} has been linked to this specialization",
+            "WORLD_ITEMS": "World Items"
         },
         "METATYPES": {
             "LABEL": "Metatype",

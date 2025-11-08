@@ -11,29 +11,37 @@
     <div class="form-group">
       <label>{{localize "SRA2.SPECIALIZATIONS.LINKED_SKILL"}}</label>
       
-      <!-- Drop Zone for Skills -->
-      <div class="linked-skill-drop-zone" data-drop-zone="skill">
-        {{#if linkedSkillName}}
-          <div class="linked-skill-display {{#if linkedSkillNotFound}}warning{{/if}}">
-            {{#if linkedSkillNotFound}}
-              <i class="fas fa-exclamation-triangle"></i>
-            {{else}}
-              <i class="fas fa-link"></i>
-            {{/if}}
-            <span class="skill-name">{{linkedSkillName}}</span>
-            {{#if linkedSkillNotFound}}
-              <span class="warning-badge" title="{{localize 'SRA2.SPECIALIZATIONS.SKILL_NOT_ON_ACTOR'}}">⚠️</span>
-            {{/if}}
-            <a class="clear-link" data-action="clear-linked-skill" title="{{localize 'SRA2.SPECIALIZATIONS.CLEAR_LINK'}}">
-              <i class="fas fa-times"></i>
-            </a>
-          </div>
-        {{else}}
-          <div class="drop-zone-hint">
-            <i class="fas fa-hand-pointer"></i>
-            <p>{{localize "SRA2.SPECIALIZATIONS.DROP_SKILL_HERE"}}</p>
-          </div>
-        {{/if}}
+      <!-- Skill Search -->
+      <div>
+      <div class="skill-search-container">
+        <input type="text" class="skill-search-input" placeholder="{{localize 'SRA2.SPECIALIZATIONS.SEARCH_SKILL_PLACEHOLDER'}}" data-action="search-skill" />
+        <div class="skill-search-results" style="display: none;"></div>
+      </div>
+      
+        <!-- Drop Zone for Skills -->
+        <div class="linked-skill-drop-zone" data-drop-zone="skill">
+          {{#if linkedSkillName}}
+            <div class="linked-skill-display {{#if linkedSkillNotFound}}warning{{/if}}">
+              {{#if linkedSkillNotFound}}
+                <i class="fas fa-exclamation-triangle"></i>
+              {{else}}
+                <i class="fas fa-link"></i>
+              {{/if}}
+              <span class="skill-name">{{linkedSkillName}}</span>
+              {{#if linkedSkillNotFound}}
+                <span class="warning-badge" title="{{localize 'SRA2.SPECIALIZATIONS.SKILL_NOT_ON_ACTOR'}}">⚠️</span>
+              {{/if}}
+              <a class="clear-link" data-action="clear-linked-skill" title="{{localize 'SRA2.SPECIALIZATIONS.CLEAR_LINK'}}">
+                <i class="fas fa-times"></i>
+              </a>
+            </div>
+          {{else}}
+            <div class="drop-zone-hint">
+              <i class="fas fa-hand-pointer"></i>
+              <p>{{localize "SRA2.SPECIALIZATIONS.DROP_SKILL_HERE"}}</p>
+            </div>
+          {{/if}}
+        </div>
       </div>
       
       <!-- Alternative: Select dropdown if owned by actor -->

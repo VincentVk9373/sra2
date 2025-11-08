@@ -280,7 +280,15 @@
             "SKILL_NOT_ON_ACTOR": "Cette compétence n'est pas sur le personnage",
             "ONLY_SKILLS_CAN_BE_LINKED": "Seules les compétences peuvent être liées aux spécialisations",
             "MUST_BE_ON_ACTOR": "La spécialisation doit être sur un personnage pour lier des compétences",
-            "BONUS": "bonus de spécialisation"
+            "BONUS": "bonus de spécialisation",
+            "SEARCH_SKILL_PLACEHOLDER": "Rechercher une compétence...",
+            "SEARCH_NO_RESULTS": "Aucune compétence trouvée",
+            "LINK_SKILL": "Lier",
+            "CREATE_SKILL": "Créer",
+            "CREATE_NEW_SKILL": "Nouvelle compétence",
+            "SKILL_CREATED_AND_LINKED": "{name} a été créé et lié",
+            "SKILL_LINKED": "{name} a été lié à cette spécialisation",
+            "WORLD_ITEMS": "Items du monde"
         },
         "METATYPES": {
             "LABEL": "Métatype",

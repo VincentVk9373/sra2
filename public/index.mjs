@@ -2228,6 +2228,20 @@ class SpecializationSheet extends ItemSheet {
   activateListeners(html) {
     super.activateListeners(html);
     html.find('[data-action="clear-linked-skill"]').on("click", this._onClearLinkedSkill.bind(this));
+    html.find(".skill-search-input").on("input", this._onSkillSearch.bind(this));
+    html.find(".skill-search-input").on("focus", this._onSkillSearchFocus.bind(this));
+    html.find(".skill-search-input").on("blur", this._onSkillSearchBlur.bind(this));
+    $(document).on("click.skill-search-spec", (event) => {
+      const target = event.target;
+      const skillSearchContainer = html.find(".skill-search-container")[0];
+      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
+        html.find(".skill-search-results").hide();
+      }
+    });
+  }
+  async close(options) {
+    $(document).off("click.skill-search-spec");
+    return super.close(options);
   }
   /**
    * Handle clearing the linked skill
@@ -2260,6 +2274,229 @@ class SpecializationSheet extends ItemSheet {
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
     return this.item.update(expandedData);
+  }
+  /**
+   * SKILL SEARCH FUNCTIONS
+   */
+  skillSearchTimeout = null;
+  lastSkillSearchTerm = "";
+  /**
+   * Handle skill search input
+   */
+  async _onSkillSearch(event) {
+    const input = event.currentTarget;
+    const searchTerm = input.value.trim().toLowerCase();
+    const resultsDiv = $(input).siblings(".skill-search-results")[0];
+    if (this.skillSearchTimeout) {
+      clearTimeout(this.skillSearchTimeout);
+    }
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = "none";
+      return;
+    }
+    this.skillSearchTimeout = setTimeout(async () => {
+      await this._performSkillSearch(searchTerm, resultsDiv);
+    }, 300);
+  }
+  /**
+   * Perform the actual skill search in compendiums and world items
+   */
+  async _performSkillSearch(searchTerm, resultsDiv) {
+    const results = [];
+    this.lastSkillSearchTerm = searchTerm;
+    if (game.items) {
+      for (const item of game.items) {
+        if (item.type === "skill" && item.name.toLowerCase().includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            pack: game.i18n.localize("SRA2.SPECIALIZATIONS.WORLD_ITEMS"),
+            linkedAttribute: item.system.linkedAttribute,
+            isWorldItem: true
+          });
+        }
+      }
+    }
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      const documents2 = await pack.getDocuments();
+      for (const doc of documents2) {
+        if (doc.type === "skill" && doc.name.toLowerCase().includes(searchTerm)) {
+          results.push({
+            name: doc.name,
+            uuid: doc.uuid,
+            pack: pack.title,
+            linkedAttribute: doc.system.linkedAttribute,
+            isWorldItem: false
+          });
+        }
+      }
+    }
+    this._displaySkillSearchResults(results, resultsDiv);
+  }
+  /**
+   * Display skill search results
+   */
+  _displaySkillSearchResults(results, resultsDiv) {
+    const formattedSearchTerm = this.lastSkillSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+    const exactMatch = results.find(
+      (r) => r.name.toLowerCase() === this.lastSkillSearchTerm.toLowerCase()
+    );
+    let html = "";
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results-create">
+          <div class="no-results-text">
+            ${game.i18n.localize("SRA2.SPECIALIZATIONS.SEARCH_NO_RESULTS")}
+          </div>
+          <button class="create-skill-btn" data-skill-name="${this.lastSkillSearchTerm}">
+            <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SPECIALIZATIONS.CREATE_SKILL")}
+          </button>
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${result.linkedAttribute.toUpperCase()}`);
+        html += `
+          <div class="search-result-item">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.pack} - ${attributeLabel}</span>
+            </div>
+            <button class="link-skill-btn" data-skill-name="${result.name}">
+              ${game.i18n.localize("SRA2.SPECIALIZATIONS.LINK_SKILL")}
+            </button>
+          </div>
+        `;
+      }
+      if (!exactMatch) {
+        html += `
+          <div class="search-result-item create-new-item">
+            <div class="result-info">
+              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
+              <span class="result-pack">${game.i18n.localize("SRA2.SPECIALIZATIONS.CREATE_NEW_SKILL")}</span>
+            </div>
+            <button class="create-skill-btn-inline" data-skill-name="${this.lastSkillSearchTerm}">
+              ${game.i18n.localize("SRA2.SPECIALIZATIONS.CREATE_SKILL")}
+            </button>
+          </div>
+        `;
+      }
+    }
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+    $(resultsDiv).find(".link-skill-btn").on("click", this._onLinkSkillFromSearch.bind(this));
+    $(resultsDiv).find(".create-skill-btn, .create-skill-btn-inline").on("click", this._onCreateNewSkill.bind(this));
+    $(resultsDiv).find(".search-result-item:not(.no-results-create):not(.create-new-item)").on("click", (event) => {
+      if ($(event.target).closest(".link-skill-btn").length > 0) return;
+      const button = $(event.currentTarget).find(".link-skill-btn")[0];
+      if (button) {
+        $(button).trigger("click");
+      }
+    });
+    $(resultsDiv).find(".search-result-item.create-new-item").on("click", (event) => {
+      if ($(event.target).closest(".create-skill-btn-inline").length > 0) return;
+      const button = $(event.currentTarget).find(".create-skill-btn-inline")[0];
+      if (button) {
+        $(button).trigger("click");
+      }
+    });
+    return Promise.resolve();
+  }
+  /**
+   * Handle linking a skill from search results
+   */
+  async _onLinkSkillFromSearch(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const skillName = button.dataset.skillName;
+    if (!skillName) return;
+    await this.item.update({ "system.linkedSkill": skillName });
+    const searchInput = this.element.find(".skill-search-input")[0];
+    if (searchInput) {
+      searchInput.value = "";
+    }
+    const resultsDiv = this.element.find(".skill-search-results")[0];
+    if (resultsDiv) {
+      resultsDiv.style.display = "none";
+    }
+    this.render(false);
+    ui.notifications?.info(game.i18n.format("SRA2.SPECIALIZATIONS.SKILL_LINKED", { name: skillName }));
+  }
+  /**
+   * Handle skill search focus
+   */
+  _onSkillSearchFocus(event) {
+    const input = event.currentTarget;
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings(".skill-search-results")[0];
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = "block";
+      }
+    }
+    return Promise.resolve();
+  }
+  /**
+   * Handle skill search blur
+   */
+  _onSkillSearchBlur(event) {
+    const input = event.currentTarget;
+    const blurEvent = event;
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings(".skill-search-results")[0];
+      if (resultsDiv) {
+        const relatedTarget = blurEvent.relatedTarget;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          return;
+        }
+        const activeElement = document.activeElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          return;
+        }
+        resultsDiv.style.display = "none";
+      }
+    }, 200);
+    return Promise.resolve();
+  }
+  /**
+   * Handle creating a new skill from search and linking it
+   */
+  async _onCreateNewSkill(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const skillName = button.dataset.skillName;
+    if (!skillName) return;
+    const formattedName = skillName.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+    const skillData = {
+      name: formattedName,
+      type: "skill",
+      system: {
+        rating: 1,
+        linkedAttribute: "strength",
+        description: ""
+      }
+    };
+    const createdItems = await Item.create(skillData);
+    if (createdItems) {
+      await this.item.update({ "system.linkedSkill": formattedName });
+      const searchInput = this.element.find(".skill-search-input")[0];
+      if (searchInput) {
+        searchInput.value = "";
+      }
+      const resultsDiv = this.element.find(".skill-search-results")[0];
+      if (resultsDiv) {
+        resultsDiv.style.display = "none";
+      }
+      this.render(false);
+      setTimeout(() => {
+        if (createdItems.sheet) {
+          createdItems.sheet.render(true);
+        }
+      }, 100);
+      ui.notifications?.info(game.i18n.format("SRA2.SPECIALIZATIONS.SKILL_CREATED_AND_LINKED", { name: formattedName }));
+    }
   }
 }
 class MetatypeSheet extends ItemSheet {
