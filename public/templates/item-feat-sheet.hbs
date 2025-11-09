@@ -12,6 +12,22 @@
       <label>{{localize "SRA2.FEATS.RECOMMENDED_LEVEL"}}</label>
       <div class="recommended-level-value">{{#if (or system.recommendedLevel (eq system.recommendedLevel 0))}}{{system.recommendedLevel}}{{else}}0{{/if}}</div>
       <p class="notes">{{localize "SRA2.FEATS.RECOMMENDED_LEVEL_HINT"}}</p>
+      
+      {{#if system.recommendedLevelBreakdown}}
+        {{#if (gt system.recommendedLevelBreakdown.length 0)}}
+        <div class="recommended-level-breakdown">
+          <h4>{{localize "SRA2.FEATS.BREAKDOWN_TITLE"}}</h4>
+          <ul>
+            {{#each system.recommendedLevelBreakdown}}
+            <li>
+              <span class="breakdown-label">{{localize this.labelKey}}{{#if this.labelParams}} {{this.labelParams}}{{/if}}</span>
+              <span class="breakdown-value">+{{this.value}}</span>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/if}}
+      {{/if}}
     </div>
 
     <!-- Rating -->

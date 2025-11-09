@@ -670,6 +670,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     }
     this.calculatedCost = calculatedCost;
     let recommendedLevel = 0;
+    const recommendedLevelBreakdown = [];
     const featType = this.featType || "equipment";
     const bonusLightDamage = this.bonusLightDamage || 0;
     const bonusSevereDamage = this.bonusSevereDamage || 0;
@@ -686,42 +687,83 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const rrList = this.rrList || [];
     if (featType === "cyberware") {
       recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
     }
-    recommendedLevel += bonusLightDamage * 3;
-    recommendedLevel += bonusSevereDamage * 6;
-    recommendedLevel += Math.abs(bonusPhysicalThreshold);
-    recommendedLevel += Math.abs(bonusMentalThreshold);
+    if (bonusLightDamage > 0) {
+      const value = bonusLightDamage * 3;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.LIGHT_WOUNDS", labelParams: `(${bonusLightDamage})`, value });
+    }
+    if (bonusSevereDamage > 0) {
+      const value = bonusSevereDamage * 6;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SEVERE_WOUNDS", labelParams: `(${bonusSevereDamage})`, value });
+    }
+    if (bonusPhysicalThreshold !== 0) {
+      const value = Math.abs(bonusPhysicalThreshold);
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.PHYSICAL_THRESHOLD", labelParams: `(${bonusPhysicalThreshold > 0 ? "+" : ""}${bonusPhysicalThreshold})`, value });
+    }
+    if (bonusMentalThreshold !== 0) {
+      const value = Math.abs(bonusMentalThreshold);
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD", labelParams: `(${bonusMentalThreshold > 0 ? "+" : ""}${bonusMentalThreshold})`, value });
+    }
     if (hasArmorBonus) {
       recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ARMOR_BONUS", value: 1 });
     }
     if (featType === "cyberdeck" && firewall > 0) {
       recommendedLevel += firewall;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.FIREWALL", labelParams: `(${firewall})`, value: firewall });
     }
     if (attack > 0) {
       recommendedLevel += attack;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ATTACK", labelParams: `(${attack})`, value: attack });
     }
-    recommendedLevel += riggerConsoleCount;
+    if (riggerConsoleCount > 0) {
+      recommendedLevel += riggerConsoleCount;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RIGGER_CONSOLE", labelParams: `(${riggerConsoleCount})`, value: riggerConsoleCount });
+    }
     if (hasVehicleControlWiring) {
       recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING", value: 2 });
     }
     for (const rr of rrList) {
       const rrType = rr.rrType;
       const rrValue = rr.rrValue || 0;
-      if (rrType === "specialization") {
-        recommendedLevel += rrValue * 2;
-      } else if (rrType === "skill") {
-        recommendedLevel += rrValue * 5;
-      } else if (rrType === "attribute") {
-        recommendedLevel += rrValue * 10;
+      if (rrValue > 0) {
+        if (rrType === "specialization") {
+          const value = rrValue * 2;
+          recommendedLevel += value;
+          recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_SPECIALIZATION", labelParams: `(${rrValue})`, value });
+        } else if (rrType === "skill") {
+          const value = rrValue * 5;
+          recommendedLevel += value;
+          recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_SKILL", labelParams: `(${rrValue})`, value });
+        } else if (rrType === "attribute") {
+          const value = rrValue * 10;
+          recommendedLevel += value;
+          recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_ATTRIBUTE", labelParams: `(${rrValue})`, value });
+        }
       }
     }
-    recommendedLevel += bonusAnarchy * 2;
+    if (bonusAnarchy > 0) {
+      const value = bonusAnarchy * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS", labelParams: `(${bonusAnarchy})`, value });
+    }
     if (grantsNarration) {
       recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
     }
     const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
-    recommendedLevel += narrativeEffectsCount;
+    if (narrativeEffectsCount > 0) {
+      recommendedLevel += narrativeEffectsCount;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS", labelParams: `(${narrativeEffectsCount})`, value: narrativeEffectsCount });
+    }
     this.recommendedLevel = recommendedLevel;
+    this.recommendedLevelBreakdown = recommendedLevelBreakdown;
   }
 }
 class SpecializationDataModel extends foundry.abstract.TypeDataModel {

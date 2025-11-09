@@ -324,6 +324,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
 
     // Calculate recommended attribute level
     let recommendedLevel = 0;
+    const recommendedLevelBreakdown: Array<{ labelKey: string; labelParams?: string; value: number }> = [];
     
     const featType = (this as any).featType || 'equipment';
     const bonusLightDamage = (this as any).bonusLightDamage || 0;
@@ -343,41 +344,65 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     // Cyberware/bioware: 1 level
     if (featType === 'cyberware') {
       recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERWARE', value: 1 });
     }
     
     // Light wounds: +3 per wound
-    recommendedLevel += bonusLightDamage * 3;
+    if (bonusLightDamage > 0) {
+      const value = bonusLightDamage * 3;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.LIGHT_WOUNDS', labelParams: `(${bonusLightDamage})`, value });
+    }
     
     // Heavy wounds: +6 per wound
-    recommendedLevel += bonusSevereDamage * 6;
+    if (bonusSevereDamage > 0) {
+      const value = bonusSevereDamage * 6;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SEVERE_WOUNDS', labelParams: `(${bonusSevereDamage})`, value });
+    }
     
     // Physical threshold bonus: +1 per point (positive or negative)
-    recommendedLevel += Math.abs(bonusPhysicalThreshold);
+    if (bonusPhysicalThreshold !== 0) {
+      const value = Math.abs(bonusPhysicalThreshold);
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.PHYSICAL_THRESHOLD', labelParams: `(${bonusPhysicalThreshold > 0 ? '+' : ''}${bonusPhysicalThreshold})`, value });
+    }
     
     // Mental threshold bonus: +1 per point (positive or negative)
-    recommendedLevel += Math.abs(bonusMentalThreshold);
+    if (bonusMentalThreshold !== 0) {
+      const value = Math.abs(bonusMentalThreshold);
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD', labelParams: `(${bonusMentalThreshold > 0 ? '+' : ''}${bonusMentalThreshold})`, value });
+    }
     
     // Armor bonus: +1 if checked
     if (hasArmorBonus) {
       recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ARMOR_BONUS', value: 1 });
     }
     
     // Cyberdeck firewall: starts at 1, each level is +1
     if (featType === 'cyberdeck' && firewall > 0) {
       recommendedLevel += firewall;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.FIREWALL', labelParams: `(${firewall})`, value: firewall });
     }
     
     // Attack: starts at 0, each level is +1
     if (attack > 0) {
       recommendedLevel += attack;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ATTACK', labelParams: `(${attack})`, value: attack });
     }
     
     // Rigger console: +1 per drone controller
-    recommendedLevel += riggerConsoleCount;
+    if (riggerConsoleCount > 0) {
+      recommendedLevel += riggerConsoleCount;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RIGGER_CONSOLE', labelParams: `(${riggerConsoleCount})`, value: riggerConsoleCount });
+    }
     
     // Vehicle control wiring: +2
     if (hasVehicleControlWiring) {
       recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING', value: 2 });
     }
     
     // Resource Reduction (RR) entries
@@ -385,31 +410,48 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       const rrType = rr.rrType;
       const rrValue = rr.rrValue || 0;
       
-      if (rrType === 'specialization') {
-        // RR specialization: +2 levels per value
-        recommendedLevel += rrValue * 2;
-      } else if (rrType === 'skill') {
-        // RR skill: +5 levels per value
-        recommendedLevel += rrValue * 5;
-      } else if (rrType === 'attribute') {
-        // RR attribute: +10 levels per value
-        recommendedLevel += rrValue * 10;
+      if (rrValue > 0) {
+        if (rrType === 'specialization') {
+          // RR specialization: +2 levels per value
+          const value = rrValue * 2;
+          recommendedLevel += value;
+          recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_SPECIALIZATION', labelParams: `(${rrValue})`, value });
+        } else if (rrType === 'skill') {
+          // RR skill: +5 levels per value
+          const value = rrValue * 5;
+          recommendedLevel += value;
+          recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_SKILL', labelParams: `(${rrValue})`, value });
+        } else if (rrType === 'attribute') {
+          // RR attribute: +10 levels per value
+          const value = rrValue * 10;
+          recommendedLevel += value;
+          recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_ATTRIBUTE', labelParams: `(${rrValue})`, value });
+        }
       }
     }
     
     // Anarchy bonus: +2 per anarchy point
-    recommendedLevel += bonusAnarchy * 2;
+    if (bonusAnarchy > 0) {
+      const value = bonusAnarchy * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS', labelParams: `(${bonusAnarchy})`, value });
+    }
     
     // Grants narration: +3 levels
     if (grantsNarration) {
       recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
     }
     
     // Narrative effects: +1 level per effect (count non-empty strings)
     const narrativeEffectsCount = narrativeEffects.filter((effect: string) => effect && effect.trim() !== '').length;
-    recommendedLevel += narrativeEffectsCount;
+    if (narrativeEffectsCount > 0) {
+      recommendedLevel += narrativeEffectsCount;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS', labelParams: `(${narrativeEffectsCount})`, value: narrativeEffectsCount });
+    }
     
     (this as any).recommendedLevel = recommendedLevel;
+    (this as any).recommendedLevelBreakdown = recommendedLevelBreakdown;
   }
 }
 
