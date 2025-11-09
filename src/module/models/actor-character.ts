@@ -149,13 +149,15 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     
     (this as any).attributeMaxes = attributeMaxes;
     
-    // Calculate damage boxes, thresholds bonuses, essence cost, and anarchy bonus from active feats
+    // Calculate damage boxes, thresholds bonuses, essence cost, anarchy bonus, and narrations from active feats
     let bonusLightDamage = 0;
     let bonusSevereDamage = 0;
     let bonusPhysicalThreshold = 0;
     let bonusMentalThreshold = 0;
     let bonusAnarchy = 0;
     let totalEssenceCost = 0;
+    let totalNarrations = 0;
+    const narrationsDetails: Array<{ name: string; actions: number }> = [];
     
     if (parent && parent.items) {
       const activeFeats = parent.items.filter((item: any) => 
@@ -169,6 +171,15 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
         bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
+        
+        // Count narrations
+        if (feat.system.grantsNarration) {
+          totalNarrations++;
+          narrationsDetails.push({
+            name: feat.name,
+            actions: feat.system.narrationActions || 1
+          });
+        }
       });
     }
     
@@ -176,6 +187,11 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
     (this as any).anarchyBonus = anarchyBonus;
     (this as any).featsAnarchyBonus = bonusAnarchy;
+    
+    // Store narrations information (base 1 + feats bonus)
+    (this as any).totalNarrations = 1 + totalNarrations;
+    (this as any).bonusNarrations = totalNarrations;
+    (this as any).narrationsDetails = narrationsDetails;
     
     // Base: 2 light, 1 severe, 1 incapacitating
     const totalLightBoxes = 2 + bonusLightDamage;

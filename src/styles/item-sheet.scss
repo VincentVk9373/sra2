@@ -46,6 +46,83 @@
   .sheet-body {
     padding: 0 1rem 1rem;
     
+    /* Narrative Effects Section */
+    .narrative-effects-section {
+      
+      h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.1rem;
+        color: #222;
+      }
+      
+      .add-entry-button {
+        margin-bottom: 1rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+        }
+        
+        i {
+          margin-right: 0.5rem;
+        }
+      }
+      
+      .narrative-effects-container {
+        .narrative-effect-entry {
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid #666;
+          border-radius: 4px;
+          
+          .narrative-effect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            
+            .entry-number {
+              font-weight: bold;
+              color: #ccc;
+            }
+            
+            button {
+              background: #ff6b6b;
+              color: #fff;
+              border: none;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              cursor: pointer;
+              transition: all 0.2s;
+              
+              &:hover {
+                background: #ff5252;
+                transform: scale(1.05);
+              }
+            }
+          }
+        }
+        
+        .no-entries {
+          text-align: center;
+          padding: 2rem;
+          color: #888;
+          font-style: italic;
+          font-size: 0.95rem;
+        }
+      }
+    }
+    
     .form-group {
       margin-bottom: 1rem;
       
@@ -241,6 +318,27 @@
           color: #888;
           font-style: italic;
           font-size: 0.95rem;
+        }
+      }
+      
+      textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 0.5rem;
+        border: 1px solid #666;
+        background: rgba(0, 0, 0, 0.2);
+        color: inherit;
+        font-family: inherit;
+        resize: vertical;
+        
+        &:focus {
+          outline: none;
+          border-color: #999;
+        }
+        
+        &::placeholder {
+          color: #666;
+          font-style: italic;
         }
       }
       /* RR Target Drop Zone (for Feats) */

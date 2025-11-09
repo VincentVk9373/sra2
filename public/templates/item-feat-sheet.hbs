@@ -86,6 +86,25 @@
       <p class="notes">{{localize "SRA2.FEATS.BONUS_ANARCHY_HINT"}}</p>
     </div>
 
+    <!-- Grants Narration -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.GRANTS_NARRATION"}}</label>
+      <input type="checkbox" name="system.grantsNarration" {{checked system.grantsNarration}} />
+      <p class="notes">{{localize "SRA2.FEATS.GRANTS_NARRATION_HINT"}}</p>
+    </div>
+
+    <!-- Narration Actions -->
+    {{#if system.grantsNarration}}
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.NARRATION_ACTIONS"}}</label>
+      <select name="system.narrationActions">
+        <option value="1" {{#if (eq system.narrationActions 1)}}selected{{/if}}>1 {{localize "SRA2.FEATS.NARRATION_ACTION"}}</option>
+        <option value="2" {{#if (eq system.narrationActions 2)}}selected{{/if}}>2 {{localize "SRA2.FEATS.NARRATION_ACTIONS_LABEL"}}</option>
+      </select>
+      <p class="notes">{{localize "SRA2.FEATS.NARRATION_ACTIONS_HINT"}}</p>
+    </div>
+    {{/if}}
+
     <!-- Armor Bonus -->
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.HAS_ARMOR_BONUS"}}</label>
@@ -374,6 +393,35 @@
       </div>
     </div>
     {{/if}}
+
+    <!-- Narrative Effects -->
+    <div class="narrative-effects-section">
+      <h3>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}</h3>
+      <button type="button" data-action="add-narrative-effect" title="{{localize 'SRA2.FEATS.ADD_NARRATIVE_EFFECT'}}" class="add-entry-button">
+        <i class="fas fa-plus"></i> {{localize "SRA2.FEATS.ADD_NARRATIVE_EFFECT"}}
+      </button>
+      
+      <div class="narrative-effects-container">
+        {{#if system.narrativeEffects}}
+          {{#each system.narrativeEffects}}
+          <div class="narrative-effect-entry">
+            <div class="narrative-effect-header">
+              <span class="entry-number">{{localize "SRA2.FEATS.EFFECT_NUMBER"}} {{add @index 1}}</span>
+              <button type="button" data-action="remove-narrative-effect" data-index="{{@index}}" title="{{localize 'SRA2.FEATS.REMOVE_NARRATIVE_EFFECT'}}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            
+            <div class="form-group">
+              <textarea name="system.narrativeEffects.{{@index}}" placeholder="{{localize 'SRA2.FEATS.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this}}</textarea>
+            </div>
+          </div>
+          {{/each}}
+        {{else}}
+          <p class="no-entries">{{localize "SRA2.FEATS.NO_NARRATIVE_EFFECTS"}}</p>
+        {{/if}}
+      </div>
+    </div>
 
     <!-- Description -->
     <div class="form-group">

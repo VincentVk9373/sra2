@@ -271,6 +271,28 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING"
+      }),
+      // Narrative effects
+      narrativeEffects: new fields.ArrayField(new fields.StringField({
+        required: false,
+        initial: ""
+      }), {
+        initial: [],
+        label: "SRA2.FEATS.NARRATIVE_EFFECTS"
+      }),
+      // Grants narration
+      grantsNarration: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.GRANTS_NARRATION"
+      }),
+      narrationActions: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 1,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.NARRATION_ACTIONS"
       })
     };
   }
@@ -306,11 +328,16 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const featType = (this as any).featType || 'equipment';
     const bonusLightDamage = (this as any).bonusLightDamage || 0;
     const bonusSevereDamage = (this as any).bonusSevereDamage || 0;
+    const bonusPhysicalThreshold = (this as any).bonusPhysicalThreshold || 0;
+    const bonusMentalThreshold = (this as any).bonusMentalThreshold || 0;
     const hasArmorBonus = (this as any).hasArmorBonus || false;
     const firewall = (this as any).firewall || 0;
     const attack = (this as any).attack || 0;
     const riggerConsoleCount = (this as any).riggerConsoleCount || 0;
     const hasVehicleControlWiring = (this as any).hasVehicleControlWiring || false;
+    const bonusAnarchy = (this as any).bonusAnarchy || 0;
+    const grantsNarration = (this as any).grantsNarration || false;
+    const narrativeEffects = (this as any).narrativeEffects || [];
     const rrList = (this as any).rrList || [];
     
     // Cyberware/bioware: 1 level
@@ -323,6 +350,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     
     // Heavy wounds: +6 per wound
     recommendedLevel += bonusSevereDamage * 6;
+    
+    // Physical threshold bonus: +1 per point (positive or negative)
+    recommendedLevel += Math.abs(bonusPhysicalThreshold);
+    
+    // Mental threshold bonus: +1 per point (positive or negative)
+    recommendedLevel += Math.abs(bonusMentalThreshold);
     
     // Armor bonus: +1 if checked
     if (hasArmorBonus) {
@@ -363,6 +396,18 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         recommendedLevel += rrValue * 10;
       }
     }
+    
+    // Anarchy bonus: +2 per anarchy point
+    recommendedLevel += bonusAnarchy * 2;
+    
+    // Grants narration: +3 levels
+    if (grantsNarration) {
+      recommendedLevel += 3;
+    }
+    
+    // Narrative effects: +1 level per effect (count non-empty strings)
+    const narrativeEffectsCount = narrativeEffects.filter((effect: string) => effect && effect.trim() !== '').length;
+    recommendedLevel += narrativeEffectsCount;
     
     (this as any).recommendedLevel = recommendedLevel;
   }

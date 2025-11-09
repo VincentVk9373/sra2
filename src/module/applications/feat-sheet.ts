@@ -76,6 +76,12 @@ export class FeatSheet extends ItemSheet {
     
     // Clear RR target button
     html.find('[data-action="clear-rr-target"]').on('click', this._onClearRRTarget.bind(this));
+    
+    // Add narrative effect button
+    html.find('[data-action="add-narrative-effect"]').on('click', this._onAddNarrativeEffect.bind(this));
+    
+    // Remove narrative effect button
+    html.find('[data-action="remove-narrative-effect"]').on('click', this._onRemoveNarrativeEffect.bind(this));
   }
 
   /**
@@ -178,6 +184,42 @@ export class FeatSheet extends ItemSheet {
     }
 
     return super._onDrop(event);
+  }
+
+  /**
+   * Handle adding a new narrative effect
+   */
+  private async _onAddNarrativeEffect(event: Event): Promise<void> {
+    event.preventDefault();
+    
+    const narrativeEffects = [...((this.item.system as any).narrativeEffects || [])];
+    
+    narrativeEffects.push("");
+    
+    await this.item.update({
+      'system.narrativeEffects': narrativeEffects
+    } as any);
+    
+    this.render(false);
+  }
+
+  /**
+   * Handle removing a narrative effect
+   */
+  private async _onRemoveNarrativeEffect(event: Event): Promise<void> {
+    event.preventDefault();
+    
+    const index = parseInt((event.currentTarget as HTMLElement).dataset.index || '0');
+    
+    const narrativeEffects = [...((this.item.system as any).narrativeEffects || [])];
+    
+    narrativeEffects.splice(index, 1);
+    
+    await this.item.update({
+      'system.narrativeEffects': narrativeEffects
+    } as any);
+    
+    this.render(false);
   }
 
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {

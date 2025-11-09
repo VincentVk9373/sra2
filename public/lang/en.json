@@ -52,7 +52,11 @@
             "ANARCHY": "Anarchy",
             "ANARCHY_SPENT": "Anarchy spent",
             "ESSENCE": "Essence",
-            "ESSENCE_MAX": "Max Essence"
+            "ESSENCE_MAX": "Max Essence",
+            "NARRATIONS": "Narrations",
+            "NARRATION_ACTION": "action",
+            "NARRATION_ACTIONS": "actions",
+            "TOTAL_NARRATIONS": "Total Narrations"
         },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armor & Damage Thresholds",
@@ -159,6 +163,19 @@
             "REMOVE_RR_ENTRY": "Remove Entry",
             "RR_ENTRY_NUMBER": "Entry",
             "NO_RR_ENTRIES": "No risk reduction entries. Click the button above to add one.",
+            "NARRATIVE_EFFECTS": "Narrative Effects",
+            "ADD_NARRATIVE_EFFECT": "Add Narrative Effect",
+            "REMOVE_NARRATIVE_EFFECT": "Remove Effect",
+            "EFFECT_NUMBER": "Effect",
+            "NARRATIVE_EFFECT_PLACEHOLDER": "Describe a narrative effect of this feat...",
+            "NO_NARRATIVE_EFFECTS": "No narrative effects. Click the button above to add one.",
+            "GRANTS_NARRATION": "Grants Narration",
+            "GRANTS_NARRATION_HINT": "This feat grants a narration (adds to narration count)",
+            "NARRATION_ACTIONS": "Actions per Narration",
+            "NARRATION_ACTION": "action",
+            "NARRATION_ACTIONS_LABEL": "actions",
+            "NARRATION_ACTIONS_HINT": "Number of actions this narration grants (1 or 2)",
+            "NARRATION_SHORT": "Narration",
             "WEAPON": {
                 "SECTION_TITLE": "Weapon / Spell Information",
                 "DAMAGE_VALUE": "Damage Value (DV)",

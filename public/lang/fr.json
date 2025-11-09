@@ -52,7 +52,11 @@
             "ANARCHY": "Anarchie",
             "ANARCHY_SPENT": "Anarchies consommées",
             "ESSENCE": "Essence",
-            "ESSENCE_MAX": "Essence Max"
+            "ESSENCE_MAX": "Essence Max",
+            "NARRATIONS": "Narrations",
+            "NARRATION_ACTION": "action",
+            "NARRATION_ACTIONS": "actions",
+            "TOTAL_NARRATIONS": "Total de Narrations"
         },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armure et Seuils de Dégâts",
@@ -159,6 +163,19 @@
             "REMOVE_RR_ENTRY": "Supprimer l'entrée",
             "RR_ENTRY_NUMBER": "Entrée",
             "NO_RR_ENTRIES": "Aucune entrée de réduction de risque. Cliquez sur le bouton ci-dessus pour en ajouter une.",
+            "NARRATIVE_EFFECTS": "Effets Narratifs",
+            "ADD_NARRATIVE_EFFECT": "Ajouter un effet narratif",
+            "REMOVE_NARRATIVE_EFFECT": "Supprimer l'effet",
+            "EFFECT_NUMBER": "Effet",
+            "NARRATIVE_EFFECT_PLACEHOLDER": "Décrivez un effet narratif de cet atout...",
+            "NO_NARRATIVE_EFFECTS": "Aucun effet narratif. Cliquez sur le bouton ci-dessus pour en ajouter un.",
+            "GRANTS_NARRATION": "Accorde une Narration",
+            "GRANTS_NARRATION_HINT": "Cet atout accorde une narration (ajoute au compte de narrations)",
+            "NARRATION_ACTIONS": "Actions par Narration",
+            "NARRATION_ACTION": "action",
+            "NARRATION_ACTIONS_LABEL": "actions",
+            "NARRATION_ACTIONS_HINT": "Nombre d'actions que cette narration accorde (1 ou 2)",
+            "NARRATION_SHORT": "Narration",
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme / Sort",
                 "DAMAGE_VALUE": "Valeur de Dégât (VD)",

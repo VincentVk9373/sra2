@@ -159,6 +159,8 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     let bonusMentalThreshold = 0;
     let bonusAnarchy = 0;
     let totalEssenceCost = 0;
+    let totalNarrations = 0;
+    const narrationsDetails = [];
     if (parent && parent.items) {
       const activeFeats = parent.items.filter(
         (item) => item.type === "feat" && item.system.active === true
@@ -170,11 +172,21 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
         bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
+        if (feat.system.grantsNarration) {
+          totalNarrations++;
+          narrationsDetails.push({
+            name: feat.name,
+            actions: feat.system.narrationActions || 1
+          });
+        }
       });
     }
     this.totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
     this.anarchyBonus = anarchyBonus;
     this.featsAnarchyBonus = bonusAnarchy;
+    this.totalNarrations = 1 + totalNarrations;
+    this.bonusNarrations = totalNarrations;
+    this.narrationsDetails = narrationsDetails;
     const totalLightBoxes = 2 + bonusLightDamage;
     const totalSevereBoxes = 1 + bonusSevereDamage;
     const damage = this.damage || {};
@@ -611,6 +623,28 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING"
+      }),
+      // Narrative effects
+      narrativeEffects: new fields.ArrayField(new fields.StringField({
+        required: false,
+        initial: ""
+      }), {
+        initial: [],
+        label: "SRA2.FEATS.NARRATIVE_EFFECTS"
+      }),
+      // Grants narration
+      grantsNarration: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.GRANTS_NARRATION"
+      }),
+      narrationActions: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 1,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.NARRATION_ACTIONS"
       })
     };
   }
@@ -639,17 +673,24 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const featType = this.featType || "equipment";
     const bonusLightDamage = this.bonusLightDamage || 0;
     const bonusSevereDamage = this.bonusSevereDamage || 0;
+    const bonusPhysicalThreshold = this.bonusPhysicalThreshold || 0;
+    const bonusMentalThreshold = this.bonusMentalThreshold || 0;
     const hasArmorBonus = this.hasArmorBonus || false;
     const firewall = this.firewall || 0;
     const attack = this.attack || 0;
     const riggerConsoleCount = this.riggerConsoleCount || 0;
     const hasVehicleControlWiring = this.hasVehicleControlWiring || false;
+    const bonusAnarchy = this.bonusAnarchy || 0;
+    const grantsNarration = this.grantsNarration || false;
+    const narrativeEffects = this.narrativeEffects || [];
     const rrList = this.rrList || [];
     if (featType === "cyberware") {
       recommendedLevel += 1;
     }
     recommendedLevel += bonusLightDamage * 3;
     recommendedLevel += bonusSevereDamage * 6;
+    recommendedLevel += Math.abs(bonusPhysicalThreshold);
+    recommendedLevel += Math.abs(bonusMentalThreshold);
     if (hasArmorBonus) {
       recommendedLevel += 1;
     }
@@ -674,6 +715,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         recommendedLevel += rrValue * 10;
       }
     }
+    recommendedLevel += bonusAnarchy * 2;
+    if (grantsNarration) {
+      recommendedLevel += 3;
+    }
+    const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
+    recommendedLevel += narrativeEffectsCount;
     this.recommendedLevel = recommendedLevel;
   }
 }
@@ -2132,6 +2179,8 @@ class FeatSheet extends ItemSheet {
     html.find('[data-action="add-rr-entry"]').on("click", this._onAddRREntry.bind(this));
     html.find('[data-action="remove-rr-entry"]').on("click", this._onRemoveRREntry.bind(this));
     html.find('[data-action="clear-rr-target"]').on("click", this._onClearRRTarget.bind(this));
+    html.find('[data-action="add-narrative-effect"]').on("click", this._onAddNarrativeEffect.bind(this));
+    html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
   }
   /**
    * Handle adding a new RR entry
@@ -2206,6 +2255,31 @@ class FeatSheet extends ItemSheet {
       }
     }
     return super._onDrop(event);
+  }
+  /**
+   * Handle adding a new narrative effect
+   */
+  async _onAddNarrativeEffect(event) {
+    event.preventDefault();
+    const narrativeEffects = [...this.item.system.narrativeEffects || []];
+    narrativeEffects.push("");
+    await this.item.update({
+      "system.narrativeEffects": narrativeEffects
+    });
+    this.render(false);
+  }
+  /**
+   * Handle removing a narrative effect
+   */
+  async _onRemoveNarrativeEffect(event) {
+    event.preventDefault();
+    const index = parseInt(event.currentTarget.dataset.index || "0");
+    const narrativeEffects = [...this.item.system.narrativeEffects || []];
+    narrativeEffects.splice(index, 1);
+    await this.item.update({
+      "system.narrativeEffects": narrativeEffects
+    });
+    this.render(false);
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);

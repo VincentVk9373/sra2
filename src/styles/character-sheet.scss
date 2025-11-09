@@ -399,6 +399,32 @@
             }
           }
         }
+        
+        .narration-attribute {
+          .attribute-controls {
+            justify-content: center;
+            
+            .narration-value {
+              flex: 1;
+              padding: 0.5rem;
+              text-align: center;
+              font-size: 1.2rem;
+              font-weight: bold;
+              border: 1px solid #666;
+              background: rgba(255, 100, 100, 0.1);
+              border-radius: 3px;
+              color: #222;
+            }
+          }
+          
+          .attribute-cost {
+            .narration-bonus {
+              color: #d32f2f;
+              font-weight: bold;
+              font-size: 0.9rem;
+            }
+          }
+        }
       }
       
       /* Essence display */
@@ -1095,6 +1121,16 @@
                   font-size: 0.75rem;
                   font-weight: normal;
                   white-space: nowrap;
+                  
+                  .anarchy-bonus-badge {
+                    color: #d32f2f;
+                    font-weight: bold;
+                  }
+                  
+                  .narration-badge {
+                    color: #d32f2f;
+                    font-weight: bold;
+                  }
                 }
               }
               
