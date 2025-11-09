@@ -33,36 +33,60 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: true,
         label: "SRA2.FEATS.ACTIVE"
       }),
-      rrType: new fields.ArrayField(new fields.StringField({
-        required: true,
-        initial: "none",
-        choices: {
-          "none": "SRA2.FEATS.RR_TYPE.NONE",
-          "attribute": "SRA2.FEATS.RR_TYPE.ATTRIBUTE",
-          "skill": "SRA2.FEATS.RR_TYPE.SKILL",
-          "specialization": "SRA2.FEATS.RR_TYPE.SPECIALIZATION"
-        }
+      rrList: new fields.ArrayField(new fields.SchemaField({
+        rrType: new fields.StringField({
+          required: true,
+          initial: "skill",
+          choices: {
+            "attribute": "SRA2.FEATS.RR_TYPE.ATTRIBUTE",
+            "skill": "SRA2.FEATS.RR_TYPE.SKILL",
+            "specialization": "SRA2.FEATS.RR_TYPE.SPECIALIZATION"
+          },
+          label: "SRA2.FEATS.RR_TYPE.LABEL"
+        }),
+        rrValue: new fields.NumberField({
+          required: true,
+          initial: 0,
+          min: 0,
+          max: 3,
+          integer: true,
+          label: "SRA2.FEATS.RR_VALUE"
+        }),
+        rrTarget: new fields.StringField({
+          required: false,
+          initial: "",
+          nullable: false,
+          label: "SRA2.FEATS.RR_TARGET"
+        })
       }), {
         initial: [],
-        label: "SRA2.FEATS.RR_TYPE.LABEL"
+        label: "SRA2.FEATS.RR_LIST"
       }),
-      rrValue: new fields.ArrayField(new fields.NumberField({
-        required: true,
-        initial: 0,
-        min: 0,
-        max: 3,
-        integer: true
-      }), {
-        initial: [],
-        label: "SRA2.FEATS.RR_VALUE"
-      }),
-      rrTarget: new fields.ArrayField(new fields.StringField({
+      // Backup fields for migration - preserve old data for comparison
+      _rrTypeBackup: new fields.ArrayField(new fields.StringField(), {
         required: false,
-        initial: "",
-        nullable: false
-      }), {
-        initial: [],
-        label: "SRA2.FEATS.RR_TARGET"
+        initial: undefined
+      }),
+      _rrValueBackup: new fields.ArrayField(new fields.NumberField(), {
+        required: false,
+        initial: undefined
+      }),
+      _rrTargetBackup: new fields.ArrayField(new fields.StringField(), {
+        required: false,
+        initial: undefined
+      }),
+      // Keep old fields as well for backward compatibility and comparison
+      rrType: new fields.ArrayField(new fields.StringField(), {
+        required: false,
+        initial: undefined
+      }),
+      rrValue: new fields.ArrayField(new fields.NumberField(), {
+        required: false,
+        initial: undefined
+      }),
+      rrTarget: new fields.ArrayField(new fields.StringField(), {
+        required: false,
+        initial: undefined
       }),
       bonusLightDamage: new fields.NumberField({
         required: true,

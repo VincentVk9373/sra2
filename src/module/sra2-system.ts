@@ -6,6 +6,12 @@ globalThis.SYSTEM = SYSTEM;
 import * as models from "./models/_module.ts";
 import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
+// @ts-ignore - JavaScript module without type declarations
+import { Migrations } from "./migration/migration.mjs";
+// @ts-ignore - JavaScript module without type declarations
+import { Migration_13_0_3 } from "./migration/migration-13.0.3.mjs";
+// @ts-ignore - JavaScript module without type declarations
+import { HOOKS } from "./hooks.mjs";
 
 export class SRA2System {
   static start(): void {
@@ -28,6 +34,12 @@ export class SRA2System {
         documents,
       };
     }
+    
+    // Register migrations
+    new Migrations();
+    Hooks.on(HOOKS.MIGRATIONS, (declareMigration: any) => {
+      declareMigration(new Migration_13_0_3());
+    });
     
     // Register custom Actor document class
     CONFIG.Actor.documentClass = documents.SRA2Actor;
@@ -96,7 +108,11 @@ export class SRA2System {
   async onReady(): Promise<void> {
     console.log(SYSTEM.LOG.HEAD + 'SRA2System.onReady');
     
-    // Migrate old feat data to new array format
+    // Run migrations
+    const migrations = new Migrations();
+    migrations.migrate();
+    
+    // Migrate old feat data to new array format (deprecated, keeping for older versions)
     await this.migrateFeatsToArrayFormat();
     
     // Migrate anarchyNimbus to anarchySpent

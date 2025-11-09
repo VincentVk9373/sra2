@@ -108,7 +108,7 @@
             <!-- RR Type -->
             <div class="form-group">
               <label>{{localize "SRA2.FEATS.RR_TYPE.LABEL"}}</label>
-              <select name="system.rrType.{{index}}">
+              <select name="system.rrList.{{index}}.rrType">
                 <option value="skill" {{#if (eq rrType "skill")}}selected{{/if}}>{{localize "SRA2.FEATS.RR_TYPE.SKILL"}}</option>
                 <option value="attribute" {{#if (eq rrType "attribute")}}selected{{/if}}>{{localize "SRA2.FEATS.RR_TYPE.ATTRIBUTE"}}</option>
                 <option value="specialization" {{#if (eq rrType "specialization")}}selected{{/if}}>{{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}}</option>
@@ -118,14 +118,14 @@
             <!-- RR Value -->
             <div class="form-group">
               <label>{{localize "SRA2.FEATS.RR_VALUE"}}</label>
-              <input type="number" name="system.rrValue.{{index}}" value="{{rrValue}}" min="0" max="3" />
+              <input type="number" name="system.rrList.{{index}}.rrValue" value="{{rrValue}}" min="0" max="3" />
             </div>
 
             <!-- RR Target -->
             <div class="form-group">
               <label>{{localize "SRA2.FEATS.RR_TARGET"}}</label>
               {{#if (eq rrType "attribute")}}
-                <select name="system.rrTarget.{{index}}">
+                <select name="system.rrList.{{index}}.rrTarget">
                   <option value="">{{localize "SRA2.FEATS.RR_TARGET_SELECT"}}</option>
                   <option value="strength" {{#if (eq rrTarget "strength")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</option>
                   <option value="agility" {{#if (eq rrTarget "agility")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</option>
@@ -135,7 +135,7 @@
                 </select>
               {{else}}
                 <!-- Hidden input to preserve rrTarget value for non-attribute types -->
-                <input type="hidden" name="system.rrTarget.{{index}}" value="{{rrTarget}}" />
+                <input type="hidden" name="system.rrList.{{index}}.rrTarget" value="{{rrTarget}}" />
                 <!-- Drop Zone for Skills/Specializations -->
                 <div class="rr-target-drop-zone" data-rr-index="{{index}}">
                   {{#if rrTargetName}}

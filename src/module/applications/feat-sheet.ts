@@ -20,16 +20,15 @@ export class FeatSheet extends ItemSheet {
     const context = super.getData() as any;
     context.system = this.item.system;
     
-    // Build RR entries array from rrType, rrValue, and rrTarget arrays
+    // Build RR entries array from rrList
     context.rrEntries = [];
-    const rrTypes = context.system.rrType || [];
-    const rrValues = context.system.rrValue || [];
-    const rrTargets = context.system.rrTarget || [];
+    const rrList = context.system.rrList || [];
     
-    for (let i = 0; i < rrTypes.length; i++) {
-      const rrType = rrTypes[i];
-      const rrValue = rrValues[i] || 0;
-      const rrTarget = rrTargets[i] || '';
+    for (let i = 0; i < rrList.length; i++) {
+      const rrEntry = rrList[i];
+      const rrType = rrEntry.rrType;
+      const rrValue = rrEntry.rrValue || 0;
+      const rrTarget = rrEntry.rrTarget || '';
       
       const entry: any = {
         index: i,
@@ -81,18 +80,16 @@ export class FeatSheet extends ItemSheet {
   private async _onAddRREntry(event: Event): Promise<void> {
     event.preventDefault();
     
-    const rrTypes = [...((this.item.system as any).rrType || [])];
-    const rrValues = [...((this.item.system as any).rrValue || [])];
-    const rrTargets = [...((this.item.system as any).rrTarget || [])];
+    const rrList = [...((this.item.system as any).rrList || [])];
     
-    rrTypes.push('skill');
-    rrValues.push(0);
-    rrTargets.push('');
+    rrList.push({
+      rrType: 'skill',
+      rrValue: 0,
+      rrTarget: ''
+    });
     
     await this.item.update({
-      'system.rrType': rrTypes,
-      'system.rrValue': rrValues,
-      'system.rrTarget': rrTargets
+      'system.rrList': rrList
     } as any);
     
     this.render(false);
@@ -106,18 +103,12 @@ export class FeatSheet extends ItemSheet {
     
     const index = parseInt((event.currentTarget as HTMLElement).dataset.index || '0');
     
-    const rrTypes = [...((this.item.system as any).rrType || [])];
-    const rrValues = [...((this.item.system as any).rrValue || [])];
-    const rrTargets = [...((this.item.system as any).rrTarget || [])];
+    const rrList = [...((this.item.system as any).rrList || [])];
     
-    rrTypes.splice(index, 1);
-    rrValues.splice(index, 1);
-    rrTargets.splice(index, 1);
+    rrList.splice(index, 1);
     
     await this.item.update({
-      'system.rrType': rrTypes,
-      'system.rrValue': rrValues,
-      'system.rrTarget': rrTargets
+      'system.rrList': rrList
     } as any);
     
     this.render(false);
@@ -130,11 +121,13 @@ export class FeatSheet extends ItemSheet {
     event.preventDefault();
     
     const index = parseInt((event.currentTarget as HTMLElement).dataset.index || '0');
-    const rrTargets = [...((this.item.system as any).rrTarget || [])];
+    const rrList = [...((this.item.system as any).rrList || [])];
     
-    rrTargets[index] = '';
+    if (rrList[index]) {
+      rrList[index] = { ...rrList[index], rrTarget: '' };
+    }
     
-    await this.item.update({ 'system.rrTarget': rrTargets } as any);
+    await this.item.update({ 'system.rrList': rrList } as any);
     this.render(false);
   }
 
@@ -155,23 +148,21 @@ export class FeatSheet extends ItemSheet {
       if (!dropZone) return super._onDrop(event);
       
       const index = parseInt((dropZone as HTMLElement).dataset.rrIndex || '0');
-      const rrTypes = [...((this.item.system as any).rrType || [])];
-      const rrType = rrTypes[index];
+      const rrList = [...((this.item.system as any).rrList || [])];
+      const rrType = rrList[index]?.rrType;
       
       // Check if it's a skill or specialization matching the RR type
       if (item.type === 'skill' && rrType === 'skill') {
         // Store the skill name (not ID) so the feat can be prepared in advance
-        const rrTargets = [...((this.item.system as any).rrTarget || [])];
-        rrTargets[index] = item.name;
-        await this.item.update({ 'system.rrTarget': rrTargets } as any);
+        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        await this.item.update({ 'system.rrList': rrList } as any);
         this.render(false);
         ui.notifications?.info(game.i18n!.format('SRA2.FEATS.LINKED_TO_TARGET', { name: item.name }));
         return;
       } else if (item.type === 'specialization' && rrType === 'specialization') {
         // Store the specialization name (not ID) so the feat can be prepared in advance
-        const rrTargets = [...((this.item.system as any).rrTarget || [])];
-        rrTargets[index] = item.name;
-        await this.item.update({ 'system.rrTarget': rrTargets } as any);
+        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        await this.item.update({ 'system.rrList': rrList } as any);
         this.render(false);
         ui.notifications?.info(game.i18n!.format('SRA2.FEATS.LINKED_TO_TARGET', { name: item.name }));
         return;

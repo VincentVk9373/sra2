@@ -1,5 +1,5 @@
 const SYSTEM_ID = "sra2";
-const SYSTEM = {
+const SYSTEM$1 = {
   id: SYSTEM_ID,
   LOG: {
     HEAD: `${SYSTEM_ID} | `
@@ -373,36 +373,60 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: true,
         label: "SRA2.FEATS.ACTIVE"
       }),
-      rrType: new fields.ArrayField(new fields.StringField({
-        required: true,
-        initial: "none",
-        choices: {
-          "none": "SRA2.FEATS.RR_TYPE.NONE",
-          "attribute": "SRA2.FEATS.RR_TYPE.ATTRIBUTE",
-          "skill": "SRA2.FEATS.RR_TYPE.SKILL",
-          "specialization": "SRA2.FEATS.RR_TYPE.SPECIALIZATION"
-        }
+      rrList: new fields.ArrayField(new fields.SchemaField({
+        rrType: new fields.StringField({
+          required: true,
+          initial: "skill",
+          choices: {
+            "attribute": "SRA2.FEATS.RR_TYPE.ATTRIBUTE",
+            "skill": "SRA2.FEATS.RR_TYPE.SKILL",
+            "specialization": "SRA2.FEATS.RR_TYPE.SPECIALIZATION"
+          },
+          label: "SRA2.FEATS.RR_TYPE.LABEL"
+        }),
+        rrValue: new fields.NumberField({
+          required: true,
+          initial: 0,
+          min: 0,
+          max: 3,
+          integer: true,
+          label: "SRA2.FEATS.RR_VALUE"
+        }),
+        rrTarget: new fields.StringField({
+          required: false,
+          initial: "",
+          nullable: false,
+          label: "SRA2.FEATS.RR_TARGET"
+        })
       }), {
         initial: [],
-        label: "SRA2.FEATS.RR_TYPE.LABEL"
+        label: "SRA2.FEATS.RR_LIST"
       }),
-      rrValue: new fields.ArrayField(new fields.NumberField({
-        required: true,
-        initial: 0,
-        min: 0,
-        max: 3,
-        integer: true
-      }), {
-        initial: [],
-        label: "SRA2.FEATS.RR_VALUE"
-      }),
-      rrTarget: new fields.ArrayField(new fields.StringField({
+      // Backup fields for migration - preserve old data for comparison
+      _rrTypeBackup: new fields.ArrayField(new fields.StringField(), {
         required: false,
-        initial: "",
-        nullable: false
-      }), {
-        initial: [],
-        label: "SRA2.FEATS.RR_TARGET"
+        initial: void 0
+      }),
+      _rrValueBackup: new fields.ArrayField(new fields.NumberField(), {
+        required: false,
+        initial: void 0
+      }),
+      _rrTargetBackup: new fields.ArrayField(new fields.StringField(), {
+        required: false,
+        initial: void 0
+      }),
+      // Keep old fields as well for backward compatibility and comparison
+      rrType: new fields.ArrayField(new fields.StringField(), {
+        required: false,
+        initial: void 0
+      }),
+      rrValue: new fields.ArrayField(new fields.NumberField(), {
+        required: false,
+        initial: void 0
+      }),
+      rrTarget: new fields.ArrayField(new fields.StringField(), {
+        required: false,
+        initial: void 0
       }),
       bonusLightDamage: new fields.NumberField({
         required: true,
@@ -755,14 +779,12 @@ class CharacterSheet extends ActorSheet {
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
     const allFeats = this.actor.items.filter((item) => item.type === "feat").map((feat) => {
       feat.rrEntries = [];
-      const rrTypes = feat.system.rrType || [];
-      const rrValues = feat.system.rrValue || [];
-      const rrTargets = feat.system.rrTarget || [];
-      for (let i = 0; i < rrTypes.length; i++) {
-        const rrType = rrTypes[i];
-        const rrValue = rrValues[i] || 0;
-        const rrTarget = rrTargets[i] || "";
-        if (rrType === "none") continue;
+      const rrList = feat.system.rrList || [];
+      for (let i = 0; i < rrList.length; i++) {
+        const rrEntry = rrList[i];
+        const rrType = rrEntry.rrType;
+        const rrValue = rrEntry.rrValue || 0;
+        const rrTarget = rrEntry.rrTarget || "";
         const entry = { rrType, rrValue, rrTarget };
         if (rrType === "attribute" && rrTarget) {
           entry.rrTargetLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
@@ -2044,13 +2066,12 @@ class FeatSheet extends ItemSheet {
     const context = super.getData();
     context.system = this.item.system;
     context.rrEntries = [];
-    const rrTypes = context.system.rrType || [];
-    const rrValues = context.system.rrValue || [];
-    const rrTargets = context.system.rrTarget || [];
-    for (let i = 0; i < rrTypes.length; i++) {
-      const rrType = rrTypes[i];
-      const rrValue = rrValues[i] || 0;
-      const rrTarget = rrTargets[i] || "";
+    const rrList = context.system.rrList || [];
+    for (let i = 0; i < rrList.length; i++) {
+      const rrEntry = rrList[i];
+      const rrType = rrEntry.rrType;
+      const rrValue = rrEntry.rrValue || 0;
+      const rrTarget = rrEntry.rrTarget || "";
       const entry = {
         index: i,
         rrType,
@@ -2084,16 +2105,14 @@ class FeatSheet extends ItemSheet {
    */
   async _onAddRREntry(event) {
     event.preventDefault();
-    const rrTypes = [...this.item.system.rrType || []];
-    const rrValues = [...this.item.system.rrValue || []];
-    const rrTargets = [...this.item.system.rrTarget || []];
-    rrTypes.push("skill");
-    rrValues.push(0);
-    rrTargets.push("");
+    const rrList = [...this.item.system.rrList || []];
+    rrList.push({
+      rrType: "skill",
+      rrValue: 0,
+      rrTarget: ""
+    });
     await this.item.update({
-      "system.rrType": rrTypes,
-      "system.rrValue": rrValues,
-      "system.rrTarget": rrTargets
+      "system.rrList": rrList
     });
     this.render(false);
   }
@@ -2103,16 +2122,10 @@ class FeatSheet extends ItemSheet {
   async _onRemoveRREntry(event) {
     event.preventDefault();
     const index = parseInt(event.currentTarget.dataset.index || "0");
-    const rrTypes = [...this.item.system.rrType || []];
-    const rrValues = [...this.item.system.rrValue || []];
-    const rrTargets = [...this.item.system.rrTarget || []];
-    rrTypes.splice(index, 1);
-    rrValues.splice(index, 1);
-    rrTargets.splice(index, 1);
+    const rrList = [...this.item.system.rrList || []];
+    rrList.splice(index, 1);
     await this.item.update({
-      "system.rrType": rrTypes,
-      "system.rrValue": rrValues,
-      "system.rrTarget": rrTargets
+      "system.rrList": rrList
     });
     this.render(false);
   }
@@ -2122,9 +2135,11 @@ class FeatSheet extends ItemSheet {
   async _onClearRRTarget(event) {
     event.preventDefault();
     const index = parseInt(event.currentTarget.dataset.index || "0");
-    const rrTargets = [...this.item.system.rrTarget || []];
-    rrTargets[index] = "";
-    await this.item.update({ "system.rrTarget": rrTargets });
+    const rrList = [...this.item.system.rrList || []];
+    if (rrList[index]) {
+      rrList[index] = { ...rrList[index], rrTarget: "" };
+    }
+    await this.item.update({ "system.rrList": rrList });
     this.render(false);
   }
   /**
@@ -2138,19 +2153,17 @@ class FeatSheet extends ItemSheet {
       const dropZone = event.target.closest("[data-rr-index]");
       if (!dropZone) return super._onDrop(event);
       const index = parseInt(dropZone.dataset.rrIndex || "0");
-      const rrTypes = [...this.item.system.rrType || []];
-      const rrType = rrTypes[index];
+      const rrList = [...this.item.system.rrList || []];
+      const rrType = rrList[index]?.rrType;
       if (item.type === "skill" && rrType === "skill") {
-        const rrTargets = [...this.item.system.rrTarget || []];
-        rrTargets[index] = item.name;
-        await this.item.update({ "system.rrTarget": rrTargets });
+        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        await this.item.update({ "system.rrList": rrList });
         this.render(false);
         ui.notifications?.info(game.i18n.format("SRA2.FEATS.LINKED_TO_TARGET", { name: item.name }));
         return;
       } else if (item.type === "specialization" && rrType === "specialization") {
-        const rrTargets = [...this.item.system.rrTarget || []];
-        rrTargets[index] = item.name;
-        await this.item.update({ "system.rrTarget": rrTargets });
+        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        await this.item.update({ "system.rrList": rrList });
         this.render(false);
         ui.notifications?.info(game.i18n.format("SRA2.FEATS.LINKED_TO_TARGET", { name: item.name }));
         return;
@@ -2528,7 +2541,162 @@ const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   SkillSheet,
   SpecializationSheet
 }, Symbol.toStringTag, { value: "Module" }));
-globalThis.SYSTEM = SYSTEM;
+const HOOKS = {
+  MIGRATIONS: "sra2-declareMigration"
+};
+const CURRENT_SYSTEM_VERSION = "currentSystemVersion";
+class Migration {
+  get code() {
+    return "sample";
+  }
+  get version() {
+    return "0.0.0";
+  }
+  async migrate() {
+    return () => {
+    };
+  }
+  async applyItemsUpdates(computeUpdates = (items) => []) {
+    await game.actors.forEach(async (actor) => {
+      const actorItemUpdates = computeUpdates(actor.items);
+      if (actorItemUpdates.length > 0) {
+        const message = game.i18n.format("SRA2.MIGRATION.APPLYING_ACTOR_ITEMS", { name: actor.name });
+        console.log(SYSTEM.LOG.HEAD, this.code, message, actorItemUpdates);
+        await actor.updateEmbeddedDocuments("Item", actorItemUpdates);
+      }
+    });
+    const itemUpdates = computeUpdates(game.items);
+    if (itemUpdates.length > 0) {
+      const message = game.i18n.localize("SRA2.MIGRATION.APPLYING_ITEMS");
+      console.log(SYSTEM.LOG.HEAD, this.code, message, itemUpdates);
+      await Item.updateDocuments(itemUpdates);
+    }
+  }
+}
+class Migrations {
+  constructor() {
+    game.settings.register(SYSTEM.id, CURRENT_SYSTEM_VERSION, {
+      name: "SRA2.MIGRATION.SETTING_NAME",
+      scope: "world",
+      config: false,
+      type: String,
+      default: "0.0.0"
+    });
+  }
+  migrate() {
+    const currentVersion = game.settings.get(SYSTEM.id, CURRENT_SYSTEM_VERSION);
+    if (foundry.utils.isNewerVersion(game.system.version, currentVersion)) {
+      let migrations = [];
+      Hooks.callAll(
+        HOOKS.MIGRATIONS,
+        (...list) => migrations = migrations.concat(list.filter((m) => foundry.utils.isNewerVersion(m.version, currentVersion)))
+      );
+      Hooks.off(HOOKS.MIGRATIONS, () => {
+      });
+      if (migrations.length > 0) {
+        migrations.sort((a, b) => foundry.utils.isNewerVersion(a.version, b.version) ? 1 : foundry.utils.isNewerVersion(b.version, a.version) ? -1 : 0);
+        migrations.forEach(async (m) => {
+          const message2 = game.i18n.format("SRA2.MIGRATION.EXECUTING", { code: m.code, currentVersion, targetVersion: m.version });
+          this.$notify(message2);
+          await m.migrate();
+        });
+        const message = game.i18n.format("SRA2.MIGRATION.DONE", { version: game.system.version });
+        this.$notify(message);
+      } else {
+        const message = game.i18n.format("SRA2.MIGRATION.NOT_NEEDED", { version: game.system.version });
+        console.log(SYSTEM.LOG.HEAD + message);
+      }
+      game.settings.set(SYSTEM.id, CURRENT_SYSTEM_VERSION, game.system.version);
+    } else {
+      const message = game.i18n.localize("SRA2.MIGRATION.VERSION_UNCHANGED");
+      console.log(SYSTEM.LOG.HEAD + message);
+    }
+  }
+  $notify(message) {
+    ui.notifications.info(message);
+    console.log(SYSTEM.LOG.HEAD + message);
+  }
+}
+class Migration_13_0_3 extends Migration {
+  get code() {
+    return "migration-13.0.3";
+  }
+  get version() {
+    return "13.0.3";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.3: Converting rrType/rrValue/rrTarget to rrList");
+    let totalMigrated = 0;
+    let totalSkipped = 0;
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        item.system;
+        const hasOldFormat = sourceSystem.rrType !== void 0 && Array.isArray(sourceSystem.rrType) || sourceSystem.rrValue !== void 0 && Array.isArray(sourceSystem.rrValue) || sourceSystem.rrTarget !== void 0 && Array.isArray(sourceSystem.rrTarget);
+        const hasNewFormatInSource = sourceSystem.rrList !== void 0 && Array.isArray(sourceSystem.rrList);
+        if (hasNewFormatInSource && !hasOldFormat) {
+          console.log(SYSTEM.LOG.HEAD + `Migration 13.0.3: Skipping "${item.name}" - already has rrList in source (${sourceSystem.rrList.length} entries), no old data`);
+          totalSkipped++;
+          continue;
+        }
+        if (!hasOldFormat) {
+          console.log(SYSTEM.LOG.HEAD + `Migration 13.0.3: Skipping "${item.name}" - no old format fields found`);
+          totalSkipped++;
+          continue;
+        }
+        const rrType = Array.isArray(sourceSystem.rrType) ? sourceSystem.rrType : [];
+        const rrValue = Array.isArray(sourceSystem.rrValue) ? sourceSystem.rrValue : [];
+        const rrTarget = Array.isArray(sourceSystem.rrTarget) ? sourceSystem.rrTarget : [];
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.3: Found "${item.name}" with old format:`, {
+          rrType,
+          rrValue,
+          rrTarget
+        });
+        const rrList = [];
+        const maxLength = Math.max(rrType.length, rrValue.length, rrTarget.length);
+        for (let i = 0; i < maxLength; i++) {
+          const type = rrType[i];
+          if (type && type !== "none") {
+            rrList.push({
+              rrType: type,
+              rrValue: rrValue[i] !== void 0 ? rrValue[i] : 0,
+              rrTarget: rrTarget[i] !== void 0 ? rrTarget[i] : ""
+            });
+          }
+        }
+        const update = {
+          _id: item.id,
+          "system.rrList": rrList,
+          // Store backup of old data before deletion
+          "system._rrTypeBackup": rrType,
+          "system._rrValueBackup": rrValue,
+          "system._rrTargetBackup": rrTarget,
+          // Remove old fields by setting them to null (Foundry will delete them)
+          "system.rrType": null,
+          "system.rrValue": null,
+          "system.rrTarget": null
+        };
+        updates.push(update);
+        totalMigrated++;
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.3: Converting feat "${item.name}":`);
+        console.log(SYSTEM.LOG.HEAD + `  Old data (will be deleted, backed up as _rrTypeBackup/_rrValueBackup/_rrTargetBackup):`, { rrType, rrValue, rrTarget });
+        console.log(SYSTEM.LOG.HEAD + `  New rrList (${rrList.length} entries):`, rrList);
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.3 completed - Migrated: ${totalMigrated}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalMigrated > 0) {
+      const userMessage = game.i18n ? game.i18n.localize("SRA2.MIGRATION.13_0_3_INFO") : "Migration 13.0.3: Risk Reduction data converted. Check console for details.";
+      ui.notifications?.info(userMessage, { permanent: false });
+    }
+  }
+}
+globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
     new SRA2System();
@@ -2540,7 +2708,7 @@ class SRA2System {
     Hooks.once("init", () => this.onInit());
   }
   onInit() {
-    console.log(SYSTEM.LOG.HEAD + "SRA2System.onInit");
+    console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onInit");
     if (game.system) {
       game.system.api = {
         applications,
@@ -2548,6 +2716,10 @@ class SRA2System {
         documents
       };
     }
+    new Migrations();
+    Hooks.on(HOOKS.MIGRATIONS, (declareMigration) => {
+      declareMigration(new Migration_13_0_3());
+    });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {
       character: CharacterDataModel,
@@ -2593,7 +2765,9 @@ class SRA2System {
     Hooks.once("ready", () => this.onReady());
   }
   async onReady() {
-    console.log(SYSTEM.LOG.HEAD + "SRA2System.onReady");
+    console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onReady");
+    const migrations = new Migrations();
+    migrations.migrate();
     await this.migrateFeatsToArrayFormat();
     await this.migrateAnarchyNimbusToSpent();
   }
@@ -2649,16 +2823,16 @@ class SRA2System {
         }
       }
       if (actorUpdates.length > 0) {
-        console.log(`${SYSTEM.LOG.HEAD} Migrating ${actorUpdates.length} feats on actor ${actor.name}`);
+        console.log(`${SYSTEM$1.LOG.HEAD} Migrating ${actorUpdates.length} feats on actor ${actor.name}`);
         await actor.updateEmbeddedDocuments("Item", actorUpdates);
       }
     }
     if (featsToUpdate.length > 0) {
-      console.log(`${SYSTEM.LOG.HEAD} Migrating ${featsToUpdate.length} world feats`);
+      console.log(`${SYSTEM$1.LOG.HEAD} Migrating ${featsToUpdate.length} world feats`);
       await Item.updateDocuments(featsToUpdate);
     }
     if (featsToUpdate.length > 0 || game.actors.some((a) => a.items.some((i) => i.type === "feat"))) {
-      console.log(`${SYSTEM.LOG.HEAD} Feat migration to array format complete`);
+      console.log(`${SYSTEM$1.LOG.HEAD} Feat migration to array format complete`);
     }
   }
   /**
@@ -2678,9 +2852,9 @@ class SRA2System {
       }
     }
     if (actorsToUpdate.length > 0) {
-      console.log(`${SYSTEM.LOG.HEAD} Migrating anarchyNimbus to anarchySpent for ${actorsToUpdate.length} actors`);
+      console.log(`${SYSTEM$1.LOG.HEAD} Migrating anarchyNimbus to anarchySpent for ${actorsToUpdate.length} actors`);
       await Actor.updateDocuments(actorsToUpdate);
-      console.log(`${SYSTEM.LOG.HEAD} anarchyNimbus to anarchySpent migration complete`);
+      console.log(`${SYSTEM$1.LOG.HEAD} anarchyNimbus to anarchySpent migration complete`);
     }
   }
 }

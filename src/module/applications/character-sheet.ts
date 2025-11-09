@@ -33,16 +33,13 @@ export class CharacterSheet extends ActorSheet {
     const allFeats = this.actor.items.filter((item: any) => item.type === 'feat').map((feat: any) => {
       // Add translated labels for attribute targets in RR entries
       feat.rrEntries = [];
-      const rrTypes = feat.system.rrType || [];
-      const rrValues = feat.system.rrValue || [];
-      const rrTargets = feat.system.rrTarget || [];
+      const rrList = feat.system.rrList || [];
       
-      for (let i = 0; i < rrTypes.length; i++) {
-        const rrType = rrTypes[i];
-        const rrValue = rrValues[i] || 0;
-        const rrTarget = rrTargets[i] || '';
-        
-        if (rrType === 'none') continue;
+      for (let i = 0; i < rrList.length; i++) {
+        const rrEntry = rrList[i];
+        const rrType = rrEntry.rrType;
+        const rrValue = rrEntry.rrValue || 0;
+        const rrTarget = rrEntry.rrTarget || '';
         
         const entry: any = { rrType, rrValue, rrTarget };
         
