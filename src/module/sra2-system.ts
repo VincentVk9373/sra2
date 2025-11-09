@@ -11,6 +11,8 @@ import { Migrations } from "./migration/migration.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_0_3 } from "./migration/migration-13.0.3.mjs";
 // @ts-ignore - JavaScript module without type declarations
+import { Migration_13_0_4 } from "./migration/migration-13.0.4.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
 export class SRA2System {
@@ -39,6 +41,7 @@ export class SRA2System {
     new Migrations();
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration: any) => {
       declareMigration(new Migration_13_0_3());
+      declareMigration(new Migration_13_0_4());
     });
     
     // Register custom Actor document class

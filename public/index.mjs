@@ -402,32 +402,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: [],
         label: "SRA2.FEATS.RR_LIST"
       }),
-      // Backup fields for migration - preserve old data for comparison
-      _rrTypeBackup: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: void 0
-      }),
-      _rrValueBackup: new fields.ArrayField(new fields.NumberField(), {
-        required: false,
-        initial: void 0
-      }),
-      _rrTargetBackup: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: void 0
-      }),
-      // Keep old fields as well for backward compatibility and comparison
-      rrType: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: void 0
-      }),
-      rrValue: new fields.ArrayField(new fields.NumberField(), {
-        required: false,
-        initial: void 0
-      }),
-      rrTarget: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: void 0
-      }),
       bonusLightDamage: new fields.NumberField({
         required: true,
         initial: 0,
@@ -2696,6 +2670,68 @@ class Migration_13_0_3 extends Migration {
     }
   }
 }
+class Migration_13_0_4 extends Migration {
+  get code() {
+    return "migration-13.0.4";
+  }
+  get version() {
+    return "13.0.4";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.4: Cleaning up old RR fields and backups");
+    let totalCleaned = 0;
+    let totalSkipped = 0;
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        const hasOldFields = sourceSystem.rrType !== void 0 || sourceSystem.rrValue !== void 0 || sourceSystem.rrTarget !== void 0;
+        const hasBackups = sourceSystem._rrTypeBackup !== void 0 || sourceSystem._rrValueBackup !== void 0 || sourceSystem._rrTargetBackup !== void 0;
+        if (!hasOldFields && !hasBackups) {
+          totalSkipped++;
+          continue;
+        }
+        const hasRrList = sourceSystem.rrList !== void 0 && Array.isArray(sourceSystem.rrList);
+        if (!hasRrList) {
+          console.warn(SYSTEM.LOG.HEAD + `Migration 13.0.4: Skipping "${item.name}" - no rrList found! This item may need manual review.`);
+          totalSkipped++;
+          continue;
+        }
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.4: Cleaning up feat "${item.name}":`);
+        if (hasOldFields) {
+          console.log(SYSTEM.LOG.HEAD + `  Removing old fields: rrType, rrValue, rrTarget`);
+        }
+        if (hasBackups) {
+          console.log(SYSTEM.LOG.HEAD + `  Removing backups: _rrTypeBackup, _rrValueBackup, _rrTargetBackup`);
+        }
+        console.log(SYSTEM.LOG.HEAD + `  Keeping rrList with ${sourceSystem.rrList.length} entries`);
+        const update = {
+          _id: item.id,
+          // Remove old fields
+          "system.rrType": null,
+          "system.rrValue": null,
+          "system.rrTarget": null,
+          // Remove backup fields
+          "system._rrTypeBackup": null,
+          "system._rrValueBackup": null,
+          "system._rrTargetBackup": null
+        };
+        updates.push(update);
+        totalCleaned++;
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.4 completed - Cleaned: ${totalCleaned}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalCleaned > 0) {
+      const userMessage = game.i18n ? game.i18n.localize("SRA2.MIGRATION.13_0_4_INFO") : "Migration 13.0.4: Old RR fields cleaned up. Data migration complete.";
+      ui.notifications?.info(userMessage, { permanent: false });
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -2719,6 +2755,7 @@ class SRA2System {
     new Migrations();
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration) => {
       declareMigration(new Migration_13_0_3());
+      declareMigration(new Migration_13_0_4());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {

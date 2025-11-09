@@ -62,32 +62,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: [],
         label: "SRA2.FEATS.RR_LIST"
       }),
-      // Backup fields for migration - preserve old data for comparison
-      _rrTypeBackup: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: undefined
-      }),
-      _rrValueBackup: new fields.ArrayField(new fields.NumberField(), {
-        required: false,
-        initial: undefined
-      }),
-      _rrTargetBackup: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: undefined
-      }),
-      // Keep old fields as well for backward compatibility and comparison
-      rrType: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: undefined
-      }),
-      rrValue: new fields.ArrayField(new fields.NumberField(), {
-        required: false,
-        initial: undefined
-      }),
-      rrTarget: new fields.ArrayField(new fields.StringField(), {
-        required: false,
-        initial: undefined
-      }),
       bonusLightDamage: new fields.NumberField({
         required: true,
         initial: 0,
