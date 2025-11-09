@@ -7,6 +7,13 @@
   </header>
 
   <section class="sheet-body">
+    <!-- Recommended Level Display -->
+    <div class="form-group recommended-level-display">
+      <label>{{localize "SRA2.FEATS.RECOMMENDED_LEVEL"}}</label>
+      <div class="recommended-level-value">{{#if (or system.recommendedLevel (eq system.recommendedLevel 0))}}{{system.recommendedLevel}}{{else}}0{{/if}}</div>
+      <p class="notes">{{localize "SRA2.FEATS.RECOMMENDED_LEVEL_HINT"}}</p>
+    </div>
+
     <!-- Rating -->
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.RATING"}}</label>
@@ -77,6 +84,27 @@
       <label>{{localize "SRA2.FEATS.BONUS_ANARCHY"}}</label>
       <input type="number" name="system.bonusAnarchy" value="{{system.bonusAnarchy}}" min="0" />
       <p class="notes">{{localize "SRA2.FEATS.BONUS_ANARCHY_HINT"}}</p>
+    </div>
+
+    <!-- Armor Bonus -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.HAS_ARMOR_BONUS"}}</label>
+      <input type="checkbox" name="system.hasArmorBonus" {{checked system.hasArmorBonus}} />
+      <p class="notes">{{localize "SRA2.FEATS.HAS_ARMOR_BONUS_HINT"}}</p>
+    </div>
+
+    <!-- Rigger Console Count -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.RIGGER_CONSOLE_COUNT"}}</label>
+      <input type="number" name="system.riggerConsoleCount" value="{{system.riggerConsoleCount}}" min="0" />
+      <p class="notes">{{localize "SRA2.FEATS.RIGGER_CONSOLE_COUNT_HINT"}}</p>
+    </div>
+
+    <!-- Vehicle Control Wiring -->
+    <div class="form-group">
+      <label>{{localize "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING"}}</label>
+      <input type="checkbox" name="system.hasVehicleControlWiring" {{checked system.hasVehicleControlWiring}} />
+      <p class="notes">{{localize "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING_HINT"}}</p>
     </div>
 
     <!-- Essence Cost (Cyberware/Bioware only) -->

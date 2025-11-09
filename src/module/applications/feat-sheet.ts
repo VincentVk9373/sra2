@@ -18,6 +18,10 @@ export class FeatSheet extends ItemSheet {
 
   override getData(): any {
     const context = super.getData() as any;
+    
+    // Ensure prepareDerivedData is called to calculate recommendedLevel
+    this.item.prepareData();
+    
     context.system = this.item.system;
     
     // Build RR entries array from rrList

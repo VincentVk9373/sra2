@@ -253,6 +253,24 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.FEATS.AWAKENED.ADEPT"
+      }),
+      // Additional fields for recommended level calculation
+      hasArmorBonus: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.HAS_ARMOR_BONUS"
+      }),
+      riggerConsoleCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.RIGGER_CONSOLE_COUNT"
+      }),
+      hasVehicleControlWiring: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING"
       })
     };
   }
@@ -281,6 +299,72 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     }
     
     (this as any).calculatedCost = calculatedCost;
+
+    // Calculate recommended attribute level
+    let recommendedLevel = 0;
+    
+    const featType = (this as any).featType || 'equipment';
+    const bonusLightDamage = (this as any).bonusLightDamage || 0;
+    const bonusSevereDamage = (this as any).bonusSevereDamage || 0;
+    const hasArmorBonus = (this as any).hasArmorBonus || false;
+    const firewall = (this as any).firewall || 0;
+    const attack = (this as any).attack || 0;
+    const riggerConsoleCount = (this as any).riggerConsoleCount || 0;
+    const hasVehicleControlWiring = (this as any).hasVehicleControlWiring || false;
+    const rrList = (this as any).rrList || [];
+    
+    // Cyberware/bioware: 1 level
+    if (featType === 'cyberware') {
+      recommendedLevel += 1;
+    }
+    
+    // Light wounds: +3 per wound
+    recommendedLevel += bonusLightDamage * 3;
+    
+    // Heavy wounds: +6 per wound
+    recommendedLevel += bonusSevereDamage * 6;
+    
+    // Armor bonus: +1 if checked
+    if (hasArmorBonus) {
+      recommendedLevel += 1;
+    }
+    
+    // Cyberdeck firewall: starts at 1, each level is +1
+    if (featType === 'cyberdeck' && firewall > 0) {
+      recommendedLevel += firewall;
+    }
+    
+    // Attack: starts at 0, each level is +1
+    if (attack > 0) {
+      recommendedLevel += attack;
+    }
+    
+    // Rigger console: +1 per drone controller
+    recommendedLevel += riggerConsoleCount;
+    
+    // Vehicle control wiring: +2
+    if (hasVehicleControlWiring) {
+      recommendedLevel += 2;
+    }
+    
+    // Resource Reduction (RR) entries
+    for (const rr of rrList) {
+      const rrType = rr.rrType;
+      const rrValue = rr.rrValue || 0;
+      
+      if (rrType === 'specialization') {
+        // RR specialization: +2 levels per value
+        recommendedLevel += rrValue * 2;
+      } else if (rrType === 'skill') {
+        // RR skill: +5 levels per value
+        recommendedLevel += rrValue * 5;
+      } else if (rrType === 'attribute') {
+        // RR attribute: +10 levels per value
+        recommendedLevel += rrValue * 10;
+      }
+    }
+    
+    (this as any).recommendedLevel = recommendedLevel;
   }
 }
 

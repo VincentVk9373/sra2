@@ -108,12 +108,53 @@
         font-style: italic;
       }
       
+      .notes {
+        margin: 0.25rem 0 0;
+        font-size: 0.8rem;
+        color: #888;
+        font-style: italic;
+      }
+      
       .cost-display {
         padding: 0.5rem;
         border: 1px solid #666;
         background: rgba(0, 0, 0, 0.2);
         font-weight: bold;
         color: #ffd700;
+      }
+      
+      /* Recommended Level Display */
+      &.recommended-level-display {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(123, 31, 162, 0.15) 0%, rgba(156, 39, 176, 0.1) 100%);
+        border: 2px solid #7b1fa2;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        
+        label {
+          font-size: 1rem;
+          color: #9c27b0;
+          margin-bottom: 0.5rem;
+        }
+        
+        .recommended-level-value {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #9c27b0;
+          text-align: center;
+          padding: 0.5rem;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 4px;
+          margin-bottom: 0.5rem;
+        }
+        
+        .notes {
+          margin: 0;
+          font-size: 0.85rem;
+          color: #888;
+          font-style: italic;
+          text-align: center;
+        }
       }
       
       /* Linked Skill Drop Zone */

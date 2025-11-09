@@ -593,6 +593,24 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.FEATS.AWAKENED.ADEPT"
+      }),
+      // Additional fields for recommended level calculation
+      hasArmorBonus: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.HAS_ARMOR_BONUS"
+      }),
+      riggerConsoleCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.RIGGER_CONSOLE_COUNT"
+      }),
+      hasVehicleControlWiring: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING"
       })
     };
   }
@@ -617,6 +635,46 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         calculatedCost = 0;
     }
     this.calculatedCost = calculatedCost;
+    let recommendedLevel = 0;
+    const featType = this.featType || "equipment";
+    const bonusLightDamage = this.bonusLightDamage || 0;
+    const bonusSevereDamage = this.bonusSevereDamage || 0;
+    const hasArmorBonus = this.hasArmorBonus || false;
+    const firewall = this.firewall || 0;
+    const attack = this.attack || 0;
+    const riggerConsoleCount = this.riggerConsoleCount || 0;
+    const hasVehicleControlWiring = this.hasVehicleControlWiring || false;
+    const rrList = this.rrList || [];
+    if (featType === "cyberware") {
+      recommendedLevel += 1;
+    }
+    recommendedLevel += bonusLightDamage * 3;
+    recommendedLevel += bonusSevereDamage * 6;
+    if (hasArmorBonus) {
+      recommendedLevel += 1;
+    }
+    if (featType === "cyberdeck" && firewall > 0) {
+      recommendedLevel += firewall;
+    }
+    if (attack > 0) {
+      recommendedLevel += attack;
+    }
+    recommendedLevel += riggerConsoleCount;
+    if (hasVehicleControlWiring) {
+      recommendedLevel += 2;
+    }
+    for (const rr of rrList) {
+      const rrType = rr.rrType;
+      const rrValue = rr.rrValue || 0;
+      if (rrType === "specialization") {
+        recommendedLevel += rrValue * 2;
+      } else if (rrType === "skill") {
+        recommendedLevel += rrValue * 5;
+      } else if (rrType === "attribute") {
+        recommendedLevel += rrValue * 10;
+      }
+    }
+    this.recommendedLevel = recommendedLevel;
   }
 }
 class SpecializationDataModel extends foundry.abstract.TypeDataModel {
@@ -2038,6 +2096,7 @@ class FeatSheet extends ItemSheet {
   }
   getData() {
     const context = super.getData();
+    this.item.prepareData();
     context.system = this.item.system;
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
