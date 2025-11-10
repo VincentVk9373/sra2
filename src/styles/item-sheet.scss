@@ -46,6 +46,18 @@
   .sheet-body {
     padding: 0 1rem 1rem;
     
+    /* Rating field - readonly */
+    .form-group input[readonly] {
+      opacity: 0.7;
+      background: rgba(74, 158, 255, 0.1);
+      border-color: #4a9eff;
+      cursor: not-allowed;
+      
+      &:hover {
+        border-color: #6ab4ff;
+      }
+    }
+    
     /* Narrative Effects Section */
     .narrative-effects-section {
       
@@ -853,6 +865,99 @@
           
           i {
             color: #ff9800;
+          }
+        }
+      }
+
+      /* Ranges Group */
+      .ranges-group {
+        .range-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 0.75rem;
+          
+          .range-label {
+            min-width: 100px;
+            font-size: 0.9rem;
+            color: #ccc;
+            font-weight: 500;
+          }
+          
+          select {
+            flex: 0 0 auto;
+            padding: 0.4rem 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #666;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            
+            &:hover {
+              border-color: #888;
+            }
+            
+            &:focus {
+              border-color: #4a9eff;
+              outline: none;
+            }
+            
+            &:disabled {
+              opacity: 0.7;
+              background: rgba(0, 0, 0, 0.2);
+              border-color: #555;
+              cursor: not-allowed;
+              
+              &:hover {
+                border-color: #555;
+              }
+            }
+          }
+          
+          .range-improvement-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.6rem;
+            background: rgba(139, 195, 74, 0.1);
+            border: 1px solid #8bc34a;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            
+            &:hover {
+              background: rgba(139, 195, 74, 0.2);
+              border-color: #9ccc65;
+            }
+            
+            input[type="checkbox"] {
+              cursor: pointer;
+              width: 16px;
+              height: 16px;
+              margin: 0;
+              
+              &:checked {
+                accent-color: #8bc34a;
+              }
+            }
+            
+            span {
+              color: #ccc;
+              font-weight: 500;
+              white-space: nowrap;
+            }
+            
+            &:has(input:checked) {
+              background: rgba(139, 195, 74, 0.25);
+              border-color: #aed581;
+              
+              span {
+                color: #fff;
+                font-weight: 600;
+              }
+            }
           }
         }
       }

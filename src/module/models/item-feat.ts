@@ -206,6 +206,27 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         },
         label: "SRA2.FEATS.WEAPON.LONG_RANGE"
       }),
+      rangeImprovements: new fields.SchemaField({
+        melee: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        short: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        medium: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        long: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }, {
+        required: true,
+        label: "SRA2.FEATS.WEAPON.RANGE_IMPROVEMENTS"
+      }),
       // Vehicle/Drone specific fields
       autopilot: new fields.NumberField({
         required: true,
@@ -473,6 +494,19 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (damageValueBonus > 0) {
       recommendedLevel += damageValueBonus;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS', labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+    }
+    
+    // Range improvements: +2 per improved range
+    const rangeImprovements = (this as any).rangeImprovements || {};
+    let rangeImprovementCount = 0;
+    if (rangeImprovements.melee) rangeImprovementCount++;
+    if (rangeImprovements.short) rangeImprovementCount++;
+    if (rangeImprovements.medium) rangeImprovementCount++;
+    if (rangeImprovements.long) rangeImprovementCount++;
+    if (rangeImprovementCount > 0) {
+      const value = rangeImprovementCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RANGE_IMPROVEMENTS', labelParams: `(${rangeImprovementCount})`, value });
     }
     
     // Resource Reduction (RR) entries

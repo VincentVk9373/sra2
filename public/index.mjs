@@ -554,6 +554,27 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         },
         label: "SRA2.FEATS.WEAPON.LONG_RANGE"
       }),
+      rangeImprovements: new fields.SchemaField({
+        melee: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        short: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        medium: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        long: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }, {
+        required: true,
+        label: "SRA2.FEATS.WEAPON.RANGE_IMPROVEMENTS"
+      }),
       // Vehicle/Drone specific fields
       autopilot: new fields.NumberField({
         required: true,
@@ -792,6 +813,17 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (damageValueBonus > 0) {
       recommendedLevel += damageValueBonus;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS", labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+    }
+    const rangeImprovements = this.rangeImprovements || {};
+    let rangeImprovementCount = 0;
+    if (rangeImprovements.melee) rangeImprovementCount++;
+    if (rangeImprovements.short) rangeImprovementCount++;
+    if (rangeImprovements.medium) rangeImprovementCount++;
+    if (rangeImprovements.long) rangeImprovementCount++;
+    if (rangeImprovementCount > 0) {
+      const value = rangeImprovementCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RANGE_IMPROVEMENTS", labelParams: `(${rangeImprovementCount})`, value });
     }
     for (const rr of rrList) {
       const rrType = rr.rrType;
@@ -2315,6 +2347,7 @@ class FeatSheet extends ItemSheet {
     html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
     html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
     html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
+    html.find('.range-improvement-checkbox input[type="checkbox"]').on("change", this._onRangeImprovementChange.bind(this));
   }
   /**
    * Handle adding a new RR entry
@@ -2552,9 +2585,63 @@ class FeatSheet extends ItemSheet {
       hiddenInput.value = newCount.toString();
     }
   }
+  /**
+   * Handle range improvement checkbox change
+   * When checked, automatically improves the range: none -> dice, dice -> ok
+   * When unchecked, automatically downgrades the range: ok -> dice, dice -> none
+   */
+  _onRangeImprovementChange(event) {
+    event.preventDefault();
+    const checkbox = event.currentTarget;
+    const isChecked = checkbox.checked;
+    const rangeRow = checkbox.closest(".range-row");
+    if (!rangeRow) return;
+    const select = rangeRow.querySelector("select");
+    if (!select) return;
+    const rangeLabel = rangeRow.querySelector(".range-label")?.textContent || "";
+    let fieldName = "";
+    if (rangeLabel.includes("Contact") || rangeLabel.includes("Melee") || rangeLabel.includes("Mêlée")) {
+      fieldName = "system.meleeRange";
+    } else if (rangeLabel.includes("Courte") || rangeLabel.includes("Short")) {
+      fieldName = "system.shortRange";
+    } else if (rangeLabel.includes("Moyenne") || rangeLabel.includes("Medium")) {
+      fieldName = "system.mediumRange";
+    } else if (rangeLabel.includes("Longue") || rangeLabel.includes("Long")) {
+      fieldName = "system.longRange";
+    }
+    const currentValue = select.value;
+    let newValue = currentValue;
+    if (isChecked) {
+      if (currentValue === "none") {
+        newValue = "dice";
+      } else if (currentValue === "dice") {
+        newValue = "ok";
+      }
+    } else {
+      if (currentValue === "ok") {
+        newValue = "dice";
+      } else if (currentValue === "dice") {
+        newValue = "none";
+      }
+    }
+    select.value = newValue;
+    const hiddenInput = this.element.find(`input[name="${fieldName}"]`)[0];
+    if (hiddenInput) {
+      hiddenInput.value = newValue;
+    }
+  }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
-    return this.item.update(expandedData);
+    await this.item.update(expandedData);
+    this.item.prepareData();
+    const recommendedLevel = this.item.system.recommendedLevel || 0;
+    const currentRating = this.item.system.rating || 0;
+    if (currentRating !== recommendedLevel) {
+      await this.item.update({
+        "system.rating": recommendedLevel
+      });
+    }
+    return this.item;
   }
 }
 class SkillSheet extends ItemSheet {

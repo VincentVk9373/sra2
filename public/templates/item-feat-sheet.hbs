@@ -33,7 +33,8 @@
     <!-- Rating -->
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.RATING"}}</label>
-      <input type="number" name="system.rating" value="{{system.rating}}" min="0" />
+      <input type="number" name="system.rating" value="{{system.rating}}" min="0" readonly title="{{localize 'SRA2.FEATS.RATING_AUTO_CALCULATED'}}" />
+      <p class="notes">{{localize "SRA2.FEATS.RATING_AUTO_CALCULATED"}}</p>
     </div>
 
     <!-- Feat Type -->
@@ -366,41 +367,62 @@
       <!-- Ranges -->
       <div class="form-group ranges-group">
         <label>{{localize "SRA2.FEATS.WEAPON.RANGES"}}</label>
+        <!-- Hidden inputs to store actual values -->
+        <input type="hidden" name="system.meleeRange" value="{{system.meleeRange}}" />
+        <input type="hidden" name="system.shortRange" value="{{system.shortRange}}" />
+        <input type="hidden" name="system.mediumRange" value="{{system.mediumRange}}" />
+        <input type="hidden" name="system.longRange" value="{{system.longRange}}" />
         
         <div class="range-row">
           <span class="range-label">{{localize "SRA2.FEATS.WEAPON.MELEE_RANGE"}}</span>
-          <select name="system.meleeRange">
+          <select disabled>
             <option value="none" {{#if (eq system.meleeRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
             <option value="ok" {{#if (eq system.meleeRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
             <option value="dice" {{#if (eq system.meleeRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
           </select>
+          <label class="range-improvement-checkbox">
+            <input type="checkbox" name="system.rangeImprovements.melee" {{checked system.rangeImprovements.melee}} />
+            <span>{{localize "SRA2.FEATS.WEAPON.IMPROVE_RANGE"}} (+2)</span>
+          </label>
         </div>
 
         <div class="range-row">
           <span class="range-label">{{localize "SRA2.FEATS.WEAPON.SHORT_RANGE"}}</span>
-          <select name="system.shortRange">
+          <select disabled>
             <option value="none" {{#if (eq system.shortRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
             <option value="ok" {{#if (eq system.shortRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
             <option value="dice" {{#if (eq system.shortRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
           </select>
+          <label class="range-improvement-checkbox">
+            <input type="checkbox" name="system.rangeImprovements.short" {{checked system.rangeImprovements.short}} />
+            <span>{{localize "SRA2.FEATS.WEAPON.IMPROVE_RANGE"}} (+2)</span>
+          </label>
         </div>
 
         <div class="range-row">
           <span class="range-label">{{localize "SRA2.FEATS.WEAPON.MEDIUM_RANGE"}}</span>
-          <select name="system.mediumRange">
+          <select disabled>
             <option value="none" {{#if (eq system.mediumRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
             <option value="ok" {{#if (eq system.mediumRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
             <option value="dice" {{#if (eq system.mediumRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
           </select>
+          <label class="range-improvement-checkbox">
+            <input type="checkbox" name="system.rangeImprovements.medium" {{checked system.rangeImprovements.medium}} />
+            <span>{{localize "SRA2.FEATS.WEAPON.IMPROVE_RANGE"}} (+2)</span>
+          </label>
         </div>
 
         <div class="range-row">
           <span class="range-label">{{localize "SRA2.FEATS.WEAPON.LONG_RANGE"}}</span>
-          <select name="system.longRange">
+          <select disabled>
             <option value="none" {{#if (eq system.longRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
             <option value="ok" {{#if (eq system.longRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
             <option value="dice" {{#if (eq system.longRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
           </select>
+          <label class="range-improvement-checkbox">
+            <input type="checkbox" name="system.rangeImprovements.long" {{checked system.rangeImprovements.long}} />
+            <span>{{localize "SRA2.FEATS.WEAPON.IMPROVE_RANGE"}} (+2)</span>
+          </label>
         </div>
       </div>
     </div>

@@ -99,6 +99,9 @@ export class FeatSheet extends ItemSheet {
     
     // Summoned spirit checkbox
     html.find('.summoned-spirit-checkbox').on('change', this._onSummonedSpiritChange.bind(this));
+    
+    // Range improvement checkboxes
+    html.find('.range-improvement-checkbox input[type="checkbox"]').on('change', this._onRangeImprovementChange.bind(this));
   }
 
   /**
@@ -417,9 +420,89 @@ export class FeatSheet extends ItemSheet {
     }
   }
 
+  /**
+   * Handle range improvement checkbox change
+   * When checked, automatically improves the range: none -> dice, dice -> ok
+   * When unchecked, automatically downgrades the range: ok -> dice, dice -> none
+   */
+  private _onRangeImprovementChange(event: Event): void {
+    event.preventDefault();
+    
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const isChecked = checkbox.checked;
+    
+    // Find which range this checkbox is for
+    const rangeRow = checkbox.closest('.range-row');
+    if (!rangeRow) return;
+    
+    const select = rangeRow.querySelector('select') as HTMLSelectElement;
+    if (!select) return;
+    
+    // Determine which range field we're dealing with
+    const rangeLabel = rangeRow.querySelector('.range-label')?.textContent || '';
+    let fieldName = '';
+    if (rangeLabel.includes('Contact') || rangeLabel.includes('Melee') || rangeLabel.includes('Mêlée')) {
+      fieldName = 'system.meleeRange';
+    } else if (rangeLabel.includes('Courte') || rangeLabel.includes('Short')) {
+      fieldName = 'system.shortRange';
+    } else if (rangeLabel.includes('Moyenne') || rangeLabel.includes('Medium')) {
+      fieldName = 'system.mediumRange';
+    } else if (rangeLabel.includes('Longue') || rangeLabel.includes('Long')) {
+      fieldName = 'system.longRange';
+    }
+    
+    const currentValue = select.value;
+    let newValue = currentValue;
+    
+    if (isChecked) {
+      // Improve the range: none -> dice, dice -> ok
+      if (currentValue === 'none') {
+        newValue = 'dice';
+      } else if (currentValue === 'dice') {
+        newValue = 'ok';
+      }
+      // If already 'ok', keep it at 'ok'
+    } else {
+      // Downgrade the range: ok -> dice, dice -> none
+      if (currentValue === 'ok') {
+        newValue = 'dice';
+      } else if (currentValue === 'dice') {
+        newValue = 'none';
+      }
+      // If already 'none', keep it at 'none'
+    }
+    
+    // Update the disabled select for visual display
+    select.value = newValue;
+    
+    // Update the hidden input that holds the actual value
+    const hiddenInput = this.element.find(`input[name="${fieldName}"]`)[0] as HTMLInputElement;
+    if (hiddenInput) {
+      hiddenInput.value = newValue;
+    }
+  }
+
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
     const expandedData = foundry.utils.expandObject(formData);
-    return this.item.update(expandedData);
+    
+    // Update the item first to recalculate recommendedLevel
+    await this.item.update(expandedData);
+    
+    // Recalculate derived data to get the new recommendedLevel
+    this.item.prepareData();
+    
+    // Sync rating with recommendedLevel
+    const recommendedLevel = (this.item.system as any).recommendedLevel || 0;
+    const currentRating = (this.item.system as any).rating || 0;
+    
+    // Only update rating if it's different from recommendedLevel
+    if (currentRating !== recommendedLevel) {
+      await this.item.update({
+        'system.rating': recommendedLevel
+      } as any);
+    }
+    
+    return this.item;
   }
 }
 

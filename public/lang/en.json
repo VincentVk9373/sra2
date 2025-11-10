@@ -82,6 +82,7 @@
             "DELETE": "Delete Feat",
             "DRAG_DROP": "Drag and drop feats here",
             "RATING": "Rating",
+            "RATING_AUTO_CALCULATED": "Automatically calculated from recommended level",
             "ACTIVE": "Active",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} is already on this character",
@@ -200,7 +201,8 @@
                 "NARRATIVE_EFFECTS": "Narrative effects",
                 "NARRATIVE_EFFECTS_POSITIVE": "Positive narrative effects",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Negative narrative effects",
-                "DAMAGE_VALUE_BONUS": "DV Bonus"
+                "DAMAGE_VALUE_BONUS": "DV Bonus",
+                "RANGE_IMPROVEMENTS": "Range improvements"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",
@@ -224,6 +226,8 @@
                 "RANGE_NONE": "-",
                 "RANGE_OK": "OK",
                 "RANGE_DICE": "Dice",
+                "IMPROVE_RANGE": "Improve range",
+                "RANGE_IMPROVEMENTS": "Range improvements",
                 "DAMAGE_VALUE_BONUS": "DV Bonus",
                 "DAMAGE_VALUE_BONUS_HINT": "Each checked box adds +1 to DV and +1 to recommended level",
                 "BONUS_1": "+1 DV (+1 level)",
