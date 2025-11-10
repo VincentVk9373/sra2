@@ -427,10 +427,10 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Calculate Risk Reduction (RR) from active feats for a given skill, specialization, or attribute
+   * Get detailed RR sources for a given skill, specialization, or attribute
    */
-  private calculateRR(itemType: 'skill' | 'specialization' | 'attribute', itemName: string): number {
-    let totalRR = 0;
+  private getRRSources(itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{featName: string, rrValue: number}> {
+    const sources: Array<{featName: string, rrValue: number}> = [];
     
     // Get all active feats from the actor
     const feats = this.actor.items.filter((item: any) => 
@@ -450,13 +450,24 @@ export class CharacterSheet extends ActorSheet {
         const rrTarget = rrEntry.rrTarget || '';
         
         // Check if this RR entry provides RR for the given item
-        if (rrType === itemType && rrTarget === itemName) {
-          totalRR += rrValue;
+        if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
+          sources.push({
+            featName: feat.name,
+            rrValue: rrValue
+          });
         }
       }
     }
     
-    return totalRR;
+    return sources;
+  }
+
+  /**
+   * Calculate Risk Reduction (RR) from active feats for a given skill, specialization, or attribute
+   */
+  private calculateRR(itemType: 'skill' | 'specialization' | 'attribute', itemName: string): number {
+    const sources = this.getRRSources(itemType, itemName);
+    return sources.reduce((total, source) => total + source.rrValue, 0);
   }
 
   /**
@@ -508,19 +519,36 @@ export class CharacterSheet extends ActorSheet {
     // Get localized attribute name
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
     
-    // Calculate automatic RR from feats (specialization + attribute + parent skill)
-    const specializationRR = this.calculateRR('specialization', specialization.name);
-    const attributeRR = this.calculateRR('attribute', linkedAttribute);
-    
-    // Get RR from parent skill (if linked)
+    // Get RR sources for specialization, skill, and attribute
+    const specRRSources = this.getRRSources('specialization', specialization.name);
+    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
     const linkedSkillName = specSystem.linkedSkill;
-    const skillRR = linkedSkillName ? this.calculateRR('skill', linkedSkillName) : 0;
+    const skillRRSources = linkedSkillName ? this.getRRSources('skill', linkedSkillName) : [];
     
-    const autoRR = Math.min(3, specializationRR + attributeRR + skillRR);
-    const defaultRiskDice = this.getRiskDiceByRR(autoRR);
+    const allRRSources = [
+      ...specRRSources,
+      ...skillRRSources.map(s => ({ ...s, featName: s.featName + ` (${linkedSkillName})` })),
+      ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
+    ];
+    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
+    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+
+    // Build RR sources HTML
+    let rrSourcesHtml = '';
+    if (allRRSources.length > 0) {
+      rrSourcesHtml = '<div class="rr-sources"><strong>Sources RR:</strong>';
+      allRRSources.forEach((source, index) => {
+        rrSourcesHtml += `
+          <label class="rr-source-item">
+            <input type="checkbox" class="rr-source-checkbox" data-rr-value="${source.rrValue}" checked />
+            <span>${source.featName} (+${source.rrValue})</span>
+          </label>`;
+      });
+      rrSourcesHtml += '</div>';
+    }
 
     // Create a dialog to optionally add modifiers and risk dice
-    new Dialog({
+    const dialog = new Dialog({
       title: game.i18n!.format('SRA2.SPECIALIZATIONS.ROLL_TITLE', { name: specialization.name }),
       content: `
         <form class="sra2-roll-dialog">
@@ -545,17 +573,72 @@ export class CharacterSheet extends ActorSheet {
               </label>
             </div>
           </div>
+          ${rrSourcesHtml}
           <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')} (max ${basePool}):</label>
-            <input type="number" name="riskDice" value="${defaultRiskDice}" min="0" max="${basePool}" />
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}: <span id="rr-display">${autoRR}</span>/3</label>
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</label>
+            <input type="hidden" name="riskDice" id="risk-dice-input" value="${defaultRiskDice}" />
+            <div class="dice-selector" id="dice-selector">
+              ${Array.from({length: basePool}, (_, i) => 
+                `<div class="dice-icon ${i < defaultRiskDice ? 'selected' : ''}" data-dice-index="${i + 1}">
+                  <i class="fas fa-dice-d6"></i>
+                  <span class="dice-number">${i + 1}</span>
+                </div>`
+              ).join('')}
+            </div>
             <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_DICE_HINT')}</p>
           </div>
-          <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')} </label>
-            <input type="number" name="riskReduction" value="${autoRR}" min="0" max="3" />
-            <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION_HINT')}${autoRR > 0 ? ' <strong>(Auto: ' + autoRR + ')</strong>' : ''}</p>
-          </div>
         </form>
+        <script>
+          (function() {
+            const form = document.querySelector('.sra2-roll-dialog');
+            const checkboxes = form.querySelectorAll('.rr-source-checkbox');
+            const rrDisplay = form.querySelector('#rr-display');
+            const riskDiceInput = form.querySelector('#risk-dice-input');
+            const diceSelector = form.querySelector('#dice-selector');
+            const diceIcons = diceSelector.querySelectorAll('.dice-icon');
+            const maxDice = ${basePool};
+            const riskDiceByRR = [2, 5, 8, 12];
+            
+            function updateRR() {
+              let totalRR = 0;
+              checkboxes.forEach(cb => {
+                if (cb.checked) {
+                  totalRR += parseInt(cb.dataset.rrValue);
+                }
+              });
+              totalRR = Math.min(3, totalRR);
+              rrDisplay.textContent = totalRR;
+              
+              const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
+              setDiceSelection(suggestedRisk);
+            }
+            
+            function setDiceSelection(count) {
+              riskDiceInput.value = count;
+              diceIcons.forEach((dice, index) => {
+                if (index < count) {
+                  dice.classList.add('selected');
+                } else {
+                  dice.classList.remove('selected');
+                }
+              });
+            }
+            
+            diceIcons.forEach((dice) => {
+              dice.addEventListener('click', function() {
+                const index = parseInt(this.dataset.diceIndex);
+                setDiceSelection(index);
+              });
+            });
+            
+            checkboxes.forEach(cb => {
+              cb.addEventListener('change', updateRR);
+            });
+          })();
+        </script>
       `,
       buttons: {
         roll: {
@@ -565,7 +648,11 @@ export class CharacterSheet extends ActorSheet {
             const totalPool = basePool;
             const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
             const normalDice = totalPool - riskDice;
-            const riskReduction = Math.max(0, Math.min(3, parseInt(html.find('[name="riskReduction"]').val()) || 0));
+            let riskReduction = 0;
+            html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+              riskReduction += parseInt(cb.dataset.rrValue);
+            });
+            riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
             this._rollSkillDice(specialization.name, normalDice, riskDice, riskReduction, rollMode);
           }
@@ -576,7 +663,9 @@ export class CharacterSheet extends ActorSheet {
         }
       },
       default: 'roll'
-    }).render(true);
+    }, { width: 600 });
+    
+    dialog.render(true);
   }
 
   /**
@@ -620,15 +709,30 @@ export class CharacterSheet extends ActorSheet {
       return;
     }
 
-    // Calculate automatic RR from feats for this attribute
-    const autoRR = Math.min(3, this.calculateRR('attribute', attributeName));
-    const defaultRiskDice = this.getRiskDiceByRR(autoRR);
+    // Get RR sources for this attribute
+    const rrSources = this.getRRSources('attribute', attributeName);
+    const autoRR = Math.min(3, rrSources.reduce((total, s) => total + s.rrValue, 0));
+    const defaultRiskDice = Math.min(attributeValue, this.getRiskDiceByRR(autoRR));
 
     // Get localized attribute name
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`);
 
+    // Build RR sources HTML
+    let rrSourcesHtml = '';
+    if (rrSources.length > 0) {
+      rrSourcesHtml = '<div class="rr-sources"><strong>Sources RR:</strong>';
+      rrSources.forEach((source, index) => {
+        rrSourcesHtml += `
+          <label class="rr-source-item">
+            <input type="checkbox" class="rr-source-checkbox" data-rr-value="${source.rrValue}" checked />
+            <span>${source.featName} (+${source.rrValue})</span>
+          </label>`;
+      });
+      rrSourcesHtml += '</div>';
+    }
+
     // Create a dialog to optionally add modifiers and risk dice
-    new Dialog({
+    const dialog = new Dialog({
       title: game.i18n!.format('SRA2.ATTRIBUTES.ROLL_TITLE', { name: attributeLabel }),
       content: `
         <form class="sra2-roll-dialog">
@@ -652,17 +756,73 @@ export class CharacterSheet extends ActorSheet {
               </label>
             </div>
           </div>
+          ${rrSourcesHtml}
           <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')} (max ${attributeValue}):</label>
-            <input type="number" name="riskDice" value="${defaultRiskDice}" min="0" max="${attributeValue}" />
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}: <span id="rr-display">${autoRR}</span>/3</label>
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</label>
+            <input type="hidden" name="riskDice" id="risk-dice-input" value="${defaultRiskDice}" />
+            <div class="dice-selector" id="dice-selector">
+              ${Array.from({length: attributeValue}, (_, i) => 
+                `<div class="dice-icon ${i < defaultRiskDice ? 'selected' : ''}" data-dice-index="${i + 1}">
+                  <i class="fas fa-dice-d6"></i>
+                  <span class="dice-number">${i + 1}</span>
+                </div>`
+              ).join('')}
+            </div>
             <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_DICE_HINT')}</p>
           </div>
-          <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')} (max 3):</label>
-            <input type="number" name="riskReduction" value="${autoRR}" min="0" max="3" />
-            <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION_HINT')}${autoRR > 0 ? ' <strong>(Auto: ' + autoRR + ')</strong>' : ''}</p>
-          </div>
         </form>
+        <script>
+          (function() {
+            const form = document.querySelector('.sra2-roll-dialog');
+            const checkboxes = form.querySelectorAll('.rr-source-checkbox');
+            const rrDisplay = form.querySelector('#rr-display');
+            const riskDiceInput = form.querySelector('#risk-dice-input');
+            const diceSelector = form.querySelector('#dice-selector');
+            const diceIcons = diceSelector.querySelectorAll('.dice-icon');
+            const maxDice = ${attributeValue};
+            const riskDiceByRR = [2, 5, 8, 12];
+            
+            function updateRR() {
+              let totalRR = 0;
+              checkboxes.forEach(cb => {
+                if (cb.checked) {
+                  totalRR += parseInt(cb.dataset.rrValue);
+                }
+              });
+              totalRR = Math.min(3, totalRR);
+              rrDisplay.textContent = totalRR;
+              
+              // Update risk dice suggestion
+              const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
+              setDiceSelection(suggestedRisk);
+            }
+            
+            function setDiceSelection(count) {
+              riskDiceInput.value = count;
+              diceIcons.forEach((dice, index) => {
+                if (index < count) {
+                  dice.classList.add('selected');
+                } else {
+                  dice.classList.remove('selected');
+                }
+              });
+            }
+            
+            diceIcons.forEach((dice) => {
+              dice.addEventListener('click', function() {
+                const index = parseInt(this.dataset.diceIndex);
+                setDiceSelection(index);
+              });
+            });
+            
+            checkboxes.forEach(cb => {
+              cb.addEventListener('change', updateRR);
+            });
+          })();
+        </script>
       `,
       buttons: {
         roll: {
@@ -672,7 +832,11 @@ export class CharacterSheet extends ActorSheet {
             const totalPool = attributeValue;
             const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
             const normalDice = totalPool - riskDice;
-            const riskReduction = Math.max(0, Math.min(3, parseInt(html.find('[name="riskReduction"]').val()) || 0));
+            let riskReduction = 0;
+            html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+              riskReduction += parseInt(cb.dataset.rrValue);
+            });
+            riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
             this._rollSkillDice(attributeLabel, normalDice, riskDice, riskReduction, rollMode);
           }
@@ -683,7 +847,9 @@ export class CharacterSheet extends ActorSheet {
         }
       },
       default: 'roll'
-    }).render(true);
+    }, { width: 600 });
+    
+    dialog.render(true);
   }
 
   /**
@@ -718,14 +884,29 @@ export class CharacterSheet extends ActorSheet {
     // Get localized attribute name
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
     
-    // Calculate automatic RR from feats (skill + attribute)
-    const skillRR = this.calculateRR('skill', skill.name);
-    const attributeRR = this.calculateRR('attribute', linkedAttribute);
-    const autoRR = Math.min(3, skillRR + attributeRR);
-    const defaultRiskDice = this.getRiskDiceByRR(autoRR);
+    // Get RR sources for skill and attribute
+    const skillRRSources = this.getRRSources('skill', skill.name);
+    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
+    const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
+    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
+    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+
+    // Build RR sources HTML
+    let rrSourcesHtml = '';
+    if (allRRSources.length > 0) {
+      rrSourcesHtml = '<div class="rr-sources"><strong>Sources RR:</strong>';
+      allRRSources.forEach((source, index) => {
+        rrSourcesHtml += `
+          <label class="rr-source-item">
+            <input type="checkbox" class="rr-source-checkbox" data-rr-value="${source.rrValue}" checked />
+            <span>${source.featName} (+${source.rrValue})</span>
+          </label>`;
+      });
+      rrSourcesHtml += '</div>';
+    }
 
     // Create a dialog to optionally add modifiers and risk dice
-    new Dialog({
+    const dialog = new Dialog({
       title: game.i18n!.format('SRA2.SKILLS.ROLL_TITLE', { name: skill.name }),
       content: `
         <form class="sra2-roll-dialog">
@@ -750,17 +931,72 @@ export class CharacterSheet extends ActorSheet {
               </label>
             </div>
           </div>
+          ${rrSourcesHtml}
           <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')} (max ${basePool}):</label>
-            <input type="number" name="riskDice" value="${defaultRiskDice}" min="0" max="${basePool}" />
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}: <span id="rr-display">${autoRR}</span>/3</label>
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</label>
+            <input type="hidden" name="riskDice" id="risk-dice-input" value="${defaultRiskDice}" />
+            <div class="dice-selector" id="dice-selector">
+              ${Array.from({length: basePool}, (_, i) => 
+                `<div class="dice-icon ${i < defaultRiskDice ? 'selected' : ''}" data-dice-index="${i + 1}">
+                  <i class="fas fa-dice-d6"></i>
+                  <span class="dice-number">${i + 1}</span>
+                </div>`
+              ).join('')}
+            </div>
             <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_DICE_HINT')}</p>
           </div>
-          <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}:</label>
-            <input type="number" name="riskReduction" value="${autoRR}" min="0" max="3" />
-            <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION_HINT')}${autoRR > 0 ? ' <strong>(Auto: ' + autoRR + ')</strong>' : ''}</p>
-          </div>
         </form>
+        <script>
+          (function() {
+            const form = document.querySelector('.sra2-roll-dialog');
+            const checkboxes = form.querySelectorAll('.rr-source-checkbox');
+            const rrDisplay = form.querySelector('#rr-display');
+            const riskDiceInput = form.querySelector('#risk-dice-input');
+            const diceSelector = form.querySelector('#dice-selector');
+            const diceIcons = diceSelector.querySelectorAll('.dice-icon');
+            const maxDice = ${basePool};
+            const riskDiceByRR = [2, 5, 8, 12];
+            
+            function updateRR() {
+              let totalRR = 0;
+              checkboxes.forEach(cb => {
+                if (cb.checked) {
+                  totalRR += parseInt(cb.dataset.rrValue);
+                }
+              });
+              totalRR = Math.min(3, totalRR);
+              rrDisplay.textContent = totalRR;
+              
+              const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
+              setDiceSelection(suggestedRisk);
+            }
+            
+            function setDiceSelection(count) {
+              riskDiceInput.value = count;
+              diceIcons.forEach((dice, index) => {
+                if (index < count) {
+                  dice.classList.add('selected');
+                } else {
+                  dice.classList.remove('selected');
+                }
+              });
+            }
+            
+            diceIcons.forEach((dice) => {
+              dice.addEventListener('click', function() {
+                const index = parseInt(this.dataset.diceIndex);
+                setDiceSelection(index);
+              });
+            });
+            
+            checkboxes.forEach(cb => {
+              cb.addEventListener('change', updateRR);
+            });
+          })();
+        </script>
       `,
       buttons: {
         roll: {
@@ -770,7 +1006,11 @@ export class CharacterSheet extends ActorSheet {
             const totalPool = basePool;
             const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
             const normalDice = totalPool - riskDice;
-            const riskReduction = Math.max(0, Math.min(3, parseInt(html.find('[name="riskReduction"]').val()) || 0));
+            let riskReduction = 0;
+            html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+              riskReduction += parseInt(cb.dataset.rrValue);
+            });
+            riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
             this._rollSkillDice(skill.name, normalDice, riskDice, riskReduction, rollMode);
           }
@@ -781,7 +1021,9 @@ export class CharacterSheet extends ActorSheet {
         }
       },
       default: 'roll'
-    }).render(true);
+    }, { width: 600 });
+    
+    dialog.render(true);
   }
 
 
