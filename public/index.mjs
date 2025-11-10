@@ -687,6 +687,23 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         max: 2,
         integer: true,
         label: "SRA2.FEATS.NARRATION_ACTIONS"
+      }),
+      // Additional sustained spells and summoned spirits
+      sustainedSpellCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.SUSTAINED_SPELL_COUNT"
+      }),
+      summonedSpiritCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 1,
+        integer: true,
+        label: "SRA2.FEATS.SUMMONED_SPIRIT_COUNT"
       })
     };
   }
@@ -813,6 +830,18 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (negativeEffectsCount > 0) {
       recommendedLevel -= negativeEffectsCount;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE", labelParams: `(${negativeEffectsCount})`, value: -negativeEffectsCount });
+    }
+    const sustainedSpellCount = this.sustainedSpellCount || 0;
+    if (sustainedSpellCount > 0) {
+      const value = sustainedSpellCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUSTAINED_SPELLS", labelParams: `(${sustainedSpellCount})`, value });
+    }
+    const summonedSpiritCount = this.summonedSpiritCount || 0;
+    if (summonedSpiritCount > 0) {
+      const value = summonedSpiritCount * 3;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS", labelParams: `(${summonedSpiritCount})`, value });
     }
     this.recommendedLevel = recommendedLevel;
     this.recommendedLevelBreakdown = recommendedLevelBreakdown;
@@ -2284,6 +2313,8 @@ class FeatSheet extends ItemSheet {
     html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
     html.find('[data-action="select-weapon-type"]').on("change", this._onWeaponTypeChange.bind(this));
     html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
+    html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
+    html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
   }
   /**
    * Handle adding a new RR entry
@@ -2473,6 +2504,53 @@ class FeatSheet extends ItemSheet {
         cbElement.checked = newBonus === 2;
       }
     });
+  }
+  /**
+   * Handle sustained spell checkbox changes
+   */
+  _onSustainedSpellChange(event) {
+    event.preventDefault();
+    const checkbox = event.currentTarget;
+    const value = parseInt(checkbox.dataset.spellValue || "0");
+    const currentCount = this.item.system.sustainedSpellCount || 0;
+    let newCount;
+    if (checkbox.checked) {
+      newCount = value;
+    } else {
+      if (value === 2 && currentCount === 2) {
+        newCount = 1;
+      } else if (value === 1 && currentCount >= 1) {
+        newCount = 0;
+      } else {
+        newCount = currentCount;
+      }
+    }
+    const hiddenInput = this.element.find('input[name="system.sustainedSpellCount"]')[0];
+    if (hiddenInput) {
+      hiddenInput.value = newCount.toString();
+    }
+    const checkboxes = this.element.find(".sustained-spell-checkbox");
+    checkboxes.each((_, cb) => {
+      const cbElement = cb;
+      const cbValue = parseInt(cbElement.dataset.spellValue || "0");
+      if (cbValue === 1) {
+        cbElement.checked = newCount >= 1;
+      } else if (cbValue === 2) {
+        cbElement.checked = newCount === 2;
+      }
+    });
+  }
+  /**
+   * Handle summoned spirit checkbox change
+   */
+  _onSummonedSpiritChange(event) {
+    event.preventDefault();
+    const checkbox = event.currentTarget;
+    const newCount = checkbox.checked ? 1 : 0;
+    const hiddenInput = this.element.find('input[name="system.summonedSpiritCount"]')[0];
+    if (hiddenInput) {
+      hiddenInput.value = newCount.toString();
+    }
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);

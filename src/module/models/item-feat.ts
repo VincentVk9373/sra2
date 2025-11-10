@@ -339,6 +339,23 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         max: 2,
         integer: true,
         label: "SRA2.FEATS.NARRATION_ACTIONS"
+      }),
+      // Additional sustained spells and summoned spirits
+      sustainedSpellCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.SUSTAINED_SPELL_COUNT"
+      }),
+      summonedSpiritCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 1,
+        integer: true,
+        label: "SRA2.FEATS.SUMMONED_SPIRIT_COUNT"
       })
     };
   }
@@ -508,6 +525,22 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (negativeEffectsCount > 0) {
       recommendedLevel -= negativeEffectsCount;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE', labelParams: `(${negativeEffectsCount})`, value: -negativeEffectsCount });
+    }
+    
+    // Additional sustained spells: +2 per spell (max 2)
+    const sustainedSpellCount = (this as any).sustainedSpellCount || 0;
+    if (sustainedSpellCount > 0) {
+      const value = sustainedSpellCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUSTAINED_SPELLS', labelParams: `(${sustainedSpellCount})`, value });
+    }
+    
+    // Additional summoned spirit: +3 (max 1)
+    const summonedSpiritCount = (this as any).summonedSpiritCount || 0;
+    if (summonedSpiritCount > 0) {
+      const value = summonedSpiritCount * 3;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS', labelParams: `(${summonedSpiritCount})`, value });
     }
     
     (this as any).recommendedLevel = recommendedLevel;

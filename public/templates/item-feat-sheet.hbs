@@ -104,6 +104,38 @@
       <p class="notes">{{localize "SRA2.FEATS.BONUS_ANARCHY_HINT"}}</p>
     </div>
 
+    <!-- Additional Sustained Spells -->
+    <div class="form-group sustained-spell-group">
+      <label>{{localize "SRA2.FEATS.SUSTAINED_SPELLS"}}</label>
+      <p class="notes">{{localize "SRA2.FEATS.SUSTAINED_SPELLS_HINT"}}</p>
+      <!-- Hidden input to store the actual value -->
+      <input type="hidden" name="system.sustainedSpellCount" value="{{system.sustainedSpellCount}}" data-dtype="Number" />
+      <div class="bonus-checkboxes">
+        <label class="bonus-checkbox-label">
+          <input type="checkbox" class="sustained-spell-checkbox" data-spell-value="1" {{#if (gte system.sustainedSpellCount 1)}}checked{{/if}} />
+          <span>{{localize "SRA2.FEATS.SUSTAINED_SPELL_1"}}</span>
+        </label>
+        <label class="bonus-checkbox-label">
+          <input type="checkbox" class="sustained-spell-checkbox" data-spell-value="2" {{#if (eq system.sustainedSpellCount 2)}}checked{{/if}} />
+          <span>{{localize "SRA2.FEATS.SUSTAINED_SPELL_2"}}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Additional Summoned Spirit -->
+    <div class="form-group summoned-spirit-group">
+      <label>{{localize "SRA2.FEATS.SUMMONED_SPIRIT"}}</label>
+      <p class="notes">{{localize "SRA2.FEATS.SUMMONED_SPIRIT_HINT"}}</p>
+      <!-- Hidden input to store the actual value -->
+      <input type="hidden" name="system.summonedSpiritCount" value="{{system.summonedSpiritCount}}" data-dtype="Number" />
+      <div class="bonus-checkboxes">
+        <label class="bonus-checkbox-label">
+          <input type="checkbox" class="summoned-spirit-checkbox" {{#if (eq system.summonedSpiritCount 1)}}checked{{/if}} />
+          <span>{{localize "SRA2.FEATS.SUMMONED_SPIRIT_1"}}</span>
+        </label>
+      </div>
+    </div>
+
     <!-- Grants Narration -->
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.GRANTS_NARRATION"}}</label>

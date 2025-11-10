@@ -180,6 +180,15 @@
             "NARRATION_ACTIONS_LABEL": "actions",
             "NARRATION_ACTIONS_HINT": "Nombre d'actions que cette narration accorde (1 ou 2)",
             "NARRATION_SHORT": "Narration",
+            "SUSTAINED_SPELLS": "Sorts maintenus supplémentaires",
+            "SUSTAINED_SPELLS_HINT": "Chaque case cochée permet de maintenir un sort supplémentaire (max +2) et ajoute +2 au niveau recommandé",
+            "SUSTAINED_SPELL_COUNT": "Nombre de sorts maintenus supplémentaires",
+            "SUSTAINED_SPELL_1": "+1 Sort maintenu (+2 niveau)",
+            "SUSTAINED_SPELL_2": "+2 Sorts maintenus (+4 niveaux)",
+            "SUMMONED_SPIRIT": "Esprit invoqué supplémentaire",
+            "SUMMONED_SPIRIT_HINT": "Permet d'invoquer un esprit supplémentaire (max +1) et ajoute +3 au niveau recommandé",
+            "SUMMONED_SPIRIT_COUNT": "Nombre d'esprits invoqués supplémentaires",
+            "SUMMONED_SPIRIT_1": "+1 Esprit invoqué (+3 niveau)",
             "BREAKDOWN_TITLE": "Détail du calcul",
             "BREAKDOWN": {
                 "CYBERWARE": "Cyberware/Bioware",
@@ -200,7 +209,9 @@
                 "NARRATIVE_EFFECTS": "Effets narratifs",
                 "NARRATIVE_EFFECTS_POSITIVE": "Effets narratifs positifs",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Effets narratifs négatifs",
-                "DAMAGE_VALUE_BONUS": "Bonus VD"
+                "DAMAGE_VALUE_BONUS": "Bonus VD",
+                "SUSTAINED_SPELLS": "Sorts maintenus supplémentaires",
+                "SUMMONED_SPIRITS": "Esprits invoqués supplémentaires"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",

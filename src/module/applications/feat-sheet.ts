@@ -93,6 +93,12 @@ export class FeatSheet extends ItemSheet {
     
     // Damage value bonus checkboxes
     html.find('.damage-bonus-checkbox').on('change', this._onDamageValueBonusChange.bind(this));
+    
+    // Sustained spell checkboxes
+    html.find('.sustained-spell-checkbox').on('change', this._onSustainedSpellChange.bind(this));
+    
+    // Summoned spirit checkbox
+    html.find('.summoned-spirit-checkbox').on('change', this._onSummonedSpiritChange.bind(this));
   }
 
   /**
@@ -348,6 +354,67 @@ export class FeatSheet extends ItemSheet {
         cbElement.checked = newBonus === 2;
       }
     });
+  }
+
+  /**
+   * Handle sustained spell checkbox changes
+   */
+  private _onSustainedSpellChange(event: Event): void {
+    event.preventDefault();
+    
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const value = parseInt(checkbox.dataset.spellValue || '0');
+    const currentCount = (this.item.system as any).sustainedSpellCount || 0;
+    
+    let newCount: number;
+    
+    if (checkbox.checked) {
+      // If checking, set to the checkbox value
+      newCount = value;
+    } else {
+      // If unchecking, decrease appropriately
+      if (value === 2 && currentCount === 2) {
+        newCount = 1;
+      } else if (value === 1 && currentCount >= 1) {
+        newCount = 0;
+      } else {
+        newCount = currentCount;
+      }
+    }
+    
+    // Update the hidden input field
+    const hiddenInput = this.element.find('input[name="system.sustainedSpellCount"]')[0] as HTMLInputElement;
+    if (hiddenInput) {
+      hiddenInput.value = newCount.toString();
+    }
+    
+    // Update the checkboxes state
+    const checkboxes = this.element.find('.sustained-spell-checkbox');
+    checkboxes.each((_, cb) => {
+      const cbElement = cb as HTMLInputElement;
+      const cbValue = parseInt(cbElement.dataset.spellValue || '0');
+      if (cbValue === 1) {
+        cbElement.checked = newCount >= 1;
+      } else if (cbValue === 2) {
+        cbElement.checked = newCount === 2;
+      }
+    });
+  }
+
+  /**
+   * Handle summoned spirit checkbox change
+   */
+  private _onSummonedSpiritChange(event: Event): void {
+    event.preventDefault();
+    
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const newCount = checkbox.checked ? 1 : 0;
+    
+    // Update the hidden input field
+    const hiddenInput = this.element.find('input[name="system.summonedSpiritCount"]')[0] as HTMLInputElement;
+    if (hiddenInput) {
+      hiddenInput.value = newCount.toString();
+    }
   }
 
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
