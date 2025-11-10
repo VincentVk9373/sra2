@@ -431,6 +431,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERWARE', value: 1 });
     }
     
+    // Spell: 1 level
+    if (featType === 'spell') {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPELL', value: 1 });
+    }
+    
     // Light wounds: +3 per wound
     if (bonusLightDamage > 0) {
       const value = bonusLightDamage * 3;
@@ -575,6 +581,37 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       const value = summonedSpiritCount * 3;
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS', labelParams: `(${summonedSpiritCount})`, value });
+    }
+    
+    // Awakened abilities
+    const astralPerception = (this as any).astralPerception || false;
+    const astralProjection = (this as any).astralProjection || false;
+    const sorcery = (this as any).sorcery || false;
+    const conjuration = (this as any).conjuration || false;
+    const adept = (this as any).adept || false;
+    
+    // Astral perception AND projection: +2
+    if (astralPerception && astralProjection) {
+      recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION', value: 2 });
+    }
+    
+    // Sorcery: +1
+    if (sorcery) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SORCERY', value: 1 });
+    }
+    
+    // Conjuration: +2
+    if (conjuration) {
+      recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CONJURATION', value: 2 });
+    }
+    
+    // Adept: +1
+    if (adept) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT', value: 1 });
     }
     
     (this as any).recommendedLevel = recommendedLevel;

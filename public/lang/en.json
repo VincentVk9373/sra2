@@ -184,6 +184,7 @@
             "BREAKDOWN_TITLE": "Calculation Breakdown",
             "BREAKDOWN": {
                 "CYBERWARE": "Cyberware/Bioware",
+                "SPELL": "Spell",
                 "LIGHT_WOUNDS": "Light wounds",
                 "SEVERE_WOUNDS": "Severe wounds",
                 "PHYSICAL_THRESHOLD": "Physical threshold",
@@ -202,7 +203,13 @@
                 "NARRATIVE_EFFECTS_POSITIVE": "Positive narrative effects",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Negative narrative effects",
                 "DAMAGE_VALUE_BONUS": "DV Bonus",
-                "RANGE_IMPROVEMENTS": "Range improvements"
+                "RANGE_IMPROVEMENTS": "Range improvements",
+                "SUSTAINED_SPELLS": "Additional sustained spells",
+                "SUMMONED_SPIRITS": "Additional summoned spirits",
+                "ASTRAL_PERCEPTION_PROJECTION": "Astral perception and projection",
+                "SORCERY": "Sorcery",
+                "CONJURATION": "Conjuration",
+                "ADEPT": "Adept"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",

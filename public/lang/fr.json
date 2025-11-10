@@ -193,6 +193,7 @@
             "BREAKDOWN_TITLE": "Détail du calcul",
             "BREAKDOWN": {
                 "CYBERWARE": "Cyberware/Bioware",
+                "SPELL": "Sort",
                 "LIGHT_WOUNDS": "Blessures légères",
                 "SEVERE_WOUNDS": "Blessures graves",
                 "PHYSICAL_THRESHOLD": "Seuil physique",
@@ -213,7 +214,11 @@
                 "DAMAGE_VALUE_BONUS": "Bonus VD",
                 "RANGE_IMPROVEMENTS": "Améliorations de portée",
                 "SUSTAINED_SPELLS": "Sorts maintenus supplémentaires",
-                "SUMMONED_SPIRITS": "Esprits invoqués supplémentaires"
+                "SUMMONED_SPIRITS": "Esprits invoqués supplémentaires",
+                "ASTRAL_PERCEPTION_PROJECTION": "Perception et projection astrale",
+                "SORCERY": "Sorcellerie",
+                "CONJURATION": "Conjuration",
+                "ADEPT": "Adepte"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",

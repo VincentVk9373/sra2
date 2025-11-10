@@ -769,6 +769,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
     }
+    if (featType === "spell") {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPELL", value: 1 });
+    }
     if (bonusLightDamage > 0) {
       const value = bonusLightDamage * 3;
       recommendedLevel += value;
@@ -874,6 +878,27 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       const value = summonedSpiritCount * 3;
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS", labelParams: `(${summonedSpiritCount})`, value });
+    }
+    const astralPerception = this.astralPerception || false;
+    const astralProjection = this.astralProjection || false;
+    const sorcery = this.sorcery || false;
+    const conjuration = this.conjuration || false;
+    const adept = this.adept || false;
+    if (astralPerception && astralProjection) {
+      recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION", value: 2 });
+    }
+    if (sorcery) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SORCERY", value: 1 });
+    }
+    if (conjuration) {
+      recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CONJURATION", value: 2 });
+    }
+    if (adept) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT", value: 1 });
     }
     this.recommendedLevel = recommendedLevel;
     this.recommendedLevelBreakdown = recommendedLevelBreakdown;
