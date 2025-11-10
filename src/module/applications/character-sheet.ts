@@ -602,6 +602,22 @@ export class CharacterSheet extends ActorSheet {
             const maxDice = ${basePool};
             const riskDiceByRR = [2, 5, 8, 12];
             
+            // Risk thresholds based on RR level
+            const riskThresholds = {
+              0: { normal: 2, fort: 4, extreme: 6 },
+              1: { normal: 5, fort: 7, extreme: 9 },
+              2: { normal: 8, fort: 11, extreme: 13 },
+              3: { normal: 12, fort: 15, extreme: 999 }
+            };
+            
+            function getRiskLevel(diceCount, rr) {
+              const thresholds = riskThresholds[rr] || riskThresholds[0];
+              if (diceCount <= thresholds.normal) return 'faible';
+              if (diceCount <= thresholds.fort) return 'normal';
+              if (diceCount <= thresholds.extreme) return 'fort';
+              return 'extreme';
+            }
+            
             function updateRR() {
               let totalRR = 0;
               checkboxes.forEach(cb => {
@@ -613,16 +629,32 @@ export class CharacterSheet extends ActorSheet {
               rrDisplay.textContent = totalRR;
               
               const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
-              setDiceSelection(suggestedRisk);
+              setDiceSelection(suggestedRisk, totalRR);
             }
             
-            function setDiceSelection(count) {
+            function setDiceSelection(count, currentRR) {
               riskDiceInput.value = count;
+              
+              // Get current RR if not provided
+              if (currentRR === undefined) {
+                currentRR = 0;
+                checkboxes.forEach(cb => {
+                  if (cb.checked) {
+                    currentRR += parseInt(cb.dataset.rrValue);
+                  }
+                });
+                currentRR = Math.min(3, currentRR);
+              }
+              
               diceIcons.forEach((dice, index) => {
+                const diceNumber = index + 1;
+                dice.classList.remove('selected', 'risk-faible', 'risk-normal', 'risk-fort', 'risk-extreme');
+                
+                const riskLevel = getRiskLevel(diceNumber, currentRR);
+                dice.classList.add('risk-' + riskLevel);
+                
                 if (index < count) {
                   dice.classList.add('selected');
-                } else {
-                  dice.classList.remove('selected');
                 }
               });
             }
@@ -630,13 +662,22 @@ export class CharacterSheet extends ActorSheet {
             diceIcons.forEach((dice) => {
               dice.addEventListener('click', function() {
                 const index = parseInt(this.dataset.diceIndex);
-                setDiceSelection(index);
+                const currentValue = parseInt(riskDiceInput.value);
+                // Toggle: si on clique sur le dernier dé sélectionné, désélectionner tout
+                if (index === currentValue) {
+                  setDiceSelection(0);
+                } else {
+                  setDiceSelection(index);
+                }
               });
             });
             
             checkboxes.forEach(cb => {
               cb.addEventListener('change', updateRR);
             });
+            
+            // Initial color setup
+            setDiceSelection(riskDiceInput.value);
           })();
         </script>
       `,
@@ -785,6 +826,22 @@ export class CharacterSheet extends ActorSheet {
             const maxDice = ${attributeValue};
             const riskDiceByRR = [2, 5, 8, 12];
             
+            // Risk thresholds based on RR level
+            const riskThresholds = {
+              0: { normal: 2, fort: 4, extreme: 6 },
+              1: { normal: 5, fort: 7, extreme: 9 },
+              2: { normal: 8, fort: 11, extreme: 13 },
+              3: { normal: 12, fort: 15, extreme: 999 }
+            };
+            
+            function getRiskLevel(diceCount, rr) {
+              const thresholds = riskThresholds[rr] || riskThresholds[0];
+              if (diceCount <= thresholds.normal) return 'faible';
+              if (diceCount <= thresholds.fort) return 'normal';
+              if (diceCount <= thresholds.extreme) return 'fort';
+              return 'extreme';
+            }
+            
             function updateRR() {
               let totalRR = 0;
               checkboxes.forEach(cb => {
@@ -795,18 +852,33 @@ export class CharacterSheet extends ActorSheet {
               totalRR = Math.min(3, totalRR);
               rrDisplay.textContent = totalRR;
               
-              // Update risk dice suggestion
               const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
-              setDiceSelection(suggestedRisk);
+              setDiceSelection(suggestedRisk, totalRR);
             }
             
-            function setDiceSelection(count) {
+            function setDiceSelection(count, currentRR) {
               riskDiceInput.value = count;
+              
+              // Get current RR if not provided
+              if (currentRR === undefined) {
+                currentRR = 0;
+                checkboxes.forEach(cb => {
+                  if (cb.checked) {
+                    currentRR += parseInt(cb.dataset.rrValue);
+                  }
+                });
+                currentRR = Math.min(3, currentRR);
+              }
+              
               diceIcons.forEach((dice, index) => {
+                const diceNumber = index + 1;
+                dice.classList.remove('selected', 'risk-faible', 'risk-normal', 'risk-fort', 'risk-extreme');
+                
+                const riskLevel = getRiskLevel(diceNumber, currentRR);
+                dice.classList.add('risk-' + riskLevel);
+                
                 if (index < count) {
                   dice.classList.add('selected');
-                } else {
-                  dice.classList.remove('selected');
                 }
               });
             }
@@ -814,13 +886,22 @@ export class CharacterSheet extends ActorSheet {
             diceIcons.forEach((dice) => {
               dice.addEventListener('click', function() {
                 const index = parseInt(this.dataset.diceIndex);
-                setDiceSelection(index);
+                const currentValue = parseInt(riskDiceInput.value);
+                // Toggle: si on clique sur le dernier dé sélectionné, désélectionner tout
+                if (index === currentValue) {
+                  setDiceSelection(0);
+                } else {
+                  setDiceSelection(index);
+                }
               });
             });
             
             checkboxes.forEach(cb => {
               cb.addEventListener('change', updateRR);
             });
+            
+            // Initial color setup
+            setDiceSelection(riskDiceInput.value);
           })();
         </script>
       `,
@@ -960,6 +1041,22 @@ export class CharacterSheet extends ActorSheet {
             const maxDice = ${basePool};
             const riskDiceByRR = [2, 5, 8, 12];
             
+            // Risk thresholds based on RR level
+            const riskThresholds = {
+              0: { normal: 2, fort: 4, extreme: 6 },
+              1: { normal: 5, fort: 7, extreme: 9 },
+              2: { normal: 8, fort: 11, extreme: 13 },
+              3: { normal: 12, fort: 15, extreme: 999 }
+            };
+            
+            function getRiskLevel(diceCount, rr) {
+              const thresholds = riskThresholds[rr] || riskThresholds[0];
+              if (diceCount <= thresholds.normal) return 'faible';
+              if (diceCount <= thresholds.fort) return 'normal';
+              if (diceCount <= thresholds.extreme) return 'fort';
+              return 'extreme';
+            }
+            
             function updateRR() {
               let totalRR = 0;
               checkboxes.forEach(cb => {
@@ -971,16 +1068,32 @@ export class CharacterSheet extends ActorSheet {
               rrDisplay.textContent = totalRR;
               
               const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
-              setDiceSelection(suggestedRisk);
+              setDiceSelection(suggestedRisk, totalRR);
             }
             
-            function setDiceSelection(count) {
+            function setDiceSelection(count, currentRR) {
               riskDiceInput.value = count;
+              
+              // Get current RR if not provided
+              if (currentRR === undefined) {
+                currentRR = 0;
+                checkboxes.forEach(cb => {
+                  if (cb.checked) {
+                    currentRR += parseInt(cb.dataset.rrValue);
+                  }
+                });
+                currentRR = Math.min(3, currentRR);
+              }
+              
               diceIcons.forEach((dice, index) => {
+                const diceNumber = index + 1;
+                dice.classList.remove('selected', 'risk-faible', 'risk-normal', 'risk-fort', 'risk-extreme');
+                
+                const riskLevel = getRiskLevel(diceNumber, currentRR);
+                dice.classList.add('risk-' + riskLevel);
+                
                 if (index < count) {
                   dice.classList.add('selected');
-                } else {
-                  dice.classList.remove('selected');
                 }
               });
             }
@@ -988,13 +1101,22 @@ export class CharacterSheet extends ActorSheet {
             diceIcons.forEach((dice) => {
               dice.addEventListener('click', function() {
                 const index = parseInt(this.dataset.diceIndex);
-                setDiceSelection(index);
+                const currentValue = parseInt(riskDiceInput.value);
+                // Toggle: si on clique sur le dernier dé sélectionné, désélectionner tout
+                if (index === currentValue) {
+                  setDiceSelection(0);
+                } else {
+                  setDiceSelection(index);
+                }
               });
             });
             
             checkboxes.forEach(cb => {
               cb.addEventListener('change', updateRR);
             });
+            
+            // Initial color setup
+            setDiceSelection(riskDiceInput.value);
           })();
         </script>
       `,

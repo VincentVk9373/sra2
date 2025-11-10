@@ -2024,7 +2024,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f5f5f5;
       border: 2px solid #ccc;
       border-radius: 6px;
       cursor: pointer;
@@ -2032,8 +2031,7 @@
       
       i {
         font-size: 1.5rem;
-        color: #999;
-        transition: color 0.2s;
+        transition: color 0.2s, filter 0.2s;
       }
       
       .dice-number {
@@ -2042,40 +2040,198 @@
         right: 4px;
         font-size: 0.65rem;
         font-weight: bold;
-        color: #666;
-        background: white;
         padding: 1px 3px;
         border-radius: 2px;
         line-height: 1;
+        transition: all 0.2s;
+      }
+      
+      // Risk level colors
+      &.risk-faible {
+        background: #1a1a1a;
+        border-color: #28a745;
+        
+        i {
+          color: #28a745;
+        }
+        
+        .dice-number {
+          background: rgba(40, 167, 69, 0.2);
+          color: #28a745;
+        }
+        
+        &.selected {
+          background: #d4edda;
+          border-width: 3px;
+          border-color: #28a745;
+          box-shadow: 0 0 20px rgba(40, 167, 69, 0.6),
+                      0 4px 8px rgba(40, 167, 69, 0.3),
+                      inset 0 0 15px rgba(40, 167, 69, 0.2);
+          transform: translateY(-2px);
+          
+          i {
+            filter: drop-shadow(0 0 4px rgba(40, 167, 69, 0.8));
+            animation: pulse-green 2s ease-in-out infinite;
+          }
+          
+          .dice-number {
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+          }
+        }
+      }
+      
+      &.risk-normal {
+        background: #1a1a1a;
+        border-color: #ffc107;
+        
+        i {
+          color: #ffc107;
+        }
+        
+        .dice-number {
+          background: rgba(255, 193, 7, 0.2);
+          color: #ffc107;
+        }
+        
+        &.selected {
+          background: #fff3cd;
+          border-width: 3px;
+          border-color: #ffc107;
+          box-shadow: 0 0 20px rgba(255, 193, 7, 0.6),
+                      0 4px 8px rgba(255, 193, 7, 0.3),
+                      inset 0 0 15px rgba(255, 193, 7, 0.2);
+          transform: translateY(-2px);
+          
+          i {
+            color: #856404;
+            filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.8));
+            animation: pulse-yellow 2s ease-in-out infinite;
+          }
+          
+          .dice-number {
+            background: rgba(255, 193, 7, 0.9);
+            color: #856404;
+          }
+        }
+      }
+      
+      &.risk-fort {
+        background: #1a1a1a;
+        border-color: #fd7e14;
+        
+        i {
+          color: #fd7e14;
+        }
+        
+        .dice-number {
+          background: rgba(253, 126, 20, 0.2);
+          color: #fd7e14;
+        }
+        
+        &.selected {
+          background: #ffe5d0;
+          border-width: 3px;
+          border-color: #fd7e14;
+          box-shadow: 0 0 20px rgba(253, 126, 20, 0.6),
+                      0 4px 8px rgba(253, 126, 20, 0.3),
+                      inset 0 0 15px rgba(253, 126, 20, 0.2);
+          transform: translateY(-2px);
+          
+          i {
+            filter: drop-shadow(0 0 4px rgba(253, 126, 20, 0.8));
+            animation: pulse-orange 2s ease-in-out infinite;
+          }
+          
+          .dice-number {
+            background: rgba(253, 126, 20, 0.9);
+            color: white;
+          }
+        }
+      }
+      
+      &.risk-extreme {
+        background: #1a1a1a;
+        border-color: #dc3545;
+        
+        i {
+          color: #dc3545;
+        }
+        
+        .dice-number {
+          background: rgba(220, 53, 69, 0.2);
+          color: #dc3545;
+        }
+        
+        &.selected {
+          background: #f8d7da;
+          border-width: 3px;
+          border-color: #dc3545;
+          box-shadow: 0 0 20px rgba(220, 53, 69, 0.7),
+                      0 4px 8px rgba(220, 53, 69, 0.4),
+                      inset 0 0 15px rgba(220, 53, 69, 0.2);
+          transform: translateY(-2px);
+          
+          i {
+            filter: drop-shadow(0 0 4px rgba(220, 53, 69, 0.9));
+            animation: pulse-red 2s ease-in-out infinite;
+          }
+          
+          .dice-number {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+          }
+        }
       }
       
       &:hover {
         transform: scale(1.1);
-        border-color: #764ba2;
-        background: #faf5ff;
         
-        i {
-          color: #764ba2;
-        }
-      }
-      
-      &.selected {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-color: #764ba2;
-        
-        i {
-          color: white;
-        }
-        
-        .dice-number {
-          background: rgba(255, 255, 255, 0.9);
-          color: #764ba2;
+        &.selected {
+          transform: scale(1.1) translateY(-2px);
         }
       }
       
       &:active {
         transform: scale(0.95);
       }
+    }
+  }
+  
+  // Pulse animations for selected dice
+  @keyframes pulse-green {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(40, 167, 69, 0.8));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(40, 167, 69, 1));
+    }
+  }
+  
+  @keyframes pulse-yellow {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.8));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(255, 193, 7, 1));
+    }
+  }
+  
+  @keyframes pulse-orange {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(253, 126, 20, 0.8));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(253, 126, 20, 1));
+    }
+  }
+  
+  @keyframes pulse-red {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(220, 53, 69, 0.9));
+    }
+    50% {
+      filter: drop-shadow(0 0 10px rgba(220, 53, 69, 1));
     }
   }
   
