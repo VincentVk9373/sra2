@@ -26,6 +26,24 @@ export const WEAPON_TYPES = {
 } as const;
 
 /**
+ * Vehicle/Drone types configuration with their stats
+ */
+export const VEHICLE_TYPES = {
+  "microdrone": { autopilot: 6, structure: 0, handling: 10, speed: 0, flyingSpeed: 1, armor: 0, weaponMount: "none" },
+  "small-drone": { autopilot: 6, structure: 1, handling: 9, speed: 2, flyingSpeed: 4, armor: 0, weaponMount: "smg" },
+  "medium-drone": { autopilot: 6, structure: 2, handling: 7, speed: 3, flyingSpeed: 6, armor: 0, weaponMount: "rifle" },
+  "large-drone": { autopilot: 6, structure: 4, handling: 4, speed: 4, flyingSpeed: 8, armor: 0, weaponMount: "rifle" },
+  "racing-motorcycle": { autopilot: 6, structure: 4, handling: 2, speed: 6, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
+  "offroad-motorcycle": { autopilot: 6, structure: 4, handling: 3, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
+  "chopper": { autopilot: 6, structure: 5, handling: 2, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
+  "sports-car": { autopilot: 6, structure: 5, handling: 2, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "none" },
+  "sedan": { autopilot: 6, structure: 6, handling: 2, speed: 4, flyingSpeed: 0, armor: 0, weaponMount: "none" },
+  "suv-pickup": { autopilot: 6, structure: 7, handling: 1, speed: 4, flyingSpeed: 0, armor: 0, weaponMount: "none" },
+  "van": { autopilot: 6, structure: 8, handling: 1, speed: 3, flyingSpeed: 0, armor: 0, weaponMount: "none" },
+  "bus-truck": { autopilot: 6, structure: 10, handling: 0, speed: 2, flyingSpeed: 0, armor: 0, weaponMount: "none" }
+} as const;
+
+/**
  * Data model for Feat items
  */
 export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
@@ -152,6 +170,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: "",
         label: "SRA2.FEATS.WEAPON.WEAPON_TYPE"
       }),
+      vehicleType: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.VEHICLE.VEHICLE_TYPE"
+      }),
       // Weapon/Spell specific fields
       damageValue: new fields.StringField({
         required: true,
@@ -256,6 +279,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.VEHICLE.SPEED"
       }),
+      flyingSpeed: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.FLYING_SPEED"
+      }),
       armor: new fields.NumberField({
         required: true,
         initial: 0,
@@ -263,10 +293,75 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.VEHICLE.ARMOR"
       }),
+      weaponMount: new fields.StringField({
+        required: true,
+        initial: "none",
+        label: "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"
+      }),
       weaponInfo: new fields.StringField({
         required: true,
         initial: "",
         label: "SRA2.FEATS.VEHICLE.WEAPON_INFO"
+      }),
+      // Vehicle bonuses
+      autopilotBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 6,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.AUTOPILOT_BONUS"
+      }),
+      speedBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 3,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.SPEED_BONUS"
+      }),
+      handlingBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 3,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.HANDLING_BONUS"
+      }),
+      armorBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.ARMOR_BONUS"
+      }),
+      isFixed: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.IS_FIXED"
+      }),
+      isFlying: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.IS_FLYING"
+      }),
+      weaponMountImprovement: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.WEAPON_MOUNT_IMPROVEMENT"
+      }),
+      autopilotUnlocked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.AUTOPILOT_UNLOCKED"
+      }),
+      additionalDroneCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 3,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT"
       }),
       // Cyberdeck specific fields
       firewall: new fields.NumberField({
@@ -612,6 +707,72 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (adept) {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT', value: 1 });
+    }
+    
+    // Vehicle/Drone bonuses
+    const autopilotBonus = (this as any).autopilotBonus || 0;
+    const speedBonus = (this as any).speedBonus || 0;
+    const handlingBonus = (this as any).handlingBonus || 0;
+    const armorBonus = (this as any).armorBonus || 0;
+    const isFixed = (this as any).isFixed || false;
+    const isFlying = (this as any).isFlying || false;
+    const weaponMountImprovement = (this as any).weaponMountImprovement || false;
+    const autopilotUnlocked = (this as any).autopilotUnlocked || false;
+    const additionalDroneCount = (this as any).additionalDroneCount || 0;
+    
+    // Autopilot bonus: +1 per level
+    if (autopilotBonus > 0) {
+      recommendedLevel += autopilotBonus;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.AUTOPILOT_BONUS', labelParams: `(+${autopilotBonus})`, value: autopilotBonus });
+    }
+    
+    // Speed bonus: +1 per level
+    if (speedBonus > 0) {
+      recommendedLevel += speedBonus;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPEED_BONUS', labelParams: `(+${speedBonus})`, value: speedBonus });
+    }
+    
+    // Handling bonus: +1 per level
+    if (handlingBonus > 0) {
+      recommendedLevel += handlingBonus;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.HANDLING_BONUS', labelParams: `(+${handlingBonus})`, value: handlingBonus });
+    }
+    
+    // Armor bonus: +1 per level
+    if (armorBonus > 0) {
+      recommendedLevel += armorBonus;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ARMOR_BONUS', labelParams: `(+${armorBonus})`, value: armorBonus });
+    }
+    
+    // Fixed (unable to move): -1
+    if (isFixed) {
+      recommendedLevel -= 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.IS_FIXED', value: -1 });
+    }
+    
+    // Flying: +1
+    if (isFlying) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.IS_FLYING', value: 1 });
+    }
+    
+    // Weapon mount improvement: +1
+    if (weaponMountImprovement) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_MOUNT_IMPROVEMENT', value: 1 });
+    }
+    
+    // Autopilot unlocked: +3
+    if (autopilotUnlocked) {
+      recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.AUTOPILOT_UNLOCKED', value: 3 });
+    }
+    
+    // Additional drones: +2 per drone
+    if (additionalDroneCount > 0) {
+      const value = additionalDroneCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES', labelParams: `(${additionalDroneCount})`, value });
     }
     
     (this as any).recommendedLevel = recommendedLevel;

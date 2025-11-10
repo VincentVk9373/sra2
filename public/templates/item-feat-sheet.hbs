@@ -441,34 +441,167 @@
     <div class="vehicle-fields-section">
       <h3>{{localize "SRA2.FEATS.VEHICLE.SECTION_TITLE"}}</h3>
       
+      <!-- Vehicle Type Selection -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.VEHICLE_TYPE"}}</label>
+        <select name="system.vehicleType" data-action="select-vehicle-type">
+          <option value="">{{localize "SRA2.FEATS.VEHICLE.SELECT_VEHICLE"}}</option>
+          <option value="microdrone" {{#if (eq system.vehicleType "microdrone")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.MICRODRONE"}}</option>
+          <option value="small-drone" {{#if (eq system.vehicleType "small-drone")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SMALL_DRONE"}}</option>
+          <option value="medium-drone" {{#if (eq system.vehicleType "medium-drone")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.MEDIUM_DRONE"}}</option>
+          <option value="large-drone" {{#if (eq system.vehicleType "large-drone")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.LARGE_DRONE"}}</option>
+          <option value="racing-motorcycle" {{#if (eq system.vehicleType "racing-motorcycle")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.RACING_MOTORCYCLE"}}</option>
+          <option value="offroad-motorcycle" {{#if (eq system.vehicleType "offroad-motorcycle")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.OFFROAD_MOTORCYCLE"}}</option>
+          <option value="chopper" {{#if (eq system.vehicleType "chopper")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.CHOPPER"}}</option>
+          <option value="sports-car" {{#if (eq system.vehicleType "sports-car")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SPORTS_CAR"}}</option>
+          <option value="sedan" {{#if (eq system.vehicleType "sedan")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SEDAN"}}</option>
+          <option value="suv-pickup" {{#if (eq system.vehicleType "suv-pickup")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SUV_PICKUP"}}</option>
+          <option value="van" {{#if (eq system.vehicleType "van")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.VAN"}}</option>
+          <option value="bus-truck" {{#if (eq system.vehicleType "bus-truck")}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.BUS_TRUCK"}}</option>
+        </select>
+      </div>
+
+      <!-- Vehicle Info Display -->
+      {{#if system.vehicleType}}
+      <div class="form-group vehicle-info-display">
+        <label>{{localize "SRA2.FEATS.VEHICLE.INFO"}}</label>
+        <div class="vehicle-stats">
+          <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT"}}:</span>
+          <span class="stat-value">{{finalVehicleStats.autopilot}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.STRUCTURE_SHORT"}}:</span>
+          <span class="stat-value">{{finalVehicleStats.structure}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.HANDLING_SHORT"}}:</span>
+          <span class="stat-value">{{finalVehicleStats.handling}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.SPEED_SHORT"}}:</span>
+          <span class="stat-value">{{finalVehicleStats.speed}}{{#if (gt finalVehicleStats.flyingSpeed 0)}} ({{localize "SRA2.FEATS.VEHICLE.FLYING_SHORT"}} {{finalVehicleStats.flyingSpeed}}){{/if}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.ARMOR_SHORT"}}:</span>
+          <span class="stat-value">{{finalVehicleStats.armor}}</span>
+        </div>
+      </div>
+      {{/if}}
+      
+      <!-- Base Stats (Read-only) -->
+      <h4>{{localize "SRA2.FEATS.VEHICLE.BASE_STATS"}}</h4>
+      
       <!-- Autopilot -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT"}}</label>
-        <input type="number" name="system.autopilot" value="{{system.autopilot}}" min="0" />
+        <input type="number" name="system.autopilot" value="{{system.autopilot}}" min="0" {{#if system.vehicleType}}disabled{{/if}} />
       </div>
 
       <!-- Structure -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.VEHICLE.STRUCTURE"}}</label>
-        <input type="number" name="system.structure" value="{{system.structure}}" min="0" />
+        <input type="number" name="system.structure" value="{{system.structure}}" min="0" {{#if system.vehicleType}}disabled{{/if}} />
       </div>
 
       <!-- Handling -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.VEHICLE.HANDLING"}}</label>
-        <input type="number" name="system.handling" value="{{system.handling}}" min="0" />
+        <input type="number" name="system.handling" value="{{system.handling}}" min="0" {{#if system.vehicleType}}disabled{{/if}} />
       </div>
 
       <!-- Speed -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.VEHICLE.SPEED"}}</label>
-        <input type="number" name="system.speed" value="{{system.speed}}" min="0" />
+        <input type="number" name="system.speed" value="{{system.speed}}" min="0" {{#if system.vehicleType}}disabled{{/if}} />
+      </div>
+
+      <!-- Flying Speed -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED"}}</label>
+        <input type="number" name="system.flyingSpeed" value="{{system.flyingSpeed}}" min="0" {{#if system.vehicleType}}disabled{{/if}} />
       </div>
 
       <!-- Armor -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.VEHICLE.ARMOR"}}</label>
-        <input type="number" name="system.armor" value="{{system.armor}}" min="0" />
+        <input type="number" name="system.armor" value="{{system.armor}}" min="0" {{#if system.vehicleType}}disabled{{/if}} />
+      </div>
+
+      <!-- Weapon Mount -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"}}</label>
+        <input type="text" name="system.weaponMount" value="{{system.weaponMount}}" {{#if system.vehicleType}}disabled{{/if}} />
+      </div>
+
+      <!-- Bonuses Section -->
+      <h4>{{localize "SRA2.FEATS.VEHICLE.BONUSES"}}</h4>
+      <p class="notes">{{localize "SRA2.FEATS.VEHICLE.BONUSES_HINT"}}</p>
+
+      <!-- Autopilot Bonus -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_BONUS"}}</label>
+        <input type="number" name="system.autopilotBonus" value="{{system.autopilotBonus}}" min="0" max="6" />
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_BONUS_HINT"}}</p>
+      </div>
+
+      <!-- Speed Bonus -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.SPEED_BONUS"}}</label>
+        <input type="number" name="system.speedBonus" value="{{system.speedBonus}}" min="0" max="3" />
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.SPEED_BONUS_HINT"}}</p>
+      </div>
+
+      <!-- Handling Bonus -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.HANDLING_BONUS"}}</label>
+        <input type="number" name="system.handlingBonus" value="{{system.handlingBonus}}" min="0" max="3" />
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.HANDLING_BONUS_HINT"}}</p>
+      </div>
+
+      <!-- Armor Bonus -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.ARMOR_BONUS"}}</label>
+        <input type="number" name="system.armorBonus" value="{{system.armorBonus}}" min="0" />
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.ARMOR_BONUS_HINT"}}</p>
+      </div>
+
+      <!-- Is Fixed -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.isFixed" {{checked system.isFixed}} />
+          {{localize "SRA2.FEATS.VEHICLE.IS_FIXED"}}
+        </label>
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.IS_FIXED_HINT"}}</p>
+      </div>
+
+      <!-- Is Flying -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.isFlying" {{checked system.isFlying}} />
+          {{localize "SRA2.FEATS.VEHICLE.IS_FLYING"}}
+        </label>
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.IS_FLYING_HINT"}}</p>
+      </div>
+
+      <!-- Weapon Mount Improvement -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.weaponMountImprovement" {{checked system.weaponMountImprovement}} />
+          {{localize "SRA2.FEATS.VEHICLE.WEAPON_MOUNT_IMPROVEMENT"}}
+        </label>
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.WEAPON_MOUNT_IMPROVEMENT_HINT"}}</p>
+      </div>
+
+      <!-- Autopilot Unlocked -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="system.autopilotUnlocked" {{checked system.autopilotUnlocked}} />
+          {{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_UNLOCKED"}}
+        </label>
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_UNLOCKED_HINT"}}</p>
+      </div>
+
+      <!-- Additional Drone Count -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT"}}</label>
+        <input type="number" name="system.additionalDroneCount" value="{{system.additionalDroneCount}}" min="0" max="3" />
+        <p class="notes">{{localize "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT_HINT"}}</p>
       </div>
 
       <!-- Weapon Info -->

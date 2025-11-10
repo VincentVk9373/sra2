@@ -1,4 +1,4 @@
-import { WEAPON_TYPES } from '../models/item-feat.js';
+import { WEAPON_TYPES, VEHICLE_TYPES } from '../models/item-feat.js';
 
 /**
  * Feat Sheet Application
@@ -28,6 +28,9 @@ export class FeatSheet extends ItemSheet {
     
     // Calculate final damage value
     context.finalDamageValue = this._calculateFinalDamageValue();
+    
+    // Calculate final vehicle stats
+    context.finalVehicleStats = this._calculateFinalVehicleStats();
     
     // Build RR entries array from rrList
     context.rrEntries = [];
@@ -90,6 +93,9 @@ export class FeatSheet extends ItemSheet {
     
     // Weapon type selection
     html.find('[data-action="select-weapon-type"]').on('change', this._onWeaponTypeChange.bind(this));
+    
+    // Vehicle type selection
+    html.find('[data-action="select-vehicle-type"]').on('change', this._onVehicleTypeChange.bind(this));
     
     // Damage value bonus checkboxes
     html.find('.damage-bonus-checkbox').on('change', this._onDamageValueBonusChange.bind(this));
@@ -312,6 +318,69 @@ export class FeatSheet extends ItemSheet {
     } as any);
     
     this.render(false);
+  }
+
+  /**
+   * Handle vehicle type selection change
+   */
+  private async _onVehicleTypeChange(event: Event): Promise<void> {
+    event.preventDefault();
+    
+    const vehicleType = (event.currentTarget as HTMLSelectElement).value;
+    
+    if (!vehicleType || !VEHICLE_TYPES[vehicleType as keyof typeof VEHICLE_TYPES]) {
+      return;
+    }
+    
+    const vehicleStats = VEHICLE_TYPES[vehicleType as keyof typeof VEHICLE_TYPES];
+    
+    await this.item.update({
+      'system.vehicleType': vehicleType,
+      'system.autopilot': vehicleStats.autopilot,
+      'system.structure': vehicleStats.structure,
+      'system.handling': vehicleStats.handling,
+      'system.speed': vehicleStats.speed,
+      'system.flyingSpeed': vehicleStats.flyingSpeed,
+      'system.armor': vehicleStats.armor,
+      'system.weaponMount': vehicleStats.weaponMount
+    } as any);
+    
+    this.render(false);
+  }
+
+  /**
+   * Calculate the final vehicle stats taking into account bonuses
+   */
+  private _calculateFinalVehicleStats(): any {
+    const baseAutopilot = (this.item.system as any).autopilot || 6;
+    const baseStructure = (this.item.system as any).structure || 2;
+    const baseHandling = (this.item.system as any).handling || 5;
+    const baseSpeed = (this.item.system as any).speed || 3;
+    const baseFlyingSpeed = (this.item.system as any).flyingSpeed || 0;
+    const baseArmor = (this.item.system as any).armor || 0;
+    
+    const autopilotBonus = (this.item.system as any).autopilotBonus || 0;
+    const speedBonus = (this.item.system as any).speedBonus || 0;
+    const handlingBonus = (this.item.system as any).handlingBonus || 0;
+    const armorBonus = (this.item.system as any).armorBonus || 0;
+    const isFlying = (this.item.system as any).isFlying || false;
+    const isFixed = (this.item.system as any).isFixed || false;
+    
+    // Calculate final values
+    const finalAutopilot = Math.min(12, baseAutopilot + autopilotBonus);
+    const finalHandling = baseHandling + handlingBonus;
+    const finalSpeed = isFixed ? 0 : (baseSpeed + speedBonus);
+    const finalFlyingSpeed = isFlying ? (baseFlyingSpeed > 0 ? baseFlyingSpeed : 1) : 0;
+    const finalArmor = Math.min(baseStructure, baseArmor + armorBonus);
+    
+    return {
+      autopilot: finalAutopilot,
+      structure: baseStructure,
+      handling: finalHandling,
+      speed: finalSpeed,
+      flyingSpeed: finalFlyingSpeed,
+      armor: finalArmor
+    };
   }
 
   /**
