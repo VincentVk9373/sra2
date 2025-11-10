@@ -1484,24 +1484,18 @@ class CharacterSheet extends ActorSheet {
     const feats = this.actor.items.filter(
       (item) => item.type === "feat" && item.system.active === true
     );
-    console.log(`SRA2 | Calculating RR for ${itemType} "${itemName}", found ${feats.length} active feats`);
     for (const feat of feats) {
       const featSystem = feat.system;
       const rrList = featSystem.rrList || [];
-      if (rrList.length > 0) {
-        console.log(`SRA2 | Feat "${feat.name}" has ${rrList.length} RR entries:`, rrList);
-      }
       for (const rrEntry of rrList) {
         const rrType = rrEntry.rrType;
         const rrValue = rrEntry.rrValue || 0;
         const rrTarget = rrEntry.rrTarget || "";
         if (rrType === itemType && rrTarget === itemName) {
-          console.log(`SRA2 | ✓ Match found! Adding ${rrValue} RR from feat "${feat.name}"`);
           totalRR += rrValue;
         }
       }
     }
-    console.log(`SRA2 | Total RR for ${itemType} "${itemName}": ${totalRR}`);
     return totalRR;
   }
   /**
@@ -1523,7 +1517,6 @@ class CharacterSheet extends ActorSheet {
    */
   async _onRollSpecialization(event) {
     event.preventDefault();
-    console.log("SRA2 | Roll specialization clicked!");
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
     const effectiveRating = parseInt(element.dataset.effectiveRating || "0");
@@ -1547,6 +1540,7 @@ class CharacterSheet extends ActorSheet {
     const linkedSkillName = specSystem.linkedSkill;
     const skillRR = linkedSkillName ? this.calculateRR("skill", linkedSkillName) : 0;
     const autoRR = Math.min(3, specializationRR + attributeRR + skillRR);
+    const defaultRiskDice = this.getRiskDiceByRR(autoRR);
     new Dialog({
       title: game.i18n.format("SRA2.SPECIALIZATIONS.ROLL_TITLE", { name: specialization.name }),
       content: `
@@ -1555,21 +1549,26 @@ class CharacterSheet extends ActorSheet {
             <label>${game.i18n.localize("SRA2.SKILLS.BASE_POOL")}: <strong>${basePool}</strong></label>
             <p class="notes">(${game.i18n.localize("SRA2.SPECIALIZATIONS.BONUS")}: ${effectiveRating} + ${attributeLabel}: ${attributeValue})</p>
           </div>
-          <div class="form-group">
-            <label>${game.i18n.localize("SRA2.SKILLS.MODIFIER")}:</label>
-            <input type="number" name="modifier" value="0" min="-10" max="10" />
-          </div>
-          <div class="form-group">
+          <div class="form-group roll-mode-group">
             <label>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE")}:</label>
-            <select name="rollMode">
-              <option value="normal" selected>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_NORMAL")}</option>
-              <option value="advantage">${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_ADVANTAGE")}</option>
-              <option value="disadvantage">${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_DISADVANTAGE")}</option>
-            </select>
+            <div class="radio-group">
+              <label class="radio-option disadvantage">
+                <input type="radio" name="rollMode" value="disadvantage" />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_DISADVANTAGE")}</span>
+              </label>
+              <label class="radio-option normal">
+                <input type="radio" name="rollMode" value="normal" checked />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_NORMAL")}</span>
+              </label>
+              <label class="radio-option advantage">
+                <input type="radio" name="rollMode" value="advantage" />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_ADVANTAGE")}</span>
+              </label>
+            </div>
           </div>
           <div class="form-group">
             <label>${game.i18n.localize("SRA2.SKILLS.RISK_DICE")} (max ${basePool}):</label>
-            <input type="number" name="riskDice" value="0" min="0" max="${basePool}" />
+            <input type="number" name="riskDice" value="${defaultRiskDice}" min="0" max="${basePool}" />
             <p class="notes">${game.i18n.localize("SRA2.SKILLS.RISK_DICE_HINT")}</p>
           </div>
           <div class="form-group">
@@ -1584,12 +1583,11 @@ class CharacterSheet extends ActorSheet {
           icon: '<i class="fas fa-dice-d6"></i>',
           label: game.i18n.localize("SRA2.SKILLS.ROLL"),
           callback: (html) => {
-            const modifier = parseInt(html.find('[name="modifier"]').val()) || 0;
-            const totalPool = Math.max(1, basePool + modifier);
+            const totalPool = basePool;
             const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
             const normalDice = totalPool - riskDice;
             const riskReduction = Math.max(0, Math.min(3, parseInt(html.find('[name="riskReduction"]').val()) || 0));
-            const rollMode = html.find('[name="rollMode"]').val() || "normal";
+            const rollMode = html.find('[name="rollMode"]:checked').val() || "normal";
             this._rollSkillDice(specialization.name, normalDice, riskDice, riskReduction, rollMode);
           }
         },
@@ -1614,6 +1612,13 @@ class CharacterSheet extends ActorSheet {
     return this._onRollSpecialization(event);
   }
   /**
+   * Get risk dice count based on RR level
+   */
+  getRiskDiceByRR(rr) {
+    const riskDiceByRR = [2, 5, 8, 12];
+    return riskDiceByRR[Math.min(3, Math.max(0, rr))] || 2;
+  }
+  /**
    * Handle rolling an attribute
    */
   async _onRollAttribute(event) {
@@ -1627,6 +1632,7 @@ class CharacterSheet extends ActorSheet {
       return;
     }
     const autoRR = Math.min(3, this.calculateRR("attribute", attributeName));
+    const defaultRiskDice = this.getRiskDiceByRR(autoRR);
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`);
     new Dialog({
       title: game.i18n.format("SRA2.ATTRIBUTES.ROLL_TITLE", { name: attributeLabel }),
@@ -1635,21 +1641,26 @@ class CharacterSheet extends ActorSheet {
           <div class="form-group">
             <label>${game.i18n.localize("SRA2.ATTRIBUTES.BASE_POOL")}: <strong>${attributeValue}</strong></label>
           </div>
-          <div class="form-group">
-            <label>${game.i18n.localize("SRA2.SKILLS.MODIFIER")}:</label>
-            <input type="number" name="modifier" value="0" min="-10" max="10" />
-          </div>
-          <div class="form-group">
+          <div class="form-group roll-mode-group">
             <label>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE")}:</label>
-            <select name="rollMode">
-              <option value="normal" selected>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_NORMAL")}</option>
-              <option value="advantage">${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_ADVANTAGE")}</option>
-              <option value="disadvantage">${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_DISADVANTAGE")}</option>
-            </select>
+            <div class="radio-group">
+              <label class="radio-option disadvantage">
+                <input type="radio" name="rollMode" value="disadvantage" />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_DISADVANTAGE")}</span>
+              </label>
+              <label class="radio-option normal">
+                <input type="radio" name="rollMode" value="normal" checked />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_NORMAL")}</span>
+              </label>
+              <label class="radio-option advantage">
+                <input type="radio" name="rollMode" value="advantage" />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_ADVANTAGE")}</span>
+              </label>
+            </div>
           </div>
           <div class="form-group">
             <label>${game.i18n.localize("SRA2.SKILLS.RISK_DICE")} (max ${attributeValue}):</label>
-            <input type="number" name="riskDice" value="0" min="0" max="${attributeValue}" />
+            <input type="number" name="riskDice" value="${defaultRiskDice}" min="0" max="${attributeValue}" />
             <p class="notes">${game.i18n.localize("SRA2.SKILLS.RISK_DICE_HINT")}</p>
           </div>
           <div class="form-group">
@@ -1664,12 +1675,11 @@ class CharacterSheet extends ActorSheet {
           icon: '<i class="fas fa-dice-d6"></i>',
           label: game.i18n.localize("SRA2.SKILLS.ROLL"),
           callback: (html) => {
-            const modifier = parseInt(html.find('[name="modifier"]').val()) || 0;
-            const totalPool = Math.max(1, attributeValue + modifier);
+            const totalPool = attributeValue;
             const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
             const normalDice = totalPool - riskDice;
             const riskReduction = Math.max(0, Math.min(3, parseInt(html.find('[name="riskReduction"]').val()) || 0));
-            const rollMode = html.find('[name="rollMode"]').val() || "normal";
+            const rollMode = html.find('[name="rollMode"]:checked').val() || "normal";
             this._rollSkillDice(attributeLabel, normalDice, riskDice, riskReduction, rollMode);
           }
         },
@@ -1686,7 +1696,6 @@ class CharacterSheet extends ActorSheet {
    */
   async _onRollSkill(event) {
     event.preventDefault();
-    console.log("SRA2 | Roll skill clicked!");
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
     if (!itemId) {
@@ -1708,6 +1717,7 @@ class CharacterSheet extends ActorSheet {
     const skillRR = this.calculateRR("skill", skill.name);
     const attributeRR = this.calculateRR("attribute", linkedAttribute);
     const autoRR = Math.min(3, skillRR + attributeRR);
+    const defaultRiskDice = this.getRiskDiceByRR(autoRR);
     new Dialog({
       title: game.i18n.format("SRA2.SKILLS.ROLL_TITLE", { name: skill.name }),
       content: `
@@ -1716,21 +1726,26 @@ class CharacterSheet extends ActorSheet {
             <label>${game.i18n.localize("SRA2.SKILLS.BASE_POOL")}: <strong>${basePool}</strong></label>
             <p class="notes">(${game.i18n.localize("SRA2.SKILLS.RATING")}: ${rating} + ${attributeLabel}: ${attributeValue})</p>
           </div>
-          <div class="form-group">
-            <label>${game.i18n.localize("SRA2.SKILLS.MODIFIER")}:</label>
-            <input type="number" name="modifier" value="0" min="-10" max="10" />
-          </div>
-          <div class="form-group">
+          <div class="form-group roll-mode-group">
             <label>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE")}:</label>
-            <select name="rollMode">
-              <option value="normal" selected>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_NORMAL")}</option>
-              <option value="advantage">${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_ADVANTAGE")}</option>
-              <option value="disadvantage">${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_DISADVANTAGE")}</option>
-            </select>
+            <div class="radio-group">
+              <label class="radio-option disadvantage">
+                <input type="radio" name="rollMode" value="disadvantage" />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_DISADVANTAGE")}</span>
+              </label>
+              <label class="radio-option normal">
+                <input type="radio" name="rollMode" value="normal" checked />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_NORMAL")}</span>
+              </label>
+              <label class="radio-option advantage">
+                <input type="radio" name="rollMode" value="advantage" />
+                <span>${game.i18n.localize("SRA2.SKILLS.ROLL_MODE_ADVANTAGE")}</span>
+              </label>
+            </div>
           </div>
           <div class="form-group">
             <label>${game.i18n.localize("SRA2.SKILLS.RISK_DICE")} (max ${basePool}):</label>
-            <input type="number" name="riskDice" value="0" min="0" max="${basePool}" />
+            <input type="number" name="riskDice" value="${defaultRiskDice}" min="0" max="${basePool}" />
             <p class="notes">${game.i18n.localize("SRA2.SKILLS.RISK_DICE_HINT")}</p>
           </div>
           <div class="form-group">
@@ -1745,12 +1760,11 @@ class CharacterSheet extends ActorSheet {
           icon: '<i class="fas fa-dice-d6"></i>',
           label: game.i18n.localize("SRA2.SKILLS.ROLL"),
           callback: (html) => {
-            const modifier = parseInt(html.find('[name="modifier"]').val()) || 0;
-            const totalPool = Math.max(1, basePool + modifier);
+            const totalPool = basePool;
             const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
             const normalDice = totalPool - riskDice;
             const riskReduction = Math.max(0, Math.min(3, parseInt(html.find('[name="riskReduction"]').val()) || 0));
-            const rollMode = html.find('[name="rollMode"]').val() || "normal";
+            const rollMode = html.find('[name="rollMode"]:checked').val() || "normal";
             this._rollSkillDice(skill.name, normalDice, riskDice, riskReduction, rollMode);
           }
         },
