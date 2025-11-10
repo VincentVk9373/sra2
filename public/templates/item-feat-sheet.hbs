@@ -73,12 +73,14 @@
       <input type="checkbox" name="system.active" {{checked system.active}} />
     </div>
 
-    <!-- First Feat -->
+    <!-- First Feat (Trait only) -->
+    {{#if (eq system.featType "trait")}}
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.IS_FIRST_FEAT"}}</label>
       <input type="checkbox" name="system.isFirstFeat" {{checked system.isFirstFeat}} />
       <p class="notes">{{localize "SRA2.FEATS.IS_FIRST_FEAT_HINT"}}</p>
     </div>
+    {{/if}}
 
     <!-- Bonus Light Damage -->
     <div class="form-group">
