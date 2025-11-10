@@ -158,6 +158,14 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: "0",
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE"
       }),
+      damageValueBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"
+      }),
       meleeRange: new fields.StringField({
         required: true,
         initial: "none",
@@ -305,9 +313,15 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         label: "SRA2.FEATS.IS_WEAPON_FOCUS"
       }),
       // Narrative effects
-      narrativeEffects: new fields.ArrayField(new fields.StringField({
-        required: false,
-        initial: ""
+      narrativeEffects: new fields.ArrayField(new fields.SchemaField({
+        text: new fields.StringField({
+          required: false,
+          initial: ""
+        }),
+        isNegative: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
       }), {
         initial: [],
         label: "SRA2.FEATS.NARRATIVE_EFFECTS"
@@ -437,6 +451,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS', value: 1 });
     }
     
+    // Damage value bonus: +1 per bonus
+    const damageValueBonus = (this as any).damageValueBonus || 0;
+    if (damageValueBonus > 0) {
+      recommendedLevel += damageValueBonus;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS', labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+    }
+    
     // Resource Reduction (RR) entries
     for (const rr of rrList) {
       const rrType = rr.rrType;
@@ -475,11 +496,18 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
     }
     
-    // Narrative effects: +1 level per effect (count non-empty strings)
-    const narrativeEffectsCount = narrativeEffects.filter((effect: string) => effect && effect.trim() !== '').length;
-    if (narrativeEffectsCount > 0) {
-      recommendedLevel += narrativeEffectsCount;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS', labelParams: `(${narrativeEffectsCount})`, value: narrativeEffectsCount });
+    // Narrative effects: +1 level per positive effect, -1 per negative effect (count non-empty strings)
+    const positiveEffectsCount = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && !effect.isNegative).length;
+    const negativeEffectsCount = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && effect.isNegative).length;
+    
+    if (positiveEffectsCount > 0) {
+      recommendedLevel += positiveEffectsCount;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE', labelParams: `(${positiveEffectsCount})`, value: positiveEffectsCount });
+    }
+    
+    if (negativeEffectsCount > 0) {
+      recommendedLevel -= negativeEffectsCount;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE', labelParams: `(${negativeEffectsCount})`, value: -negativeEffectsCount });
     }
     
     (this as any).recommendedLevel = recommendedLevel;

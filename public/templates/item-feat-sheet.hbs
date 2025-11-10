@@ -21,7 +21,7 @@
             {{#each system.recommendedLevelBreakdown}}
             <li>
               <span class="breakdown-label">{{localize this.labelKey}}{{#if this.labelParams}} {{this.labelParams}}{{/if}}</span>
-              <span class="breakdown-value">+{{this.value}}</span>
+              <span class="breakdown-value">{{#if (gte this.value 0)}}+{{/if}}{{this.value}}</span>
             </li>
             {{/each}}
           </ul>
@@ -276,7 +276,7 @@
         <label>{{localize "SRA2.FEATS.WEAPON.INFO"}}</label>
         <div class="weapon-stats">
           <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
-          <span class="stat-value">{{system.damageValue}}</span>
+          <span class="stat-value">{{finalDamageValue}}</span>
           <span class="stat-separator">/</span>
           <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}:</span>
           <span class="stat-value">{{#if (eq system.meleeRange "ok")}}OK{{else}}{{#if (eq system.meleeRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
@@ -296,7 +296,39 @@
       <!-- Damage Value (VD) -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE"}}</label>
-        <input type="text" name="system.damageValue" value="{{system.damageValue}}" />
+        <div class="damage-value-display">
+          <input type="text" name="system.damageValue" value="{{system.damageValue}}" {{#if system.weaponType}}disabled{{/if}} />
+          {{#if system.weaponType}}
+            <div class="calculated-damage">
+              <span class="label-small">{{localize "SRA2.FEATS.WEAPON.FINAL_VALUE"}}:</span>
+              <span class="value-display">{{finalDamageValue}}</span>
+            </div>
+            {{#unless item.actor}}
+              <p class="notes warning-note">
+                <i class="fas fa-info-circle"></i>
+                {{localize "SRA2.FEATS.WEAPON.NEEDS_ACTOR_FOR_CALCULATION"}}
+              </p>
+            {{/unless}}
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Damage Value Bonus -->
+      <div class="form-group damage-value-bonus-group">
+        <label>{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"}}</label>
+        <p class="notes">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS_HINT"}}</p>
+        <!-- Hidden input to store the actual value -->
+        <input type="hidden" name="system.damageValueBonus" value="{{system.damageValueBonus}}" data-dtype="Number" />
+        <div class="bonus-checkboxes">
+          <label class="bonus-checkbox-label">
+            <input type="checkbox" class="damage-bonus-checkbox" data-bonus-value="1" {{#if (gte system.damageValueBonus 1)}}checked{{/if}} />
+            <span>{{localize "SRA2.FEATS.WEAPON.BONUS_1"}}</span>
+          </label>
+          <label class="bonus-checkbox-label">
+            <input type="checkbox" class="damage-bonus-checkbox" data-bonus-value="2" {{#if (eq system.damageValueBonus 2)}}checked{{/if}} />
+            <span>{{localize "SRA2.FEATS.WEAPON.BONUS_2"}}</span>
+          </label>
+        </div>
       </div>
 
       <!-- Ranges -->
@@ -491,7 +523,15 @@
             </div>
             
             <div class="form-group">
-              <textarea name="system.narrativeEffects.{{@index}}" placeholder="{{localize 'SRA2.FEATS.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this}}</textarea>
+              <textarea name="system.narrativeEffects.{{@index}}.text" placeholder="{{localize 'SRA2.FEATS.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this.text}}</textarea>
+            </div>
+            
+            <div class="form-group narrative-effect-negative">
+              <label>
+                <input type="checkbox" name="system.narrativeEffects.{{@index}}.isNegative" {{checked this.isNegative}} />
+                {{localize "SRA2.FEATS.NARRATIVE_EFFECT_NEGATIVE"}}
+              </label>
+              <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_NEGATIVE_HINT"}}</p>
             </div>
           </div>
           {{/each}}

@@ -801,6 +801,120 @@
           }
         }
       }
+
+      /* Damage Value Display */
+      .damage-value-display {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        input[type="text"]:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .calculated-damage {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem;
+          background: rgba(255, 152, 0, 0.1);
+          border: 1px solid #ff9800;
+          border-radius: 4px;
+          
+          .label-small {
+            font-size: 0.85rem;
+            color: #ff9800;
+            font-weight: 600;
+          }
+          
+          .value-display {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.25rem 0.75rem;
+            border-radius: 3px;
+          }
+        }
+
+        .warning-note {
+          font-size: 0.85rem;
+          color: #ff9800;
+          margin: 0;
+          padding: 0.5rem;
+          background: rgba(255, 152, 0, 0.05);
+          border-left: 3px solid #ff9800;
+          border-radius: 3px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          
+          i {
+            color: #ff9800;
+          }
+        }
+      }
+
+      /* Damage Value Bonus Checkboxes */
+      .damage-value-bonus-group {
+        .notes {
+          font-size: 0.85rem;
+          color: #aaa;
+          margin: 0.25rem 0 0.75rem 0;
+          font-style: italic;
+        }
+
+        .bonus-checkboxes {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          
+          .bonus-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            
+            &:hover {
+              background: rgba(76, 175, 80, 0.2);
+              border-color: #66bb6a;
+            }
+            
+            input[type="checkbox"] {
+              cursor: pointer;
+              width: 18px;
+              height: 18px;
+              
+              &:checked {
+                accent-color: #4caf50;
+              }
+            }
+            
+            span {
+              font-size: 0.95rem;
+              color: #ccc;
+              font-weight: 500;
+            }
+            
+            &:has(input:checked) {
+              background: rgba(76, 175, 80, 0.3);
+              border-color: #81c784;
+              
+              span {
+                color: #fff;
+                font-weight: 600;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -506,6 +506,14 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: "0",
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE"
       }),
+      damageValueBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"
+      }),
       meleeRange: new fields.StringField({
         required: true,
         initial: "none",
@@ -653,9 +661,15 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         label: "SRA2.FEATS.IS_WEAPON_FOCUS"
       }),
       // Narrative effects
-      narrativeEffects: new fields.ArrayField(new fields.StringField({
-        required: false,
-        initial: ""
+      narrativeEffects: new fields.ArrayField(new fields.SchemaField({
+        text: new fields.StringField({
+          required: false,
+          initial: ""
+        }),
+        isNegative: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
       }), {
         initial: [],
         label: "SRA2.FEATS.NARRATIVE_EFFECTS"
@@ -757,6 +771,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS", value: 1 });
     }
+    const damageValueBonus = this.damageValueBonus || 0;
+    if (damageValueBonus > 0) {
+      recommendedLevel += damageValueBonus;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS", labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+    }
     for (const rr of rrList) {
       const rrType = rr.rrType;
       const rrValue = rr.rrValue || 0;
@@ -785,10 +804,15 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevel += 3;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
     }
-    const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
-    if (narrativeEffectsCount > 0) {
-      recommendedLevel += narrativeEffectsCount;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS", labelParams: `(${narrativeEffectsCount})`, value: narrativeEffectsCount });
+    const positiveEffectsCount = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && !effect.isNegative).length;
+    const negativeEffectsCount = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && effect.isNegative).length;
+    if (positiveEffectsCount > 0) {
+      recommendedLevel += positiveEffectsCount;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE", labelParams: `(${positiveEffectsCount})`, value: positiveEffectsCount });
+    }
+    if (negativeEffectsCount > 0) {
+      recommendedLevel -= negativeEffectsCount;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE", labelParams: `(${negativeEffectsCount})`, value: -negativeEffectsCount });
     }
     this.recommendedLevel = recommendedLevel;
     this.recommendedLevelBreakdown = recommendedLevelBreakdown;
@@ -2221,6 +2245,7 @@ class FeatSheet extends ItemSheet {
     const context = super.getData();
     this.item.prepareData();
     context.system = this.item.system;
+    context.finalDamageValue = this._calculateFinalDamageValue();
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
     for (let i = 0; i < rrList.length; i++) {
@@ -2258,6 +2283,7 @@ class FeatSheet extends ItemSheet {
     html.find('[data-action="add-narrative-effect"]').on("click", this._onAddNarrativeEffect.bind(this));
     html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
     html.find('[data-action="select-weapon-type"]').on("change", this._onWeaponTypeChange.bind(this));
+    html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
   }
   /**
    * Handle adding a new RR entry
@@ -2339,7 +2365,10 @@ class FeatSheet extends ItemSheet {
   async _onAddNarrativeEffect(event) {
     event.preventDefault();
     const narrativeEffects = [...this.item.system.narrativeEffects || []];
-    narrativeEffects.push("");
+    narrativeEffects.push({
+      text: "",
+      isNegative: false
+    });
     await this.item.update({
       "system.narrativeEffects": narrativeEffects
     });
@@ -2357,6 +2386,37 @@ class FeatSheet extends ItemSheet {
       "system.narrativeEffects": narrativeEffects
     });
     this.render(false);
+  }
+  /**
+   * Calculate the final damage value taking into account STRENGTH attribute
+   */
+  _calculateFinalDamageValue() {
+    const damageValue = this.item.system.damageValue || "0";
+    const damageValueBonus = this.item.system.damageValueBonus || 0;
+    const strength = this.item.actor ? this.item.actor.system?.attributes?.strength || 0 : 0;
+    if (damageValue === "FOR") {
+      const total = strength + damageValueBonus;
+      if (!this.item.actor) {
+        return damageValueBonus > 0 ? `FOR+${damageValueBonus}` : "FOR";
+      }
+      return `${total} (FOR${damageValueBonus > 0 ? `+${damageValueBonus}` : ""})`;
+    } else if (damageValue.startsWith("FOR+")) {
+      const modifier = parseInt(damageValue.substring(4)) || 0;
+      const total = strength + modifier + damageValueBonus;
+      if (!this.item.actor) {
+        return damageValueBonus > 0 ? `FOR+${modifier}+${damageValueBonus}` : `FOR+${modifier}`;
+      }
+      return `${total} (FOR+${modifier}${damageValueBonus > 0 ? `+${damageValueBonus}` : ""})`;
+    } else if (damageValue === "toxin") {
+      return "selon toxine";
+    } else {
+      const base = parseInt(damageValue) || 0;
+      const total = base + damageValueBonus;
+      if (damageValueBonus > 0) {
+        return `${total} (${base}+${damageValueBonus})`;
+      }
+      return total.toString();
+    }
   }
   /**
    * Handle weapon type selection change
@@ -2378,6 +2438,41 @@ class FeatSheet extends ItemSheet {
       "system.longRange": weaponStats.long
     });
     this.render(false);
+  }
+  /**
+   * Handle damage value bonus checkbox changes
+   */
+  _onDamageValueBonusChange(event) {
+    event.preventDefault();
+    const checkbox = event.currentTarget;
+    const value = parseInt(checkbox.dataset.bonusValue || "0");
+    const currentBonus = this.item.system.damageValueBonus || 0;
+    let newBonus;
+    if (checkbox.checked) {
+      newBonus = value;
+    } else {
+      if (value === 2 && currentBonus === 2) {
+        newBonus = 1;
+      } else if (value === 1 && currentBonus >= 1) {
+        newBonus = 0;
+      } else {
+        newBonus = currentBonus;
+      }
+    }
+    const hiddenInput = this.element.find('input[name="system.damageValueBonus"]')[0];
+    if (hiddenInput) {
+      hiddenInput.value = newBonus.toString();
+    }
+    const checkboxes = this.element.find(".damage-bonus-checkbox");
+    checkboxes.each((_, cb) => {
+      const cbElement = cb;
+      const cbValue = parseInt(cbElement.dataset.bonusValue || "0");
+      if (cbValue === 1) {
+        cbElement.checked = newBonus >= 1;
+      } else if (cbValue === 2) {
+        cbElement.checked = newBonus === 2;
+      }
+    });
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
@@ -3102,6 +3197,113 @@ class Migration_13_0_7 extends Migration {
     }
   }
 }
+class Migration_13_0_8 extends Migration {
+  get code() {
+    return "migration-13.0.8";
+  }
+  get version() {
+    return "13.0.8";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.8: Converting narrativeEffects to new format and fixing damageValueBonus");
+    let totalConverted = 0;
+    let totalSkipped = 0;
+    let totalFixed = 0;
+    let conversionDetails = [];
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        let needsUpdate = false;
+        const update = {
+          _id: item.id
+        };
+        if (sourceSystem.narrativeEffects && sourceSystem.narrativeEffects.length > 0) {
+          const firstEffect = sourceSystem.narrativeEffects[0];
+          if (!(typeof firstEffect === "object" && firstEffect !== null && "text" in firstEffect)) {
+            const convertedEffects = sourceSystem.narrativeEffects.map((effect) => {
+              if (typeof effect === "string") {
+                return {
+                  text: effect,
+                  isNegative: false
+                };
+              }
+              return {
+                text: effect?.text || effect?.toString() || "",
+                isNegative: effect?.isNegative || false
+              };
+            });
+            update["system.narrativeEffects"] = convertedEffects;
+            update["system._migratedNarrativeEffectsAt"] = (/* @__PURE__ */ new Date()).toISOString();
+            update["system._narrativeEffectsMigrationVersion"] = "13.0.8";
+            needsUpdate = true;
+            console.log(SYSTEM.LOG.HEAD + `Migration 13.0.8: Converting narrativeEffects for "${item.name}" (ID: ${item.id})`);
+            console.log(SYSTEM.LOG.HEAD + `  - Effect count: ${sourceSystem.narrativeEffects.length}`);
+            conversionDetails.push({
+              name: item.name,
+              id: item.id,
+              effectCount: sourceSystem.narrativeEffects.length
+            });
+            totalConverted++;
+          }
+        }
+        if (sourceSystem.damageValueBonus === null || sourceSystem.damageValueBonus === void 0 || typeof sourceSystem.damageValueBonus !== "number" || !Number.isInteger(sourceSystem.damageValueBonus)) {
+          update["system.damageValueBonus"] = 0;
+          needsUpdate = true;
+          totalFixed++;
+          console.log(SYSTEM.LOG.HEAD + `Migration 13.0.8: Fixing damageValueBonus for "${item.name}" (ID: ${item.id})`);
+        }
+        if (needsUpdate) {
+          updates.push(update);
+        } else {
+          totalSkipped++;
+        }
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.8 completed - NarrativeEffects converted: ${totalConverted}, DamageValueBonus fixed: ${totalFixed}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (conversionDetails.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + "=== CONVERSION DETAILS ===");
+      console.log(SYSTEM.LOG.HEAD + `Total items converted: ${conversionDetails.length}`);
+      const totalEffects = conversionDetails.reduce((sum, d) => sum + d.effectCount, 0);
+      console.log(SYSTEM.LOG.HEAD + `  - Total narrative effects migrated: ${totalEffects}`);
+      console.log(SYSTEM.LOG.HEAD + "=========================");
+      console.log(SYSTEM.LOG.HEAD + "Converted items:");
+      conversionDetails.forEach((detail, index) => {
+        console.log(SYSTEM.LOG.HEAD + `  ${index + 1}. "${detail.name}" (ID: ${detail.id}) - ${detail.effectCount} effect(s)`);
+      });
+    }
+    if (totalFixed > 0) {
+      console.log(SYSTEM.LOG.HEAD + `Fixed damageValueBonus on ${totalFixed} item(s)`);
+    }
+    if (totalConverted > 0 || totalFixed > 0) {
+      let userMessage = "";
+      if (totalConverted > 0 && totalFixed > 0) {
+        userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_8_INFO", { count: totalConverted, fixed: totalFixed }) : `Migration 13.0.8: Converted narrative effects on ${totalConverted} feat(s) and fixed damageValueBonus on ${totalFixed} feat(s).`;
+      } else if (totalConverted > 0) {
+        userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_8_INFO", { count: totalConverted }) : `Migration 13.0.8: Converted narrative effects on ${totalConverted} feat(s) to new format.`;
+      } else if (totalFixed > 0) {
+        userMessage = `Migration 13.0.8: Fixed damageValueBonus on ${totalFixed} feat(s).`;
+      }
+      ui.notifications?.info(userMessage, { permanent: false });
+      console.log(SYSTEM.LOG.HEAD + "✓ Migration complete.");
+      if (totalConverted > 0) {
+        console.log(SYSTEM.LOG.HEAD + "✓ All narrative effects converted to new format.");
+        console.log(SYSTEM.LOG.HEAD + "✓ All effects default to positive (isNegative: false)");
+      }
+      if (totalFixed > 0) {
+        console.log(SYSTEM.LOG.HEAD + "✓ All damageValueBonus fields set to valid integer values.");
+      }
+      console.log(SYSTEM.LOG.HEAD + "✓ No data was lost in the conversion");
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -3129,6 +3331,7 @@ class SRA2System {
       declareMigration(new Migration_13_0_5());
       declareMigration(new Migration_13_0_6());
       declareMigration(new Migration_13_0_7());
+      declareMigration(new Migration_13_0_8());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {
@@ -3171,6 +3374,12 @@ class SRA2System {
     });
     Handlebars.registerHelper("eq", function(a, b) {
       return a === b;
+    });
+    Handlebars.registerHelper("gt", function(a, b) {
+      return a > b;
+    });
+    Handlebars.registerHelper("gte", function(a, b) {
+      return a >= b;
     });
     Hooks.once("ready", () => this.onReady());
   }

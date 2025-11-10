@@ -170,6 +170,8 @@
             "REMOVE_NARRATIVE_EFFECT": "Remove Effect",
             "EFFECT_NUMBER": "Effect",
             "NARRATIVE_EFFECT_PLACEHOLDER": "Describe a narrative effect of this feat...",
+            "NARRATIVE_EFFECT_NEGATIVE": "Negative effect (counts -1 instead of +1 to level)",
+            "NARRATIVE_EFFECT_NEGATIVE_HINT": "Check this box if the effect is negative for the character (disadvantage, curse, etc.)",
             "NO_NARRATIVE_EFFECTS": "No narrative effects. Click the button above to add one.",
             "GRANTS_NARRATION": "Grants Narration",
             "GRANTS_NARRATION_HINT": "This feat grants a narration (adds to narration count)",
@@ -195,7 +197,10 @@
                 "RR_ATTRIBUTE": "RR Attribute",
                 "ANARCHY_BONUS": "Anarchy Bonus",
                 "GRANTS_NARRATION": "Grants narration",
-                "NARRATIVE_EFFECTS": "Narrative effects"
+                "NARRATIVE_EFFECTS": "Narrative effects",
+                "NARRATIVE_EFFECTS_POSITIVE": "Positive narrative effects",
+                "NARRATIVE_EFFECTS_NEGATIVE": "Negative narrative effects",
+                "DAMAGE_VALUE_BONUS": "DV Bonus"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",
@@ -204,6 +209,8 @@
                 "INFO": "Weapon Information",
                 "DAMAGE_VALUE": "Damage Value (DV)",
                 "DAMAGE_VALUE_SHORT": "DV",
+                "FINAL_VALUE": "Final Value",
+                "NEEDS_ACTOR_FOR_CALCULATION": "Add this weapon to a character to calculate the final value with Strength (FOR)",
                 "RANGES": "Ranges",
                 "RANGES_SHORT": "Ranges",
                 "MELEE_RANGE": "Melee",
@@ -217,6 +224,10 @@
                 "RANGE_NONE": "-",
                 "RANGE_OK": "OK",
                 "RANGE_DICE": "Dice",
+                "DAMAGE_VALUE_BONUS": "DV Bonus",
+                "DAMAGE_VALUE_BONUS_HINT": "Each checked box adds +1 to DV and +1 to recommended level",
+                "BONUS_1": "+1 DV (+1 level)",
+                "BONUS_2": "+2 DV (+2 levels)",
                 "TYPES": {
                     "BARE_HANDS": "Bare Hands",
                     "SHORT_WEAPONS": "Short Weapons (knife, brass knuckles, cyber claws and blades)",
@@ -394,7 +405,8 @@
             "APPLYING_ITEMS": "Applying updates on items",
             "SETTING_NAME": "Current System Version",
             "13_0_5_INFO": "Migration 13.0.5: Weapon and Spell feat types have been separated. All feats have been converted to \"Weapon\" type. You can manually change spells to \"Spell\" type.",
-            "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup."
+            "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup.",
+            "13_0_8_INFO": "Migration 13.0.8: Narrative effects on {count} feat(s) have been converted to the new format (with negative option)."
         }
     }
 }

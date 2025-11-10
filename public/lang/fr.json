@@ -170,6 +170,8 @@
             "REMOVE_NARRATIVE_EFFECT": "Supprimer l'effet",
             "EFFECT_NUMBER": "Effet",
             "NARRATIVE_EFFECT_PLACEHOLDER": "Décrivez un effet narratif de cet atout...",
+            "NARRATIVE_EFFECT_NEGATIVE": "Effet négatif (compte -1 au lieu de +1 au niveau)",
+            "NARRATIVE_EFFECT_NEGATIVE_HINT": "Cochez cette case si l'effet est négatif pour le personnage (désavantage, malédiction, etc.)",
             "NO_NARRATIVE_EFFECTS": "Aucun effet narratif. Cliquez sur le bouton ci-dessus pour en ajouter un.",
             "GRANTS_NARRATION": "Accorde une Narration",
             "GRANTS_NARRATION_HINT": "Cet atout accorde une narration (ajoute au compte de narrations)",
@@ -195,7 +197,10 @@
                 "RR_ATTRIBUTE": "RR Attribut",
                 "ANARCHY_BONUS": "Bonus Anarchie",
                 "GRANTS_NARRATION": "Accorde une narration",
-                "NARRATIVE_EFFECTS": "Effets narratifs"
+                "NARRATIVE_EFFECTS": "Effets narratifs",
+                "NARRATIVE_EFFECTS_POSITIVE": "Effets narratifs positifs",
+                "NARRATIVE_EFFECTS_NEGATIVE": "Effets narratifs négatifs",
+                "DAMAGE_VALUE_BONUS": "Bonus VD"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",
@@ -204,6 +209,8 @@
                 "INFO": "Informations de l'Arme",
                 "DAMAGE_VALUE": "Valeur de Dégât (VD)",
                 "DAMAGE_VALUE_SHORT": "VD",
+                "FINAL_VALUE": "Valeur Finale",
+                "NEEDS_ACTOR_FOR_CALCULATION": "Ajoutez cette arme à un personnage pour calculer la valeur finale avec la Force (FOR)",
                 "RANGES": "Portées",
                 "RANGES_SHORT": "Portées",
                 "MELEE_RANGE": "Mêlée",
@@ -217,6 +224,10 @@
                 "RANGE_NONE": "-",
                 "RANGE_OK": "OK",
                 "RANGE_DICE": "Dés",
+                "DAMAGE_VALUE_BONUS": "Bonus de VD",
+                "DAMAGE_VALUE_BONUS_HINT": "Chaque case cochée ajoute +1 au VD et +1 au niveau recommandé",
+                "BONUS_1": "+1 VD (+1 niveau)",
+                "BONUS_2": "+2 VD (+2 niveaux)",
                 "TYPES": {
                     "BARE_HANDS": "Mains nues",
                     "SHORT_WEAPONS": "Armes courtes (couteau, poing américain, griffes et lame cybernétiques)",
@@ -394,7 +405,8 @@
             "APPLYING_ITEMS": "Application des mises à jour sur les objets",
             "SETTING_NAME": "Version Actuelle du Système",
             "13_0_5_INFO": "Migration 13.0.5 : Les types d'atouts \"Armes et Sorts\" ont été séparés. Tous les atouts ont été convertis en type \"Arme\". Vous pouvez changer manuellement les sorts en type \"Sort\".",
-            "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde."
+            "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde.",
+            "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif)."
         }
     }
 }

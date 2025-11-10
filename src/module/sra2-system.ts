@@ -19,6 +19,8 @@ import { Migration_13_0_6 } from "./migration/migration-13.0.6.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_0_7 } from "./migration/migration-13.0.7.mjs";
 // @ts-ignore - JavaScript module without type declarations
+import { Migration_13_0_8 } from "./migration/migration-13.0.8.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
 export class SRA2System {
@@ -51,6 +53,7 @@ export class SRA2System {
       declareMigration(new Migration_13_0_5());
       declareMigration(new Migration_13_0_6());
       declareMigration(new Migration_13_0_7());
+      declareMigration(new Migration_13_0_8());
     });
     
     // Register custom Actor document class
@@ -112,6 +115,14 @@ export class SRA2System {
     
     Handlebars.registerHelper('eq', function(a: any, b: any) {
       return a === b;
+    });
+    
+    Handlebars.registerHelper('gt', function(a: any, b: any) {
+      return a > b;
+    });
+    
+    Handlebars.registerHelper('gte', function(a: any, b: any) {
+      return a >= b;
     });
     
     Hooks.once("ready", () => this.onReady());
