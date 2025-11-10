@@ -121,13 +121,6 @@
     </div>
     {{/if}}
 
-    <!-- Armor Bonus -->
-    <div class="form-group">
-      <label>{{localize "SRA2.FEATS.HAS_ARMOR_BONUS"}}</label>
-      <input type="checkbox" name="system.hasArmorBonus" {{checked system.hasArmorBonus}} />
-      <p class="notes">{{localize "SRA2.FEATS.HAS_ARMOR_BONUS_HINT"}}</p>
-    </div>
-
     <!-- Rigger Console Count -->
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.RIGGER_CONSOLE_COUNT"}}</label>
@@ -238,6 +231,13 @@
     {{#if (eq system.featType "weapons-spells")}}
     <div class="weapon-fields-section">
       <h3>{{localize "SRA2.FEATS.WEAPON.SECTION_TITLE"}}</h3>
+      
+      <!-- Weapon Focus -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.IS_WEAPON_FOCUS"}}</label>
+        <input type="checkbox" name="system.isWeaponFocus" {{checked system.isWeaponFocus}} />
+        <p class="notes">{{localize "SRA2.FEATS.IS_WEAPON_FOCUS_HINT"}}</p>
+      </div>
       
       <!-- Damage Value (VD) -->
       <div class="form-group">

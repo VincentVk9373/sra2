@@ -255,11 +255,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         label: "SRA2.FEATS.AWAKENED.ADEPT"
       }),
       // Additional fields for recommended level calculation
-      hasArmorBonus: new fields.BooleanField({
-        required: true,
-        initial: false,
-        label: "SRA2.FEATS.HAS_ARMOR_BONUS"
-      }),
       riggerConsoleCount: new fields.NumberField({
         required: true,
         initial: 0,
@@ -271,6 +266,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.FEATS.HAS_VEHICLE_CONTROL_WIRING"
+      }),
+      isWeaponFocus: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_WEAPON_FOCUS"
       }),
       // Narrative effects
       narrativeEffects: new fields.ArrayField(new fields.StringField({
@@ -331,11 +331,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const bonusSevereDamage = (this as any).bonusSevereDamage || 0;
     const bonusPhysicalThreshold = (this as any).bonusPhysicalThreshold || 0;
     const bonusMentalThreshold = (this as any).bonusMentalThreshold || 0;
-    const hasArmorBonus = (this as any).hasArmorBonus || false;
     const firewall = (this as any).firewall || 0;
     const attack = (this as any).attack || 0;
     const riggerConsoleCount = (this as any).riggerConsoleCount || 0;
     const hasVehicleControlWiring = (this as any).hasVehicleControlWiring || false;
+    const isWeaponFocus = (this as any).isWeaponFocus || false;
     const bonusAnarchy = (this as any).bonusAnarchy || 0;
     const grantsNarration = (this as any).grantsNarration || false;
     const narrativeEffects = (this as any).narrativeEffects || [];
@@ -375,12 +375,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD', labelParams: `(${bonusMentalThreshold > 0 ? '+' : ''}${bonusMentalThreshold})`, value });
     }
     
-    // Armor bonus: +1 if checked
-    if (hasArmorBonus) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ARMOR_BONUS', value: 1 });
-    }
-    
     // Cyberdeck firewall: starts at 1, each level is +1
     if (featType === 'cyberdeck' && firewall > 0) {
       recommendedLevel += firewall;
@@ -403,6 +397,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (hasVehicleControlWiring) {
       recommendedLevel += 2;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING', value: 2 });
+    }
+    
+    // Weapon focus: +1
+    if (isWeaponFocus) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS', value: 1 });
     }
     
     // Resource Reduction (RR) entries
