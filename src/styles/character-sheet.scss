@@ -1186,6 +1186,80 @@
             color: #333;
             line-height: 1.4;
           }
+          
+          .narrative-effects {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            border-left: 3px solid #6c757d;
+            border-radius: 4px;
+            
+            h5 {
+              margin: 0 0 0.5rem 0;
+              font-size: 0.85rem;
+              font-weight: bold;
+              color: #495057;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .narrative-effects-list {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+              
+              .narrative-effect {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 0.4rem 0;
+                font-size: 0.85rem;
+                line-height: 1.4;
+                
+                &:not(:last-child) {
+                  border-bottom: 1px solid #dee2e6;
+                }
+                
+                .effect-badge {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-width: 2rem;
+                  height: 1.5rem;
+                  padding: 0 0.4rem;
+                  font-size: 0.75rem;
+                  font-weight: bold;
+                  border-radius: 3px;
+                  flex-shrink: 0;
+                  
+                  &.positive {
+                    background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+                    color: #155724;
+                    box-shadow: 0 1px 3px rgba(132, 250, 176, 0.3);
+                  }
+                  
+                  &.negative {
+                    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+                    color: #721c24;
+                    box-shadow: 0 1px 3px rgba(255, 154, 158, 0.3);
+                  }
+                }
+                
+                .effect-text {
+                  flex: 1;
+                  color: #212529;
+                }
+                
+                &.positive .effect-text {
+                  color: #155724;
+                }
+                
+                &.negative .effect-text {
+                  color: #721c24;
+                }
+              }
+            }
+          }
         }
         
         .empty-feats {

@@ -26,6 +26,10 @@ export class Migration_13_0_10 extends Migration {
     await this.applyItemsUpdates((items) => {
       const updates = [];
       
+      // Log all feat items for debugging
+      const featItems = items.filter(item => item.type === 'feat');
+      console.log(SYSTEM.LOG.HEAD + `Found ${featItems.length} feat items to check`);
+      
       for (const item of items) {
         // Only process feat items
         if (item.type !== 'feat') {
@@ -35,15 +39,24 @@ export class Migration_13_0_10 extends Migration {
         // Access the system data
         const sourceSystem = item._source?.system || item.system;
         
+        // Skip if already migrated
+        if (sourceSystem._costMigrationVersion === '13.0.10') {
+          totalSkipped++;
+          continue;
+        }
+        
         let needsUpdate = false;
         const update = {
           _id: item.id
         };
         
-        const currentCost = sourceSystem.cost;
+        const currentCost = sourceSystem.cost || 'free-equipment';
         const featType = sourceSystem.featType || 'equipment';
         let newCost = currentCost;
         let reason = '';
+        
+        // Log current state for debugging
+        console.log(SYSTEM.LOG.HEAD + `Checking "${item.name}" - cost: "${currentCost}", type: "${featType}"`);
         
         // Convert specialized-equipment to advanced-equipment
         if (currentCost === 'specialized-equipment') {
@@ -51,14 +64,19 @@ export class Migration_13_0_10 extends Migration {
           needsUpdate = true;
           reason = 'specialized-equipment → advanced-equipment';
         }
-        
         // Convert old 'feat' cost type to appropriate value
-        if (currentCost === 'feat') {
+        else if (currentCost === 'feat') {
           // For equipment and weapons, set to free-equipment (0 cost)
           // For other types, the cost doesn't apply anyway but we set it to free-equipment for consistency
           newCost = 'free-equipment';
           needsUpdate = true;
           reason = 'feat → free-equipment (cost = 0 for non-equipment types)';
+        }
+        // Ensure all items have a valid cost value
+        else if (!currentCost || !['free-equipment', 'equipment', 'advanced-equipment'].includes(currentCost)) {
+          newCost = 'free-equipment';
+          needsUpdate = true;
+          reason = `invalid or missing cost (${currentCost}) → free-equipment`;
         }
         
         if (needsUpdate) {
@@ -82,8 +100,6 @@ export class Migration_13_0_10 extends Migration {
           
           updates.push(update);
           totalUpdated++;
-        } else {
-          totalSkipped++;
         }
       }
       

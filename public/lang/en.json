@@ -184,6 +184,7 @@
             "BREAKDOWN": {
                 "BASE_FEAT_COST": "Base talent cost (non-first feat)",
                 "CYBERWARE": "Cyberware/Bioware",
+                "ADEPT_POWER": "Adept Power",
                 "SPELL": "Spell",
                 "LIGHT_WOUNDS": "Light wounds",
                 "SEVERE_WOUNDS": "Severe wounds",

@@ -193,6 +193,7 @@
             "BREAKDOWN": {
                 "BASE_FEAT_COST": "Coût de base de talent (non-premier atout)",
                 "CYBERWARE": "Cyberware/Bioware",
+                "ADEPT_POWER": "Pouvoir d'adepte",
                 "SPELL": "Sort",
                 "LIGHT_WOUNDS": "Blessures légères",
                 "SEVERE_WOUNDS": "Blessures graves",

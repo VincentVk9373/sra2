@@ -411,7 +411,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         choices: {
           "free-equipment": "SRA2.FEATS.COST.FREE_EQUIPMENT",
           "equipment": "SRA2.FEATS.COST.EQUIPMENT",
-          "advanced-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT"
+          "advanced-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT",
+          // Legacy values kept for migration compatibility (not shown in UI)
+          "specialized-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT",
+          "feat": "SRA2.FEATS.COST.FREE_EQUIPMENT"
         },
         label: "SRA2.FEATS.COST.LABEL"
       }),
@@ -846,6 +849,13 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         case "advanced-equipment":
           calculatedCost = 5e3;
           break;
+        // Legacy values (kept for migration compatibility)
+        case "specialized-equipment":
+          calculatedCost = 5e3;
+          break;
+        case "feat":
+          calculatedCost = 0;
+          break;
         default:
           calculatedCost = 0;
       }
@@ -875,6 +885,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "cyberware") {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
+    }
+    if (featType === "adept-power") {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT_POWER", value: 1 });
     }
     if (featType === "spell") {
       recommendedLevel += 1;
@@ -3822,28 +3836,38 @@ class Migration_13_0_10 extends Migration {
     let updateDetails = [];
     await this.applyItemsUpdates((items) => {
       const updates = [];
+      const featItems = items.filter((item) => item.type === "feat");
+      console.log(SYSTEM.LOG.HEAD + `Found ${featItems.length} feat items to check`);
       for (const item of items) {
         if (item.type !== "feat") {
           continue;
         }
         const sourceSystem = item._source?.system || item.system;
+        if (sourceSystem._costMigrationVersion === "13.0.10") {
+          totalSkipped++;
+          continue;
+        }
         let needsUpdate = false;
         const update = {
           _id: item.id
         };
-        const currentCost = sourceSystem.cost;
+        const currentCost = sourceSystem.cost || "free-equipment";
         const featType = sourceSystem.featType || "equipment";
         let newCost = currentCost;
         let reason = "";
+        console.log(SYSTEM.LOG.HEAD + `Checking "${item.name}" - cost: "${currentCost}", type: "${featType}"`);
         if (currentCost === "specialized-equipment") {
           newCost = "advanced-equipment";
           needsUpdate = true;
           reason = "specialized-equipment → advanced-equipment";
-        }
-        if (currentCost === "feat") {
+        } else if (currentCost === "feat") {
           newCost = "free-equipment";
           needsUpdate = true;
           reason = "feat → free-equipment (cost = 0 for non-equipment types)";
+        } else if (!["free-equipment", "equipment", "advanced-equipment"].includes(currentCost)) {
+          newCost = "free-equipment";
+          needsUpdate = true;
+          reason = `invalid or missing cost (${currentCost}) → free-equipment`;
         }
         if (needsUpdate) {
           update["system.cost"] = newCost;
@@ -3863,8 +3887,6 @@ class Migration_13_0_10 extends Migration {
           });
           updates.push(update);
           totalUpdated++;
-        } else {
-          totalSkipped++;
         }
       }
       return updates;

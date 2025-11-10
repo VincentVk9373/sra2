@@ -67,7 +67,10 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         choices: {
           "free-equipment": "SRA2.FEATS.COST.FREE_EQUIPMENT",
           "equipment": "SRA2.FEATS.COST.EQUIPMENT",
-          "advanced-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT"
+          "advanced-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT",
+          // Legacy values kept for migration compatibility (not shown in UI)
+          "specialized-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT",
+          "feat": "SRA2.FEATS.COST.FREE_EQUIPMENT"
         },
         label: "SRA2.FEATS.COST.LABEL"
       }),
@@ -508,6 +511,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         case 'advanced-equipment':
           calculatedCost = 5000;
           break;
+        // Legacy values (kept for migration compatibility)
+        case 'specialized-equipment':
+          calculatedCost = 5000;
+          break;
+        case 'feat':
+          calculatedCost = 0;
+          break;
         default:
           calculatedCost = 0;
       }
@@ -546,6 +556,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (featType === 'cyberware') {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERWARE', value: 1 });
+    }
+    
+    // Adept power: 1 level
+    if (featType === 'adept-power') {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT_POWER', value: 1 });
     }
     
     // Spell: 1 level

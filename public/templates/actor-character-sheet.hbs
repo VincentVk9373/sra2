@@ -410,6 +410,27 @@
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
             {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
+            {{/if}}
           </div>
           {{/each}}
       </div>
@@ -444,6 +465,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
@@ -483,6 +525,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
@@ -545,6 +608,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
@@ -644,6 +728,27 @@
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
             {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
+            {{/if}}
           </div>
           {{/each}}
       </div>
@@ -741,6 +846,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
@@ -840,6 +966,27 @@
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
             {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
+            {{/if}}
           </div>
           {{/each}}
       </div>
@@ -900,6 +1047,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
@@ -968,6 +1136,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
@@ -1130,6 +1319,27 @@
             </div>
             {{#if this.system.description}}
             <div class="feat-description">{{{this.system.description}}}</div>
+            {{/if}}
+            {{#if this.system.narrativeEffects}}
+              {{#if (gt this.system.narrativeEffects.length 0)}}
+              <div class="narrative-effects">
+                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                <ul class="narrative-effects-list">
+                  {{#each this.system.narrativeEffects}}
+                    {{#if this.text}}
+                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                      {{#if this.isNegative}}
+                        <span class="effect-badge negative">{{this.value}}</span>
+                      {{else}}
+                        <span class="effect-badge positive">+1</span>
+                      {{/if}}
+                      <span class="effect-text">{{this.text}}</span>
+                    </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
             {{/if}}
           </div>
           {{/each}}
