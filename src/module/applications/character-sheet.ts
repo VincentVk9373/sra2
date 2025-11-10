@@ -108,11 +108,11 @@ export class CharacterSheet extends ActorSheet {
     
     // Calculate RR for attributes first (needed for skills and specializations)
     const attributesRR = {
-      strength: this.calculateRR('attribute', 'strength'),
-      agility: this.calculateRR('attribute', 'agility'),
-      willpower: this.calculateRR('attribute', 'willpower'),
-      logic: this.calculateRR('attribute', 'logic'),
-      charisma: this.calculateRR('attribute', 'charisma')
+      strength: Math.min(3, this.calculateRR('attribute', 'strength')),
+      agility: Math.min(3, this.calculateRR('attribute', 'agility')),
+      willpower: Math.min(3, this.calculateRR('attribute', 'willpower')),
+      logic: Math.min(3, this.calculateRR('attribute', 'logic')),
+      charisma: Math.min(3, this.calculateRR('attribute', 'charisma'))
     };
     
     // Add specializations to each skill and calculate RR
@@ -438,10 +438,16 @@ export class CharacterSheet extends ActorSheet {
       item.system.active === true
     );
     
+    console.log(`SRA2 | Calculating RR for ${itemType} "${itemName}", found ${feats.length} active feats`);
+    
     // Calculate RR from feats that target this item
     for (const feat of feats) {
       const featSystem = feat.system as any;
       const rrList = featSystem.rrList || [];
+      
+      if (rrList.length > 0) {
+        console.log(`SRA2 | Feat "${feat.name}" has ${rrList.length} RR entries:`, rrList);
+      }
       
       // Loop through all RR entries in this feat
       for (const rrEntry of rrList) {
@@ -451,13 +457,14 @@ export class CharacterSheet extends ActorSheet {
         
         // Check if this RR entry provides RR for the given item
         if (rrType === itemType && rrTarget === itemName) {
+          console.log(`SRA2 | ✓ Match found! Adding ${rrValue} RR from feat "${feat.name}"`);
           totalRR += rrValue;
         }
       }
     }
     
-    // RR is capped at 3
-    return Math.min(3, totalRR);
+    console.log(`SRA2 | Total RR for ${itemType} "${itemName}": ${totalRR}`);
+    return totalRR;
   }
 
   /**
@@ -610,7 +617,7 @@ export class CharacterSheet extends ActorSheet {
     }
 
     // Calculate automatic RR from feats for this attribute
-    const autoRR = this.calculateRR('attribute', attributeName);
+    const autoRR = Math.min(3, this.calculateRR('attribute', attributeName));
 
     // Get localized attribute name
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`);
