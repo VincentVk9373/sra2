@@ -479,6 +479,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         max: 1,
         integer: true,
         label: "SRA2.FEATS.SUMMONED_SPIRIT_COUNT"
+      }),
+      // First feat flag
+      isFirstFeat: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_FIRST_FEAT"
       })
     };
   }
@@ -526,6 +532,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const grantsNarration = (this as any).grantsNarration || false;
     const narrativeEffects = (this as any).narrativeEffects || [];
     const rrList = (this as any).rrList || [];
+    const isFirstFeat = (this as any).isFirstFeat || false;
+    
+    // Base cost for trait (not first feat): +3 levels
+    if (featType === 'trait' && !isFirstFeat) {
+      recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BASE_FEAT_COST', value: 3 });
+    }
     
     // Cyberware/bioware: 1 level
     if (featType === 'cyberware') {

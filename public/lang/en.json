@@ -84,6 +84,8 @@
             "RATING": "Rating",
             "RATING_AUTO_CALCULATED": "Automatically calculated from recommended level",
             "ACTIVE": "Active",
+            "IS_FIRST_FEAT": "First trait",
+            "IS_FIRST_FEAT_HINT": "Check this box if this is the character's first trait (traits only: costs 0 at level 0, otherwise costs 3)",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} is already on this character",
             "ONLY_FEATS": "Only feat items can be dropped in the feats section",
@@ -185,6 +187,7 @@
             "NARRATION_SHORT": "Narration",
             "BREAKDOWN_TITLE": "Calculation Breakdown",
             "BREAKDOWN": {
+                "BASE_FEAT_COST": "Base talent cost (non-first feat)",
                 "CYBERWARE": "Cyberware/Bioware",
                 "SPELL": "Spell",
                 "LIGHT_WOUNDS": "Light wounds",
@@ -469,7 +472,8 @@
             "SETTING_NAME": "Current System Version",
             "13_0_5_INFO": "Migration 13.0.5: Weapon and Spell feat types have been separated. All feats have been converted to \"Weapon\" type. You can manually change spells to \"Spell\" type.",
             "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup.",
-            "13_0_8_INFO": "Migration 13.0.8: Narrative effects on {count} feat(s) have been converted to the new format (with negative option)."
+            "13_0_8_INFO": "Migration 13.0.8: Narrative effects on {count} feat(s) have been converted to the new format (with negative option).",
+            "13_0_9_INFO": "Migration 13.0.9: {count} feat(s) have been updated - added value field to narrative effects and 'first feat' field to {firstFeatCount} feat(s)."
         }
     }
 }

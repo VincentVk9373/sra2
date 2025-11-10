@@ -84,6 +84,8 @@
             "RATING": "Niveau",
             "RATING_AUTO_CALCULATED": "Calculé automatiquement selon le niveau recommandé",
             "ACTIVE": "Actif",
+            "IS_FIRST_FEAT": "Premier trait",
+            "IS_FIRST_FEAT_HINT": "Cochez cette case si c'est le premier trait du personnage (traits seulement : coûte 0 au niveau 0, sinon coûte 3)",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} est déjà sur ce personnage",
             "ONLY_FEATS": "Seuls les atouts peuvent être déposés dans la section des atouts",
@@ -194,6 +196,7 @@
             "SUMMONED_SPIRIT_1": "+1 Esprit invoqué (+3 niveau)",
             "BREAKDOWN_TITLE": "Détail du calcul",
             "BREAKDOWN": {
+                "BASE_FEAT_COST": "Coût de base de talent (non-premier atout)",
                 "CYBERWARE": "Cyberware/Bioware",
                 "SPELL": "Sort",
                 "LIGHT_WOUNDS": "Blessures légères",
@@ -478,7 +481,8 @@
             "SETTING_NAME": "Version Actuelle du Système",
             "13_0_5_INFO": "Migration 13.0.5 : Les types d'atouts \"Armes et Sorts\" ont été séparés. Tous les atouts ont été convertis en type \"Arme\". Vous pouvez changer manuellement les sorts en type \"Sort\".",
             "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde.",
-            "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif)."
+            "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif).",
+            "13_0_9_INFO": "Migration 13.0.9 : {count} atout(s) ont été mis à jour - ajout du champ valeur aux effets narratifs et du champ 'premier atout' à {firstFeatCount} atout(s)."
         }
     }
 }

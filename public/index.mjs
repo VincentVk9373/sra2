@@ -823,6 +823,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         max: 1,
         integer: true,
         label: "SRA2.FEATS.SUMMONED_SPIRIT_COUNT"
+      }),
+      // First feat flag
+      isFirstFeat: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_FIRST_FEAT"
       })
     };
   }
@@ -863,6 +869,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const grantsNarration = this.grantsNarration || false;
     const narrativeEffects = this.narrativeEffects || [];
     const rrList = this.rrList || [];
+    const isFirstFeat = this.isFirstFeat || false;
+    if (featType === "trait" && !isFirstFeat) {
+      recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BASE_FEAT_COST", value: 3 });
+    }
     if (featType === "cyberware") {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
@@ -3701,9 +3712,10 @@ class Migration_13_0_9 extends Migration {
     return "13.0.9";
   }
   async migrate() {
-    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.9: Adding value field to narrativeEffects");
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.9: Adding value field to narrativeEffects and isFirstFeat field");
     let totalUpdated = 0;
     let totalSkipped = 0;
+    let totalFirstFeatAdded = 0;
     let updateDetails = [];
     await this.applyItemsUpdates((items) => {
       const updates = [];
@@ -3712,8 +3724,11 @@ class Migration_13_0_9 extends Migration {
           continue;
         }
         const sourceSystem = item._source?.system || item.system;
+        let needsUpdate = false;
+        const update = {
+          _id: item.id
+        };
         if (sourceSystem.narrativeEffects && sourceSystem.narrativeEffects.length > 0) {
-          let needsUpdate = false;
           const updatedEffects = sourceSystem.narrativeEffects.map((effect) => {
             if (typeof effect === "object" && effect !== null && !("value" in effect)) {
               needsUpdate = true;
@@ -3726,48 +3741,69 @@ class Migration_13_0_9 extends Migration {
             return effect;
           });
           if (needsUpdate) {
-            const update = {
-              _id: item.id,
-              "system.narrativeEffects": updatedEffects,
-              "system._migratedNarrativeEffectsValueAt": (/* @__PURE__ */ new Date()).toISOString(),
-              "system._narrativeEffectsValueMigrationVersion": "13.0.9"
-            };
-            updates.push(update);
+            update["system.narrativeEffects"] = updatedEffects;
+            update["system._migratedNarrativeEffectsValueAt"] = (/* @__PURE__ */ new Date()).toISOString();
             console.log(SYSTEM.LOG.HEAD + `Migration 13.0.9: Adding value field to narrativeEffects for "${item.name}" (ID: ${item.id})`);
             console.log(SYSTEM.LOG.HEAD + `  - Effect count: ${updatedEffects.length}`);
             updateDetails.push({
               name: item.name,
               id: item.id,
-              effectCount: updatedEffects.length
+              effectCount: updatedEffects.length,
+              hasFirstFeat: false
             });
-            totalUpdated++;
-          } else {
-            totalSkipped++;
           }
+        }
+        if (sourceSystem.isFirstFeat === void 0 || sourceSystem.isFirstFeat === null) {
+          update["system.isFirstFeat"] = false;
+          needsUpdate = true;
+          totalFirstFeatAdded++;
+          console.log(SYSTEM.LOG.HEAD + `Migration 13.0.9: Adding isFirstFeat field to "${item.name}" (ID: ${item.id})`);
+          const existingDetail = updateDetails.find((d) => d.id === item.id);
+          if (existingDetail) {
+            existingDetail.hasFirstFeat = true;
+          } else {
+            updateDetails.push({
+              name: item.name,
+              id: item.id,
+              effectCount: 0,
+              hasFirstFeat: true
+            });
+          }
+        }
+        if (needsUpdate) {
+          update["system._narrativeEffectsValueMigrationVersion"] = "13.0.9";
+          updates.push(update);
+          totalUpdated++;
         } else {
           totalSkipped++;
         }
       }
       return updates;
     });
-    const summaryMessage = `Migration 13.0.9 completed - Items updated: ${totalUpdated}, Skipped: ${totalSkipped}`;
+    const summaryMessage = `Migration 13.0.9 completed - Items updated: ${totalUpdated}, isFirstFeat added: ${totalFirstFeatAdded}, Skipped: ${totalSkipped}`;
     console.log(SYSTEM.LOG.HEAD + summaryMessage);
     if (updateDetails.length > 0) {
       console.log(SYSTEM.LOG.HEAD + "=== UPDATE DETAILS ===");
       console.log(SYSTEM.LOG.HEAD + `Total items updated: ${updateDetails.length}`);
       const totalEffects = updateDetails.reduce((sum, d) => sum + d.effectCount, 0);
+      const totalWithFirstFeat = updateDetails.filter((d) => d.hasFirstFeat).length;
       console.log(SYSTEM.LOG.HEAD + `  - Total narrative effects updated: ${totalEffects}`);
+      console.log(SYSTEM.LOG.HEAD + `  - Total items with isFirstFeat added: ${totalWithFirstFeat}`);
       console.log(SYSTEM.LOG.HEAD + "======================");
       console.log(SYSTEM.LOG.HEAD + "Updated items:");
       updateDetails.forEach((detail, index) => {
-        console.log(SYSTEM.LOG.HEAD + `  ${index + 1}. "${detail.name}" (ID: ${detail.id}) - ${detail.effectCount} effect(s)`);
+        const updates = [];
+        if (detail.effectCount > 0) updates.push(`${detail.effectCount} effect(s)`);
+        if (detail.hasFirstFeat) updates.push("isFirstFeat added");
+        console.log(SYSTEM.LOG.HEAD + `  ${index + 1}. "${detail.name}" (ID: ${detail.id}) - ${updates.join(", ")}`);
       });
     }
     if (totalUpdated > 0) {
-      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_9_INFO", { count: totalUpdated }) : `Migration 13.0.9: Added value field to narrative effects on ${totalUpdated} feat(s).`;
+      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_9_INFO", { count: totalUpdated, firstFeatCount: totalFirstFeatAdded }) : `Migration 13.0.9: Updated ${totalUpdated} feat(s) - added value field to narrative effects and isFirstFeat field to ${totalFirstFeatAdded} feat(s).`;
       ui.notifications?.info(userMessage, { permanent: false });
       console.log(SYSTEM.LOG.HEAD + "✓ Migration complete.");
       console.log(SYSTEM.LOG.HEAD + "✓ All narrative effects now have a value field (default: -1)");
+      console.log(SYSTEM.LOG.HEAD + "✓ All feats now have isFirstFeat field (default: false)");
       console.log(SYSTEM.LOG.HEAD + "✓ No data was lost in the migration");
     } else {
       console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
