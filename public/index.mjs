@@ -466,7 +466,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
-          "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"
+          "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
+          "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
+          "spell": "SRA2.FEATS.FEAT_TYPE.SPELL"
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"
       }),
@@ -923,7 +925,9 @@ class CharacterSheet extends ActorSheet {
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
       cyberdeck: allFeats.filter((feat) => feat.system.featType === "cyberdeck"),
       vehicle: allFeats.filter((feat) => feat.system.featType === "vehicle"),
-      weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells")
+      weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
+      weapon: allFeats.filter((feat) => feat.system.featType === "weapon"),
+      spell: allFeats.filter((feat) => feat.system.featType === "spell")
     };
     context.feats = allFeats;
     const skills = this.actor.items.filter((item) => item.type === "skill");
@@ -1987,6 +1991,8 @@ class CharacterSheet extends ActorSheet {
             <option value="cyberdeck">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERDECK")}</option>
             <option value="vehicle">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.VEHICLE")}</option>
             <option value="weapons-spells">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS")}</option>
+            <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
+            <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
           </select>
           <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
             <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.FEATS.CREATE")}
@@ -2027,6 +2033,8 @@ class CharacterSheet extends ActorSheet {
               <option value="cyberdeck">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERDECK")}</option>
               <option value="vehicle">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.VEHICLE")}</option>
               <option value="weapons-spells">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS")}</option>
+              <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
+              <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
             </select>
             <button class="create-feat-btn-inline" data-feat-name="${this.lastFeatSearchTerm}">
               ${game.i18n.localize("SRA2.FEATS.CREATE")}
@@ -2907,6 +2915,145 @@ class Migration_13_0_4 extends Migration {
     }
   }
 }
+class Migration_13_0_5 extends Migration {
+  get code() {
+    return "migration-13.0.5";
+  }
+  get version() {
+    return "13.0.5";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.5: Separating weapons and spells feat types");
+    let totalConverted = 0;
+    let totalSkipped = 0;
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        if (sourceSystem.featType !== "weapons-spells") {
+          totalSkipped++;
+          continue;
+        }
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.5: Converting feat "${item.name}" from "weapons-spells" to "weapon"`);
+        const update = {
+          _id: item.id,
+          "system.featType": "weapon"
+        };
+        updates.push(update);
+        totalConverted++;
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.5 completed - Converted: ${totalConverted} weapons-spells to weapon, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalConverted > 0) {
+      const userMessage = game.i18n ? game.i18n.localize("SRA2.MIGRATION.13_0_5_INFO") : `Migration 13.0.5: Converted ${totalConverted} "weapons-spells" feats to "weapon" type. You can manually change specific items to "spell" type if needed.`;
+      ui.notifications?.info(userMessage, { permanent: false });
+    }
+  }
+}
+class Migration_13_0_6 extends Migration {
+  get code() {
+    return "migration-13.0.6";
+  }
+  get version() {
+    return "13.0.6";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Migration 13.0.6: Rollback - keeping old weapons-spells type valid");
+    console.log(SYSTEM.LOG.HEAD + "No conversion needed. weapons-spells, weapon, and spell types are all valid.");
+    const message = "Migration 13.0.6: All feat types (weapons-spells, weapon, spell) are now valid. No data conversion performed.";
+    console.log(SYSTEM.LOG.HEAD + message);
+    if (ui.notifications) {
+      ui.notifications.info(message, { permanent: false });
+    }
+  }
+}
+class Migration_13_0_7 extends Migration {
+  get code() {
+    return "migration-13.0.7";
+  }
+  get version() {
+    return "13.0.7";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.7: Converting weapons-spells to weapon (with backup)");
+    let totalConverted = 0;
+    let totalSkipped = 0;
+    let conversionDetails = [];
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        if (sourceSystem.featType !== "weapons-spells") {
+          totalSkipped++;
+          continue;
+        }
+        const itemInfo = {
+          name: item.name,
+          id: item.id,
+          oldType: "weapons-spells",
+          newType: "weapon",
+          hasWeaponFocus: sourceSystem.isWeaponFocus || false,
+          hasDamageValue: (sourceSystem.damageValue || 0) > 0,
+          hasRanges: sourceSystem.meleeRange !== "none" || sourceSystem.shortRange !== "none" || sourceSystem.mediumRange !== "none" || sourceSystem.longRange !== "none"
+        };
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.7: Converting "${item.name}" (ID: ${item.id})`);
+        console.log(SYSTEM.LOG.HEAD + `  - Old type: weapons-spells`);
+        console.log(SYSTEM.LOG.HEAD + `  - New type: weapon`);
+        console.log(SYSTEM.LOG.HEAD + `  - Has weapon focus: ${itemInfo.hasWeaponFocus}`);
+        console.log(SYSTEM.LOG.HEAD + `  - Has damage value: ${itemInfo.hasDamageValue}`);
+        console.log(SYSTEM.LOG.HEAD + `  - Has ranges: ${itemInfo.hasRanges}`);
+        conversionDetails.push(itemInfo);
+        const update = {
+          _id: item.id,
+          // Change the type
+          "system.featType": "weapon",
+          // Create a backup of the old type for safety
+          "system._oldFeatTypeBackup": "weapons-spells",
+          // Add a migration timestamp
+          "system._migratedAt": (/* @__PURE__ */ new Date()).toISOString(),
+          "system._migrationVersion": "13.0.7"
+        };
+        updates.push(update);
+        totalConverted++;
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.7 completed - Converted: ${totalConverted}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (conversionDetails.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + "=== CONVERSION DETAILS ===");
+      console.log(SYSTEM.LOG.HEAD + `Total items converted: ${conversionDetails.length}`);
+      const withWeaponFocus = conversionDetails.filter((d) => d.hasWeaponFocus).length;
+      const withDamage = conversionDetails.filter((d) => d.hasDamageValue).length;
+      const withRanges = conversionDetails.filter((d) => d.hasRanges).length;
+      console.log(SYSTEM.LOG.HEAD + `  - Items with weapon focus: ${withWeaponFocus}`);
+      console.log(SYSTEM.LOG.HEAD + `  - Items with damage value: ${withDamage}`);
+      console.log(SYSTEM.LOG.HEAD + `  - Items with ranges: ${withRanges}`);
+      console.log(SYSTEM.LOG.HEAD + "=========================");
+      console.log(SYSTEM.LOG.HEAD + "Converted items:");
+      conversionDetails.forEach((detail, index) => {
+        console.log(SYSTEM.LOG.HEAD + `  ${index + 1}. "${detail.name}" (ID: ${detail.id})`);
+      });
+    }
+    if (totalConverted > 0) {
+      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_7_INFO", { count: totalConverted }) : `Migration 13.0.7: Converted ${totalConverted} "weapons-spells" items to "weapon" type. All data preserved with backup.`;
+      ui.notifications?.info(userMessage, { permanent: false });
+      console.log(SYSTEM.LOG.HEAD + "✓ Migration complete. All items have been backed up.");
+      console.log(SYSTEM.LOG.HEAD + "✓ Old type saved in system._oldFeatTypeBackup");
+      console.log(SYSTEM.LOG.HEAD + "✓ No data was lost in the conversion");
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to convert - all items already migrated or are other types");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -2931,6 +3078,9 @@ class SRA2System {
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration) => {
       declareMigration(new Migration_13_0_3());
       declareMigration(new Migration_13_0_4());
+      declareMigration(new Migration_13_0_5());
+      declareMigration(new Migration_13_0_6());
+      declareMigration(new Migration_13_0_7());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {

@@ -124,7 +124,9 @@
                 "CYBERWARE": "Cyberware / Bioware",
                 "CYBERDECK": "Cyberdeck",
                 "VEHICLE": "Véhicule / Drone",
-                "WEAPONS_SPELLS": "Armes et Sorts"
+                "WEAPONS_SPELLS": "Armes et Sorts",
+                "WEAPON": "Arme",
+                "SPELL": "Sort"
             },
             "RR_TARGET_SELECT": "Sélectionner...",
             "RR_TARGET_PLACEHOLDER": "Nom ou ID de l'objet cible",
@@ -196,7 +198,7 @@
                 "NARRATIVE_EFFECTS": "Effets narratifs"
             },
             "WEAPON": {
-                "SECTION_TITLE": "Informations Arme / Sort",
+                "SECTION_TITLE": "Informations Arme",
                 "DAMAGE_VALUE": "Valeur de Dégât (VD)",
                 "DAMAGE_VALUE_SHORT": "VD",
                 "RANGES": "Portées",
@@ -248,6 +250,10 @@
                 "SORCERY": "Sorcellerie",
                 "CONJURATION": "Conjuration",
                 "ADEPT": "Adepte"
+            },
+            "SPELL": {
+                "SECTION_TITLE": "Informations Sort",
+                "SECTION_HINT": "Les sorts utilisent les propriétés de base des atouts (effets narratifs, bonus, etc.) sans les caractéristiques d'arme."
             }
         },
         "SKILLS": {
@@ -360,7 +366,9 @@
             "VERSION_UNCHANGED": "Version du système inchangée",
             "APPLYING_ACTOR_ITEMS": "Application des mises à jour sur les objets de l'acteur {name}",
             "APPLYING_ITEMS": "Application des mises à jour sur les objets",
-            "SETTING_NAME": "Version Actuelle du Système"
+            "SETTING_NAME": "Version Actuelle du Système",
+            "13_0_5_INFO": "Migration 13.0.5 : Les types d'atouts \"Armes et Sorts\" ont été séparés. Tous les atouts ont été convertis en type \"Arme\". Vous pouvez changer manuellement les sorts en type \"Sort\".",
+            "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde."
         }
     }
 }

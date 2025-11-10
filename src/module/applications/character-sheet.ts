@@ -63,7 +63,9 @@ export class CharacterSheet extends ActorSheet {
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck'),
       vehicle: allFeats.filter((feat: any) => feat.system.featType === 'vehicle'),
-      weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells')
+      weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
+      weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon'),
+      spell: allFeats.filter((feat: any) => feat.system.featType === 'spell')
     };
     
     // Keep the feats array for backwards compatibility
@@ -1502,6 +1504,8 @@ export class CharacterSheet extends ActorSheet {
             <option value="cyberdeck">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERDECK')}</option>
             <option value="vehicle">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.VEHICLE')}</option>
             <option value="weapons-spells">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS')}</option>
+            <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
+            <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
           </select>
           <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
             <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.FEATS.CREATE')}
@@ -1546,6 +1550,8 @@ export class CharacterSheet extends ActorSheet {
               <option value="cyberdeck">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERDECK')}</option>
               <option value="vehicle">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.VEHICLE')}</option>
               <option value="weapons-spells">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS')}</option>
+              <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
+              <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
             </select>
             <button class="create-feat-btn-inline" data-feat-name="${this.lastFeatSearchTerm}">
               ${game.i18n!.localize('SRA2.FEATS.CREATE')}

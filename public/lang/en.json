@@ -124,7 +124,9 @@
                 "CYBERWARE": "Cyberware / Bioware",
                 "CYBERDECK": "Cyberdeck",
                 "VEHICLE": "Vehicle / Drone",
-                "WEAPONS_SPELLS": "Weapons & Spells"
+                "WEAPONS_SPELLS": "Weapons & Spells",
+                "WEAPON": "Weapon",
+                "SPELL": "Spell"
             },
             "RR_TARGET_SELECT": "Select...",
             "RR_TARGET_PLACEHOLDER": "Name or ID of target object",
@@ -196,7 +198,7 @@
                 "NARRATIVE_EFFECTS": "Narrative effects"
             },
             "WEAPON": {
-                "SECTION_TITLE": "Weapon / Spell Information",
+                "SECTION_TITLE": "Weapon Information",
                 "DAMAGE_VALUE": "Damage Value (DV)",
                 "DAMAGE_VALUE_SHORT": "DV",
                 "RANGES": "Ranges",
@@ -248,6 +250,10 @@
                 "SORCERY": "Sorcery",
                 "CONJURATION": "Conjuration",
                 "ADEPT": "Adept"
+            },
+            "SPELL": {
+                "SECTION_TITLE": "Spell Information",
+                "SECTION_HINT": "Spells use base feat properties (narrative effects, bonuses, etc.) without weapon characteristics."
             }
         },
         "SKILLS": {
@@ -360,7 +366,9 @@
             "VERSION_UNCHANGED": "System version not changed",
             "APPLYING_ACTOR_ITEMS": "Applying updates on actor {name} items",
             "APPLYING_ITEMS": "Applying updates on items",
-            "SETTING_NAME": "Current System Version"
+            "SETTING_NAME": "Current System Version",
+            "13_0_5_INFO": "Migration 13.0.5: Weapon and Spell feat types have been separated. All feats have been converted to \"Weapon\" type. You can manually change spells to \"Spell\" type.",
+            "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup."
         }
     }
 }

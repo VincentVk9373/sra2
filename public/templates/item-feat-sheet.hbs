@@ -49,6 +49,8 @@
         <option value="cyberdeck" {{#if (eq system.featType "cyberdeck")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</option>
         <option value="vehicle" {{#if (eq system.featType "vehicle")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}</option>
         <option value="weapons-spells" {{#if (eq system.featType "weapons-spells")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}</option>
+        <option value="weapon" {{#if (eq system.featType "weapon")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</option>
+        <option value="spell" {{#if (eq system.featType "spell")}}selected{{/if}}>{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}</option>
       </select>
     </div>
 
@@ -227,8 +229,8 @@
       </div>
     </div>
 
-    <!-- Weapon/Spell Specific Fields -->
-    {{#if (eq system.featType "weapons-spells")}}
+    <!-- Weapon/Weapons-Spells Specific Fields -->
+    {{#if (or (eq system.featType "weapon") (eq system.featType "weapons-spells"))}}
     <div class="weapon-fields-section">
       <h3>{{localize "SRA2.FEATS.WEAPON.SECTION_TITLE"}}</h3>
       
@@ -285,6 +287,14 @@
           </select>
         </div>
       </div>
+    </div>
+    {{/if}}
+
+    <!-- Spell Specific Fields -->
+    {{#if (eq system.featType "spell")}}
+    <div class="spell-fields-section">
+      <h3>{{localize "SRA2.FEATS.SPELL.SECTION_TITLE"}}</h3>
+      <p class="notes">{{localize "SRA2.FEATS.SPELL.SECTION_HINT"}}</p>
     </div>
     {{/if}}
 
