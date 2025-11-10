@@ -1486,13 +1486,11 @@ class CharacterSheet extends ActorSheet {
     );
     for (const feat of feats) {
       const featSystem = feat.system;
-      const rrTypes = featSystem.rrType || [];
-      const rrValues = featSystem.rrValue || [];
-      const rrTargets = featSystem.rrTarget || [];
-      for (let i = 0; i < rrTypes.length; i++) {
-        const rrType = rrTypes[i];
-        const rrValue = rrValues[i] || 0;
-        const rrTarget = rrTargets[i] || "";
+      const rrList = featSystem.rrList || [];
+      for (const rrEntry of rrList) {
+        const rrType = rrEntry.rrType;
+        const rrValue = rrEntry.rrValue || 0;
+        const rrTarget = rrEntry.rrTarget || "";
         if (rrType === itemType && rrTarget === itemName) {
           totalRR += rrValue;
         }

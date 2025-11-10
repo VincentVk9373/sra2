@@ -441,15 +441,13 @@ export class CharacterSheet extends ActorSheet {
     // Calculate RR from feats that target this item
     for (const feat of feats) {
       const featSystem = feat.system as any;
-      const rrTypes = featSystem.rrType || [];
-      const rrValues = featSystem.rrValue || [];
-      const rrTargets = featSystem.rrTarget || [];
+      const rrList = featSystem.rrList || [];
       
       // Loop through all RR entries in this feat
-      for (let i = 0; i < rrTypes.length; i++) {
-        const rrType = rrTypes[i];
-        const rrValue = rrValues[i] || 0;
-        const rrTarget = rrTargets[i] || '';
+      for (const rrEntry of rrList) {
+        const rrType = rrEntry.rrType;
+        const rrValue = rrEntry.rrValue || 0;
+        const rrTarget = rrEntry.rrTarget || '';
         
         // Check if this RR entry provides RR for the given item
         if (rrType === itemType && rrTarget === itemName) {
