@@ -781,6 +781,13 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         isNegative: new fields.BooleanField({
           required: true,
           initial: false
+        }),
+        value: new fields.NumberField({
+          required: true,
+          initial: -1,
+          min: -5,
+          max: -1,
+          integer: true
         })
       }), {
         initial: [],
@@ -949,14 +956,15 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
     }
     const positiveEffectsCount = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && !effect.isNegative).length;
-    const negativeEffectsCount = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && effect.isNegative).length;
+    const negativeEffects = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && effect.isNegative);
     if (positiveEffectsCount > 0) {
       recommendedLevel += positiveEffectsCount;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE", labelParams: `(${positiveEffectsCount})`, value: positiveEffectsCount });
     }
-    if (negativeEffectsCount > 0) {
-      recommendedLevel -= negativeEffectsCount;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE", labelParams: `(${negativeEffectsCount})`, value: -negativeEffectsCount });
+    if (negativeEffects.length > 0) {
+      const negativeEffectValue = negativeEffects.reduce((sum, effect) => sum + (effect.value || -1), 0);
+      recommendedLevel += negativeEffectValue;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE", labelParams: `(${negativeEffects.length})`, value: negativeEffectValue });
     }
     const sustainedSpellCount = this.sustainedSpellCount || 0;
     if (sustainedSpellCount > 0) {
@@ -3685,6 +3693,87 @@ class Migration_13_0_8 extends Migration {
     }
   }
 }
+class Migration_13_0_9 extends Migration {
+  get code() {
+    return "migration-13.0.9";
+  }
+  get version() {
+    return "13.0.9";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.9: Adding value field to narrativeEffects");
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    let updateDetails = [];
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        if (sourceSystem.narrativeEffects && sourceSystem.narrativeEffects.length > 0) {
+          let needsUpdate = false;
+          const updatedEffects = sourceSystem.narrativeEffects.map((effect) => {
+            if (typeof effect === "object" && effect !== null && !("value" in effect)) {
+              needsUpdate = true;
+              return {
+                ...effect,
+                value: -1
+                // Default value for all effects
+              };
+            }
+            return effect;
+          });
+          if (needsUpdate) {
+            const update = {
+              _id: item.id,
+              "system.narrativeEffects": updatedEffects,
+              "system._migratedNarrativeEffectsValueAt": (/* @__PURE__ */ new Date()).toISOString(),
+              "system._narrativeEffectsValueMigrationVersion": "13.0.9"
+            };
+            updates.push(update);
+            console.log(SYSTEM.LOG.HEAD + `Migration 13.0.9: Adding value field to narrativeEffects for "${item.name}" (ID: ${item.id})`);
+            console.log(SYSTEM.LOG.HEAD + `  - Effect count: ${updatedEffects.length}`);
+            updateDetails.push({
+              name: item.name,
+              id: item.id,
+              effectCount: updatedEffects.length
+            });
+            totalUpdated++;
+          } else {
+            totalSkipped++;
+          }
+        } else {
+          totalSkipped++;
+        }
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.9 completed - Items updated: ${totalUpdated}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (updateDetails.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + "=== UPDATE DETAILS ===");
+      console.log(SYSTEM.LOG.HEAD + `Total items updated: ${updateDetails.length}`);
+      const totalEffects = updateDetails.reduce((sum, d) => sum + d.effectCount, 0);
+      console.log(SYSTEM.LOG.HEAD + `  - Total narrative effects updated: ${totalEffects}`);
+      console.log(SYSTEM.LOG.HEAD + "======================");
+      console.log(SYSTEM.LOG.HEAD + "Updated items:");
+      updateDetails.forEach((detail, index) => {
+        console.log(SYSTEM.LOG.HEAD + `  ${index + 1}. "${detail.name}" (ID: ${detail.id}) - ${detail.effectCount} effect(s)`);
+      });
+    }
+    if (totalUpdated > 0) {
+      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_9_INFO", { count: totalUpdated }) : `Migration 13.0.9: Added value field to narrative effects on ${totalUpdated} feat(s).`;
+      ui.notifications?.info(userMessage, { permanent: false });
+      console.log(SYSTEM.LOG.HEAD + "✓ Migration complete.");
+      console.log(SYSTEM.LOG.HEAD + "✓ All narrative effects now have a value field (default: -1)");
+      console.log(SYSTEM.LOG.HEAD + "✓ No data was lost in the migration");
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -3713,6 +3802,7 @@ class SRA2System {
       declareMigration(new Migration_13_0_6());
       declareMigration(new Migration_13_0_7());
       declareMigration(new Migration_13_0_8());
+      declareMigration(new Migration_13_0_9());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {

@@ -437,6 +437,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         isNegative: new fields.BooleanField({
           required: true,
           initial: false
+        }),
+        value: new fields.NumberField({
+          required: true,
+          initial: -1,
+          min: -5,
+          max: -1,
+          integer: true
         })
       }), {
         initial: [],
@@ -648,18 +655,19 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
     }
     
-    // Narrative effects: +1 level per positive effect, -1 per negative effect (count non-empty strings)
+    // Narrative effects: +1 level per positive effect, value per negative effect (count non-empty strings)
     const positiveEffectsCount = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && !effect.isNegative).length;
-    const negativeEffectsCount = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && effect.isNegative).length;
+    const negativeEffects = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && effect.isNegative);
     
     if (positiveEffectsCount > 0) {
       recommendedLevel += positiveEffectsCount;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE', labelParams: `(${positiveEffectsCount})`, value: positiveEffectsCount });
     }
     
-    if (negativeEffectsCount > 0) {
-      recommendedLevel -= negativeEffectsCount;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE', labelParams: `(${negativeEffectsCount})`, value: -negativeEffectsCount });
+    if (negativeEffects.length > 0) {
+      const negativeEffectValue = negativeEffects.reduce((sum: number, effect: any) => sum + (effect.value || -1), 0);
+      recommendedLevel += negativeEffectValue; // Adding because value is already negative
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE', labelParams: `(${negativeEffects.length})`, value: negativeEffectValue });
     }
     
     // Additional sustained spells: +2 per spell (max 2)
