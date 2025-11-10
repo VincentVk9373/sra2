@@ -1,3 +1,5 @@
+import { WEAPON_TYPES } from '../models/item-feat.js';
+
 /**
  * Feat Sheet Application
  */
@@ -82,6 +84,9 @@ export class FeatSheet extends ItemSheet {
     
     // Remove narrative effect button
     html.find('[data-action="remove-narrative-effect"]').on('click', this._onRemoveNarrativeEffect.bind(this));
+    
+    // Weapon type selection
+    html.find('[data-action="select-weapon-type"]').on('change', this._onWeaponTypeChange.bind(this));
   }
 
   /**
@@ -217,6 +222,35 @@ export class FeatSheet extends ItemSheet {
     
     await this.item.update({
       'system.narrativeEffects': narrativeEffects
+    } as any);
+    
+    this.render(false);
+  }
+
+  /**
+   * Handle weapon type selection change
+   */
+  private async _onWeaponTypeChange(event: Event): Promise<void> {
+    event.preventDefault();
+    
+    const weaponType = (event.currentTarget as HTMLSelectElement).value;
+    
+    if (!weaponType || !WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES]) {
+      return;
+    }
+    
+    const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+    
+    // Convert damage value to string
+    const damageValue = typeof weaponStats.vd === 'number' ? weaponStats.vd.toString() : weaponStats.vd;
+    
+    await this.item.update({
+      'system.weaponType': weaponType,
+      'system.damageValue': damageValue,
+      'system.meleeRange': weaponStats.melee,
+      'system.shortRange': weaponStats.short,
+      'system.mediumRange': weaponStats.medium,
+      'system.longRange': weaponStats.long
     } as any);
     
     this.render(false);

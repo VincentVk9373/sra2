@@ -1,4 +1,31 @@
 /**
+ * Weapon types configuration with their stats
+ */
+export const WEAPON_TYPES = {
+  "bare-hands": { vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none" },
+  "short-weapons": { vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none" },
+  "long-weapons": { vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none" },
+  "advanced-melee": { vd: 5, melee: "ok", short: "none", medium: "none", long: "none" },
+  "throwing": { vd: "FOR+1", melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "bows": { vd: "FOR+1", melee: "ok", short: "ok", medium: "ok", long: "none" },
+  "crossbows": { vd: 4, melee: "ok", short: "ok", medium: "ok", long: "none" },
+  "tasers": { vd: 5, melee: "ok", short: "ok", medium: "none", long: "none" },
+  "pocket-pistols": { vd: 3, melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "light-pistols": { vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "automatic-pistols": { vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "heavy-pistols": { vd: 5, melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "smgs": { vd: 5, melee: "dice", short: "ok", medium: "ok", long: "none" },
+  "assault-rifles": { vd: 7, melee: "dice", short: "ok", medium: "ok", long: "dice" },
+  "shotguns": { vd: 8, melee: "dice", short: "ok", medium: "dice", long: "none" },
+  "sniper-rifles": { vd: 10, melee: "none", short: "dice", medium: "dice", long: "ok" },
+  "machine-guns": { vd: 9, melee: "none", short: "ok", medium: "ok", long: "ok" },
+  "grenades": { vd: 7, melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "gas-grenades": { vd: "toxin", melee: "ok", short: "ok", medium: "dice", long: "none" },
+  "grenade-launchers": { vd: 7, melee: "none", short: "dice", medium: "ok", long: "ok" },
+  "rocket-launchers": { vd: 12, melee: "none", short: "none", medium: "dice", long: "ok" }
+} as const;
+
+/**
  * Data model for Feat items
  */
 export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
@@ -120,12 +147,15 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"
       }),
-      // Weapon/Spell specific fields
-      damageValue: new fields.NumberField({
+      weaponType: new fields.StringField({
         required: true,
-        initial: 0,
-        min: 0,
-        integer: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.WEAPON_TYPE"
+      }),
+      // Weapon/Spell specific fields
+      damageValue: new fields.StringField({
+        required: true,
+        initial: "0",
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE"
       }),
       meleeRange: new fields.StringField({

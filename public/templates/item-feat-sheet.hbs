@@ -240,11 +240,63 @@
         <input type="checkbox" name="system.isWeaponFocus" {{checked system.isWeaponFocus}} />
         <p class="notes">{{localize "SRA2.FEATS.IS_WEAPON_FOCUS_HINT"}}</p>
       </div>
+
+      <!-- Weapon Type Selection -->
+      <div class="form-group">
+        <label>{{localize "SRA2.FEATS.WEAPON.WEAPON_TYPE"}}</label>
+        <select name="system.weaponType" data-action="select-weapon-type">
+          <option value="">{{localize "SRA2.FEATS.WEAPON.SELECT_WEAPON"}}</option>
+          <option value="bare-hands" {{#if (eq system.weaponType "bare-hands")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.BARE_HANDS"}}</option>
+          <option value="short-weapons" {{#if (eq system.weaponType "short-weapons")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SHORT_WEAPONS"}}</option>
+          <option value="long-weapons" {{#if (eq system.weaponType "long-weapons")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.LONG_WEAPONS"}}</option>
+          <option value="advanced-melee" {{#if (eq system.weaponType "advanced-melee")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.ADVANCED_MELEE"}}</option>
+          <option value="throwing" {{#if (eq system.weaponType "throwing")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.THROWING"}}</option>
+          <option value="bows" {{#if (eq system.weaponType "bows")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.BOWS"}}</option>
+          <option value="crossbows" {{#if (eq system.weaponType "crossbows")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.CROSSBOWS"}}</option>
+          <option value="tasers" {{#if (eq system.weaponType "tasers")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.TASERS"}}</option>
+          <option value="pocket-pistols" {{#if (eq system.weaponType "pocket-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.POCKET_PISTOLS"}}</option>
+          <option value="light-pistols" {{#if (eq system.weaponType "light-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.LIGHT_PISTOLS"}}</option>
+          <option value="automatic-pistols" {{#if (eq system.weaponType "automatic-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.AUTOMATIC_PISTOLS"}}</option>
+          <option value="heavy-pistols" {{#if (eq system.weaponType "heavy-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.HEAVY_PISTOLS"}}</option>
+          <option value="smgs" {{#if (eq system.weaponType "smgs")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SMGS"}}</option>
+          <option value="assault-rifles" {{#if (eq system.weaponType "assault-rifles")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.ASSAULT_RIFLES"}}</option>
+          <option value="shotguns" {{#if (eq system.weaponType "shotguns")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SHOTGUNS"}}</option>
+          <option value="sniper-rifles" {{#if (eq system.weaponType "sniper-rifles")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SNIPER_RIFLES"}}</option>
+          <option value="machine-guns" {{#if (eq system.weaponType "machine-guns")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.MACHINE_GUNS"}}</option>
+          <option value="grenades" {{#if (eq system.weaponType "grenades")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.GRENADES"}}</option>
+          <option value="gas-grenades" {{#if (eq system.weaponType "gas-grenades")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.GAS_GRENADES"}}</option>
+          <option value="grenade-launchers" {{#if (eq system.weaponType "grenade-launchers")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.GRENADE_LAUNCHERS"}}</option>
+          <option value="rocket-launchers" {{#if (eq system.weaponType "rocket-launchers")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.ROCKET_LAUNCHERS"}}</option>
+        </select>
+      </div>
+
+      <!-- Weapon Info Display -->
+      {{#if system.weaponType}}
+      <div class="form-group weapon-info-display">
+        <label>{{localize "SRA2.FEATS.WEAPON.INFO"}}</label>
+        <div class="weapon-stats">
+          <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+          <span class="stat-value">{{system.damageValue}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}:</span>
+          <span class="stat-value">{{#if (eq system.meleeRange "ok")}}OK{{else}}{{#if (eq system.meleeRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}:</span>
+          <span class="stat-value">{{#if (eq system.shortRange "ok")}}OK{{else}}{{#if (eq system.shortRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}:</span>
+          <span class="stat-value">{{#if (eq system.mediumRange "ok")}}OK{{else}}{{#if (eq system.mediumRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+          <span class="stat-separator">/</span>
+          <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}:</span>
+          <span class="stat-value">{{#if (eq system.longRange "ok")}}OK{{else}}{{#if (eq system.longRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+        </div>
+      </div>
+      {{/if}}
       
       <!-- Damage Value (VD) -->
       <div class="form-group">
         <label>{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE"}}</label>
-        <input type="number" name="system.damageValue" value="{{system.damageValue}}" min="0" />
+        <input type="text" name="system.damageValue" value="{{system.damageValue}}" />
       </div>
 
       <!-- Ranges -->

@@ -758,6 +758,49 @@
           }
         }
       }
+
+      /* Weapon Info Display */
+      .weapon-info-display {
+        padding: 1rem;
+        background: rgba(74, 158, 255, 0.1);
+        border: 1px solid #4a9eff;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        
+        label {
+          display: block;
+          font-size: 0.9rem;
+          font-weight: bold;
+          color: #4a9eff;
+          margin-bottom: 0.5rem;
+        }
+        
+        .weapon-stats {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 1rem;
+          
+          .stat-label {
+            font-weight: bold;
+            color: #ccc;
+          }
+          
+          .stat-value {
+            color: #fff;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+          }
+          
+          .stat-separator {
+            color: #666;
+            font-weight: bold;
+          }
+        }
+      }
     }
   }
 }
