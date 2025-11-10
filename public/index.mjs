@@ -402,7 +402,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       rating: new fields.NumberField({
         required: true,
         initial: 0,
-        min: 0,
         integer: true,
         label: "SRA2.FEATS.RATING"
       }),
@@ -412,8 +411,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         choices: {
           "free-equipment": "SRA2.FEATS.COST.FREE_EQUIPMENT",
           "equipment": "SRA2.FEATS.COST.EQUIPMENT",
-          "specialized-equipment": "SRA2.FEATS.COST.SPECIALIZED_EQUIPMENT",
-          "feat": "SRA2.FEATS.COST.FEAT"
+          "advanced-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT"
         },
         label: "SRA2.FEATS.COST.LABEL"
       }),
@@ -833,29 +831,29 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     };
   }
   prepareDerivedData() {
-    const rating = this.rating || 0;
     const costType = this.cost || "free-equipment";
+    const featType = this.featType || "equipment";
+    const rating = this.rating || 0;
     let calculatedCost = 0;
-    switch (costType) {
-      case "free-equipment":
-        calculatedCost = 0 + rating * 5e3;
-        break;
-      case "equipment":
-        calculatedCost = 2500 + rating * 5e3;
-        break;
-      case "specialized-equipment":
-        calculatedCost = 5e3 + rating * 5e3;
-        break;
-      case "feat":
-        calculatedCost = rating * 5e3;
-        break;
-      default:
-        calculatedCost = 0;
+    if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
+      switch (costType) {
+        case "free-equipment":
+          calculatedCost = 0;
+          break;
+        case "equipment":
+          calculatedCost = 2500;
+          break;
+        case "advanced-equipment":
+          calculatedCost = 5e3;
+          break;
+        default:
+          calculatedCost = 0;
+      }
     }
+    calculatedCost += rating * 5e3;
     this.calculatedCost = calculatedCost;
     let recommendedLevel = 0;
     const recommendedLevelBreakdown = [];
-    const featType = this.featType || "equipment";
     const bonusLightDamage = this.bonusLightDamage || 0;
     const bonusSevereDamage = this.bonusSevereDamage || 0;
     const bonusPhysicalThreshold = this.bonusPhysicalThreshold || 0;
@@ -3810,6 +3808,98 @@ class Migration_13_0_9 extends Migration {
     }
   }
 }
+class Migration_13_0_10 extends Migration {
+  get code() {
+    return "migration-13.0.10";
+  }
+  get version() {
+    return "13.0.10";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.10: Updating cost field values");
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    let updateDetails = [];
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        let needsUpdate = false;
+        const update = {
+          _id: item.id
+        };
+        const currentCost = sourceSystem.cost;
+        const featType = sourceSystem.featType || "equipment";
+        let newCost = currentCost;
+        let reason = "";
+        if (currentCost === "specialized-equipment") {
+          newCost = "advanced-equipment";
+          needsUpdate = true;
+          reason = "specialized-equipment → advanced-equipment";
+        }
+        if (currentCost === "feat") {
+          newCost = "free-equipment";
+          needsUpdate = true;
+          reason = "feat → free-equipment (cost = 0 for non-equipment types)";
+        }
+        if (needsUpdate) {
+          update["system.cost"] = newCost;
+          update["system._costMigrationVersion"] = "13.0.10";
+          console.log(SYSTEM.LOG.HEAD + `Migration 13.0.10: Updating cost for "${item.name}" (ID: ${item.id})`);
+          console.log(SYSTEM.LOG.HEAD + `  - Type: ${featType}`);
+          console.log(SYSTEM.LOG.HEAD + `  - Old cost: ${currentCost}`);
+          console.log(SYSTEM.LOG.HEAD + `  - New cost: ${newCost}`);
+          console.log(SYSTEM.LOG.HEAD + `  - Reason: ${reason}`);
+          updateDetails.push({
+            name: item.name,
+            id: item.id,
+            featType,
+            oldCost: currentCost,
+            newCost,
+            reason
+          });
+          updates.push(update);
+          totalUpdated++;
+        } else {
+          totalSkipped++;
+        }
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.10 completed - Items updated: ${totalUpdated}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (updateDetails.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + "=== UPDATE DETAILS ===");
+      console.log(SYSTEM.LOG.HEAD + `Total items updated: ${updateDetails.length}`);
+      const specializedToAdvanced = updateDetails.filter((d) => d.oldCost === "specialized-equipment").length;
+      const featToFree = updateDetails.filter((d) => d.oldCost === "feat").length;
+      console.log(SYSTEM.LOG.HEAD + `  - specialized-equipment → advanced-equipment: ${specializedToAdvanced}`);
+      console.log(SYSTEM.LOG.HEAD + `  - feat → free-equipment: ${featToFree}`);
+      console.log(SYSTEM.LOG.HEAD + "======================");
+      console.log(SYSTEM.LOG.HEAD + "Updated items:");
+      updateDetails.forEach((detail, index) => {
+        console.log(SYSTEM.LOG.HEAD + `  ${index + 1}. "${detail.name}" (${detail.featType}): ${detail.oldCost} → ${detail.newCost}`);
+      });
+    }
+    if (totalUpdated > 0) {
+      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_10_INFO", {
+        count: totalUpdated,
+        specializedCount: updateDetails.filter((d) => d.oldCost === "specialized-equipment").length,
+        featCount: updateDetails.filter((d) => d.oldCost === "feat").length
+      }) : `Migration 13.0.10: Updated ${totalUpdated} feat(s) cost values.`;
+      ui.notifications?.info(userMessage, { permanent: false });
+      console.log(SYSTEM.LOG.HEAD + "✓ Migration complete.");
+      console.log(SYSTEM.LOG.HEAD + "✓ Cost system simplified: free (0¥), equipment (2500¥), advanced (5000¥)");
+      console.log(SYSTEM.LOG.HEAD + "✓ Cost now only applies to equipment and weapon types");
+      console.log(SYSTEM.LOG.HEAD + "✓ No data was lost in the migration");
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -3839,6 +3929,7 @@ class SRA2System {
       declareMigration(new Migration_13_0_7());
       declareMigration(new Migration_13_0_8());
       declareMigration(new Migration_13_0_9());
+      declareMigration(new Migration_13_0_10());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {

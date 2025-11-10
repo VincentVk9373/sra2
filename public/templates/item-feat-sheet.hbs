@@ -55,16 +55,17 @@
       </select>
     </div>
 
-    <!-- Cost -->
+    <!-- Cost (Equipment and Weapons) -->
+    {{#if (or (eq system.featType "equipment") (eq system.featType "weapon") (eq system.featType "weapons-spells"))}}
     <div class="form-group">
       <label>{{localize "SRA2.FEATS.COST.LABEL"}}</label>
       <select name="system.cost">
         <option value="free-equipment" {{#if (eq system.cost "free-equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.FREE_EQUIPMENT"}}</option>
         <option value="equipment" {{#if (eq system.cost "equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.EQUIPMENT"}}</option>
-        <option value="specialized-equipment" {{#if (eq system.cost "specialized-equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.SPECIALIZED_EQUIPMENT"}}</option>
-        <option value="feat" {{#if (eq system.cost "feat")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.FEAT"}}</option>
+        <option value="advanced-equipment" {{#if (eq system.cost "advanced-equipment")}}selected{{/if}}>{{localize "SRA2.FEATS.COST.ADVANCED_EQUIPMENT"}}</option>
       </select>
     </div>
+    {{/if}}
 
     <!-- Active -->
     <div class="form-group">

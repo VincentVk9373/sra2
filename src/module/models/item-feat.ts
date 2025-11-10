@@ -58,7 +58,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       rating: new fields.NumberField({
         required: true,
         initial: 0,
-        min: 0,
         integer: true,
         label: "SRA2.FEATS.RATING"
       }),
@@ -68,8 +67,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         choices: {
           "free-equipment": "SRA2.FEATS.COST.FREE_EQUIPMENT",
           "equipment": "SRA2.FEATS.COST.EQUIPMENT",
-          "specialized-equipment": "SRA2.FEATS.COST.SPECIALIZED_EQUIPMENT",
-          "feat": "SRA2.FEATS.COST.FEAT"
+          "advanced-equipment": "SRA2.FEATS.COST.ADVANCED_EQUIPMENT"
         },
         label: "SRA2.FEATS.COST.LABEL"
       }),
@@ -490,27 +488,32 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
   }
 
   override prepareDerivedData(): void {
-    // Calculate cost based on cost type and rating
-    const rating = (this as any).rating || 0;
+    // Get common properties
     const costType = (this as any).cost || 'free-equipment';
+    const featType = (this as any).featType || 'equipment';
+    const rating = (this as any).rating || 0;
     
+    // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;
-    switch (costType) {
-      case 'free-equipment':
-        calculatedCost = 0 + rating * 5000;
-        break;
-      case 'equipment':
-        calculatedCost = 2500 + rating * 5000;
-        break;
-      case 'specialized-equipment':
-        calculatedCost = 5000 + rating * 5000;
-        break;
-      case 'feat':
-        calculatedCost = rating * 5000;
-        break;
-      default:
-        calculatedCost = 0;
+    
+    // Apply cost calculations for equipment, weapon, and weapons-spells types
+    if (featType === 'equipment' || featType === 'weapon' || featType === 'weapons-spells') {
+      switch (costType) {
+        case 'free-equipment':
+          calculatedCost = 0;
+          break;
+        case 'equipment':
+          calculatedCost = 2500;
+          break;
+        case 'advanced-equipment':
+          calculatedCost = 5000;
+          break;
+        default:
+          calculatedCost = 0;
+      }
     }
+
+    calculatedCost += rating * 5000;
     
     (this as any).calculatedCost = calculatedCost;
 
@@ -518,7 +521,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     let recommendedLevel = 0;
     const recommendedLevelBreakdown: Array<{ labelKey: string; labelParams?: string; value: number }> = [];
     
-    const featType = (this as any).featType || 'equipment';
     const bonusLightDamage = (this as any).bonusLightDamage || 0;
     const bonusSevereDamage = (this as any).bonusSevereDamage || 0;
     const bonusPhysicalThreshold = (this as any).bonusPhysicalThreshold || 0;

@@ -98,14 +98,9 @@
             "FEAT_CREATED": "{name} has been created",
             "COST": {
                 "LABEL": "Cost",
-                "FREE_EQUIPMENT": "Free Equipment",
-                "FREE_EQUIPMENT_COST": "0 Yens + 5000 Yens / level",
-                "EQUIPMENT": "Equipment",
-                "EQUIPMENT_COST": "2500 Yens + 5000 yens / feat",
-                "SPECIALIZED_EQUIPMENT": "Specialized Equipment",
-                "SPECIALIZED_EQUIPMENT_COST": "0 Yens + 5000 yens / feat",
-                "FEAT": "Feat",
-                "FEAT_COST": "5000 Yens / level"
+                "FREE_EQUIPMENT": "Free Equipment (0 yens)",
+                "EQUIPMENT": "Equipment (2500 yens)",
+                "ADVANCED_EQUIPMENT": "Advanced Equipment (5000 yens)"
             },
             "RR_TYPE": {
                 "LABEL": "Risk Reduction Type",
@@ -473,7 +468,8 @@
             "13_0_5_INFO": "Migration 13.0.5: Weapon and Spell feat types have been separated. All feats have been converted to \"Weapon\" type. You can manually change spells to \"Spell\" type.",
             "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup.",
             "13_0_8_INFO": "Migration 13.0.8: Narrative effects on {count} feat(s) have been converted to the new format (with negative option).",
-            "13_0_9_INFO": "Migration 13.0.9: {count} feat(s) have been updated - added value field to narrative effects and 'first feat' field to {firstFeatCount} feat(s)."
+            "13_0_9_INFO": "Migration 13.0.9: {count} feat(s) have been updated - added value field to narrative effects and 'first feat' field to {firstFeatCount} feat(s).",
+            "13_0_10_INFO": "Migration 13.0.10: {count} feat(s) updated - simplified cost system (free 0¥, equipment 2500¥, advanced 5000¥). {specializedCount} specialized equipment converted to advanced, {featCount} feat(s) converted."
         }
     }
 }

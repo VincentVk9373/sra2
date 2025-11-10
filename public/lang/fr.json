@@ -98,14 +98,9 @@
             "FEAT_CREATED": "{name} a été créé",
             "COST": {
                 "LABEL": "Coût",
-                "FREE_EQUIPMENT": "Equipement gratuit",
-                "FREE_EQUIPMENT_COST": "0 Yens + 5000 Yens / niveau",
-                "EQUIPMENT": "Equipement",
-                "EQUIPMENT_COST": "2500 Yens + 5000 yens / atout",
-                "SPECIALIZED_EQUIPMENT": "Equipement specialisé",
-                "SPECIALIZED_EQUIPMENT_COST": "0 Yens + 5000 yens / atout",
-                "FEAT": "Atout",
-                "FEAT_COST": "5000 Yens / niveau"
+                "FREE_EQUIPMENT": "Équipement gratuit (0 yens)",
+                "EQUIPMENT": "Équipement (2500 yens)",
+                "ADVANCED_EQUIPMENT": "Équipement avancé (5000 yens)"
             },
             "RR_TYPE": {
                 "LABEL": "Type de Réduction de Risque",
@@ -482,7 +477,8 @@
             "13_0_5_INFO": "Migration 13.0.5 : Les types d'atouts \"Armes et Sorts\" ont été séparés. Tous les atouts ont été convertis en type \"Arme\". Vous pouvez changer manuellement les sorts en type \"Sort\".",
             "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde.",
             "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif).",
-            "13_0_9_INFO": "Migration 13.0.9 : {count} atout(s) ont été mis à jour - ajout du champ valeur aux effets narratifs et du champ 'premier atout' à {firstFeatCount} atout(s)."
+            "13_0_9_INFO": "Migration 13.0.9 : {count} atout(s) ont été mis à jour - ajout du champ valeur aux effets narratifs et du champ 'premier atout' à {firstFeatCount} atout(s).",
+            "13_0_10_INFO": "Migration 13.0.10 : {count} atout(s) mis à jour - système de coût simplifié (gratuit 0¥, équipement 2500¥, avancé 5000¥). {specializedCount} équipement(s) spécialisé(s) converti(s) en avancé, {featCount} atout(s) converti(s)."
         }
     }
 }
