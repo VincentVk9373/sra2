@@ -552,7 +552,35 @@ export class FeatSheet extends ItemSheet {
   }
 
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
-    const expandedData = foundry.utils.expandObject(formData);
+    const expandedData = foundry.utils.expandObject(formData) as any;
+    
+    // Check if isFirstFeat is being set to true for a trait
+    if (expandedData.system?.isFirstFeat === true && 
+        expandedData.system?.featType === 'trait' && 
+        this.item.actor) {
+      
+      // Find all other traits on the same actor that have isFirstFeat = true
+      const otherFirstFeats = this.item.actor.items.filter((item: any) => 
+        item.type === 'feat' &&
+        item.id !== this.item.id &&
+        item.system?.featType === 'trait' &&
+        item.system?.isFirstFeat === true
+      );
+      
+      // If there are other traits with isFirstFeat, uncheck them
+      if (otherFirstFeats.length > 0) {
+        for (const otherFeat of otherFirstFeats) {
+          await otherFeat.update({
+            'system.isFirstFeat': false
+          } as any);
+        }
+        
+        ui.notifications?.info(
+          game.i18n!.localize('SRA2.FEATS.FIRST_FEAT_TRANSFERRED') || 
+          'The "first trait" flag has been moved from the other trait(s) to this one.'
+        );
+      }
+    }
     
     // Update the item first to recalculate recommendedLevel
     await this.item.update(expandedData);

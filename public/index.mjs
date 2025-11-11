@@ -436,7 +436,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         }),
         rrValue: new fields.NumberField({
           required: true,
-          initial: 0,
+          initial: 1,
           min: 0,
           max: 3,
           integer: true,
@@ -830,6 +830,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.FEATS.IS_FIRST_FEAT"
+      }),
+      // Shamanic mask (for awakened feats)
+      shamanicMask: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.SHAMANIC_MASK"
       })
     };
   }
@@ -1067,6 +1073,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       const value = additionalDroneCount * 2;
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES", labelParams: `(${additionalDroneCount})`, value });
+    }
+    const shamanicMask = this.shamanicMask || false;
+    if (shamanicMask && featType === "awakened") {
+      recommendedLevel -= 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SHAMANIC_MASK", value: -1 });
     }
     this.recommendedLevel = recommendedLevel;
     this.recommendedLevelBreakdown = recommendedLevelBreakdown;
@@ -3256,6 +3267,21 @@ class FeatSheet extends ItemSheet {
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
+    if (expandedData.system?.isFirstFeat === true && expandedData.system?.featType === "trait" && this.item.actor) {
+      const otherFirstFeats = this.item.actor.items.filter(
+        (item) => item.type === "feat" && item.id !== this.item.id && item.system?.featType === "trait" && item.system?.isFirstFeat === true
+      );
+      if (otherFirstFeats.length > 0) {
+        for (const otherFeat of otherFirstFeats) {
+          await otherFeat.update({
+            "system.isFirstFeat": false
+          });
+        }
+        ui.notifications?.info(
+          game.i18n.localize("SRA2.FEATS.FIRST_FEAT_TRANSFERRED") || 'The "first trait" flag has been moved from the other trait(s) to this one.'
+        );
+      }
+    }
     await this.item.update(expandedData);
     this.item.prepareData();
     const recommendedLevel = this.item.system.recommendedLevel || 0;

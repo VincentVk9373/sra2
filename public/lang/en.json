@@ -219,7 +219,8 @@
                 "IS_FLYING": "Flying",
                 "WEAPON_MOUNT_IMPROVEMENT": "Weapon mount improvement",
                 "AUTOPILOT_UNLOCKED": "Autopilot Overclocking",
-                "ADDITIONAL_DRONES": "Additional drones"
+                "ADDITIONAL_DRONES": "Additional drones",
+                "SHAMANIC_MASK": "Shamanic Mask"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",
@@ -348,7 +349,9 @@
                 "ASTRAL_PROJECTION": "Astral Projection",
                 "SORCERY": "Sorcery",
                 "CONJURATION": "Conjuration",
-                "ADEPT": "Adept"
+                "ADEPT": "Adept",
+                "SHAMANIC_MASK": "Shamanic Mask",
+                "SHAMANIC_MASK_HINT": "Reduces the feat level by 1 when activated"
             },
             "SPELL": {
                 "SECTION_TITLE": "Spell Information",

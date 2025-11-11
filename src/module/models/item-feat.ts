@@ -92,7 +92,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         }),
         rrValue: new fields.NumberField({
           required: true,
-          initial: 0,
+          initial: 1,
           min: 0,
           max: 3,
           integer: true,
@@ -486,6 +486,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.FEATS.IS_FIRST_FEAT"
+      }),
+      // Shamanic mask (for awakened feats)
+      shamanicMask: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.SHAMANIC_MASK"
       })
     };
   }
@@ -812,6 +818,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       const value = additionalDroneCount * 2;
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES', labelParams: `(${additionalDroneCount})`, value });
+    }
+    
+    // Shamanic mask: -1 level (for awakened feats only)
+    const shamanicMask = (this as any).shamanicMask || false;
+    if (shamanicMask && featType === 'awakened') {
+      recommendedLevel -= 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SHAMANIC_MASK', value: -1 });
     }
     
     (this as any).recommendedLevel = recommendedLevel;

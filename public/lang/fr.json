@@ -228,7 +228,8 @@
                 "IS_FLYING": "Volant",
                 "WEAPON_MOUNT_IMPROVEMENT": "Amélioration de monture d'arme",
                 "AUTOPILOT_UNLOCKED": "Débridage de l'Autopilote",
-                "ADDITIONAL_DRONES": "Drones supplémentaires"
+                "ADDITIONAL_DRONES": "Drones supplémentaires",
+                "SHAMANIC_MASK": "Masque chamanique"
             },
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",
@@ -357,7 +358,9 @@
                 "ASTRAL_PROJECTION": "Projection astrale",
                 "SORCERY": "Sorcellerie",
                 "CONJURATION": "Conjuration",
-                "ADEPT": "Adepte"
+                "ADEPT": "Adepte",
+                "SHAMANIC_MASK": "Masque chamanique",
+                "SHAMANIC_MASK_HINT": "Réduit le niveau de l'atout de 1 lorsqu'il est activé"
             },
             "SPELL": {
                 "SECTION_TITLE": "Informations Sort",
