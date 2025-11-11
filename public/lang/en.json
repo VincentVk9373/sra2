@@ -71,7 +71,8 @@
         "CATCHPHRASES": {
             "LABEL": "Catchphrases",
             "CATCHPHRASE": "Catchphrase",
-            "PLACEHOLDER": "Enter a catchphrase..."
+            "PLACEHOLDER": "Enter a catchphrase...",
+            "SEND_TO_CHAT": "Send to chat"
         },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armor & Damage Thresholds",

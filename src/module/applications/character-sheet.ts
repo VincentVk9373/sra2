@@ -232,6 +232,9 @@ export class CharacterSheet extends ActorSheet {
     // Quick roll specialization (from dice badge)
     html.find('[data-action="quick-roll-specialization"]').on('click', this._onQuickRollSpecialization.bind(this));
 
+    // Send catchphrase to chat
+    html.find('[data-action="send-catchphrase"]').on('click', this._onSendCatchphrase.bind(this));
+
     // Handle rating changes
     html.find('.rating-input').on('change', this._onRatingChange.bind(this));
 
@@ -2065,6 +2068,25 @@ export class CharacterSheet extends ActorSheet {
     }, 200);
     
     return Promise.resolve();
+  }
+
+  /**
+   * Handle sending a catchphrase to chat
+   */
+  private async _onSendCatchphrase(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const catchphrase = element.dataset.catchphrase;
+    
+    if (!catchphrase) return;
+
+    // Create the chat message
+    const messageData = {
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: `<div class="sra2-catchphrase">${catchphrase}</div>`
+    };
+    
+    await ChatMessage.create(messageData as any);
   }
 
   /**

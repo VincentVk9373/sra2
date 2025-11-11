@@ -71,7 +71,8 @@
         "CATCHPHRASES": {
             "LABEL": "Répliques",
             "CATCHPHRASE": "Réplique",
-            "PLACEHOLDER": "Entrer une réplique..."
+            "PLACEHOLDER": "Entrer une réplique...",
+            "SEND_TO_CHAT": "Envoyer dans le chat"
         },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armure et Seuils de Dégâts",

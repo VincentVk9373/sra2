@@ -1394,6 +1394,7 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="quick-roll-skill"]').on("click", this._onQuickRollSkill.bind(this));
     html.find('[data-action="roll-specialization"]').on("click", this._onRollSpecialization.bind(this));
     html.find('[data-action="quick-roll-specialization"]').on("click", this._onQuickRollSpecialization.bind(this));
+    html.find('[data-action="send-catchphrase"]').on("click", this._onSendCatchphrase.bind(this));
     html.find(".rating-input").on("change", this._onRatingChange.bind(this));
     html.find(".skill-search-input").on("input", this._onSkillSearch.bind(this));
     html.find(".skill-search-input").on("focus", this._onSkillSearchFocus.bind(this));
@@ -2875,6 +2876,20 @@ class CharacterSheet extends ActorSheet {
       }
     }, 200);
     return Promise.resolve();
+  }
+  /**
+   * Handle sending a catchphrase to chat
+   */
+  async _onSendCatchphrase(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const catchphrase = element.dataset.catchphrase;
+    if (!catchphrase) return;
+    const messageData = {
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: `<div class="sra2-catchphrase">${catchphrase}</div>`
+    };
+    await ChatMessage.create(messageData);
   }
   /**
    * Handle creating a new feat from search

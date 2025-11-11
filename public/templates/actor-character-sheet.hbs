@@ -217,19 +217,47 @@
       <div class="catchphrases-fields">
         <div class="catchphrase-field">
           <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 1</label>
-          <input type="text" name="system.catchphrases.catchphrase1" value="{{system.catchphrases.catchphrase1}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+          <div class="catchphrase-input-wrapper">
+            <input type="text" name="system.catchphrases.catchphrase1" value="{{system.catchphrases.catchphrase1}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+            {{#if system.catchphrases.catchphrase1}}
+            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase1}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+              <i class="fas fa-comment"></i>
+            </a>
+            {{/if}}
+          </div>
         </div>
         <div class="catchphrase-field">
           <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 2</label>
-          <input type="text" name="system.catchphrases.catchphrase2" value="{{system.catchphrases.catchphrase2}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+          <div class="catchphrase-input-wrapper">
+            <input type="text" name="system.catchphrases.catchphrase2" value="{{system.catchphrases.catchphrase2}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+            {{#if system.catchphrases.catchphrase2}}
+            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase2}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+              <i class="fas fa-comment"></i>
+            </a>
+            {{/if}}
+          </div>
         </div>
         <div class="catchphrase-field">
           <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 3</label>
-          <input type="text" name="system.catchphrases.catchphrase3" value="{{system.catchphrases.catchphrase3}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+          <div class="catchphrase-input-wrapper">
+            <input type="text" name="system.catchphrases.catchphrase3" value="{{system.catchphrases.catchphrase3}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+            {{#if system.catchphrases.catchphrase3}}
+            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase3}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+              <i class="fas fa-comment"></i>
+            </a>
+            {{/if}}
+          </div>
         </div>
         <div class="catchphrase-field">
           <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 4</label>
-          <input type="text" name="system.catchphrases.catchphrase4" value="{{system.catchphrases.catchphrase4}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+          <div class="catchphrase-input-wrapper">
+            <input type="text" name="system.catchphrases.catchphrase4" value="{{system.catchphrases.catchphrase4}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+            {{#if system.catchphrases.catchphrase4}}
+            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase4}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+              <i class="fas fa-comment"></i>
+            </a>
+            {{/if}}
+          </div>
         </div>
       </div>
     </div>
