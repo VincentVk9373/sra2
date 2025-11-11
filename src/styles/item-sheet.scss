@@ -6,7 +6,7 @@
     gap: 1rem;
     padding: 1rem;
     border-bottom: 2px solid #333;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
     
     .profile-img {
       width: 60px;
@@ -25,7 +25,7 @@
       flex: 1;
       
       .item-name {
-        margin: 0;
+        margin: 0 0 0.5rem 0;
         
         input {
           width: 100%;
@@ -37,6 +37,248 @@
           &:focus {
             outline: 1px solid #666;
             padding: 0.25rem;
+          }
+        }
+      }
+      
+      .header-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        
+        .feat-type-badge {
+          padding: 0.25rem 0.75rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: #fff;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .recommended-level-badge {
+          padding: 0.25rem 0.75rem;
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          color: #fff;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          
+          i {
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+  
+  /* Feat Sheet Specific - Sidebar Layout */
+  &.sra2-feat-sheet {
+    .sheet-content {
+      display: flex;
+      min-height: 500px;
+      
+      .section-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem 0.75rem;
+        background: rgba(0, 0, 0, 0.1);
+        border-right: 2px solid #333;
+        min-width: 60px;
+        
+        .nav-item {
+          width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.05);
+          border: 2px solid #666;
+          border-radius: 6px;
+          color: #999;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-size: 1.2rem;
+          padding: 0;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #999;
+            color: #fff;
+            transform: translateX(2px);
+          }
+          
+          &.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            
+            &:hover {
+              transform: translateX(2px) scale(1.05);
+            }
+          }
+          
+          i {
+            margin: 0;
+          }
+        }
+      }
+      
+      .section-content {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        max-height: calc(100vh - 250px);
+        
+        .content-section {
+          display: none;
+          
+          &.active {
+            display: block;
+          }
+          
+          h2 {
+            font-size: 1.3rem;
+            margin: 0 0 1.5rem 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #667eea;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            
+            i {
+              font-size: 1.1rem;
+            }
+          }
+          
+          h4 {
+            font-size: 1rem;
+            margin: 1.5rem 0 1rem 0;
+            color: #999;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+        }
+        
+        .add-entry-button {
+          margin-bottom: 1rem;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s;
+          
+          &:hover {
+            background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+          }
+          
+          i {
+            margin-right: 0.5rem;
+          }
+        }
+        
+        .rr-entries-container,
+        .narrative-effects-container {
+          .rr-entry,
+          .narrative-effect-entry {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #666;
+            border-radius: 4px;
+            
+            .rr-entry-header,
+            .narrative-effect-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.75rem;
+              
+              .entry-number {
+                font-weight: bold;
+                color: #ccc;
+              }
+              
+              button {
+                background: #ff6b6b;
+                color: #fff;
+                border: none;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+                
+                &:hover {
+                  background: #ff5252;
+                  transform: scale(1.05);
+                }
+              }
+            }
+          }
+          
+          .no-entries {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            font-style: italic;
+            font-size: 0.95rem;
+          }
+        }
+        
+        .weapon-info-display,
+        .vehicle-info-display {
+          padding: 1rem;
+          background: rgba(74, 158, 255, 0.1);
+          border: 1px solid #4a9eff;
+          border-radius: 4px;
+          margin-bottom: 1rem;
+          
+          label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #4a9eff;
+            margin-bottom: 0.5rem;
+          }
+          
+          .weapon-stats,
+          .vehicle-stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            
+            .stat-label {
+              font-weight: bold;
+              color: #ccc;
+            }
+            
+            .stat-value {
+              color: #fff;
+              font-weight: 600;
+              background: rgba(0, 0, 0, 0.3);
+              padding: 0.15rem 0.4rem;
+              border-radius: 3px;
+            }
+            
+            .stat-separator {
+              color: #666;
+              font-weight: bold;
+            }
           }
         }
       }

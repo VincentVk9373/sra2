@@ -2948,8 +2948,8 @@ class FeatSheet extends ItemSheet {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "item", "feat"],
       template: "systems/sra2/templates/item-feat-sheet.hbs",
-      width: 520,
-      height: 480,
+      width: 720,
+      height: 680,
       tabs: [],
       dragDrop: [
         { dropSelector: ".rr-target-drop-zone" }
@@ -3005,6 +3005,21 @@ class FeatSheet extends ItemSheet {
     html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
     html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
     html.find('.range-improvement-checkbox input[type="checkbox"]').on("change", this._onRangeImprovementChange.bind(this));
+    html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
+  }
+  /**
+   * Handle section navigation
+   */
+  _onSectionNavigation(event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const section = button.dataset.section;
+    if (!section) return;
+    const form = $(this.form);
+    form.find(".section-nav .nav-item").removeClass("active");
+    button.classList.add("active");
+    form.find(".content-section").removeClass("active");
+    form.find(`[data-section-content="${section}"]`).addClass("active");
   }
   /**
    * Handle adding a new RR entry

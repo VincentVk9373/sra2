@@ -142,6 +142,19 @@
                 "WEAPON": "Weapon",
                 "SPELL": "Spell"
             },
+            "SECTION": {
+                "GENERAL": "General",
+                "STATS": "Stats",
+                "WEAPON": "Weapon",
+                "SPELL": "Spell",
+                "VEHICLE": "Vehicle",
+                "CYBERDECK": "Cyberdeck",
+                "CONTACT": "Contact",
+                "AWAKENED": "Awakened",
+                "RR": "Risk Reduction",
+                "EFFECTS": "Effects",
+                "DESCRIPTION": "Description"
+            },
             "RR_TARGET_SELECT": "Select...",
             "RR_TARGET_PLACEHOLDER": "Name or ID of target object",
             "CLEAR_RR_TARGET": "Clear target",
