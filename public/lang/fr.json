@@ -260,6 +260,7 @@
                 "BONUS_1": "+1 VD (+1 niveau)",
                 "BONUS_2": "+2 VD (+2 niveaux)",
                 "TYPES": {
+                    "CUSTOM_WEAPON": "Arme personnalisée",
                     "BARE_HANDS": "Mains nues",
                     "SHORT_WEAPONS": "Armes courtes (couteau, poing américain, griffes et lame cybernétiques)",
                     "LONG_WEAPONS": "Armes longues (épée, rapière, katana, hache de combat, arme d'hast, matraque, matraque télescopique)",

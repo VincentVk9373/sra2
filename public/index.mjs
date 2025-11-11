@@ -355,6 +355,7 @@ class SkillDataModel extends foundry.abstract.TypeDataModel {
   }
 }
 const WEAPON_TYPES = {
+  "custom-weapon": { vd: "0", melee: "none", short: "none", medium: "none", long: "none" },
   "bare-hands": { vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none" },
   "short-weapons": { vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none" },
   "long-weapons": { vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none" },

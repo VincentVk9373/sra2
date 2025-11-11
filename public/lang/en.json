@@ -243,7 +243,7 @@
                 "LONG_SHORT": "Long",
                 "RANGE_NONE": "-",
                 "RANGE_OK": "OK",
-                "RANGE_DICE": "Dice",
+                "RANGE_DICE": "Des",
                 "IMPROVE_RANGE": "Improve range",
                 "RANGE_IMPROVEMENTS": "Range improvements",
                 "DAMAGE_VALUE_BONUS": "DV Bonus",
@@ -251,6 +251,7 @@
                 "BONUS_1": "+1 DV (+1 level)",
                 "BONUS_2": "+2 DV (+2 levels)",
                 "TYPES": {
+                    "CUSTOM_WEAPON": "Custom Weapon",
                     "BARE_HANDS": "Bare Hands",
                     "SHORT_WEAPONS": "Short Weapons (knife, brass knuckles, cyber claws and blades)",
                     "LONG_WEAPONS": "Long Weapons (sword, rapier, katana, combat axe, polearm, club, telescopic baton)",
