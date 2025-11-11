@@ -58,6 +58,21 @@
             "NARRATION_ACTIONS": "actions",
             "TOTAL_NARRATIONS": "Total de Narrations"
         },
+        "KEYWORDS": {
+            "LABEL": "Mots-clefs",
+            "KEYWORD": "Mot-clef",
+            "PLACEHOLDER": "Entrer un mot-clef..."
+        },
+        "BEHAVIORS": {
+            "LABEL": "Comportements",
+            "BEHAVIOR": "Comportement",
+            "PLACEHOLDER": "Entrer un comportement..."
+        },
+        "CATCHPHRASES": {
+            "LABEL": "Répliques",
+            "CATCHPHRASE": "Réplique",
+            "PLACEHOLDER": "Entrer une réplique..."
+        },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armure et Seuils de Dégâts",
             "ARMOR_LEVEL": "Niveau d'Armure",

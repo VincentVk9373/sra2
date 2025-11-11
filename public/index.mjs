@@ -111,6 +111,64 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
           required: true,
           initial: ""
         })
+      }),
+      keywords: new fields.SchemaField({
+        keyword1: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        keyword2: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        keyword3: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        keyword4: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        keyword5: new fields.StringField({
+          required: true,
+          initial: ""
+        })
+      }),
+      behaviors: new fields.SchemaField({
+        behavior1: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        behavior2: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        behavior3: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        behavior4: new fields.StringField({
+          required: true,
+          initial: ""
+        })
+      }),
+      catchphrases: new fields.SchemaField({
+        catchphrase1: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        catchphrase2: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        catchphrase3: new fields.StringField({
+          required: true,
+          initial: ""
+        }),
+        catchphrase4: new fields.StringField({
+          required: true,
+          initial: ""
+        })
       })
     };
   }

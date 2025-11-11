@@ -58,6 +58,21 @@
             "NARRATION_ACTIONS": "actions",
             "TOTAL_NARRATIONS": "Total Narrations"
         },
+        "KEYWORDS": {
+            "LABEL": "Keywords",
+            "KEYWORD": "Keyword",
+            "PLACEHOLDER": "Enter a keyword..."
+        },
+        "BEHAVIORS": {
+            "LABEL": "Behaviors",
+            "BEHAVIOR": "Behavior",
+            "PLACEHOLDER": "Enter a behavior..."
+        },
+        "CATCHPHRASES": {
+            "LABEL": "Catchphrases",
+            "CATCHPHRASE": "Catchphrase",
+            "PLACEHOLDER": "Enter a catchphrase..."
+        },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armor & Damage Thresholds",
             "ARMOR_LEVEL": "Armor Level",
