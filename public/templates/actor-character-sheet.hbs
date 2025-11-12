@@ -10,1444 +10,1510 @@
     </div>
   </header>
 
-  <section class="sheet-body">
-    <!-- Metatype -->
-    <div class="metatype-section">
-      <h2>{{localize "SRA2.METATYPES.LABEL"}}</h2>
-      <div class="metatype-drop-zone" data-drop-zone="metatype">
-        {{#if metatype}}
-          <div class="metatype-item" data-item-id="{{metatype._id}}">
-            <div class="metatype-content">
-              <img class="metatype-img" src="{{metatype.img}}" alt="{{metatype.name}}" />
-              <div class="metatype-info">
-                <h3 class="metatype-name">{{metatype.name}}</h3>
-                <div class="metatype-maxes">
-                  <div class="metatype-max-item">
-                    <span class="max-label">{{localize "SRA2.ATTRIBUTES.STRENGTH"}}:</span>
-                    <span class="max-value">{{metatype.system.maxStrength}}</span>
+  <div class="sheet-content">
+    <!-- Left Sidebar Navigation -->
+    <nav class="section-nav">
+      <button type="button" class="nav-item {{#if (eq activeSection 'identity')}}active{{/if}}" data-section="identity" title="{{localize 'SRA2.CHARACTER.SECTION.IDENTITY'}}">
+        <i class="fas fa-user"></i>
+      </button>
+      <button type="button" class="nav-item {{#if (eq activeSection 'attributes')}}active{{/if}}" data-section="attributes" title="{{localize 'SRA2.CHARACTER.SECTION.ATTRIBUTES'}}">
+        <i class="fas fa-chart-bar"></i>
+      </button>
+      <button type="button" class="nav-item {{#if (eq activeSection 'resources')}}active{{/if}}" data-section="resources" title="{{localize 'SRA2.CHARACTER.SECTION.RESOURCES'}}">
+        <i class="fas fa-coins"></i>
+      </button>
+      <button type="button" class="nav-item {{#if (eq activeSection 'combat')}}active{{/if}}" data-section="combat" title="{{localize 'SRA2.CHARACTER.SECTION.COMBAT'}}">
+        <i class="fas fa-shield-alt"></i>
+      </button>
+      <button type="button" class="nav-item {{#if (eq activeSection 'skills')}}active{{/if}}" data-section="skills" title="{{localize 'SRA2.CHARACTER.SECTION.SKILLS'}}">
+        <i class="fas fa-book"></i>
+      </button>
+      <button type="button" class="nav-item {{#if (eq activeSection 'feats')}}active{{/if}}" data-section="feats" title="{{localize 'SRA2.CHARACTER.SECTION.FEATS'}}">
+        <i class="fas fa-star"></i>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="section-content">
+      <!-- Identity Section -->
+      <section class="content-section {{#if (eq activeSection 'identity')}}active{{/if}}" data-section-content="identity">
+        <h2><i class="fas fa-user"></i> {{localize "SRA2.CHARACTER.SECTION.IDENTITY"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Metatype -->
+          <div class="metatype-section">
+            <h2>{{localize "SRA2.METATYPES.LABEL"}}</h2>
+            <div class="metatype-drop-zone" data-drop-zone="metatype">
+              {{#if metatype}}
+                <div class="metatype-item" data-item-id="{{metatype._id}}">
+                  <div class="metatype-content">
+                    <img class="metatype-img" src="{{metatype.img}}" alt="{{metatype.name}}" />
+                    <div class="metatype-info">
+                      <h3 class="metatype-name">{{metatype.name}}</h3>
+                      <div class="metatype-maxes">
+                        <div class="metatype-max-item">
+                          <span class="max-label">{{localize "SRA2.ATTRIBUTES.STRENGTH"}}:</span>
+                          <span class="max-value">{{metatype.system.maxStrength}}</span>
+                        </div>
+                        <div class="metatype-max-item">
+                          <span class="max-label">{{localize "SRA2.ATTRIBUTES.AGILITY"}}:</span>
+                          <span class="max-value">{{metatype.system.maxAgility}}</span>
+                        </div>
+                        <div class="metatype-max-item">
+                          <span class="max-label">{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}:</span>
+                          <span class="max-value">{{metatype.system.maxWillpower}}</span>
+                        </div>
+                        <div class="metatype-max-item">
+                          <span class="max-label">{{localize "SRA2.ATTRIBUTES.LOGIC"}}:</span>
+                          <span class="max-value">{{metatype.system.maxLogic}}</span>
+                        </div>
+                        <div class="metatype-max-item">
+                          <span class="max-label">{{localize "SRA2.ATTRIBUTES.CHARISMA"}}:</span>
+                          <span class="max-value">{{metatype.system.maxCharisma}}</span>
+                        </div>
+                        {{#if (gt metatype.system.anarchyBonus 0)}}
+                        <div class="metatype-max-item anarchy-bonus">
+                          <span class="max-label">{{localize "SRA2.RESOURCES.ANARCHY"}}:</span>
+                          <span class="max-value anarchy">+{{metatype.system.anarchyBonus}}</span>
+                        </div>
+                        {{/if}}
+                      </div>
+                    </div>
+                    <div class="metatype-controls">
+                      <a class="metatype-edit" data-action="edit-metatype" title="{{localize 'SRA2.METATYPES.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="metatype-delete" data-action="delete-metatype" title="{{localize 'SRA2.METATYPES.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
                   </div>
-                  <div class="metatype-max-item">
-                    <span class="max-label">{{localize "SRA2.ATTRIBUTES.AGILITY"}}:</span>
-                    <span class="max-value">{{metatype.system.maxAgility}}</span>
-                  </div>
-                  <div class="metatype-max-item">
-                    <span class="max-label">{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}:</span>
-                    <span class="max-value">{{metatype.system.maxWillpower}}</span>
-                  </div>
-                  <div class="metatype-max-item">
-                    <span class="max-label">{{localize "SRA2.ATTRIBUTES.LOGIC"}}:</span>
-                    <span class="max-value">{{metatype.system.maxLogic}}</span>
-                  </div>
-                  <div class="metatype-max-item">
-                    <span class="max-label">{{localize "SRA2.ATTRIBUTES.CHARISMA"}}:</span>
-                    <span class="max-value">{{metatype.system.maxCharisma}}</span>
-                  </div>
-                  {{#if (gt metatype.system.anarchyBonus 0)}}
-                  <div class="metatype-max-item anarchy-bonus">
-                    <span class="max-label">{{localize "SRA2.RESOURCES.ANARCHY"}}:</span>
-                    <span class="max-value anarchy">+{{metatype.system.anarchyBonus}}</span>
-                  </div>
+                </div>
+              {{else}}
+                <div class="empty-metatype">
+                  <p>{{localize "SRA2.METATYPES.DRAG_DROP"}}</p>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+
+          <!-- Keywords -->
+          <div class="keywords-section">
+            <h2>{{localize "SRA2.KEYWORDS.LABEL"}}</h2>
+            <div class="keywords-fields">
+              <div class="keyword-field">
+                <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 1</label>
+                <input type="text" name="system.keywords.keyword1" value="{{system.keywords.keyword1}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="keyword-field">
+                <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 2</label>
+                <input type="text" name="system.keywords.keyword2" value="{{system.keywords.keyword2}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="keyword-field">
+                <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 3</label>
+                <input type="text" name="system.keywords.keyword3" value="{{system.keywords.keyword3}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="keyword-field">
+                <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 4</label>
+                <input type="text" name="system.keywords.keyword4" value="{{system.keywords.keyword4}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="keyword-field">
+                <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 5</label>
+                <input type="text" name="system.keywords.keyword5" value="{{system.keywords.keyword5}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Behaviors -->
+          <div class="behaviors-section">
+            <h2>{{localize "SRA2.BEHAVIORS.LABEL"}}</h2>
+            <div class="behaviors-fields">
+              <div class="behavior-field">
+                <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 1</label>
+                <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="behavior-field">
+                <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 2</label>
+                <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="behavior-field">
+                <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 3</label>
+                <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
+              </div>
+              <div class="behavior-field">
+                <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 4</label>
+                <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Catchphrases -->
+          <div class="catchphrases-section">
+            <h2>{{localize "SRA2.CATCHPHRASES.LABEL"}}</h2>
+            <div class="catchphrases-fields">
+              <div class="catchphrase-field">
+                <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 1</label>
+                <div class="catchphrase-input-wrapper">
+                  <input type="text" name="system.catchphrases.catchphrase1" value="{{system.catchphrases.catchphrase1}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+                  {{#if system.catchphrases.catchphrase1}}
+                  <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase1}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                    <i class="fas fa-comment"></i>
+                  </a>
                   {{/if}}
                 </div>
               </div>
-              <div class="metatype-controls">
-                <a class="metatype-edit" data-action="edit-metatype" title="{{localize 'SRA2.METATYPES.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="metatype-delete" data-action="delete-metatype" title="{{localize 'SRA2.METATYPES.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
+              <div class="catchphrase-field">
+                <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 2</label>
+                <div class="catchphrase-input-wrapper">
+                  <input type="text" name="system.catchphrases.catchphrase2" value="{{system.catchphrases.catchphrase2}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+                  {{#if system.catchphrases.catchphrase2}}
+                  <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase2}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                    <i class="fas fa-comment"></i>
+                  </a>
+                  {{/if}}
+                </div>
+              </div>
+              <div class="catchphrase-field">
+                <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 3</label>
+                <div class="catchphrase-input-wrapper">
+                  <input type="text" name="system.catchphrases.catchphrase3" value="{{system.catchphrases.catchphrase3}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+                  {{#if system.catchphrases.catchphrase3}}
+                  <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase3}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                    <i class="fas fa-comment"></i>
+                  </a>
+                  {{/if}}
+                </div>
+              </div>
+              <div class="catchphrase-field">
+                <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 4</label>
+                <div class="catchphrase-input-wrapper">
+                  <input type="text" name="system.catchphrases.catchphrase4" value="{{system.catchphrases.catchphrase4}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
+                  {{#if system.catchphrases.catchphrase4}}
+                  <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase4}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                    <i class="fas fa-comment"></i>
+                  </a>
+                  {{/if}}
+                </div>
               </div>
             </div>
           </div>
-        {{else}}
-          <div class="empty-metatype">
-            <p>{{localize "SRA2.METATYPES.DRAG_DROP"}}</p>
-          </div>
-        {{/if}}
-      </div>
-    </div>
+        </section>
+      </section>
 
-    <!-- Attributes -->
-    <div class="attributes">
-      <h2>{{localize "SRA2.ATTRIBUTES.LABEL"}}</h2>
-      <div class="attribute-grid">
-        <div class="attribute">
-          <label>{{localize "SRA2.ATTRIBUTES.STRENGTH"}} {{#if (gt attributesRR.strength 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.strength}}</span>{{/if}}</label>
-          <div class="attribute-controls">
-            <a class="attribute-roll" data-action="roll-attribute" data-attribute="strength" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
-              <i class="fas fa-dice-d6"></i>
-            </a>
-            <input type="number" name="system.attributes.strength" value="{{system.attributes.strength}}" min="1" max="{{system.attributeMaxes.strength}}"/>
-          </div>
-          <span class="attribute-cost">{{system.attributeCosts.strength}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-        </div>
-        <div class="attribute">
-          <label>{{localize "SRA2.ATTRIBUTES.AGILITY"}} {{#if (gt attributesRR.agility 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.agility}}</span>{{/if}}</label>
-          <div class="attribute-controls">
-            <a class="attribute-roll" data-action="roll-attribute" data-attribute="agility" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
-              <i class="fas fa-dice-d6"></i>
-            </a>
-            <input type="number" name="system.attributes.agility" value="{{system.attributes.agility}}" min="1" max="{{system.attributeMaxes.agility}}"/>
-          </div>
-          <span class="attribute-cost">{{system.attributeCosts.agility}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-        </div>
-        <div class="attribute">
-          <label>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}} {{#if (gt attributesRR.willpower 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.willpower}}</span>{{/if}}</label>
-          <div class="attribute-controls">
-            <a class="attribute-roll" data-action="roll-attribute" data-attribute="willpower" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
-              <i class="fas fa-dice-d6"></i>
-            </a>
-            <input type="number" name="system.attributes.willpower" value="{{system.attributes.willpower}}" min="1" max="{{system.attributeMaxes.willpower}}"/>
-          </div>
-          <span class="attribute-cost">{{system.attributeCosts.willpower}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-        </div>
-        <div class="attribute">
-          <label>{{localize "SRA2.ATTRIBUTES.LOGIC"}} {{#if (gt attributesRR.logic 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.logic}}</span>{{/if}}</label>
-          <div class="attribute-controls">
-            <a class="attribute-roll" data-action="roll-attribute" data-attribute="logic" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
-              <i class="fas fa-dice-d6"></i>
-            </a>
-            <input type="number" name="system.attributes.logic" value="{{system.attributes.logic}}" min="1" max="{{system.attributeMaxes.logic}}"/>
-          </div>
-          <span class="attribute-cost">{{system.attributeCosts.logic}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-        </div>
-        <div class="attribute">
-          <label>{{localize "SRA2.ATTRIBUTES.CHARISMA"}} {{#if (gt attributesRR.charisma 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.charisma}}</span>{{/if}}</label>
-          <div class="attribute-controls">
-            <a class="attribute-roll" data-action="roll-attribute" data-attribute="charisma" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
-              <i class="fas fa-dice-d6"></i>
-            </a>
-            <input type="number" name="system.attributes.charisma" value="{{system.attributes.charisma}}" min="1" max="{{system.attributeMaxes.charisma}}"/>
-          </div>
-          <span class="attribute-cost">{{system.attributeCosts.charisma}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-        </div>
-        <div class="attribute anarchy-attribute">
-          <label>{{localize "SRA2.RESOURCES.ANARCHY"}}</label>
-          <div class="attribute-controls">
-            <span class="anarchy-value">{{system.totalAnarchy}}</span>
-          </div>
-          <span class="attribute-cost">&nbsp;</span>
-        </div>
-        <div class="attribute narration-attribute">
-          <label>{{localize "SRA2.RESOURCES.NARRATIONS"}}</label>
-          <div class="attribute-controls">
-            <span class="narration-value">{{system.totalNarrations}}</span>
-          </div>
-          <span class="attribute-cost">{{#if (gt system.bonusNarrations 0)}}<span class="narration-bonus">+{{system.bonusNarrations}}</span>{{else}}&nbsp;{{/if}}</span>
-        </div>
-      </div>
-      <div class="essence-display-attribute">
-        {{localize "SRA2.RESOURCES.ESSENCE"}} : <span class="essence-current">{{system.currentEssence}}</span>/<span class="essence-max">{{system.maxEssence}}</span>
-      </div>
-    </div>
-
-    <!-- Resources -->
-    <div class="resources">
-      <h2>{{localize "SRA2.RESOURCES.LABEL"}}</h2>
-      <div class="resource-fields">
-        <div class="field">
-          <label>{{localize "SRA2.RESOURCES.YENS_LABEL"}}</label>
-          <input type="number" name="system.resources.yens" value="{{system.resources.yens}}" min="0"/>
-        </div>
-      </div>
-      <div class="anarchy-spent-section">
-        <label class="anarchy-spent-label">{{localize "SRA2.RESOURCES.ANARCHY_SPENT"}}</label>
-        <div class="anarchy-spent-checkboxes">
-          {{#each system.anarchySpent}}
-            <input type="checkbox" name="system.anarchySpent.{{@index}}" {{#if this}}checked{{/if}} />
-          {{/each}}
-        </div>
-      </div>
-    </div>
-
-    <!-- Keywords -->
-    <div class="keywords-section">
-      <h2>{{localize "SRA2.KEYWORDS.LABEL"}}</h2>
-      <div class="keywords-fields">
-        <div class="keyword-field">
-          <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 1</label>
-          <input type="text" name="system.keywords.keyword1" value="{{system.keywords.keyword1}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="keyword-field">
-          <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 2</label>
-          <input type="text" name="system.keywords.keyword2" value="{{system.keywords.keyword2}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="keyword-field">
-          <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 3</label>
-          <input type="text" name="system.keywords.keyword3" value="{{system.keywords.keyword3}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="keyword-field">
-          <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 4</label>
-          <input type="text" name="system.keywords.keyword4" value="{{system.keywords.keyword4}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="keyword-field">
-          <label>{{localize "SRA2.KEYWORDS.KEYWORD"}} 5</label>
-          <input type="text" name="system.keywords.keyword5" value="{{system.keywords.keyword5}}" placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}"/>
-        </div>
-      </div>
-    </div>
-
-    <!-- Behaviors -->
-    <div class="behaviors-section">
-      <h2>{{localize "SRA2.BEHAVIORS.LABEL"}}</h2>
-      <div class="behaviors-fields">
-        <div class="behavior-field">
-          <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 1</label>
-          <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="behavior-field">
-          <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 2</label>
-          <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="behavior-field">
-          <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 3</label>
-          <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
-        </div>
-        <div class="behavior-field">
-          <label>{{localize "SRA2.BEHAVIORS.BEHAVIOR"}} 4</label>
-          <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}" placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}"/>
-        </div>
-      </div>
-    </div>
-
-    <!-- Catchphrases -->
-    <div class="catchphrases-section">
-      <h2>{{localize "SRA2.CATCHPHRASES.LABEL"}}</h2>
-      <div class="catchphrases-fields">
-        <div class="catchphrase-field">
-          <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 1</label>
-          <div class="catchphrase-input-wrapper">
-            <input type="text" name="system.catchphrases.catchphrase1" value="{{system.catchphrases.catchphrase1}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
-            {{#if system.catchphrases.catchphrase1}}
-            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase1}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
-              <i class="fas fa-comment"></i>
-            </a>
-            {{/if}}
-          </div>
-        </div>
-        <div class="catchphrase-field">
-          <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 2</label>
-          <div class="catchphrase-input-wrapper">
-            <input type="text" name="system.catchphrases.catchphrase2" value="{{system.catchphrases.catchphrase2}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
-            {{#if system.catchphrases.catchphrase2}}
-            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase2}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
-              <i class="fas fa-comment"></i>
-            </a>
-            {{/if}}
-          </div>
-        </div>
-        <div class="catchphrase-field">
-          <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 3</label>
-          <div class="catchphrase-input-wrapper">
-            <input type="text" name="system.catchphrases.catchphrase3" value="{{system.catchphrases.catchphrase3}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
-            {{#if system.catchphrases.catchphrase3}}
-            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase3}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
-              <i class="fas fa-comment"></i>
-            </a>
-            {{/if}}
-          </div>
-        </div>
-        <div class="catchphrase-field">
-          <label>{{localize "SRA2.CATCHPHRASES.CATCHPHRASE"}} 4</label>
-          <div class="catchphrase-input-wrapper">
-            <input type="text" name="system.catchphrases.catchphrase4" value="{{system.catchphrases.catchphrase4}}" placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}"/>
-            {{#if system.catchphrases.catchphrase4}}
-            <a class="catchphrase-send" data-action="send-catchphrase" data-catchphrase="{{system.catchphrases.catchphrase4}}" title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
-              <i class="fas fa-comment"></i>
-            </a>
-            {{/if}}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Armor & Damage Thresholds -->
-    <div class="armor-thresholds-section">
-      <h2>{{localize "SRA2.ARMOR_THRESHOLDS.LABEL"}}</h2>
-      <div class="armor-level">
-        <label>{{localize "SRA2.ARMOR_THRESHOLDS.ARMOR_LEVEL"}}</label>
-        <input type="number" name="system.armorLevel" value="{{system.armorLevel}}" min="0" max="5" />
-        <span class="armor-cost">{{system.armorCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-      </div>
-      
-      <div class="damage-tracking">
-        <label class="damage-label">{{localize "SRA2.DAMAGE.LABEL"}}</label>
-        <div class="damage-checkboxes">
-          <div class="damage-group light">
-            <span class="damage-type-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
-            {{#each system.damage.light}}
-              <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
-            {{/each}}
-          </div>
-          <div class="damage-group severe">
-            <span class="damage-type-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
-            {{#each system.damage.severe}}
-              <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
-            {{/each}}
-          </div>
-          <div class="damage-group incapacitating">
-            <span class="damage-type-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
-            <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
-          </div>
-        </div>
-      </div>
-      
-      <div class="thresholds-table">
-        <table>
-          <thead>
-            <tr>
-              <th>{{localize "SRA2.ARMOR_THRESHOLDS.TYPE"}}</th>
-              <th>{{localize "SRA2.ARMOR_THRESHOLDS.LIGHT"}}</th>
-              <th>{{localize "SRA2.ARMOR_THRESHOLDS.MODERATE"}}</th>
-              <th>{{localize "SRA2.ARMOR_THRESHOLDS.SEVERE"}}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{localize "SRA2.ARMOR_THRESHOLDS.WITHOUT_ARMOR"}}</td>
-              <td>{{system.damageThresholds.withoutArmor.light}}</td>
-              <td>{{system.damageThresholds.withoutArmor.moderate}}</td>
-              <td>{{system.damageThresholds.withoutArmor.severe}}</td>
-            </tr>
-            <tr>
-              <td>{{localize "SRA2.ARMOR_THRESHOLDS.WITH_ARMOR"}}</td>
-              <td>{{system.damageThresholds.withArmor.light}}</td>
-              <td>{{system.damageThresholds.withArmor.moderate}}</td>
-              <td>{{system.damageThresholds.withArmor.severe}}</td>
-            </tr>
-            <tr>
-              <td>{{localize "SRA2.ARMOR_THRESHOLDS.MENTAL"}}</td>
-              <td>{{system.damageThresholds.mental.light}}</td>
-              <td>{{system.damageThresholds.mental.moderate}}</td>
-              <td>{{system.damageThresholds.mental.severe}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Skills Section -->
-    <div class="skills-section">
-      <h2>{{localize "SRA2.SKILLS.LABEL"}}</h2>
-      
-      <!-- Skill Search -->
-      <div class="skill-search-container">
-        <input type="text" class="skill-search-input" placeholder="{{localize 'SRA2.SKILLS.SEARCH_PLACEHOLDER'}}" data-action="search-skill" />
-        <div class="skill-search-results" style="display: none;"></div>
-      </div>
-      
-      <div class="skills-list" data-drop-zone="skill">
-        {{#each skills}}
-        <div class="skill-item" data-item-id="{{this._id}}" draggable="true">
-          <div class="skill-header">
-            <div class="skill-title">
-              <h4>{{this.name}} <span class="skill-attribute">({{this.linkedAttributeLabel}})</span> {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}} <span class="dice-pool-badge clickable" data-action="quick-roll-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span></h4>
-              <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" max="8" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.RATING'}}" />
-              <span class="skill-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-            </div>
-            <div class="skill-controls">
-              <a class="skill-roll" data-action="roll-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                <i class="fas fa-dice-d6"></i>
-              </a>
-              <a class="skill-edit" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">
-                <i class="fas fa-edit"></i>
-              </a>
-              <a class="skill-delete" data-action="delete-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.DELETE'}}">
-                <i class="fas fa-trash"></i>
-              </a>
-            </div>
-          </div>
-          {{#if this.system.description}}
-          <div class="skill-description">{{{this.system.description}}}</div>
-          {{/if}}
-          
-          <!-- Specializations for this skill -->
-          {{#if this.specializations}}
-          <div class="skill-specializations">
-            {{#each this.specializations}}
-            <div class="specialization-item" data-item-id="{{this._id}}" draggable="true">
-              <div class="specialization-header">
-                <div class="specialization-title">
-                  <i class="fas fa-angle-right"></i>
-                  <span class="spec-name">{{this.name}}</span>
-                  <span class="spec-info">({{this.parentSkillName}} + {{this.linkedAttributeLabel}})</span>
-                  {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}}
-                  {{!-- <span class="spec-rating">[{{this.effectiveRating}}]</span> --}}
-                  <span class="dice-pool-badge clickable" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span>
-                  <span class="specialization-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
-                </div>
-                <div class="specialization-controls">
-                  <a class="spec-roll" data-action="roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}">
+      <!-- Attributes Section -->
+      <section class="content-section {{#if (eq activeSection 'attributes')}}active{{/if}}" data-section-content="attributes">
+        <h2><i class="fas fa-chart-bar"></i> {{localize "SRA2.CHARACTER.SECTION.ATTRIBUTES"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Attributes -->
+          <div class="attributes">
+            <h2>{{localize "SRA2.ATTRIBUTES.LABEL"}}</h2>
+            <div class="attribute-grid">
+              <div class="attribute">
+                <label>{{localize "SRA2.ATTRIBUTES.STRENGTH"}} {{#if (gt attributesRR.strength 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.strength}}</span>{{/if}}</label>
+                <div class="attribute-controls">
+                  <a class="attribute-roll" data-action="roll-attribute" data-attribute="strength" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
                     <i class="fas fa-dice-d6"></i>
                   </a>
-                  <a class="specialization-edit" data-action="edit-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.EDIT'}}">
-                    <i class="fas fa-edit"></i>
+                  <input type="number" name="system.attributes.strength" value="{{system.attributes.strength}}" min="1" max="{{system.attributeMaxes.strength}}"/>
+                </div>
+                <span class="attribute-cost">{{system.attributeCosts.strength}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.ATTRIBUTES.AGILITY"}} {{#if (gt attributesRR.agility 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.agility}}</span>{{/if}}</label>
+                <div class="attribute-controls">
+                  <a class="attribute-roll" data-action="roll-attribute" data-attribute="agility" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
+                    <i class="fas fa-dice-d6"></i>
                   </a>
-                  <a class="specialization-delete" data-action="delete-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.DELETE'}}">
-                    <i class="fas fa-trash"></i>
+                  <input type="number" name="system.attributes.agility" value="{{system.attributes.agility}}" min="1" max="{{system.attributeMaxes.agility}}"/>
+                </div>
+                <span class="attribute-cost">{{system.attributeCosts.agility}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}} {{#if (gt attributesRR.willpower 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.willpower}}</span>{{/if}}</label>
+                <div class="attribute-controls">
+                  <a class="attribute-roll" data-action="roll-attribute" data-attribute="willpower" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
+                    <i class="fas fa-dice-d6"></i>
                   </a>
+                  <input type="number" name="system.attributes.willpower" value="{{system.attributes.willpower}}" min="1" max="{{system.attributeMaxes.willpower}}"/>
+                </div>
+                <span class="attribute-cost">{{system.attributeCosts.willpower}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.ATTRIBUTES.LOGIC"}} {{#if (gt attributesRR.logic 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.logic}}</span>{{/if}}</label>
+                <div class="attribute-controls">
+                  <a class="attribute-roll" data-action="roll-attribute" data-attribute="logic" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
+                    <i class="fas fa-dice-d6"></i>
+                  </a>
+                  <input type="number" name="system.attributes.logic" value="{{system.attributes.logic}}" min="1" max="{{system.attributeMaxes.logic}}"/>
+                </div>
+                <span class="attribute-cost">{{system.attributeCosts.logic}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.ATTRIBUTES.CHARISMA"}} {{#if (gt attributesRR.charisma 0)}}<span class="rr-badge" title="Risk Reduction">RR {{attributesRR.charisma}}</span>{{/if}}</label>
+                <div class="attribute-controls">
+                  <a class="attribute-roll" data-action="roll-attribute" data-attribute="charisma" title="{{localize 'SRA2.ATTRIBUTES.ROLL'}}">
+                    <i class="fas fa-dice-d6"></i>
+                  </a>
+                  <input type="number" name="system.attributes.charisma" value="{{system.attributes.charisma}}" min="1" max="{{system.attributeMaxes.charisma}}"/>
+                </div>
+                <span class="attribute-cost">{{system.attributeCosts.charisma}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+              </div>
+              <div class="attribute anarchy-attribute">
+                <label>{{localize "SRA2.RESOURCES.ANARCHY"}}</label>
+                <div class="attribute-controls">
+                  <span class="anarchy-value">{{system.totalAnarchy}}</span>
+                </div>
+                <span class="attribute-cost">&nbsp;</span>
+              </div>
+              <div class="attribute narration-attribute">
+                <label>{{localize "SRA2.RESOURCES.NARRATIONS"}}</label>
+                <div class="attribute-controls">
+                  <span class="narration-value">{{system.totalNarrations}}</span>
+                </div>
+                <span class="attribute-cost">{{#if (gt system.bonusNarrations 0)}}<span class="narration-bonus">+{{system.bonusNarrations}}</span>{{else}}&nbsp;{{/if}}</span>
+              </div>
+            </div>
+            <div class="essence-display-attribute">
+              {{localize "SRA2.RESOURCES.ESSENCE"}} : <span class="essence-current">{{system.currentEssence}}</span>/<span class="essence-max">{{system.maxEssence}}</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Resources Section -->
+      <section class="content-section {{#if (eq activeSection 'resources')}}active{{/if}}" data-section-content="resources">
+        <h2><i class="fas fa-coins"></i> {{localize "SRA2.CHARACTER.SECTION.RESOURCES"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Resources -->
+          <div class="resources">
+            <h2>{{localize "SRA2.RESOURCES.LABEL"}}</h2>
+            <div class="resource-fields">
+              <div class="field">
+                <label>{{localize "SRA2.RESOURCES.YENS_LABEL"}}</label>
+                <input type="number" name="system.resources.yens" value="{{system.resources.yens}}" min="0"/>
+              </div>
+            </div>
+            <div class="anarchy-spent-section">
+              <label class="anarchy-spent-label">{{localize "SRA2.RESOURCES.ANARCHY_SPENT"}}</label>
+              <div class="anarchy-spent-checkboxes">
+                {{#each system.anarchySpent}}
+                  <input type="checkbox" name="system.anarchySpent.{{@index}}" {{#if this}}checked{{/if}} />
+                {{/each}}
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Combat Section -->
+      <section class="content-section {{#if (eq activeSection 'combat')}}active{{/if}}" data-section-content="combat">
+        <h2><i class="fas fa-shield-alt"></i> {{localize "SRA2.CHARACTER.SECTION.COMBAT"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Armor & Damage Thresholds -->
+          <div class="armor-thresholds-section">
+            <h2>{{localize "SRA2.ARMOR_THRESHOLDS.LABEL"}}</h2>
+            <div class="armor-level">
+              <label>{{localize "SRA2.ARMOR_THRESHOLDS.ARMOR_LEVEL"}}</label>
+              <input type="number" name="system.armorLevel" value="{{system.armorLevel}}" min="0" max="5" />
+              <span class="armor-cost">{{system.armorCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+            </div>
+            
+            <div class="damage-tracking">
+              <label class="damage-label">{{localize "SRA2.DAMAGE.LABEL"}}</label>
+              <div class="damage-checkboxes">
+                <div class="damage-group light">
+                  <span class="damage-type-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
+                  {{#each system.damage.light}}
+                    <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
+                  {{/each}}
+                </div>
+                <div class="damage-group severe">
+                  <span class="damage-type-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
+                  {{#each system.damage.severe}}
+                    <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                  {{/each}}
+                </div>
+                <div class="damage-group incapacitating">
+                  <span class="damage-type-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
+                  <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
                 </div>
               </div>
-              {{#if this.system.description}}
-              <div class="specialization-description">{{{this.system.description}}}</div>
-              {{/if}}
             </div>
-            {{/each}}
+            
+            <div class="thresholds-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>{{localize "SRA2.ARMOR_THRESHOLDS.TYPE"}}</th>
+                    <th>{{localize "SRA2.ARMOR_THRESHOLDS.LIGHT"}}</th>
+                    <th>{{localize "SRA2.ARMOR_THRESHOLDS.MODERATE"}}</th>
+                    <th>{{localize "SRA2.ARMOR_THRESHOLDS.SEVERE"}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{localize "SRA2.ARMOR_THRESHOLDS.WITHOUT_ARMOR"}}</td>
+                    <td>{{system.damageThresholds.withoutArmor.light}}</td>
+                    <td>{{system.damageThresholds.withoutArmor.moderate}}</td>
+                    <td>{{system.damageThresholds.withoutArmor.severe}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{localize "SRA2.ARMOR_THRESHOLDS.WITH_ARMOR"}}</td>
+                    <td>{{system.damageThresholds.withArmor.light}}</td>
+                    <td>{{system.damageThresholds.withArmor.moderate}}</td>
+                    <td>{{system.damageThresholds.withArmor.severe}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{localize "SRA2.ARMOR_THRESHOLDS.MENTAL"}}</td>
+                    <td>{{system.damageThresholds.mental.light}}</td>
+                    <td>{{system.damageThresholds.mental.moderate}}</td>
+                    <td>{{system.damageThresholds.mental.severe}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Skills Section -->
+      <section class="content-section {{#if (eq activeSection 'skills')}}active{{/if}}" data-section-content="skills">
+        <h2><i class="fas fa-book"></i> {{localize "SRA2.CHARACTER.SECTION.SKILLS"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Skills Section -->
+          <div class="skills-section">
+            <h2>{{localize "SRA2.SKILLS.LABEL"}}</h2>
+            
+            <!-- Skill Search -->
+            <div class="skill-search-container">
+              <input type="text" class="skill-search-input" placeholder="{{localize 'SRA2.SKILLS.SEARCH_PLACEHOLDER'}}" data-action="search-skill" />
+              <div class="skill-search-results" style="display: none;"></div>
+            </div>
+            
+            <div class="skills-list" data-drop-zone="skill">
+              {{#each skills}}
+              <div class="skill-item" data-item-id="{{this._id}}" draggable="true">
+                <div class="skill-header">
+                  <div class="skill-title">
+                    <h4>{{this.name}} <span class="skill-attribute">({{this.linkedAttributeLabel}})</span> {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}} <span class="dice-pool-badge clickable" data-action="quick-roll-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span></h4>
+                    <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" max="8" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.RATING'}}" />
+                    <span class="skill-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+                  </div>
+                  <div class="skill-controls">
+                    <a class="skill-roll" data-action="roll-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                      <i class="fas fa-dice-d6"></i>
+                    </a>
+                    <a class="skill-edit" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <a class="skill-delete" data-action="delete-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.DELETE'}}">
+                      <i class="fas fa-trash"></i>
+                    </a>
+                  </div>
+                </div>
+                {{#if this.system.description}}
+                <div class="skill-description">{{{this.system.description}}}</div>
+                {{/if}}
+                
+                <!-- Specializations for this skill -->
+                {{#if this.specializations}}
+                <div class="skill-specializations">
+                  {{#each this.specializations}}
+                  <div class="specialization-item" data-item-id="{{this._id}}" draggable="true">
+                    <div class="specialization-header">
+                      <div class="specialization-title">
+                        <i class="fas fa-angle-right"></i>
+                        <span class="spec-name">{{this.name}}</span>
+                        <span class="spec-info">({{this.parentSkillName}} + {{this.linkedAttributeLabel}})</span>
+                        {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}}
+                        <span class="dice-pool-badge clickable" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span>
+                        <span class="specialization-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+                      </div>
+                      <div class="specialization-controls">
+                        <a class="spec-roll" data-action="roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}">
+                          <i class="fas fa-dice-d6"></i>
+                        </a>
+                        <a class="specialization-edit" data-action="edit-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.EDIT'}}">
+                          <i class="fas fa-edit"></i>
+                        </a>
+                        <a class="specialization-delete" data-action="delete-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.DELETE'}}">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </div>
+                    </div>
+                    {{#if this.system.description}}
+                    <div class="specialization-description">{{{this.system.description}}}</div>
+                    {{/if}}
+                  </div>
+                  {{/each}}
+                </div>
+                {{/if}}
+              </div>
+              {{/each}}
+              
+              <!-- Unlinked Specializations -->
+              {{#each unlinkedSpecializations}}
+              <div class="specialization-item unlinked" data-item-id="{{this._id}}" draggable="true">
+                <div class="specialization-header">
+                  <div class="specialization-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>{{this.name}} <span class="spec-attribute">({{this.linkedAttributeLabel}})</span> {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}} <span class="dice-pool-badge clickable" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="0" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span> <span class="specialization-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span></h4>
+                  </div>
+                  <div class="specialization-controls">
+                    <a class="specialization-edit" data-action="edit-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.EDIT'}}">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <a class="specialization-delete" data-action="delete-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.DELETE'}}">
+                      <i class="fas fa-trash"></i>
+                    </a>
+                  </div>
+                </div>
+                <div class="specialization-warning">{{localize "SRA2.SPECIALIZATIONS.NO_LINKED_SKILL"}}</div>
+                {{#if this.system.description}}
+                <div class="specialization-description">{{{this.system.description}}}</div>
+                {{/if}}
+              </div>
+              {{/each}}
+              
+              {{#unless skills}}
+              {{#unless unlinkedSpecializations}}
+              <div class="empty-skills">
+                <p>{{localize "SRA2.SKILLS.DRAG_DROP"}}</p>
+              </div>
+              {{/unless}}
+              {{/unless}}
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Feats Section -->
+      <section class="content-section {{#if (eq activeSection 'feats')}}active{{/if}}" data-section-content="feats">
+        <h2><i class="fas fa-star"></i> {{localize "SRA2.CHARACTER.SECTION.FEATS"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Feats Search Section -->
+          <div class="feats-search-section">
+            <h2>{{localize "SRA2.FEATS.LABEL"}}</h2>
+            
+            <!-- Feat Search -->
+            <div class="feat-search-container">
+              <input type="text" class="feat-search-input" placeholder="{{localize 'SRA2.FEATS.SEARCH_PLACEHOLDER'}}" data-action="search-feat" />
+              <div class="feat-search-results" style="display: none;"></div>
+            </div>
+          </div>
+
+          <!-- Feats Drop Zone (shown when no feats exist) -->
+          {{#unless feats}}
+          <div class="feats-section empty-feats-section">
+            <div class="feats-list" data-drop-zone="feat">
+              <div class="empty-feats">
+                <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
+              </div>
+            </div>
+          </div>
+          {{/unless}}
+
+          <!-- Traits Section -->
+          {{#if featsByType.trait}}
+          <div class="feats-section traits-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.TRAIT"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.trait}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
+                            {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
+                            {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
           </div>
           {{/if}}
-        </div>
-        {{/each}}
-        
-        <!-- Unlinked Specializations -->
-        {{#each unlinkedSpecializations}}
-        <div class="specialization-item unlinked" data-item-id="{{this._id}}" draggable="true">
-          <div class="specialization-header">
-            <div class="specialization-title">
-              <i class="fas fa-exclamation-triangle"></i>
-              <h4>{{this.name}} <span class="spec-attribute">({{this.linkedAttributeLabel}})</span> {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}} <span class="dice-pool-badge clickable" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="0" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span> <span class="specialization-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span></h4>
-            </div>
-            <div class="specialization-controls">
-              <a class="specialization-edit" data-action="edit-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.EDIT'}}">
-                <i class="fas fa-edit"></i>
-              </a>
-              <a class="specialization-delete" data-action="delete-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.DELETE'}}">
-                <i class="fas fa-trash"></i>
-              </a>
+
+          <!-- Contacts Section -->
+          {{#if featsByType.contact}}
+          <div class="feats-section contacts-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.contact}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.system.contactName}}
+                          <span class="contact-name-badge">{{this.system.contactName}}</span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
             </div>
           </div>
-          <div class="specialization-warning">{{localize "SRA2.SPECIALIZATIONS.NO_LINKED_SKILL"}}</div>
-          {{#if this.system.description}}
-          <div class="specialization-description">{{{this.system.description}}}</div>
           {{/if}}
-        </div>
-        {{/each}}
-        
-        {{#unless skills}}
-        {{#unless unlinkedSpecializations}}
-        <div class="empty-skills">
-          <p>{{localize "SRA2.SKILLS.DRAG_DROP"}}</p>
-        </div>
-        {{/unless}}
-        {{/unless}}
-      </div>
-    </div>
 
-    <!-- Feats Search Section -->
-    <div class="feats-search-section">
-      <h2>{{localize "SRA2.FEATS.LABEL"}}</h2>
-      
-      <!-- Feat Search -->
-      <div class="feat-search-container">
-        <input type="text" class="feat-search-input" placeholder="{{localize 'SRA2.FEATS.SEARCH_PLACEHOLDER'}}" data-action="search-feat" />
-        <div class="feat-search-results" style="display: none;"></div>
-      </div>
-    </div>
-
-    <!-- Feats Drop Zone (shown when no feats exist) -->
-    {{#unless feats}}
-    <div class="feats-section empty-feats-section">
-      <div class="feats-list" data-drop-zone="feat">
-        <div class="empty-feats">
-          <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
-        </div>
-      </div>
-    </div>
-    {{/unless}}
-
-    <!-- Traits Section -->
-    {{#if featsByType.trait}}
-    <div class="feats-section traits-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.TRAIT"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.trait}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
+          <!-- Awakened Section -->
+          {{#if featsByType.awakened}}
+          <div class="feats-section awakened-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.awakened}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}</h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Awakened Abilities -->
+                  <div class="awakened-abilities">
+                    {{#if this.system.astralPerception}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}</span>{{/if}}
+                    {{#if this.system.astralProjection}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"}}</span>{{/if}}
+                    {{#if this.system.sorcery}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.SORCERY"}}</span>{{/if}}
+                    {{#if this.system.conjuration}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.CONJURATION"}}</span>{{/if}}
+                    {{#if this.system.adept}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ADEPT"}}</span>{{/if}}
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
                   {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
-                      {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
-                      {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Contacts Section -->
-    {{#if featsByType.contact}}
-    <div class="feats-section contacts-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.contact}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.system.contactName}}
-                    <span class="contact-name-badge">{{this.system.contactName}}</span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Awakened Section -->
-    {{#if featsByType.awakened}}
-    <div class="feats-section awakened-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.awakened}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}</h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            <!-- Awakened Abilities -->
-            <div class="awakened-abilities">
-              {{#if this.system.astralPerception}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}</span>{{/if}}
-              {{#if this.system.astralProjection}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"}}</span>{{/if}}
-              {{#if this.system.sorcery}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.SORCERY"}}</span>{{/if}}
-              {{#if this.system.conjuration}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.CONJURATION"}}</span>{{/if}}
-              {{#if this.system.adept}}<span class="ability-badge">{{localize "SRA2.FEATS.AWAKENED.ADEPT"}}</span>{{/if}}
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Adept Powers Section -->
-    {{#if featsByType.adeptPower}}
-    <div class="feats-section adept-powers-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.adeptPower}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
-                      {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
-                      {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Weapons & Spells Section (old type) -->
-    {{#if featsByType.weaponsSpells}}
-    <div class="feats-section weapons-spells-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.weaponsSpells}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
-                      {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
-                      {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            <!-- Weapon/Spell Stats -->
-            <div class="weapon-stats">
-              {{#if (gt this.system.damageValue 0)}}
-              <div class="weapon-stat">
-                <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
-                <span class="stat-value">{{this.system.damageValue}}</span>
-              </div>
-              {{/if}}
-              <div class="weapon-ranges">
-                <span class="ranges-label">{{localize "SRA2.FEATS.WEAPON.RANGES_SHORT"}}:</span>
-                {{#unless (eq this.system.meleeRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
-                    <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange "ok")}}OK{{else if (eq this.system.meleeRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.shortRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
-                    <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange "ok")}}OK{{else if (eq this.system.shortRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.mediumRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
-                    <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange "ok")}}OK{{else if (eq this.system.mediumRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.longRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
-                    <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange "ok")}}OK{{else if (eq this.system.longRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Weapons Section (new type) -->
-    {{#if featsByType.weapon}}
-    <div class="feats-section weapon-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.weapon}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
-                      {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
-                      {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            <!-- Weapon Stats -->
-            <div class="weapon-stats">
-              {{#if (gt this.system.damageValue 0)}}
-              <div class="weapon-stat">
-                <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
-                <span class="stat-value">{{this.system.damageValue}}</span>
-              </div>
-              {{/if}}
-              <div class="weapon-ranges">
-                <span class="ranges-label">{{localize "SRA2.FEATS.WEAPON.RANGES_SHORT"}}:</span>
-                {{#unless (eq this.system.meleeRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
-                    <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange "ok")}}OK{{else if (eq this.system.meleeRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.shortRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
-                    <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange "ok")}}OK{{else if (eq this.system.shortRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.mediumRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
-                    <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange "ok")}}OK{{else if (eq this.system.mediumRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.longRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
-                    <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange "ok")}}OK{{else if (eq this.system.longRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Spells Section (new type) -->
-    {{#if featsByType.spell}}
-    <div class="feats-section spell-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.spell}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
-                      {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
-                      {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            <!-- Spell Stats -->
-            <div class="weapon-stats">
-              {{#if (gt this.system.damageValue 0)}}
-              <div class="weapon-stat">
-                <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
-                <span class="stat-value">{{this.system.damageValue}}</span>
-              </div>
-              {{/if}}
-              <div class="weapon-ranges">
-                <span class="ranges-label">{{localize "SRA2.FEATS.WEAPON.RANGES_SHORT"}}:</span>
-                {{#unless (eq this.system.meleeRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
-                    <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange "ok")}}OK{{else if (eq this.system.meleeRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.shortRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
-                    <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange "ok")}}OK{{else if (eq this.system.shortRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.mediumRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
-                    <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange "ok")}}OK{{else if (eq this.system.mediumRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-                {{#unless (eq this.system.longRange "none")}}
-                  <span class="range-item">
-                    <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
-                    <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange "ok")}}OK{{else if (eq this.system.longRange "dice")}}Dés{{else}}-{{/if}}</span>
-                  </span>
-                {{/unless}}
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-
-    <!-- Equipment Section -->
-    {{#if featsByType.equipment}}
-    <div class="feats-section equipment-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.equipment}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
-                      {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-    
-    <!-- Cyberware / Bioware Section -->
-    {{#if featsByType.cyberware}}
-    <div class="feats-section cyberware-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.cyberware}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
-                      ]
-                    </span>
-                      {{#if this.system.grantsNarration}}
-                      <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
-                        [ +{{this.system.narrationActions}} {{localize "SRA2.FEATS.NARRATION_SHORT"}} ]
-                      </span>
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
                     {{/if}}
                   {{/if}}
-                  {{#if (gt this.system.essenceCost 0)}}
-                    <span class="essence-cost-badge" title="{{localize 'SRA2.FEATS.ESSENCE_COST'}}">[-{{this.system.essenceCost}} {{localize "SRA2.RESOURCES.ESSENCE"}}]</span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-    
-    <!-- Cyberdeck Section -->
-    {{#if featsByType.cyberdeck}}
-    <div class="feats-section cyberdeck-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.cyberdeck}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            <!-- Cyberdeck Stats -->
-            <div class="cyberdeck-stats">
-              <div class="cyberdeck-stat">
-                <span class="stat-label">{{localize "SRA2.FEATS.CYBERDECK.FIREWALL_SHORT"}}:</span>
-                <span class="stat-value">{{this.system.firewall}}</span>
-              </div>
-              <div class="cyberdeck-stat">
-                <span class="stat-label">{{localize "SRA2.FEATS.CYBERDECK.ATTACK_SHORT"}}:</span>
-                <span class="stat-value">{{this.system.attack}}</span>
-              </div>
-            </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-          </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
-    
-    <!-- Vehicle / Drone Section -->
-    {{#if featsByType.vehicle}}
-    <div class="feats-section vehicle-section">
-      <h2>{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}</h2>
-      <div class="feats-list" data-drop-zone="feat">
-        {{#each featsByType.vehicle}}
-          <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
-            <div class="feat-header">
-              <div class="feat-title">
-                <h4>{{this.name}}
-                  {{#if this.rrEntries}}
-                    {{#each this.rrEntries}}
-                      <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
-                        {{#if (eq rrType "attribute")}}
-                          [RR {{rrValue}} → {{rrTargetLabel}}]
-                        {{else if (eq rrType "skill")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
-                        {{else if (eq rrType "specialization")}}
-                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
-                        {{/if}}
-                      </span>
-                    {{/each}}
-                  {{/if}}
-                  {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
-                    <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
-                      [
-                      {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
-                      {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
-                      {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
-                      {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
-                      {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
-                      {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
-                      ]
-                    </span>
-                  {{/if}}
-                </h4>
-                <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
-                <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
-              </div>
-              <div class="feat-controls">
-                <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </div>
-            </div>
-            <!-- Vehicle/Drone Stats -->
-            <div class="vehicle-stats">
-              <div class="vehicle-stat-row">
-                <div class="vehicle-stat">
-                  <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT"}}:</span>
-                  <span class="stat-value">{{this.system.autopilot}}</span>
                 </div>
-                <div class="vehicle-stat">
-                  <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.STRUCTURE_SHORT"}}:</span>
-                  <span class="stat-value">{{this.system.structure}}</span>
-                </div>
-                <div class="vehicle-stat">
-                  <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.HANDLING_SHORT"}}:</span>
-                  <span class="stat-value">{{this.system.handling}}</span>
-                </div>
-                <div class="vehicle-stat">
-                  <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.SPEED_SHORT"}}:</span>
-                  <span class="stat-value">{{this.system.speed}}</span>
-                </div>
-                <div class="vehicle-stat">
-                  <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.ARMOR_SHORT"}}:</span>
-                  <span class="stat-value">{{this.system.armor}}</span>
-                </div>
-              </div>
-              {{#if this.system.weaponInfo}}
-              <div class="vehicle-weapon-info">
-                <span class="weapon-info-label">{{localize "SRA2.FEATS.VEHICLE.WEAPON_INFO_SHORT"}}:</span>
-                <span class="weapon-info-value">{{this.system.weaponInfo}}</span>
-              </div>
-              {{/if}}
+                {{/each}}
             </div>
-            {{#if this.system.description}}
-            <div class="feat-description">{{{this.system.description}}}</div>
-            {{/if}}
-            {{#if this.system.narrativeEffects}}
-              {{#if (gt this.system.narrativeEffects.length 0)}}
-              <div class="narrative-effects">
-                <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
-                <ul class="narrative-effects-list">
-                  {{#each this.system.narrativeEffects}}
-                    {{#if this.text}}
-                    <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
-                      {{#if this.isNegative}}
-                        <span class="effect-badge negative">{{this.value}}</span>
-                      {{else}}
-                        <span class="effect-badge positive">+1</span>
-                      {{/if}}
-                      <span class="effect-text">{{this.text}}</span>
-                    </li>
-                    {{/if}}
-                  {{/each}}
-                </ul>
-              </div>
-              {{/if}}
-            {{/if}}
           </div>
-          {{/each}}
-      </div>
-    </div>
-    {{/if}}
+          {{/if}}
 
-  </section>
+          <!-- Adept Powers Section -->
+          {{#if featsByType.adeptPower}}
+          <div class="feats-section adept-powers-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.adeptPower}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
+                            {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
+                            {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+
+          <!-- Weapons & Spells Section (old type) -->
+          {{#if featsByType.weaponsSpells}}
+          <div class="feats-section weapons-spells-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.weaponsSpells}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
+                            {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
+                            {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Weapon/Spell Stats -->
+                  <div class="weapon-stats">
+                    {{#if (gt this.system.damageValue 0)}}
+                    <div class="weapon-stat">
+                      <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+                      <span class="stat-value">{{this.system.damageValue}}</span>
+                    </div>
+                    {{/if}}
+                    <div class="weapon-ranges">
+                      <span class="ranges-label">{{localize "SRA2.FEATS.WEAPON.RANGES_SHORT"}}:</span>
+                      {{#unless (eq this.system.meleeRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
+                          <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange "ok")}}OK{{else if (eq this.system.meleeRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.shortRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
+                          <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange "ok")}}OK{{else if (eq this.system.shortRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.mediumRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
+                          <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange "ok")}}OK{{else if (eq this.system.mediumRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.longRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
+                          <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange "ok")}}OK{{else if (eq this.system.longRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+
+          <!-- Weapons Section (new type) -->
+          {{#if featsByType.weapon}}
+          <div class="feats-section weapon-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.weapon}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
+                            {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
+                            {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Weapon Stats -->
+                  <div class="weapon-stats">
+                    {{#if (gt this.system.damageValue 0)}}
+                    <div class="weapon-stat">
+                      <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+                      <span class="stat-value">{{this.system.damageValue}}</span>
+                    </div>
+                    {{/if}}
+                    <div class="weapon-ranges">
+                      <span class="ranges-label">{{localize "SRA2.FEATS.WEAPON.RANGES_SHORT"}}:</span>
+                      {{#unless (eq this.system.meleeRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
+                          <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange "ok")}}OK{{else if (eq this.system.meleeRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.shortRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
+                          <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange "ok")}}OK{{else if (eq this.system.shortRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.mediumRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
+                          <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange "ok")}}OK{{else if (eq this.system.mediumRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.longRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
+                          <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange "ok")}}OK{{else if (eq this.system.longRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+
+          <!-- Spells Section (new type) -->
+          {{#if featsByType.spell}}
+          <div class="feats-section spell-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.spell}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}} / {{localize 'SRA2.FEATS.GRANTS_NARRATION'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (or (gt this.system.bonusAnarchy 0) this.system.grantsNarration))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}<span class="anarchy-bonus-badge">+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}</span>{{/if}}
+                            {{#if (and (gt this.system.bonusAnarchy 0) this.system.grantsNarration)}} / {{/if}}
+                            {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Spell Stats -->
+                  <div class="weapon-stats">
+                    {{#if (gt this.system.damageValue 0)}}
+                    <div class="weapon-stat">
+                      <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+                      <span class="stat-value">{{this.system.damageValue}}</span>
+                    </div>
+                    {{/if}}
+                    <div class="weapon-ranges">
+                      <span class="ranges-label">{{localize "SRA2.FEATS.WEAPON.RANGES_SHORT"}}:</span>
+                      {{#unless (eq this.system.meleeRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
+                          <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange "ok")}}OK{{else if (eq this.system.meleeRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.shortRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
+                          <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange "ok")}}OK{{else if (eq this.system.shortRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.mediumRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
+                          <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange "ok")}}OK{{else if (eq this.system.mediumRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                      {{#unless (eq this.system.longRange "none")}}
+                        <span class="range-item">
+                          <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
+                          <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange "ok")}}OK{{else if (eq this.system.longRange "dice")}}Dés{{else}}-{{/if}}</span>
+                        </span>
+                      {{/unless}}
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+
+          <!-- Equipment Section -->
+          {{#if featsByType.equipment}}
+          <div class="feats-section equipment-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.equipment}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
+                            {{#if this.system.grantsNarration}}<span class="narration-badge">{{localize "SRA2.FEATS.NARRATION_SHORT"}} ({{this.system.narrationActions}})</span>{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+          
+          <!-- Cyberware / Bioware Section -->
+          {{#if featsByType.cyberware}}
+          <div class="feats-section cyberware-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.cyberware}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
+                            ]
+                          </span>
+                            {{#if this.system.grantsNarration}}
+                            <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                              [ +{{this.system.narrationActions}} {{localize "SRA2.FEATS.NARRATION_SHORT"}} ]
+                            </span>
+                          {{/if}}
+                        {{/if}}
+                        {{#if (gt this.system.essenceCost 0)}}
+                          <span class="essence-cost-badge" title="{{localize 'SRA2.FEATS.ESSENCE_COST'}}">[-{{this.system.essenceCost}} {{localize "SRA2.RESOURCES.ESSENCE"}}]</span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+          
+          <!-- Cyberdeck Section -->
+          {{#if featsByType.cyberdeck}}
+          <div class="feats-section cyberdeck-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.cyberdeck}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Cyberdeck Stats -->
+                  <div class="cyberdeck-stats">
+                    <div class="cyberdeck-stat">
+                      <span class="stat-label">{{localize "SRA2.FEATS.CYBERDECK.FIREWALL_SHORT"}}:</span>
+                      <span class="stat-value">{{this.system.firewall}}</span>
+                    </div>
+                    <div class="cyberdeck-stat">
+                      <span class="stat-label">{{localize "SRA2.FEATS.CYBERDECK.ATTACK_SHORT"}}:</span>
+                      <span class="stat-value">{{this.system.attack}}</span>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+          
+          <!-- Vehicle / Drone Section -->
+          {{#if featsByType.vehicle}}
+          <div class="feats-section vehicle-section">
+            <h2>{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}</h2>
+            <div class="feats-list" data-drop-zone="feat">
+              {{#each featsByType.vehicle}}
+                <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4>{{this.name}}
+                        {{#if this.rrEntries}}
+                          {{#each this.rrEntries}}
+                            <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                              {{#if (eq rrType "attribute")}}
+                                [RR {{rrValue}} → {{rrTargetLabel}}]
+                              {{else if (eq rrType "skill")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                              {{else if (eq rrType "specialization")}}
+                                [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                              {{/if}}
+                            </span>
+                          {{/each}}
+                        {{/if}}
+                        {{#if (or (gt this.system.bonusLightDamage 0) (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}}
+                          <span class="damage-bonus-info" title="{{localize 'SRA2.FEATS.BONUS_LIGHT_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_SEVERE_DAMAGE'}} / {{localize 'SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_MENTAL_THRESHOLD'}} / {{localize 'SRA2.FEATS.BONUS_ANARCHY'}}">
+                            [
+                            {{#if (gt this.system.bonusLightDamage 0)}}+{{this.system.bonusLightDamage}} {{localize "SRA2.DAMAGE.LIGHT"}}{{/if}}
+                            {{#if (and (gt this.system.bonusLightDamage 0) (or (gt this.system.bonusSevereDamage 0) (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (gt this.system.bonusSevereDamage 0)}}+{{this.system.bonusSevereDamage}} {{localize "SRA2.DAMAGE.SEVERE"}}{{/if}}
+                            {{#if (and (gt this.system.bonusSevereDamage 0) (or (ne this.system.bonusPhysicalThreshold 0) (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusPhysicalThreshold 0)}}{{#if (gt this.system.bonusPhysicalThreshold 0)}}+{{/if}}{{this.system.bonusPhysicalThreshold}} {{localize "SRA2.FEATS.BONUS_PHYSICAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusPhysicalThreshold 0) (or (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0)))}} / {{/if}}
+                            {{#if (ne this.system.bonusMentalThreshold 0)}}{{#if (gt this.system.bonusMentalThreshold 0)}}+{{/if}}{{this.system.bonusMentalThreshold}} {{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_SHORT"}}{{/if}}
+                            {{#if (and (ne this.system.bonusMentalThreshold 0) (gt this.system.bonusAnarchy 0))}} / {{/if}}
+                            {{#if (gt this.system.bonusAnarchy 0)}}+{{this.system.bonusAnarchy}} {{localize "SRA2.FEATS.BONUS_ANARCHY_SHORT"}}{{/if}}
+                            ]
+                          </span>
+                        {{/if}}
+                      </h4>
+                      <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.RATING'}}" />
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Vehicle/Drone Stats -->
+                  <div class="vehicle-stats">
+                    <div class="vehicle-stat-row">
+                      <div class="vehicle-stat">
+                        <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT"}}:</span>
+                        <span class="stat-value">{{this.system.autopilot}}</span>
+                      </div>
+                      <div class="vehicle-stat">
+                        <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.STRUCTURE_SHORT"}}:</span>
+                        <span class="stat-value">{{this.system.structure}}</span>
+                      </div>
+                      <div class="vehicle-stat">
+                        <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.HANDLING_SHORT"}}:</span>
+                        <span class="stat-value">{{this.system.handling}}</span>
+                      </div>
+                      <div class="vehicle-stat">
+                        <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.SPEED_SHORT"}}:</span>
+                        <span class="stat-value">{{this.system.speed}}</span>
+                      </div>
+                      <div class="vehicle-stat">
+                        <span class="stat-label">{{localize "SRA2.FEATS.VEHICLE.ARMOR_SHORT"}}:</span>
+                        <span class="stat-value">{{this.system.armor}}</span>
+                      </div>
+                    </div>
+                    {{#if this.system.weaponInfo}}
+                    <div class="vehicle-weapon-info">
+                      <span class="weapon-info-label">{{localize "SRA2.FEATS.VEHICLE.WEAPON_INFO_SHORT"}}:</span>
+                      <span class="weapon-info-value">{{this.system.weaponInfo}}</span>
+                    </div>
+                    {{/if}}
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                  {{#if this.system.narrativeEffects}}
+                    {{#if (gt this.system.narrativeEffects.length 0)}}
+                    <div class="narrative-effects">
+                      <h5>{{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}:</h5>
+                      <ul class="narrative-effects-list">
+                        {{#each this.system.narrativeEffects}}
+                          {{#if this.text}}
+                          <li class="narrative-effect {{#if this.isNegative}}negative{{else}}positive{{/if}}">
+                            {{#if this.isNegative}}
+                              <span class="effect-badge negative">{{this.value}}</span>
+                            {{else}}
+                              <span class="effect-badge positive">+1</span>
+                            {{/if}}
+                            <span class="effect-text">{{this.text}}</span>
+                          </li>
+                          {{/if}}
+                        {{/each}}
+                      </ul>
+                    </div>
+                    {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+
+        </section>
+      </section>
+
+    </div>
+  </div>
 </form>
-

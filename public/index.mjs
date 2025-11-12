@@ -1253,6 +1253,8 @@ const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   SRA2Actor
 }, Symbol.toStringTag, { value: "Module" }));
 class CharacterSheet extends ActorSheet {
+  /** Active section for tabbed navigation */
+  _activeSection = "identity";
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "actor", "character"],
@@ -1372,6 +1374,7 @@ class CharacterSheet extends ActorSheet {
       return spec;
     });
     context.attributesRR = attributesRR;
+    context.activeSection = this._activeSection;
     return context;
   }
   async close(options) {
@@ -1381,6 +1384,7 @@ class CharacterSheet extends ActorSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
+    html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
     html.find('[data-action="edit-metatype"]').on("click", this._onEditMetatype.bind(this));
     html.find('[data-action="delete-metatype"]').on("click", this._onDeleteMetatype.bind(this));
     html.find('[data-action="edit-feat"]').on("click", this._onEditFeat.bind(this));
@@ -1441,6 +1445,21 @@ class CharacterSheet extends ActorSheet {
     }
     const expandedData = foundry.utils.expandObject(actorData);
     return this.actor.update(expandedData);
+  }
+  /**
+   * Handle section navigation
+   */
+  _onSectionNavigation(event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const section = button.dataset.section;
+    if (!section) return;
+    this._activeSection = section;
+    const form = $(this.form);
+    form.find(".section-nav .nav-item").removeClass("active");
+    button.classList.add("active");
+    form.find(".content-section").removeClass("active");
+    form.find(`[data-section-content="${section}"]`).addClass("active");
   }
   /**
    * Handle editing a metatype

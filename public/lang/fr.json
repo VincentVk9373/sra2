@@ -22,6 +22,16 @@
         "ACTOR": {
             "CHARACTER_NAME": "Nom du Personnage"
         },
+        "CHARACTER": {
+            "SECTION": {
+                "IDENTITY": "Identité",
+                "ATTRIBUTES": "Attributs",
+                "RESOURCES": "Ressources",
+                "COMBAT": "Combat",
+                "SKILLS": "Compétences",
+                "FEATS": "Atouts"
+            }
+        },
         "TOTAL_COST": "Coût Total",
         "NPC": {
             "DIFFICULTY": "Niveau de Difficulté"

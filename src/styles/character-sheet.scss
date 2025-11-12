@@ -1,5 +1,90 @@
 /* Minimalist Character Sheet Styles */
 .sra2-character-sheet {
+  /* Sidebar Layout for Tabbed Navigation */
+  .sheet-content {
+    display: flex;
+    min-height: 500px;
+    
+    .section-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem 0.75rem;
+      background: rgba(0, 0, 0, 0.1);
+      border-right: 2px solid #333;
+      min-width: 60px;
+      
+      .nav-item {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid #666;
+        border-radius: 6px;
+        color: #999;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1.2rem;
+        padding: 0;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: #999;
+          color: #fff;
+          transform: translateX(2px);
+        }
+        
+        &.active {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-color: #667eea;
+          color: #fff;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+          
+          &:hover {
+            transform: translateX(2px) scale(1.05);
+          }
+        }
+        
+        i {
+          margin: 0;
+        }
+      }
+    }
+    
+    .section-content {
+      flex: 1;
+      padding: 0;
+      overflow-y: auto;
+      max-height: calc(100vh - 250px);
+      
+      .content-section {
+        display: none;
+        
+        &.active {
+          display: block;
+        }
+        
+        > h2 {
+          font-size: 1.3rem;
+          margin: 0;
+          padding: 1rem 1rem 0.75rem;
+          border-bottom: 2px solid #667eea;
+          color: #667eea;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(102, 126, 234, 0.05);
+          
+          i {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+  }
+  
   /* Yen Symbol Styling */
   .yen-symbol {
     color: #666; /* dark golden yellow */

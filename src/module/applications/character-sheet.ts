@@ -2,6 +2,9 @@
  * Character Sheet Application
  */
 export class CharacterSheet extends ActorSheet {
+  /** Active section for tabbed navigation */
+  private _activeSection: string = 'identity';
+
   static override get defaultOptions(): DocumentSheet.Options<Actor> {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'sheet', 'actor', 'character'],
@@ -180,6 +183,9 @@ export class CharacterSheet extends ActorSheet {
     // Store attributesRR in context
     context.attributesRR = attributesRR;
 
+    // Add active section for navigation
+    context.activeSection = this._activeSection;
+
     return context;
   }
 
@@ -192,6 +198,9 @@ export class CharacterSheet extends ActorSheet {
 
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
+
+    // Section navigation
+    html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
 
     // Edit metatype
     html.find('[data-action="edit-metatype"]').on('click', this._onEditMetatype.bind(this));
@@ -302,6 +311,28 @@ export class CharacterSheet extends ActorSheet {
     
     // Update the actor with the form data
     return this.actor.update(expandedData);
+  }
+
+  /**
+   * Handle section navigation
+   */
+  private _onSectionNavigation(event: Event): void {
+    event.preventDefault();
+    const button = event.currentTarget as HTMLElement;
+    const section = button.dataset.section;
+    
+    if (!section) return;
+    
+    // Update active section
+    this._activeSection = section;
+    
+    // Update UI
+    const form = $(this.form);
+    form.find('.section-nav .nav-item').removeClass('active');
+    button.classList.add('active');
+    
+    form.find('.content-section').removeClass('active');
+    form.find(`[data-section-content="${section}"]`).addClass('active');
   }
 
   /**
