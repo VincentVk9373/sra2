@@ -244,6 +244,15 @@ export class CharacterSheet extends ActorSheet {
     // Send catchphrase to chat
     html.find('[data-action="send-catchphrase"]').on('click', this._onSendCatchphrase.bind(this));
 
+    // Roll weapon
+    html.find('[data-action="roll-weapon"]').on('click', this._onRollWeapon.bind(this));
+
+    // Roll spell
+    html.find('[data-action="roll-spell"]').on('click', this._onRollSpell.bind(this));
+
+    // Roll weapon/spell (old type)
+    html.find('[data-action="roll-weapon-spell"]').on('click', this._onRollWeaponSpell.bind(this));
+
     // Handle rating changes
     html.find('.rating-input').on('change', this._onRatingChange.bind(this));
 
@@ -1186,7 +1195,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll skill dice and display results with Dice So Nice
    */
-  private async _rollSkillDice(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal'): Promise<void> {
+  private async _rollSkillDice(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string): Promise<void> {
     let normalSuccesses = 0;
     let riskSuccesses = 0;
     let criticalFailures = 0;
@@ -1330,6 +1339,44 @@ export class CharacterSheet extends ActorSheet {
     resultsHtml += `<div class="successes ${totalSuccesses > 0 ? 'has-success' : 'no-success'}">`;
     resultsHtml += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${totalSuccesses}`;
     resultsHtml += '</div>';
+    
+    // Weapon Damage Value (VD final)
+    if (weaponDamageValue && weaponDamageValue !== '0') {
+      const strength = (this.actor.system as any).attributes?.strength || 0;
+      let baseVD = 0;
+      let vdDisplay = weaponDamageValue;
+      
+      // Parse the damage value
+      if (weaponDamageValue === 'FOR') {
+        baseVD = strength;
+        vdDisplay = `FOR (${strength})`;
+      } else if (weaponDamageValue.startsWith('FOR+')) {
+        const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+        baseVD = strength + modifier;
+        vdDisplay = `FOR+${modifier} (${baseVD})`;
+      } else if (weaponDamageValue === 'toxin') {
+        vdDisplay = 'selon toxine';
+        baseVD = -1; // Special case, don't calculate final VD
+      } else {
+        baseVD = parseInt(weaponDamageValue) || 0;
+      }
+      
+      if (baseVD >= 0) {
+        const finalVD = totalSuccesses + baseVD;
+        resultsHtml += `<div class="weapon-damage-value">`;
+        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')} de l'arme:</strong> ${vdDisplay}`;
+        resultsHtml += '</div>';
+        resultsHtml += `<div class="final-damage-value">`;
+        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.FINAL_VD')}:</strong> `;
+        resultsHtml += `<span class="calculation">${totalSuccesses} succès + ${baseVD} VD = </span>`;
+        resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
+        resultsHtml += '</div>';
+      } else if (weaponDamageValue === 'toxin') {
+        resultsHtml += `<div class="weapon-damage-value">`;
+        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')}:</strong> ${vdDisplay}`;
+        resultsHtml += '</div>';
+      }
+    }
     
     // Critical failures
     if (rawCriticalFailures > 0 || riskReduction > 0) {
@@ -2118,6 +2165,583 @@ export class CharacterSheet extends ActorSheet {
     };
     
     await ChatMessage.create(messageData as any);
+  }
+
+  /**
+   * Handle rolling a weapon
+   */
+  private async _onRollWeapon(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    
+    if (!itemId) {
+      console.error("SRA2 | No weapon ID found");
+      return;
+    }
+
+    const weapon = this.actor.items.get(itemId);
+    if (!weapon || weapon.type !== 'feat') return;
+
+    await this._rollWeaponOrSpell(weapon, 'weapon');
+  }
+
+  /**
+   * Handle rolling a spell
+   */
+  private async _onRollSpell(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    
+    if (!itemId) {
+      console.error("SRA2 | No spell ID found");
+      return;
+    }
+
+    const spell = this.actor.items.get(itemId);
+    if (!spell || spell.type !== 'feat') return;
+
+    await this._rollWeaponOrSpell(spell, 'spell');
+  }
+
+  /**
+   * Handle rolling a weapon/spell (old type)
+   */
+  private async _onRollWeaponSpell(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    
+    if (!itemId) {
+      console.error("SRA2 | No weapon/spell ID found");
+      return;
+    }
+
+    const item = this.actor.items.get(itemId);
+    if (!item || item.type !== 'feat') return;
+
+    await this._rollWeaponOrSpell(item, 'weapon-spell');
+  }
+
+  /**
+   * Handle rolling dice for a weapon or spell
+   */
+  private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell'): Promise<void> {
+    const itemSystem = item.system as any;
+    
+    // Get all skills and specializations
+    const skills = this.actor.items.filter((i: any) => i.type === 'skill');
+    const allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
+    
+    // Build skill options HTML
+    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
+    skills.forEach((skill: any) => {
+      const skillSystem = skill.system as any;
+      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+      const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+      const skillRating = skillSystem.rating || 0;
+      const totalDicePool = attributeValue + skillRating;
+      
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}">${skill.name} (${totalDicePool} dés)</option>`;
+      
+      // Add specializations for this skill
+      const specs = allSpecializations.filter((spec: any) => {
+        const linkedSkillName = spec.system.linkedSkill;
+        return linkedSkillName === skill.name;
+      });
+      
+      specs.forEach((spec: any) => {
+        const specSystem = spec.system as any;
+        const specLinkedAttribute = specSystem.linkedAttribute || 'strength';
+        const specAttributeValue = (this.actor.system as any).attributes?.[specLinkedAttribute] || 0;
+        const parentRating = skillRating;
+        const effectiveRating = parentRating + 2;
+        const specTotalDicePool = specAttributeValue + effectiveRating;
+        
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${specTotalDicePool} dés)</option>`;
+      });
+    });
+    
+    // Get weapon/spell info
+    const damageValue = itemSystem.damageValue || '0';
+    const weaponName = item.name;
+    
+    const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
+    
+    // Create dialog to select skill/specialization
+    const dialog = new Dialog({
+      title: game.i18n!.format(titleKey, { name: weaponName }),
+      content: `
+        <form class="sra2-weapon-roll-dialog">
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.WEAPON_NAME')}:</label>
+            <p class="weapon-name"><strong>${weaponName}</strong></p>
+          </div>
+          ${damageValue !== '0' ? `
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE')}:</label>
+            <p class="damage-value"><strong>${damageValue}</strong></p>
+          </div>
+          ` : ''}
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL')}:</label>
+            <select id="skill-select" class="skill-select">
+              ${skillOptionsHtml}
+            </select>
+          </div>
+        </form>
+      `,
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-dice-d6"></i>',
+          label: game.i18n!.localize('SRA2.SKILLS.ROLL'),
+          callback: (html: any) => {
+            const selectedValue = html.find('#skill-select').val();
+            if (!selectedValue || selectedValue === '') {
+              ui.notifications?.warn(game.i18n!.localize('SRA2.FEATS.WEAPON.NO_SKILL_SELECTED'));
+              return;
+            }
+            
+            const [itemType, itemId] = (selectedValue as string).split('-');
+            
+            if (itemType === 'skill') {
+              const skill = this.actor.items.get(itemId);
+              if (skill) {
+                // Trigger the skill roll with weapon name
+                this._rollSkillWithWeapon(skill, weaponName, 'skill', damageValue);
+              }
+            } else if (itemType === 'spec') {
+              const spec = this.actor.items.get(itemId);
+              if (spec) {
+                // Trigger the specialization roll with weapon name
+                const effectiveRating = parseInt(html.find(`#skill-select option:selected`).data('effective-rating') || '0');
+                this._rollSpecializationWithWeapon(spec, weaponName, effectiveRating, damageValue);
+              }
+            }
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('Cancel')
+        }
+      },
+      default: 'roll'
+    }, { width: 500 });
+    
+    dialog.render(true);
+  }
+
+  /**
+   * Roll a skill with weapon context
+   */
+  private async _rollSkillWithWeapon(skill: any, weaponName: string, skillType: 'skill', weaponDamageValue?: string): Promise<void> {
+    const skillSystem = skill.system as any;
+    const rating = skillSystem.rating || 0;
+    const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+    
+    // Get the attribute value from the actor
+    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+    const basePool = rating + attributeValue;
+    
+    if (basePool <= 0) {
+      ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.NO_DICE'));
+      return;
+    }
+
+    // Get localized attribute name
+    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+    
+    // Get RR sources for skill and attribute
+    const skillRRSources = this.getRRSources('skill', skill.name);
+    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
+    const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
+    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
+    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+
+    // Build RR sources HTML
+    let rrSourcesHtml = '';
+    if (allRRSources.length > 0) {
+      rrSourcesHtml = '<div class="rr-sources"><strong>Sources RR:</strong>';
+      allRRSources.forEach((source, index) => {
+        rrSourcesHtml += `
+          <label class="rr-source-item">
+            <input type="checkbox" class="rr-source-checkbox" data-rr-value="${source.rrValue}" checked />
+            <span>${source.featName} (+${source.rrValue})</span>
+          </label>`;
+      });
+      rrSourcesHtml += '</div>';
+    }
+
+    // Create a dialog to optionally add modifiers and risk dice
+    const dialog = new Dialog({
+      title: game.i18n!.format('SRA2.FEATS.WEAPON.ROLL_WITH_SKILL', { weapon: weaponName, skill: skill.name }),
+      content: `
+        <form class="sra2-roll-dialog">
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.BASE_POOL')}: <strong>${basePool}</strong></label>
+            <p class="notes">(${game.i18n!.localize('SRA2.SKILLS.RATING')}: ${rating} + ${attributeLabel}: ${attributeValue})</p>
+          </div>
+          <div class="form-group roll-mode-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE')}:</label>
+            <div class="radio-group">
+              <label class="radio-option disadvantage">
+                <input type="radio" name="rollMode" value="disadvantage" />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_DISADVANTAGE')}</span>
+              </label>
+              <label class="radio-option normal">
+                <input type="radio" name="rollMode" value="normal" checked />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_NORMAL')}</span>
+              </label>
+              <label class="radio-option advantage">
+                <input type="radio" name="rollMode" value="advantage" />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_ADVANTAGE')}</span>
+              </label>
+            </div>
+          </div>
+          ${rrSourcesHtml}
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}: <span id="rr-display">${autoRR}</span>/3</label>
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</label>
+            <input type="hidden" name="riskDice" id="risk-dice-input" value="${defaultRiskDice}" />
+            <div class="dice-selector" id="dice-selector">
+              ${Array.from({length: basePool}, (_, i) => 
+                `<div class="dice-icon ${i < defaultRiskDice ? 'selected' : ''}" data-dice-index="${i + 1}">
+                  <i class="fas fa-dice-d6"></i>
+                  <span class="dice-number">${i + 1}</span>
+                </div>`
+              ).join('')}
+            </div>
+            <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_DICE_HINT')}</p>
+          </div>
+        </form>
+        <script>
+          (function() {
+            const form = document.querySelector('.sra2-roll-dialog');
+            const checkboxes = form.querySelectorAll('.rr-source-checkbox');
+            const rrDisplay = form.querySelector('#rr-display');
+            const riskDiceInput = form.querySelector('#risk-dice-input');
+            const diceSelector = form.querySelector('#dice-selector');
+            const diceIcons = diceSelector.querySelectorAll('.dice-icon');
+            const maxDice = ${basePool};
+            const riskDiceByRR = [2, 5, 8, 12];
+            
+            // Risk thresholds based on RR level
+            const riskThresholds = {
+              0: { normal: 2, fort: 4, extreme: 6 },
+              1: { normal: 5, fort: 7, extreme: 9 },
+              2: { normal: 8, fort: 11, extreme: 13 },
+              3: { normal: 12, fort: 15, extreme: 999 }
+            };
+            
+            function getRiskLevel(diceCount, rr) {
+              const thresholds = riskThresholds[rr] || riskThresholds[0];
+              if (diceCount <= thresholds.normal) return 'faible';
+              if (diceCount <= thresholds.fort) return 'normal';
+              if (diceCount <= thresholds.extreme) return 'fort';
+              return 'extreme';
+            }
+            
+            function updateRR() {
+              let totalRR = 0;
+              checkboxes.forEach(cb => {
+                if (cb.checked) {
+                  totalRR += parseInt(cb.dataset.rrValue);
+                }
+              });
+              totalRR = Math.min(3, totalRR);
+              rrDisplay.textContent = totalRR;
+              
+              const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
+              setDiceSelection(suggestedRisk, totalRR);
+            }
+            
+            function setDiceSelection(count, currentRR) {
+              riskDiceInput.value = count;
+              
+              // Get current RR if not provided
+              if (currentRR === undefined) {
+                currentRR = 0;
+                checkboxes.forEach(cb => {
+                  if (cb.checked) {
+                    currentRR += parseInt(cb.dataset.rrValue);
+                  }
+                });
+                currentRR = Math.min(3, currentRR);
+              }
+              
+              diceIcons.forEach((dice, index) => {
+                const diceNumber = index + 1;
+                dice.classList.remove('selected', 'risk-faible', 'risk-normal', 'risk-fort', 'risk-extreme');
+                
+                const riskLevel = getRiskLevel(diceNumber, currentRR);
+                dice.classList.add('risk-' + riskLevel);
+                
+                if (index < count) {
+                  dice.classList.add('selected');
+                }
+              });
+            }
+            
+            diceIcons.forEach((dice) => {
+              dice.addEventListener('click', function() {
+                const index = parseInt(this.dataset.diceIndex);
+                const currentValue = parseInt(riskDiceInput.value);
+                // Toggle: si on clique sur le dernier dé sélectionné, désélectionner tout
+                if (index === currentValue) {
+                  setDiceSelection(0);
+                } else {
+                  setDiceSelection(index);
+                }
+              });
+            });
+            
+            checkboxes.forEach(cb => {
+              cb.addEventListener('change', updateRR);
+            });
+            
+            // Initial color setup
+            setDiceSelection(riskDiceInput.value);
+          })();
+        </script>
+      `,
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-dice-d6"></i>',
+          label: game.i18n!.localize('SRA2.SKILLS.ROLL'),
+          callback: (html: any) => {
+            const totalPool = basePool;
+            const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
+            const normalDice = totalPool - riskDice;
+            let riskReduction = 0;
+            html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+              riskReduction += parseInt(cb.dataset.rrValue);
+            });
+            riskReduction = Math.min(3, riskReduction);
+            const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
+            this._rollSkillDice(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('Cancel')
+        }
+      },
+      default: 'roll'
+    }, { width: 600 });
+    
+    dialog.render(true);
+  }
+
+  /**
+   * Roll a specialization with weapon context
+   */
+  private async _rollSpecializationWithWeapon(specialization: any, weaponName: string, effectiveRating: number, weaponDamageValue?: string): Promise<void> {
+    const specSystem = specialization.system as any;
+    const linkedAttribute = specSystem.linkedAttribute || 'strength';
+    
+    // Get the attribute value from the actor
+    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+    const basePool = effectiveRating + attributeValue;
+
+    if (basePool <= 0) {
+      ui.notifications?.warn(game.i18n!.localize('SRA2.SPECIALIZATIONS.NO_DICE'));
+      return;
+    }
+
+    // Get localized attribute name
+    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+    
+    // Get RR sources for specialization, skill, and attribute
+    const specRRSources = this.getRRSources('specialization', specialization.name);
+    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
+    const linkedSkillName = specSystem.linkedSkill;
+    const skillRRSources = linkedSkillName ? this.getRRSources('skill', linkedSkillName) : [];
+    
+    const allRRSources = [
+      ...specRRSources,
+      ...skillRRSources.map(s => ({ ...s, featName: s.featName + ` (${linkedSkillName})` })),
+      ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
+    ];
+    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
+    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+
+    // Build RR sources HTML
+    let rrSourcesHtml = '';
+    if (allRRSources.length > 0) {
+      rrSourcesHtml = '<div class="rr-sources"><strong>Sources RR:</strong>';
+      allRRSources.forEach((source, index) => {
+        rrSourcesHtml += `
+          <label class="rr-source-item">
+            <input type="checkbox" class="rr-source-checkbox" data-rr-value="${source.rrValue}" checked />
+            <span>${source.featName} (+${source.rrValue})</span>
+          </label>`;
+      });
+      rrSourcesHtml += '</div>';
+    }
+
+    // Create a dialog to optionally add modifiers and risk dice
+    const dialog = new Dialog({
+      title: game.i18n!.format('SRA2.FEATS.WEAPON.ROLL_WITH_SKILL', { weapon: weaponName, skill: specialization.name }),
+      content: `
+        <form class="sra2-roll-dialog">
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.BASE_POOL')}: <strong>${basePool}</strong></label>
+            <p class="notes">(${game.i18n!.localize('SRA2.SPECIALIZATIONS.BONUS')}: ${effectiveRating} + ${attributeLabel}: ${attributeValue})</p>
+          </div>
+          <div class="form-group roll-mode-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE')}:</label>
+            <div class="radio-group">
+              <label class="radio-option disadvantage">
+                <input type="radio" name="rollMode" value="disadvantage" />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_DISADVANTAGE')}</span>
+              </label>
+              <label class="radio-option normal">
+                <input type="radio" name="rollMode" value="normal" checked />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_NORMAL')}</span>
+              </label>
+              <label class="radio-option advantage">
+                <input type="radio" name="rollMode" value="advantage" />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_ADVANTAGE')}</span>
+              </label>
+            </div>
+          </div>
+          ${rrSourcesHtml}
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}: <span id="rr-display">${autoRR}</span>/3</label>
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</label>
+            <input type="hidden" name="riskDice" id="risk-dice-input" value="${defaultRiskDice}" />
+            <div class="dice-selector" id="dice-selector">
+              ${Array.from({length: basePool}, (_, i) => 
+                `<div class="dice-icon ${i < defaultRiskDice ? 'selected' : ''}" data-dice-index="${i + 1}">
+                  <i class="fas fa-dice-d6"></i>
+                  <span class="dice-number">${i + 1}</span>
+                </div>`
+              ).join('')}
+            </div>
+            <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_DICE_HINT')}</p>
+          </div>
+        </form>
+        <script>
+          (function() {
+            const form = document.querySelector('.sra2-roll-dialog');
+            const checkboxes = form.querySelectorAll('.rr-source-checkbox');
+            const rrDisplay = form.querySelector('#rr-display');
+            const riskDiceInput = form.querySelector('#risk-dice-input');
+            const diceSelector = form.querySelector('#dice-selector');
+            const diceIcons = diceSelector.querySelectorAll('.dice-icon');
+            const maxDice = ${basePool};
+            const riskDiceByRR = [2, 5, 8, 12];
+            
+            // Risk thresholds based on RR level
+            const riskThresholds = {
+              0: { normal: 2, fort: 4, extreme: 6 },
+              1: { normal: 5, fort: 7, extreme: 9 },
+              2: { normal: 8, fort: 11, extreme: 13 },
+              3: { normal: 12, fort: 15, extreme: 999 }
+            };
+            
+            function getRiskLevel(diceCount, rr) {
+              const thresholds = riskThresholds[rr] || riskThresholds[0];
+              if (diceCount <= thresholds.normal) return 'faible';
+              if (diceCount <= thresholds.fort) return 'normal';
+              if (diceCount <= thresholds.extreme) return 'fort';
+              return 'extreme';
+            }
+            
+            function updateRR() {
+              let totalRR = 0;
+              checkboxes.forEach(cb => {
+                if (cb.checked) {
+                  totalRR += parseInt(cb.dataset.rrValue);
+                }
+              });
+              totalRR = Math.min(3, totalRR);
+              rrDisplay.textContent = totalRR;
+              
+              const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
+              setDiceSelection(suggestedRisk, totalRR);
+            }
+            
+            function setDiceSelection(count, currentRR) {
+              riskDiceInput.value = count;
+              
+              // Get current RR if not provided
+              if (currentRR === undefined) {
+                currentRR = 0;
+                checkboxes.forEach(cb => {
+                  if (cb.checked) {
+                    currentRR += parseInt(cb.dataset.rrValue);
+                  }
+                });
+                currentRR = Math.min(3, currentRR);
+              }
+              
+              diceIcons.forEach((dice, index) => {
+                const diceNumber = index + 1;
+                dice.classList.remove('selected', 'risk-faible', 'risk-normal', 'risk-fort', 'risk-extreme');
+                
+                const riskLevel = getRiskLevel(diceNumber, currentRR);
+                dice.classList.add('risk-' + riskLevel);
+                
+                if (index < count) {
+                  dice.classList.add('selected');
+                }
+              });
+            }
+            
+            diceIcons.forEach((dice) => {
+              dice.addEventListener('click', function() {
+                const index = parseInt(this.dataset.diceIndex);
+                const currentValue = parseInt(riskDiceInput.value);
+                // Toggle: si on clique sur le dernier dé sélectionné, désélectionner tout
+                if (index === currentValue) {
+                  setDiceSelection(0);
+                } else {
+                  setDiceSelection(index);
+                }
+              });
+            });
+            
+            checkboxes.forEach(cb => {
+              cb.addEventListener('change', updateRR);
+            });
+            
+            // Initial color setup
+            setDiceSelection(riskDiceInput.value);
+          })();
+        </script>
+      `,
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-dice-d6"></i>',
+          label: game.i18n!.localize('SRA2.SKILLS.ROLL'),
+          callback: (html: any) => {
+            const totalPool = basePool;
+            const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
+            const normalDice = totalPool - riskDice;
+            let riskReduction = 0;
+            html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+              riskReduction += parseInt(cb.dataset.rrValue);
+            });
+            riskReduction = Math.min(3, riskReduction);
+            const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
+            this._rollSkillDice(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('Cancel')
+        }
+      },
+      default: 'roll'
+    }, { width: 600 });
+    
+    dialog.render(true);
   }
 
   /**

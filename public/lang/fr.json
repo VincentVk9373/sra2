@@ -278,8 +278,15 @@
                 "WEAPON_TYPE": "Type d'Arme",
                 "SELECT_WEAPON": "Sélectionner une arme...",
                 "INFO": "Informations de l'Arme",
+                "ROLL": "Lancer les dés",
+                "ROLL_TITLE": "Lancer {name}",
+                "ROLL_WITH_SKILL": "{weapon} avec {skill}",
+                "SELECT_SKILL": "Sélectionner une compétence",
+                "WEAPON_NAME": "Nom de l'arme",
+                "NO_SKILL_SELECTED": "Veuillez sélectionner une compétence",
                 "DAMAGE_VALUE": "Valeur de Dégât (VD)",
                 "DAMAGE_VALUE_SHORT": "VD",
+                "FINAL_VD": "VD Final",
                 "FINAL_VALUE": "Valeur Finale",
                 "NEEDS_ACTOR_FOR_CALCULATION": "Ajoutez cette arme à un personnage pour calculer la valeur finale avec la Force (FOR)",
                 "RANGES": "Portées",
@@ -407,7 +414,9 @@
             },
             "SPELL": {
                 "SECTION_TITLE": "Informations Sort",
-                "SECTION_HINT": "Les sorts utilisent les propriétés de base des atouts (effets narratifs, bonus, etc.) sans les caractéristiques d'arme."
+                "SECTION_HINT": "Les sorts utilisent les propriétés de base des atouts (effets narratifs, bonus, etc.) sans les caractéristiques d'arme.",
+                "ROLL": "Lancer les dés",
+                "ROLL_TITLE": "Lancer {name}"
             }
         },
         "SKILLS": {
