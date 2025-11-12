@@ -2944,6 +2944,8 @@ class CharacterSheet extends ActorSheet {
   }
 }
 class FeatSheet extends ItemSheet {
+  /** Track the currently active section */
+  _activeSection = "general";
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "item", "feat"],
@@ -2961,6 +2963,7 @@ class FeatSheet extends ItemSheet {
     const context = super.getData();
     this.item.prepareData();
     context.system = this.item.system;
+    context.activeSection = this._activeSection;
     context.finalDamageValue = this._calculateFinalDamageValue();
     context.finalVehicleStats = this._calculateFinalVehicleStats();
     context.rrEntries = [];
@@ -3015,6 +3018,7 @@ class FeatSheet extends ItemSheet {
     const button = event.currentTarget;
     const section = button.dataset.section;
     if (!section) return;
+    this._activeSection = section;
     const form = $(this.form);
     form.find(".section-nav .nav-item").removeClass("active");
     button.classList.add("active");

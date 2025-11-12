@@ -4,6 +4,9 @@ import { WEAPON_TYPES, VEHICLE_TYPES } from '../models/item-feat.js';
  * Feat Sheet Application
  */
 export class FeatSheet extends ItemSheet {
+  /** Track the currently active section */
+  private _activeSection: string = 'general';
+  
   static override get defaultOptions(): DocumentSheet.Options<Item> {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'sheet', 'item', 'feat'],
@@ -25,6 +28,9 @@ export class FeatSheet extends ItemSheet {
     this.item.prepareData();
     
     context.system = this.item.system;
+    
+    // Pass the active section to the template
+    context.activeSection = this._activeSection;
     
     // Calculate final damage value
     context.finalDamageValue = this._calculateFinalDamageValue();
@@ -123,6 +129,9 @@ export class FeatSheet extends ItemSheet {
     const section = button.dataset.section;
     
     if (!section) return;
+    
+    // Save the active section
+    this._activeSection = section;
     
     // Find the form element
     const form = $(this.form);

@@ -28,49 +28,49 @@
   <div class="sheet-content">
     <!-- Left Sidebar Navigation -->
     <nav class="section-nav">
-      <button type="button" class="nav-item active" data-section="general" title="{{localize 'SRA2.FEATS.SECTION.GENERAL'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'general')}}active{{/if}}" data-section="general" title="{{localize 'SRA2.FEATS.SECTION.GENERAL'}}">
         <i class="fas fa-info-circle"></i>
       </button>
-      <button type="button" class="nav-item" data-section="stats" title="{{localize 'SRA2.FEATS.SECTION.STATS'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'stats')}}active{{/if}}" data-section="stats" title="{{localize 'SRA2.FEATS.SECTION.STATS'}}">
         <i class="fas fa-chart-bar"></i>
       </button>
       {{#if (or (eq system.featType "weapon") (eq system.featType "weapons-spells"))}}
-      <button type="button" class="nav-item" data-section="weapon" title="{{localize 'SRA2.FEATS.SECTION.WEAPON'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'weapon')}}active{{/if}}" data-section="weapon" title="{{localize 'SRA2.FEATS.SECTION.WEAPON'}}">
         <i class="fas fa-crosshairs"></i>
       </button>
       {{/if}}
       {{#if (eq system.featType "spell")}}
-      <button type="button" class="nav-item" data-section="spell" title="{{localize 'SRA2.FEATS.SECTION.SPELL'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'spell')}}active{{/if}}" data-section="spell" title="{{localize 'SRA2.FEATS.SECTION.SPELL'}}">
         <i class="fas fa-hat-wizard"></i>
       </button>
       {{/if}}
       {{#if (eq system.featType "vehicle")}}
-      <button type="button" class="nav-item" data-section="vehicle" title="{{localize 'SRA2.FEATS.SECTION.VEHICLE'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'vehicle')}}active{{/if}}" data-section="vehicle" title="{{localize 'SRA2.FEATS.SECTION.VEHICLE'}}">
         <i class="fas fa-car"></i>
       </button>
       {{/if}}
       {{#if (eq system.featType "cyberdeck")}}
-      <button type="button" class="nav-item" data-section="cyberdeck" title="{{localize 'SRA2.FEATS.SECTION.CYBERDECK'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'cyberdeck')}}active{{/if}}" data-section="cyberdeck" title="{{localize 'SRA2.FEATS.SECTION.CYBERDECK'}}">
         <i class="fas fa-laptop-code"></i>
       </button>
       {{/if}}
       {{#if (eq system.featType "contact")}}
-      <button type="button" class="nav-item" data-section="contact" title="{{localize 'SRA2.FEATS.SECTION.CONTACT'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'contact')}}active{{/if}}" data-section="contact" title="{{localize 'SRA2.FEATS.SECTION.CONTACT'}}">
         <i class="fas fa-user-friends"></i>
       </button>
       {{/if}}
       {{#if (eq system.featType "awakened")}}
-      <button type="button" class="nav-item" data-section="awakened" title="{{localize 'SRA2.FEATS.SECTION.AWAKENED'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'awakened')}}active{{/if}}" data-section="awakened" title="{{localize 'SRA2.FEATS.SECTION.AWAKENED'}}">
         <i class="fas fa-om"></i>
       </button>
       {{/if}}
-      <button type="button" class="nav-item" data-section="rr" title="{{localize 'SRA2.FEATS.SECTION.RR'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'rr')}}active{{/if}}" data-section="rr" title="{{localize 'SRA2.FEATS.SECTION.RR'}}">
         <i class="fas fa-percentage"></i>
       </button>
-      <button type="button" class="nav-item" data-section="effects" title="{{localize 'SRA2.FEATS.SECTION.EFFECTS'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'effects')}}active{{/if}}" data-section="effects" title="{{localize 'SRA2.FEATS.SECTION.EFFECTS'}}">
         <i class="fas fa-magic"></i>
       </button>
-      <button type="button" class="nav-item" data-section="description" title="{{localize 'SRA2.FEATS.SECTION.DESCRIPTION'}}">
+      <button type="button" class="nav-item {{#if (eq activeSection 'description')}}active{{/if}}" data-section="description" title="{{localize 'SRA2.FEATS.SECTION.DESCRIPTION'}}">
         <i class="fas fa-book"></i>
       </button>
     </nav>
@@ -78,7 +78,7 @@
     <!-- Main Content Area -->
     <div class="section-content">
       <!-- General Section -->
-      <section class="content-section active" data-section-content="general">
+      <section class="content-section {{#if (eq activeSection 'general')}}active{{/if}}" data-section-content="general">
         <h2><i class="fas fa-info-circle"></i> {{localize "SRA2.FEATS.SECTION.GENERAL"}}</h2>
         
         <div class="form-group">
@@ -141,7 +141,7 @@
       </section>
 
       <!-- Stats Section -->
-      <section class="content-section" data-section-content="stats">
+      <section class="content-section {{#if (eq activeSection 'stats')}}active{{/if}}" data-section-content="stats">
         <h2><i class="fas fa-chart-bar"></i> {{localize "SRA2.FEATS.SECTION.STATS"}}</h2>
         
         <div class="form-group recommended-level-display">
@@ -258,7 +258,7 @@
 
       <!-- Weapon Section -->
       {{#if (or (eq system.featType "weapon") (eq system.featType "weapons-spells"))}}
-      <section class="content-section" data-section-content="weapon">
+      <section class="content-section {{#if (eq activeSection 'weapon')}}active{{/if}}" data-section-content="weapon">
         <h2><i class="fas fa-crosshairs"></i> {{localize "SRA2.FEATS.WEAPON.SECTION_TITLE"}}</h2>
         
         <div class="form-group">
@@ -473,7 +473,7 @@
 
       <!-- Spell Section -->
       {{#if (eq system.featType "spell")}}
-      <section class="content-section" data-section-content="spell">
+      <section class="content-section {{#if (eq activeSection 'spell')}}active{{/if}}" data-section-content="spell">
         <h2><i class="fas fa-hat-wizard"></i> {{localize "SRA2.FEATS.SPELL.SECTION_TITLE"}}</h2>
         <p class="notes">{{localize "SRA2.FEATS.SPELL.SECTION_HINT"}}</p>
       </section>
@@ -481,7 +481,7 @@
 
       <!-- Vehicle Section -->
       {{#if (eq system.featType "vehicle")}}
-      <section class="content-section" data-section-content="vehicle">
+      <section class="content-section {{#if (eq activeSection 'vehicle')}}active{{/if}}" data-section-content="vehicle">
         <h2><i class="fas fa-car"></i> {{localize "SRA2.FEATS.VEHICLE.SECTION_TITLE"}}</h2>
         
         <div class="form-group">
@@ -636,7 +636,7 @@
 
       <!-- Cyberdeck Section -->
       {{#if (eq system.featType "cyberdeck")}}
-      <section class="content-section" data-section-content="cyberdeck">
+      <section class="content-section {{#if (eq activeSection 'cyberdeck')}}active{{/if}}" data-section-content="cyberdeck">
         <h2><i class="fas fa-laptop-code"></i> {{localize "SRA2.FEATS.CYBERDECK.SECTION_TITLE"}}</h2>
         
         <div class="form-group">
@@ -653,7 +653,7 @@
 
       <!-- Contact Section -->
       {{#if (eq system.featType "contact")}}
-      <section class="content-section" data-section-content="contact">
+      <section class="content-section {{#if (eq activeSection 'contact')}}active{{/if}}" data-section-content="contact">
         <h2><i class="fas fa-user-friends"></i> {{localize "SRA2.FEATS.CONTACT.SECTION_TITLE"}}</h2>
         
         <div class="form-group">
@@ -665,7 +665,7 @@
 
       <!-- Awakened Section -->
       {{#if (eq system.featType "awakened")}}
-      <section class="content-section" data-section-content="awakened">
+      <section class="content-section {{#if (eq activeSection 'awakened')}}active{{/if}}" data-section-content="awakened">
         <h2><i class="fas fa-om"></i> {{localize "SRA2.FEATS.AWAKENED.SECTION_TITLE"}}</h2>
         
         <div class="form-group checkbox-group">
@@ -714,7 +714,7 @@
       {{/if}}
 
       <!-- RR Section -->
-      <section class="content-section" data-section-content="rr">
+      <section class="content-section {{#if (eq activeSection 'rr')}}active{{/if}}" data-section-content="rr">
         <h2><i class="fas fa-percentage"></i> {{localize "SRA2.FEATS.RR_ENTRIES"}}</h2>
         <button type="button" data-action="add-rr-entry" title="{{localize 'SRA2.FEATS.ADD_RR_ENTRY'}}" class="add-entry-button">
           <i class="fas fa-plus"></i> {{localize "SRA2.FEATS.ADD_RR_ENTRY"}}
@@ -793,7 +793,7 @@
       </section>
 
       <!-- Effects Section -->
-      <section class="content-section" data-section-content="effects">
+      <section class="content-section {{#if (eq activeSection 'effects')}}active{{/if}}" data-section-content="effects">
         <h2><i class="fas fa-magic"></i> {{localize "SRA2.FEATS.NARRATIVE_EFFECTS"}}</h2>
         <button type="button" data-action="add-narrative-effect" title="{{localize 'SRA2.FEATS.ADD_NARRATIVE_EFFECT'}}" class="add-entry-button">
           <i class="fas fa-plus"></i> {{localize "SRA2.FEATS.ADD_NARRATIVE_EFFECT"}}
@@ -844,7 +844,7 @@
       </section>
 
       <!-- Description Section -->
-      <section class="content-section" data-section-content="description">
+      <section class="content-section {{#if (eq activeSection 'description')}}active{{/if}}" data-section-content="description">
         <h2><i class="fas fa-book"></i> {{localize "SRA2.FEATS.DESCRIPTION"}}</h2>
         <div class="form-group">
           <div class="editor-content">{{editor system.description target="system.description" button=true engine="prosemirror" collaborate=false}}</div>
