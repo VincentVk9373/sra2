@@ -178,15 +178,12 @@ select {
     padding: 0.5rem;
     border-radius: 4px;
     text-align: center;
-    background: rgba(244, 67, 54, 0.3);
-    color: #f44336;
     font-weight: bold;
-    border: 2px solid #f44336;
     
     .calculation {
       font-size: 0.9rem;
-      color: #222;
-      margin-right: 0.25rem;
+      margin-bottom: 0.25rem;
+      display: block;
     }
     
     .final-value {
@@ -194,20 +191,58 @@ select {
       font-weight: bold;
     }
     
-    &.reduced-to-zero {
+    &.reduced-to-zero,
+    &.no-complication {
       background: rgba(76, 175, 80, 0.2);
       color: #4caf50;
-      border-color: #4caf50;
+      border: 2px solid #4caf50;
       
       .calculation {
         color: #156d19;
-        text-decoration: line-through;
-      }
-      
-      .final-value {
-        color: #4caf50;
       }
     }
+    
+    &.minor-complication {
+      background: rgba(255, 152, 0, 0.25);
+      color: #f57c00;
+      border: 2px solid #ff9800;
+      
+      .calculation {
+        color: #555;
+      }
+    }
+    
+    &.critical-complication {
+      background: rgba(244, 67, 54, 0.3);
+      color: #f44336;
+      border: 2px solid #f44336;
+      
+      .calculation {
+        color: #222;
+      }
+    }
+    
+    &.disaster {
+      background: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%);
+      color: #fff;
+      border: 3px solid #8b0000;
+      box-shadow: 0 0 12px rgba(139, 0, 0, 0.6);
+      font-size: 1.25rem;
+      animation: pulse-disaster 1s ease-in-out infinite;
+      
+      .calculation {
+        color: #ffcccc;
+      }
+    }
+  }
+}
+
+@keyframes pulse-disaster {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(139, 0, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(139, 0, 0, 0.9);
   }
 }
 
@@ -261,4 +296,5 @@ select {
     margin: 0.25rem 0 0;
   }
 }
+
 

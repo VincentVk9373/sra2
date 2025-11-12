@@ -2369,7 +2369,7 @@ class CharacterSheet extends ActorSheet {
         resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT")} de l'arme:</strong> ${vdDisplay}`;
         resultsHtml += "</div>";
         resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.FINAL_VD")}:</strong> `;
+        resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")}:</strong> `;
         resultsHtml += `<span class="calculation">${totalSuccesses} succès + ${baseVD} VD = </span>`;
         resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
         resultsHtml += "</div>";
@@ -2380,12 +2380,26 @@ class CharacterSheet extends ActorSheet {
       }
     }
     if (rawCriticalFailures > 0 || riskReduction > 0) {
-      resultsHtml += `<div class="critical-failures ${criticalFailures === 0 ? "reduced-to-zero" : ""}">`;
-      resultsHtml += `<strong>${game.i18n.localize("SRA2.SKILLS.CRITICAL_FAILURES")}:</strong> `;
-      if (riskReduction > 0) {
-        resultsHtml += `<span class="calculation">${rawCriticalFailures} - ${riskReduction} RR = </span>`;
+      let criticalLabel = "";
+      let criticalClass = "";
+      if (criticalFailures >= 3) {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.DISASTER");
+        criticalClass = "disaster";
+      } else if (criticalFailures === 2) {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION");
+        criticalClass = "critical-complication";
+      } else if (criticalFailures === 1) {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION");
+        criticalClass = "minor-complication";
+      } else {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.NO_COMPLICATION");
+        criticalClass = "reduced-to-zero";
       }
-      resultsHtml += `<span class="final-value">${criticalFailures}</span>`;
+      resultsHtml += `<div class="critical-failures ${criticalClass}">`;
+      if (riskReduction > 0) {
+        resultsHtml += `<span class="calculation">${rawCriticalFailures} - ${riskReduction} RR = ${criticalFailures}</span><br>`;
+      }
+      resultsHtml += `<strong>${criticalLabel}</strong>`;
       resultsHtml += "</div>";
     }
     resultsHtml += "</div>";
