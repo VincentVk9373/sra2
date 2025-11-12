@@ -758,7 +758,7 @@
                   </select>
                 {{else}}
                   <input type="hidden" name="system.rrList.{{index}}.rrTarget" value="{{rrTarget}}" />
-                  <div class="rr-target-drop-zone" data-rr-index="{{index}}">
+                  <div class="rr-target-search-container" data-rr-index="{{index}}">
                     {{#if rrTargetName}}
                       <div class="rr-target-display {{#if rrTargetNotFound}}warning{{/if}}">
                         {{#if rrTargetNotFound}}
@@ -776,9 +776,9 @@
                         </a>
                       </div>
                     {{else}}
-                      <div class="drop-zone-hint">
-                        <i class="fas fa-hand-pointer"></i>
-                        <p>{{localize "SRA2.FEATS.DROP_TARGET_HERE"}}</p>
+                      <div class="rr-target-search-wrapper">
+                        <input type="text" class="rr-target-search-input" placeholder="{{localize 'SRA2.FEATS.SEARCH_TARGET_PLACEHOLDER'}}" data-rr-index="{{index}}" autocomplete="off" />
+                        <div class="rr-target-search-results"></div>
                       </div>
                     {{/if}}
                   </div>

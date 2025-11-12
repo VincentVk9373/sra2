@@ -117,6 +117,22 @@ export class FeatSheet extends ItemSheet {
     
     // Section navigation
     html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
+    
+    // RR target search
+    html.find('.rr-target-search-input').on('input', this._onRRTargetSearch.bind(this));
+    html.find('.rr-target-search-input').on('focus', this._onRRTargetSearchFocus.bind(this));
+    html.find('.rr-target-search-input').on('blur', this._onRRTargetSearchBlur.bind(this));
+    
+    // Close RR target search results when clicking outside
+    $(document).on('click.rr-target-search', (event) => {
+      const target = event.target as unknown as HTMLElement;
+      const searchContainers = html.find('.rr-target-search-container');
+      searchContainers.each((_, container) => {
+        if (!container.contains(target)) {
+          $(container).find('.rr-target-search-results').hide();
+        }
+      });
+    });
   }
   
   /**
@@ -134,6 +150,7 @@ export class FeatSheet extends ItemSheet {
     this._activeSection = section;
     
     // Find the form element
+    if (!this.form) return;
     const form = $(this.form);
     
     // Update navigation buttons
@@ -584,6 +601,238 @@ export class FeatSheet extends ItemSheet {
     if (hiddenInput) {
       hiddenInput.value = newValue;
     }
+  }
+
+  /**
+   * Handle RR target search input
+   */
+  private rrTargetSearchTimeout: any = null;
+  
+  private async _onRRTargetSearch(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = input.value.trim().toLowerCase();
+    const rrIndex = parseInt(input.dataset.rrIndex || '0');
+    const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
+    
+    // Clear previous timeout
+    if (this.rrTargetSearchTimeout) {
+      clearTimeout(this.rrTargetSearchTimeout);
+    }
+    
+    // If search term is empty, hide results
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Debounce search
+    this.rrTargetSearchTimeout = setTimeout(async () => {
+      await this._performRRTargetSearch(searchTerm, rrIndex, resultsDiv);
+    }, 300);
+  }
+
+  /**
+   * Perform the actual RR target search in actor items and compendiums
+   */
+  private async _performRRTargetSearch(searchTerm: string, rrIndex: number, resultsDiv: HTMLElement): Promise<void> {
+    const results: any[] = [];
+    const rrList = (this.item.system as any).rrList || [];
+    const rrType = rrList[rrIndex]?.rrType;
+    
+    if (!rrType || rrType === 'attribute') {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Search in actor items if this feat is on an actor
+    if (this.item.actor) {
+      for (const item of this.item.actor.items as any) {
+        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            source: game.i18n!.localize('SRA2.FEATS.FROM_ACTOR'),
+            type: rrType
+          });
+        }
+      }
+    }
+    
+    // Search in world items
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+          // Check if not already in results
+          const exists = results.some(r => r.name === item.name);
+          if (!exists) {
+            results.push({
+              name: item.name,
+              uuid: item.uuid,
+              source: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
+              type: rrType
+            });
+          }
+        }
+      }
+    }
+    
+    // Search in all compendiums
+    for (const pack of game.packs as any) {
+      // Only search in Item compendiums
+      if (pack.documentName !== 'Item') continue;
+      
+      // Get all documents from the pack
+      const documents = await pack.getDocuments();
+      
+      // Filter for items that match the search term and type
+      for (const doc of documents) {
+        if (doc.type === rrType && doc.name.toLowerCase().includes(searchTerm)) {
+          // Check if not already in results
+          const exists = results.some(r => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              uuid: doc.uuid,
+              source: pack.title,
+              type: rrType
+            });
+          }
+        }
+      }
+    }
+    
+    // Display results
+    this._displayRRTargetSearchResults(results, rrIndex, resultsDiv);
+  }
+
+  /**
+   * Display RR target search results
+   */
+  private _displayRRTargetSearchResults(results: any[], rrIndex: number, resultsDiv: HTMLElement): void {
+    let html = '';
+    
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.SKILLS.SEARCH_NO_RESULTS')}
+          </div>
+        </div>
+      `;
+    } else {
+      // Display search results
+      for (const result of results) {
+        const typeLabel = result.type === 'skill' 
+          ? game.i18n!.localize('SRA2.FEATS.RR_TYPE.SKILL')
+          : game.i18n!.localize('SRA2.FEATS.RR_TYPE.SPECIALIZATION');
+        
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-rr-index="${rrIndex}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source} - ${typeLabel}</span>
+            </div>
+            <button class="add-rr-target-btn" data-target-name="${result.name}" data-rr-index="${rrIndex}">
+              ${game.i18n!.localize('SRA2.FEATS.SELECT')}
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Attach click handlers to buttons
+    $(resultsDiv).find('.add-rr-target-btn').on('click', this._onSelectRRTarget.bind(this));
+    
+    // Make entire result items clickable
+    $(resultsDiv).find('.search-result-item:not(.no-results)').on('click', (event) => {
+      // Don't trigger if clicking directly on the button
+      if ($(event.target).closest('.add-rr-target-btn').length > 0) return;
+      
+      // Find the button in this item and trigger its click
+      const button = $(event.currentTarget).find('.add-rr-target-btn')[0] as HTMLButtonElement;
+      if (button) {
+        $(button).trigger('click');
+      }
+    });
+  }
+
+  /**
+   * Handle selecting an RR target from search results
+   */
+  private async _onSelectRRTarget(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const targetName = button.dataset.targetName;
+    const rrIndex = parseInt(button.dataset.rrIndex || '0');
+    
+    if (!targetName) return;
+    
+    const rrList = [...((this.item.system as any).rrList || [])];
+    
+    if (rrList[rrIndex]) {
+      rrList[rrIndex] = { ...rrList[rrIndex], rrTarget: targetName };
+    }
+    
+    await this.item.update({ 'system.rrList': rrList } as any);
+    this.render(false);
+    
+    ui.notifications?.info(game.i18n!.format('SRA2.FEATS.LINKED_TO_TARGET', { name: targetName }));
+  }
+
+  /**
+   * Handle RR target search focus
+   */
+  private _onRRTargetSearchFocus(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // If there's already content and results, show them
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = 'block';
+      }
+    }
+  }
+
+  /**
+   * Handle RR target search blur
+   */
+  private _onRRTargetSearchBlur(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    const blurEvent = event as FocusEvent;
+    
+    // Check if the new focus target is within the results div
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        // Check if the related target (where focus is going) is inside the results div
+        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          // Don't hide if focus is moving to an element within the results
+          return;
+        }
+        
+        // Also check if any element in the results is focused
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          // Don't hide if an element in results is active
+          return;
+        }
+        
+        resultsDiv.style.display = 'none';
+      }
+    }, 200);
+  }
+
+  override async close(options?: Application.CloseOptions): Promise<void> {
+    // Clean up document-level event listeners
+    $(document).off('click.rr-target-search');
+    return super.close(options);
   }
 
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {

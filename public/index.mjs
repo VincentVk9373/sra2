@@ -3028,6 +3028,18 @@ class FeatSheet extends ItemSheet {
     html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
     html.find('.range-improvement-checkbox input[type="checkbox"]').on("change", this._onRangeImprovementChange.bind(this));
     html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
+    html.find(".rr-target-search-input").on("input", this._onRRTargetSearch.bind(this));
+    html.find(".rr-target-search-input").on("focus", this._onRRTargetSearchFocus.bind(this));
+    html.find(".rr-target-search-input").on("blur", this._onRRTargetSearchBlur.bind(this));
+    $(document).on("click.rr-target-search", (event) => {
+      const target = event.target;
+      const searchContainers = html.find(".rr-target-search-container");
+      searchContainers.each((_, container) => {
+        if (!container.contains(target)) {
+          $(container).find(".rr-target-search-results").hide();
+        }
+      });
+    });
   }
   /**
    * Handle section navigation
@@ -3038,6 +3050,7 @@ class FeatSheet extends ItemSheet {
     const section = button.dataset.section;
     if (!section) return;
     this._activeSection = section;
+    if (!this.form) return;
     const form = $(this.form);
     form.find(".section-nav .nav-item").removeClass("active");
     button.classList.add("active");
@@ -3376,6 +3389,178 @@ class FeatSheet extends ItemSheet {
     if (hiddenInput) {
       hiddenInput.value = newValue;
     }
+  }
+  /**
+   * Handle RR target search input
+   */
+  rrTargetSearchTimeout = null;
+  async _onRRTargetSearch(event) {
+    const input = event.currentTarget;
+    const searchTerm = input.value.trim().toLowerCase();
+    const rrIndex = parseInt(input.dataset.rrIndex || "0");
+    const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
+    if (this.rrTargetSearchTimeout) {
+      clearTimeout(this.rrTargetSearchTimeout);
+    }
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = "none";
+      return;
+    }
+    this.rrTargetSearchTimeout = setTimeout(async () => {
+      await this._performRRTargetSearch(searchTerm, rrIndex, resultsDiv);
+    }, 300);
+  }
+  /**
+   * Perform the actual RR target search in actor items and compendiums
+   */
+  async _performRRTargetSearch(searchTerm, rrIndex, resultsDiv) {
+    const results = [];
+    const rrList = this.item.system.rrList || [];
+    const rrType = rrList[rrIndex]?.rrType;
+    if (!rrType || rrType === "attribute") {
+      resultsDiv.style.display = "none";
+      return;
+    }
+    if (this.item.actor) {
+      for (const item of this.item.actor.items) {
+        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
+            type: rrType
+          });
+        }
+      }
+    }
+    if (game.items) {
+      for (const item of game.items) {
+        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+          const exists = results.some((r) => r.name === item.name);
+          if (!exists) {
+            results.push({
+              name: item.name,
+              uuid: item.uuid,
+              source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
+              type: rrType
+            });
+          }
+        }
+      }
+    }
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      const documents2 = await pack.getDocuments();
+      for (const doc of documents2) {
+        if (doc.type === rrType && doc.name.toLowerCase().includes(searchTerm)) {
+          const exists = results.some((r) => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              uuid: doc.uuid,
+              source: pack.title,
+              type: rrType
+            });
+          }
+        }
+      }
+    }
+    this._displayRRTargetSearchResults(results, rrIndex, resultsDiv);
+  }
+  /**
+   * Display RR target search results
+   */
+  _displayRRTargetSearchResults(results, rrIndex, resultsDiv) {
+    let html = "";
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n.localize("SRA2.SKILLS.SEARCH_NO_RESULTS")}
+          </div>
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        const typeLabel = result.type === "skill" ? game.i18n.localize("SRA2.FEATS.RR_TYPE.SKILL") : game.i18n.localize("SRA2.FEATS.RR_TYPE.SPECIALIZATION");
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-rr-index="${rrIndex}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source} - ${typeLabel}</span>
+            </div>
+            <button class="add-rr-target-btn" data-target-name="${result.name}" data-rr-index="${rrIndex}">
+              ${game.i18n.localize("SRA2.FEATS.SELECT")}
+            </button>
+          </div>
+        `;
+      }
+    }
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+    $(resultsDiv).find(".add-rr-target-btn").on("click", this._onSelectRRTarget.bind(this));
+    $(resultsDiv).find(".search-result-item:not(.no-results)").on("click", (event) => {
+      if ($(event.target).closest(".add-rr-target-btn").length > 0) return;
+      const button = $(event.currentTarget).find(".add-rr-target-btn")[0];
+      if (button) {
+        $(button).trigger("click");
+      }
+    });
+  }
+  /**
+   * Handle selecting an RR target from search results
+   */
+  async _onSelectRRTarget(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const targetName = button.dataset.targetName;
+    const rrIndex = parseInt(button.dataset.rrIndex || "0");
+    if (!targetName) return;
+    const rrList = [...this.item.system.rrList || []];
+    if (rrList[rrIndex]) {
+      rrList[rrIndex] = { ...rrList[rrIndex], rrTarget: targetName };
+    }
+    await this.item.update({ "system.rrList": rrList });
+    this.render(false);
+    ui.notifications?.info(game.i18n.format("SRA2.FEATS.LINKED_TO_TARGET", { name: targetName }));
+  }
+  /**
+   * Handle RR target search focus
+   */
+  _onRRTargetSearchFocus(event) {
+    const input = event.currentTarget;
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = "block";
+      }
+    }
+  }
+  /**
+   * Handle RR target search blur
+   */
+  _onRRTargetSearchBlur(event) {
+    const input = event.currentTarget;
+    const blurEvent = event;
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
+      if (resultsDiv) {
+        const relatedTarget = blurEvent.relatedTarget;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          return;
+        }
+        const activeElement = document.activeElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          return;
+        }
+        resultsDiv.style.display = "none";
+      }
+    }, 200);
+  }
+  async close(options) {
+    $(document).off("click.rr-target-search");
+    return super.close(options);
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
