@@ -419,6 +419,24 @@
                 "ROLL_TITLE": "Lancer {name}"
             }
         },
+        "COMBAT": {
+            "ATTACK": "Attaque",
+            "DEFENSE": "Défense",
+            "DEFEND": "Se défendre",
+            "NO_DEFENSE": "Pas de défense",
+            "WAITING_FOR_DEFENSE": "{attacker} attaque {defender} avec {successes} succès. En attente de la défense...",
+            "DEFENSE_ROLL_TITLE": "Défense de {defender} contre {attacker}",
+            "DEFENSE_ROLL_CONFIG": "Configuration de la défense avec {skill}",
+            "SELECT_DEFENSE_SKILL": "Sélectionner une compétence de défense",
+            "NO_DEFENSE_SKILL_SELECTED": "Veuillez sélectionner une compétence de défense",
+            "ATTACK_INFO": "Information d'attaque",
+            "ATTACK_SUCCESSES": "Succès de l'attaque",
+            "ATTACK_ROLL": "Attaque : {name}",
+            "ATTACK_BLOCKED": "Attaque bloquée !",
+            "ATTACK_SUCCESS": "ATTAQUE RÉUSSIE",
+            "ATTACK_FAILED": "ATTAQUE RATÉE",
+            "DEFENSE_BLOCKS_ATTACK": "{defender} bloque l'attaque ! ({defenseSuccesses} succès défense > {attackSuccesses} succès attaque)"
+        },
         "SKILLS": {
             "LABEL": "Compétences",
             "NAME": "Nom de la Compétence",
