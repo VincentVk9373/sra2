@@ -146,101 +146,153 @@ select {
   }
   
   .final-damage-value {
-    padding: 1.5rem;
+    padding: 2rem;
     border-radius: 8px;
     text-align: center;
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(255, 87, 34, 0.4) 100%);
-    border: 4px solid #ff9800;
-    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.5);
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.4) 0%, rgba(255, 87, 34, 0.4) 100%);
+    border: 5px solid #ff9800;
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
     
     .damage-label {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: bold;
       color: #e65100;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 0.75rem;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
     }
     
     .calculation {
-      font-size: 1.1rem;
-      color: #555;
-      margin-bottom: 0.75rem;
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 1rem;
       display: block;
     }
     
     .final-value {
-      font-size: 3rem;
+      font-size: 4.5rem;
       font-weight: bold;
       color: #e65100;
       line-height: 1;
       
       &.vd-value {
-        text-shadow: 0 2px 6px rgba(230, 81, 0, 0.4), 0 0 10px rgba(255, 152, 0, 0.3);
+        text-shadow: 0 3px 8px rgba(230, 81, 0, 0.5), 0 0 15px rgba(255, 152, 0, 0.4);
       }
     }
   }
   
-  .critical-failures {
-    font-size: 1.1rem;
-    padding: 0.5rem;
-    border-radius: 4px;
+  .skill-complications {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 8px;
     text-align: center;
-    font-weight: bold;
     
-    .calculation {
-      font-size: 0.9rem;
-      margin-bottom: 0.25rem;
-      display: block;
-    }
-    
-    .final-value {
-      font-size: 1.3rem;
-      font-weight: bold;
-    }
-    
-    &.reduced-to-zero,
-    &.no-complication {
-      background: rgba(76, 175, 80, 0.2);
-      color: #4caf50;
-      border: 2px solid #4caf50;
+    .complication-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
       
-      .calculation {
-        color: #156d19;
+      .complication-icon {
+        font-size: 2.5rem;
+      }
+      
+      .complication-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+    
+    .complication-detail {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      opacity: 0.9;
+    }
+    
+    &.no-complication {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+      border: 3px solid #4caf50;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+      
+      .complication-header {
+        color: #2e7d32;
+        
+        .complication-icon {
+          color: #4caf50;
+        }
+      }
+      
+      .complication-detail {
+        color: #388e3c;
       }
     }
     
     &.minor-complication {
-      background: rgba(255, 152, 0, 0.25);
-      color: #f57c00;
-      border: 2px solid #ff9800;
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(245, 124, 0, 0.3) 100%);
+      border: 3px solid #ff9800;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
       
-      .calculation {
-        color: #555;
+      .complication-header {
+        color: #e65100;
+        
+        .complication-icon {
+          color: #ff9800;
+        }
+      }
+      
+      .complication-detail {
+        color: #f57c00;
       }
     }
     
     &.critical-complication {
-      background: rgba(244, 67, 54, 0.3);
-      color: #f44336;
-      border: 2px solid #f44336;
+      background: linear-gradient(135deg, rgba(244, 67, 54, 0.4) 0%, rgba(211, 47, 47, 0.4) 100%);
+      border: 4px solid #f44336;
+      box-shadow: 0 4px 16px rgba(244, 67, 54, 0.6);
       
-      .calculation {
-        color: #222;
+      .complication-header {
+        color: #b71c1c;
+        
+        .complication-icon {
+          color: #f44336;
+          animation: shake 0.5s ease-in-out;
+        }
+      }
+      
+      .complication-detail {
+        color: #c62828;
       }
     }
     
     &.disaster {
-      background: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%);
-      color: #fff;
-      border: 3px solid #8b0000;
-      box-shadow: 0 0 12px rgba(139, 0, 0, 0.6);
-      font-size: 1.25rem;
+      background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.7) 100%);
+      border: 5px solid #8b0000;
+      box-shadow: 0 0 24px rgba(139, 0, 0, 0.8), inset 0 0 20px rgba(255, 0, 0, 0.2);
       animation: pulse-disaster 1s ease-in-out infinite;
       
-      .calculation {
+      .complication-header {
+        color: #ff6b6b;
+        
+        .complication-icon {
+          color: #ff4444;
+          font-size: 3rem;
+          animation: shake-intense 0.3s ease-in-out infinite;
+        }
+        
+        .complication-title {
+          font-size: 2.5rem;
+          text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+      }
+      
+      .complication-detail {
         color: #ffcccc;
+        font-size: 1.1rem;
       }
     }
   }
@@ -295,28 +347,28 @@ select {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    padding: 1.5rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
     margin-bottom: 1rem;
-    border-radius: 8px;
-    font-size: 2rem;
+    border-radius: 6px;
+    font-size: 1.1rem;
     font-weight: bold;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     
     .outcome-icon {
-      font-size: 2.5rem;
+      font-size: 1.3rem;
     }
     
     .outcome-text {
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
     
     &.attack-success {
-      background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.25) 0%, rgba(46, 125, 50, 0.25) 100%);
       color: #2e7d32;
-      border: 3px solid #4caf50;
-      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+      border: 2px solid #4caf50;
+      box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
       
       .outcome-icon {
         color: #4caf50;
@@ -324,10 +376,10 @@ select {
     }
     
     &.attack-failed {
-      background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(183, 28, 28, 0.3) 100%);
+      background: linear-gradient(135deg, rgba(244, 67, 54, 0.25) 0%, rgba(183, 28, 28, 0.25) 100%);
       color: #b71c1c;
-      border: 3px solid #f44336;
-      box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+      border: 2px solid #f44336;
+      box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
       
       .outcome-icon {
         color: #f44336;

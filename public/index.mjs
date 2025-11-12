@@ -2964,29 +2964,6 @@ class CharacterSheet extends ActorSheet {
     html += `<div class="successes ${rollResult.totalSuccesses > 0 ? "has-success" : "no-success"}">`;
     html += `<strong>${game.i18n.localize("SRA2.SKILLS.TOTAL_SUCCESSES")}:</strong> ${rollResult.totalSuccesses}`;
     html += "</div>";
-    if (rollResult.rawCriticalFailures > 0 || rollResult.riskReduction > 0) {
-      let criticalLabel = "";
-      let criticalClass = "";
-      if (rollResult.criticalFailures >= 3) {
-        criticalLabel = game.i18n.localize("SRA2.SKILLS.DISASTER");
-        criticalClass = "disaster";
-      } else if (rollResult.criticalFailures === 2) {
-        criticalLabel = game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION");
-        criticalClass = "critical-complication";
-      } else if (rollResult.criticalFailures === 1) {
-        criticalLabel = game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION");
-        criticalClass = "minor-complication";
-      } else {
-        criticalLabel = game.i18n.localize("SRA2.SKILLS.NO_COMPLICATION");
-        criticalClass = "reduced-to-zero";
-      }
-      html += `<div class="critical-failures ${criticalClass}">`;
-      if (rollResult.riskReduction > 0) {
-        html += `<span class="calculation">${rollResult.rawCriticalFailures} - ${rollResult.riskReduction} RR = ${rollResult.criticalFailures}</span><br>`;
-      }
-      html += `<strong>${criticalLabel}</strong>`;
-      html += "</div>";
-    }
     return html;
   }
   /**
@@ -3018,15 +2995,43 @@ class CharacterSheet extends ActorSheet {
         resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT")} de l'arme:</strong> ${vdDisplay}`;
         resultsHtml += "</div>";
         resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")}:</strong> `;
-        resultsHtml += `<span class="calculation">${rollResult.totalSuccesses} succès + ${baseVD} VD = </span>`;
-        resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
+        resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")}</div>`;
+        resultsHtml += `<div class="calculation">${rollResult.totalSuccesses} succès + ${baseVD} VD = </div>`;
+        resultsHtml += `<div class="final-value vd-value">${finalVD}</div>`;
         resultsHtml += "</div>";
       } else if (weaponDamageValue === "toxin") {
         resultsHtml += `<div class="weapon-damage-value">`;
         resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT")}:</strong> ${vdDisplay}`;
         resultsHtml += "</div>";
       }
+    }
+    if (rollResult.rawCriticalFailures > 0 || rollResult.riskReduction > 0) {
+      let criticalLabel = "";
+      let criticalClass = "";
+      if (rollResult.criticalFailures >= 3) {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.DISASTER");
+        criticalClass = "disaster";
+      } else if (rollResult.criticalFailures === 2) {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION");
+        criticalClass = "critical-complication";
+      } else if (rollResult.criticalFailures === 1) {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION");
+        criticalClass = "minor-complication";
+      } else {
+        criticalLabel = game.i18n.localize("SRA2.SKILLS.NO_COMPLICATION");
+        criticalClass = "no-complication";
+      }
+      resultsHtml += `<div class="skill-complications ${criticalClass}">`;
+      resultsHtml += `<div class="complication-header">`;
+      resultsHtml += `<div class="complication-icon"><i class="fas fa-exclamation-triangle"></i></div>`;
+      resultsHtml += `<div class="complication-title">${criticalLabel}</div>`;
+      resultsHtml += "</div>";
+      if (rollResult.riskReduction > 0 && rollResult.criticalFailures > 0) {
+        resultsHtml += `<div class="complication-detail">${rollResult.rawCriticalFailures} - ${rollResult.riskReduction} RR = ${rollResult.criticalFailures}</div>`;
+      } else if (rollResult.riskReduction > 0) {
+        resultsHtml += `<div class="complication-detail">${rollResult.rawCriticalFailures} - ${rollResult.riskReduction} RR = 0 (bloqué)</div>`;
+      }
+      resultsHtml += "</div>";
     }
     resultsHtml += "</div>";
     const messageData = {
