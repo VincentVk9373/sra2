@@ -467,7 +467,14 @@
             "DAMAGE_OVERFLOW_LIGHT": "Blessures légères pleines, appliqué en grave",
             "DAMAGE_OVERFLOW_SEVERE": "Blessures graves pleines, appliqué en incapacitant",
             "ALREADY_INCAPACITATED": "{target} est déjà incapacité",
-            "NOW_INCAPACITATED": "{target} est maintenant INCAPACITÉ !"
+            "NOW_INCAPACITATED": "{target} est maintenant INCAPACITÉ !",
+            "DEFENSE_METHOD": "Méthode de défense",
+            "USE_THRESHOLD": "Utiliser le seuil (rapide)",
+            "ROLL_DICE": "Lancer les dés",
+            "COMPLICATION": "Complication mineure",
+            "DEFENSE_SUCCESS": "DÉFENSE RÉUSSIE",
+            "COMBAT_RESULT": "Résultat du combat : {attacker} vs {defender}",
+            "NO_DEFENSE_ROLLED": "Aucune défense"
         },
         "SKILLS": {
             "LABEL": "Compétences",

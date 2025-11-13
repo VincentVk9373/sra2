@@ -2400,7 +2400,8 @@ class CharacterSheet extends ActorSheet {
       const attributeValue = defenderActor.system.attributes?.[linkedAttribute] || 0;
       const skillRating = skillSystem.rating || 0;
       const totalDicePool = attributeValue + skillRating;
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}">${skill.name} (${totalDicePool} dés)</option>`;
+      const { threshold } = this._calculateNPCThreshold(defenderActor, skill, totalDicePool, "skill");
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}">${skill.name} (${game.i18n.localize("SRA2.NPC.THRESHOLD")}: ${threshold} / ${totalDicePool} dés)</option>`;
       const specs = allSpecializations.filter((spec) => {
         const linkedSkillName = spec.system.linkedSkill;
         return linkedSkillName === skill.name;
@@ -2412,7 +2413,8 @@ class CharacterSheet extends ActorSheet {
         const parentRating = skillRating;
         const effectiveRating = parentRating + 2;
         const specTotalDicePool = specAttributeValue + effectiveRating;
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${specTotalDicePool} dés)</option>`;
+        const { threshold: specThreshold } = this._calculateNPCThreshold(defenderActor, spec, specTotalDicePool, "specialization", skill);
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-threshold="${specThreshold}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${game.i18n.localize("SRA2.NPC.THRESHOLD")}: ${specThreshold} / ${specTotalDicePool} dés)</option>`;
       });
     });
     const dialog = new Dialog({
@@ -2433,6 +2435,19 @@ class CharacterSheet extends ActorSheet {
               ${skillOptionsHtml}
             </select>
           </div>
+          <div class="form-group defense-method-group">
+            <label>${game.i18n.localize("SRA2.COMBAT.DEFENSE_METHOD")}:</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="defenseMethod" value="threshold" checked />
+                <span>${game.i18n.localize("SRA2.COMBAT.USE_THRESHOLD")}</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="defenseMethod" value="roll" />
+                <span>${game.i18n.localize("SRA2.COMBAT.ROLL_DICE")}</span>
+              </label>
+            </div>
+          </div>
         </form>
       `,
       buttons: {
@@ -2449,7 +2464,14 @@ class CharacterSheet extends ActorSheet {
             const [itemType, itemId] = selectedValue.split("-");
             const defenseItem = defenderActor.items.get(itemId);
             if (defenseItem) {
-              await this._rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor);
+              const defenseMethod = html.find('input[name="defenseMethod"]:checked').val();
+              const selectedOption = html.find("#defense-skill-select option:selected");
+              if (defenseMethod === "threshold") {
+                const threshold = parseInt(selectedOption.attr("data-threshold")) || 0;
+                await this._defendWithThreshold(defenseItem, itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor);
+              } else {
+                await this._rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor);
+              }
             }
           }
         },
@@ -2663,6 +2685,58 @@ class CharacterSheet extends ActorSheet {
       default: "roll"
     }, { width: 600 });
     dialog.render(true);
+  }
+  /**
+   * Calculate NPC threshold for defense
+   */
+  _calculateNPCThreshold(actor, item, dicePool, itemType, parentSkill) {
+    let totalRR = 0;
+    const activeFeats = actor.items.filter(
+      (i) => i.type === "feat" && i.system.active === true
+    );
+    const linkedAttribute = item.system.linkedAttribute;
+    activeFeats.forEach((feat) => {
+      const rrList = feat.system.rrList || [];
+      rrList.forEach((rrEntry) => {
+        if (itemType === "skill" && rrEntry.rrType === "skill" && rrEntry.rrTarget === item.name) {
+          totalRR += rrEntry.rrValue || 0;
+        } else if (itemType === "specialization") {
+          if (rrEntry.rrType === "specialization" && rrEntry.rrTarget === item.name) {
+            totalRR += rrEntry.rrValue || 0;
+          } else if (parentSkill && rrEntry.rrType === "skill" && rrEntry.rrTarget === parentSkill.name) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+        }
+        if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === linkedAttribute) {
+          totalRR += rrEntry.rrValue || 0;
+        }
+      });
+    });
+    const threshold = Math.floor(dicePool / 3) + totalRR + 1;
+    return { threshold, totalRR };
+  }
+  /**
+   * Defend with NPC threshold (no dice roll)
+   */
+  async _defendWithThreshold(defenseItem, itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor) {
+    const defenseName = defenseItem.name;
+    const defenseResult = {
+      skillName: defenseName,
+      totalSuccesses: threshold,
+      isThreshold: true,
+      // Flag to indicate this is a threshold-based defense
+      normalDiceResults: "",
+      riskDiceResults: "",
+      normalSuccesses: threshold,
+      riskSuccesses: 0,
+      criticalFailures: 0,
+      rawCriticalFailures: 0,
+      dicePool: 0,
+      riskDice: 0,
+      riskReduction: 0,
+      rollMode: "threshold"
+    };
+    await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor);
   }
   /**
    * Perform dice roll and return results
@@ -2924,6 +2998,16 @@ class CharacterSheet extends ActorSheet {
    */
   _buildDiceResultsHtml(rollResult, weaponDamageValue) {
     let html = "";
+    if (rollResult.isThreshold) {
+      html += '<div class="dice-pool">';
+      html += `<strong>${game.i18n.localize("SRA2.NPC.THRESHOLD")}:</strong> `;
+      html += `<span class="threshold-badge">${rollResult.totalSuccesses}</span>`;
+      html += "</div>";
+      html += `<div class="successes has-success">`;
+      html += `<strong>${game.i18n.localize("SRA2.SKILLS.TOTAL_SUCCESSES")}:</strong> ${rollResult.totalSuccesses}`;
+      html += "</div>";
+      return html;
+    }
     const totalPool = rollResult.dicePool + rollResult.riskDice;
     html += '<div class="dice-pool">';
     html += `<strong>${game.i18n.localize("SRA2.SKILLS.DICE_POOL")}:</strong> `;
