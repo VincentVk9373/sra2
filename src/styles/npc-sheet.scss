@@ -280,6 +280,16 @@
     }
   }
 
+  .clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+  }
+
   .skills-header {
     display: grid;
     grid-template-columns: 1fr 80px 60px 80px 60px;
