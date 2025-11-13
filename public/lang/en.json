@@ -1,8 +1,7 @@
 {
     "TYPES": {
         "Actor": {
-            "character": "Character",
-            "npc": "NPC"
+            "character": "Character"
         },
         "Item": {
             "skill": "Skill",
@@ -14,6 +13,7 @@
     "SRA2": {
         "SHEET": {
             "CHARACTER": "SRA2 Character Sheet",
+            "NPC": "SRA2 NPC Sheet",
             "FEAT": "SRA2 Feat Sheet",
             "SKILL": "SRA2 Skill Sheet",
             "SPECIALIZATION": "SRA2 Specialization Sheet",
@@ -34,8 +34,24 @@
         },
         "TOTAL_COST": "Total Cost",
         "NPC": {
-            "DIFFICULTY": "Difficulty Rating"
+            "NAME": "NPC Name",
+            "DIFFICULTY": "Difficulty Rating",
+            "DESCRIPTION": "Description",
+            "SECTION": {
+                "INFO": "Information",
+                "COMBAT": "Combat",
+                "SKILLS": "Skills",
+                "FEATS": "Feats"
+            },
+            "DICE_POOL": "Dice",
+            "RR": "RR",
+            "THRESHOLD": "Threshold",
+            "SKILLS_INFO": "NPCs don't roll dice. They have predefined result thresholds.",
+            "THRESHOLD_FORMULA": "Threshold Formula",
+            "FORMULA": "floor(Dice / 3) + RR + 1",
+            "OTHER_FEATS": "Other Feats"
         },
+        "CONFIRM_DELETE": "Are you sure you want to delete {name}?",
         "ATTRIBUTES": {
             "LABEL": "Attributes",
             "STRENGTH": "Strength",

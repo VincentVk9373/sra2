@@ -1,8 +1,7 @@
 {
     "TYPES": {
         "Actor": {
-            "character": "Personnage",
-            "npc": "PNJ"
+            "character": "Personnage"
         },
         "Item": {
             "skill": "Compétence",
@@ -14,6 +13,7 @@
     "SRA2": {
         "SHEET": {
             "CHARACTER": "Feuille de Personnage SRA2",
+            "NPC": "Feuille de PNJ SRA2",
             "FEAT": "Feuille d'Atout SRA2",
             "SKILL": "Feuille de Compétence SRA2",
             "SPECIALIZATION": "Feuille de Spécialisation SRA2",
@@ -34,8 +34,24 @@
         },
         "TOTAL_COST": "Coût Total",
         "NPC": {
-            "DIFFICULTY": "Niveau de Difficulté"
+            "NAME": "Nom du PNJ",
+            "DIFFICULTY": "Niveau de Difficulté",
+            "DESCRIPTION": "Description",
+            "SECTION": {
+                "INFO": "Informations",
+                "COMBAT": "Combat",
+                "SKILLS": "Compétences",
+                "FEATS": "Atouts"
+            },
+            "DICE_POOL": "Dés",
+            "RR": "RR",
+            "THRESHOLD": "Seuil",
+            "SKILLS_INFO": "Les PNJ ne lancent pas de dés. Ils ont des seuils de résultat prédéfinis.",
+            "THRESHOLD_FORMULA": "Formule du seuil",
+            "FORMULA": "floor(Dés / 3) + RR + 1",
+            "OTHER_FEATS": "Autres Atouts"
         },
+        "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer {name} ?",
         "ATTRIBUTES": {
             "LABEL": "Attributs",
             "STRENGTH": "Force",

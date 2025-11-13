@@ -1,6 +1,5 @@
 // Export all models here
 export { CharacterDataModel } from './actor-character';
-export { NpcDataModel } from './actor-npc';
 export { SkillDataModel } from './item-skill';
 export { FeatDataModel } from './item-feat';
 export { SpecializationDataModel } from './item-specialization';

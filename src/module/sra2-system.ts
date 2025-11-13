@@ -68,7 +68,6 @@ export class SRA2System {
     // Register Actor data models
     CONFIG.Actor.dataModels = {
       character: models.CharacterDataModel,
-      npc: models.NpcDataModel,
     };
     
     // Register Item data models
@@ -79,11 +78,18 @@ export class SRA2System {
       metatype: models.MetatypeDataModel,
     };
     
-    // Register character sheet
+    // Register character sheet (PC view - default)
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
       types: ["character"],
       makeDefault: true,
       label: "SRA2.SHEET.CHARACTER"
+    });
+    
+    // Register NPC sheet (simplified view for same character type)
+    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.NpcSheet, {
+      types: ["character"],
+      makeDefault: false,
+      label: "SRA2.SHEET.NPC"
     });
     
     // Register feat sheet
@@ -129,6 +135,16 @@ export class SRA2System {
     
     Handlebars.registerHelper('gte', function(a: any, b: any) {
       return a >= b;
+    });
+    
+    Handlebars.registerHelper('concat', function(...args: any[]) {
+      // Remove the last argument which is the Handlebars options object
+      const values = args.slice(0, -1);
+      return values.join('');
+    });
+    
+    Handlebars.registerHelper('uppercase', function(str: string) {
+      return str ? str.toUpperCase() : '';
     });
     
     // Register chat message hook for apply damage buttons

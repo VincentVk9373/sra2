@@ -330,47 +330,6 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     }
   }
 }
-class NpcDataModel extends foundry.abstract.TypeDataModel {
-  static defineSchema() {
-    const fields = foundry.data.fields;
-    return {
-      state: new fields.SchemaField({
-        health: new fields.NumberField({
-          required: true,
-          initial: 10,
-          min: 0,
-          integer: true
-        }),
-        maxHealth: new fields.NumberField({
-          required: true,
-          initial: 10,
-          min: 1,
-          integer: true
-        }),
-        armor: new fields.NumberField({
-          required: true,
-          initial: 0,
-          min: 0,
-          integer: true
-        })
-      }),
-      difficulty: new fields.NumberField({
-        required: true,
-        initial: 1,
-        min: 1,
-        max: 6,
-        integer: true,
-        label: "SRA2.NPC.DIFFICULTY"
-      }),
-      description: new fields.HTMLField({
-        required: true,
-        initial: ""
-      })
-    };
-  }
-  prepareDerivedData() {
-  }
-}
 class SkillDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -1243,7 +1202,6 @@ const models = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   CharacterDataModel,
   FeatDataModel,
   MetatypeDataModel,
-  NpcDataModel,
   SkillDataModel,
   SpecializationDataModel
 }, Symbol.toStringTag, { value: "Module" }));
@@ -4206,6 +4164,228 @@ class CharacterSheet extends ActorSheet {
     }
   }
 }
+class NpcSheet extends ActorSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "sheet", "actor", "npc"],
+      template: "systems/sra2/templates/actor-npc-sheet.hbs",
+      width: 800,
+      height: 700,
+      tabs: [],
+      dragDrop: [
+        { dragSelector: ".skill-item", dropSelector: ".skills-list" },
+        { dragSelector: ".feat-item", dropSelector: ".feats-list" },
+        { dragSelector: ".specialization-item", dropSelector: ".skills-list" }
+      ],
+      submitOnChange: true
+    });
+  }
+  getData() {
+    const context = super.getData();
+    context.system = this.actor.system;
+    const allFeats = this.actor.items.filter((item) => item.type === "feat");
+    context.feats = allFeats;
+    const skills = this.actor.items.filter((item) => item.type === "skill");
+    const allSpecializations = this.actor.items.filter((item) => item.type === "specialization");
+    const specializationsBySkill = /* @__PURE__ */ new Map();
+    allSpecializations.forEach((spec) => {
+      const linkedSkillName = spec.system.linkedSkill;
+      if (linkedSkillName) {
+        const linkedSkill = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === linkedSkillName
+        );
+        if (linkedSkill && linkedSkill.id) {
+          const skillId = linkedSkill.id;
+          if (!specializationsBySkill.has(skillId)) {
+            specializationsBySkill.set(skillId, []);
+          }
+          specializationsBySkill.get(skillId).push(spec);
+        }
+      }
+    });
+    const skillsWithThresholds = skills.map((skill) => {
+      const skillData = { ...skill };
+      const linkedAttribute = skill.system.linkedAttribute;
+      let attributeValue = 0;
+      if (linkedAttribute && this.actor.system.attributes) {
+        attributeValue = this.actor.system.attributes[linkedAttribute] || 0;
+      }
+      const skillRating = skill.system.rating || 0;
+      const totalDicePool = attributeValue + skillRating;
+      let totalRR = 0;
+      const activeFeats = this.actor.items.filter(
+        (item) => item.type === "feat" && item.system.active === true
+      );
+      activeFeats.forEach((feat) => {
+        const rrList = feat.system.rrList || [];
+        rrList.forEach((rrEntry) => {
+          if (rrEntry.rrType === "skill" && rrEntry.rrTarget === skill.name) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+          if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === linkedAttribute) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+        });
+      });
+      const npcThreshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      skillData.totalDicePool = totalDicePool;
+      skillData.totalRR = totalRR;
+      skillData.npcThreshold = npcThreshold;
+      const specs = specializationsBySkill.get(skill.id) || [];
+      skillData.specializations = specs.map((spec) => {
+        const specData = { ...spec };
+        const specDicePool = totalDicePool + 2;
+        let specTotalRR = totalRR;
+        activeFeats.forEach((feat) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry) => {
+            if (rrEntry.rrType === "specialization" && rrEntry.rrTarget === spec.name) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
+        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
+        specData.totalDicePool = specDicePool;
+        specData.totalRR = specTotalRR;
+        specData.npcThreshold = specThreshold;
+        return specData;
+      });
+      return skillData;
+    });
+    context.skills = skillsWithThresholds;
+    return context;
+  }
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find('[data-action="edit-skill"]').on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        item.sheet?.render(true);
+      }
+    });
+    html.find('[data-action="delete-skill"]').on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        const confirmed = await Dialog.confirm({
+          title: game.i18n.localize("SRA2.SKILLS.DELETE"),
+          content: `<p>${game.i18n.format("SRA2.CONFIRM_DELETE", { name: item.name })}</p>`
+        });
+        if (confirmed) {
+          await item.delete();
+        }
+      }
+    });
+    html.find('[data-action="edit-specialization"]').on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        item.sheet?.render(true);
+      }
+    });
+    html.find('[data-action="delete-specialization"]').on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        const confirmed = await Dialog.confirm({
+          title: game.i18n.localize("SRA2.SPECIALIZATIONS.DELETE"),
+          content: `<p>${game.i18n.format("SRA2.CONFIRM_DELETE", { name: item.name })}</p>`
+        });
+        if (confirmed) {
+          await item.delete();
+        }
+      }
+    });
+    html.find('[data-action="edit-feat"]').on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        item.sheet?.render(true);
+      }
+    });
+    html.find('[data-action="delete-feat"]').on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        const confirmed = await Dialog.confirm({
+          title: game.i18n.localize("SRA2.FEATS.DELETE"),
+          content: `<p>${game.i18n.format("SRA2.CONFIRM_DELETE", { name: item.name })}</p>`
+        });
+        if (confirmed) {
+          await item.delete();
+        }
+      }
+    });
+    html.find('[data-action="add-world-skill"]').on("click", async (event) => {
+      event.preventDefault();
+      this._showItemBrowser("skill");
+    });
+    html.find('[data-action="add-world-feat"]').on("click", async (event) => {
+      event.preventDefault();
+      this._showItemBrowser("feat");
+    });
+  }
+  /**
+   * Show item browser dialog
+   */
+  async _showItemBrowser(itemType) {
+    const items = game.items.filter((item) => item.type === itemType);
+    const itemOptions = items.map((item) => {
+      return `<option value="${item.id}">${item.name}</option>`;
+    }).join("");
+    const content = `
+      <div class="form-group">
+        <label>${game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.WORLD_ITEMS`)}</label>
+        <select id="item-select" style="width: 100%;">
+          <option value="">${game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.SEARCH_PLACEHOLDER`)}</option>
+          ${itemOptions}
+        </select>
+      </div>
+    `;
+    new Dialog({
+      title: game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.ADD_${itemType.toUpperCase()}`),
+      content,
+      buttons: {
+        add: {
+          icon: '<i class="fas fa-plus"></i>',
+          label: game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.ADD_${itemType.toUpperCase()}`),
+          callback: async (html) => {
+            const itemId = html.find("#item-select").val();
+            if (itemId) {
+              const item = game.items.get(itemId);
+              if (item) {
+                await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+              }
+            }
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n.localize("Cancel")
+        }
+      },
+      default: "add"
+    }).render(true);
+  }
+  async _onDropItem(event, data) {
+    if (!this.actor.isOwner) return false;
+    const item = await Item.implementation.fromDropData(data);
+    if (!item) return false;
+    const existingItem = this.actor.items.find((i) => i.name === item.name && i.type === item.type);
+    if (existingItem) {
+      ui.notifications.warn(game.i18n.format("SRA2.ALREADY_EXISTS", { name: item.name }));
+      return false;
+    }
+    return await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+  }
+}
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
@@ -5194,6 +5374,7 @@ const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   CharacterSheet,
   FeatSheet,
   MetatypeSheet,
+  NpcSheet,
   SkillSheet,
   SpecializationSheet
 }, Symbol.toStringTag, { value: "Module" }));
@@ -5899,8 +6080,7 @@ class SRA2System {
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {
-      character: CharacterDataModel,
-      npc: NpcDataModel
+      character: CharacterDataModel
     };
     CONFIG.Item.dataModels = {
       skill: SkillDataModel,
@@ -5912,6 +6092,11 @@ class SRA2System {
       types: ["character"],
       makeDefault: true,
       label: "SRA2.SHEET.CHARACTER"
+    });
+    DocumentSheetConfig.registerSheet(Actor, "sra2", NpcSheet, {
+      types: ["character"],
+      makeDefault: false,
+      label: "SRA2.SHEET.NPC"
     });
     DocumentSheetConfig.registerSheet(Item, "sra2", FeatSheet, {
       types: ["feat"],
@@ -5944,6 +6129,13 @@ class SRA2System {
     });
     Handlebars.registerHelper("gte", function(a, b) {
       return a >= b;
+    });
+    Handlebars.registerHelper("concat", function(...args) {
+      const values = args.slice(0, -1);
+      return values.join("");
+    });
+    Handlebars.registerHelper("uppercase", function(str) {
+      return str ? str.toUpperCase() : "";
     });
     Hooks.on("renderChatMessage", (message, html) => {
       html.find(".apply-damage-btn").on("click", async (event) => {
