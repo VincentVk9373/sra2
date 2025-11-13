@@ -6,560 +6,477 @@
 
 
 select {
-  height: 36px;
+    height: 36px;
 }
 
 /* Dice Roll Results in Chat */
-.sra2-skill-roll {
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  
-  .dice-pool {
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    
-    .risk-label {
-      color: #7b1fa2;
-      font-weight: bold;
-    }
-    
-    .rr-label {
-      color: #4caf50;
-      font-weight: bold;
-      background: rgba(76, 175, 80, 0.15);
-      padding: 0.125rem 0.5rem;
-      border-radius: 3px;
-      font-size: 0.85rem;
-    }
-  }
-  
-  .dice-results {
-    margin-bottom: 0.5rem;
-    line-height: 2.2;
-    
-    &.risk {
-      background: rgba(123, 31, 162, 0.1);
-      padding: 0.5rem;
-      border-radius: 4px;
-      border-left: 3px solid #7b1fa2;
-    }
-    
-    .mini-success {
-      margin-left: 0.5rem;
-      font-size: 0.85rem;
-      color: #999;
-    }
-    
-    .die {
-      display: inline-block;
-      width: 30px;
-      height: 30px;
-      line-height: 30px;
-      text-align: center;
-      margin: 0 0.25rem;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 1rem;
-      
-      &.normal {
-        &.success {
-          background: #4caf50;
-          color: #fff;
-          box-shadow: 0 2px 4px rgba(76, 175, 80, 0.4);
-        }
-        
-        &.failure {
-          background: #666;
-          color: #ccc;
-        }
-      }
-      
-      &.risk {
-        border: 2px solid #4a148c;
-        
-        &.success {
-          background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
-          color: #fff;
-          box-shadow: 0 2px 4px rgba(74, 20, 140, 0.6);
-          position: relative;
-          
-          // Add a small badge to indicate double success
-          &::after {
-            content: '×2';
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #fff;
+.sra2-skill-roll,
+.sra2-combat-roll {
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+
+    .dice-pool {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+
+        .risk-label {
             color: #7b1fa2;
-            font-size: 0.6rem;
-            padding: 1px 3px;
-            border-radius: 8px;
             font-weight: bold;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-          }
         }
-        
-        &.critical {
-          background: linear-gradient(135deg, #1a0029 0%, #000000 100%);
-          color: #fff;
-          box-shadow: 0 2px 4px rgba(26, 0, 41, 0.8), 0 0 8px rgba(244, 67, 54, 0.4);
-          animation: pulse-critical 0.5s ease-in-out;
-          border-color: #f44336;
+
+        .rr-label {
+            color: #4caf50;
+            font-weight: bold;
+            background: rgba(76, 175, 80, 0.15);
+            padding: 0.125rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
         }
-        
-        &.failure {
-          background: #424242;
-          color: #ccc;
+    }
+
+    .dice-results {
+        margin-bottom: 0.5rem;
+        line-height: 2.2;
+
+        &.risk {
+            background: rgba(123, 31, 162, 0.1);
+            padding: 0.5rem;
+            border-radius: 4px;
+            border-left: 3px solid #7b1fa2;
         }
-      }
+
+        .die {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            margin: 0 0.25rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1rem;
+
+            &.normal {
+                &.success {
+                    background: #4caf50;
+                    color: #fff;
+                    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.4);
+                }
+
+                &.failure {
+                    background: #666;
+                    color: #ccc;
+                }
+            }
+
+            &.risk {
+                border: 2px solid #4a148c;
+
+                &.success {
+                    background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+                    color: #fff;
+                    box-shadow: 0 2px 4px rgba(74, 20, 140, 0.6);
+                    position: relative;
+
+                    // Add a small badge to indicate double success
+                    &::after {
+                        content: '×2';
+                        position: absolute;
+                        top: -8px;
+                        right: -8px;
+                        background: #fff;
+                        color: #7b1fa2;
+                        font-size: 0.6rem;
+                        padding: 1px 3px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                    }
+                }
+
+                &.critical {
+                    background: linear-gradient(135deg, #1a0029 0%, #000000 100%);
+                    color: #fff;
+                    box-shadow: 0 2px 4px rgba(26, 0, 41, 0.8), 0 0 8px rgba(244, 67, 54, 0.4);
+                    animation: pulse-critical 0.5s ease-in-out;
+                    border-color: #f44336;
+                }
+
+                &.failure {
+                    background: #424242;
+                    color: #ccc;
+                }
+            }
+        }
     }
-  }
-  
-  .successes {
-    font-size: 1.1rem;
-    padding: 0.5rem;
-    border-radius: 4px;
-    text-align: center;
-    margin-bottom: 0.5rem;
-    
-    &.has-success {
-      background: rgba(76, 175, 80, 0.2);
-      color: #4caf50;
-      font-weight: bold;
+
+    .successes {
+        font-size: 1.1rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+        margin-bottom: 0.5rem;
+
+        &.has-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #428944;
+            font-weight: bold;
+        }
+
+        &.no-success {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
     }
-    
-    &.no-success {
-      background: rgba(244, 67, 54, 0.2);
-      color: #f44336;
+
+    .final-damage-value {
+        padding: 1rem 0.5rem;
+        border-radius: 12px;
+        text-align: center;
+        background: linear-gradient(135deg, rgba(0, 174, 255, 0.5) 0%, rgba(76, 160, 228, 0.5) 100%);
+        border: 2px solid #1f32e2;
+
+        .damage-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f32e2;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .calculation {
+            font-size: 14px;
+            color: #1f32e2;
+            margin-bottom: 0.2rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        .final-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #1f32e2;
+            line-height: 1;
+        }
     }
-  }
-  
-  .weapon-damage-value {
-    font-size: 0.95rem;
-    padding: 0.4rem 0.5rem;
-    margin-bottom: 0.4rem;
-    text-align: center;
-    background: rgba(33, 150, 243, 0.1);
-    border-radius: 4px;
-    color: #1976d2;
-  }
-  
-  .final-damage-value {
-    padding: 2rem;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, rgba(255, 152, 0, 0.4) 0%, rgba(255, 87, 34, 0.4) 100%);
-    border: 5px solid #ff9800;
-    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
-    
-    .damage-label {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #e65100;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 1rem;
+
+    .critical-failures {
+        margin: 1rem 0 0 0;
+        padding: 16px;
+        border-radius: 16px;
+        text-align: center;
+
+        .complication-header {
+            display: grid;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+
+            .complication-icon {
+                font-size: 3rem;
+                line-height: 1;
+            }
+
+            .complication-title {
+                font-size: 16px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 4px;
+                text-shadow: 0 4px 8px rgb(153 57 57 / 50%);
+                line-height: 1;
+            }
+        }
+
+        .complication-calculation {
+            font-size: 14px;
+            margin-top: 1rem;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        &.reduced-to-zero {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.4) 0%, rgba(46, 125, 50, 0.4) 100%);
+            border: 2px solid #4caf50;
+
+            .complication-header {
+                font-size: 19px;
+                color: #666;
+                margin-bottom: 1.2rem;
+                display: block;
+                font-weight: 500;
+
+                .complication-icon {
+                    color: #1b5e20;
+                    display: none;
+                }
+
+                .complication-title {
+                    color: #1b5e20;
+                }
+            }
+
+            .complication-calculation {
+                color: #1b5e20;
+            }
+        }
+
+        &.minor-complication {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.4) 0%, rgba(245, 124, 0, 0.4) 100%);
+            border: 6px solid #ff9800;
+            box-shadow: 0 8px 24px rgba(255, 152, 0, 0.6), inset 0 0 35px rgba(255, 152, 0, 0.1);
+
+            .complication-header {
+                .complication-icon {
+                    color: #895607
+                }
+
+                .complication-title {
+                    color: #895607
+                }
+            }
+
+            .complication-calculation {
+                color: #895607
+            }
+        }
+
+        &.critical-complication {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.6) 0%, rgba(211, 47, 47, 0.6) 100%);
+            border: 8px solid #f44336;
+            box-shadow: 0 12px 32px rgba(244, 67, 54, 0.8), inset 0 0 45px rgba(244, 67, 54, 0.15);
+
+            .complication-header {
+                .complication-icon {
+                    color: #7b0b0b;
+                    animation: shake 0.5s ease-in-out infinite;
+                    filter: drop-shadow(0 0 12px rgba(244, 67, 54, 1));
+                }
+
+                .complication-title {
+                    color: #7b0b0b;
+                    font-size: 15px;
+                }
+            }
+
+            .complication-calculation {
+                color: #7b0b0b;
+                font-size: 2rem;
+            }
+        }
+
+        &.disaster {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%);
+            border: 12px solid #8b0000;
+            box-shadow: 0 0 50px rgba(139, 0, 0, 1), inset 0 0 70px rgba(255, 0, 0, 0.5);
+            animation: pulse-disaster 1s ease-in-out infinite;
+
+            .complication-header {
+                .complication-icon {
+                    color: #ff4444;
+                    animation: shake-intense 0.3s ease-in-out infinite;
+                    filter: drop-shadow(0 0 20px rgba(255, 0, 0, 1));
+                }
+
+                .complication-title {
+                    color: #ff6b6b;
+                    font-weight: 900;
+                    text-shadow: 0 0 25px rgba(255, 0, 0, 1), 0 4px 10px rgba(0, 0, 0, 0.8);
+                }
+            }
+
+            .complication-calculation {
+                color: #ffcccc;
+                font-size: 2.2rem;
+            }
+        }
     }
-    
-    .calculation {
-      font-size: 1.2rem;
-      color: #666;
-      margin-bottom: 1rem;
-      display: block;
+
+    // Combat-specific sections
+    .attack-section,
+    .defense-section {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 4px;
+
+        h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
     }
-    
-    .final-value {
-      font-size: 4.5rem;
-      font-weight: bold;
-      color: #e65100;
-      line-height: 1;
-      
-      &.vd-value {
-        text-shadow: 0 3px 8px rgba(230, 81, 0, 0.5), 0 0 15px rgba(255, 152, 0, 0.4);
-      }
+
+    .attack-section {
+        background: rgba(244, 67, 54, 0.1);
+        border-left: 4px solid #f44336;
     }
-  }
-  
-  .skill-complications {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    
-    .complication-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-      
-      .complication-icon {
-        font-size: 2.5rem;
-      }
-      
-      .complication-title {
-        font-size: 1rem;
+
+    .defense-section {
+        background: rgba(33, 150, 243, 0.1);
+        border-left: 4px solid #2196f3;
+    }
+
+    .combat-result {
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .combat-outcome-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: 6px;
+        font-size: 1.1rem;
         font-weight: bold;
         text-transform: uppercase;
         letter-spacing: 1px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-    }
-    
-    .complication-detail {
-      font-size: 1rem;
-      margin-top: 0.5rem;
-      opacity: 0.9;
-    }
-    
-    &.no-complication {
-      background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
-      border: 3px solid #4caf50;
-      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-      
-      .complication-header {
-        color: #2e7d32;
-        
-        .complication-icon {
-          color: #4caf50;
+
+        .outcome-icon {
+            font-size: 1.3rem;
         }
-      }
-      
-      .complication-detail {
-        color: #388e3c;
-      }
-    }
-    
-    &.minor-complication {
-      background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(245, 124, 0, 0.3) 100%);
-      border: 3px solid #ff9800;
-      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
-      
-      .complication-header {
-        color: #e65100;
-        
-        .complication-icon {
-          color: #ff9800;
+
+        .outcome-text {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
-      }
-      
-      .complication-detail {
-        color: #f57c00;
-      }
-    }
-    
-    &.critical-complication {
-      background: linear-gradient(135deg, rgba(244, 67, 54, 0.4) 0%, rgba(211, 47, 47, 0.4) 100%);
-      border: 4px solid #f44336;
-      box-shadow: 0 4px 16px rgba(244, 67, 54, 0.6);
-      
-      .complication-header {
-        color: #b71c1c;
-        
-        .complication-icon {
-          color: #f44336;
-          animation: shake 0.5s ease-in-out;
+
+        &.attack-success {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.25) 0%, rgba(46, 125, 50, 0.25) 100%);
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+
+            .outcome-icon {
+                color: #4caf50;
+            }
         }
-      }
-      
-      .complication-detail {
-        color: #c62828;
-      }
-    }
-    
-    &.disaster {
-      background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.7) 100%);
-      border: 5px solid #8b0000;
-      box-shadow: 0 0 24px rgba(139, 0, 0, 0.8), inset 0 0 20px rgba(255, 0, 0, 0.2);
-      animation: pulse-disaster 1s ease-in-out infinite;
-      
-      .complication-header {
-        color: #ff6b6b;
-        
-        .complication-icon {
-          color: #ff4444;
-          font-size: 3rem;
-          animation: shake-intense 0.3s ease-in-out infinite;
+
+        &.attack-failed {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.25) 0%, rgba(183, 28, 28, 0.25) 100%);
+            color: #b71c1c;
+            border: 2px solid #f44336;
+            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+
+            .outcome-icon {
+                color: #f44336;
+            }
         }
-        
-        .complication-title {
-          font-size: 1.5rem;
-          text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-      }
-      
-      .complication-detail {
-        color: #ffcccc;
-        font-size: 1.1rem;
-      }
     }
-  }
+
+    .defense-success {
+        padding: 0.75rem;
+        background: rgba(76, 175, 80, 0.15);
+        border-radius: 4px;
+        text-align: center;
+        margin-bottom: 1rem;
+
+        p {
+            margin: 0;
+            color: #2e7d32;
+            font-size: 1rem;
+        }
+    }
 }
 
 @keyframes pulse-disaster {
-  0%, 100% {
-    box-shadow: 0 0 12px rgba(139, 0, 0, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(139, 0, 0, 0.9);
-  }
-}
 
-/* Combat Roll Results in Chat */
-.sra2-combat-roll {
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  
-  .attack-section,
-  .defense-section {
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    border-radius: 4px;
-    
-    h3 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.1rem;
-      font-weight: bold;
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(139, 0, 0, 0.6);
     }
-  }
-  
-  .attack-section {
-    background: rgba(244, 67, 54, 0.1);
-    border-left: 4px solid #f44336;
-  }
-  
-  .defense-section {
-    background: rgba(33, 150, 243, 0.1);
-    border-left: 4px solid #2196f3;
-  }
-  
-  .combat-result {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.05);
-  }
-  
-  .combat-outcome-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    
-    .outcome-icon {
-      font-size: 1.3rem;
+
+    50% {
+        box-shadow: 0 0 20px rgba(139, 0, 0, 0.9);
     }
-    
-    .outcome-text {
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-    
-    &.attack-success {
-      background: linear-gradient(135deg, rgba(76, 175, 80, 0.25) 0%, rgba(46, 125, 50, 0.25) 100%);
-      color: #2e7d32;
-      border: 2px solid #4caf50;
-      box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
-      
-      .outcome-icon {
-        color: #4caf50;
-      }
-    }
-    
-    &.attack-failed {
-      background: linear-gradient(135deg, rgba(244, 67, 54, 0.25) 0%, rgba(183, 28, 28, 0.25) 100%);
-      color: #b71c1c;
-      border: 2px solid #f44336;
-      box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
-      
-      .outcome-icon {
-        color: #f44336;
-      }
-    }
-  }
-  
-  .defense-success {
-    padding: 0.75rem;
-    background: rgba(76, 175, 80, 0.15);
-    border-radius: 4px;
-    text-align: center;
-    margin-bottom: 1rem;
-    
-    p {
-      margin: 0;
-      color: #2e7d32;
-      font-size: 1rem;
-    }
-  }
-  
-  .combat-complications {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    
-    .complication-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      
-      .complication-icon {
-        font-size: 2.5rem;
-      }
-      
-      .complication-title {
-        font-size: 1rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-    }
-    
-    .complication-detail {
-      font-size: 1rem;
-      margin-top: 0.5rem;
-      opacity: 0.9;
-    }
-    
-    &.minor-complication {
-      background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(245, 124, 0, 0.3) 100%);
-      border: 3px solid #ff9800;
-      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
-      
-      .complication-header {
-        color: #e65100;
-        
-        .complication-icon {
-          color: #ff9800;
-        }
-      }
-      
-      .complication-detail {
-        color: #f57c00;
-      }
-    }
-    
-    &.critical-complication {
-      background: linear-gradient(135deg, rgba(244, 67, 54, 0.4) 0%, rgba(211, 47, 47, 0.4) 100%);
-      border: 4px solid #f44336;
-      box-shadow: 0 4px 16px rgba(244, 67, 54, 0.6);
-      
-      .complication-header {
-        color: #b71c1c;
-        
-        .complication-icon {
-          color: #f44336;
-          animation: shake 0.5s ease-in-out;
-        }
-      }
-      
-      .complication-detail {
-        color: #c62828;
-      }
-    }
-    
-    &.disaster {
-      background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.7) 100%);
-      border: 5px solid #8b0000;
-      box-shadow: 0 0 24px rgba(139, 0, 0, 0.8), inset 0 0 20px rgba(255, 0, 0, 0.2);
-      animation: pulse-disaster 1s ease-in-out infinite;
-      
-      .complication-header {
-        color: #ff6b6b;
-        
-        .complication-icon {
-          color: #ff4444;
-          font-size: 3rem;
-          animation: shake-intense 0.3s ease-in-out infinite;
-        }
-        
-        .complication-title {
-          font-size: 1.5rem;
-          text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-      }
-      
-      .complication-detail {
-        color: #ffcccc;
-        font-size: 1.1rem;
-      }
-    }
-  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 @keyframes shake-intense {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-10deg);
+    }
+
+    75% {
+        transform: rotate(10deg);
+    }
 }
 
 @keyframes pulse-critical {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
 }
 
 /* Roll Dialog Styles */
 .sra2-roll-dialog {
-  .dice-breakdown {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    border-left: 3px solid #4a9eff;
-    font-size: 0.95rem;
-    
-    strong {
-      display: block;
-      margin-bottom: 0.25rem;
+    .dice-breakdown {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        border-left: 3px solid #4a9eff;
+        font-size: 0.95rem;
+
+        strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        #normal-dice-display {
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        #risk-dice-display {
+            color: #7b1fa2;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
     }
-    
-    #normal-dice-display {
-      color: #4caf50;
-      font-weight: bold;
-      font-size: 1.1rem;
+
+    #risk-dice-max {
+        font-size: 0.85rem;
+        color: #999;
+        font-style: italic;
     }
-    
-    #risk-dice-display {
-      color: #7b1fa2;
-      font-weight: bold;
-      font-size: 1.1rem;
+
+    .notes {
+        font-size: 0.8rem;
+        color: #999;
+        font-style: italic;
+        margin: 0.25rem 0 0;
     }
-  }
-  
-  #risk-dice-max {
-    font-size: 0.85rem;
-    color: #999;
-    font-style: italic;
-  }
-  
-  .notes {
-    font-size: 0.8rem;
-    color: #999;
-    font-style: italic;
-    margin: 0.25rem 0 0;
-  }
 }
-
-

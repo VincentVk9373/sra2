@@ -1323,7 +1323,6 @@ export class CharacterSheet extends ActorSheet {
     if (normalDiceResults) {
       resultsHtml += '<div class="dice-results">';
       resultsHtml += `<strong>${game.i18n!.localize('SRA2.SKILLS.NORMAL_DICE')}:</strong> ${normalDiceResults}`;
-      resultsHtml += `<span class="mini-success"> (${normalSuccesses} ${game.i18n!.localize('SRA2.SKILLS.SUCCESSES_SHORT')})</span>`;
       resultsHtml += '</div>';
     }
     
@@ -1331,7 +1330,6 @@ export class CharacterSheet extends ActorSheet {
     if (riskDiceResults) {
       resultsHtml += '<div class="dice-results risk">';
       resultsHtml += `<strong>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</strong> ${riskDiceResults}`;
-      resultsHtml += `<span class="mini-success"> (${riskSuccesses} ${game.i18n!.localize('SRA2.SKILLS.SUCCESSES_SHORT')})</span>`;
       resultsHtml += '</div>';
     }
     
@@ -1363,17 +1361,10 @@ export class CharacterSheet extends ActorSheet {
       
       if (baseVD >= 0) {
         const finalVD = totalSuccesses + baseVD;
-        resultsHtml += `<div class="weapon-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')} de l'arme:</strong> ${vdDisplay}`;
-        resultsHtml += '</div>';
         resultsHtml += `<div class="final-damage-value">`;
         resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')}:</strong> `;
         resultsHtml += `<span class="calculation">${totalSuccesses} succès + ${baseVD} VD = </span>`;
         resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
-        resultsHtml += '</div>';
-      } else if (weaponDamageValue === 'toxin') {
-        resultsHtml += `<div class="weapon-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')}:</strong> ${vdDisplay}`;
         resultsHtml += '</div>';
       }
     }
@@ -1398,12 +1389,15 @@ export class CharacterSheet extends ActorSheet {
       }
       
       resultsHtml += `<div class="critical-failures ${criticalClass}">`;
+      resultsHtml += `<div class="complication-header">`;
+      resultsHtml += `<div class="complication-icon">⚠</div>`;
+      resultsHtml += `<div class="complication-title">${criticalLabel}</div>`;
+      resultsHtml += `</div>`;
       
       if (riskReduction > 0) {
-        resultsHtml += `<span class="calculation">${rawCriticalFailures} - ${riskReduction} RR = ${criticalFailures}</span><br>`;
+        resultsHtml += `<div class="complication-calculation">Attaque: ${rawCriticalFailures} - ${riskReduction} RR = ${criticalFailures}</div>`;
       }
       
-      resultsHtml += `<strong>${criticalLabel}</strong>`;
       resultsHtml += '</div>';
     }
     
@@ -1900,6 +1894,22 @@ export class CharacterSheet extends ActorSheet {
     
     let resultsHtml = '<div class="sra2-combat-roll">';
     
+    // Determine outcome first
+    const attackSuccess = !defenseResult || defenseResult.totalSuccesses <= attackResult.totalSuccesses;
+    
+    // Display outcome header FIRST
+    if (attackSuccess) {
+      resultsHtml += `<div class="combat-outcome-header attack-success">`;
+      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
+      resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_SUCCESS')}</div>`;
+      resultsHtml += '</div>';
+    } else {
+      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
+      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
+      resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_FAILED')}</div>`;
+      resultsHtml += '</div>';
+    }
+    
     // Attack section
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
@@ -1917,101 +1927,31 @@ export class CharacterSheet extends ActorSheet {
     // Combat result
     resultsHtml += '<div class="combat-result">';
     
-    if (defenseResult && defenseResult.totalSuccesses > attackResult.totalSuccesses) {
+    if (!attackSuccess) {
       // Defense successful - ECHEC DE L'ATTAQUE
-      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_FAILED')}</div>`;
-      resultsHtml += '</div>';
       resultsHtml += `<div class="defense-success">`;
       resultsHtml += `<p>${game.i18n!.format('SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK', {
         defender: defenderName || '?',
-        defenseSuccesses: defenseResult.totalSuccesses,
+        defenseSuccesses: defenseResult!.totalSuccesses,
         attackSuccesses: attackResult.totalSuccesses
       })}</p>`;
       resultsHtml += '</div>';
     } else {
-      // Attack successful - SUCCES DE L'ATTAQUE
+      // Attack successful, calculate damage
       const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
       const netSuccesses = attackResult.totalSuccesses - defenseSuccesses;
       
-      resultsHtml += `<div class="combat-outcome-header attack-success">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_SUCCESS')}</div>`;
-      resultsHtml += '</div>';
-      
       if (baseVD >= 0) {
         const finalDamage = baseVD + netSuccesses;
-        resultsHtml += `<div class="weapon-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')} de l'arme:</strong> ${vdDisplay}`;
-        resultsHtml += '</div>';
         resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')}</div>`;
+        resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')} : ${finalDamage}</div>`;
         if (defenseResult) {
-          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackResult.totalSuccesses} succès attaque - ${defenseSuccesses} succès défense = </div>`;
+          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackResult.totalSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
         } else {
-          resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD = </div>`;
-        }
-        resultsHtml += `<div class="final-value vd-value">${finalDamage}</div>`;
-        resultsHtml += '</div>';
-      }
-    }
-    
-    // Display combined complications from both attack and defense
-    const allComplications = [];
-    
-    if (attackResult.criticalFailures > 0) {
-      allComplications.push({
-        source: game.i18n!.localize('SRA2.COMBAT.ATTACK'),
-        count: attackResult.criticalFailures,
-        raw: attackResult.rawCriticalFailures,
-        rr: attackResult.riskReduction
-      });
-    }
-    
-    if (defenseResult && defenseResult.criticalFailures > 0) {
-      allComplications.push({
-        source: game.i18n!.localize('SRA2.COMBAT.DEFENSE'),
-        count: defenseResult.criticalFailures,
-        raw: defenseResult.rawCriticalFailures,
-        rr: defenseResult.riskReduction
-      });
-    }
-    
-    if (allComplications.length > 0) {
-      const totalComplications = allComplications.reduce((sum, c) => sum + c.count, 0);
-      let complicationLabel = '';
-      let complicationClass = '';
-      
-      if (totalComplications >= 3) {
-        complicationLabel = game.i18n!.localize('SRA2.SKILLS.DISASTER');
-        complicationClass = 'disaster';
-      } else if (totalComplications === 2) {
-        complicationLabel = game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION');
-        complicationClass = 'critical-complication';
-      } else if (totalComplications === 1) {
-        complicationLabel = game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION');
-        complicationClass = 'minor-complication';
-      }
-      
-      resultsHtml += `<div class="combat-complications ${complicationClass}">`;
-      resultsHtml += `<div class="complication-header">`;
-      resultsHtml += `<div class="complication-icon"><i class="fas fa-exclamation-triangle"></i></div>`;
-      resultsHtml += `<div class="complication-title">${complicationLabel}</div>`;
-      resultsHtml += '</div>';
-      
-      allComplications.forEach((comp) => {
-        resultsHtml += `<div class="complication-detail">`;
-        resultsHtml += `<strong>${comp.source}:</strong> `;
-        if (comp.rr > 0) {
-          resultsHtml += `${comp.raw} - ${comp.rr} RR = ${comp.count}`;
-        } else {
-          resultsHtml += `${comp.count}`;
+          resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD</div>`;
         }
         resultsHtml += '</div>';
-      });
-      
-      resultsHtml += '</div>';
+      }
     }
     
     resultsHtml += '</div>';
@@ -2053,7 +1993,6 @@ export class CharacterSheet extends ActorSheet {
     if (rollResult.normalDiceResults) {
       html += '<div class="dice-results">';
       html += `<strong>${game.i18n!.localize('SRA2.SKILLS.NORMAL_DICE')}:</strong> ${rollResult.normalDiceResults}`;
-      html += `<span class="mini-success"> (${rollResult.normalSuccesses} ${game.i18n!.localize('SRA2.SKILLS.SUCCESSES_SHORT')})</span>`;
       html += '</div>';
     }
     
@@ -2061,7 +2000,6 @@ export class CharacterSheet extends ActorSheet {
     if (rollResult.riskDiceResults) {
       html += '<div class="dice-results risk">';
       html += `<strong>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</strong> ${rollResult.riskDiceResults}`;
-      html += `<span class="mini-success"> (${rollResult.riskSuccesses} ${game.i18n!.localize('SRA2.SKILLS.SUCCESSES_SHORT')})</span>`;
       html += '</div>';
     }
     
@@ -2069,6 +2007,38 @@ export class CharacterSheet extends ActorSheet {
     html += `<div class="successes ${rollResult.totalSuccesses > 0 ? 'has-success' : 'no-success'}">`;
     html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${rollResult.totalSuccesses}`;
     html += '</div>';
+    
+    // Critical failures
+    if (rollResult.rawCriticalFailures > 0 || rollResult.riskReduction > 0) {
+      let criticalLabel = '';
+      let criticalClass = '';
+      
+      if (rollResult.criticalFailures >= 3) {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.DISASTER');
+        criticalClass = 'disaster';
+      } else if (rollResult.criticalFailures === 2) {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION');
+        criticalClass = 'critical-complication';
+      } else if (rollResult.criticalFailures === 1) {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION');
+        criticalClass = 'minor-complication';
+      } else {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.NO_COMPLICATION');
+        criticalClass = 'reduced-to-zero';
+      }
+      
+      html += `<div class="critical-failures ${criticalClass}">`;
+      html += `<div class="complication-header">`;
+      html += `<div class="complication-icon">⚠</div>`;
+      html += `<div class="complication-title">${criticalLabel}</div>`;
+      html += `</div>`;
+      
+      if (rollResult.riskReduction > 0) {
+        html += `<div class="complication-calculation">Attaque: ${rollResult.rawCriticalFailures} - ${rollResult.riskReduction} RR = ${rollResult.criticalFailures}</div>`;
+      }
+      
+      html += '</div>';
+    }
     
     return html;
   }
@@ -2102,53 +2072,12 @@ export class CharacterSheet extends ActorSheet {
       
       if (baseVD >= 0) {
         const finalVD = rollResult.totalSuccesses + baseVD;
-        resultsHtml += `<div class="weapon-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')} de l'arme:</strong> ${vdDisplay}`;
-        resultsHtml += '</div>';
         resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')}</div>`;
-        resultsHtml += `<div class="calculation">${rollResult.totalSuccesses} succès + ${baseVD} VD = </div>`;
-        resultsHtml += `<div class="final-value vd-value">${finalVD}</div>`;
-        resultsHtml += '</div>';
-      } else if (weaponDamageValue === 'toxin') {
-        resultsHtml += `<div class="weapon-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')}:</strong> ${vdDisplay}`;
+        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')}:</strong> `;
+        resultsHtml += `<span class="calculation">${rollResult.totalSuccesses} succès + ${baseVD} VD = </span>`;
+        resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
         resultsHtml += '</div>';
       }
-    }
-    
-    // Display complications in a big, visible way
-    if (rollResult.rawCriticalFailures > 0 || rollResult.riskReduction > 0) {
-      let criticalLabel = '';
-      let criticalClass = '';
-      
-      if (rollResult.criticalFailures >= 3) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.DISASTER');
-        criticalClass = 'disaster';
-      } else if (rollResult.criticalFailures === 2) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION');
-        criticalClass = 'critical-complication';
-      } else if (rollResult.criticalFailures === 1) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION');
-        criticalClass = 'minor-complication';
-      } else {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.NO_COMPLICATION');
-        criticalClass = 'no-complication';
-      }
-      
-      resultsHtml += `<div class="skill-complications ${criticalClass}">`;
-      resultsHtml += `<div class="complication-header">`;
-      resultsHtml += `<div class="complication-icon"><i class="fas fa-exclamation-triangle"></i></div>`;
-      resultsHtml += `<div class="complication-title">${criticalLabel}</div>`;
-      resultsHtml += '</div>';
-      
-      if (rollResult.riskReduction > 0 && rollResult.criticalFailures > 0) {
-        resultsHtml += `<div class="complication-detail">${rollResult.rawCriticalFailures} - ${rollResult.riskReduction} RR = ${rollResult.criticalFailures}</div>`;
-      } else if (rollResult.riskReduction > 0) {
-        resultsHtml += `<div class="complication-detail">${rollResult.rawCriticalFailures} - ${rollResult.riskReduction} RR = 0 (bloqué)</div>`;
-      }
-      
-      resultsHtml += '</div>';
     }
     
     resultsHtml += '</div>';

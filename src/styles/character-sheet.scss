@@ -2429,3 +2429,171 @@
   }
 }
 
+/* Chat Message Styles for Weapons and Spells */
+.sra2-weapon-use {
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(200, 35, 51, 0.05));
+  border: 2px solid #dc3545;
+  border-radius: 8px;
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #dc3545;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    i {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .weapon-stats {
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid #dc3545;
+    
+    .stat-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      strong {
+        color: #dc3545;
+        min-width: 140px;
+      }
+    }
+  }
+  
+  .weapon-description {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(220, 53, 69, 0.3);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #ccc;
+  }
+}
+
+.sra2-spell-cast {
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(118, 75, 162, 0.15), rgba(102, 126, 234, 0.1));
+  border: 2px solid #764ba2;
+  border-radius: 8px;
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #764ba2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    i {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .spell-effects {
+    padding: 0.75rem;
+    background: rgba(118, 75, 162, 0.15);
+    border-radius: 4px;
+    border-left: 3px solid #764ba2;
+    margin-bottom: 1rem;
+    
+    strong {
+      color: #764ba2;
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      
+      li {
+        padding: 0.25rem 0;
+        font-size: 0.9rem;
+        color: #ccc;
+        
+        &:before {
+          content: "✦";
+          color: #764ba2;
+          margin-right: 0.5rem;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+  
+  .spell-narrative-effects {
+    padding: 0.75rem;
+    background: rgba(102, 126, 234, 0.15);
+    border-radius: 4px;
+    border-left: 3px solid #667eea;
+    margin-bottom: 1rem;
+    
+    strong {
+      color: #667eea;
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      
+      li {
+        padding: 0.35rem 0;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        .effect-value {
+          display: inline-block;
+          padding: 0.15rem 0.4rem;
+          border-radius: 3px;
+          font-weight: 700;
+          font-size: 0.85rem;
+          
+          &.positive {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+          }
+          
+          &.negative {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid #f44336;
+          }
+        }
+      }
+    }
+  }
+  
+  .spell-description {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(118, 75, 162, 0.3);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #ccc;
+  }
+}
+
