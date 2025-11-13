@@ -58,6 +58,7 @@
             "ATTACK_WITH_WEAPON": "Attack with this weapon",
             "CAST_SPELL": "Cast this spell",
             "ATTACK": "Attack",
+            "ROLL_WITH_DICE": "Roll dice to attack",
             "SECTION": {
                 "INFO": "Information",
                 "COMBAT": "Combat",
@@ -479,7 +480,14 @@
             },
             "SPELL": {
                 "SECTION_TITLE": "Spell Information",
-                "SECTION_HINT": "Spells use base feat properties (narrative effects, bonuses, etc.) without weapon characteristics."
+                "SECTION_HINT": "Spells use base feat properties (narrative effects, bonuses, etc.) without weapon characteristics.",
+                "ROLL": "Roll Dice",
+                "ROLL_TITLE": "Roll {name}",
+                "CLICK_TO_ROLL": "Click to cast this spell",
+                "TYPE": "Spell Type",
+                "TYPE_DIRECT": "Direct Spell",
+                "TYPE_INDIRECT": "Indirect Spell",
+                "TYPE_HINT": "Direct spells affect the target directly (mana), indirect spells go through physical effects (elemental)"
             }
         },
         "SKILLS": {

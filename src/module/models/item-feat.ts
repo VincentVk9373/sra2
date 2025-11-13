@@ -493,6 +493,16 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.FEATS.AWAKENED.SHAMANIC_MASK"
+      }),
+      // Spell type (direct or indirect)
+      spellType: new fields.StringField({
+        required: true,
+        initial: "direct",
+        choices: {
+          "direct": "SRA2.FEATS.SPELL.TYPE_DIRECT",
+          "indirect": "SRA2.FEATS.SPELL.TYPE_INDIRECT"
+        },
+        label: "SRA2.FEATS.SPELL.TYPE"
       })
     };
   }

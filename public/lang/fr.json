@@ -444,7 +444,11 @@
                 "SECTION_HINT": "Les sorts utilisent les propriétés de base des atouts (effets narratifs, bonus, etc.) sans les caractéristiques d'arme.",
                 "ROLL": "Lancer les dés",
                 "ROLL_TITLE": "Lancer {name}",
-                "CLICK_TO_ROLL": "Cliquer pour lancer ce sort"
+                "CLICK_TO_ROLL": "Cliquer pour lancer ce sort",
+                "TYPE": "Type de Sort",
+                "TYPE_DIRECT": "Sort Direct",
+                "TYPE_INDIRECT": "Sort Indirect",
+                "TYPE_HINT": "Les sorts directs affectent directement la cible (mana), les sorts indirects passent par des effets physiques (élémentaux)"
             }
         },
         "COMBAT": {

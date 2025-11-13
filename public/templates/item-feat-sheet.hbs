@@ -476,6 +476,15 @@
       <section class="content-section {{#if (eq activeSection 'spell')}}active{{/if}}" data-section-content="spell">
         <h2><i class="fas fa-hat-wizard"></i> {{localize "SRA2.FEATS.SPELL.SECTION_TITLE"}}</h2>
         <p class="notes">{{localize "SRA2.FEATS.SPELL.SECTION_HINT"}}</p>
+        
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.SPELL.TYPE"}}</label>
+          <select name="system.spellType">
+            <option value="direct" {{#if (eq system.spellType "direct")}}selected{{/if}}>{{localize "SRA2.FEATS.SPELL.TYPE_DIRECT"}}</option>
+            <option value="indirect" {{#if (eq system.spellType "indirect")}}selected{{/if}}>{{localize "SRA2.FEATS.SPELL.TYPE_INDIRECT"}}</option>
+          </select>
+          <p class="notes">{{localize "SRA2.FEATS.SPELL.TYPE_HINT"}}</p>
+        </div>
       </section>
       {{/if}}
 

@@ -15,19 +15,34 @@
       {{#if weapons}}
         <div class="weapons-list">
           <h3><i class="fas fa-sword"></i> {{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</h3>
+          <div class="skills-header">
+            <div class="skill-header-name">{{localize "SRA2.FEATS.NAME"}}</div>
+            <div class="skill-header-vd">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}</div>
+            <div class="skill-header-dice">{{localize "SRA2.NPC.DICE_POOL"}}</div>
+            <div class="skill-header-rr">{{localize "SRA2.NPC.RR"}}</div>
+            <div class="skill-header-threshold">{{localize "SRA2.NPC.THRESHOLD"}}</div>
+            <div class="skill-header-actions"></div>
+          </div>
           {{#each weapons}}
-          <div class="weapon-item" data-item-id="{{this._id}}">
-            <div class="weapon-header clickable" data-action="roll-npc-weapon" data-item-id="{{this._id}}" title="{{localize 'SRA2.NPC.ATTACK_WITH_WEAPON'}}">
-              <div class="weapon-name">
-                <img class="weapon-img" src="{{this.img}}" alt="{{this.name}}" />
-                <span class="name">{{this.name}}</span>
-              </div>
-              <div class="weapon-vd">
-                <span class="vd-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
-                <span class="vd-value">{{this.system.damageValue}}</span>
-              </div>
+          <div class="weapon-item npc-skill-item" data-item-id="{{this._id}}">
+            <div class="weapon-name">
+              <img class="weapon-img" src="{{this.img}}" alt="{{this.name}}" />
+              <span>{{this.name}}</span>
             </div>
-            <div class="weapon-controls">
+            <div class="weapon-vd">
+              <span class="vd-value">{{this.system.damageValue}}</span>
+            </div>
+            <div class="skill-dice-pool clickable" data-action="roll-npc-weapon-dice" data-item-id="{{this._id}}" data-weapon-vd="{{this.system.damageValue}}" title="{{localize 'SRA2.NPC.ROLL_WITH_DICE'}}">
+              <span class="dice-value">{{this.totalDicePool}}</span>
+              <i class="fas fa-dice-d6"></i>
+            </div>
+            <div class="skill-rr">
+              <span class="rr-value">{{this.totalRR}}</span>
+            </div>
+            <div class="skill-threshold clickable" data-action="attack-threshold-weapon" data-item-id="{{this._id}}" data-threshold="{{this.npcThreshold}}" data-item-name="{{this.name}}" data-weapon-vd="{{this.system.damageValue}}" title="{{localize 'SRA2.NPC.ATTACK_WITH_THRESHOLD'}}">
+              <span class="threshold-value">{{this.npcThreshold}}</span>
+            </div>
+            <div class="skill-controls">
               <a class="weapon-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
                 <i class="fas fa-edit"></i>
               </a>
@@ -43,19 +58,34 @@
       {{#if spells}}
         <div class="spells-list">
           <h3><i class="fas fa-magic"></i> {{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}</h3>
+          <div class="skills-header">
+            <div class="skill-header-name">{{localize "SRA2.FEATS.NAME"}}</div>
+            <div class="skill-header-vd">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}</div>
+            <div class="skill-header-dice">{{localize "SRA2.NPC.DICE_POOL"}}</div>
+            <div class="skill-header-rr">{{localize "SRA2.NPC.RR"}}</div>
+            <div class="skill-header-threshold">{{localize "SRA2.NPC.THRESHOLD"}}</div>
+            <div class="skill-header-actions"></div>
+          </div>
           {{#each spells}}
-          <div class="spell-item" data-item-id="{{this._id}}">
-            <div class="spell-header clickable" data-action="roll-npc-spell" data-item-id="{{this._id}}" title="{{localize 'SRA2.NPC.CAST_SPELL'}}">
-              <div class="spell-name">
-                <img class="spell-img" src="{{this.img}}" alt="{{this.name}}" />
-                <span class="name">{{this.name}}</span>
-              </div>
-              <div class="spell-vd">
-                <span class="vd-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
-                <span class="vd-value">{{this.system.damageValue}}</span>
-              </div>
+          <div class="spell-item npc-skill-item" data-item-id="{{this._id}}">
+            <div class="spell-name">
+              <img class="spell-img" src="{{this.img}}" alt="{{this.name}}" />
+              <span>{{this.name}}</span>
             </div>
-            <div class="spell-controls">
+            <div class="spell-vd">
+              <span class="vd-value">{{this.system.damageValue}}</span>
+            </div>
+            <div class="skill-dice-pool clickable" data-action="roll-npc-spell-dice" data-item-id="{{this._id}}" data-spell-vd="{{this.system.damageValue}}" title="{{localize 'SRA2.NPC.ROLL_WITH_DICE'}}">
+              <span class="dice-value">{{this.totalDicePool}}</span>
+              <i class="fas fa-dice-d6"></i>
+            </div>
+            <div class="skill-rr">
+              <span class="rr-value">{{this.totalRR}}</span>
+            </div>
+            <div class="skill-threshold clickable" data-action="attack-threshold-spell" data-item-id="{{this._id}}" data-threshold="{{this.npcThreshold}}" data-item-name="{{this.name}}" data-spell-vd="{{this.system.damageValue}}" title="{{localize 'SRA2.NPC.ATTACK_WITH_THRESHOLD'}}">
+              <span class="threshold-value">{{this.npcThreshold}}</span>
+            </div>
+            <div class="skill-controls">
               <a class="spell-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
                 <i class="fas fa-edit"></i>
               </a>
