@@ -43,17 +43,66 @@
     <section class="npc-section combat-section">
       <h2><i class="fas fa-shield-alt"></i> {{localize "SRA2.NPC.SECTION.COMBAT"}}</h2>
       
-      <div class="state-fields">
-        <div class="state-field">
-          <label>{{localize "SRA2.STATE.HEALTH"}}</label>
-          <input type="number" name="system.state.health" value="{{system.state.health}}" min="0" />
-          <span class="state-separator">/</span>
-          <input type="number" name="system.state.maxHealth" value="{{system.state.maxHealth}}" min="1" />
+      <div class="armor-level-field">
+        <label>{{localize "SRA2.ARMOR_THRESHOLDS.ARMOR_LEVEL"}}</label>
+        <input type="number" name="system.armorLevel" value="{{system.armorLevel}}" min="0" max="5" />
+        <span class="armor-cost">{{system.armorCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+      </div>
+
+      <div class="damage-tracking">
+        <label class="damage-label">{{localize "SRA2.DAMAGE.LABEL"}}</label>
+        <div class="damage-checkboxes">
+          <div class="damage-group light">
+            <span class="damage-type-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
+            {{#each system.damage.light}}
+              <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
+            {{/each}}
+          </div>
+          <div class="damage-group severe">
+            <span class="damage-type-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
+            {{#each system.damage.severe}}
+              <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+            {{/each}}
+          </div>
+          <div class="damage-group incapacitating">
+            <span class="damage-type-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
+            <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
+          </div>
         </div>
-        <div class="state-field">
-          <label>{{localize "SRA2.STATE.ARMOR"}}</label>
-          <input type="number" name="system.state.armor" value="{{system.state.armor}}" min="0" />
-        </div>
+      </div>
+      
+      <div class="thresholds-table">
+        <h3>{{localize "SRA2.ARMOR_THRESHOLDS.LABEL"}}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>{{localize "SRA2.ARMOR_THRESHOLDS.TYPE"}}</th>
+              <th>{{localize "SRA2.ARMOR_THRESHOLDS.LIGHT"}}</th>
+              <th>{{localize "SRA2.ARMOR_THRESHOLDS.MODERATE"}}</th>
+              <th>{{localize "SRA2.ARMOR_THRESHOLDS.SEVERE"}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{localize "SRA2.ARMOR_THRESHOLDS.WITHOUT_ARMOR"}}</td>
+              <td>{{system.damageThresholds.withoutArmor.light}}</td>
+              <td>{{system.damageThresholds.withoutArmor.moderate}}</td>
+              <td>{{system.damageThresholds.withoutArmor.severe}}</td>
+            </tr>
+            <tr>
+              <td>{{localize "SRA2.ARMOR_THRESHOLDS.WITH_ARMOR"}}</td>
+              <td>{{system.damageThresholds.withArmor.light}}</td>
+              <td>{{system.damageThresholds.withArmor.moderate}}</td>
+              <td>{{system.damageThresholds.withArmor.severe}}</td>
+            </tr>
+            <tr>
+              <td>{{localize "SRA2.ARMOR_THRESHOLDS.MENTAL"}}</td>
+              <td>{{system.damageThresholds.mental.light}}</td>
+              <td>{{system.damageThresholds.mental.moderate}}</td>
+              <td>{{system.damageThresholds.mental.severe}}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
