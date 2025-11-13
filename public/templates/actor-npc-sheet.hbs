@@ -1,0 +1,209 @@
+<form class="{{cssClass}} sra2-npc-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="header-fields">
+      <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'SRA2.NPC.NAME'}}"/></h1>
+      <div class="npc-difficulty">
+        <span class="difficulty-label">{{localize "SRA2.NPC.DIFFICULTY"}}: </span>
+        <input type="number" name="system.difficulty" value="{{system.difficulty}}" min="1" max="6" />
+      </div>
+    </div>
+  </header>
+
+  <div class="sheet-content">
+    <!-- Attributs Section -->
+    <section class="npc-section attributes-section">
+      <h2><i class="fas fa-chart-bar"></i> {{localize "SRA2.ATTRIBUTES.LABEL"}}</h2>
+      
+      <div class="attributes-grid">
+        <div class="attribute-item">
+          <label>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</label>
+          <input type="number" name="system.attributes.strength" value="{{system.attributes.strength}}" min="0" />
+        </div>
+        <div class="attribute-item">
+          <label>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</label>
+          <input type="number" name="system.attributes.agility" value="{{system.attributes.agility}}" min="0" />
+        </div>
+        <div class="attribute-item">
+          <label>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</label>
+          <input type="number" name="system.attributes.willpower" value="{{system.attributes.willpower}}" min="0" />
+        </div>
+        <div class="attribute-item">
+          <label>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</label>
+          <input type="number" name="system.attributes.logic" value="{{system.attributes.logic}}" min="0" />
+        </div>
+        <div class="attribute-item">
+          <label>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</label>
+          <input type="number" name="system.attributes.charisma" value="{{system.attributes.charisma}}" min="0" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Combat Section -->
+    <section class="npc-section combat-section">
+      <h2><i class="fas fa-shield-alt"></i> {{localize "SRA2.NPC.SECTION.COMBAT"}}</h2>
+      
+      <div class="state-fields">
+        <div class="state-field">
+          <label>{{localize "SRA2.STATE.HEALTH"}}</label>
+          <input type="number" name="system.state.health" value="{{system.state.health}}" min="0" />
+          <span class="state-separator">/</span>
+          <input type="number" name="system.state.maxHealth" value="{{system.state.maxHealth}}" min="1" />
+        </div>
+        <div class="state-field">
+          <label>{{localize "SRA2.STATE.ARMOR"}}</label>
+          <input type="number" name="system.state.armor" value="{{system.state.armor}}" min="0" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Compétences Section -->
+    <section class="npc-section skills-section">
+      <h2><i class="fas fa-book"></i> {{localize "SRA2.NPC.SECTION.SKILLS"}}</h2>
+      
+      <div class="npc-skills-info">
+        <p class="info-text">{{localize "SRA2.NPC.SKILLS_INFO"}}</p>
+        <p class="formula-text">{{localize "SRA2.NPC.THRESHOLD_FORMULA"}}: <strong>{{localize "SRA2.NPC.FORMULA"}}</strong></p>
+      </div>
+
+      <div class="skills-list">
+        <div class="skills-controls">
+          <button type="button" class="add-world-skill-button" data-action="add-world-skill" title="{{localize 'SRA2.SKILLS.ADD_SKILL'}}">
+            <i class="fas fa-search"></i> {{localize "SRA2.SKILLS.ADD_SKILL"}}
+          </button>
+        </div>
+
+        {{#if skills}}
+          <div class="skills-header">
+            <div class="skill-header-name">{{localize "SRA2.SKILLS.NAME"}}</div>
+            <div class="skill-header-dice">{{localize "SRA2.NPC.DICE_POOL"}}</div>
+            <div class="skill-header-rr">{{localize "SRA2.NPC.RR"}}</div>
+            <div class="skill-header-threshold">{{localize "SRA2.NPC.THRESHOLD"}}</div>
+            <div class="skill-header-actions"></div>
+          </div>
+
+          {{#each skills}}
+          <div class="skill-item npc-skill-item" data-item-id="{{this._id}}">
+            <div class="skill-name">
+              <img class="skill-img" src="{{this.img}}" alt="{{this.name}}" />
+              <span>{{this.name}}</span>
+              {{#if this.system.linkedAttribute}}
+                <span class="skill-attribute">({{localize (concat "SRA2.ATTRIBUTES." (uppercase this.system.linkedAttribute))}})</span>
+              {{/if}}
+            </div>
+            <div class="skill-dice-pool">
+              <span class="dice-value">{{this.totalDicePool}}</span>
+              <i class="fas fa-dice-d6"></i>
+            </div>
+            <div class="skill-rr">
+              <span class="rr-value">{{this.totalRR}}</span>
+            </div>
+            <div class="skill-threshold">
+              <span class="threshold-value">{{this.npcThreshold}}</span>
+            </div>
+            <div class="skill-controls">
+              <a class="skill-edit" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                <i class="fas fa-edit"></i>
+              </a>
+              <a class="skill-delete" data-action="delete-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.DELETE'}}">
+                <i class="fas fa-trash"></i>
+              </a>
+            </div>
+          </div>
+
+          {{#if this.specializations}}
+            {{#each this.specializations}}
+            <div class="specialization-item npc-specialization-item" data-item-id="{{this._id}}">
+              <div class="specialization-name">
+                <i class="fas fa-caret-right"></i>
+                <span>{{this.name}}</span>
+              </div>
+              <div class="skill-dice-pool">
+                <span class="dice-value">{{this.totalDicePool}}</span>
+                <i class="fas fa-dice-d6"></i>
+              </div>
+              <div class="skill-rr">
+                <span class="rr-value">{{this.totalRR}}</span>
+              </div>
+              <div class="skill-threshold">
+                <span class="threshold-value">{{this.npcThreshold}}</span>
+              </div>
+              <div class="skill-controls">
+                <a class="specialization-edit" data-action="edit-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.EDIT'}}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a class="specialization-delete" data-action="delete-specialization" data-item-id="{{this._id}}" title="{{localize 'SRA2.SPECIALIZATIONS.DELETE'}}">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            {{/each}}
+          {{/if}}
+          {{/each}}
+        {{else}}
+          <div class="empty-skills">
+            <p>{{localize "SRA2.SKILLS.DRAG_DROP"}}</p>
+          </div>
+        {{/if}}
+      </div>
+    </section>
+
+    <!-- Atouts Section -->
+    <section class="npc-section feats-section">
+      <h2><i class="fas fa-star"></i> {{localize "SRA2.NPC.SECTION.FEATS"}}</h2>
+      
+      <div class="feats-controls">
+        <button type="button" class="add-world-feat-button" data-action="add-world-feat" title="{{localize 'SRA2.FEATS.ADD_FEAT'}}">
+          <i class="fas fa-search"></i> {{localize "SRA2.FEATS.ADD_FEAT"}}
+        </button>
+      </div>
+
+      {{#if feats}}
+        <div class="feats-list">
+          {{#each feats}}
+          <div class="feat-item npc-feat-item {{#if system.active}}active{{/if}}" data-item-id="{{this._id}}">
+            <div class="feat-header">
+              <img class="feat-img" src="{{this.img}}" alt="{{this.name}}" />
+              <div class="feat-info">
+                <h4 class="feat-name">{{this.name}}</h4>
+                <div class="feat-meta">
+                  <span class="feat-type">
+                    {{#if (eq system.featType "trait")}}{{localize "SRA2.FEATS.FEAT_TYPE.TRAIT"}}
+                    {{else if (eq system.featType "contact")}}{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}
+                    {{else if (eq system.featType "awakened")}}{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}
+                    {{else if (eq system.featType "equipment")}}{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}
+                    {{else if (eq system.featType "cyberware")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}
+                    {{else if (eq system.featType "weapon")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}
+                    {{else if (eq system.featType "spell")}}{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}
+                    {{/if}}
+                  </span>
+                  {{#if (eq system.featType "weapon")}}
+                    {{#if this.system.weaponType}}
+                    <span class="weapon-stats">
+                      <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+                      <span class="stat-value">{{this.finalDamageValue}}</span>
+                    </span>
+                    {{/if}}
+                  {{/if}}
+                </div>
+              </div>
+            </div>
+            <div class="feat-controls">
+              <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                <i class="fas fa-edit"></i>
+              </a>
+              <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                <i class="fas fa-trash"></i>
+              </a>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <div class="empty-feats">
+          <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
+        </div>
+      {{/if}}
+    </section>
+  </div>
+</form>

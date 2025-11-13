@@ -1,0 +1,633 @@
+/* NPC Sheet Styles */
+
+.sra2-npc-sheet {
+  .sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom: 3px solid #5a67d8;
+    
+    .profile-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      border: 3px solid white;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.2s;
+      
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+    
+    .header-fields {
+      flex: 1;
+      
+      .charname {
+        margin: 0 0 0.5rem 0;
+        
+        input {
+          font-size: 1.8rem;
+          font-weight: bold;
+          color: white;
+          background: rgba(255, 255, 255, 0.1);
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          padding: 0.5rem;
+          border-radius: 6px;
+          width: 100%;
+          
+          &:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+          }
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+          }
+        }
+      }
+    }
+  }
+
+  .npc-difficulty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    .difficulty-label {
+      font-weight: bold;
+      font-size: 1rem;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    input[type="number"] {
+      width: 70px;
+      padding: 0.4rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid white;
+      border-radius: 6px;
+      background: white;
+      color: #667eea;
+    }
+  }
+
+  .sheet-content {
+    padding: 1rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+  }
+
+  .npc-section {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    h2 {
+      margin: 0 0 1.5rem 0;
+      padding-bottom: 0.75rem;
+      border-bottom: 3px solid #667eea;
+      color: #2c3e50;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      i {
+        color: #667eea;
+      }
+    }
+  }
+
+  .attributes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    
+    .attribute-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      label {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      input[type="number"] {
+        padding: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        background: #f8f9fa;
+        color: #667eea;
+        transition: all 0.2s;
+        
+        &:focus {
+          border-color: #667eea;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      }
+    }
+  }
+
+  .state-fields {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    
+    .state-field {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      label {
+        font-weight: 600;
+        color: #555;
+        font-size: 1rem;
+      }
+      
+      input[type="number"] {
+        width: 70px;
+        padding: 0.5rem;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        background: #f8f9fa;
+        
+        &:focus {
+          border-color: #667eea;
+          background: white;
+        }
+      }
+      
+      .state-separator {
+        font-weight: bold;
+        color: #999;
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .npc-skills-info {
+    background: #f0f4f8;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #3498db;
+    
+    .info-text {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.95rem;
+      color: #444;
+    }
+    
+    .formula-text {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #666;
+      
+      strong {
+        color: #2c3e50;
+        font-family: 'Courier New', monospace;
+        background: #e8f0f7;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .skills-header {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px 100px 80px;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    background: #34495e;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px 6px 0 0;
+    margin-top: 1rem;
+    
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .skill-header-name {
+      justify-content: flex-start;
+      padding-left: 0.5rem;
+    }
+  }
+
+  .npc-skill-item {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px 100px 80px;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    border: 1px solid #ddd;
+    border-top: none;
+    background: white;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background: #f8f9fa;
+    }
+    
+    &:last-child {
+      border-radius: 0 0 6px 6px;
+    }
+    
+    .skill-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      
+      .skill-img {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        object-fit: cover;
+        border: 1px solid #ccc;
+      }
+      
+      .skill-attribute {
+        font-size: 0.85rem;
+        color: #666;
+        font-weight: normal;
+      }
+    }
+    
+    .skill-dice-pool,
+    .skill-rr,
+    .skill-threshold {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-size: 0.95rem;
+      
+      .dice-value,
+      .rr-value,
+      .threshold-value {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      
+      i {
+        color: #666;
+      }
+    }
+    
+    .skill-threshold {
+      .threshold-value {
+        color: #27ae60;
+        font-size: 1.3rem;
+      }
+    }
+    
+    .skill-controls {
+      display: flex;
+      gap: 0.25rem;
+      justify-content: center;
+      
+      a {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #e0e0e0;
+        }
+        
+        i {
+          font-size: 0.9rem;
+          color: #555;
+        }
+        
+        &.skill-delete:hover i {
+          color: #e74c3c;
+        }
+      }
+    }
+  }
+
+  .npc-specialization-item {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px 100px 80px;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    border: 1px solid #ddd;
+    border-top: none;
+    background: #f8f9fa;
+    font-size: 0.9rem;
+    
+    &:hover {
+      background: #ecf0f1;
+    }
+    
+    .specialization-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-style: italic;
+      color: #555;
+      
+      i {
+        color: #3498db;
+        font-size: 0.8rem;
+      }
+    }
+    
+    .skill-dice-pool,
+    .skill-rr,
+    .skill-threshold {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-size: 0.9rem;
+      
+      .dice-value,
+      .rr-value,
+      .threshold-value {
+        font-weight: bold;
+      }
+    }
+    
+    .skill-threshold {
+      .threshold-value {
+        color: #27ae60;
+        font-size: 1.2rem;
+      }
+    }
+    
+    .skill-controls {
+      display: flex;
+      gap: 0.25rem;
+      justify-content: center;
+      
+      a {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #d0d0d0;
+        }
+        
+        i {
+          font-size: 0.85rem;
+          color: #555;
+        }
+        
+        &.specialization-delete:hover i {
+          color: #e74c3c;
+        }
+      }
+    }
+  }
+
+  .skills-controls {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .add-world-skill-button,
+  .add-world-feat-button {
+    padding: 0.5rem 1rem;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      background: #2980b9;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    }
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
+  .state-section {
+    margin: 1rem 0;
+    
+    h3 {
+      margin-bottom: 0.75rem;
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+    
+    .state-fields {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .state-field {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      label {
+        font-weight: 600;
+        color: #555;
+      }
+      
+      input[type="number"] {
+        width: 60px;
+        padding: 0.4rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+      }
+      
+      .state-separator {
+        font-weight: bold;
+        color: #999;
+      }
+    }
+  }
+
+  .feats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .feats-controls {
+    margin-bottom: 1rem;
+  }
+
+  .empty-feats {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    margin-top: 1rem;
+    
+    p {
+      margin: 0;
+      font-style: italic;
+    }
+  }
+
+  .npc-feat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: #f8f9fa;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    &.active {
+      border-left: 4px solid #27ae60;
+    }
+    
+    .feat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      
+      .feat-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+        border: 1px solid #ccc;
+      }
+      
+      .feat-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        
+        .feat-name {
+          font-weight: 600;
+          color: #2c3e50;
+          margin: 0 0 0.25rem 0;
+          font-size: 1rem;
+        }
+        
+        .feat-meta {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+          
+          .feat-type {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            font-style: italic;
+          }
+          
+          .weapon-stats {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            
+            .stat-label {
+              font-weight: 500;
+              color: #666;
+            }
+            
+            .stat-value {
+              font-weight: bold;
+              color: #e74c3c;
+              font-size: 1rem;
+            }
+          }
+        }
+      }
+    }
+    
+    .feat-controls {
+      display: flex;
+      gap: 0.5rem;
+      
+      a {
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #e0e0e0;
+        }
+        
+        i {
+          font-size: 0.95rem;
+          color: #555;
+        }
+        
+        &.feat-delete:hover i {
+          color: #e74c3c;
+        }
+      }
+    }
+  }
+
+  .empty-skills {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    margin-top: 1rem;
+    
+    p {
+      margin: 0;
+      font-style: italic;
+    }
+  }
+}
+
