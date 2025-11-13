@@ -228,6 +228,7 @@
                 "CYBERWARE": "Cyberware/Bioware",
                 "ADEPT_POWER": "Adept Power",
                 "SPELL": "Spell",
+                "VEHICLE": "Vehicle/Drone",
                 "LIGHT_WOUNDS": "Light wounds",
                 "SEVERE_WOUNDS": "Severe wounds",
                 "PHYSICAL_THRESHOLD": "Physical threshold",

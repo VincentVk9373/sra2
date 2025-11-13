@@ -577,6 +577,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPELL', value: 1 });
     }
     
+    // Vehicle/Drone: 1 level
+    if (featType === 'vehicle') {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.VEHICLE', value: 1 });
+    }
+    
     // Light wounds: +3 per wound
     if (bonusLightDamage > 0) {
       const value = bonusLightDamage * 3;

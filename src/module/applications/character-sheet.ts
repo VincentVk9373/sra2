@@ -1336,9 +1336,8 @@ export class CharacterSheet extends ActorSheet {
     // Total successes
     resultsHtml += `<div class="successes ${totalSuccesses > 0 ? 'has-success' : 'no-success'}">`;
     resultsHtml += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${totalSuccesses}`;
-    resultsHtml += '</div>';
     
-    // Weapon Damage Value (VD final)
+    // Weapon Damage Value (VD) displayed next to successes
     if (weaponDamageValue && weaponDamageValue !== '0') {
       const strength = (this.actor.system as any).attributes?.strength || 0;
       let baseVD = 0;
@@ -1361,13 +1360,16 @@ export class CharacterSheet extends ActorSheet {
       
       if (baseVD >= 0) {
         const finalVD = totalSuccesses + baseVD;
-        resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')}:</strong> `;
-        resultsHtml += `<span class="calculation">${totalSuccesses} succès + ${baseVD} VD = </span>`;
-        resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
-        resultsHtml += '</div>';
+        resultsHtml += ` | `;
+        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')}:</strong> `;
+        resultsHtml += `<span class="final-damage-value">`;
+        resultsHtml += `<span class="calculation">${totalSuccesses} + ${baseVD} = </span>`;
+        resultsHtml += `<span class="final-value">${finalVD}</span>`;
+        resultsHtml += `</span>`;
       }
     }
+    
+    resultsHtml += '</div>';
     
     // Critical failures with severity levels
     if (rawCriticalFailures > 0 || riskReduction > 0) {
@@ -1518,7 +1520,7 @@ export class CharacterSheet extends ActorSheet {
             if (!selectedValue || selectedValue === '') {
               ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED'));
               // No defense, full damage
-              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name);
+              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor);
               return;
             }
             
@@ -1535,7 +1537,7 @@ export class CharacterSheet extends ActorSheet {
           label: game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE'),
           callback: async () => {
             // No defense, full damage
-            await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name);
+            await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor);
           }
         }
       },
@@ -1571,7 +1573,7 @@ export class CharacterSheet extends ActorSheet {
     if (basePool <= 0) {
       ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.NO_DICE'));
       // No defense dice, full damage
-      await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name);
+      await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor);
       return;
     }
     
@@ -1747,7 +1749,7 @@ export class CharacterSheet extends ActorSheet {
             defenseResult.skillName = defenseName;
             
             // Display combined result
-            await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name);
+            await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor);
           }
         },
         cancel: {
@@ -1872,7 +1874,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Display attack result with optional defense
    */
-  private async _displayAttackResult(attackName: string, attackResult: any, defenseResult: any | null, weaponDamageValue: string, defenderName?: string): Promise<void> {
+  private async _displayAttackResult(attackName: string, attackResult: any, defenseResult: any | null, weaponDamageValue: string, defenderName?: string, defenderActor?: any): Promise<void> {
     const strength = (this.actor.system as any).attributes?.strength || 0;
     let baseVD = 0;
     let vdDisplay = weaponDamageValue;
@@ -1913,7 +1915,7 @@ export class CharacterSheet extends ActorSheet {
     // Attack section
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
-    resultsHtml += this._buildDiceResultsHtml(attackResult);
+    resultsHtml += this._buildDiceResultsHtml(attackResult, weaponDamageValue);
     resultsHtml += '</div>';
     
     // Defense section
@@ -1950,6 +1952,14 @@ export class CharacterSheet extends ActorSheet {
         } else {
           resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD</div>`;
         }
+        
+        // Add button to apply damage if we have a defender
+        if (defenderActor && defenderName) {
+          resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${finalDamage}" data-defender-name="${defenderName}" title="${game.i18n!.format('SRA2.COMBAT.APPLY_DAMAGE_TITLE', {damage: finalDamage, defender: defenderName})}">`;
+          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n!.localize('SRA2.COMBAT.APPLY_DAMAGE')}`;
+          resultsHtml += `</button>`;
+        }
+        
         resultsHtml += '</div>';
       }
     }
@@ -1969,9 +1979,119 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
+   * Apply damage to a defender
+   */
+  static async applyDamage(defenderId: string, damageValue: number, defenderName: string): Promise<void> {
+    const defender = game.actors?.get(defenderId);
+    
+    if (!defender) {
+      ui.notifications?.error(`Cannot find defender: ${defenderName}`);
+      return;
+    }
+    
+    const defenderSystem = defender.system as any;
+    const damageThresholds = defenderSystem.damageThresholds?.withArmor || {
+      light: 1,
+      moderate: 4,
+      severe: 7
+    };
+    
+    // Deep copy of damage object with arrays
+    let damage = {
+      light: [...(defenderSystem.damage?.light || [])],
+      severe: [...(defenderSystem.damage?.severe || [])],
+      incapacitating: defenderSystem.damage?.incapacitating || false
+    };
+    let damageType = '';
+    let overflow = false;
+    
+    // Determine damage type based on thresholds
+    if (damageValue >= damageThresholds.severe) {
+      // Incapacitating wound
+      damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
+      damage.incapacitating = true;
+    } else if (damageValue >= damageThresholds.moderate) {
+      // Severe wound
+      damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
+      
+      // Find first empty severe box
+      let applied = false;
+      for (let i = 0; i < damage.severe.length; i++) {
+        if (!damage.severe[i]) {
+          damage.severe[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      
+      // If no space in severe, overflow to incapacitating
+      if (!applied) {
+        ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
+        damage.incapacitating = true;
+        overflow = true;
+      }
+    } else if (damageValue >= damageThresholds.light) {
+      // Light wound
+      damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
+      
+      // Find first empty light box
+      let applied = false;
+      for (let i = 0; i < damage.light.length; i++) {
+        if (!damage.light[i]) {
+          damage.light[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      
+      // If no space in light, overflow to severe
+      if (!applied) {
+        ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT'));
+        
+        // Try to apply to severe
+        let severeApplied = false;
+        for (let i = 0; i < damage.severe.length; i++) {
+          if (!damage.severe[i]) {
+            damage.severe[i] = true;
+            severeApplied = true;
+            break;
+          }
+        }
+        
+        // If no space in severe either, overflow to incapacitating
+        if (!severeApplied) {
+          ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
+          damage.incapacitating = true;
+        }
+        overflow = true;
+      }
+    } else {
+      // Damage below light threshold, no wound
+      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
+        damage: `${damageValue} (en dessous du seuil)`,
+        target: defenderName 
+      }));
+      return;
+    }
+    
+    // Update the actor's damage
+    await defender.update({ 'system.damage': damage });
+    
+    // Check if now incapacitated
+    if (damage.incapacitating === true) {
+      ui.notifications?.error(game.i18n!.format('SRA2.COMBAT.NOW_INCAPACITATED', { target: defenderName }));
+    } else {
+      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
+        damage: overflow ? `${damageType} (débordement)` : damageType,
+        target: defenderName 
+      }));
+    }
+  }
+
+  /**
    * Build dice results HTML
    */
-  private _buildDiceResultsHtml(rollResult: any): string {
+  private _buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string): string {
     let html = '';
     
     const totalPool = rollResult.dicePool + rollResult.riskDice;
@@ -2003,9 +2123,42 @@ export class CharacterSheet extends ActorSheet {
       html += '</div>';
     }
     
-    // Total successes
+    // Total successes with weapon damage value next to it
     html += `<div class="successes ${rollResult.totalSuccesses > 0 ? 'has-success' : 'no-success'}">`;
     html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${rollResult.totalSuccesses}`;
+    
+    // Weapon Damage Value (VD) displayed next to successes
+    if (weaponDamageValue && weaponDamageValue !== '0') {
+      const strength = (this.actor.system as any).attributes?.strength || 0;
+      let baseVD = 0;
+      let vdDisplay = weaponDamageValue;
+      
+      // Parse the damage value
+      if (weaponDamageValue === 'FOR') {
+        baseVD = strength;
+        vdDisplay = `FOR (${strength})`;
+      } else if (weaponDamageValue.startsWith('FOR+')) {
+        const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+        baseVD = strength + modifier;
+        vdDisplay = `FOR+${modifier} (${baseVD})`;
+      } else if (weaponDamageValue === 'toxin') {
+        vdDisplay = 'selon toxine';
+        baseVD = -1; // Special case, don't calculate final VD
+      } else {
+        baseVD = parseInt(weaponDamageValue) || 0;
+      }
+      
+      if (baseVD >= 0) {
+        const finalVD = rollResult.totalSuccesses + baseVD;
+        html += ` | `;
+        html += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')}:</strong> `;
+        html += `<span class="final-damage-value">`;
+        html += `<span class="calculation">${rollResult.totalSuccesses} + ${baseVD} = </span>`;
+        html += `<span class="final-value">${finalVD}</span>`;
+        html += `</span>`;
+      }
+    }
+    
     html += '</div>';
     
     // Critical failures
@@ -2048,38 +2201,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _displayRollResult(skillName: string, rollResult: any, weaponDamageValue?: string): Promise<void> {
     let resultsHtml = '<div class="sra2-skill-roll">';
-    resultsHtml += this._buildDiceResultsHtml(rollResult);
-    
-    // Weapon Damage Value (VD final)
-    if (weaponDamageValue && weaponDamageValue !== '0') {
-      const strength = (this.actor.system as any).attributes?.strength || 0;
-      let baseVD = 0;
-      let vdDisplay = weaponDamageValue;
-      
-      if (weaponDamageValue === 'FOR') {
-        baseVD = strength;
-        vdDisplay = `FOR (${strength})`;
-      } else if (weaponDamageValue.startsWith('FOR+')) {
-        const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
-        baseVD = strength + modifier;
-        vdDisplay = `FOR+${modifier} (${baseVD})`;
-      } else if (weaponDamageValue === 'toxin') {
-        vdDisplay = 'selon toxine';
-        baseVD = -1;
-      } else {
-        baseVD = parseInt(weaponDamageValue) || 0;
-      }
-      
-      if (baseVD >= 0) {
-        const finalVD = rollResult.totalSuccesses + baseVD;
-        resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')}:</strong> `;
-        resultsHtml += `<span class="calculation">${rollResult.totalSuccesses} succès + ${baseVD} VD = </span>`;
-        resultsHtml += `<span class="final-value vd-value">${finalVD}</span>`;
-        resultsHtml += '</div>';
-      }
-    }
-    
+    resultsHtml += this._buildDiceResultsHtml(rollResult, weaponDamageValue);
     resultsHtml += '</div>';
     
     const messageData = {

@@ -237,6 +237,7 @@
                 "CYBERWARE": "Cyberware/Bioware",
                 "ADEPT_POWER": "Pouvoir d'adepte",
                 "SPELL": "Sort",
+                "VEHICLE": "Véhicule/Drone",
                 "LIGHT_WOUNDS": "Blessures légères",
                 "SEVERE_WOUNDS": "Blessures graves",
                 "PHYSICAL_THRESHOLD": "Seuil physique",
@@ -435,7 +436,17 @@
             "ATTACK_BLOCKED": "Attaque bloquée !",
             "ATTACK_SUCCESS": "ATTAQUE RÉUSSIE",
             "ATTACK_FAILED": "ATTAQUE RATÉE",
-            "DEFENSE_BLOCKS_ATTACK": "{defender} bloque l'attaque ! ({defenseSuccesses} succès défense > {attackSuccesses} succès attaque)"
+            "DEFENSE_BLOCKS_ATTACK": "{defender} bloque l'attaque ! ({defenseSuccesses} succès défense > {attackSuccesses} succès attaque)",
+            "APPLY_DAMAGE": "Appliquer les dégâts",
+            "APPLY_DAMAGE_TITLE": "Appliquer {damage} de dégâts à {defender}",
+            "DAMAGE_APPLIED": "{damage} dégâts appliqués à {target}",
+            "DAMAGE_LIGHT": "Blessure légère",
+            "DAMAGE_SEVERE": "Blessure grave",
+            "DAMAGE_INCAPACITATING": "Blessure incapacitante",
+            "DAMAGE_OVERFLOW_LIGHT": "Blessures légères pleines, appliqué en grave",
+            "DAMAGE_OVERFLOW_SEVERE": "Blessures graves pleines, appliqué en incapacitant",
+            "ALREADY_INCAPACITATED": "{target} est déjà incapacité",
+            "NOW_INCAPACITATED": "{target} est maintenant INCAPACITÉ !"
         },
         "SKILLS": {
             "LABEL": "Compétences",

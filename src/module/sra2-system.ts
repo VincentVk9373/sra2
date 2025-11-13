@@ -131,6 +131,19 @@ export class SRA2System {
       return a >= b;
     });
     
+    // Register chat message hook for apply damage buttons
+    Hooks.on('renderChatMessage', (message: any, html: any) => {
+      html.find('.apply-damage-btn').on('click', async (event: any) => {
+        event.preventDefault();
+        const button = $(event.currentTarget);
+        const defenderId = button.data('defender-id');
+        const damage = parseInt(button.data('damage'));
+        const defenderName = button.data('defender-name');
+        
+        await applications.CharacterSheet.applyDamage(defenderId, damage, defenderName);
+      });
+    });
+    
     Hooks.once("ready", () => this.onReady());
   }
 
