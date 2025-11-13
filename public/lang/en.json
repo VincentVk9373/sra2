@@ -49,7 +49,12 @@
             "SKILLS_INFO": "NPCs don't roll dice. They have predefined result thresholds.",
             "THRESHOLD_FORMULA": "Threshold Formula",
             "FORMULA": "floor(Dice / 3) + RR + 1",
-            "OTHER_FEATS": "Other Feats"
+            "OTHER_FEATS": "Other Feats",
+            "ATTACK_WITH_THRESHOLD": "Attack with this threshold",
+            "NO_TARGET_SELECTED": "No target selected. Please target a token before attacking.",
+            "ATTACK_AGAINST": "Attack against",
+            "ATTACK_FLAVOR": "{npcName} attacks {targetName} with {skillName}",
+            "DEFENSE_ROLL_REQUIRED": "Target must make a defense roll"
         },
         "CONFIRM_DELETE": "Are you sure you want to delete {name}?",
         "ATTRIBUTES": {

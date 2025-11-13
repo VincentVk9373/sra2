@@ -138,7 +138,7 @@
             <div class="skill-rr">
               <span class="rr-value">{{this.totalRR}}</span>
             </div>
-            <div class="skill-threshold">
+            <div class="skill-threshold clickable" data-action="attack-threshold" data-item-id="{{this._id}}" data-threshold="{{this.npcThreshold}}" data-item-name="{{this.name}}" data-is-specialization="false" title="{{localize 'SRA2.NPC.ATTACK_WITH_THRESHOLD'}}">
               <span class="threshold-value">{{this.npcThreshold}}</span>
             </div>
             <div class="skill-controls">
@@ -165,7 +165,7 @@
               <div class="skill-rr">
                 <span class="rr-value">{{this.totalRR}}</span>
               </div>
-              <div class="skill-threshold">
+              <div class="skill-threshold clickable" data-action="attack-threshold" data-item-id="{{this._id}}" data-threshold="{{this.npcThreshold}}" data-item-name="{{this.name}}" data-is-specialization="true" title="{{localize 'SRA2.NPC.ATTACK_WITH_THRESHOLD'}}">
                 <span class="threshold-value">{{this.npcThreshold}}</span>
               </div>
               <div class="skill-controls">

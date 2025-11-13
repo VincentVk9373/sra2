@@ -49,7 +49,12 @@
             "SKILLS_INFO": "Les PNJ ne lancent pas de dés. Ils ont des seuils de résultat prédéfinis.",
             "THRESHOLD_FORMULA": "Formule du seuil",
             "FORMULA": "floor(Dés / 3) + RR + 1",
-            "OTHER_FEATS": "Autres Atouts"
+            "OTHER_FEATS": "Autres Atouts",
+            "ATTACK_WITH_THRESHOLD": "Attaquer avec ce seuil",
+            "NO_TARGET_SELECTED": "Aucune cible sélectionnée. Veuillez cibler un token avant d'attaquer.",
+            "ATTACK_AGAINST": "Attaque contre",
+            "ATTACK_FLAVOR": "{npcName} attaque {targetName} avec {skillName}",
+            "DEFENSE_ROLL_REQUIRED": "La cible doit effectuer un jet de défense"
         },
         "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer {name} ?",
         "ATTRIBUTES": {
