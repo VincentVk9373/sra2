@@ -28,7 +28,23 @@ export class NpcSheet extends ActorSheet {
 
     // Get feats
     const allFeats = this.actor.items.filter((item: any) => item.type === 'feat');
-    context.feats = allFeats;
+    
+    // Separate weapons, spells, and other feats
+    const weapons = allFeats.filter((feat: any) => 
+      feat.system.featType === 'weapon' || feat.system.featType === 'weapons-spells'
+    );
+    const spells = allFeats.filter((feat: any) => 
+      feat.system.featType === 'spell'
+    );
+    const otherFeats = allFeats.filter((feat: any) => 
+      feat.system.featType !== 'weapon' && 
+      feat.system.featType !== 'spell' && 
+      feat.system.featType !== 'weapons-spells'
+    );
+    
+    context.weapons = weapons;
+    context.spells = spells;
+    context.feats = otherFeats;
 
     // Get skills with NPC threshold calculations
     const skills = this.actor.items.filter((item: any) => item.type === 'skill');
@@ -158,6 +174,12 @@ export class NpcSheet extends ActorSheet {
 
     // Attack with threshold
     html.find('[data-action="attack-threshold"]').on('click', this._onAttackThreshold.bind(this));
+
+    // Roll NPC weapon
+    html.find('[data-action="roll-npc-weapon"]').on('click', this._onRollNPCWeapon.bind(this));
+
+    // Roll NPC spell
+    html.find('[data-action="roll-npc-spell"]').on('click', this._onRollNPCSpell.bind(this));
 
     // Edit skill
     html.find('[data-action="edit-skill"]').on('click', async (event: JQuery.ClickEvent) => {
@@ -1195,6 +1217,14 @@ export class NpcSheet extends ActorSheet {
       } else {
         resultsHtml += `<div class="calculation">${attackThreshold} succès</div>`;
       }
+      
+      // Add button to apply damage if we have a defender
+      if (defenderActor) {
+        resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${netSuccesses}" data-defender-name="${defenderActor.name}" title="${game.i18n!.format('SRA2.COMBAT.APPLY_DAMAGE_TITLE', {damage: netSuccesses, defender: defenderActor.name})}">`;
+        resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n!.localize('SRA2.COMBAT.APPLY_DAMAGE')}`;
+        resultsHtml += `</button>`;
+      }
+      
       resultsHtml += '</div>';
     }
     
@@ -1269,21 +1299,39 @@ export class NpcSheet extends ActorSheet {
     html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${rollResult.totalSuccesses}`;
     html += '</div>';
     
-    // Critical failures
+    // Critical failures with proper styling (same as character sheet)
     if (rollResult.rawCriticalFailures > 0) {
-      html += '<div class="critical-failures">';
-      html += `<strong>${game.i18n!.localize('SRA2.SKILLS.CRITICAL_FAILURES')}:</strong> `;
-      if (rollResult.riskReduction > 0 && rollResult.rawCriticalFailures > rollResult.criticalFailures) {
-        html += `<span class="reduced">${rollResult.rawCriticalFailures}</span> → <strong>${rollResult.criticalFailures}</strong>`;
-        html += ` <span class="rr-reduction">(RR -${rollResult.riskReduction})</span>`;
+      const criticalFailures = rollResult.criticalFailures;
+      const rawCriticalFailures = rollResult.rawCriticalFailures;
+      const riskReduction = rollResult.riskReduction || 0;
+      
+      let criticalLabel = '';
+      let criticalClass = '';
+      
+      if (criticalFailures >= 3) {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.DISASTER');
+        criticalClass = 'disaster';
+      } else if (criticalFailures === 2) {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION');
+        criticalClass = 'critical-complication';
+      } else if (criticalFailures === 1) {
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION');
+        criticalClass = 'minor-complication';
       } else {
-        html += `<strong>${rollResult.criticalFailures}</strong>`;
+        criticalLabel = game.i18n!.localize('SRA2.SKILLS.NO_COMPLICATION');
+        criticalClass = 'reduced-to-zero';
       }
       
-      // Add warning if there are critical failures remaining
-      if (rollResult.criticalFailures > 0) {
-        html += ` <span class="critical-warning"><i class="fas fa-exclamation-triangle"></i> ${game.i18n!.localize('SRA2.COMBAT.COMPLICATION')}</span>`;
+      html += `<div class="critical-failures ${criticalClass}">`;
+      html += `<div class="complication-header">`;
+      html += `<div class="complication-icon">⚠</div>`;
+      html += `<div class="complication-title">${criticalLabel}</div>`;
+      html += `</div>`;
+      
+      if (riskReduction > 0) {
+        html += `<div class="complication-calculation">Défense: ${rawCriticalFailures} - ${riskReduction} RR = ${criticalFailures}</div>`;
       }
+      
       html += '</div>';
     }
     
@@ -1323,11 +1371,717 @@ export class NpcSheet extends ActorSheet {
   }
 
   /**
+   * Handle rolling an NPC weapon
+   */
+  private async _onRollNPCWeapon(event: JQuery.ClickEvent): Promise<void> {
+    event.preventDefault();
+    const element = $(event.currentTarget);
+    const itemId = element.data('item-id') || element.attr('data-item-id');
+
+    if (!itemId) {
+      console.error("SRA2 | No weapon ID found");
+      return;
+    }
+
+    const weapon = this.actor.items.get(itemId);
+    if (!weapon || weapon.type !== 'feat') return;
+
+    await this._rollNPCWeaponOrSpell(weapon, 'weapon');
+  }
+
+  /**
+   * Handle rolling an NPC spell
+   */
+  private async _onRollNPCSpell(event: JQuery.ClickEvent): Promise<void> {
+    event.preventDefault();
+    const element = $(event.currentTarget);
+    const itemId = element.data('item-id') || element.attr('data-item-id');
+
+    if (!itemId) {
+      console.error("SRA2 | No spell ID found");
+      return;
+    }
+
+    const spell = this.actor.items.get(itemId);
+    if (!spell || spell.type !== 'feat') return;
+
+    await this._rollNPCWeaponOrSpell(spell, 'spell');
+  }
+
+  /**
+   * Roll weapon or spell for NPC
+   */
+  private async _rollNPCWeaponOrSpell(item: any, type: 'weapon' | 'spell'): Promise<void> {
+    const itemSystem = item.system as any;
+    
+    // Get all skills and specializations
+    const skills = this.actor.items.filter((i: any) => i.type === 'skill');
+    const allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
+    
+    // Build skill options HTML with thresholds
+    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
+    
+    skills.forEach((skill: any) => {
+      const skillSystem = skill.system as any;
+      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+      const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+      const skillRating = skillSystem.rating || 0;
+      const totalDicePool = attributeValue + skillRating;
+      
+      // Calculate threshold for this skill
+      let totalRR = 0;
+      const activeFeats = this.actor.items.filter((i: any) => 
+        i.type === 'feat' && i.system.active === true
+      );
+      
+      activeFeats.forEach((feat: any) => {
+        const rrList = feat.system.rrList || [];
+        rrList.forEach((rrEntry: any) => {
+          if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === skill.name) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+          if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+        });
+      });
+      
+      const npcThreshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-threshold="${npcThreshold}">${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${npcThreshold})</option>`;
+      
+      // Add specializations for this skill
+      const specs = allSpecializations.filter((spec: any) => {
+        const linkedSkillName = spec.system.linkedSkill;
+        return linkedSkillName === skill.name;
+      });
+      
+      specs.forEach((spec: any) => {
+        const specDicePool = totalDicePool + 2;
+        let specTotalRR = totalRR;
+        
+        activeFeats.forEach((feat: any) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry: any) => {
+            if (rrEntry.rrType === 'specialization' && rrEntry.rrTarget === spec.name) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
+        
+        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
+        
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-threshold="${specThreshold}">  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold})</option>`;
+      });
+    });
+    
+    // Get weapon/spell info
+    const damageValue = itemSystem.damageValue || '0';
+    const weaponName = item.name;
+    
+    const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
+    
+    // Create dialog to select skill/specialization
+    const dialog = new Dialog({
+      title: game.i18n!.format(titleKey, { name: weaponName }),
+      content: `
+        <form class="sra2-npc-weapon-roll-dialog">
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.WEAPON_NAME')}:</label>
+            <p class="weapon-name"><strong>${weaponName}</strong></p>
+          </div>
+          ${damageValue !== '0' ? `
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE')}:</label>
+            <p class="damage-value"><strong>${damageValue}</strong></p>
+          </div>
+          ` : ''}
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL')}:</label>
+            <select id="skill-select" class="skill-select">
+              ${skillOptionsHtml}
+            </select>
+          </div>
+        </form>
+      `,
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-dice-d6"></i>',
+          label: game.i18n!.localize('SRA2.NPC.ATTACK'),
+          callback: (html: any) => {
+            const selectedValue = html.find('#skill-select').val();
+            if (!selectedValue || selectedValue === '') {
+              ui.notifications?.warn(game.i18n!.localize('SRA2.FEATS.WEAPON.NO_SKILL_SELECTED'));
+              return;
+            }
+            
+            const selectedOption = html.find('#skill-select option:selected');
+            const threshold = parseInt(selectedOption.attr('data-threshold')) || 0;
+            const [itemType, itemId] = (selectedValue as string).split('-');
+            
+            if (!itemId) return;
+            
+            const skillItem = this.actor.items.get(itemId);
+            if (skillItem) {
+              const skillName = skillItem.name;
+              this._attackWithNPCWeapon(weaponName, skillName, threshold, damageValue);
+            }
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('Cancel')
+        }
+      },
+      default: 'roll'
+    }, { width: 500 });
+    
+    dialog.render(true);
+  }
+
+  /**
+   * Attack with NPC weapon using threshold
+   */
+  private async _attackWithNPCWeapon(weaponName: string, skillName: string, threshold: number, weaponDamageValue: string): Promise<void> {
+    // Get user targets
+    const targets = Array.from(game.user!.targets || []);
+    
+    if (targets.length === 0) {
+      ui.notifications?.warn(game.i18n!.localize('SRA2.NPC.NO_TARGET_SELECTED'));
+      return;
+    }
+
+    // For each target, prompt defense roll with VD
+    for (const target of targets) {
+      const targetActor = target.actor;
+      if (targetActor) {
+        await this._promptDefenseRollWithVD(targetActor, threshold, `${weaponName} (${skillName})`, weaponDamageValue);
+      }
+    }
+  }
+
+  /**
+   * Prompt defense roll with weapon damage value
+   */
+  private async _promptDefenseRollWithVD(defenderActor: any, attackThreshold: number, attackName: string, weaponDamageValue: string): Promise<void> {
+    // Get all skills and specializations from defender
+    const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
+    const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
+    
+    // Build skill options HTML - ALWAYS show both threshold and dice pool
+    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
+    
+    skills.forEach((skill: any) => {
+      const skillSystem = skill.system as any;
+      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+      const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
+      const skillRating = skillSystem.rating || 0;
+      const totalDicePool = attributeValue + skillRating;
+      
+      // Calculate threshold
+      let totalRR = 0;
+      const activeFeats = defenderActor.items.filter((i: any) => 
+        i.type === 'feat' && i.system.active === true
+      );
+      
+      activeFeats.forEach((feat: any) => {
+        const rrList = feat.system.rrList || [];
+        rrList.forEach((rrEntry: any) => {
+          if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === skill.name) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+          if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
+            totalRR += rrEntry.rrValue || 0;
+          }
+        });
+      });
+      
+      const threshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}">${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${threshold} / ${totalDicePool} dés)</option>`;
+      
+      // Add specializations
+      const specs = allSpecializations.filter((spec: any) => {
+        const linkedSkillName = spec.system.linkedSkill;
+        return linkedSkillName === skill.name;
+      });
+      
+      specs.forEach((spec: any) => {
+        const specDicePool = totalDicePool + 2;
+        let specTotalRR = totalRR;
+        
+        activeFeats.forEach((feat: any) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry: any) => {
+            if (rrEntry.rrType === 'specialization' && rrEntry.rrTarget === spec.name) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
+        
+        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
+        
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specDicePool}" data-threshold="${specThreshold}">  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold} / ${specDicePool} dés)</option>`;
+      });
+    });
+    
+    // Create defense dialog
+    const dialog = new Dialog({
+      title: game.i18n!.format('SRA2.COMBAT.DEFENSE_ROLL_TITLE', { 
+        attacker: this.actor.name,
+        defender: defenderActor.name
+      }),
+      content: `
+        <form class="sra2-defense-roll-dialog">
+          <div class="form-group">
+            <p><strong>${game.i18n!.localize('SRA2.COMBAT.ATTACK_INFO')}:</strong></p>
+            <p>${attackName}</p>
+            <p><strong>${game.i18n!.localize('SRA2.NPC.THRESHOLD')}:</strong> ${attackThreshold}</p>
+            ${weaponDamageValue !== '0' ? `<p><strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE')}:</strong> ${weaponDamageValue}</p>` : ''}
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL')}:</label>
+            <select id="defense-skill-select" class="skill-select">
+              ${skillOptionsHtml}
+            </select>
+          </div>
+          <div class="form-group defense-method-group">
+            <label>${game.i18n!.localize('SRA2.COMBAT.DEFENSE_METHOD')}:</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="defenseMethod" value="threshold" checked />
+                <span>${game.i18n!.localize('SRA2.COMBAT.USE_THRESHOLD')}</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="defenseMethod" value="roll" />
+                <span>${game.i18n!.localize('SRA2.COMBAT.ROLL_DICE')}</span>
+              </label>
+            </div>
+          </div>
+        </form>
+      `,
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-shield-alt"></i>',
+          label: game.i18n!.localize('SRA2.COMBAT.DEFEND'),
+          callback: async (html: any) => {
+            const selectedValue = html.find('#defense-skill-select').val();
+            if (!selectedValue || selectedValue === '') {
+              ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED'));
+              // No defense, full damage
+              await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue);
+              return;
+            }
+            
+            const [itemType, itemId] = (selectedValue as string).split('-');
+            const defenseItem = defenderActor.items.get(itemId);
+            
+            if (defenseItem) {
+              // Check which defense method was chosen
+              const defenseMethod = html.find('input[name="defenseMethod"]:checked').val();
+              const selectedOption = html.find('#defense-skill-select option:selected');
+              
+              if (defenseMethod === 'threshold') {
+                // Use threshold (no dice roll)
+                const threshold = parseInt(selectedOption.attr('data-threshold')) || 0;
+                await this._defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue);
+              } else {
+                // Roll dice
+                await this._rollDefenseAgainstNPCWeapon(defenseItem, itemType as 'skill' | 'spec', attackName, attackThreshold, defenderActor, weaponDamageValue);
+              }
+            }
+          }
+        },
+        noDefense: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE'),
+          callback: async () => {
+            // No defense, full damage
+            await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue);
+          }
+        }
+      },
+      default: 'roll'
+    }, { width: 500 });
+    
+    dialog.render(true);
+  }
+
+  /**
    * Get risk dice count based on RR level
    */
   private getRiskDiceByRR(rr: number): number {
     const riskDiceByRR = [2, 5, 8, 12];
     return riskDiceByRR[Math.min(3, Math.max(0, rr))] || 2;
+  }
+
+  /**
+   * Defend with threshold against weapon attack
+   */
+  private async _defendWithThresholdAgainstWeapon(defenseItem: any, threshold: number, attackName: string, attackThreshold: number, defenderActor: any, weaponDamageValue: string): Promise<void> {
+    const defenseName = defenseItem.name;
+    
+    // Create a "fake" defense result using threshold
+    const defenseResult = {
+      skillName: defenseName,
+      totalSuccesses: threshold,
+      isThreshold: true,
+      normalDiceResults: '',
+      riskDiceResults: '',
+      normalSuccesses: threshold,
+      riskSuccesses: 0,
+      criticalFailures: 0,
+      rawCriticalFailures: 0,
+      dicePool: 0,
+      riskDice: 0,
+      riskReduction: 0,
+      rollMode: 'threshold'
+    };
+    
+    // Display the attack result with VD
+    await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue);
+  }
+
+  /**
+   * Roll defense against NPC weapon attack
+   */
+  private async _rollDefenseAgainstNPCWeapon(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackThreshold: number, defenderActor: any, weaponDamageValue: string): Promise<void> {
+    const defenseSystem = defenseItem.system as any;
+    const linkedAttribute = defenseSystem.linkedAttribute || 'strength';
+    const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
+    
+    let rating = 0;
+    let defenseName = defenseItem.name;
+    
+    if (itemType === 'skill') {
+      rating = defenseSystem.rating || 0;
+    } else {
+      // Specialization
+      const parentSkillName = defenseSystem.linkedSkill;
+      const parentSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === parentSkillName);
+      const parentRating = parentSkill ? (parentSkill.system.rating || 0) : 0;
+      rating = parentRating + 2;
+    }
+    
+    const basePool = rating + attributeValue;
+    
+    if (basePool <= 0) {
+      ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.NO_DICE'));
+      // No defense dice, full damage
+      await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue);
+      return;
+    }
+    
+    // Get RR for defense
+    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+    const skillRRSources = itemType === 'skill' ? this.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : this.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
+    const attributeRRSources = this.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
+    const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
+    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
+    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    
+    // Build RR sources HTML
+    let rrSourcesHtml = '';
+    if (allRRSources.length > 0) {
+      rrSourcesHtml = '<div class="rr-sources"><strong>Sources RR:</strong>';
+      allRRSources.forEach((source) => {
+        rrSourcesHtml += `
+          <label class="rr-source-item">
+            <input type="checkbox" class="rr-source-checkbox" data-rr-value="${source.rrValue}" checked />
+            <span>${source.featName} (+${source.rrValue})</span>
+          </label>`;
+      });
+      rrSourcesHtml += '</div>';
+    }
+    
+    // Create defense roll dialog
+    const dialog = new Dialog({
+      title: game.i18n!.format('SRA2.COMBAT.DEFENSE_ROLL_CONFIG', { skill: defenseName }),
+      content: `
+        <form class="sra2-roll-dialog">
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.BASE_POOL')}: <strong>${basePool}</strong></label>
+            <p class="notes">(${game.i18n!.localize(itemType === 'skill' ? 'SRA2.SKILLS.RATING' : 'SRA2.SPECIALIZATIONS.BONUS')}: ${rating} + ${attributeLabel}: ${attributeValue})</p>
+          </div>
+          <div class="form-group roll-mode-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE')}:</label>
+            <div class="radio-group">
+              <label class="radio-option disadvantage">
+                <input type="radio" name="rollMode" value="disadvantage" />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_DISADVANTAGE')}</span>
+              </label>
+              <label class="radio-option normal">
+                <input type="radio" name="rollMode" value="normal" checked />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_NORMAL')}</span>
+              </label>
+              <label class="radio-option advantage">
+                <input type="radio" name="rollMode" value="advantage" />
+                <span>${game.i18n!.localize('SRA2.SKILLS.ROLL_MODE_ADVANTAGE')}</span>
+              </label>
+            </div>
+          </div>
+          ${rrSourcesHtml}
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_REDUCTION')}: <span id="rr-display">${autoRR}</span>/3</label>
+          </div>
+          <div class="form-group">
+            <label>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</label>
+            <input type="hidden" name="riskDice" id="risk-dice-input" value="${defaultRiskDice}" />
+            <div class="dice-selector" id="dice-selector">
+              ${Array.from({length: basePool}, (_, i) => 
+                `<div class="dice-icon ${i < defaultRiskDice ? 'selected' : ''}" data-dice-index="${i + 1}">
+                  <i class="fas fa-dice-d6"></i>
+                  <span class="dice-number">${i + 1}</span>
+                </div>`
+              ).join('')}
+            </div>
+            <p class="notes">${game.i18n!.localize('SRA2.SKILLS.RISK_DICE_HINT')}</p>
+          </div>
+        </form>
+        <script>
+          (function() {
+            const form = document.querySelector('.sra2-roll-dialog');
+            const checkboxes = form.querySelectorAll('.rr-source-checkbox');
+            const rrDisplay = form.querySelector('#rr-display');
+            const riskDiceInput = form.querySelector('#risk-dice-input');
+            const diceSelector = form.querySelector('#dice-selector');
+            const diceIcons = diceSelector.querySelectorAll('.dice-icon');
+            const maxDice = ${basePool};
+            const riskDiceByRR = [2, 5, 8, 12];
+            
+            const riskThresholds = {
+              0: { normal: 2, fort: 4, extreme: 6 },
+              1: { normal: 5, fort: 7, extreme: 9 },
+              2: { normal: 8, fort: 11, extreme: 13 },
+              3: { normal: 12, fort: 15, extreme: 999 }
+            };
+            
+            function getRiskLevel(diceCount, rr) {
+              const thresholds = riskThresholds[rr] || riskThresholds[0];
+              if (diceCount <= thresholds.normal) return 'faible';
+              if (diceCount <= thresholds.fort) return 'normal';
+              if (diceCount <= thresholds.extreme) return 'fort';
+              return 'extreme';
+            }
+            
+            function updateRR() {
+              let totalRR = 0;
+              checkboxes.forEach(cb => {
+                if (cb.checked) {
+                  totalRR += parseInt(cb.dataset.rrValue);
+                }
+              });
+              totalRR = Math.min(3, totalRR);
+              rrDisplay.textContent = totalRR;
+              
+              const suggestedRisk = Math.min(maxDice, riskDiceByRR[totalRR]);
+              setDiceSelection(suggestedRisk, totalRR);
+            }
+            
+            function setDiceSelection(count, currentRR) {
+              riskDiceInput.value = count;
+              
+              if (currentRR === undefined) {
+                currentRR = 0;
+                checkboxes.forEach(cb => {
+                  if (cb.checked) {
+                    currentRR += parseInt(cb.dataset.rrValue);
+                  }
+                });
+                currentRR = Math.min(3, currentRR);
+              }
+              
+              diceIcons.forEach((dice, index) => {
+                const diceNumber = index + 1;
+                dice.classList.remove('selected', 'risk-faible', 'risk-normal', 'risk-fort', 'risk-extreme');
+                
+                const riskLevel = getRiskLevel(diceNumber, currentRR);
+                dice.classList.add('risk-' + riskLevel);
+                
+                if (index < count) {
+                  dice.classList.add('selected');
+                }
+              });
+            }
+            
+            diceIcons.forEach((dice) => {
+              dice.addEventListener('click', function() {
+                const index = parseInt(this.dataset.diceIndex);
+                const currentValue = parseInt(riskDiceInput.value);
+                if (index === currentValue) {
+                  setDiceSelection(0);
+                } else {
+                  setDiceSelection(index);
+                }
+              });
+            });
+            
+            checkboxes.forEach(cb => {
+              cb.addEventListener('change', updateRR);
+            });
+            
+            setDiceSelection(riskDiceInput.value);
+          })();
+        </script>
+      `,
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-shield-alt"></i>',
+          label: game.i18n!.localize('SRA2.COMBAT.DEFEND'),
+          callback: async (html: any) => {
+            const totalPool = basePool;
+            const riskDice = Math.min(totalPool, parseInt(html.find('[name="riskDice"]').val()) || 0);
+            const normalDice = totalPool - riskDice;
+            let riskReduction = 0;
+            html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+              riskReduction += parseInt(cb.dataset.rrValue);
+            });
+            riskReduction = Math.min(3, riskReduction);
+            const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
+            
+            // Roll defense
+            const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+            
+            // Display combined result with VD
+            await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('Cancel')
+        }
+      },
+      default: 'roll'
+    }, { width: 600 });
+    
+    dialog.render(true);
+  }
+
+  /**
+   * Display NPC weapon attack result with VD
+   */
+  private async _displayNPCWeaponAttackResult(attackName: string, attackThreshold: number, defenseResult: any | null, defenderActor: any, weaponDamageValue: string): Promise<void> {
+    // Parse weapon damage value (support FOR, FOR+X, numeric, toxin)
+    const strength = (this.actor.system as any).attributes?.strength || 0;
+    let baseVD = 0;
+    let vdDisplay = weaponDamageValue;
+    
+    if (weaponDamageValue === 'FOR') {
+      baseVD = strength;
+      vdDisplay = `FOR (${strength})`;
+    } else if (weaponDamageValue.startsWith('FOR+')) {
+      const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+      baseVD = strength + modifier;
+      vdDisplay = `FOR+${modifier} (${baseVD})`;
+    } else if (weaponDamageValue === 'toxin') {
+      vdDisplay = 'selon toxine';
+      baseVD = -1;
+    } else {
+      baseVD = parseInt(weaponDamageValue) || 0;
+    }
+    
+    let resultsHtml = '<div class="sra2-combat-roll">';
+    
+    // Determine outcome first
+    const attackSuccess = !defenseResult || defenseResult.totalSuccesses < attackThreshold;
+    
+    // Display outcome header FIRST
+    if (attackSuccess) {
+      resultsHtml += `<div class="combat-outcome-header attack-success">`;
+      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
+      resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_SUCCESS')}</div>`;
+      resultsHtml += '</div>';
+    } else {
+      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
+      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
+      resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_FAILED')}</div>`;
+      resultsHtml += '</div>';
+    }
+    
+    // Attack section
+    resultsHtml += '<div class="attack-section">';
+    resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
+    resultsHtml += this._buildNPCAttackHtmlWithVD(attackThreshold, weaponDamageValue, vdDisplay);
+    resultsHtml += '</div>';
+    
+    // Defense section
+    if (defenseResult) {
+      resultsHtml += '<div class="defense-section">';
+      resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.DEFENSE')}: ${defenseResult.skillName}</h3>`;
+      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      resultsHtml += '</div>';
+    }
+    
+    // Combat result
+    resultsHtml += '<div class="combat-result">';
+    
+    if (!attackSuccess) {
+      // Defense successful - ECHEC DE L'ATTAQUE
+      resultsHtml += `<div class="defense-success">`;
+      resultsHtml += `<p>${game.i18n!.format('SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK', {
+        defender: defenderActor.name || '?',
+        defenseSuccesses: defenseResult!.totalSuccesses,
+        attackSuccesses: attackThreshold
+      })}</p>`;
+      resultsHtml += '</div>';
+    } else {
+      // Attack successful, calculate damage with VD
+      const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
+      const netSuccesses = attackThreshold - defenseSuccesses;
+      
+      if (baseVD >= 0) {
+        const finalDamage = baseVD + netSuccesses;
+        resultsHtml += `<div class="final-damage-value">`;
+        resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')} : ${finalDamage}</div>`;
+        if (defenseResult) {
+          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackThreshold} succès attaque - ${defenseSuccesses} succès défense</div>`;
+        } else {
+          resultsHtml += `<div class="calculation">${attackThreshold} succès + ${baseVD} VD</div>`;
+        }
+        
+        // Add button to apply damage
+        if (defenderActor) {
+          resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n!.format('SRA2.COMBAT.APPLY_DAMAGE_TITLE', {damage: finalDamage, defender: defenderActor.name})}">`;
+          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n!.localize('SRA2.COMBAT.APPLY_DAMAGE')}`;
+          resultsHtml += `</button>`;
+        }
+        
+        resultsHtml += '</div>';
+      }
+    }
+    
+    resultsHtml += '</div>';
+    resultsHtml += '</div>';
+    
+    const messageData = {
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      flavor: game.i18n!.format('SRA2.COMBAT.ATTACK_ROLL', { name: attackName }),
+      content: resultsHtml,
+      sound: CONFIG.sounds?.dice
+    };
+    
+    await ChatMessage.create(messageData);
+  }
+
+  /**
+   * Build NPC attack HTML with VD display
+   */
+  private _buildNPCAttackHtmlWithVD(threshold: number, weaponDamageValue: string, vdDisplay: string): string {
+    let html = '';
+    
+    html += '<div class="dice-pool">';
+    html += `<strong>${game.i18n!.localize('SRA2.NPC.THRESHOLD')}:</strong> `;
+    html += `<span class="threshold-badge">${threshold}</span>`;
+    html += '</div>';
+    
+    html += `<div class="successes has-success">`;
+    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${threshold}`;
+    if (weaponDamageValue && weaponDamageValue !== '0') {
+      html += ` | <strong>VD:</strong> <span class="vd-display">${vdDisplay}</span>`;
+    }
+    html += '</div>';
+    
+    return html;
   }
 
   /**

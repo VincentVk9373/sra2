@@ -1182,6 +1182,37 @@
                 font-size: 1rem;
                 font-weight: bold;
                 
+                &.weapon-name-clickable,
+                &.spell-name-clickable {
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  padding: 0.2rem 0.4rem;
+                  border-radius: 4px;
+                  display: inline-block;
+                  
+                  &:hover {
+                    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                    color: white;
+                    transform: translateX(3px);
+                    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+                    
+                    .rr-info,
+                    .damage-bonus-info {
+                      color: rgba(255, 255, 255, 0.9);
+                    }
+                  }
+                  
+                  &:active {
+                    transform: translateX(1px);
+                    box-shadow: 0 1px 3px rgba(231, 76, 60, 0.3);
+                  }
+                }
+                
+                &.spell-name-clickable:hover {
+                  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+                  box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);
+                }
+                
                 .rr-info {
                   display: inline-block;
                   padding: 0.15rem 0.5rem;

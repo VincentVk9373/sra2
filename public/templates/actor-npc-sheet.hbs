@@ -7,6 +7,69 @@
   </header>
 
   <div class="sheet-content">
+    <!-- Armes et Sorts Section -->
+    {{#if (or weapons spells)}}
+    <section class="npc-section weapons-spells-section">
+      <h2><i class="fas fa-crosshairs"></i> {{localize "SRA2.NPC.SECTION.WEAPONS_SPELLS"}}</h2>
+      
+      {{#if weapons}}
+        <div class="weapons-list">
+          <h3><i class="fas fa-sword"></i> {{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</h3>
+          {{#each weapons}}
+          <div class="weapon-item" data-item-id="{{this._id}}">
+            <div class="weapon-header clickable" data-action="roll-npc-weapon" data-item-id="{{this._id}}" title="{{localize 'SRA2.NPC.ATTACK_WITH_WEAPON'}}">
+              <div class="weapon-name">
+                <img class="weapon-img" src="{{this.img}}" alt="{{this.name}}" />
+                <span class="name">{{this.name}}</span>
+              </div>
+              <div class="weapon-vd">
+                <span class="vd-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+                <span class="vd-value">{{this.system.damageValue}}</span>
+              </div>
+            </div>
+            <div class="weapon-controls">
+              <a class="weapon-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                <i class="fas fa-edit"></i>
+              </a>
+              <a class="weapon-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                <i class="fas fa-trash"></i>
+              </a>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      {{/if}}
+      
+      {{#if spells}}
+        <div class="spells-list">
+          <h3><i class="fas fa-magic"></i> {{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}</h3>
+          {{#each spells}}
+          <div class="spell-item" data-item-id="{{this._id}}">
+            <div class="spell-header clickable" data-action="roll-npc-spell" data-item-id="{{this._id}}" title="{{localize 'SRA2.NPC.CAST_SPELL'}}">
+              <div class="spell-name">
+                <img class="spell-img" src="{{this.img}}" alt="{{this.name}}" />
+                <span class="name">{{this.name}}</span>
+              </div>
+              <div class="spell-vd">
+                <span class="vd-label">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}:</span>
+                <span class="vd-value">{{this.system.damageValue}}</span>
+              </div>
+            </div>
+            <div class="spell-controls">
+              <a class="spell-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                <i class="fas fa-edit"></i>
+              </a>
+              <a class="spell-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                <i class="fas fa-trash"></i>
+              </a>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      {{/if}}
+    </section>
+    {{/if}}
+
     <!-- Attributs Section -->
     <section class="npc-section attributes-section">
       <h2><i class="fas fa-chart-bar"></i> {{localize "SRA2.ATTRIBUTES.LABEL"}}</h2>

@@ -809,7 +809,7 @@
                 <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
                   <div class="feat-header">
                     <div class="feat-title">
-                      <h4>{{this.name}}
+                      <h4 class="weapon-name-clickable" data-action="roll-weapon-spell" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.WEAPON.CLICK_TO_ROLL'}}">{{this.name}}
                         {{#if this.rrEntries}}
                           {{#each this.rrEntries}}
                             <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
@@ -931,7 +931,7 @@
                 <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
                   <div class="feat-header">
                     <div class="feat-title">
-                      <h4>{{this.name}}
+                      <h4 class="weapon-name-clickable" data-action="roll-weapon" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.WEAPON.CLICK_TO_ROLL'}}">{{this.name}}
                         {{#if this.rrEntries}}
                           {{#each this.rrEntries}}
                             <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
@@ -1053,7 +1053,7 @@
                 <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
                   <div class="feat-header">
                     <div class="feat-title">
-                      <h4>{{this.name}}
+                      <h4 class="spell-name-clickable" data-action="roll-spell" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.SPELL.CLICK_TO_ROLL'}}">{{this.name}}
                         {{#if this.rrEntries}}
                           {{#each this.rrEntries}}
                             <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">

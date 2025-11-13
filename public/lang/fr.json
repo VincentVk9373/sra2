@@ -41,7 +41,8 @@
                 "INFO": "Informations",
                 "COMBAT": "Combat",
                 "SKILLS": "Compétences",
-                "FEATS": "Atouts"
+                "FEATS": "Atouts",
+                "WEAPONS_SPELLS": "Armes et Sorts"
             },
             "DICE_POOL": "Dés",
             "RR": "RR",
@@ -54,7 +55,10 @@
             "NO_TARGET_SELECTED": "Aucune cible sélectionnée. Veuillez cibler un token avant d'attaquer.",
             "ATTACK_AGAINST": "Attaque contre",
             "ATTACK_FLAVOR": "{npcName} attaque {targetName} avec {skillName}",
-            "DEFENSE_ROLL_REQUIRED": "La cible doit effectuer un jet de défense"
+            "DEFENSE_ROLL_REQUIRED": "La cible doit effectuer un jet de défense",
+            "ATTACK_WITH_WEAPON": "Attaquer avec cette arme",
+            "CAST_SPELL": "Lancer ce sort",
+            "ATTACK": "Attaquer"
         },
         "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer {name} ?",
         "ATTRIBUTES": {
@@ -306,6 +310,7 @@
                 "SELECT_SKILL": "Sélectionner une compétence",
                 "WEAPON_NAME": "Nom de l'arme",
                 "NO_SKILL_SELECTED": "Veuillez sélectionner une compétence",
+                "CLICK_TO_ROLL": "Cliquer pour attaquer avec cette arme",
                 "DAMAGE_VALUE": "Valeur de Dégât (VD)",
                 "DAMAGE_VALUE_SHORT": "VD",
                 "DAMAGE": "Dégâts",
@@ -438,7 +443,8 @@
                 "SECTION_TITLE": "Informations Sort",
                 "SECTION_HINT": "Les sorts utilisent les propriétés de base des atouts (effets narratifs, bonus, etc.) sans les caractéristiques d'arme.",
                 "ROLL": "Lancer les dés",
-                "ROLL_TITLE": "Lancer {name}"
+                "ROLL_TITLE": "Lancer {name}",
+                "CLICK_TO_ROLL": "Cliquer pour lancer ce sort"
             }
         },
         "COMBAT": {

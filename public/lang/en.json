@@ -54,7 +54,17 @@
             "NO_TARGET_SELECTED": "No target selected. Please target a token before attacking.",
             "ATTACK_AGAINST": "Attack against",
             "ATTACK_FLAVOR": "{npcName} attacks {targetName} with {skillName}",
-            "DEFENSE_ROLL_REQUIRED": "Target must make a defense roll"
+            "DEFENSE_ROLL_REQUIRED": "Target must make a defense roll",
+            "ATTACK_WITH_WEAPON": "Attack with this weapon",
+            "CAST_SPELL": "Cast this spell",
+            "ATTACK": "Attack",
+            "SECTION": {
+                "INFO": "Information",
+                "COMBAT": "Combat",
+                "SKILLS": "Skills",
+                "FEATS": "Feats",
+                "WEAPONS_SPELLS": "Weapons and Spells"
+            }
         },
         "COMBAT": {
             "ATTACK": "Attack",
@@ -372,7 +382,21 @@
                     "GAS_GRENADES": "Gas Grenades*",
                     "GRENADE_LAUNCHERS": "Grenade Launchers** (Ares Antioch II, ArmTech MGL-6 & 12)",
                     "ROCKET_LAUNCHERS": "Rocket Launchers** (Aztechnology Striker, Onotari Interceptor)"
-                }
+                },
+                "ROLL": "Roll Dice",
+                "ROLL_TITLE": "Roll {name}",
+                "ROLL_WITH_SKILL": "{weapon} with {skill}",
+                "SELECT_SKILL": "Select a skill",
+                "WEAPON_NAME": "Weapon name",
+                "NO_SKILL_SELECTED": "Please select a skill",
+                "CLICK_TO_ROLL": "Click to attack with this weapon"
+            },
+            "SPELL": {
+                "SECTION_TITLE": "Spell Information",
+                "SECTION_HINT": "Spells use the base feat properties (narrative effects, bonuses, etc.) without weapon characteristics.",
+                "ROLL": "Roll Dice",
+                "ROLL_TITLE": "Roll {name}",
+                "CLICK_TO_ROLL": "Click to cast this spell"
             },
             "VEHICLE": {
                 "SECTION_TITLE": "Vehicle / Drone Information",

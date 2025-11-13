@@ -739,9 +739,161 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
+
+  // Weapons and Spells Section for NPCs
+  .weapons-spells-section {
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+    border: 2px solid #f39c12;
+    border-radius: 6px;
+    padding: 1rem;
+    
+    h2 {
+      color: #d35400;
+      margin-bottom: 0.75rem;
+      
+      i {
+        color: #e74c3c;
+      }
+    }
+    
+    h3 {
+      font-size: 0.9rem;
+      color: #2c3e50;
+      margin: 0.5rem 0;
+      padding-bottom: 0.25rem;
+      border-bottom: 2px solid #ecf0f1;
+    }
+    
+    .weapon-item,
+    .spell-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      transition: all 0.2s;
+      
+      &:hover {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    .weapon-header,
+    .spell-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      flex: 1;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        
+        .weapon-name,
+        .spell-name {
+          color: white;
+          
+          .name {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+          }
+        }
+        
+        .weapon-vd,
+        .spell-vd {
+          .vd-label,
+          .vd-value {
+            color: white;
+          }
+        }
+      }
+      
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+    
+    .spell-header:hover {
+      background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    }
+    
+    .weapon-name,
+    .spell-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      img {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        object-fit: cover;
+      }
+      
+      .name {
+        font-weight: bold;
+        font-size: 0.95rem;
+        color: #2c3e50;
+      }
+    }
+    
+    .weapon-vd,
+    .spell-vd {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      
+      .vd-label {
+        color: #666;
+        font-weight: normal;
+      }
+      
+      .vd-value {
+        font-weight: bold;
+        font-size: 1rem;
+        color: #e74c3c;
+      }
+    }
+    
+    .weapon-controls,
+    .spell-controls {
+      display: flex;
+      gap: 0.2rem;
+      padding: 0.3rem 0.5rem;
+      
+      a {
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #e0e0e0;
+        }
+        
+        i {
+          font-size: 0.75rem;
+          color: #555;
+        }
+        
+        &.weapon-delete:hover i,
+        &.spell-delete:hover i {
+          color: #e74c3c;
+        }
+      }
+    }
+  }
 }
 
-// Style for threshold badge in NPC attacks
+// Style for threshold badge in NPC attacks (outside .sra2-npc-sheet)
 .sra2-combat-roll {
   .threshold-badge {
     display: inline-block;
@@ -753,6 +905,12 @@
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     margin-left: 0.3rem;
+  }
+  
+  .vd-display {
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 1.1rem;
   }
 }
 
