@@ -503,6 +503,17 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           "indirect": "SRA2.FEATS.SPELL.TYPE_INDIRECT"
         },
         label: "SRA2.FEATS.SPELL.TYPE"
+      }),
+      // Linked specializations for weapons
+      linkedAttackSpecialization: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"
+      }),
+      linkedDefenseSpecialization: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"
       })
     };
   }

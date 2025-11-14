@@ -1419,7 +1419,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll an attack with defense system
    */
-  private async _rollAttackWithDefense(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string): Promise<void> {
+  private async _rollAttackWithDefense(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any): Promise<void> {
     // First, roll the attack
     const attackResult = await this._performDiceRoll(dicePool, riskDice, riskReduction, rollMode);
     
@@ -1450,16 +1450,39 @@ export class CharacterSheet extends ActorSheet {
     }));
     
     // Prompt defense roll
-    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue);
+    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon);
   }
 
   /**
    * Prompt target to make a defense roll
    */
-  private async _promptDefenseRoll(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string): Promise<void> {
+  private async _promptDefenseRoll(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any): Promise<void> {
     // Get all skills and specializations from defender
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
+    
+    // Get linked defense specialization from attacking weapon if available
+    const linkedDefenseSpecId = attackingWeapon?.system?.linkedDefenseSpecialization || '';
+    let defaultSelection = '';
+    let linkedSpec: any = null;
+    let linkedSkill: any = null;
+    
+    // Try to find the linked defense specialization
+    if (linkedDefenseSpecId) {
+      linkedSpec = allSpecializations.find((s: any) => s.id === linkedDefenseSpecId);
+      if (linkedSpec) {
+        defaultSelection = `spec-${linkedSpec.id}`;
+        // Find the parent skill for this specialization
+        const linkedSkillName = linkedSpec.system.linkedSkill;
+        linkedSkill = skills.find((s: any) => s.name === linkedSkillName);
+      }
+    }
+    
+    // If no specialization found, use the first skill as default
+    if (!defaultSelection && skills.length > 0) {
+      linkedSkill = skills[0]; // Default to first skill
+      defaultSelection = `skill-${linkedSkill.id}`;
+    }
     
     // Build skill options HTML - ALWAYS show both threshold and dice pool
     let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
@@ -1474,8 +1497,11 @@ export class CharacterSheet extends ActorSheet {
       // Calculate threshold for all actors (NPC or PC)
       const { threshold } = this._calculateNPCThreshold(defenderActor, skill, totalDicePool, 'skill');
       
+      // Check if this skill should be selected by default
+      const selected = defaultSelection === `skill-${skill.id}` ? ' selected' : '';
+      
       // Display both threshold and dice pool
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}">${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${threshold} / ${totalDicePool} dés)</option>`;
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}"${selected}>${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${threshold} / ${totalDicePool} dés)</option>`;
       
       // Add specializations for this skill
       const specs = allSpecializations.filter((spec: any) => {
@@ -1493,7 +1519,10 @@ export class CharacterSheet extends ActorSheet {
         
         const { threshold: specThreshold } = this._calculateNPCThreshold(defenderActor, spec, specTotalDicePool, 'specialization', skill);
         
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-threshold="${specThreshold}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold} / ${specTotalDicePool} dés)</option>`;
+        // Check if this specialization should be selected by default
+        const specSelected = defaultSelection === `spec-${spec.id}` ? ' selected' : '';
+        
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-threshold="${specThreshold}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold} / ${specTotalDicePool} dés)</option>`;
       });
     });
     
@@ -3192,6 +3221,30 @@ export class CharacterSheet extends ActorSheet {
     const skills = this.actor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
     
+    // Get linked attack specialization from weapon if available
+    const linkedAttackSpecId = itemSystem.linkedAttackSpecialization || '';
+    let defaultSelection = '';
+    let linkedSpec: any = null;
+    let linkedSkill: any = null;
+    
+    // Try to find the linked specialization
+    if (linkedAttackSpecId) {
+      linkedSpec = allSpecializations.find((s: any) => s.id === linkedAttackSpecId);
+      if (linkedSpec) {
+        defaultSelection = `spec-${linkedSpec.id}`;
+        // Find the parent skill for this specialization
+        const linkedSkillName = linkedSpec.system.linkedSkill;
+        linkedSkill = skills.find((s: any) => s.name === linkedSkillName);
+      }
+    }
+    
+    // If no specialization found, try to find a linked skill by name (optional: could be extended with a linkedSkill field)
+    // For now, we'll just use the first skill if no specialization is linked
+    if (!defaultSelection && skills.length > 0) {
+      linkedSkill = skills[0]; // Default to first skill
+      defaultSelection = `skill-${linkedSkill.id}`;
+    }
+    
     // Build skill options HTML
     let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
     skills.forEach((skill: any) => {
@@ -3201,7 +3254,8 @@ export class CharacterSheet extends ActorSheet {
       const skillRating = skillSystem.rating || 0;
       const totalDicePool = attributeValue + skillRating;
       
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}">${skill.name} (${totalDicePool} dés)</option>`;
+      const selected = defaultSelection === `skill-${skill.id}` ? ' selected' : '';
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}"${selected}>${skill.name} (${totalDicePool} dés)</option>`;
       
       // Add specializations for this skill
       const specs = allSpecializations.filter((spec: any) => {
@@ -3217,7 +3271,8 @@ export class CharacterSheet extends ActorSheet {
         const effectiveRating = parentRating + 2;
         const specTotalDicePool = specAttributeValue + effectiveRating;
         
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${specTotalDicePool} dés)</option>`;
+        const specSelected = defaultSelection === `spec-${spec.id}` ? ' selected' : '';
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${specTotalDicePool} dés)</option>`;
       });
     });
     
@@ -3270,14 +3325,14 @@ export class CharacterSheet extends ActorSheet {
               if (skill) {
                 // Trigger the skill roll with weapon name (using old method for non-combat rolls)
                 // This is kept for backward compatibility with spells and non-targeted attacks
-                this._rollSkillWithWeapon(skill, weaponName, 'skill', damageValue || '0');
+                this._rollSkillWithWeapon(skill, weaponName, 'skill', damageValue || '0', item);
               }
             } else if (itemType === 'spec') {
               const spec = this.actor.items.get(itemId);
               if (spec) {
                 // Trigger the specialization roll with weapon name
                 const effectiveRating = parseInt(html.find(`#skill-select option:selected`).data('effective-rating') || '0');
-                this._rollSpecializationWithWeapon(spec, weaponName, effectiveRating, damageValue || '0');
+                this._rollSpecializationWithWeapon(spec, weaponName, effectiveRating, damageValue || '0', item);
               }
             }
           }
@@ -3296,7 +3351,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll a skill with weapon context
    */
-  private async _rollSkillWithWeapon(skill: any, weaponName: string, _skillType: 'skill', weaponDamageValue?: string): Promise<void> {
+  private async _rollSkillWithWeapon(skill: any, weaponName: string, _skillType: 'skill', weaponDamageValue?: string, weapon?: any): Promise<void> {
     const skillSystem = skill.system as any;
     const rating = skillSystem.rating || 0;
     const linkedAttribute = skillSystem.linkedAttribute || 'strength';
@@ -3482,7 +3537,7 @@ export class CharacterSheet extends ActorSheet {
             });
             riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
-            this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue);
+            this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
           }
         },
         cancel: {
@@ -3499,7 +3554,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll a specialization with weapon context
    */
-  private async _rollSpecializationWithWeapon(specialization: any, weaponName: string, effectiveRating: number, weaponDamageValue?: string): Promise<void> {
+  private async _rollSpecializationWithWeapon(specialization: any, weaponName: string, effectiveRating: number, weaponDamageValue?: string, weapon?: any): Promise<void> {
     const specSystem = specialization.system as any;
     const linkedAttribute = specSystem.linkedAttribute || 'strength';
     
@@ -3691,7 +3746,7 @@ export class CharacterSheet extends ActorSheet {
             });
             riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
-            this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue);
+            this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
           }
         },
         cancel: {

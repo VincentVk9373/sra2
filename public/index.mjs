@@ -864,6 +864,17 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "indirect": "SRA2.FEATS.SPELL.TYPE_INDIRECT"
         },
         label: "SRA2.FEATS.SPELL.TYPE"
+      }),
+      // Linked specializations for weapons
+      linkedAttackSpecialization: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"
+      }),
+      linkedDefenseSpecialization: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"
       })
     };
   }
@@ -2377,7 +2388,7 @@ class CharacterSheet extends ActorSheet {
   /**
    * Roll an attack with defense system
    */
-  async _rollAttackWithDefense(skillName, dicePool, riskDice = 0, riskReduction = 0, rollMode = "normal", weaponDamageValue) {
+  async _rollAttackWithDefense(skillName, dicePool, riskDice = 0, riskReduction = 0, rollMode = "normal", weaponDamageValue, attackingWeapon) {
     const attackResult = await this._performDiceRoll(dicePool, riskDice, riskReduction, rollMode);
     const targets = Array.from(game.user?.targets || []);
     if (targets.length === 0 || !weaponDamageValue || weaponDamageValue === "0") {
@@ -2395,14 +2406,30 @@ class CharacterSheet extends ActorSheet {
       defender: targetActor.name,
       successes: attackResult.totalSuccesses
     }));
-    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue);
+    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon);
   }
   /**
    * Prompt target to make a defense roll
    */
-  async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue) {
+  async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon) {
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
+    const linkedDefenseSpecId = attackingWeapon?.system?.linkedDefenseSpecialization || "";
+    let defaultSelection = "";
+    let linkedSpec = null;
+    let linkedSkill = null;
+    if (linkedDefenseSpecId) {
+      linkedSpec = allSpecializations.find((s) => s.id === linkedDefenseSpecId);
+      if (linkedSpec) {
+        defaultSelection = `spec-${linkedSpec.id}`;
+        const linkedSkillName = linkedSpec.system.linkedSkill;
+        linkedSkill = skills.find((s) => s.name === linkedSkillName);
+      }
+    }
+    if (!defaultSelection && skills.length > 0) {
+      linkedSkill = skills[0];
+      defaultSelection = `skill-${linkedSkill.id}`;
+    }
     let skillOptionsHtml = '<option value="">-- ' + game.i18n.localize("SRA2.COMBAT.SELECT_DEFENSE_SKILL") + " --</option>";
     skills.forEach((skill) => {
       const skillSystem = skill.system;
@@ -2411,7 +2438,8 @@ class CharacterSheet extends ActorSheet {
       const skillRating = skillSystem.rating || 0;
       const totalDicePool = attributeValue + skillRating;
       const { threshold } = this._calculateNPCThreshold(defenderActor, skill, totalDicePool, "skill");
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}">${skill.name} (${game.i18n.localize("SRA2.NPC.THRESHOLD")}: ${threshold} / ${totalDicePool} dés)</option>`;
+      const selected = defaultSelection === `skill-${skill.id}` ? " selected" : "";
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}"${selected}>${skill.name} (${game.i18n.localize("SRA2.NPC.THRESHOLD")}: ${threshold} / ${totalDicePool} dés)</option>`;
       const specs = allSpecializations.filter((spec) => {
         const linkedSkillName = spec.system.linkedSkill;
         return linkedSkillName === skill.name;
@@ -2424,7 +2452,8 @@ class CharacterSheet extends ActorSheet {
         const effectiveRating = parentRating + 2;
         const specTotalDicePool = specAttributeValue + effectiveRating;
         const { threshold: specThreshold } = this._calculateNPCThreshold(defenderActor, spec, specTotalDicePool, "specialization", skill);
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-threshold="${specThreshold}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${game.i18n.localize("SRA2.NPC.THRESHOLD")}: ${specThreshold} / ${specTotalDicePool} dés)</option>`;
+        const specSelected = defaultSelection === `spec-${spec.id}` ? " selected" : "";
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-threshold="${specThreshold}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${game.i18n.localize("SRA2.NPC.THRESHOLD")}: ${specThreshold} / ${specTotalDicePool} dés)</option>`;
       });
     });
     const dialog = new Dialog({
@@ -3737,6 +3766,22 @@ class CharacterSheet extends ActorSheet {
     const itemSystem = item.system;
     const skills = this.actor.items.filter((i) => i.type === "skill");
     const allSpecializations = this.actor.items.filter((i) => i.type === "specialization");
+    const linkedAttackSpecId = itemSystem.linkedAttackSpecialization || "";
+    let defaultSelection = "";
+    let linkedSpec = null;
+    let linkedSkill = null;
+    if (linkedAttackSpecId) {
+      linkedSpec = allSpecializations.find((s) => s.id === linkedAttackSpecId);
+      if (linkedSpec) {
+        defaultSelection = `spec-${linkedSpec.id}`;
+        const linkedSkillName = linkedSpec.system.linkedSkill;
+        linkedSkill = skills.find((s) => s.name === linkedSkillName);
+      }
+    }
+    if (!defaultSelection && skills.length > 0) {
+      linkedSkill = skills[0];
+      defaultSelection = `skill-${linkedSkill.id}`;
+    }
     let skillOptionsHtml = '<option value="">-- ' + game.i18n.localize("SRA2.FEATS.WEAPON.SELECT_SKILL") + " --</option>";
     skills.forEach((skill) => {
       const skillSystem = skill.system;
@@ -3744,7 +3789,8 @@ class CharacterSheet extends ActorSheet {
       const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
       const skillRating = skillSystem.rating || 0;
       const totalDicePool = attributeValue + skillRating;
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}">${skill.name} (${totalDicePool} dés)</option>`;
+      const selected = defaultSelection === `skill-${skill.id}` ? " selected" : "";
+      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}"${selected}>${skill.name} (${totalDicePool} dés)</option>`;
       const specs = allSpecializations.filter((spec) => {
         const linkedSkillName = spec.system.linkedSkill;
         return linkedSkillName === skill.name;
@@ -3756,7 +3802,8 @@ class CharacterSheet extends ActorSheet {
         const parentRating = skillRating;
         const effectiveRating = parentRating + 2;
         const specTotalDicePool = specAttributeValue + effectiveRating;
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${specTotalDicePool} dés)</option>`;
+        const specSelected = defaultSelection === `spec-${spec.id}` ? " selected" : "";
+        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${specTotalDicePool} dés)</option>`;
       });
     });
     const damageValue = itemSystem.damageValue || "0";
@@ -3799,13 +3846,13 @@ class CharacterSheet extends ActorSheet {
             if (itemType === "skill") {
               const skill = this.actor.items.get(itemId);
               if (skill) {
-                this._rollSkillWithWeapon(skill, weaponName, "skill", damageValue);
+                this._rollSkillWithWeapon(skill, weaponName, "skill", damageValue, item);
               }
             } else if (itemType === "spec") {
               const spec = this.actor.items.get(itemId);
               if (spec) {
                 const effectiveRating = parseInt(html.find(`#skill-select option:selected`).data("effective-rating") || "0");
-                this._rollSpecializationWithWeapon(spec, weaponName, effectiveRating, damageValue);
+                this._rollSpecializationWithWeapon(spec, weaponName, effectiveRating, damageValue, item);
               }
             }
           }
@@ -3822,7 +3869,7 @@ class CharacterSheet extends ActorSheet {
   /**
    * Roll a skill with weapon context
    */
-  async _rollSkillWithWeapon(skill, weaponName, _skillType, weaponDamageValue) {
+  async _rollSkillWithWeapon(skill, weaponName, _skillType, weaponDamageValue, weapon) {
     const skillSystem = skill.system;
     const rating = skillSystem.rating || 0;
     const linkedAttribute = skillSystem.linkedAttribute || "strength";
@@ -3998,7 +4045,7 @@ class CharacterSheet extends ActorSheet {
             });
             riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || "normal";
-            this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue);
+            this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
           }
         },
         cancel: {
@@ -4013,7 +4060,7 @@ class CharacterSheet extends ActorSheet {
   /**
    * Roll a specialization with weapon context
    */
-  async _rollSpecializationWithWeapon(specialization, weaponName, effectiveRating, weaponDamageValue) {
+  async _rollSpecializationWithWeapon(specialization, weaponName, effectiveRating, weaponDamageValue, weapon) {
     const specSystem = specialization.system;
     const linkedAttribute = specSystem.linkedAttribute || "strength";
     const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
@@ -4194,7 +4241,7 @@ class CharacterSheet extends ActorSheet {
             });
             riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || "normal";
-            this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue);
+            this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
           }
         },
         cancel: {
@@ -7037,6 +7084,7 @@ class FeatSheet extends ItemSheet {
     context.activeSection = this._activeSection;
     context.finalDamageValue = this._calculateFinalDamageValue();
     context.finalVehicleStats = this._calculateFinalVehicleStats();
+    context.availableSpecializations = this._getAvailableSpecializations();
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
     for (let i = 0; i < rrList.length; i++) {
@@ -7314,6 +7362,39 @@ class FeatSheet extends ItemSheet {
       flyingSpeed: finalFlyingSpeed,
       armor: finalArmor
     };
+  }
+  /**
+   * Get available specializations for linking to weapons
+   * Returns specializations from the actor, world items, and compendiums
+   */
+  _getAvailableSpecializations() {
+    const specializations = [];
+    const seenNames = /* @__PURE__ */ new Set();
+    if (this.item.actor) {
+      for (const item of this.item.actor.items) {
+        if (item.type === "specialization") {
+          specializations.push({
+            _id: item.id,
+            name: item.name,
+            source: "actor"
+          });
+          seenNames.add(item.name);
+        }
+      }
+    }
+    if (game.items) {
+      for (const item of game.items) {
+        if (item.type === "specialization" && !seenNames.has(item.name)) {
+          specializations.push({
+            _id: item.id,
+            name: item.name,
+            source: "world"
+          });
+          seenNames.add(item.name);
+        }
+      }
+    }
+    return specializations;
   }
   /**
    * Handle damage value bonus checkbox changes
@@ -8675,6 +8756,67 @@ class Migration_13_0_10 extends Migration {
     }
   }
 }
+class Migration_13_0_11 extends Migration {
+  get code() {
+    return "migration-13.0.11";
+  }
+  get version() {
+    return "13.0.11";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.11: Adding linked specializations fields to weapons");
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        const featType = sourceSystem.featType || "equipment";
+        if (featType !== "weapon" && featType !== "weapons-spells") {
+          continue;
+        }
+        if (sourceSystem._specializationLinkMigrationVersion === "13.0.11") {
+          totalSkipped++;
+          continue;
+        }
+        const hasAttackSpec = sourceSystem.hasOwnProperty("linkedAttackSpecialization");
+        const hasDefenseSpec = sourceSystem.hasOwnProperty("linkedDefenseSpecialization");
+        if (hasAttackSpec && hasDefenseSpec) {
+          const update2 = {
+            _id: item.id,
+            "system._specializationLinkMigrationVersion": "13.0.11"
+          };
+          updates.push(update2);
+          totalSkipped++;
+          continue;
+        }
+        const update = {
+          _id: item.id,
+          "system.linkedAttackSpecialization": sourceSystem.linkedAttackSpecialization || "",
+          "system.linkedDefenseSpecialization": sourceSystem.linkedDefenseSpecialization || "",
+          "system._specializationLinkMigrationVersion": "13.0.11"
+        };
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.11: Adding specialization link fields to weapon "${item.name}" (ID: ${item.id})`);
+        updates.push(update);
+        totalUpdated++;
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.11 completed - Weapons updated: ${totalUpdated}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalUpdated > 0) {
+      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_11_INFO", { count: totalUpdated }) : `Migration 13.0.11: Added specialization link fields to ${totalUpdated} weapon(s).`;
+      ui.notifications?.info(userMessage, { permanent: false });
+      console.log(SYSTEM.LOG.HEAD + "✓ Migration complete.");
+      console.log(SYSTEM.LOG.HEAD + "✓ Weapons can now be linked to attack and defense specializations");
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -8705,6 +8847,7 @@ class SRA2System {
       declareMigration(new Migration_13_0_8());
       declareMigration(new Migration_13_0_9());
       declareMigration(new Migration_13_0_10());
+      declareMigration(new Migration_13_0_11());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {

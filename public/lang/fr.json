@@ -335,6 +335,11 @@
                 "DAMAGE_VALUE_BONUS_HINT": "Chaque case cochée ajoute +1 au VD et +1 au niveau recommandé",
                 "BONUS_1": "+1 VD (+1 niveau)",
                 "BONUS_2": "+2 VD (+2 niveaux)",
+                "LINKED_ATTACK_SPECIALIZATION": "Spécialisation d'Attaque",
+                "LINKED_ATTACK_SPECIALIZATION_HINT": "Spécialisation utilisée lors des jets d'attaque avec cette arme",
+                "LINKED_DEFENSE_SPECIALIZATION": "Spécialisation de Défense",
+                "LINKED_DEFENSE_SPECIALIZATION_HINT": "Spécialisation utilisée lors des jets de défense contre cette arme",
+                "NO_SPECIALIZATION": "Aucune spécialisation",
                 "TYPES": {
                     "CUSTOM_WEAPON": "Arme personnalisée",
                     "BARE_HANDS": "Mains nues",
@@ -605,7 +610,8 @@
             "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde.",
             "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif).",
             "13_0_9_INFO": "Migration 13.0.9 : {count} atout(s) ont été mis à jour - ajout du champ valeur aux effets narratifs et du champ 'premier atout' à {firstFeatCount} atout(s).",
-            "13_0_10_INFO": "Migration 13.0.10 : {count} atout(s) mis à jour - système de coût simplifié (gratuit 0¥, équipement 2500¥, avancé 5000¥). {specializedCount} équipement(s) spécialisé(s) converti(s) en avancé, {featCount} atout(s) converti(s)."
+            "13_0_10_INFO": "Migration 13.0.10 : {count} atout(s) mis à jour - système de coût simplifié (gratuit 0¥, équipement 2500¥, avancé 5000¥). {specializedCount} équipement(s) spécialisé(s) converti(s) en avancé, {featCount} atout(s) converti(s).",
+            "13_0_11_INFO": "Migration 13.0.11 : {count} arme(s) mise(s) à jour - ajout des champs de liaison aux spécialisations d'attaque et de défense."
         }
     }
 }

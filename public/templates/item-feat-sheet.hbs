@@ -355,6 +355,32 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"}}</label>
+          <select name="system.linkedAttackSpecialization">
+            <option value="">{{localize "SRA2.FEATS.WEAPON.NO_SPECIALIZATION"}}</option>
+            {{#each availableSpecializations}}
+              <option value="{{this._id}}" {{#if (eq this._id ../system.linkedAttackSpecialization)}}selected{{/if}}>
+                {{this.name}}{{#if (eq this.source "world")}} ({{localize "SRA2.SKILLS.WORLD_ITEMS"}}){{/if}}
+              </option>
+            {{/each}}
+          </select>
+          <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION_HINT"}}</p>
+        </div>
+
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"}}</label>
+          <select name="system.linkedDefenseSpecialization">
+            <option value="">{{localize "SRA2.FEATS.WEAPON.NO_SPECIALIZATION"}}</option>
+            {{#each availableSpecializations}}
+              <option value="{{this._id}}" {{#if (eq this._id ../system.linkedDefenseSpecialization)}}selected{{/if}}>
+                {{this.name}}{{#if (eq this.source "world")}} ({{localize "SRA2.SKILLS.WORLD_ITEMS"}}){{/if}}
+              </option>
+            {{/each}}
+          </select>
+          <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION_HINT"}}</p>
+        </div>
+
         <div class="form-group ranges-group">
           <label>{{localize "SRA2.FEATS.WEAPON.RANGES"}}</label>
           {{#if (eq system.weaponType "custom-weapon")}}

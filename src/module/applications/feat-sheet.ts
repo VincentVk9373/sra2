@@ -38,6 +38,9 @@ export class FeatSheet extends ItemSheet {
     // Calculate final vehicle stats
     context.finalVehicleStats = this._calculateFinalVehicleStats();
     
+    // Get available specializations for weapon linking
+    context.availableSpecializations = this._getAvailableSpecializations();
+    
     // Build RR entries array from rrList
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
@@ -433,6 +436,45 @@ export class FeatSheet extends ItemSheet {
       flyingSpeed: finalFlyingSpeed,
       armor: finalArmor
     };
+  }
+
+  /**
+   * Get available specializations for linking to weapons
+   * Returns specializations from the actor, world items, and compendiums
+   */
+  private _getAvailableSpecializations(): any[] {
+    const specializations: any[] = [];
+    const seenNames = new Set<string>();
+    
+    // Priority 1: Get specializations from the actor if available
+    if (this.item.actor) {
+      for (const item of this.item.actor.items as any) {
+        if (item.type === 'specialization') {
+          specializations.push({
+            _id: item.id,
+            name: item.name,
+            source: 'actor'
+          });
+          seenNames.add(item.name);
+        }
+      }
+    }
+    
+    // Priority 2: Get specializations from world items
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === 'specialization' && !seenNames.has(item.name)) {
+          specializations.push({
+            _id: item.id,
+            name: item.name,
+            source: 'world'
+          });
+          seenNames.add(item.name);
+        }
+      }
+    }
+    
+    return specializations;
   }
 
   /**
