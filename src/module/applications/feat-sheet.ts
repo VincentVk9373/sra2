@@ -1,6 +1,16 @@
 import { WEAPON_TYPES, VEHICLE_TYPES } from '../models/item-feat.js';
 
 /**
+ * Normalize text for search: lowercase and remove accents/special characters
+ */
+function normalizeSearchText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+}
+
+/**
  * Feat Sheet Application
  */
 export class FeatSheet extends ItemSheet {
@@ -652,7 +662,7 @@ export class FeatSheet extends ItemSheet {
   
   private async _onRRTargetSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText(input.value.trim());
     const rrIndex = parseInt(input.dataset.rrIndex || '0');
     const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
     
@@ -689,7 +699,7 @@ export class FeatSheet extends ItemSheet {
     // Search in actor items if this feat is on an actor
     if (this.item.actor) {
       for (const item of this.item.actor.items as any) {
-        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === rrType && normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
             uuid: item.uuid,
@@ -703,7 +713,7 @@ export class FeatSheet extends ItemSheet {
     // Search in world items
     if (game.items) {
       for (const item of game.items as any) {
-        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === rrType && normalizeSearchText(item.name).includes(searchTerm)) {
           // Check if not already in results
           const exists = results.some(r => r.name === item.name);
           if (!exists) {
@@ -728,7 +738,7 @@ export class FeatSheet extends ItemSheet {
       
       // Filter for items that match the search term and type
       for (const doc of documents) {
-        if (doc.type === rrType && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === rrType && normalizeSearchText(doc.name).includes(searchTerm)) {
           // Check if not already in results
           const exists = results.some(r => r.name === doc.name);
           if (!exists) {

@@ -1,4 +1,14 @@
 /**
+ * Normalize text for search: lowercase and remove accents/special characters
+ */
+function normalizeSearchText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+}
+
+/**
  * Character Sheet Application
  */
 export class CharacterSheet extends ActorSheet {
@@ -2507,7 +2517,7 @@ export class CharacterSheet extends ActorSheet {
   
   private async _onSkillSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
     
     // Clear previous timeout
@@ -2539,7 +2549,7 @@ export class CharacterSheet extends ActorSheet {
     // Search in world items first
     if (game.items) {
       for (const item of game.items as any) {
-        if (item.type === 'skill' && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === 'skill' && normalizeSearchText(item.name).includes(searchTerm)) {
           // Check if skill already exists on actor
           const existingSkill = this.actor.items.find((i: any) => 
             i.type === 'skill' && i.name === item.name
@@ -2565,7 +2575,7 @@ export class CharacterSheet extends ActorSheet {
       
       // Filter for skills that match the search term
       for (const doc of documents) {
-        if (doc.type === 'skill' && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === 'skill' && normalizeSearchText(doc.name).includes(searchTerm)) {
           // Check if skill already exists on actor
           const existingSkill = this.actor.items.find((i: any) => 
             i.type === 'skill' && i.name === doc.name
@@ -2598,7 +2608,7 @@ export class CharacterSheet extends ActorSheet {
       .join(' ');
     
     const exactMatchOnActor = this.actor.items.find((i: any) => 
-      i.type === 'skill' && i.name.toLowerCase() === this.lastSearchTerm.toLowerCase()
+      i.type === 'skill' && normalizeSearchText(i.name) === normalizeSearchText(this.lastSearchTerm)
     );
     
     let html = '';
@@ -2841,7 +2851,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _onFeatSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
     
     // Clear previous timeout
@@ -2873,7 +2883,7 @@ export class CharacterSheet extends ActorSheet {
     // Search in world items first
     if (game.items) {
       for (const item of game.items as any) {
-        if (item.type === 'feat' && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === 'feat' && normalizeSearchText(item.name).includes(searchTerm)) {
           // Check if feat already exists on actor
           const existingFeat = this.actor.items.find((i: any) => 
             i.type === 'feat' && i.name === item.name
@@ -2900,7 +2910,7 @@ export class CharacterSheet extends ActorSheet {
       
       // Filter for feats that match the search term
       for (const doc of documents) {
-        if (doc.type === 'feat' && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === 'feat' && normalizeSearchText(doc.name).includes(searchTerm)) {
           // Check if feat already exists on actor
           const existingFeat = this.actor.items.find((i: any) => 
             i.type === 'feat' && i.name === doc.name
@@ -2932,7 +2942,7 @@ export class CharacterSheet extends ActorSheet {
       .join(' ');
     
     const exactMatchOnActor = this.actor.items.find((i: any) => 
-      i.type === 'feat' && i.name.toLowerCase() === this.lastFeatSearchTerm.toLowerCase()
+      i.type === 'feat' && normalizeSearchText(i.name) === normalizeSearchText(this.lastFeatSearchTerm)
     );
     
     let html = '';
@@ -3212,6 +3222,17 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
+   * Normalize a string for comparison (lowercase, no special chars)
+   */
+  private _normalizeString(str: string): string {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-z0-9]/g, ''); // Remove special characters
+  }
+
+  /**
    * Handle rolling dice for a weapon or spell
    */
   private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell'): Promise<void> {
@@ -3227,21 +3248,89 @@ export class CharacterSheet extends ActorSheet {
     let linkedSpec: any = null;
     let linkedSkill: any = null;
     
-    // Try to find the linked specialization
+    // NEW AUTO-SELECTION LOGIC:
+    // 1. Try to find the linked specialization by ID on character
     if (linkedAttackSpecId) {
       linkedSpec = allSpecializations.find((s: any) => s.id === linkedAttackSpecId);
+      
       if (linkedSpec) {
-        defaultSelection = `spec-${linkedSpec.id}`;
-        // Find the parent skill for this specialization
-        const linkedSkillName = linkedSpec.system.linkedSkill;
-        linkedSkill = skills.find((s: any) => s.name === linkedSkillName);
+        const specName = linkedSpec.name;
+        const normalizedSpecName = this._normalizeString(specName);
+        
+        // 1. Search for a skill on the character that has the same name as the specialization
+        const matchingSkill = skills.find((s: any) => 
+          this._normalizeString(s.name) === normalizedSpecName
+        );
+        
+        if (matchingSkill) {
+          // Found a skill with the same name - preselect it
+          defaultSelection = `skill-${matchingSkill.id}`;
+          linkedSkill = matchingSkill;
+        } else {
+          // 2. Check if the linked skill from specialization exists on character
+          const linkedSkillName = linkedSpec.system.linkedSkill;
+          if (linkedSkillName) {
+            const normalizedLinkedSkillName = this._normalizeString(linkedSkillName);
+            const matchingLinkedSkill = skills.find((s: any) => 
+              this._normalizeString(s.name) === normalizedLinkedSkillName
+            );
+            
+            if (matchingLinkedSkill) {
+              // Found the linked skill on character - preselect it
+              defaultSelection = `skill-${matchingLinkedSkill.id}`;
+              linkedSkill = matchingLinkedSkill;
+            } else {
+              // 3. Linked skill not found, search in game.items for the specialization by NAME
+              // to find alternative linked skill
+              const gameSpec = (game as any).items?.find((i: any) => 
+                i.type === 'specialization' && 
+                this._normalizeString(i.name) === normalizedSpecName
+              );
+              
+              if (gameSpec) {
+                const gameLinkedSkillName = gameSpec.system?.linkedSkill || '';
+                if (gameLinkedSkillName) {
+                  const normalizedGameLinkedSkill = this._normalizeString(gameLinkedSkillName);
+                  const matchingGameSkill = skills.find((s: any) => 
+                    this._normalizeString(s.name) === normalizedGameLinkedSkill
+                  );
+                  
+                  if (matchingGameSkill) {
+                    defaultSelection = `skill-${matchingGameSkill.id}`;
+                    linkedSkill = matchingGameSkill;
+                  }
+                }
+              }
+              
+              // 4. If still not found, try "arme à distance"
+              if (!defaultSelection) {
+                const normalizedRangedWeapon = this._normalizeString('arme à distance');
+                const rangedSkill = skills.find((s: any) => 
+                  this._normalizeString(s.name) === normalizedRangedWeapon
+                );
+                
+                if (rangedSkill) {
+                  defaultSelection = `skill-${rangedSkill.id}`;
+                  linkedSkill = rangedSkill;
+                } else {
+                  // Use the specialization itself as last resort before default
+                  defaultSelection = `spec-${linkedSpec.id}`;
+                  linkedSkill = skills[0]; // Will be used for fallback
+                }
+              }
+            }
+          } else {
+            // Specialization has no linked skill, use the specialization itself
+            defaultSelection = `spec-${linkedSpec.id}`;
+            linkedSkill = skills.find((s: any) => s.name === linkedSkillName);
+          }
+        }
       }
     }
     
-    // If no specialization found, try to find a linked skill by name (optional: could be extended with a linkedSkill field)
-    // For now, we'll just use the first skill if no specialization is linked
+    // 4. If still no selection, use the first skill as default
     if (!defaultSelection && skills.length > 0) {
-      linkedSkill = skills[0]; // Default to first skill
+      linkedSkill = skills[0];
       defaultSelection = `skill-${linkedSkill.id}`;
     }
     

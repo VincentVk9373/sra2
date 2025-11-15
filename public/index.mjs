@@ -1235,6 +1235,9 @@ const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   __proto__: null,
   SRA2Actor
 }, Symbol.toStringTag, { value: "Module" }));
+function normalizeSearchText$2(text) {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -3253,7 +3256,7 @@ class CharacterSheet extends ActorSheet {
   searchTimeout = null;
   async _onSkillSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText$2(input.value.trim());
     const resultsDiv = $(input).siblings(".skill-search-results")[0];
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
@@ -3274,7 +3277,7 @@ class CharacterSheet extends ActorSheet {
     this.lastSearchTerm = searchTerm;
     if (game.items) {
       for (const item of game.items) {
-        if (item.type === "skill" && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === "skill" && normalizeSearchText$2(item.name).includes(searchTerm)) {
           const existingSkill = this.actor.items.find(
             (i) => i.type === "skill" && i.name === item.name
           );
@@ -3291,7 +3294,7 @@ class CharacterSheet extends ActorSheet {
       if (pack.documentName !== "Item") continue;
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
-        if (doc.type === "skill" && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === "skill" && normalizeSearchText$2(doc.name).includes(searchTerm)) {
           const existingSkill = this.actor.items.find(
             (i) => i.type === "skill" && i.name === doc.name
           );
@@ -3313,7 +3316,7 @@ class CharacterSheet extends ActorSheet {
   _displaySkillSearchResults(results, resultsDiv) {
     const formattedSearchTerm = this.lastSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
     const exactMatchOnActor = this.actor.items.find(
-      (i) => i.type === "skill" && i.name.toLowerCase() === this.lastSearchTerm.toLowerCase()
+      (i) => i.type === "skill" && normalizeSearchText$2(i.name) === normalizeSearchText$2(this.lastSearchTerm)
     );
     let html = "";
     if (results.length === 0) {
@@ -3486,7 +3489,7 @@ class CharacterSheet extends ActorSheet {
    */
   async _onFeatSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText$2(input.value.trim());
     const resultsDiv = $(input).siblings(".feat-search-results")[0];
     if (this.featSearchTimeout) {
       clearTimeout(this.featSearchTimeout);
@@ -3507,7 +3510,7 @@ class CharacterSheet extends ActorSheet {
     this.lastFeatSearchTerm = searchTerm;
     if (game.items) {
       for (const item of game.items) {
-        if (item.type === "feat" && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === "feat" && normalizeSearchText$2(item.name).includes(searchTerm)) {
           const existingFeat = this.actor.items.find(
             (i) => i.type === "feat" && i.name === item.name
           );
@@ -3525,7 +3528,7 @@ class CharacterSheet extends ActorSheet {
       if (pack.documentName !== "Item") continue;
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
-        if (doc.type === "feat" && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === "feat" && normalizeSearchText$2(doc.name).includes(searchTerm)) {
           const existingFeat = this.actor.items.find(
             (i) => i.type === "feat" && i.name === doc.name
           );
@@ -3547,7 +3550,7 @@ class CharacterSheet extends ActorSheet {
   _displayFeatSearchResults(results, resultsDiv) {
     const formattedSearchTerm = this.lastFeatSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
     const exactMatchOnActor = this.actor.items.find(
-      (i) => i.type === "feat" && i.name.toLowerCase() === this.lastFeatSearchTerm.toLowerCase()
+      (i) => i.type === "feat" && normalizeSearchText$2(i.name) === normalizeSearchText$2(this.lastFeatSearchTerm)
     );
     let html = "";
     if (results.length === 0) {
@@ -3760,6 +3763,12 @@ class CharacterSheet extends ActorSheet {
     await this._rollWeaponOrSpell(item, "weapon-spell");
   }
   /**
+   * Normalize a string for comparison (lowercase, no special chars)
+   */
+  _normalizeString(str) {
+    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  }
+  /**
    * Handle rolling dice for a weapon or spell
    */
   async _rollWeaponOrSpell(item, type) {
@@ -3773,9 +3782,60 @@ class CharacterSheet extends ActorSheet {
     if (linkedAttackSpecId) {
       linkedSpec = allSpecializations.find((s) => s.id === linkedAttackSpecId);
       if (linkedSpec) {
-        defaultSelection = `spec-${linkedSpec.id}`;
-        const linkedSkillName = linkedSpec.system.linkedSkill;
-        linkedSkill = skills.find((s) => s.name === linkedSkillName);
+        const specName = linkedSpec.name;
+        const normalizedSpecName = this._normalizeString(specName);
+        const matchingSkill = skills.find(
+          (s) => this._normalizeString(s.name) === normalizedSpecName
+        );
+        if (matchingSkill) {
+          defaultSelection = `skill-${matchingSkill.id}`;
+          linkedSkill = matchingSkill;
+        } else {
+          const linkedSkillName = linkedSpec.system.linkedSkill;
+          if (linkedSkillName) {
+            const normalizedLinkedSkillName = this._normalizeString(linkedSkillName);
+            const matchingLinkedSkill = skills.find(
+              (s) => this._normalizeString(s.name) === normalizedLinkedSkillName
+            );
+            if (matchingLinkedSkill) {
+              defaultSelection = `skill-${matchingLinkedSkill.id}`;
+              linkedSkill = matchingLinkedSkill;
+            } else {
+              const gameSpec = game.items?.find(
+                (i) => i.type === "specialization" && this._normalizeString(i.name) === normalizedSpecName
+              );
+              if (gameSpec) {
+                const gameLinkedSkillName = gameSpec.system?.linkedSkill || "";
+                if (gameLinkedSkillName) {
+                  const normalizedGameLinkedSkill = this._normalizeString(gameLinkedSkillName);
+                  const matchingGameSkill = skills.find(
+                    (s) => this._normalizeString(s.name) === normalizedGameLinkedSkill
+                  );
+                  if (matchingGameSkill) {
+                    defaultSelection = `skill-${matchingGameSkill.id}`;
+                    linkedSkill = matchingGameSkill;
+                  }
+                }
+              }
+              if (!defaultSelection) {
+                const normalizedRangedWeapon = this._normalizeString("arme à distance");
+                const rangedSkill = skills.find(
+                  (s) => this._normalizeString(s.name) === normalizedRangedWeapon
+                );
+                if (rangedSkill) {
+                  defaultSelection = `skill-${rangedSkill.id}`;
+                  linkedSkill = rangedSkill;
+                } else {
+                  defaultSelection = `spec-${linkedSpec.id}`;
+                  linkedSkill = skills[0];
+                }
+              }
+            }
+          } else {
+            defaultSelection = `spec-${linkedSpec.id}`;
+            linkedSkill = skills.find((s) => s.name === linkedSkillName);
+          }
+        }
       }
     }
     if (!defaultSelection && skills.length > 0) {
@@ -7061,6 +7121,9 @@ class NpcSheet extends ActorSheet {
     return await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
   }
 }
+function normalizeSearchText$1(text) {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
@@ -7529,7 +7592,7 @@ class FeatSheet extends ItemSheet {
   rrTargetSearchTimeout = null;
   async _onRRTargetSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText$1(input.value.trim());
     const rrIndex = parseInt(input.dataset.rrIndex || "0");
     const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
     if (this.rrTargetSearchTimeout) {
@@ -7556,7 +7619,7 @@ class FeatSheet extends ItemSheet {
     }
     if (this.item.actor) {
       for (const item of this.item.actor.items) {
-        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === rrType && normalizeSearchText$1(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
             uuid: item.uuid,
@@ -7568,7 +7631,7 @@ class FeatSheet extends ItemSheet {
     }
     if (game.items) {
       for (const item of game.items) {
-        if (item.type === rrType && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === rrType && normalizeSearchText$1(item.name).includes(searchTerm)) {
           const exists = results.some((r) => r.name === item.name);
           if (!exists) {
             results.push({
@@ -7585,7 +7648,7 @@ class FeatSheet extends ItemSheet {
       if (pack.documentName !== "Item") continue;
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
-        if (doc.type === rrType && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === rrType && normalizeSearchText$1(doc.name).includes(searchTerm)) {
           const exists = results.some((r) => r.name === doc.name);
           if (!exists) {
             results.push({
@@ -7745,6 +7808,9 @@ class SkillSheet extends ItemSheet {
     return this.item.update(expandedData);
   }
 }
+function normalizeSearchText(text) {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 class SpecializationSheet extends ItemSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -7843,7 +7909,7 @@ class SpecializationSheet extends ItemSheet {
    */
   async _onSkillSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = input.value.trim().toLowerCase();
+    const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings(".skill-search-results")[0];
     if (this.skillSearchTimeout) {
       clearTimeout(this.skillSearchTimeout);
@@ -7864,7 +7930,7 @@ class SpecializationSheet extends ItemSheet {
     this.lastSkillSearchTerm = searchTerm;
     if (game.items) {
       for (const item of game.items) {
-        if (item.type === "skill" && item.name.toLowerCase().includes(searchTerm)) {
+        if (item.type === "skill" && normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
             uuid: item.uuid,
@@ -7879,7 +7945,7 @@ class SpecializationSheet extends ItemSheet {
       if (pack.documentName !== "Item") continue;
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
-        if (doc.type === "skill" && doc.name.toLowerCase().includes(searchTerm)) {
+        if (doc.type === "skill" && normalizeSearchText(doc.name).includes(searchTerm)) {
           results.push({
             name: doc.name,
             uuid: doc.uuid,
@@ -7898,7 +7964,7 @@ class SpecializationSheet extends ItemSheet {
   _displaySkillSearchResults(results, resultsDiv) {
     const formattedSearchTerm = this.lastSkillSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
     const exactMatch = results.find(
-      (r) => r.name.toLowerCase() === this.lastSkillSearchTerm.toLowerCase()
+      (r) => normalizeSearchText(r.name) === normalizeSearchText(this.lastSkillSearchTerm)
     );
     let html = "";
     if (results.length === 0) {
