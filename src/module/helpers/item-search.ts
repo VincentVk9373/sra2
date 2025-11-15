@@ -298,7 +298,7 @@ export function itemExistsOnActor(actor: any, itemType: string, itemName: string
  */
 export async function addItemToActorFromUuid(actor: any, itemUuid: string): Promise<boolean> {
   try {
-    const item = await fromUuid(itemUuid);
+    const item = await fromUuid(itemUuid as any);
     if (!item) {
       ui.notifications?.error(game.i18n!.localize('SRA2.SKILLS.ITEM_NOT_FOUND'));
       return false;

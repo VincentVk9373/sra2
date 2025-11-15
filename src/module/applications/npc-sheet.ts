@@ -1,6 +1,6 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
-import * as ItemSearch from '../helpers/item-search.js';
 import * as DefenseSelection from '../helpers/defense-selection.js';
+import * as CombatHelpers from '../helpers/combat-helpers.js';
 
 /**
  * NPC Sheet Application
@@ -457,7 +457,6 @@ export class NpcSheet extends ActorSheet {
 
     const specSystem = specialization.system as any;
     const linkedAttribute = specSystem.linkedAttribute || 'strength';
-    const rating = specSystem.rating || 0;
     
     // Get the attribute value from the actor
     const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
@@ -542,7 +541,6 @@ export class NpcSheet extends ActorSheet {
     const itemId = element.data('item-id') || element.attr('data-item-id');
     const threshold = element.data('threshold') || element.attr('data-threshold');
     const itemName = element.data('item-name') || element.attr('data-item-name');
-    const isSpecialization = element.data('is-specialization') === 'true' || element.attr('data-is-specialization') === 'true';
 
     if (!itemId || threshold === undefined) {
       console.error("SRA2 | No item ID or threshold found");
@@ -574,33 +572,13 @@ export class NpcSheet extends ActorSheet {
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Build skill options HTML
-    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
-    skills.forEach((skill: any) => {
-      const skillSystem = skill.system as any;
-      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
-      const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
-      const skillRating = skillSystem.rating || 0;
-      const totalDicePool = attributeValue + skillRating;
-      
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}">${skill.name} (${totalDicePool} dés)</option>`;
-      
-      // Add specializations for this skill
-      const specs = allSpecializations.filter((spec: any) => {
-        const linkedSkillName = spec.system.linkedSkill;
-        return linkedSkillName === skill.name;
-      });
-      
-      specs.forEach((spec: any) => {
-        const specSystem = spec.system as any;
-        const specLinkedAttribute = specSystem.linkedAttribute || 'strength';
-        const specAttributeValue = (defenderActor.system as any).attributes?.[specLinkedAttribute] || 0;
-        const parentRating = skillRating;
-        const effectiveRating = parentRating + 2;
-        const specTotalDicePool = specAttributeValue + effectiveRating;
-        
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}">  → ${spec.name} (${specTotalDicePool} dés)</option>`;
-      });
+    // Build skill options HTML using helper
+    const skillOptionsHtml = CombatHelpers.buildSkillOptionsHtml({
+      defenderActor,
+      skills,
+      allSpecializations,
+      defaultSelection: '', // No default for simple NPC attacks
+      includeThreshold: false
     });
     
     // Create defense dialog
@@ -879,109 +857,7 @@ export class NpcSheet extends ActorSheet {
    * Perform defense roll
    */
   private async _performDefenseRoll(dicePool: number, riskDice: number, riskReduction: number, rollMode: string, skillName: string): Promise<any> {
-    let normalSuccesses = 0;
-    let riskSuccesses = 0;
-    let criticalFailures = 0;
-    let normalDiceResults = '';
-    let riskDiceResults = '';
-    
-    const getSuccessThreshold = (mode: string): number => {
-      switch (mode) {
-        case 'advantage': return 4;
-        case 'disadvantage': return 6;
-        default: return 5;
-      }
-    };
-    
-    const successThreshold = getSuccessThreshold(rollMode);
-    
-    // Roll normal dice
-    let normalRoll: Roll | null = null;
-    if (dicePool > 0) {
-      normalRoll = new Roll(`${dicePool}d6`);
-      await normalRoll.evaluate();
-      
-      const normalResults = normalRoll.dice[0]?.results || [];
-      normalSuccesses = normalResults.filter((r: any) => r.result >= successThreshold).length;
-      
-      normalDiceResults = normalResults.map((r: any) => {
-        const isSuccess = r.result >= successThreshold;
-        return `<span class="die normal ${isSuccess ? 'success' : 'failure'}">${r.result}</span>`;
-      }).join(' ');
-    }
-    
-    // Roll risk dice
-    let riskRoll: Roll | null = null;
-    if (riskDice > 0) {
-      riskRoll = new Roll(`${riskDice}d6`);
-      await riskRoll.evaluate();
-      
-      const riskResults = riskRoll.dice[0]?.results || [];
-      
-      riskResults.forEach((r: any) => {
-        if (r.result >= successThreshold) {
-          riskSuccesses += 2;
-        } else if (r.result === 1) {
-          criticalFailures++;
-        }
-      });
-      
-      riskDiceResults = riskResults.map((r: any) => {
-        let cssClass = 'die risk ';
-        if (r.result >= successThreshold) {
-          cssClass += 'success';
-        } else if (r.result === 1) {
-          cssClass += 'critical';
-        } else {
-          cssClass += 'failure';
-        }
-        return `<span class="${cssClass}">${r.result}</span>`;
-      }).join(' ');
-    }
-    
-    // Show Dice So Nice animations if available
-    if ((game as any).dice3d) {
-      const dice3d = (game as any).dice3d;
-      const promises: Promise<any>[] = [];
-      
-      if (normalRoll) {
-        promises.push(
-          dice3d.showForRoll(normalRoll, game.user, true, null, false, null, null, {
-            colorset: "grey"
-          }).catch(() => {})
-        );
-      }
-      
-      if (riskRoll) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        promises.push(
-          dice3d.showForRoll(riskRoll, game.user, true, null, false, null, null, {
-            colorset: "black"
-          }).catch(() => {})
-        );
-      }
-      
-      await Promise.all(promises);
-    }
-    
-    const rawCriticalFailures = criticalFailures;
-    criticalFailures = Math.max(0, criticalFailures - riskReduction);
-    const totalSuccesses = normalSuccesses + riskSuccesses;
-    
-    return {
-      skillName,
-      normalDiceResults,
-      riskDiceResults,
-      totalSuccesses,
-      normalSuccesses,
-      riskSuccesses,
-      criticalFailures,
-      rawCriticalFailures,
-      dicePool,
-      riskDice,
-      riskReduction,
-      rollMode
-    };
+    return await CombatHelpers.performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
   }
 
   /**
@@ -1072,97 +948,15 @@ export class NpcSheet extends ActorSheet {
    * Build NPC attack HTML (threshold based)
    */
   private _buildNPCAttackHtml(threshold: number): string {
-    let html = '';
-    
-    html += '<div class="dice-pool">';
-    html += `<strong>${game.i18n!.localize('SRA2.NPC.THRESHOLD')}:</strong> `;
-    html += `<span class="threshold-badge">${threshold}</span>`;
-    html += '</div>';
-    
-    html += `<div class="successes has-success">`;
-    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${threshold}`;
-    html += '</div>';
-    
-    return html;
+    return CombatHelpers.buildNPCAttackHtml(threshold);
   }
 
   /**
    * Build dice results HTML (same as character sheet)
    */
   private _buildDiceResultsHtml(rollResult: any): string {
-    let html = '';
-    
-    const totalPool = rollResult.dicePool + rollResult.riskDice;
-    html += '<div class="dice-pool">';
-    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.DICE_POOL')}:</strong> `;
-    html += `${totalPool}d6`;
-    if (rollResult.riskDice > 0) {
-      html += ` (${rollResult.dicePool} ${game.i18n!.localize('SRA2.SKILLS.NORMAL')} + <span class="risk-label">${rollResult.riskDice} ${game.i18n!.localize('SRA2.SKILLS.RISK')}</span>`;
-      if (rollResult.riskReduction > 0) {
-        html += ` | <span class="rr-label">RR ${rollResult.riskReduction}</span>`;
-      }
-      html += `)`;
-    } else if (rollResult.riskReduction > 0) {
-      html += ` | <span class="rr-label">RR ${rollResult.riskReduction}</span>`;
-    }
-    html += '</div>';
-    
-    // Normal dice results
-    if (rollResult.normalDiceResults) {
-      html += '<div class="dice-results">';
-      html += `<strong>${game.i18n!.localize('SRA2.SKILLS.NORMAL_DICE')}:</strong> ${rollResult.normalDiceResults}`;
-      html += '</div>';
-    }
-    
-    // Risk dice results
-    if (rollResult.riskDiceResults) {
-      html += '<div class="dice-results risk">';
-      html += `<strong>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</strong> ${rollResult.riskDiceResults}`;
-      html += '</div>';
-    }
-    
-    // Total successes
-    html += `<div class="successes ${rollResult.totalSuccesses > 0 ? 'has-success' : 'no-success'}">`;
-    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${rollResult.totalSuccesses}`;
-    html += '</div>';
-    
-    // Critical failures with proper styling (same as character sheet)
-    if (rollResult.rawCriticalFailures > 0) {
-      const criticalFailures = rollResult.criticalFailures;
-      const rawCriticalFailures = rollResult.rawCriticalFailures;
-      const riskReduction = rollResult.riskReduction || 0;
-      
-      let criticalLabel = '';
-      let criticalClass = '';
-      
-      if (criticalFailures >= 3) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.DISASTER');
-        criticalClass = 'disaster';
-      } else if (criticalFailures === 2) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION');
-        criticalClass = 'critical-complication';
-      } else if (criticalFailures === 1) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION');
-        criticalClass = 'minor-complication';
-      } else {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.NO_COMPLICATION');
-        criticalClass = 'reduced-to-zero';
-      }
-      
-      html += `<div class="critical-failures ${criticalClass}">`;
-      html += `<div class="complication-header">`;
-      html += `<div class="complication-icon">⚠</div>`;
-      html += `<div class="complication-title">${criticalLabel}</div>`;
-      html += `</div>`;
-      
-      if (riskReduction > 0) {
-        html += `<div class="complication-calculation">Défense: ${rawCriticalFailures} - ${riskReduction} RR = ${criticalFailures}</div>`;
-      }
-      
-      html += '</div>';
-    }
-    
-    return html;
+    rollResult.isDefense = true; // Mark as defense roll for proper labels
+    return CombatHelpers.buildDiceResultsHtml(rollResult);
   }
 
   /**
@@ -1196,11 +990,14 @@ export class NpcSheet extends ActorSheet {
       return;
     }
 
+    // Get the weapon item
+    const weapon = this.actor.items.get(itemId);
+    
     // For each target, prompt defense roll with VD
     for (const target of targets) {
       const targetActor = target.actor;
       if (targetActor) {
-        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, weaponVD);
+        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, weaponVD, weapon);
       }
     }
   }
@@ -1229,11 +1026,14 @@ export class NpcSheet extends ActorSheet {
       return;
     }
 
+    // Get the spell item
+    const spell = this.actor.items.get(itemId);
+    
     // For each target, prompt defense roll with VD
     for (const target of targets) {
       const targetActor = target.actor;
       if (targetActor) {
-        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, spellVD);
+        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, spellVD, spell);
       }
     }
   }
@@ -1288,27 +1088,13 @@ export class NpcSheet extends ActorSheet {
     const skills = this.actor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
     
-    // Build skill options HTML
-    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
-    skills.forEach((skill: any) => {
-      const skillSystem = skill.system as any;
-      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
-      const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-      const skillRating = skillSystem.rating || 0;
-      const totalDicePool = attributeValue + skillRating;
-      
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}">${skill.name} (${totalDicePool} dés)</option>`;
-      
-      // Add specializations for this skill
-      const specs = allSpecializations.filter((spec: any) => {
-        const linkedSkillName = spec.system.linkedSkill;
-        return linkedSkillName === skill.name;
-      });
-      
-      specs.forEach((spec: any) => {
-        const specDicePool = totalDicePool + 2;
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specDicePool}">  → ${spec.name} (${specDicePool} dés)</option>`;
-      });
+    // Build skill options HTML using helper
+    const skillOptionsHtml = CombatHelpers.buildSkillOptionsHtml({
+      defenderActor: this.actor,
+      skills,
+      allSpecializations,
+      defaultSelection: '',
+      includeThreshold: false
     });
     
     const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
@@ -1353,7 +1139,7 @@ export class NpcSheet extends ActorSheet {
             
             const skillItem = this.actor.items.get(itemId);
             if (skillItem) {
-              this._rollSkillWithWeapon(skillItem, itemName, itemType, weaponVD);
+              this._rollSkillWithWeapon(skillItem, itemName, itemType, weaponVD, item);
             }
           }
         },
@@ -1371,7 +1157,7 @@ export class NpcSheet extends ActorSheet {
   /**
    * Roll a skill with weapon/spell context (launching dice with attack system)
    */
-  private async _rollSkillWithWeapon(skill: any, weaponName: string, skillType: string, weaponDamageValue: string): Promise<void> {
+  private async _rollSkillWithWeapon(skill: any, weaponName: string, skillType: string, weaponDamageValue: string, weapon?: any): Promise<void> {
     const skillSystem = skill.system as any;
     const linkedAttribute = skillType === 'spec' ? 
       (skillSystem.linkedAttribute || 'strength') : 
@@ -1566,7 +1352,7 @@ export class NpcSheet extends ActorSheet {
             });
             riskReduction = Math.min(3, riskReduction);
             const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
-            this._rollAttackWithDefenseNPC(`${itemName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponVD);
+            this._rollAttackWithDefenseNPC(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
           }
         },
         cancel: {
@@ -1583,7 +1369,7 @@ export class NpcSheet extends ActorSheet {
   /**
    * Roll attack with defense system for NPC
    */
-  private async _rollAttackWithDefenseNPC(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string): Promise<void> {
+  private async _rollAttackWithDefenseNPC(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any): Promise<void> {
     // First, roll the attack
     const attackResult = await this._performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
     
@@ -1606,7 +1392,7 @@ export class NpcSheet extends ActorSheet {
     }
 
     // Prompt defense roll
-    await this._promptDefenseRollWithAttackResult(targetActor, attackResult, skillName, weaponDamageValue || '0');
+    await this._promptDefenseRollWithAttackResult(targetActor, attackResult, skillName, weaponDamageValue || '0', attackingWeapon);
   }
 
   /**
@@ -1677,66 +1463,27 @@ export class NpcSheet extends ActorSheet {
   /**
    * Prompt defense roll with attack result (when NPCs roll dice)
    */
-  private async _promptDefenseRollWithAttackResult(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string): Promise<void> {
+  private async _promptDefenseRollWithAttackResult(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any): Promise<void> {
     // Get all skills and specializations from defender
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Build skill options HTML - ALWAYS show both threshold and dice pool
-    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
+    // Get linked defense specialization name from attacking weapon
+    const linkedDefenseSpecName = attackingWeapon ? DefenseSelection.getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations) : '';
     
-    skills.forEach((skill: any) => {
-      const skillSystem = skill.system as any;
-      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
-      const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
-      const skillRating = skillSystem.rating || 0;
-      const totalDicePool = attributeValue + skillRating;
-      
-      // Calculate threshold
-      let totalRR = 0;
-      const activeFeats = defenderActor.items.filter((i: any) => 
-        i.type === 'feat' && i.system.active === true
-      );
-      
-      activeFeats.forEach((feat: any) => {
-        const rrList = feat.system.rrList || [];
-        rrList.forEach((rrEntry: any) => {
-          if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === skill.name) {
-            totalRR += rrEntry.rrValue || 0;
-          }
-          if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
-            totalRR += rrEntry.rrValue || 0;
-          }
-        });
-      });
-      
-      const threshold = Math.floor(totalDicePool / 3) + totalRR + 1;
-      
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}">${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${threshold} / ${totalDicePool} dés)</option>`;
-      
-      // Add specializations
-      const specs = allSpecializations.filter((spec: any) => {
-        const linkedSkillName = spec.system.linkedSkill;
-        return linkedSkillName === skill.name;
-      });
-      
-      specs.forEach((spec: any) => {
-        const specDicePool = totalDicePool + 2;
-        let specTotalRR = totalRR;
-        
-        activeFeats.forEach((feat: any) => {
-          const rrList = feat.system.rrList || [];
-          rrList.forEach((rrEntry: any) => {
-            if (rrEntry.rrType === 'specialization' && rrEntry.rrTarget === spec.name) {
-              specTotalRR += rrEntry.rrValue || 0;
-            }
-          });
-        });
-        
-        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
-        
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specDicePool}" data-threshold="${specThreshold}">  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold} / ${specDicePool} dés)</option>`;
-      });
+    // Use the helper to find the appropriate defense selection by NAME
+    const { defaultSelection } = DefenseSelection.findDefaultDefenseSelection(
+      defenderActor,
+      linkedDefenseSpecName
+    );
+    
+    // Build skill options HTML using helper
+    const skillOptionsHtml = CombatHelpers.buildSkillOptionsHtml({
+      defenderActor,
+      skills,
+      allSpecializations,
+      defaultSelection,
+      includeThreshold: true
     });
     
     // Create defense dialog
@@ -1824,66 +1571,27 @@ export class NpcSheet extends ActorSheet {
   /**
    * Prompt defense roll with weapon damage value (threshold attack)
    */
-  private async _promptDefenseRollWithVD(defenderActor: any, attackThreshold: number, attackName: string, weaponDamageValue: string): Promise<void> {
+  private async _promptDefenseRollWithVD(defenderActor: any, attackThreshold: number, attackName: string, weaponDamageValue: string, attackingWeapon?: any): Promise<void> {
     // Get all skills and specializations from defender
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Build skill options HTML - ALWAYS show both threshold and dice pool
-    let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
+    // Get linked defense specialization name from attacking weapon
+    const linkedDefenseSpecName = attackingWeapon ? DefenseSelection.getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations) : '';
     
-    skills.forEach((skill: any) => {
-      const skillSystem = skill.system as any;
-      const linkedAttribute = skillSystem.linkedAttribute || 'strength';
-      const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
-      const skillRating = skillSystem.rating || 0;
-      const totalDicePool = attributeValue + skillRating;
-      
-      // Calculate threshold
-      let totalRR = 0;
-      const activeFeats = defenderActor.items.filter((i: any) => 
-        i.type === 'feat' && i.system.active === true
-      );
-      
-      activeFeats.forEach((feat: any) => {
-        const rrList = feat.system.rrList || [];
-        rrList.forEach((rrEntry: any) => {
-          if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === skill.name) {
-            totalRR += rrEntry.rrValue || 0;
-          }
-          if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
-            totalRR += rrEntry.rrValue || 0;
-          }
-        });
-      });
-      
-      const threshold = Math.floor(totalDicePool / 3) + totalRR + 1;
-      
-      skillOptionsHtml += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}" data-threshold="${threshold}">${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${threshold} / ${totalDicePool} dés)</option>`;
-      
-      // Add specializations
-      const specs = allSpecializations.filter((spec: any) => {
-        const linkedSkillName = spec.system.linkedSkill;
-        return linkedSkillName === skill.name;
-      });
-      
-      specs.forEach((spec: any) => {
-        const specDicePool = totalDicePool + 2;
-        let specTotalRR = totalRR;
-        
-        activeFeats.forEach((feat: any) => {
-          const rrList = feat.system.rrList || [];
-          rrList.forEach((rrEntry: any) => {
-            if (rrEntry.rrType === 'specialization' && rrEntry.rrTarget === spec.name) {
-              specTotalRR += rrEntry.rrValue || 0;
-            }
-          });
-        });
-        
-        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
-        
-        skillOptionsHtml += `<option value="spec-${spec.id}" data-dice-pool="${specDicePool}" data-threshold="${specThreshold}">  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold} / ${specDicePool} dés)</option>`;
-      });
+    // Use the helper to find the appropriate defense selection by NAME
+    const { defaultSelection } = DefenseSelection.findDefaultDefenseSelection(
+      defenderActor,
+      linkedDefenseSpecName
+    );
+    
+    // Build skill options HTML using helper
+    const skillOptionsHtml = CombatHelpers.buildSkillOptionsHtml({
+      defenderActor,
+      skills,
+      allSpecializations,
+      defaultSelection,
+      includeThreshold: true
     });
     
     // Create defense dialog
@@ -1974,22 +1682,8 @@ export class NpcSheet extends ActorSheet {
   private async _defendWithThresholdAgainstDiceAttack(defenseItem: any, threshold: number, attackName: string, attackResult: any, defenderActor: any, weaponDamageValue: string): Promise<void> {
     const defenseName = defenseItem.name;
     
-    // Create a "fake" defense result using threshold
-    const defenseResult = {
-      skillName: defenseName,
-      totalSuccesses: threshold,
-      isThreshold: true,
-      normalDiceResults: '',
-      riskDiceResults: '',
-      normalSuccesses: threshold,
-      riskSuccesses: 0,
-      criticalFailures: 0,
-      rawCriticalFailures: 0,
-      dicePool: 0,
-      riskDice: 0,
-      riskReduction: 0,
-      rollMode: 'threshold'
-    };
+    // Create a threshold defense result using helper
+    const defenseResult = CombatHelpers.createThresholdDefenseResult(defenseName, threshold);
     
     // Display the attack result with VD
     await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue);
@@ -2214,24 +1908,8 @@ export class NpcSheet extends ActorSheet {
    * Display NPC dice attack result (when attacker rolled dice, not just threshold)
    */
   private async _displayNPCDiceAttackResult(attackName: string, attackResult: any, defenseResult: any | null, defenderActor: any, weaponDamageValue: string): Promise<void> {
-    // Parse weapon damage value
     const strength = (this.actor.system as any).attributes?.strength || 0;
-    let baseVD = 0;
-    let vdDisplay = weaponDamageValue;
-    
-    if (weaponDamageValue === 'FOR') {
-      baseVD = strength;
-      vdDisplay = `FOR (${strength})`;
-    } else if (weaponDamageValue.startsWith('FOR+')) {
-      const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
-      baseVD = strength + modifier;
-      vdDisplay = `FOR+${modifier} (${baseVD})`;
-    } else if (weaponDamageValue === 'toxin') {
-      vdDisplay = 'selon toxine';
-      baseVD = -1;
-    } else {
-      baseVD = parseInt(weaponDamageValue) || 0;
-    }
+    const { baseVD } = CombatHelpers.parseWeaponDamageValue(weaponDamageValue, strength);
     
     let resultsHtml = '<div class="sra2-combat-roll">';
     
@@ -2319,83 +1997,9 @@ export class NpcSheet extends ActorSheet {
   /**
    * Build dice results HTML with VD display
    */
-  private _buildDiceResultsHtmlWithVD(rollResult: any, weaponDamageValue: string, vdDisplay: string): string {
-    let html = '';
-    
-    const totalPool = rollResult.dicePool + rollResult.riskDice;
-    html += '<div class="dice-pool">';
-    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.DICE_POOL')}:</strong> `;
-    html += `${totalPool}d6`;
-    if (rollResult.riskDice > 0) {
-      html += ` (${rollResult.dicePool} ${game.i18n!.localize('SRA2.SKILLS.NORMAL')} + <span class="risk-label">${rollResult.riskDice} ${game.i18n!.localize('SRA2.SKILLS.RISK')}</span>`;
-      if (rollResult.riskReduction > 0) {
-        html += ` | <span class="rr-label">RR ${rollResult.riskReduction}</span>`;
-      }
-      html += `)`;
-    } else if (rollResult.riskReduction > 0) {
-      html += ` | <span class="rr-label">RR ${rollResult.riskReduction}</span>`;
-    }
-    html += '</div>';
-    
-    // Normal dice results
-    if (rollResult.normalDiceResults) {
-      html += '<div class="dice-results">';
-      html += `<strong>${game.i18n!.localize('SRA2.SKILLS.NORMAL_DICE')}:</strong> ${rollResult.normalDiceResults}`;
-      html += '</div>';
-    }
-    
-    // Risk dice results
-    if (rollResult.riskDiceResults) {
-      html += '<div class="dice-results risk">';
-      html += `<strong>${game.i18n!.localize('SRA2.SKILLS.RISK_DICE')}:</strong> ${rollResult.riskDiceResults}`;
-      html += '</div>';
-    }
-    
-    // Total successes with VD
-    html += `<div class="successes ${rollResult.totalSuccesses > 0 ? 'has-success' : 'no-success'}">`;
-    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${rollResult.totalSuccesses}`;
-    if (weaponDamageValue && weaponDamageValue !== '0') {
-      html += ` | <strong>VD:</strong> <span class="vd-display">${vdDisplay}</span>`;
-    }
-    html += '</div>';
-    
-    // Critical failures with proper styling
-    if (rollResult.rawCriticalFailures > 0) {
-      const criticalFailures = rollResult.criticalFailures;
-      const rawCriticalFailures = rollResult.rawCriticalFailures;
-      const riskReduction = rollResult.riskReduction || 0;
-      
-      let criticalLabel = '';
-      let criticalClass = '';
-      
-      if (criticalFailures >= 3) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.DISASTER');
-        criticalClass = 'disaster';
-      } else if (criticalFailures === 2) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION');
-        criticalClass = 'critical-complication';
-      } else if (criticalFailures === 1) {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION');
-        criticalClass = 'minor-complication';
-      } else {
-        criticalLabel = game.i18n!.localize('SRA2.SKILLS.NO_COMPLICATION');
-        criticalClass = 'reduced-to-zero';
-      }
-      
-      html += `<div class="critical-failures ${criticalClass}">`;
-      html += `<div class="complication-header">`;
-      html += `<div class="complication-icon">⚠</div>`;
-      html += `<div class="complication-title">${criticalLabel}</div>`;
-      html += `</div>`;
-      
-      if (riskReduction > 0) {
-        html += `<div class="complication-calculation">Attaque: ${rawCriticalFailures} - ${riskReduction} RR = ${criticalFailures}</div>`;
-      }
-      
-      html += '</div>';
-    }
-    
-    return html;
+  private _buildDiceResultsHtmlWithVD(rollResult: any, weaponDamageValue: string, _vdDisplay: string): string {
+    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
+    return CombatHelpers.buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength);
   }
 
   /**
@@ -2411,22 +2015,8 @@ export class NpcSheet extends ActorSheet {
   private async _defendWithThresholdAgainstWeapon(defenseItem: any, threshold: number, attackName: string, attackThreshold: number, defenderActor: any, weaponDamageValue: string): Promise<void> {
     const defenseName = defenseItem.name;
     
-    // Create a "fake" defense result using threshold
-    const defenseResult = {
-      skillName: defenseName,
-      totalSuccesses: threshold,
-      isThreshold: true,
-      normalDiceResults: '',
-      riskDiceResults: '',
-      normalSuccesses: threshold,
-      riskSuccesses: 0,
-      criticalFailures: 0,
-      rawCriticalFailures: 0,
-      dicePool: 0,
-      riskDice: 0,
-      riskReduction: 0,
-      rollMode: 'threshold'
-    };
+    // Create a threshold defense result using helper
+    const defenseResult = CombatHelpers.createThresholdDefenseResult(defenseName, threshold);
     
     // Display the attack result with VD
     await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue);
@@ -2651,24 +2241,8 @@ export class NpcSheet extends ActorSheet {
    * Display NPC weapon attack result with VD
    */
   private async _displayNPCWeaponAttackResult(attackName: string, attackThreshold: number, defenseResult: any | null, defenderActor: any, weaponDamageValue: string): Promise<void> {
-    // Parse weapon damage value (support FOR, FOR+X, numeric, toxin)
     const strength = (this.actor.system as any).attributes?.strength || 0;
-    let baseVD = 0;
-    let vdDisplay = weaponDamageValue;
-    
-    if (weaponDamageValue === 'FOR') {
-      baseVD = strength;
-      vdDisplay = `FOR (${strength})`;
-    } else if (weaponDamageValue.startsWith('FOR+')) {
-      const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
-      baseVD = strength + modifier;
-      vdDisplay = `FOR+${modifier} (${baseVD})`;
-    } else if (weaponDamageValue === 'toxin') {
-      vdDisplay = 'selon toxine';
-      baseVD = -1;
-    } else {
-      baseVD = parseInt(weaponDamageValue) || 0;
-    }
+    const { baseVD } = CombatHelpers.parseWeaponDamageValue(weaponDamageValue, strength);
     
     let resultsHtml = '<div class="sra2-combat-roll">';
     
@@ -2756,22 +2330,9 @@ export class NpcSheet extends ActorSheet {
   /**
    * Build NPC attack HTML with VD display
    */
-  private _buildNPCAttackHtmlWithVD(threshold: number, weaponDamageValue: string, vdDisplay: string): string {
-    let html = '';
-    
-    html += '<div class="dice-pool">';
-    html += `<strong>${game.i18n!.localize('SRA2.NPC.THRESHOLD')}:</strong> `;
-    html += `<span class="threshold-badge">${threshold}</span>`;
-    html += '</div>';
-    
-    html += `<div class="successes has-success">`;
-    html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${threshold}`;
-    if (weaponDamageValue && weaponDamageValue !== '0') {
-      html += ` | <strong>VD:</strong> <span class="vd-display">${vdDisplay}</span>`;
-    }
-    html += '</div>';
-    
-    return html;
+  private _buildNPCAttackHtmlWithVD(threshold: number, weaponDamageValue: string, _vdDisplay: string): string {
+    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
+    return CombatHelpers.buildNPCAttackHtml(threshold, weaponDamageValue, actorStrength);
   }
 
   /**
@@ -2850,7 +2411,7 @@ export class NpcSheet extends ActorSheet {
     }).render(true);
   }
 
-  protected override async _onDropItem(event: DragEvent, data: ActorSheet.DropData.Item): Promise<unknown> {
+  protected override async _onDropItem(_event: DragEvent, data: ActorSheet.DropData.Item): Promise<unknown> {
     if (!this.actor.isOwner) return false;
     const item = await Item.implementation.fromDropData(data);
     if (!item) return false;
