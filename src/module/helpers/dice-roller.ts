@@ -566,3 +566,62 @@ export async function postRollToChat(
   await ChatMessage.create(messageData);
 }
 
+/**
+ * Parameters for creating a skill roll dialog
+ */
+export interface CreateSkillRollDialogParams {
+  title: string;
+  basePool: number;
+  poolDescription: string;
+  autoRR: number;
+  defaultRiskDice: number;
+  rrSources: RRSource[];
+  onRollCallback: (normalDice: number, riskDice: number, riskReduction: number, rollMode: string) => void;
+}
+
+/**
+ * Create a complete skill roll dialog with RR sources, dice selector, and roll modes
+ * This eliminates the massive duplication of dialog creation code
+ */
+export function createSkillRollDialog(params: CreateSkillRollDialogParams): Dialog {
+  const { title, basePool, poolDescription, autoRR, defaultRiskDice, rrSources, onRollCallback } = params;
+  
+  const rrSourcesHtml = buildRRSourcesHtml(rrSources);
+  const dialogContent = createRollDialogContent({
+    title,
+    basePool,
+    poolDescription,
+    autoRR,
+    defaultRiskDice,
+    rrSourcesHtml
+  });
+  
+  return new Dialog({
+    title,
+    content: dialogContent,
+    buttons: {
+      roll: {
+        icon: '<i class="fas fa-dice-d6"></i>',
+        label: game.i18n!.localize('SRA2.SKILLS.ROLL'),
+        callback: (html: any) => {
+          const riskDice = Math.min(basePool, parseInt(html.find('[name="riskDice"]').val()) || 0);
+          const normalDice = basePool - riskDice;
+          let riskReduction = 0;
+          html.find('.rr-source-checkbox:checked').each((_: number, cb: any) => {
+            riskReduction += parseInt(cb.dataset.rrValue);
+          });
+          riskReduction = Math.min(3, riskReduction);
+          const rollMode = html.find('[name="rollMode"]:checked').val() || 'normal';
+          
+          onRollCallback(normalDice, riskDice, riskReduction, rollMode);
+        }
+      },
+      cancel: {
+        icon: '<i class="fas fa-times"></i>',
+        label: game.i18n!.localize('Cancel')
+      }
+    },
+    default: 'roll'
+  }, { width: 600 });
+}
+

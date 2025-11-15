@@ -421,3 +421,80 @@ export function createThresholdDefenseResult(defenseName: string, threshold: num
   };
 }
 
+/**
+ * Build skill selection options for weapon/spell attack
+ * Similar to buildSkillOptionsHtml but without threshold calculation
+ */
+export function buildAttackSkillOptionsHtml(
+  actor: any,
+  skills: any[],
+  allSpecializations: any[],
+  defaultSelection: string
+): string {
+  let html = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
+  
+  skills.forEach((skill: any) => {
+    const skillSystem = skill.system as any;
+    const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+    const attributeValue = (actor.system as any).attributes?.[linkedAttribute] || 0;
+    const skillRating = skillSystem.rating || 0;
+    const totalDicePool = attributeValue + skillRating;
+    
+    const selected = defaultSelection === `skill-${skill.id}` ? ' selected' : '';
+    html += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}"${selected}>${skill.name} (${totalDicePool} dés)</option>`;
+    
+    // Add specializations for this skill
+    const specs = allSpecializations.filter((spec: any) => {
+      const linkedSkillName = spec.system.linkedSkill;
+      return ItemSearch.normalizeSearchText(linkedSkillName) === ItemSearch.normalizeSearchText(skill.name);
+    });
+    
+    specs.forEach((spec: any) => {
+      const specSystem = spec.system as any;
+      const specLinkedAttribute = specSystem.linkedAttribute || 'strength';
+      const specAttributeValue = (actor.system as any).attributes?.[specLinkedAttribute] || 0;
+      const parentRating = skillRating;
+      const effectiveRating = parentRating + 2;
+      const specTotalDicePool = specAttributeValue + effectiveRating;
+      
+      const specSelected = defaultSelection === `spec-${spec.id}` ? ' selected' : '';
+      html += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${specTotalDicePool} dés)</option>`;
+    });
+  });
+  
+  return html;
+}
+
+/**
+ * Create weapon/spell selection dialog content
+ */
+export function createWeaponSkillSelectionDialogContent(
+  itemName: string,
+  weaponDamageValue: string,
+  type: 'weapon' | 'spell',
+  skillOptionsHtml: string
+): string {
+  const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.SECTION_TITLE' : 'SRA2.FEATS.WEAPON.WEAPON_NAME';
+  
+  return `
+    <form class="sra2-weapon-roll-dialog">
+      <div class="form-group">
+        <label>${game.i18n!.localize(titleKey)}:</label>
+        <p class="weapon-name"><strong>${itemName}</strong></p>
+      </div>
+      ${weaponDamageValue !== '0' ? `
+      <div class="form-group">
+        <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE')}:</label>
+        <p class="damage-value"><strong>${weaponDamageValue}</strong></p>
+      </div>
+      ` : ''}
+      <div class="form-group">
+        <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL')}:</label>
+        <select id="skill-select" class="skill-select">
+          ${skillOptionsHtml}
+        </select>
+      </div>
+    </form>
+  `;
+}
+
