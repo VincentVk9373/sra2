@@ -898,12 +898,18 @@ export class NpcSheet extends ActorSheet {
     
     const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
     
+    // Get weapon damage bonus and actor strength
+    const weaponDamageBonus = (item.system as any).damageValueBonus || 0;
+    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
+    
     // Create dialog content using helper
     const dialogContent = CombatHelpers.createWeaponSkillSelectionDialogContent(
       itemName,
       weaponVD,
       type,
-      skillOptionsHtml
+      skillOptionsHtml,
+      actorStrength,
+      weaponDamageBonus
     );
     
     const dialog = new Dialog({

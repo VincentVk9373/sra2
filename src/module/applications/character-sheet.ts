@@ -2100,12 +2100,18 @@ export class CharacterSheet extends ActorSheet {
     
     const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
     
+    // Get weapon damage bonus
+    const weaponDamageBonus = itemSystem.damageValueBonus || 0;
+    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
+    
     // Create dialog to select skill/specialization
     const dialogContent = CombatHelpers.createWeaponSkillSelectionDialogContent(
       weaponName,
       damageValue,
       type === 'spell' ? 'spell' : 'weapon',
-      skillOptionsHtml
+      skillOptionsHtml,
+      actorStrength,
+      weaponDamageBonus
     );
     
     const dialog = new Dialog({

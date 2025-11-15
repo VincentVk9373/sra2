@@ -488,9 +488,18 @@ export function createWeaponSkillSelectionDialogContent(
   itemName: string,
   weaponDamageValue: string,
   type: 'weapon' | 'spell',
-  skillOptionsHtml: string
+  skillOptionsHtml: string,
+  actorStrength?: number,
+  damageValueBonus?: number
 ): string {
   const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.SECTION_TITLE' : 'SRA2.FEATS.WEAPON.WEAPON_NAME';
+  
+  // Calculate final damage value with bonus for display
+  let displayDamageValue = weaponDamageValue;
+  if (weaponDamageValue !== '0' && actorStrength !== undefined) {
+    const { vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength, damageValueBonus || 0);
+    displayDamageValue = vdDisplay;
+  }
   
   return `
     <form class="sra2-weapon-roll-dialog">
@@ -501,7 +510,7 @@ export function createWeaponSkillSelectionDialogContent(
       ${weaponDamageValue !== '0' ? `
       <div class="form-group">
         <label>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE')}:</label>
-        <p class="damage-value"><strong>${weaponDamageValue}</strong></p>
+        <p class="damage-value"><strong>${displayDamageValue}</strong></p>
       </div>
       ` : ''}
       <div class="form-group">

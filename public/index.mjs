@@ -2123,8 +2123,13 @@ function buildAttackSkillOptionsHtml(actor, skills, allSpecializations, defaultS
   });
   return html;
 }
-function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, type, skillOptionsHtml) {
+function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, type, skillOptionsHtml, actorStrength, damageValueBonus) {
   const titleKey = type === "spell" ? "SRA2.FEATS.SPELL.SECTION_TITLE" : "SRA2.FEATS.WEAPON.WEAPON_NAME";
+  let displayDamageValue = weaponDamageValue;
+  if (weaponDamageValue !== "0" && actorStrength !== void 0) {
+    const { vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength, damageValueBonus || 0);
+    displayDamageValue = vdDisplay;
+  }
   return `
     <form class="sra2-weapon-roll-dialog">
       <div class="form-group">
@@ -2134,7 +2139,7 @@ function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, ty
       ${weaponDamageValue !== "0" ? `
       <div class="form-group">
         <label>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE_VALUE")}:</label>
-        <p class="damage-value"><strong>${weaponDamageValue}</strong></p>
+        <p class="damage-value"><strong>${displayDamageValue}</strong></p>
       </div>
       ` : ""}
       <div class="form-group">
@@ -3659,11 +3664,15 @@ class CharacterSheet extends ActorSheet {
       defaultSelection
     );
     const titleKey = type === "spell" ? "SRA2.FEATS.SPELL.ROLL_TITLE" : "SRA2.FEATS.WEAPON.ROLL_TITLE";
+    const weaponDamageBonus = itemSystem.damageValueBonus || 0;
+    const actorStrength = this.actor.system.attributes?.strength || 0;
     const dialogContent = createWeaponSkillSelectionDialogContent(
       weaponName,
       damageValue,
       type === "spell" ? "spell" : "weapon",
-      skillOptionsHtml
+      skillOptionsHtml,
+      actorStrength,
+      weaponDamageBonus
     );
     const dialog = new Dialog({
       title: game.i18n.format(titleKey, { name: weaponName }),
@@ -4490,11 +4499,15 @@ class NpcSheet extends ActorSheet {
       ""
     );
     const titleKey = type === "spell" ? "SRA2.FEATS.SPELL.ROLL_TITLE" : "SRA2.FEATS.WEAPON.ROLL_TITLE";
+    const weaponDamageBonus = item.system.damageValueBonus || 0;
+    const actorStrength = this.actor.system.attributes?.strength || 0;
     const dialogContent = createWeaponSkillSelectionDialogContent(
       itemName,
       weaponVD,
       type,
-      skillOptionsHtml
+      skillOptionsHtml,
+      actorStrength,
+      weaponDamageBonus
     );
     const dialog = new Dialog({
       title: game.i18n.format(titleKey, { name: itemName }),
