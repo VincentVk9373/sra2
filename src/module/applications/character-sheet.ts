@@ -1,14 +1,6 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
-
-/**
- * Normalize text for search: lowercase and remove accents/special characters
- */
-function normalizeSearchText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
-}
+import * as ItemSearch from '../helpers/item-search.js';
+import * as DefenseSelection from '../helpers/defense-selection.js';
 
 /**
  * Character Sheet Application
@@ -844,28 +836,16 @@ export class CharacterSheet extends ActorSheet {
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Get linked defense specialization from attacking weapon if available
-    const linkedDefenseSpecId = attackingWeapon?.system?.linkedDefenseSpecialization || '';
-    let defaultSelection = '';
-    let linkedSpec: any = null;
-    let linkedSkill: any = null;
+    // Get linked defense specialization name from attacking weapon
+    // This can be either a name (new format) or an ID (old format for backwards compatibility)
+    const linkedDefenseSpecNameOrId = attackingWeapon?.system?.linkedDefenseSpecialization || '';
+    const linkedDefenseSpecName = DefenseSelection.getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations);
     
-    // Try to find the linked defense specialization
-    if (linkedDefenseSpecId) {
-      linkedSpec = allSpecializations.find((s: any) => s.id === linkedDefenseSpecId);
-      if (linkedSpec) {
-        defaultSelection = `spec-${linkedSpec.id}`;
-        // Find the parent skill for this specialization
-        const linkedSkillName = linkedSpec.system.linkedSkill;
-        linkedSkill = skills.find((s: any) => s.name === linkedSkillName);
-      }
-    }
-    
-    // If no specialization found, use the first skill as default
-    if (!defaultSelection && skills.length > 0) {
-      linkedSkill = skills[0]; // Default to first skill
-      defaultSelection = `skill-${linkedSkill.id}`;
-    }
+    // Use the helper to find the appropriate defense selection by NAME
+    const { defaultSelection, linkedSpec, linkedSkill } = DefenseSelection.findDefaultDefenseSelection(
+      defenderActor,
+      linkedDefenseSpecName
+    );
     
     // Build skill options HTML - ALWAYS show both threshold and dice pool
     let skillOptionsHtml = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
@@ -1746,32 +1726,7 @@ export class CharacterSheet extends ActorSheet {
    * Get RR sources for an actor
    */
   private _getRRSourcesForActor(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{featName: string, rrValue: number}> {
-    const sources: Array<{featName: string, rrValue: number}> = [];
-    
-    const feats = actor.items.filter((item: any) => 
-      item.type === 'feat' && 
-      item.system.active === true
-    );
-    
-    for (const feat of feats) {
-      const featSystem = feat.system as any;
-      const rrList = featSystem.rrList || [];
-      
-      for (const rrEntry of rrList) {
-        const rrType = rrEntry.rrType;
-        const rrValue = rrEntry.rrValue || 0;
-        const rrTarget = rrEntry.rrTarget || '';
-        
-        if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
-          sources.push({
-            featName: feat.name,
-            rrValue: rrValue
-          });
-        }
-      }
-    }
-    
-    return sources;
+    return DiceRoller.getRRSourcesForActor(actor, itemType, itemName);
   }
 
   /**
@@ -1890,7 +1845,7 @@ export class CharacterSheet extends ActorSheet {
   
   private async _onSkillSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const searchTerm = normalizeSearchText(input.value.trim());
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
     
     // Clear previous timeout
@@ -1914,55 +1869,19 @@ export class CharacterSheet extends ActorSheet {
    * Perform the actual skill search in compendiums and world items
    */
   private async _performSkillSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
-    const results: any[] = [];
-    
     // Store search term for potential creation
     this.lastSearchTerm = searchTerm;
     
-    // Search in world items first
-    if (game.items) {
-      for (const item of game.items as any) {
-        if (item.type === 'skill' && normalizeSearchText(item.name).includes(searchTerm)) {
-          // Check if skill already exists on actor
-          const existingSkill = this.actor.items.find((i: any) => 
-            i.type === 'skill' && i.name === item.name
-          );
-          
-          results.push({
-            name: item.name,
-            uuid: item.uuid,
-            pack: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
-            exists: !!existingSkill
-          });
-        }
-      }
-    }
+    // Use the helper function to search everywhere
+    const existingItemsCheck = (itemName: string) => 
+      ItemSearch.itemExistsOnActor(this.actor, 'skill', itemName);
     
-    // Search in all compendiums
-    for (const pack of game.packs as any) {
-      // Only search in Item compendiums
-      if (pack.documentName !== 'Item') continue;
-      
-      // Get all documents from the pack
-      const documents = await pack.getDocuments();
-      
-      // Filter for skills that match the search term
-      for (const doc of documents) {
-        if (doc.type === 'skill' && normalizeSearchText(doc.name).includes(searchTerm)) {
-          // Check if skill already exists on actor
-          const existingSkill = this.actor.items.find((i: any) => 
-            i.type === 'skill' && i.name === doc.name
-          );
-          
-          results.push({
-            name: doc.name,
-            uuid: doc.uuid,
-            pack: pack.title,
-            exists: !!existingSkill
-          });
-        }
-      }
-    }
+    const results = await ItemSearch.searchItemsEverywhere(
+      'skill',
+      searchTerm,
+      undefined,
+      existingItemsCheck
+    );
     
     // Display results
     this._displaySkillSearchResults(results, resultsDiv);
@@ -1981,7 +1900,7 @@ export class CharacterSheet extends ActorSheet {
       .join(' ');
     
     const exactMatchOnActor = this.actor.items.find((i: any) => 
-      i.type === 'skill' && normalizeSearchText(i.name) === normalizeSearchText(this.lastSearchTerm)
+      i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(this.lastSearchTerm)
     );
     
     let html = '';
@@ -2001,16 +1920,16 @@ export class CharacterSheet extends ActorSheet {
     } else {
       // Display search results
       for (const result of results) {
-        const disabledClass = result.exists ? 'disabled' : '';
-        const buttonText = result.exists ? '✓' : game.i18n!.localize('SRA2.SKILLS.ADD_SKILL');
+        const disabledClass = result.alreadyExists ? 'disabled' : '';
+        const buttonText = result.alreadyExists ? '✓' : game.i18n!.localize('SRA2.SKILLS.ADD_SKILL');
         
         html += `
           <div class="search-result-item ${disabledClass}">
             <div class="result-info">
               <span class="result-name">${result.name}</span>
-              <span class="result-pack">${result.pack}</span>
+              <span class="result-pack">${result.source}</span>
             </div>
-            <button class="add-skill-btn" data-uuid="${result.uuid}" ${result.exists ? 'disabled' : ''}>
+            <button class="add-skill-btn" data-uuid="${result.uuid}" ${result.alreadyExists ? 'disabled' : ''}>
               ${buttonText}
             </button>
           </div>
@@ -2224,7 +2143,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _onFeatSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const searchTerm = normalizeSearchText(input.value.trim());
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
     
     // Clear previous timeout
@@ -2256,7 +2175,7 @@ export class CharacterSheet extends ActorSheet {
     // Search in world items first
     if (game.items) {
       for (const item of game.items as any) {
-        if (item.type === 'feat' && normalizeSearchText(item.name).includes(searchTerm)) {
+        if (item.type === 'feat' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
           // Check if feat already exists on actor
           const existingFeat = this.actor.items.find((i: any) => 
             i.type === 'feat' && i.name === item.name
@@ -2283,7 +2202,7 @@ export class CharacterSheet extends ActorSheet {
       
       // Filter for feats that match the search term
       for (const doc of documents) {
-        if (doc.type === 'feat' && normalizeSearchText(doc.name).includes(searchTerm)) {
+        if (doc.type === 'feat' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
           // Check if feat already exists on actor
           const existingFeat = this.actor.items.find((i: any) => 
             i.type === 'feat' && i.name === doc.name
@@ -2315,7 +2234,7 @@ export class CharacterSheet extends ActorSheet {
       .join(' ');
     
     const exactMatchOnActor = this.actor.items.find((i: any) => 
-      i.type === 'feat' && normalizeSearchText(i.name) === normalizeSearchText(this.lastFeatSearchTerm)
+      i.type === 'feat' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(this.lastFeatSearchTerm)
     );
     
     let html = '';

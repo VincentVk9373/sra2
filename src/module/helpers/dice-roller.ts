@@ -32,6 +32,7 @@ export function getRiskDiceByRR(rr: number): number {
 
 /**
  * Get RR sources from an actor for a specific item type and name
+ * This is the main function used by most sheets for their own actor
  */
 export function getRRSources(
   actor: any,
@@ -68,6 +69,19 @@ export function getRRSources(
   }
   
   return sources;
+}
+
+/**
+ * Get RR sources from any actor for a specific item type and name
+ * This is useful for defense rolls where we need to check another actor's RR
+ * (identical to getRRSources but kept separate for clarity in combat scenarios)
+ */
+export function getRRSourcesForActor(
+  actor: any,
+  itemType: 'skill' | 'specialization' | 'attribute',
+  itemName: string
+): RRSource[] {
+  return getRRSources(actor, itemType, itemName);
 }
 
 /**

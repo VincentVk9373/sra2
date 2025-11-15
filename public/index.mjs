@@ -1261,6 +1261,9 @@ function getRRSources(actor, itemType, itemName2) {
   }
   return sources;
 }
+function getRRSourcesForActor(actor, itemType, itemName2) {
+  return getRRSources(actor, itemType, itemName2);
+}
 function getSuccessThreshold(mode) {
   switch (mode) {
     case "advantage":
@@ -1625,8 +1628,130 @@ async function postRollToChat(actor, skillName, resultsHtml) {
   };
   await ChatMessage.create(messageData);
 }
-function normalizeSearchText$2(text) {
+function normalizeSearchText(text) {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+function searchItemsInWorld(itemType, searchTerm, existingItemsCheck) {
+  const results = [];
+  if (!game.items) return results;
+  for (const item of game.items) {
+    if (item.type === itemType && normalizeSearchText(item.name).includes(searchTerm)) {
+      const alreadyExists = existingItemsCheck ? existingItemsCheck(item.name) : false;
+      results.push({
+        name: item.name,
+        uuid: item.uuid,
+        id: item.id,
+        source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
+        type: itemType,
+        alreadyExists
+      });
+    }
+  }
+  return results;
+}
+async function searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck) {
+  const results = [];
+  const seenNames = /* @__PURE__ */ new Set();
+  for (const pack of game.packs) {
+    if (pack.documentName !== "Item") continue;
+    const documents2 = await pack.getDocuments();
+    for (const doc of documents2) {
+      if (doc.type === itemType && normalizeSearchText(doc.name).includes(searchTerm)) {
+        if (seenNames.has(doc.name)) continue;
+        seenNames.add(doc.name);
+        const alreadyExists = existingItemsCheck ? existingItemsCheck(doc.name) : false;
+        results.push({
+          name: doc.name,
+          uuid: doc.uuid,
+          source: pack.title,
+          type: itemType,
+          alreadyExists
+        });
+      }
+    }
+  }
+  return results;
+}
+async function searchItemsEverywhere(itemType, searchTerm, actor, existingItemsCheck) {
+  const results = [];
+  const seenNames = /* @__PURE__ */ new Set();
+  const worldResults = searchItemsInWorld(itemType, searchTerm, existingItemsCheck);
+  worldResults.forEach((result) => {
+    if (!seenNames.has(result.name)) {
+      results.push(result);
+      seenNames.add(result.name);
+    }
+  });
+  const compendiumResults = await searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck);
+  compendiumResults.forEach((result) => {
+    if (!seenNames.has(result.name)) {
+      results.push(result);
+      seenNames.add(result.name);
+    }
+  });
+  return results;
+}
+function itemExistsOnActor(actor, itemType, itemName2) {
+  if (!actor) return false;
+  return actor.items.some(
+    (item) => item.type === itemType && item.name === itemName2
+  );
+}
+function findDefaultDefenseSelection(defenderActor, linkedDefenseSpecName) {
+  const skills = defenderActor.items.filter((i) => i.type === "skill");
+  const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
+  let defaultSelection = "";
+  let linkedSpec = null;
+  let linkedSkill = null;
+  if (linkedDefenseSpecName) {
+    const normalizedDefenseSpecName = normalizeSearchText(linkedDefenseSpecName);
+    linkedSpec = allSpecializations.find(
+      (s) => normalizeSearchText(s.name) === normalizedDefenseSpecName
+    );
+    if (linkedSpec) {
+      defaultSelection = `spec-${linkedSpec.id}`;
+      const linkedSkillName = linkedSpec.system.linkedSkill;
+      linkedSkill = skills.find(
+        (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSkillName)
+      );
+      return { defaultSelection, linkedSpec, linkedSkill };
+    }
+    if (game.items) {
+      const specTemplate = game.items.find(
+        (item) => item.type === "specialization" && normalizeSearchText(item.name) === normalizedDefenseSpecName
+      );
+      if (specTemplate) {
+        const linkedSkillName = specTemplate.system.linkedSkill;
+        if (linkedSkillName) {
+          linkedSkill = skills.find(
+            (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSkillName)
+          );
+          if (linkedSkill) {
+            defaultSelection = `skill-${linkedSkill.id}`;
+            return { defaultSelection, linkedSpec: null, linkedSkill };
+          }
+        }
+      }
+    }
+  }
+  if (!defaultSelection && skills.length > 0) {
+    linkedSkill = skills[0];
+    defaultSelection = `skill-${linkedSkill.id}`;
+  }
+  return { defaultSelection, linkedSpec, linkedSkill };
+}
+function convertDefenseSpecIdToName(linkedDefenseSpecId, allSpecializations) {
+  if (!linkedDefenseSpecId) return "";
+  if (linkedDefenseSpecId.length !== 16 || !/^[a-zA-Z0-9]+$/.test(linkedDefenseSpecId)) {
+    return linkedDefenseSpecId;
+  }
+  const spec = allSpecializations.find((s) => s.id === linkedDefenseSpecId);
+  return spec ? spec.name : "";
+}
+function getDefenseSpecNameFromWeapon(attackingWeapon, allAvailableSpecializations) {
+  const linkedDefenseSpec = attackingWeapon?.system?.linkedDefenseSpecialization || "";
+  if (!linkedDefenseSpec) return "";
+  return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
 }
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
@@ -2228,22 +2353,12 @@ class CharacterSheet extends ActorSheet {
   async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon) {
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
-    const linkedDefenseSpecId = attackingWeapon?.system?.linkedDefenseSpecialization || "";
-    let defaultSelection = "";
-    let linkedSpec = null;
-    let linkedSkill = null;
-    if (linkedDefenseSpecId) {
-      linkedSpec = allSpecializations.find((s) => s.id === linkedDefenseSpecId);
-      if (linkedSpec) {
-        defaultSelection = `spec-${linkedSpec.id}`;
-        const linkedSkillName = linkedSpec.system.linkedSkill;
-        linkedSkill = skills.find((s) => s.name === linkedSkillName);
-      }
-    }
-    if (!defaultSelection && skills.length > 0) {
-      linkedSkill = skills[0];
-      defaultSelection = `skill-${linkedSkill.id}`;
-    }
+    attackingWeapon?.system?.linkedDefenseSpecialization || "";
+    const linkedDefenseSpecName = getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations);
+    const { defaultSelection, linkedSpec, linkedSkill } = findDefaultDefenseSelection(
+      defenderActor,
+      linkedDefenseSpecName
+    );
     let skillOptionsHtml = '<option value="">-- ' + game.i18n.localize("SRA2.COMBAT.SELECT_DEFENSE_SKILL") + " --</option>";
     skills.forEach((skill) => {
       const skillSystem = skill.system;
@@ -2958,26 +3073,7 @@ class CharacterSheet extends ActorSheet {
    * Get RR sources for an actor
    */
   _getRRSourcesForActor(actor, itemType, itemName2) {
-    const sources = [];
-    const feats = actor.items.filter(
-      (item) => item.type === "feat" && item.system.active === true
-    );
-    for (const feat of feats) {
-      const featSystem = feat.system;
-      const rrList = featSystem.rrList || [];
-      for (const rrEntry of rrList) {
-        const rrType = rrEntry.rrType;
-        const rrValue = rrEntry.rrValue || 0;
-        const rrTarget = rrEntry.rrTarget || "";
-        if (rrType === itemType && rrTarget === itemName2 && rrValue > 0) {
-          sources.push({
-            featName: feat.name,
-            rrValue
-          });
-        }
-      }
-    }
-    return sources;
+    return getRRSourcesForActor(actor, itemType, itemName2);
   }
   /**
    * Handle drag start for feat items
@@ -3067,7 +3163,7 @@ class CharacterSheet extends ActorSheet {
   searchTimeout = null;
   async _onSkillSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = normalizeSearchText$2(input.value.trim());
+    const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings(".skill-search-results")[0];
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
@@ -3084,40 +3180,14 @@ class CharacterSheet extends ActorSheet {
    * Perform the actual skill search in compendiums and world items
    */
   async _performSkillSearch(searchTerm, resultsDiv) {
-    const results = [];
     this.lastSearchTerm = searchTerm;
-    if (game.items) {
-      for (const item of game.items) {
-        if (item.type === "skill" && normalizeSearchText$2(item.name).includes(searchTerm)) {
-          const existingSkill = this.actor.items.find(
-            (i) => i.type === "skill" && i.name === item.name
-          );
-          results.push({
-            name: item.name,
-            uuid: item.uuid,
-            pack: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
-            exists: !!existingSkill
-          });
-        }
-      }
-    }
-    for (const pack of game.packs) {
-      if (pack.documentName !== "Item") continue;
-      const documents2 = await pack.getDocuments();
-      for (const doc of documents2) {
-        if (doc.type === "skill" && normalizeSearchText$2(doc.name).includes(searchTerm)) {
-          const existingSkill = this.actor.items.find(
-            (i) => i.type === "skill" && i.name === doc.name
-          );
-          results.push({
-            name: doc.name,
-            uuid: doc.uuid,
-            pack: pack.title,
-            exists: !!existingSkill
-          });
-        }
-      }
-    }
+    const existingItemsCheck = (itemName2) => itemExistsOnActor(this.actor, "skill", itemName2);
+    const results = await searchItemsEverywhere(
+      "skill",
+      searchTerm,
+      void 0,
+      existingItemsCheck
+    );
     this._displaySkillSearchResults(results, resultsDiv);
   }
   /**
@@ -3127,7 +3197,7 @@ class CharacterSheet extends ActorSheet {
   _displaySkillSearchResults(results, resultsDiv) {
     const formattedSearchTerm = this.lastSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
     const exactMatchOnActor = this.actor.items.find(
-      (i) => i.type === "skill" && normalizeSearchText$2(i.name) === normalizeSearchText$2(this.lastSearchTerm)
+      (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(this.lastSearchTerm)
     );
     let html = "";
     if (results.length === 0) {
@@ -3143,15 +3213,15 @@ class CharacterSheet extends ActorSheet {
       `;
     } else {
       for (const result of results) {
-        const disabledClass = result.exists ? "disabled" : "";
-        const buttonText = result.exists ? "✓" : game.i18n.localize("SRA2.SKILLS.ADD_SKILL");
+        const disabledClass = result.alreadyExists ? "disabled" : "";
+        const buttonText = result.alreadyExists ? "✓" : game.i18n.localize("SRA2.SKILLS.ADD_SKILL");
         html += `
           <div class="search-result-item ${disabledClass}">
             <div class="result-info">
               <span class="result-name">${result.name}</span>
-              <span class="result-pack">${result.pack}</span>
+              <span class="result-pack">${result.source}</span>
             </div>
-            <button class="add-skill-btn" data-uuid="${result.uuid}" ${result.exists ? "disabled" : ""}>
+            <button class="add-skill-btn" data-uuid="${result.uuid}" ${result.alreadyExists ? "disabled" : ""}>
               ${buttonText}
             </button>
           </div>
@@ -3300,7 +3370,7 @@ class CharacterSheet extends ActorSheet {
    */
   async _onFeatSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = normalizeSearchText$2(input.value.trim());
+    const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings(".feat-search-results")[0];
     if (this.featSearchTimeout) {
       clearTimeout(this.featSearchTimeout);
@@ -3321,7 +3391,7 @@ class CharacterSheet extends ActorSheet {
     this.lastFeatSearchTerm = searchTerm;
     if (game.items) {
       for (const item of game.items) {
-        if (item.type === "feat" && normalizeSearchText$2(item.name).includes(searchTerm)) {
+        if (item.type === "feat" && normalizeSearchText(item.name).includes(searchTerm)) {
           const existingFeat = this.actor.items.find(
             (i) => i.type === "feat" && i.name === item.name
           );
@@ -3339,7 +3409,7 @@ class CharacterSheet extends ActorSheet {
       if (pack.documentName !== "Item") continue;
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
-        if (doc.type === "feat" && normalizeSearchText$2(doc.name).includes(searchTerm)) {
+        if (doc.type === "feat" && normalizeSearchText(doc.name).includes(searchTerm)) {
           const existingFeat = this.actor.items.find(
             (i) => i.type === "feat" && i.name === doc.name
           );
@@ -3361,7 +3431,7 @@ class CharacterSheet extends ActorSheet {
   _displayFeatSearchResults(results, resultsDiv) {
     const formattedSearchTerm = this.lastFeatSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
     const exactMatchOnActor = this.actor.items.find(
-      (i) => i.type === "feat" && normalizeSearchText$2(i.name) === normalizeSearchText$2(this.lastFeatSearchTerm)
+      (i) => i.type === "feat" && normalizeSearchText(i.name) === normalizeSearchText(this.lastFeatSearchTerm)
     );
     let html = "";
     if (results.length === 0) {
@@ -5084,26 +5154,7 @@ class NpcSheet extends ActorSheet {
    * Get RR sources for another actor
    */
   getRRSourcesForActor(actor, itemType, itemName2) {
-    const sources = [];
-    const feats = actor.items.filter(
-      (item) => item.type === "feat" && item.system.active === true
-    );
-    for (const feat of feats) {
-      const featSystem = feat.system;
-      const rrList = featSystem.rrList || [];
-      for (const rrEntry of rrList) {
-        const rrType = rrEntry.rrType;
-        const rrValue = rrEntry.rrValue || 0;
-        const rrTarget = rrEntry.rrTarget || "";
-        if (rrType === itemType && rrTarget === itemName2 && rrValue > 0) {
-          sources.push({
-            featName: feat.name,
-            rrValue
-          });
-        }
-      }
-    }
-    return sources;
+    return getRRSourcesForActor(actor, itemType, itemName2);
   }
   /**
    * Handle attacking with threshold (weapon)
@@ -6538,9 +6589,6 @@ class NpcSheet extends ActorSheet {
     return await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
   }
 }
-function normalizeSearchText$1(text) {
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
@@ -7009,7 +7057,7 @@ class FeatSheet extends ItemSheet {
   rrTargetSearchTimeout = null;
   async _onRRTargetSearch(event) {
     const input = event.currentTarget;
-    const searchTerm = normalizeSearchText$1(input.value.trim());
+    const searchTerm = normalizeSearchText(input.value.trim());
     const rrIndex = parseInt(input.dataset.rrIndex || "0");
     const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
     if (this.rrTargetSearchTimeout) {
@@ -7036,7 +7084,7 @@ class FeatSheet extends ItemSheet {
     }
     if (this.item.actor) {
       for (const item of this.item.actor.items) {
-        if (item.type === rrType && normalizeSearchText$1(item.name).includes(searchTerm)) {
+        if (item.type === rrType && normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
             uuid: item.uuid,
@@ -7048,7 +7096,7 @@ class FeatSheet extends ItemSheet {
     }
     if (game.items) {
       for (const item of game.items) {
-        if (item.type === rrType && normalizeSearchText$1(item.name).includes(searchTerm)) {
+        if (item.type === rrType && normalizeSearchText(item.name).includes(searchTerm)) {
           const exists = results.some((r) => r.name === item.name);
           if (!exists) {
             results.push({
@@ -7065,7 +7113,7 @@ class FeatSheet extends ItemSheet {
       if (pack.documentName !== "Item") continue;
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
-        if (doc.type === rrType && normalizeSearchText$1(doc.name).includes(searchTerm)) {
+        if (doc.type === rrType && normalizeSearchText(doc.name).includes(searchTerm)) {
           const exists = results.some((r) => r.name === doc.name);
           if (!exists) {
             results.push({
@@ -7224,9 +7272,6 @@ class SkillSheet extends ItemSheet {
     const expandedData = foundry.utils.expandObject(formData);
     return this.item.update(expandedData);
   }
-}
-function normalizeSearchText(text) {
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 class SpecializationSheet extends ItemSheet {
   static get defaultOptions() {

@@ -1,12 +1,4 @@
-/**
- * Normalize text for search: lowercase and remove accents/special characters
- */
-function normalizeSearchText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
-}
+import * as ItemSearch from '../helpers/item-search.js';
 
 /**
  * Specialization Sheet Application
@@ -142,7 +134,7 @@ export class SpecializationSheet extends ItemSheet {
    */
   private async _onSkillSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const searchTerm = normalizeSearchText(input.value.trim());
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
     
     // Clear previous timeout
@@ -174,7 +166,7 @@ export class SpecializationSheet extends ItemSheet {
     // Search in world items first
     if (game.items) {
       for (const item of game.items as any) {
-        if (item.type === 'skill' && normalizeSearchText(item.name).includes(searchTerm)) {
+        if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
             uuid: item.uuid,
@@ -196,7 +188,7 @@ export class SpecializationSheet extends ItemSheet {
       
       // Filter for skills that match the search term
       for (const doc of documents) {
-        if (doc.type === 'skill' && normalizeSearchText(doc.name).includes(searchTerm)) {
+        if (doc.type === 'skill' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
           results.push({
             name: doc.name,
             uuid: doc.uuid,
@@ -223,7 +215,7 @@ export class SpecializationSheet extends ItemSheet {
       .join(' ');
     
     const exactMatch = results.find((r: any) => 
-      normalizeSearchText(r.name) === normalizeSearchText(this.lastSkillSearchTerm)
+      ItemSearch.normalizeSearchText(r.name) === ItemSearch.normalizeSearchText(this.lastSkillSearchTerm)
     );
     
     let html = '';

@@ -1,4 +1,6 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
+import * as ItemSearch from '../helpers/item-search.js';
+import * as DefenseSelection from '../helpers/defense-selection.js';
 
 /**
  * NPC Sheet Application
@@ -1167,32 +1169,7 @@ export class NpcSheet extends ActorSheet {
    * Get RR sources for another actor
    */
   private getRRSourcesForActor(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number }> {
-    const sources: Array<{ featName: string, rrValue: number }> = [];
-    
-    const feats = actor.items.filter((item: any) => 
-      item.type === 'feat' && 
-      item.system.active === true
-    );
-    
-    for (const feat of feats) {
-      const featSystem = feat.system as any;
-      const rrList = featSystem.rrList || [];
-      
-      for (const rrEntry of rrList) {
-        const rrType = rrEntry.rrType;
-        const rrValue = rrEntry.rrValue || 0;
-        const rrTarget = rrEntry.rrTarget || '';
-        
-        if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
-          sources.push({
-            featName: feat.name,
-            rrValue: rrValue
-          });
-        }
-      }
-    }
-    
-    return sources;
+    return DiceRoller.getRRSourcesForActor(actor, itemType, itemName);
   }
 
   /**
