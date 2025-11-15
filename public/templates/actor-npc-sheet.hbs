@@ -30,7 +30,7 @@
               <span>{{this.name}}</span>
             </div>
             <div class="weapon-vd">
-              <span class="vd-value">{{this.system.damageValue}}</span>
+              <span class="vd-value">{{this.finalDamageValue}}</span>
             </div>
             <div class="skill-dice-pool clickable" data-action="roll-npc-weapon-dice" data-item-id="{{this._id}}" data-weapon-vd="{{this.system.damageValue}}" title="{{localize 'SRA2.NPC.ROLL_WITH_DICE'}}">
               <span class="dice-value">{{this.totalDicePool}}</span>
@@ -73,7 +73,7 @@
               <span>{{this.name}}</span>
             </div>
             <div class="spell-vd">
-              <span class="vd-value">{{this.system.damageValue}}</span>
+              <span class="vd-value">{{this.finalDamageValue}}</span>
             </div>
             <div class="skill-dice-pool clickable" data-action="roll-npc-spell-dice" data-item-id="{{this._id}}" data-spell-vd="{{this.system.damageValue}}" title="{{localize 'SRA2.NPC.ROLL_WITH_DICE'}}">
               <span class="dice-value">{{this.totalDicePool}}</span>

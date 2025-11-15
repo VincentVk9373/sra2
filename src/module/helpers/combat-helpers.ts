@@ -244,7 +244,7 @@ export async function performDefenseRoll(
 /**
  * Build dice results HTML for display in combat
  */
-export function buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string, actorStrength?: number): string {
+export function buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string, actorStrength?: number, damageValueBonus?: number): string {
   let html = '';
   
   // Check if this is a threshold-based defense (NPC)
@@ -297,7 +297,7 @@ export function buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string
   
   // Weapon Damage Value (VD) if provided
   if (weaponDamageValue && weaponDamageValue !== '0' && actorStrength !== undefined) {
-    const { baseVD, vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength);
+    const { baseVD, vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength, damageValueBonus || 0);
     
     if (baseVD >= 0) {
       html += ` | <strong>VD:</strong> <span class="vd-display">${vdDisplay}</span>`;
@@ -350,26 +350,42 @@ export function buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string
 
 /**
  * Parse weapon damage value and calculate base VD
+ * Includes damageValueBonus from weapon feat
  */
 export function parseWeaponDamageValue(
   weaponDamageValue: string,
-  actorStrength: number
+  actorStrength: number,
+  damageValueBonus: number = 0
 ): { baseVD: number; vdDisplay: string } {
   let baseVD = 0;
   let vdDisplay = weaponDamageValue;
   
   if (weaponDamageValue === 'FOR') {
-    baseVD = actorStrength;
-    vdDisplay = `FOR (${actorStrength})`;
+    baseVD = actorStrength + damageValueBonus;
+    if (damageValueBonus > 0) {
+      vdDisplay = `FOR+${damageValueBonus} (${baseVD})`;
+    } else {
+      vdDisplay = `FOR (${actorStrength})`;
+    }
   } else if (weaponDamageValue.startsWith('FOR+')) {
     const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
-    baseVD = actorStrength + modifier;
-    vdDisplay = `FOR+${modifier} (${baseVD})`;
+    baseVD = actorStrength + modifier + damageValueBonus;
+    if (damageValueBonus > 0) {
+      vdDisplay = `FOR+${modifier}+${damageValueBonus} (${baseVD})`;
+    } else {
+      vdDisplay = `FOR+${modifier} (${baseVD})`;
+    }
   } else if (weaponDamageValue === 'toxin') {
     vdDisplay = 'selon toxine';
     baseVD = -1; // Special case
   } else {
-    baseVD = parseInt(weaponDamageValue) || 0;
+    const base = parseInt(weaponDamageValue) || 0;
+    baseVD = base + damageValueBonus;
+    if (damageValueBonus > 0) {
+      vdDisplay = `${baseVD} (${base}+${damageValueBonus})`;
+    } else {
+      vdDisplay = `${baseVD}`;
+    }
   }
   
   return { baseVD, vdDisplay };
@@ -378,7 +394,7 @@ export function parseWeaponDamageValue(
 /**
  * Build NPC attack HTML (threshold based)
  */
-export function buildNPCAttackHtml(threshold: number, weaponDamageValue?: string, actorStrength?: number): string {
+export function buildNPCAttackHtml(threshold: number, weaponDamageValue?: string, actorStrength?: number, damageValueBonus?: number): string {
   let html = '';
   
   html += '<div class="dice-pool">';
@@ -391,7 +407,7 @@ export function buildNPCAttackHtml(threshold: number, weaponDamageValue?: string
   
   // Add VD if provided
   if (weaponDamageValue && weaponDamageValue !== '0' && actorStrength !== undefined) {
-    const { vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength);
+    const { vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength, damageValueBonus || 0);
     html += ` | <strong>VD:</strong> <span class="vd-display">${vdDisplay}</span>`;
   }
   

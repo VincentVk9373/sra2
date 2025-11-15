@@ -37,7 +37,10 @@ export class CharacterSheet extends ActorSheet {
     const metatypes = this.actor.items.filter((item: any) => item.type === 'metatype');
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
 
-    // Get feats and enrich with RR target labels
+    // Get actor's strength for damage value calculations
+    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
+    
+    // Get feats and enrich with RR target labels and calculated damage values
     const allFeats = this.actor.items.filter((item: any) => item.type === 'feat').map((feat: any) => {
       // Add translated labels for attribute targets in RR entries
       feat.rrEntries = [];
@@ -56,6 +59,14 @@ export class CharacterSheet extends ActorSheet {
         }
         
         feat.rrEntries.push(entry);
+      }
+      
+      // Calculate final damage value for weapons and spells
+      if (feat.system.featType === 'weapon' || feat.system.featType === 'spell' || feat.system.featType === 'weapons-spells') {
+        const damageValue = feat.system.damageValue || '0';
+        const damageValueBonus = feat.system.damageValueBonus || 0;
+        
+        feat.finalDamageValue = this._calculateFinalDamageValue(damageValue, damageValueBonus, actorStrength);
       }
       
       return feat;
@@ -693,7 +704,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll skill dice and display results with Dice So Nice
    */
-  private async _rollSkillDice(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string): Promise<void> {
+  private async _rollSkillDice(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
     // Roll dice using helper function
     const result = await DiceRoller.rollDice(dicePool, riskDice, riskReduction, rollMode);
     
@@ -707,7 +718,8 @@ export class CharacterSheet extends ActorSheet {
       rollMode,
       result,
       weaponDamageValue,
-      actorStrength
+      actorStrength,
+      damageValueBonus
     });
     
     // Post to chat using helper function
@@ -717,7 +729,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll an attack with defense system
    */
-  private async _rollAttackWithDefense(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any): Promise<void> {
+  private async _rollAttackWithDefense(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any, damageValueBonus?: number): Promise<void> {
     // First, roll the attack
     const attackResult = await this._performDiceRoll(dicePool, riskDice, riskReduction, rollMode);
     
@@ -726,7 +738,7 @@ export class CharacterSheet extends ActorSheet {
     
     if (targets.length === 0 || !weaponDamageValue || weaponDamageValue === '0') {
       // No target or no weapon damage, just display normal roll
-      await this._displayRollResult(skillName, attackResult, weaponDamageValue);
+      await this._displayRollResult(skillName, attackResult, weaponDamageValue, damageValueBonus);
       return;
     }
     
@@ -736,7 +748,7 @@ export class CharacterSheet extends ActorSheet {
     
     if (!targetActor) {
       // No actor on target, just display normal roll
-      await this._displayRollResult(skillName, attackResult, weaponDamageValue);
+      await this._displayRollResult(skillName, attackResult, weaponDamageValue, damageValueBonus);
       return;
     }
     
@@ -748,13 +760,13 @@ export class CharacterSheet extends ActorSheet {
     }));
     
     // Prompt defense roll
-    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon);
+    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon, damageValueBonus);
   }
 
   /**
    * Prompt target to make a defense roll
    */
-  private async _promptDefenseRoll(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any): Promise<void> {
+  private async _promptDefenseRoll(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any, damageValueBonus?: number): Promise<void> {
     // Get all skills and specializations from defender
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
@@ -821,7 +833,7 @@ export class CharacterSheet extends ActorSheet {
             if (!selectedValue || selectedValue === '') {
               ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED'));
               // No defense, full damage
-              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor);
+              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus);
               return;
             }
             
@@ -836,10 +848,10 @@ export class CharacterSheet extends ActorSheet {
               if (defenseMethod === 'threshold') {
                 // Use threshold (no dice roll)
                 const threshold = parseInt(selectedOption.attr('data-threshold')) || 0;
-                await this._defendWithThreshold(defenseItem, itemType as 'skill' | 'spec', threshold, attackName, attackResult, weaponDamageValue, defenderActor);
+                await this._defendWithThreshold(defenseItem, itemType as 'skill' | 'spec', threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus);
               } else {
                 // Roll dice
-                await this._rollDefenseAndCalculateDamage(defenseItem, itemType as 'skill' | 'spec', attackName, attackResult, weaponDamageValue, defenderActor);
+                await this._rollDefenseAndCalculateDamage(defenseItem, itemType as 'skill' | 'spec', attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus);
               }
             }
           }
@@ -862,7 +874,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Roll defense and calculate final damage
    */
-  private async _rollDefenseAndCalculateDamage(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any): Promise<void> {
+  private async _rollDefenseAndCalculateDamage(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any, damageValueBonus?: number): Promise<void> {
     const defenseSystem = defenseItem.system as any;
     const linkedAttribute = defenseSystem.linkedAttribute || 'strength';
     const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
@@ -897,6 +909,9 @@ export class CharacterSheet extends ActorSheet {
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
     const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
     
+    // Capture damageValueBonus for callback
+    const vdBonus = damageValueBonus;
+    
     // Create defense roll dialog using helper
     const poolDescription = `(${game.i18n!.localize(itemType === 'skill' ? 'SRA2.SKILLS.RATING' : 'SRA2.SPECIALIZATIONS.BONUS')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = DiceRoller.createSkillRollDialog({
@@ -912,7 +927,7 @@ export class CharacterSheet extends ActorSheet {
         defenseResult.skillName = defenseName;
         
         // Display combined result
-        await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor);
+        await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, vdBonus);
       }
     });
     
@@ -923,14 +938,14 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Defend with NPC threshold (no dice roll)
    */
-  private async _defendWithThreshold(defenseItem: any, _itemType: 'skill' | 'spec', threshold: number, attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any): Promise<void> {
+  private async _defendWithThreshold(defenseItem: any, _itemType: 'skill' | 'spec', threshold: number, attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any, damageValueBonus?: number): Promise<void> {
     const defenseName = defenseItem.name;
     
     // Create a threshold defense result using helper
     const defenseResult = CombatHelpers.createThresholdDefenseResult(defenseName, threshold);
     
     // Display the attack result with threshold defense
-    await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor);
+    await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus);
   }
 
   /**
@@ -943,9 +958,9 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Display attack result with optional defense
    */
-  private async _displayAttackResult(attackName: string, attackResult: any, defenseResult: any | null, weaponDamageValue: string, defenderName?: string, defenderActor?: any): Promise<void> {
+  private async _displayAttackResult(attackName: string, attackResult: any, defenseResult: any | null, weaponDamageValue: string, defenderName?: string, defenderActor?: any, damageValueBonus?: number): Promise<void> {
     const strength = (this.actor.system as any).attributes?.strength || 0;
-    const { baseVD } = CombatHelpers.parseWeaponDamageValue(weaponDamageValue, strength);
+    const { baseVD } = CombatHelpers.parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
     
     let resultsHtml = '<div class="sra2-combat-roll">';
     
@@ -1144,17 +1159,17 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Build dice results HTML
    */
-  private _buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string): string {
+  private _buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string, damageValueBonus?: number): string {
     const actorStrength = (this.actor.system as any).attributes?.strength || 0;
-    return CombatHelpers.buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength);
+    return CombatHelpers.buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength, damageValueBonus);
   }
 
   /**
    * Display simple roll result (without defense)
    */
-  private async _displayRollResult(skillName: string, rollResult: any, weaponDamageValue?: string): Promise<void> {
+  private async _displayRollResult(skillName: string, rollResult: any, weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
     let resultsHtml = '<div class="sra2-skill-roll">';
-    resultsHtml += this._buildDiceResultsHtml(rollResult, weaponDamageValue);
+    resultsHtml += this._buildDiceResultsHtml(rollResult, weaponDamageValue, damageValueBonus);
     resultsHtml += '</div>';
     
     const messageData = {
@@ -2176,7 +2191,8 @@ export class CharacterSheet extends ActorSheet {
       defaultRiskDice,
       rrSources: allRRSources,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
+        const damageBonus = (weapon?.system as any)?.damageValueBonus || 0;
+        this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon, damageBonus);
       }
     });
     
@@ -2226,11 +2242,32 @@ export class CharacterSheet extends ActorSheet {
       defaultRiskDice,
       rrSources: allRRSources,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
+        const damageBonus = (weapon?.system as any)?.damageValueBonus || 0;
+        this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon, damageBonus);
       }
     });
     
     dialog.render(true);
+  }
+
+  /**
+   * Calculate final damage value for weapon/spell display
+   */
+  private _calculateFinalDamageValue(damageValue: string, damageValueBonus: number, strength: number): string {
+    if (damageValue === "FOR") {
+      const total = strength + damageValueBonus;
+      return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
+    } else if (damageValue.startsWith("FOR+")) {
+      const modifier = parseInt(damageValue.substring(4)) || 0;
+      const total = strength + modifier + damageValueBonus;
+      return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
+    } else if (damageValue === "toxin") {
+      return "selon toxine";
+    } else {
+      const base = parseInt(damageValue) || 0;
+      const total = base + damageValueBonus;
+      return damageValueBonus > 0 ? `${total} (${base}+${damageValueBonus})` : total.toString();
+    }
   }
 
   /**

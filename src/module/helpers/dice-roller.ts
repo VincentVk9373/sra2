@@ -405,6 +405,7 @@ export interface BuildResultsHtmlOptions {
   result: DiceRollResult;
   weaponDamageValue?: string;
   actorStrength?: number;
+  damageValueBonus?: number;
 }
 
 export function buildRollResultsHtml(options: BuildResultsHtmlOptions): string {
@@ -415,7 +416,8 @@ export function buildRollResultsHtml(options: BuildResultsHtmlOptions): string {
     rollMode,
     result,
     weaponDamageValue,
-    actorStrength
+    actorStrength,
+    damageValueBonus
   } = options;
   
   const {
@@ -471,23 +473,40 @@ export function buildRollResultsHtml(options: BuildResultsHtmlOptions): string {
   
   // Weapon Damage Value (VD) displayed next to successes
   if (weaponDamageValue && weaponDamageValue !== '0' && actorStrength !== undefined) {
+    // Import parseWeaponDamageValue from combat-helpers to avoid duplication
+    // For now, we need to implement it here to avoid circular dependencies
     const strength = actorStrength;
+    const bonus = damageValueBonus || 0;
     let baseVD = 0;
     let vdDisplay = weaponDamageValue;
     
-    // Parse the damage value
+    // Parse the damage value with bonus
     if (weaponDamageValue === 'FOR') {
-      baseVD = strength;
-      vdDisplay = `FOR (${strength})`;
+      baseVD = strength + bonus;
+      if (bonus > 0) {
+        vdDisplay = `FOR+${bonus} (${baseVD})`;
+      } else {
+        vdDisplay = `FOR (${strength})`;
+      }
     } else if (weaponDamageValue.startsWith('FOR+')) {
       const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
-      baseVD = strength + modifier;
-      vdDisplay = `FOR+${modifier} (${baseVD})`;
+      baseVD = strength + modifier + bonus;
+      if (bonus > 0) {
+        vdDisplay = `FOR+${modifier}+${bonus} (${baseVD})`;
+      } else {
+        vdDisplay = `FOR+${modifier} (${baseVD})`;
+      }
     } else if (weaponDamageValue === 'toxin') {
       vdDisplay = 'selon toxine';
       baseVD = -1; // Special case, don't calculate final VD
     } else {
-      baseVD = parseInt(weaponDamageValue) || 0;
+      const base = parseInt(weaponDamageValue) || 0;
+      baseVD = base + bonus;
+      if (bonus > 0) {
+        vdDisplay = `${baseVD} (${base}+${bonus})`;
+      } else {
+        vdDisplay = `${baseVD}`;
+      }
     }
     
     if (baseVD >= 0) {
