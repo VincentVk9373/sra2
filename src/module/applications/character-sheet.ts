@@ -91,11 +91,15 @@ export class CharacterSheet extends ActorSheet {
     // Keep the feats array for backwards compatibility
     context.feats = allFeats;
     
-    // Get skills
-    const skills = this.actor.items.filter((item: any) => item.type === 'skill');
+    // Get skills (sorted alphabetically)
+    const skills = this.actor.items
+      .filter((item: any) => item.type === 'skill')
+      .sort((a: any, b: any) => a.name.localeCompare(b.name));
     
-    // Get all specializations
-    const allSpecializations = this.actor.items.filter((item: any) => item.type === 'specialization');
+    // Get all specializations (sorted alphabetically)
+    const allSpecializations = this.actor.items
+      .filter((item: any) => item.type === 'specialization')
+      .sort((a: any, b: any) => a.name.localeCompare(b.name));
     
     // Organize specializations by linked skill
     const specializationsBySkill = new Map<string, any[]>();
@@ -151,8 +155,8 @@ export class CharacterSheet extends ActorSheet {
       const skillRating = skill.system?.rating || 0;
       skill.totalDicePool = attributeValue + skillRating;
       
-      // Get specializations for this skill and add calculated ratings
-      const specs = specializationsBySkill.get(skill.id) || [];
+      // Get specializations for this skill and add calculated ratings (sorted alphabetically)
+      const specs = (specializationsBySkill.get(skill.id) || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
       skill.specializations = specs.map((spec: any) => {
         const parentRating = skill.system?.rating || 0;
         // Add properties directly to the spec object instead of creating a new one
@@ -179,8 +183,10 @@ export class CharacterSheet extends ActorSheet {
       return skill;
     });
     
-    // Add unlinked specializations with attribute labels and RR
-    context.unlinkedSpecializations = unlinkedSpecializations.map((spec: any) => {
+    // Add unlinked specializations with attribute labels and RR (sorted alphabetically)
+    context.unlinkedSpecializations = unlinkedSpecializations
+      .sort((a: any, b: any) => a.name.localeCompare(b.name))
+      .map((spec: any) => {
       const linkedAttribute = spec.system?.linkedAttribute || 'strength';
       spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
       
@@ -772,14 +778,14 @@ export class CharacterSheet extends ActorSheet {
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Get linked defense specialization name from attacking weapon
-    // This can be either a name (new format) or an ID (old format for backwards compatibility)
-    const linkedDefenseSpecName = DefenseSelection.getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations);
+    // Get linked defense skill and specialization from attacking weapon
+    const { defenseSkillName, defenseSpecName } = DefenseSelection.getDefenseInfoFromWeapon(attackingWeapon, allSpecializations);
     
     // Use the helper to find the appropriate defense selection by NAME
     const { defaultSelection } = DefenseSelection.findDefaultDefenseSelection(
       defenderActor,
-      linkedDefenseSpecName
+      defenseSpecName,
+      defenseSkillName
     );
     
     // Build skill options HTML using helper

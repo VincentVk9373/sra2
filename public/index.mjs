@@ -1803,25 +1803,38 @@ function buildRollResultsHtml(options) {
     const strength = actorStrength;
     const bonus = damageValueBonus || 0;
     let baseVD = 0;
+    let vdDisplay = weaponDamageValue;
     if (weaponDamageValue === "FOR") {
       baseVD = strength + bonus;
+      if (bonus > 0) {
+        vdDisplay = `FOR+${bonus} (${baseVD})`;
+      } else {
+        vdDisplay = `FOR (${strength})`;
+      }
     } else if (weaponDamageValue.startsWith("FOR+")) {
       const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
       baseVD = strength + modifier + bonus;
+      if (bonus > 0) {
+        vdDisplay = `FOR+${modifier}+${bonus} (${baseVD})`;
+      } else {
+        vdDisplay = `FOR+${modifier} (${baseVD})`;
+      }
     } else if (weaponDamageValue === "toxin") {
+      vdDisplay = "selon toxine";
       baseVD = -1;
     } else {
       const base = parseInt(weaponDamageValue) || 0;
       baseVD = base + bonus;
+      if (bonus > 0) {
+        vdDisplay = `${baseVD} (${base}+${bonus})`;
+      } else {
+        vdDisplay = `${baseVD}`;
+      }
     }
     if (baseVD >= 0) {
-      const finalVD = totalSuccesses + baseVD;
       resultsHtml += ` | `;
       resultsHtml += `<strong>${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT")}:</strong> `;
-      resultsHtml += `<span class="final-damage-value">`;
-      resultsHtml += `<span class="calculation">${totalSuccesses} + ${baseVD} = </span>`;
-      resultsHtml += `<span class="final-value">${finalVD}</span>`;
-      resultsHtml += `</span>`;
+      resultsHtml += `<span class="vd-display">${vdDisplay}</span>`;
     }
   }
   resultsHtml += "</div>";
@@ -1977,7 +1990,7 @@ function itemExistsOnActor(actor, itemType, itemName) {
     (item) => item.type === itemType && item.name === itemName
   );
 }
-function findDefaultDefenseSelection(defenderActor, linkedDefenseSpecName) {
+function findDefaultDefenseSelection(defenderActor, linkedDefenseSpecName, linkedDefenseSkillName) {
   const skills = defenderActor.items.filter((i) => i.type === "skill");
   const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
   let defaultSelection = "";
@@ -1996,20 +2009,31 @@ function findDefaultDefenseSelection(defenderActor, linkedDefenseSpecName) {
       );
       return { defaultSelection, linkedSpec, linkedSkill };
     }
-    if (game.items) {
-      const specTemplate = game.items.find(
-        (item) => item.type === "specialization" && normalizeSearchText(item.name) === normalizedDefenseSpecName
-      );
-      if (specTemplate) {
-        const linkedSkillName = specTemplate.system.linkedSkill;
-        if (linkedSkillName) {
-          linkedSkill = skills.find(
-            (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSkillName)
-          );
-          if (linkedSkill) {
-            defaultSelection = `skill-${linkedSkill.id}`;
-            return { defaultSelection, linkedSpec: null, linkedSkill };
-          }
+  }
+  if (!defaultSelection && linkedDefenseSkillName) {
+    const normalizedDefenseSkillName = normalizeSearchText(linkedDefenseSkillName);
+    linkedSkill = skills.find(
+      (s) => normalizeSearchText(s.name) === normalizedDefenseSkillName
+    );
+    if (linkedSkill) {
+      defaultSelection = `skill-${linkedSkill.id}`;
+      return { defaultSelection, linkedSpec: null, linkedSkill };
+    }
+  }
+  if (!defaultSelection && linkedDefenseSpecName && game.items) {
+    const normalizedDefenseSpecName = normalizeSearchText(linkedDefenseSpecName);
+    const specTemplate = game.items.find(
+      (item) => item.type === "specialization" && normalizeSearchText(item.name) === normalizedDefenseSpecName
+    );
+    if (specTemplate) {
+      const linkedSkillName = specTemplate.system.linkedSkill;
+      if (linkedSkillName) {
+        linkedSkill = skills.find(
+          (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSkillName)
+        );
+        if (linkedSkill) {
+          defaultSelection = `skill-${linkedSkill.id}`;
+          return { defaultSelection, linkedSpec: null, linkedSkill };
         }
       }
     }
@@ -2028,23 +2052,34 @@ function convertDefenseSpecIdToName(linkedDefenseSpecId, allSpecializations) {
   const spec = allSpecializations.find((s) => s.id === linkedDefenseSpecId);
   return spec ? spec.name : "";
 }
-function getDefenseSpecNameFromWeapon(attackingWeapon, allAvailableSpecializations) {
-  if (!attackingWeapon) return "";
+function getDefenseInfoFromWeapon(attackingWeapon, allAvailableSpecializations) {
+  if (!attackingWeapon) {
+    return { defenseSkillName: "", defenseSpecName: "" };
+  }
   const weaponType = attackingWeapon.system?.weaponType;
   if (weaponType && weaponType !== "custom-weapon") {
     const weaponStats = WEAPON_TYPES[weaponType];
     if (weaponStats) {
-      return weaponStats.linkedDefenseSpecialization || "";
+      return {
+        defenseSkillName: weaponStats.linkedDefenseSkill || "",
+        defenseSpecName: weaponStats.linkedDefenseSpecialization || ""
+      };
     }
   }
   if (weaponType === "custom-weapon") {
-    return attackingWeapon.system?.linkedDefenseSpecialization || "";
+    return {
+      defenseSkillName: attackingWeapon.system?.linkedDefenseSkill || "",
+      defenseSpecName: attackingWeapon.system?.linkedDefenseSpecialization || ""
+    };
   }
   const linkedDefenseSpec = attackingWeapon.system?.linkedDefenseSpecialization || "";
   if (linkedDefenseSpec) {
-    return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
+    return {
+      defenseSkillName: "",
+      defenseSpecName: convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations)
+    };
   }
-  return "";
+  return { defenseSkillName: "", defenseSpecName: "" };
 }
 function calculateNPCThreshold(actor, item, dicePool, itemType, parentSkill) {
   let totalRR = 0;
@@ -2075,7 +2110,8 @@ function calculateNPCThreshold(actor, item, dicePool, itemType, parentSkill) {
 function buildSkillOptionsHtml(params) {
   const { defenderActor, skills, allSpecializations, defaultSelection, includeThreshold = false } = params;
   let html = '<option value="">-- ' + game.i18n.localize("SRA2.COMBAT.SELECT_DEFENSE_SKILL") + " --</option>";
-  skills.forEach((skill) => {
+  const sortedSkills = [...skills].sort((a, b) => a.name.localeCompare(b.name));
+  sortedSkills.forEach((skill) => {
     const skillSystem = skill.system;
     const linkedAttribute = skillSystem.linkedAttribute || "strength";
     const attributeValue = defenderActor.system.attributes?.[linkedAttribute] || 0;
@@ -2351,7 +2387,8 @@ function createThresholdDefenseResult(defenseName, threshold) {
 }
 function buildAttackSkillOptionsHtml(actor, skills, allSpecializations, defaultSelection) {
   let html = '<option value="">-- ' + game.i18n.localize("SRA2.FEATS.WEAPON.SELECT_SKILL") + " --</option>";
-  skills.forEach((skill) => {
+  const sortedSkills = [...skills].sort((a, b) => a.name.localeCompare(b.name));
+  sortedSkills.forEach((skill) => {
     const skillSystem = skill.system;
     const linkedAttribute = skillSystem.linkedAttribute || "strength";
     const attributeValue = actor.system.attributes?.[linkedAttribute] || 0;
@@ -2464,8 +2501,8 @@ class CharacterSheet extends ActorSheet {
       spell: allFeats.filter((feat) => feat.system.featType === "spell")
     };
     context.feats = allFeats;
-    const skills = this.actor.items.filter((item) => item.type === "skill");
-    const allSpecializations = this.actor.items.filter((item) => item.type === "specialization");
+    const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
+    const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
     const specializationsBySkill = /* @__PURE__ */ new Map();
     const unlinkedSpecializations = [];
     allSpecializations.forEach((spec) => {
@@ -2503,7 +2540,7 @@ class CharacterSheet extends ActorSheet {
       const attributeValue = this.actor.system.attributes[linkedAttribute] || 0;
       const skillRating = skill.system?.rating || 0;
       skill.totalDicePool = attributeValue + skillRating;
-      const specs = specializationsBySkill.get(skill.id) || [];
+      const specs = (specializationsBySkill.get(skill.id) || []).sort((a, b) => a.name.localeCompare(b.name));
       skill.specializations = specs.map((spec) => {
         const parentRating = skill.system?.rating || 0;
         spec.parentRating = parentRating;
@@ -2521,7 +2558,7 @@ class CharacterSheet extends ActorSheet {
       });
       return skill;
     });
-    context.unlinkedSpecializations = unlinkedSpecializations.map((spec) => {
+    context.unlinkedSpecializations = unlinkedSpecializations.sort((a, b) => a.name.localeCompare(b.name)).map((spec) => {
       const linkedAttribute = spec.system?.linkedAttribute || "strength";
       spec.linkedAttributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
       const specRR = this.calculateRR("specialization", spec.name);
@@ -2939,10 +2976,11 @@ class CharacterSheet extends ActorSheet {
   async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon, damageValueBonus) {
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
-    const linkedDefenseSpecName = getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations);
+    const { defenseSkillName, defenseSpecName } = getDefenseInfoFromWeapon(attackingWeapon, allSpecializations);
     const { defaultSelection } = findDefaultDefenseSelection(
       defenderActor,
-      linkedDefenseSpecName
+      defenseSpecName,
+      defenseSkillName
     );
     const skillOptionsHtml = buildSkillOptionsHtml({
       defenderActor,
@@ -4145,8 +4183,8 @@ class NpcSheet extends ActorSheet {
     context.weapons = weapons;
     context.spells = spells;
     context.feats = otherFeats;
-    const skills = this.actor.items.filter((item) => item.type === "skill");
-    const allSpecializations = this.actor.items.filter((item) => item.type === "specialization");
+    const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
+    const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
     const specializationsBySkill = /* @__PURE__ */ new Map();
     allSpecializations.forEach((spec) => {
       const linkedSkillName = spec.system.linkedSkill;
@@ -4196,7 +4234,7 @@ class NpcSheet extends ActorSheet {
       skillData.totalDicePool = totalDicePool;
       skillData.totalRR = totalRR;
       skillData.npcThreshold = npcThreshold;
-      const specs = specializationsBySkill.get(skill.id) || [];
+      const specs = (specializationsBySkill.get(skill.id) || []).sort((a, b) => a.name.localeCompare(b.name));
       skillData.specializations = specs.map((spec) => {
         const specData = {
           ...spec,
@@ -4880,10 +4918,11 @@ class NpcSheet extends ActorSheet {
   async _promptDefenseRollWithAttackResult(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon, damageValueBonus) {
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
-    const linkedDefenseSpecName = attackingWeapon ? getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations) : "";
+    const { defenseSkillName, defenseSpecName } = attackingWeapon ? getDefenseInfoFromWeapon(attackingWeapon, allSpecializations) : { defenseSkillName: "", defenseSpecName: "" };
     const { defaultSelection } = findDefaultDefenseSelection(
       defenderActor,
-      linkedDefenseSpecName
+      defenseSpecName,
+      defenseSkillName
     );
     const skillOptionsHtml = buildSkillOptionsHtml({
       defenderActor,
@@ -4970,10 +5009,11 @@ class NpcSheet extends ActorSheet {
     const damageValueBonus = attackingWeapon?.system?.damageValueBonus || 0;
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
-    const linkedDefenseSpecName = attackingWeapon ? getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations) : "";
+    const { defenseSkillName, defenseSpecName } = attackingWeapon ? getDefenseInfoFromWeapon(attackingWeapon, allSpecializations) : { defenseSkillName: "", defenseSpecName: "" };
     const { defaultSelection } = findDefaultDefenseSelection(
       defenderActor,
-      linkedDefenseSpecName
+      defenseSpecName,
+      defenseSkillName
     );
     const skillOptionsHtml = buildSkillOptionsHtml({
       defenderActor,

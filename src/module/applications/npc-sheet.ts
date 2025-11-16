@@ -133,11 +133,15 @@ export class NpcSheet extends ActorSheet {
     context.spells = spells;
     context.feats = otherFeats;
 
-    // Get skills with NPC threshold calculations
-    const skills = this.actor.items.filter((item: any) => item.type === 'skill');
+    // Get skills with NPC threshold calculations (sorted alphabetically)
+    const skills = this.actor.items
+      .filter((item: any) => item.type === 'skill')
+      .sort((a: any, b: any) => a.name.localeCompare(b.name));
     
-    // Get all specializations
-    const allSpecializations = this.actor.items.filter((item: any) => item.type === 'specialization');
+    // Get all specializations (sorted alphabetically)
+    const allSpecializations = this.actor.items
+      .filter((item: any) => item.type === 'specialization')
+      .sort((a: any, b: any) => a.name.localeCompare(b.name));
     
     // Organize specializations by linked skill
     const specializationsBySkill = new Map<string, any[]>();
@@ -207,8 +211,8 @@ export class NpcSheet extends ActorSheet {
       skillData.totalRR = totalRR;
       skillData.npcThreshold = npcThreshold;
       
-      // Attach specializations for this skill with their thresholds
-      const specs = specializationsBySkill.get(skill.id) || [];
+      // Attach specializations for this skill with their thresholds (sorted alphabetically)
+      const specs = (specializationsBySkill.get(skill.id) || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
       skillData.specializations = specs.map((spec: any) => {
         const specData = {
           ...spec,
@@ -1109,13 +1113,16 @@ export class NpcSheet extends ActorSheet {
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Get linked defense specialization name from attacking weapon
-    const linkedDefenseSpecName = attackingWeapon ? DefenseSelection.getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations) : '';
+    // Get linked defense skill and specialization from attacking weapon
+    const { defenseSkillName, defenseSpecName } = attackingWeapon 
+      ? DefenseSelection.getDefenseInfoFromWeapon(attackingWeapon, allSpecializations)
+      : { defenseSkillName: '', defenseSpecName: '' };
     
     // Use the helper to find the appropriate defense selection by NAME
     const { defaultSelection } = DefenseSelection.findDefaultDefenseSelection(
       defenderActor,
-      linkedDefenseSpecName
+      defenseSpecName,
+      defenseSkillName
     );
     
     // Build skill options HTML using helper
@@ -1219,13 +1226,16 @@ export class NpcSheet extends ActorSheet {
     const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
     const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
     
-    // Get linked defense specialization name from attacking weapon
-    const linkedDefenseSpecName = attackingWeapon ? DefenseSelection.getDefenseSpecNameFromWeapon(attackingWeapon, allSpecializations) : '';
+    // Get linked defense skill and specialization from attacking weapon
+    const { defenseSkillName, defenseSpecName } = attackingWeapon 
+      ? DefenseSelection.getDefenseInfoFromWeapon(attackingWeapon, allSpecializations)
+      : { defenseSkillName: '', defenseSpecName: '' };
     
     // Use the helper to find the appropriate defense selection by NAME
     const { defaultSelection } = DefenseSelection.findDefaultDefenseSelection(
       defenderActor,
-      linkedDefenseSpecName
+      defenseSpecName,
+      defenseSkillName
     );
     
     // Build skill options HTML using helper

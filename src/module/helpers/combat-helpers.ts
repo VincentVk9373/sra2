@@ -70,7 +70,10 @@ export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
   
   let html = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
   
-  skills.forEach((skill: any) => {
+  // Sort skills alphabetically by name
+  const sortedSkills = [...skills].sort((a: any, b: any) => a.name.localeCompare(b.name));
+  
+  sortedSkills.forEach((skill: any) => {
     const skillSystem = skill.system as any;
     const linkedAttribute = skillSystem.linkedAttribute || 'strength';
     const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
@@ -449,7 +452,10 @@ export function buildAttackSkillOptionsHtml(
 ): string {
   let html = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
   
-  skills.forEach((skill: any) => {
+  // Sort skills alphabetically by name
+  const sortedSkills = [...skills].sort((a: any, b: any) => a.name.localeCompare(b.name));
+  
+  sortedSkills.forEach((skill: any) => {
     const skillSystem = skill.system as any;
     const linkedAttribute = skillSystem.linkedAttribute || 'strength';
     const attributeValue = (actor.system as any).attributes?.[linkedAttribute] || 0;

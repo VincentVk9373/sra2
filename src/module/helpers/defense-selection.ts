@@ -19,16 +19,16 @@ export interface DefenseSelection {
  * Find the appropriate defense skill or specialization for a defender
  * 
  * Logic:
- * 1. Search for a specialization with the same name as linkedDefenseSpecialization
- * 2. If not found, search for the linked skill of that specialization (in game.items) 
- *    and check if the defender has that skill
+ * 1. Search for the defense specialization by name
+ * 2. If not found, search for the defense skill by name
  * 3. Otherwise, use the first available skill
  * 
  * All comparisons are done by normalized labels (case-insensitive, accent-insensitive)
  */
 export function findDefaultDefenseSelection(
   defenderActor: any,
-  linkedDefenseSpecName: string
+  linkedDefenseSpecName: string,
+  linkedDefenseSkillName?: string
 ): DefenseSelection {
   const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
   const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
@@ -55,33 +55,47 @@ export function findDefaultDefenseSelection(
       
       return { defaultSelection, linkedSpec, linkedSkill };
     }
+  }
+  
+  // 2. If specialization not found, try to find the defense skill by NAME
+  if (!defaultSelection && linkedDefenseSkillName) {
+    const normalizedDefenseSkillName = ItemSearch.normalizeSearchText(linkedDefenseSkillName);
     
-    // 2. If specialization not found on defender, try to find the skill that would be linked
-    // Search for the specialization template in game.items to find its linked skill
-    if (game.items) {
-      const specTemplate = (game.items as any).find((item: any) => 
-        item.type === 'specialization' && 
-        ItemSearch.normalizeSearchText(item.name) === normalizedDefenseSpecName
-      );
-      
-      if (specTemplate) {
-        const linkedSkillName = specTemplate.system.linkedSkill;
-        if (linkedSkillName) {
-          // Check if defender has this skill
-          linkedSkill = skills.find((s: any) => 
-            ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSkillName)
-          );
-          
-          if (linkedSkill) {
-            defaultSelection = `skill-${linkedSkill.id}`;
-            return { defaultSelection, linkedSpec: null, linkedSkill };
-          }
+    linkedSkill = skills.find((s: any) => 
+      ItemSearch.normalizeSearchText(s.name) === normalizedDefenseSkillName
+    );
+    
+    if (linkedSkill) {
+      defaultSelection = `skill-${linkedSkill.id}`;
+      return { defaultSelection, linkedSpec: null, linkedSkill };
+    }
+  }
+  
+  // 3. Fallback: Search for the specialization template in game.items to find its linked skill
+  if (!defaultSelection && linkedDefenseSpecName && game.items) {
+    const normalizedDefenseSpecName = ItemSearch.normalizeSearchText(linkedDefenseSpecName);
+    const specTemplate = (game.items as any).find((item: any) => 
+      item.type === 'specialization' && 
+      ItemSearch.normalizeSearchText(item.name) === normalizedDefenseSpecName
+    );
+    
+    if (specTemplate) {
+      const linkedSkillName = specTemplate.system.linkedSkill;
+      if (linkedSkillName) {
+        // Check if defender has this skill
+        linkedSkill = skills.find((s: any) => 
+          ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSkillName)
+        );
+        
+        if (linkedSkill) {
+          defaultSelection = `skill-${linkedSkill.id}`;
+          return { defaultSelection, linkedSpec: null, linkedSkill };
         }
       }
     }
   }
   
-  // 3. If no match found, use the first skill as default
+  // 4. If no match found, use the first skill as default
   if (!defaultSelection && skills.length > 0) {
     linkedSkill = skills[0]; // Default to first skill
     defaultSelection = `skill-${linkedSkill.id}`;
@@ -113,14 +127,16 @@ export function convertDefenseSpecIdToName(
 }
 
 /**
- * Get the defense specialization name from an attacking weapon
+ * Get the defense skill and specialization names from an attacking weapon
  * Uses WEAPON_TYPES for predefined weapons or custom fields for custom weapons
  */
-export function getDefenseSpecNameFromWeapon(
+export function getDefenseInfoFromWeapon(
   attackingWeapon: any,
   allAvailableSpecializations: any[]
-): string {
-  if (!attackingWeapon) return '';
+): { defenseSkillName: string; defenseSpecName: string } {
+  if (!attackingWeapon) {
+    return { defenseSkillName: '', defenseSpecName: '' };
+  }
   
   const weaponType = attackingWeapon.system?.weaponType;
   
@@ -128,21 +144,42 @@ export function getDefenseSpecNameFromWeapon(
   if (weaponType && weaponType !== 'custom-weapon') {
     const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
     if (weaponStats) {
-      return weaponStats.linkedDefenseSpecialization || '';
+      return {
+        defenseSkillName: weaponStats.linkedDefenseSkill || '',
+        defenseSpecName: weaponStats.linkedDefenseSpecialization || ''
+      };
     }
   }
   
   // For custom weapons, get from system fields
   if (weaponType === 'custom-weapon') {
-    return attackingWeapon.system?.linkedDefenseSpecialization || '';
+    return {
+      defenseSkillName: attackingWeapon.system?.linkedDefenseSkill || '',
+      defenseSpecName: attackingWeapon.system?.linkedDefenseSpecialization || ''
+    };
   }
   
   // Fallback: try old system (ID-based) for backwards compatibility
   const linkedDefenseSpec = attackingWeapon.system?.linkedDefenseSpecialization || '';
   if (linkedDefenseSpec) {
-    return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
+    return {
+      defenseSkillName: '',
+      defenseSpecName: convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations)
+    };
   }
   
-  return '';
+  return { defenseSkillName: '', defenseSpecName: '' };
+}
+
+/**
+ * Get the defense specialization name from an attacking weapon (backwards compatibility)
+ * @deprecated Use getDefenseInfoFromWeapon instead
+ */
+export function getDefenseSpecNameFromWeapon(
+  attackingWeapon: any,
+  allAvailableSpecializations: any[]
+): string {
+  const { defenseSpecName } = getDefenseInfoFromWeapon(attackingWeapon, allAvailableSpecializations);
+  return defenseSpecName;
 }
 

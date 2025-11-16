@@ -510,13 +510,9 @@ export function buildRollResultsHtml(options: BuildResultsHtmlOptions): string {
     }
     
     if (baseVD >= 0) {
-      const finalVD = totalSuccesses + baseVD;
       resultsHtml += ` | `;
       resultsHtml += `<strong>${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT')}:</strong> `;
-      resultsHtml += `<span class="final-damage-value">`;
-      resultsHtml += `<span class="calculation">${totalSuccesses} + ${baseVD} = </span>`;
-      resultsHtml += `<span class="final-value">${finalVD}</span>`;
-      resultsHtml += `</span>`;
+      resultsHtml += `<span class="vd-display">${vdDisplay}</span>`;
     }
   }
   
