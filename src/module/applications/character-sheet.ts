@@ -990,7 +990,7 @@ export class CharacterSheet extends ActorSheet {
     // Attack section
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
-    resultsHtml += this._buildDiceResultsHtml(attackResult, weaponDamageValue);
+    resultsHtml += this._buildDiceResultsHtml(attackResult, weaponDamageValue, damageValueBonus);
     resultsHtml += '</div>';
     
     // Defense section
