@@ -2454,10 +2454,10 @@ class CharacterSheet extends ActorSheet {
       height: 700,
       tabs: [],
       dragDrop: [
-        { dragSelector: ".metatype-item", dropSelector: ".metatype-drop-zone" },
-        { dragSelector: ".feat-item", dropSelector: ".feats-list" },
-        { dragSelector: ".skill-item", dropSelector: ".skills-list" },
-        { dragSelector: ".specialization-item", dropSelector: ".skills-list" }
+        { dragSelector: ".metatype-item", dropSelector: null },
+        { dragSelector: ".feat-item", dropSelector: null },
+        { dragSelector: ".skill-item", dropSelector: null },
+        { dragSelector: ".specialization-item", dropSelector: null }
       ],
       submitOnChange: true
     });
@@ -3338,69 +3338,57 @@ class CharacterSheet extends ActorSheet {
     event.dataTransfer?.setData("text/plain", JSON.stringify(dragData));
   }
   /**
-   * Override to handle dropping feats and skills
+   * Override to handle dropping feats and skills anywhere on the sheet
    */
   async _onDrop(event) {
     const data = TextEditor.getDragEventData(event);
-    const dropTarget = event.target.closest("[data-drop-zone]");
     if (data && data.type === "Item") {
       const item = await Item.implementation.fromDropData(data);
       if (!item) return super._onDrop(event);
-      if (dropTarget && dropTarget.dataset.dropZone === "metatype") {
-        if (item.type === "metatype") {
-          if (!item.actor || item.actor.id !== this.actor.id) {
-            const existingMetatype = this.actor.items.find((i) => i.type === "metatype");
-            if (existingMetatype) {
-              const message = game.i18n.localize("SRA2.METATYPES.ONLY_ONE_METATYPE");
-              ui.notifications?.warn(message);
-              return;
-            }
-            await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-            return;
-          }
-        } else {
-          ui.notifications?.warn(game.i18n.localize("SRA2.METATYPES.ONLY_METATYPES"));
-          return;
-        }
+      if (item.actor && item.actor.id === this.actor.id) {
+        return;
       }
-      if (dropTarget && dropTarget.dataset.dropZone === "feat") {
-        if (item.type === "feat") {
-          if (!item.actor || item.actor.id !== this.actor.id) {
-            const existingFeat = this.actor.items.find(
-              (i) => i.type === "feat" && i.name === item.name
-            );
-            if (existingFeat) {
-              const message = game.i18n.format("SRA2.FEATS.ALREADY_EXISTS", { name: item.name });
-              ui.notifications?.warn(message);
-              return;
-            }
-            await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-            return;
-          }
-        } else {
-          ui.notifications?.warn(game.i18n.localize("SRA2.FEATS.ONLY_FEATS"));
+      if (item.type === "metatype") {
+        const existingMetatype = this.actor.items.find((i) => i.type === "metatype");
+        if (existingMetatype) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.METATYPES.ONLY_ONE_METATYPE"));
           return;
         }
+        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+        return;
       }
-      if (dropTarget && dropTarget.dataset.dropZone === "skill") {
-        if (item.type === "skill" || item.type === "specialization") {
-          if (!item.actor || item.actor.id !== this.actor.id) {
-            const existingItem = this.actor.items.find(
-              (i) => i.type === item.type && i.name === item.name
-            );
-            if (existingItem) {
-              const messageKey = item.type === "skill" ? "SRA2.SKILLS.ALREADY_EXISTS" : "SRA2.SPECIALIZATIONS.ALREADY_EXISTS";
-              const message = game.i18n.format(messageKey, { name: item.name });
-              ui.notifications?.warn(message);
-              return;
-            }
-            await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-            return;
-          }
-        } else {
-          ui.notifications?.warn(game.i18n.localize("SRA2.SKILLS.ONLY_SKILLS"));
+      if (item.type === "feat") {
+        const existingFeat = this.actor.items.find(
+          (i) => i.type === "feat" && i.name === item.name
+        );
+        if (existingFeat) {
+          ui.notifications?.warn(game.i18n.format("SRA2.FEATS.ALREADY_EXISTS", { name: item.name }));
           return;
         }
+        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+        return;
+      }
+      if (item.type === "skill") {
+        const existingSkill = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === item.name
+        );
+        if (existingSkill) {
+          ui.notifications?.warn(game.i18n.format("SRA2.SKILLS.ALREADY_EXISTS", { name: item.name }));
+          return;
+        }
+        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+        return;
+      }
+      if (item.type === "specialization") {
+        const existingSpec = this.actor.items.find(
+          (i) => i.type === "specialization" && i.name === item.name
+        );
+        if (existingSpec) {
+          ui.notifications?.warn(game.i18n.format("SRA2.SPECIALIZATIONS.ALREADY_EXISTS", { name: item.name }));
+          return;
+        }
+        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+        return;
       }
     }
     return super._onDrop(event);
@@ -4150,9 +4138,9 @@ class NpcSheet extends ActorSheet {
       height: 700,
       tabs: [],
       dragDrop: [
-        { dragSelector: ".skill-item", dropSelector: ".skills-list" },
-        { dragSelector: ".feat-item", dropSelector: ".feats-list" },
-        { dragSelector: ".specialization-item", dropSelector: ".skills-list" }
+        { dragSelector: ".skill-item", dropSelector: null },
+        { dragSelector: ".feat-item", dropSelector: null },
+        { dragSelector: ".specialization-item", dropSelector: null }
       ],
       submitOnChange: true
     });

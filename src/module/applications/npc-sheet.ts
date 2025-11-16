@@ -18,9 +18,9 @@ export class NpcSheet extends ActorSheet {
       height: 700,
       tabs: [],
       dragDrop: [
-        { dragSelector: '.skill-item', dropSelector: '.skills-list' },
-        { dragSelector: '.feat-item', dropSelector: '.feats-list' },
-        { dragSelector: '.specialization-item', dropSelector: '.skills-list' }
+        { dragSelector: '.skill-item', dropSelector: null },
+        { dragSelector: '.feat-item', dropSelector: null },
+        { dragSelector: '.specialization-item', dropSelector: null }
       ],
       submitOnChange: true,
     });

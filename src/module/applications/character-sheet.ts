@@ -19,10 +19,10 @@ export class CharacterSheet extends ActorSheet {
       height: 700,
       tabs: [],
       dragDrop: [
-        { dragSelector: '.metatype-item', dropSelector: '.metatype-drop-zone' },
-        { dragSelector: '.feat-item', dropSelector: '.feats-list' },
-        { dragSelector: '.skill-item', dropSelector: '.skills-list' },
-        { dragSelector: '.specialization-item', dropSelector: '.skills-list' }
+        { dragSelector: '.metatype-item', dropSelector: null },
+        { dragSelector: '.feat-item', dropSelector: null },
+        { dragSelector: '.skill-item', dropSelector: null },
+        { dragSelector: '.specialization-item', dropSelector: null }
       ],
       submitOnChange: true,
     });
@@ -1243,11 +1243,10 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Override to handle dropping feats and skills
+   * Override to handle dropping feats and skills anywhere on the sheet
    */
   protected override async _onDrop(event: DragEvent): Promise<any> {
     const data = TextEditor.getDragEventData(event) as any;
-    const dropTarget = (event.target as HTMLElement).closest('[data-drop-zone]') as HTMLElement;
     
     // Handle Item drops
     if (data && data.type === 'Item') {
@@ -1255,78 +1254,60 @@ export class CharacterSheet extends ActorSheet {
       
       if (!item) return super._onDrop(event);
       
-      // Check if dropping in metatype section
-      if (dropTarget && dropTarget.dataset.dropZone === 'metatype') {
-        if (item.type === 'metatype') {
-          // Check if the item is from a compendium or another actor
-          if (!item.actor || item.actor.id !== this.actor.id) {
-            // Check if there's already a metatype
-            const existingMetatype = this.actor.items.find((i: any) => i.type === 'metatype');
-            
-            if (existingMetatype) {
-              const message = game.i18n!.localize('SRA2.METATYPES.ONLY_ONE_METATYPE');
-              ui.notifications?.warn(message);
-              return;
-            }
-            
-            await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
-            return;
-          }
-        } else {
-          ui.notifications?.warn(game.i18n!.localize('SRA2.METATYPES.ONLY_METATYPES'));
-          return;
-        }
+      // Check if the item is from a compendium or another actor (not already on this actor)
+      if (item.actor && item.actor.id === this.actor.id) {
+        // Item already belongs to this actor, ignore
+        return;
       }
       
-      // Check if dropping in feats section
-      if (dropTarget && dropTarget.dataset.dropZone === 'feat') {
-        if (item.type === 'feat') {
-          // Check if the item is from a compendium or another actor
-          if (!item.actor || item.actor.id !== this.actor.id) {
-            // Check for duplicates by name
-            const existingFeat = this.actor.items.find((i: any) => 
-              i.type === 'feat' && i.name === item.name
-            );
-            
-            if (existingFeat) {
-              const message = game.i18n!.format('SRA2.FEATS.ALREADY_EXISTS', { name: item.name });
-              ui.notifications?.warn(message);
-              return;
-            }
-            
-            await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
-            return;
-          }
-        } else {
-          ui.notifications?.warn(game.i18n!.localize('SRA2.FEATS.ONLY_FEATS'));
+      // Handle metatype
+      if (item.type === 'metatype') {
+        const existingMetatype = this.actor.items.find((i: any) => i.type === 'metatype');
+        if (existingMetatype) {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.METATYPES.ONLY_ONE_METATYPE'));
           return;
         }
+        await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
+        return;
       }
       
-      // Check if dropping in skills section
-      if (dropTarget && dropTarget.dataset.dropZone === 'skill') {
-        if (item.type === 'skill' || item.type === 'specialization') {
-          // Check if the item is from a compendium or another actor
-          if (!item.actor || item.actor.id !== this.actor.id) {
-            // Check for duplicates by name
-            const existingItem = this.actor.items.find((i: any) => 
-              i.type === item.type && i.name === item.name
-            );
-            
-            if (existingItem) {
-              const messageKey = item.type === 'skill' ? 'SRA2.SKILLS.ALREADY_EXISTS' : 'SRA2.SPECIALIZATIONS.ALREADY_EXISTS';
-              const message = game.i18n!.format(messageKey, { name: item.name });
-              ui.notifications?.warn(message);
-              return;
-            }
-            
-            await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
-            return;
-          }
-        } else {
-          ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.ONLY_SKILLS'));
+      // Handle feat
+      if (item.type === 'feat') {
+        const existingFeat = this.actor.items.find((i: any) => 
+          i.type === 'feat' && i.name === item.name
+        );
+        if (existingFeat) {
+          ui.notifications?.warn(game.i18n!.format('SRA2.FEATS.ALREADY_EXISTS', { name: item.name }));
           return;
         }
+        await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
+        return;
+      }
+      
+      // Handle skill
+      if (item.type === 'skill') {
+        const existingSkill = this.actor.items.find((i: any) => 
+          i.type === 'skill' && i.name === item.name
+        );
+        if (existingSkill) {
+          ui.notifications?.warn(game.i18n!.format('SRA2.SKILLS.ALREADY_EXISTS', { name: item.name }));
+          return;
+        }
+        await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
+        return;
+      }
+      
+      // Handle specialization
+      if (item.type === 'specialization') {
+        const existingSpec = this.actor.items.find((i: any) => 
+          i.type === 'specialization' && i.name === item.name
+        );
+        if (existingSpec) {
+          ui.notifications?.warn(game.i18n!.format('SRA2.SPECIALIZATIONS.ALREADY_EXISTS', { name: item.name }));
+          return;
+        }
+        await this.actor.createEmbeddedDocuments('Item', [item.toObject()]);
+        return;
       }
     }
 
