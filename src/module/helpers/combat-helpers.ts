@@ -356,33 +356,36 @@ export function buildDiceResultsHtml(rollResult: any, weaponDamageValue?: string
  * Includes damageValueBonus from weapon feat
  */
 export function parseWeaponDamageValue(
-  weaponDamageValue: string,
+  weaponDamageValue: string | number,
   actorStrength: number,
   damageValueBonus: number = 0
 ): { baseVD: number; vdDisplay: string } {
-  let baseVD = 0;
-  let vdDisplay = weaponDamageValue;
+  // Ensure weaponDamageValue is a string
+  const vdString = String(weaponDamageValue);
   
-  if (weaponDamageValue === 'FOR') {
+  let baseVD = 0;
+  let vdDisplay = vdString;
+  
+  if (vdString === 'FOR') {
     baseVD = actorStrength + damageValueBonus;
     if (damageValueBonus > 0) {
       vdDisplay = `FOR+${damageValueBonus} (${baseVD})`;
     } else {
       vdDisplay = `FOR (${actorStrength})`;
     }
-  } else if (weaponDamageValue.startsWith('FOR+')) {
-    const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+  } else if (vdString.startsWith('FOR+')) {
+    const modifier = parseInt(vdString.substring(4)) || 0;
     baseVD = actorStrength + modifier + damageValueBonus;
     if (damageValueBonus > 0) {
       vdDisplay = `FOR+${modifier}+${damageValueBonus} (${baseVD})`;
     } else {
       vdDisplay = `FOR+${modifier} (${baseVD})`;
     }
-  } else if (weaponDamageValue === 'toxin') {
+  } else if (vdString === 'toxin') {
     vdDisplay = 'selon toxine';
     baseVD = -1; // Special case
   } else {
-    const base = parseInt(weaponDamageValue) || 0;
+    const base = parseInt(vdString) || 0;
     baseVD = base + damageValueBonus;
     if (damageValueBonus > 0) {
       vdDisplay = `${baseVD} (${base}+${damageValueBonus})`;

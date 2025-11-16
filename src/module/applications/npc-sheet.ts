@@ -25,6 +25,48 @@ export class NpcSheet extends ActorSheet {
     });
   }
 
+  /**
+   * Handle form submission to update actor data
+   */
+  protected override async _updateObject(_event: Event, formData: any): Promise<any> {
+    const actorData: any = {};
+    for (const [key, value] of Object.entries(formData)) {
+      if (!key.startsWith('items.')) {
+        actorData[key] = value;
+      }
+    }
+    
+    // Handle unchecked checkboxes for damage (they don't appear in formData)
+    const damageFields = ['system.damage.incapacitating'];
+    damageFields.forEach(field => {
+      if (!(field in formData)) {
+        actorData[field] = false;
+      }
+    });
+    
+    // Handle damage arrays
+    const currentDamage = (this.actor.system as any).damage || {};
+    if (currentDamage.light) {
+      for (let i = 0; i < currentDamage.light.length; i++) {
+        const fieldName = `system.damage.light.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    if (currentDamage.severe) {
+      for (let i = 0; i < currentDamage.severe.length; i++) {
+        const fieldName = `system.damage.severe.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    
+    const expandedData = foundry.utils.expandObject(actorData);
+    return this.actor.update(expandedData);
+  }
+
   override getData(): any {
     const context = super.getData() as any;
 

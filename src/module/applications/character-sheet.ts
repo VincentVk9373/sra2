@@ -338,6 +338,34 @@ export class CharacterSheet extends ActorSheet {
       }
     }
     
+    // Handle unchecked checkboxes for damage (they don't appear in formData)
+    // If a damage checkbox is not in formData, it means it was unchecked
+    const damageFields = ['system.damage.incapacitating'];
+    damageFields.forEach(field => {
+      if (!(field in formData)) {
+        actorData[field] = false;
+      }
+    });
+    
+    // Handle damage arrays (light and severe)
+    const currentDamage = (this.actor.system as any).damage || {};
+    if (currentDamage.light) {
+      for (let i = 0; i < currentDamage.light.length; i++) {
+        const fieldName = `system.damage.light.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    if (currentDamage.severe) {
+      for (let i = 0; i < currentDamage.severe.length; i++) {
+        const fieldName = `system.damage.severe.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    
     // Expand the form data to handle nested properties
     const expandedData = foundry.utils.expandObject(actorData);
     

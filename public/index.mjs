@@ -1800,30 +1800,31 @@ function buildRollResultsHtml(options) {
   resultsHtml += `<div class="successes ${totalSuccesses > 0 ? "has-success" : "no-success"}">`;
   resultsHtml += `<strong>${game.i18n.localize("SRA2.SKILLS.TOTAL_SUCCESSES")}:</strong> ${totalSuccesses}`;
   if (weaponDamageValue && weaponDamageValue !== "0" && actorStrength !== void 0) {
+    const vdString = String(weaponDamageValue);
     const strength = actorStrength;
     const bonus = damageValueBonus || 0;
     let baseVD = 0;
-    let vdDisplay = weaponDamageValue;
-    if (weaponDamageValue === "FOR") {
+    let vdDisplay = vdString;
+    if (vdString === "FOR") {
       baseVD = strength + bonus;
       if (bonus > 0) {
         vdDisplay = `FOR+${bonus} (${baseVD})`;
       } else {
         vdDisplay = `FOR (${strength})`;
       }
-    } else if (weaponDamageValue.startsWith("FOR+")) {
-      const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+    } else if (vdString.startsWith("FOR+")) {
+      const modifier = parseInt(vdString.substring(4)) || 0;
       baseVD = strength + modifier + bonus;
       if (bonus > 0) {
         vdDisplay = `FOR+${modifier}+${bonus} (${baseVD})`;
       } else {
         vdDisplay = `FOR+${modifier} (${baseVD})`;
       }
-    } else if (weaponDamageValue === "toxin") {
+    } else if (vdString === "toxin") {
       vdDisplay = "selon toxine";
       baseVD = -1;
     } else {
-      const base = parseInt(weaponDamageValue) || 0;
+      const base = parseInt(vdString) || 0;
       baseVD = base + bonus;
       if (bonus > 0) {
         vdDisplay = `${baseVD} (${base}+${bonus})`;
@@ -2322,28 +2323,29 @@ function buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength, dama
   return html;
 }
 function parseWeaponDamageValue(weaponDamageValue, actorStrength, damageValueBonus = 0) {
+  const vdString = String(weaponDamageValue);
   let baseVD = 0;
-  let vdDisplay = weaponDamageValue;
-  if (weaponDamageValue === "FOR") {
+  let vdDisplay = vdString;
+  if (vdString === "FOR") {
     baseVD = actorStrength + damageValueBonus;
     if (damageValueBonus > 0) {
       vdDisplay = `FOR+${damageValueBonus} (${baseVD})`;
     } else {
       vdDisplay = `FOR (${actorStrength})`;
     }
-  } else if (weaponDamageValue.startsWith("FOR+")) {
-    const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+  } else if (vdString.startsWith("FOR+")) {
+    const modifier = parseInt(vdString.substring(4)) || 0;
     baseVD = actorStrength + modifier + damageValueBonus;
     if (damageValueBonus > 0) {
       vdDisplay = `FOR+${modifier}+${damageValueBonus} (${baseVD})`;
     } else {
       vdDisplay = `FOR+${modifier} (${baseVD})`;
     }
-  } else if (weaponDamageValue === "toxin") {
+  } else if (vdString === "toxin") {
     vdDisplay = "selon toxine";
     baseVD = -1;
   } else {
-    const base = parseInt(weaponDamageValue) || 0;
+    const base = parseInt(vdString) || 0;
     baseVD = base + damageValueBonus;
     if (damageValueBonus > 0) {
       vdDisplay = `${baseVD} (${base}+${damageValueBonus})`;
@@ -2639,6 +2641,29 @@ class CharacterSheet extends ActorSheet {
     for (const [key, value] of Object.entries(formData)) {
       if (!key.startsWith("items.")) {
         actorData[key] = value;
+      }
+    }
+    const damageFields = ["system.damage.incapacitating"];
+    damageFields.forEach((field) => {
+      if (!(field in formData)) {
+        actorData[field] = false;
+      }
+    });
+    const currentDamage = this.actor.system.damage || {};
+    if (currentDamage.light) {
+      for (let i = 0; i < currentDamage.light.length; i++) {
+        const fieldName = `system.damage.light.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    if (currentDamage.severe) {
+      for (let i = 0; i < currentDamage.severe.length; i++) {
+        const fieldName = `system.damage.severe.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
       }
     }
     const expandedData = foundry.utils.expandObject(actorData);
@@ -4131,6 +4156,42 @@ class NpcSheet extends ActorSheet {
       ],
       submitOnChange: true
     });
+  }
+  /**
+   * Handle form submission to update actor data
+   */
+  async _updateObject(_event, formData) {
+    const actorData = {};
+    for (const [key, value] of Object.entries(formData)) {
+      if (!key.startsWith("items.")) {
+        actorData[key] = value;
+      }
+    }
+    const damageFields = ["system.damage.incapacitating"];
+    damageFields.forEach((field) => {
+      if (!(field in formData)) {
+        actorData[field] = false;
+      }
+    });
+    const currentDamage = this.actor.system.damage || {};
+    if (currentDamage.light) {
+      for (let i = 0; i < currentDamage.light.length; i++) {
+        const fieldName = `system.damage.light.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    if (currentDamage.severe) {
+      for (let i = 0; i < currentDamage.severe.length; i++) {
+        const fieldName = `system.damage.severe.${i}`;
+        if (!(fieldName in formData)) {
+          actorData[fieldName] = false;
+        }
+      }
+    }
+    const expandedData = foundry.utils.expandObject(actorData);
+    return this.actor.update(expandedData);
   }
   getData() {
     const context = super.getData();

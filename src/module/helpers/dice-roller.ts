@@ -473,34 +473,34 @@ export function buildRollResultsHtml(options: BuildResultsHtmlOptions): string {
   
   // Weapon Damage Value (VD) displayed next to successes
   if (weaponDamageValue && weaponDamageValue !== '0' && actorStrength !== undefined) {
-    // Import parseWeaponDamageValue from combat-helpers to avoid duplication
-    // For now, we need to implement it here to avoid circular dependencies
+    // Ensure weaponDamageValue is a string
+    const vdString = String(weaponDamageValue);
     const strength = actorStrength;
     const bonus = damageValueBonus || 0;
     let baseVD = 0;
-    let vdDisplay = weaponDamageValue;
+    let vdDisplay = vdString;
     
     // Parse the damage value with bonus
-    if (weaponDamageValue === 'FOR') {
+    if (vdString === 'FOR') {
       baseVD = strength + bonus;
       if (bonus > 0) {
         vdDisplay = `FOR+${bonus} (${baseVD})`;
       } else {
         vdDisplay = `FOR (${strength})`;
       }
-    } else if (weaponDamageValue.startsWith('FOR+')) {
-      const modifier = parseInt(weaponDamageValue.substring(4)) || 0;
+    } else if (vdString.startsWith('FOR+')) {
+      const modifier = parseInt(vdString.substring(4)) || 0;
       baseVD = strength + modifier + bonus;
       if (bonus > 0) {
         vdDisplay = `FOR+${modifier}+${bonus} (${baseVD})`;
       } else {
         vdDisplay = `FOR+${modifier} (${baseVD})`;
       }
-    } else if (weaponDamageValue === 'toxin') {
+    } else if (vdString === 'toxin') {
       vdDisplay = 'selon toxine';
       baseVD = -1; // Special case, don't calculate final VD
     } else {
-      const base = parseInt(weaponDamageValue) || 0;
+      const base = parseInt(vdString) || 0;
       baseVD = base + bonus;
       if (bonus > 0) {
         vdDisplay = `${baseVD} (${base}+${bonus})`;
