@@ -4138,15 +4138,48 @@ class NpcSheet extends ActorSheet {
     const allFeats = this.actor.items.filter((item) => item.type === "feat");
     const activeFeats = allFeats.filter((feat) => feat.system.active === true);
     const actorStrength = this.actor.system.attributes?.strength || 0;
-    const calculateWeaponSpellStats = (item, linkedSkillName) => {
+    const calculateWeaponSpellStats = (item) => {
       const itemData = {
         ...item,
         _id: item.id || item._id,
         id: item.id || item._id
       };
+      let linkedSkillName = "";
+      const weaponType = item.system.weaponType;
+      if (weaponType && weaponType !== "custom-weapon") {
+        const weaponStats = WEAPON_TYPES[weaponType];
+        if (weaponStats) {
+          linkedSkillName = weaponStats.linkedSkill || "";
+        }
+      } else if (weaponType === "custom-weapon") {
+        linkedSkillName = item.system.linkedAttackSkill || "";
+      }
       let totalDicePool = 0;
       let totalRR = 0;
       let linkedAttribute = "";
+      if (linkedSkillName) {
+        const linkedSkill = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === linkedSkillName
+        );
+        if (linkedSkill) {
+          const skillSystem = linkedSkill.system;
+          linkedAttribute = skillSystem.linkedAttribute || "strength";
+          const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+          const skillRating = skillSystem.rating || 0;
+          totalDicePool = attributeValue + skillRating;
+          activeFeats.forEach((feat) => {
+            const rrList = feat.system.rrList || [];
+            rrList.forEach((rrEntry) => {
+              if (rrEntry.rrType === "skill" && rrEntry.rrTarget === linkedSkillName) {
+                totalRR += rrEntry.rrValue || 0;
+              }
+              if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === linkedAttribute) {
+                totalRR += rrEntry.rrValue || 0;
+              }
+            });
+          });
+        }
+      }
       if (totalDicePool === 0) {
         linkedAttribute = "strength";
         const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;

@@ -1,6 +1,7 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
 import * as DefenseSelection from '../helpers/defense-selection.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
+import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
  * NPC Sheet Application
@@ -40,14 +41,29 @@ export class NpcSheet extends ActorSheet {
     const actorStrength = (this.actor.system as any).attributes?.strength || 0;
     
     // Helper function to calculate weapon/spell stats
-    const calculateWeaponSpellStats = (item: any, linkedSkillName?: string) => {
+    const calculateWeaponSpellStats = (item: any) => {
       const itemData = {
         ...item,
         _id: item.id || item._id,
         id: item.id || item._id
       };
       
-      // Try to find a linked skill if specified
+      // Get linked skill name from WEAPON_TYPES or custom fields
+      let linkedSkillName = '';
+      const weaponType = item.system.weaponType;
+      
+      if (weaponType && weaponType !== 'custom-weapon') {
+        // Arme pré-définie : récupérer depuis WEAPON_TYPES
+        const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+        if (weaponStats) {
+          linkedSkillName = weaponStats.linkedSkill || '';
+        }
+      } else if (weaponType === 'custom-weapon') {
+        // Arme custom : récupérer depuis les champs du système
+        linkedSkillName = item.system.linkedAttackSkill || '';
+      }
+      
+      // Try to find the linked skill
       let totalDicePool = 0;
       let totalRR = 0;
       let linkedAttribute = '';
@@ -123,9 +139,7 @@ export class NpcSheet extends ActorSheet {
       feat.system.featType !== 'weapons-spells'
     );
     
-    // Calculate stats for weapons and spells
-    // For weapons/spells, we could link to specific skills, but for simplicity
-    // we'll use the default calculation (can be enhanced later)
+    // Calculate stats for weapons and spells using linked skills from WEAPON_TYPES
     const weapons = rawWeapons.map((weapon: any) => calculateWeaponSpellStats(weapon));
     const spells = rawSpells.map((spell: any) => calculateWeaponSpellStats(spell));
     
