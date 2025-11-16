@@ -372,28 +372,258 @@ class SkillDataModel extends foundry.abstract.TypeDataModel {
   }
 }
 const WEAPON_TYPES = {
-  "custom-weapon": { vd: "0", melee: "none", short: "none", medium: "none", long: "none" },
-  "bare-hands": { vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none" },
-  "short-weapons": { vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none" },
-  "long-weapons": { vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none" },
-  "advanced-melee": { vd: 5, melee: "ok", short: "none", medium: "none", long: "none" },
-  "throwing": { vd: "FOR+1", melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "bows": { vd: "FOR+1", melee: "ok", short: "ok", medium: "ok", long: "none" },
-  "crossbows": { vd: 4, melee: "ok", short: "ok", medium: "ok", long: "none" },
-  "tasers": { vd: 5, melee: "ok", short: "ok", medium: "none", long: "none" },
-  "pocket-pistols": { vd: 3, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "light-pistols": { vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "automatic-pistols": { vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "heavy-pistols": { vd: 5, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "smgs": { vd: 5, melee: "dice", short: "ok", medium: "ok", long: "none" },
-  "assault-rifles": { vd: 7, melee: "dice", short: "ok", medium: "ok", long: "dice" },
-  "shotguns": { vd: 8, melee: "dice", short: "ok", medium: "dice", long: "none" },
-  "sniper-rifles": { vd: 10, melee: "none", short: "dice", medium: "dice", long: "ok" },
-  "machine-guns": { vd: 9, melee: "none", short: "ok", medium: "ok", long: "ok" },
-  "grenades": { vd: 7, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "gas-grenades": { vd: "toxin", melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "grenade-launchers": { vd: 7, melee: "none", short: "dice", medium: "ok", long: "ok" },
-  "rocket-launchers": { vd: 12, melee: "none", short: "none", medium: "dice", long: "ok" }
+  "custom-weapon": {
+    vd: "0",
+    melee: "none",
+    short: "none",
+    medium: "none",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Combat rapproché - Mains nues
+  "bare-hands": {
+    vd: "FOR",
+    melee: "ok",
+    short: "none",
+    medium: "none",
+    long: "none",
+    linkedSkill: "Combat rapproché",
+    linkedSpecialization: "Spé : Mains nues",
+    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSpecialization: "Spé : Défense"
+  },
+  // Combat rapproché - Lames
+  "short-weapons": {
+    vd: "FOR+1",
+    melee: "ok",
+    short: "none",
+    medium: "none",
+    long: "none",
+    linkedSkill: "Combat rapproché",
+    linkedSpecialization: "Spé : Lames",
+    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSpecialization: "Spé : Défense"
+  },
+  "long-weapons": {
+    vd: "FOR+2",
+    melee: "ok",
+    short: "none",
+    medium: "none",
+    long: "none",
+    linkedSkill: "Combat rapproché",
+    linkedSpecialization: "Spé : Lames",
+    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSpecialization: "Spé : Défense"
+  },
+  // Combat rapproché - Armes contondantes
+  "advanced-melee": {
+    vd: 5,
+    melee: "ok",
+    short: "none",
+    medium: "none",
+    long: "none",
+    linkedSkill: "Combat rapproché",
+    linkedSpecialization: "Spé : Armes contondantes",
+    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSpecialization: "Spé : Défense"
+  },
+  "tasers": {
+    vd: 5,
+    melee: "ok",
+    short: "ok",
+    medium: "none",
+    long: "none",
+    linkedSkill: "Combat rapproché",
+    linkedSpecialization: "Spé : Armes contondantes",
+    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSpecialization: "Spé : Défense"
+  },
+  // Armes à distance - Armes de jet
+  "throwing": {
+    vd: "FOR+1",
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes de jet",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "grenades": {
+    vd: 7,
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes de jet",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "gas-grenades": {
+    vd: "toxin",
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes de jet",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Armes de trait
+  "bows": {
+    vd: "FOR+1",
+    melee: "ok",
+    short: "ok",
+    medium: "ok",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes de trait",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "crossbows": {
+    vd: 4,
+    melee: "ok",
+    short: "ok",
+    medium: "ok",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes de trait",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Pistolets
+  "pocket-pistols": {
+    vd: 3,
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "light-pistols": {
+    vd: 4,
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "automatic-pistols": {
+    vd: 4,
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "heavy-pistols": {
+    vd: 5,
+    melee: "ok",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Mitraillettes
+  "smgs": {
+    vd: 5,
+    melee: "dice",
+    short: "ok",
+    medium: "ok",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Mitraillettes",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Fusils
+  "assault-rifles": {
+    vd: 7,
+    melee: "dice",
+    short: "ok",
+    medium: "ok",
+    long: "dice",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Fusils",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "shotguns": {
+    vd: 8,
+    melee: "dice",
+    short: "ok",
+    medium: "dice",
+    long: "none",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Fusils",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "sniper-rifles": {
+    vd: 10,
+    melee: "none",
+    short: "dice",
+    medium: "dice",
+    long: "ok",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Fusils",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Lance-grenades
+  "grenade-launchers": {
+    vd: 7,
+    melee: "none",
+    short: "dice",
+    medium: "ok",
+    long: "dice",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Lance-grenades",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Armes lourdes
+  "machine-guns": {
+    vd: 9,
+    melee: "none",
+    short: "ok",
+    medium: "ok",
+    long: "ok",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes lourdes",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "rocket-launchers": {
+    vd: 12,
+    melee: "none",
+    short: "none",
+    medium: "dice",
+    long: "ok",
+    linkedSkill: "Armes à distance",
+    linkedSpecialization: "Spé : Armes lourdes",
+    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSpecialization: "Spé : Défense à distance"
+  }
 };
 const VEHICLE_TYPES = {
   "microdrone": { autopilot: 6, structure: 0, handling: 10, speed: 0, flyingSpeed: 1, armor: 0, weaponMount: "none" },
@@ -3586,81 +3816,34 @@ class CharacterSheet extends ActorSheet {
    */
   async _rollWeaponOrSpell(item, type) {
     const itemSystem = item.system;
-    const skills = this.actor.items.filter((i) => i.type === "skill");
-    const allSpecializations = this.actor.items.filter((i) => i.type === "specialization");
+    const actorSkills = this.actor.items.filter((i) => i.type === "skill");
+    const actorSpecializations = this.actor.items.filter((i) => i.type === "specialization");
     const linkedAttackSpecId = itemSystem.linkedAttackSpecialization || "";
     let defaultSelection = "";
     let linkedSpec = null;
-    let linkedSkill = null;
     if (linkedAttackSpecId) {
-      linkedSpec = allSpecializations.find((s) => s.id === linkedAttackSpecId);
+      linkedSpec = actorSpecializations.find((s) => s._id === linkedAttackSpecId);
       if (linkedSpec) {
-        const specName = linkedSpec.name;
-        const normalizedSpecName = this._normalizeString(specName);
-        const matchingSkill = skills.find(
-          (s) => this._normalizeString(s.name) === normalizedSpecName
-        );
-        if (matchingSkill) {
-          defaultSelection = `skill-${matchingSkill.id}`;
-          linkedSkill = matchingSkill;
-        } else {
-          const linkedSkillName = linkedSpec.system.linkedSkill;
-          if (linkedSkillName) {
-            const normalizedLinkedSkillName = this._normalizeString(linkedSkillName);
-            const matchingLinkedSkill = skills.find(
-              (s) => this._normalizeString(s.name) === normalizedLinkedSkillName
-            );
-            if (matchingLinkedSkill) {
-              defaultSelection = `skill-${matchingLinkedSkill.id}`;
-              linkedSkill = matchingLinkedSkill;
-            } else {
-              const gameSpec = game.items?.find(
-                (i) => i.type === "specialization" && this._normalizeString(i.name) === normalizedSpecName
-              );
-              if (gameSpec) {
-                const gameLinkedSkillName = gameSpec.system?.linkedSkill || "";
-                if (gameLinkedSkillName) {
-                  const normalizedGameLinkedSkill = this._normalizeString(gameLinkedSkillName);
-                  const matchingGameSkill = skills.find(
-                    (s) => this._normalizeString(s.name) === normalizedGameLinkedSkill
-                  );
-                  if (matchingGameSkill) {
-                    defaultSelection = `skill-${matchingGameSkill.id}`;
-                    linkedSkill = matchingGameSkill;
-                  }
-                }
-              }
-              if (!defaultSelection) {
-                const normalizedRangedWeapon = this._normalizeString("arme à distance");
-                const rangedSkill = skills.find(
-                  (s) => this._normalizeString(s.name) === normalizedRangedWeapon
-                );
-                if (rangedSkill) {
-                  defaultSelection = `skill-${rangedSkill.id}`;
-                  linkedSkill = rangedSkill;
-                } else {
-                  defaultSelection = `spec-${linkedSpec.id}`;
-                  linkedSkill = skills[0];
-                }
-              }
-            }
-          } else {
-            defaultSelection = `spec-${linkedSpec.id}`;
-            linkedSkill = skills.find((s) => s.name === linkedSkillName);
+        defaultSelection = `spec-${linkedSpec.id}`;
+      } else {
+        linkedSpec = game.items.find((i) => i.type === "specialization" && i._id === linkedAttackSpecId);
+        if (linkedSpec) {
+          const specSkillId = linkedSpec.system.linkedSkill;
+          const gameSpecSkillName = game.items.find((i) => i.type === "skill" && i._id === specSkillId)?.system.name;
+          const gameSpecSkill = game.items.find((i) => i.type === "skill" && i.system.name === gameSpecSkillName);
+          const actorSpecSkill = actorSkills.find((s) => this._normalizeString(s.system.name) === this._normalizeString(gameSpecSkill.system.name));
+          if (actorSpecSkill) {
+            defaultSelection = `skill-${actorSpecSkill._id}`;
           }
         }
       }
-    }
-    if (!defaultSelection && skills.length > 0) {
-      linkedSkill = skills[0];
-      defaultSelection = `skill-${linkedSkill.id}`;
     }
     const damageValue = itemSystem.damageValue || "0";
     const weaponName = item.name;
     const skillOptionsHtml = buildAttackSkillOptionsHtml(
       this.actor,
-      skills,
-      allSpecializations,
+      actorSkills,
+      actorSpecializations,
       defaultSelection
     );
     const titleKey = type === "spell" ? "SRA2.FEATS.SPELL.ROLL_TITLE" : "SRA2.FEATS.WEAPON.ROLL_TITLE";
@@ -5210,7 +5393,6 @@ class FeatSheet extends ItemSheet {
     context.activeSection = this._activeSection;
     context.finalDamageValue = this._calculateFinalDamageValue();
     context.finalVehicleStats = this._calculateFinalVehicleStats();
-    context.availableSpecializations = this._getAvailableSpecializations();
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
     for (let i = 0; i < rrList.length; i++) {
@@ -5488,39 +5670,6 @@ class FeatSheet extends ItemSheet {
       flyingSpeed: finalFlyingSpeed,
       armor: finalArmor
     };
-  }
-  /**
-   * Get available specializations for linking to weapons
-   * Returns specializations from the actor, world items, and compendiums
-   */
-  _getAvailableSpecializations() {
-    const specializations = [];
-    const seenNames = /* @__PURE__ */ new Set();
-    if (this.item.actor) {
-      for (const item of this.item.actor.items) {
-        if (item.type === "specialization") {
-          specializations.push({
-            _id: item.id,
-            name: item.name,
-            source: "actor"
-          });
-          seenNames.add(item.name);
-        }
-      }
-    }
-    if (game.items) {
-      for (const item of game.items) {
-        if (item.type === "specialization" && !seenNames.has(item.name)) {
-          specializations.push({
-            _id: item.id,
-            name: item.name,
-            source: "world"
-          });
-          seenNames.add(item.name);
-        }
-      }
-    }
-    return specializations;
   }
   /**
    * Handle damage value bonus checkbox changes

@@ -1991,101 +1991,33 @@ export class CharacterSheet extends ActorSheet {
     const itemSystem = item.system as any;
     
     // Get all skills and specializations
-    const skills = this.actor.items.filter((i: any) => i.type === 'skill');
-    const allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
+    const actorSkills = this.actor.items.filter((i: any) => i.type === 'skill');
+    const actorSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
     
     // Get linked attack specialization from weapon if available
     const linkedAttackSpecId = itemSystem.linkedAttackSpecialization || '';
     let defaultSelection = '';
     let linkedSpec: any = null;
-    let linkedSkill: any = null;
-    
-    // NEW AUTO-SELECTION LOGIC:
-    // 1. Try to find the linked specialization by ID on character
+    // if a specialization is linked, try to find it in the actor's items
     if (linkedAttackSpecId) {
-      linkedSpec = allSpecializations.find((s: any) => s.id === linkedAttackSpecId);
-      
-      if (linkedSpec) {
-        const specName = linkedSpec.name;
-        const normalizedSpecName = this._normalizeString(specName);
-        
-        // 1. Search for a skill on the character that has the same name as the specialization
-        const matchingSkill = skills.find((s: any) => 
-          this._normalizeString(s.name) === normalizedSpecName
-        );
-        
-        if (matchingSkill) {
-          // Found a skill with the same name - preselect it
-          defaultSelection = `skill-${matchingSkill.id}`;
-          linkedSkill = matchingSkill;
-        } else {
-          // 2. Check if the linked skill from specialization exists on character
-          const linkedSkillName = linkedSpec.system.linkedSkill;
-          if (linkedSkillName) {
-            const normalizedLinkedSkillName = this._normalizeString(linkedSkillName);
-            const matchingLinkedSkill = skills.find((s: any) => 
-              this._normalizeString(s.name) === normalizedLinkedSkillName
-            );
-            
-            if (matchingLinkedSkill) {
-              // Found the linked skill on character - preselect it
-              defaultSelection = `skill-${matchingLinkedSkill.id}`;
-              linkedSkill = matchingLinkedSkill;
-            } else {
-              // 3. Linked skill not found, search in game.items for the specialization by NAME
-              // to find alternative linked skill
-              const gameSpec = (game as any).items?.find((i: any) => 
-                i.type === 'specialization' && 
-                this._normalizeString(i.name) === normalizedSpecName
-              );
-              
-              if (gameSpec) {
-                const gameLinkedSkillName = gameSpec.system?.linkedSkill || '';
-                if (gameLinkedSkillName) {
-                  const normalizedGameLinkedSkill = this._normalizeString(gameLinkedSkillName);
-                  const matchingGameSkill = skills.find((s: any) => 
-                    this._normalizeString(s.name) === normalizedGameLinkedSkill
-                  );
-                  
-                  if (matchingGameSkill) {
-                    defaultSelection = `skill-${matchingGameSkill.id}`;
-                    linkedSkill = matchingGameSkill;
-                  }
-                }
-              }
-              
-              // 4. If still not found, try "arme à distance"
-              if (!defaultSelection) {
-                const normalizedRangedWeapon = this._normalizeString('arme à distance');
-                const rangedSkill = skills.find((s: any) => 
-                  this._normalizeString(s.name) === normalizedRangedWeapon
-                );
-                
-                if (rangedSkill) {
-                  defaultSelection = `skill-${rangedSkill.id}`;
-                  linkedSkill = rangedSkill;
-                } else {
-                  // Use the specialization itself as last resort before default
-                  defaultSelection = `spec-${linkedSpec.id}`;
-                  linkedSkill = skills[0]; // Will be used for fallback
-                }
-              }
-            }
-          } else {
-            // Specialization has no linked skill, use the specialization itself
-            defaultSelection = `spec-${linkedSpec.id}`;
-            linkedSkill = skills.find((s: any) => s.name === linkedSkillName);
+      linkedSpec = actorSpecializations.find((s: any) => s._id === linkedAttackSpecId);
+      if(linkedSpec) {
+        defaultSelection = `spec-${linkedSpec.id}`;
+      } else {
+        linkedSpec = (game as any).items.find((i: any) => i.type === 'specialization' && i._id === linkedAttackSpecId);
+        if(linkedSpec) {
+          // get spec skill
+          const specSkillId = linkedSpec.system.linkedSkill;
+          const gameSpecSkillName = (game as any).items.find((i: any) => i.type === 'skill' && i._id === specSkillId)?.system.name;
+          const gameSpecSkill = (game as any).items.find((i: any) => i.type === 'skill' && i.system.name === gameSpecSkillName);
+          const actorSpecSkill = actorSkills.find((s: any) => this._normalizeString(s.system.name) === this._normalizeString(gameSpecSkill.system.name));
+          if(actorSpecSkill) {
+            defaultSelection = `skill-${actorSpecSkill._id}`;
           }
         }
-      }
+      }    
     }
-    
-    // 4. If still no selection, use the first skill as default
-    if (!defaultSelection && skills.length > 0) {
-      linkedSkill = skills[0];
-      defaultSelection = `skill-${linkedSkill.id}`;
-    }
-    
+
     // Get weapon/spell info
     const damageValue = itemSystem.damageValue || '0';
     const weaponName = item.name;
@@ -2093,8 +2025,8 @@ export class CharacterSheet extends ActorSheet {
     // Build skill options HTML using helper
     const skillOptionsHtml = CombatHelpers.buildAttackSkillOptionsHtml(
       this.actor,
-      skills,
-      allSpecializations,
+      actorSkills,
+      actorSpecializations,
       defaultSelection
     );
     

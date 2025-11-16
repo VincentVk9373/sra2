@@ -1,29 +1,129 @@
 /**
  * Weapon types configuration with their stats
+ * Includes recommended skill and specialization for attack AND defense
+ * Specializations are prefixed with "Spé : " to easily find them in game.items
  */
 export const WEAPON_TYPES = {
-  "custom-weapon": { vd: "0", melee: "none", short: "none", medium: "none", long: "none" },
-  "bare-hands": { vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none" },
-  "short-weapons": { vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none" },
-  "long-weapons": { vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none" },
-  "advanced-melee": { vd: 5, melee: "ok", short: "none", medium: "none", long: "none" },
-  "throwing": { vd: "FOR+1", melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "bows": { vd: "FOR+1", melee: "ok", short: "ok", medium: "ok", long: "none" },
-  "crossbows": { vd: 4, melee: "ok", short: "ok", medium: "ok", long: "none" },
-  "tasers": { vd: 5, melee: "ok", short: "ok", medium: "none", long: "none" },
-  "pocket-pistols": { vd: 3, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "light-pistols": { vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "automatic-pistols": { vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "heavy-pistols": { vd: 5, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "smgs": { vd: 5, melee: "dice", short: "ok", medium: "ok", long: "none" },
-  "assault-rifles": { vd: 7, melee: "dice", short: "ok", medium: "ok", long: "dice" },
-  "shotguns": { vd: 8, melee: "dice", short: "ok", medium: "dice", long: "none" },
-  "sniper-rifles": { vd: 10, melee: "none", short: "dice", medium: "dice", long: "ok" },
-  "machine-guns": { vd: 9, melee: "none", short: "ok", medium: "ok", long: "ok" },
-  "grenades": { vd: 7, melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "gas-grenades": { vd: "toxin", melee: "ok", short: "ok", medium: "dice", long: "none" },
-  "grenade-launchers": { vd: 7, melee: "none", short: "dice", medium: "ok", long: "ok" },
-  "rocket-launchers": { vd: 12, melee: "none", short: "none", medium: "dice", long: "ok" }
+  "custom-weapon": { 
+    vd: "0", melee: "none", short: "none", medium: "none", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Combat rapproché - Mains nues
+  "bare-hands": { 
+    vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none",
+    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Mains nues",
+    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+  },
+  // Combat rapproché - Lames
+  "short-weapons": { 
+    vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none",
+    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Lames",
+    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+  },
+  "long-weapons": { 
+    vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none",
+    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Lames",
+    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+  },
+  // Combat rapproché - Armes contondantes
+  "advanced-melee": { 
+    vd: 5, melee: "ok", short: "none", medium: "none", long: "none",
+    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Armes contondantes",
+    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+  },
+  "tasers": { 
+    vd: 5, melee: "ok", short: "ok", medium: "none", long: "none",
+    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Armes contondantes",
+    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+  },
+  // Armes à distance - Armes de jet
+  "throwing": { 
+    vd: "FOR+1", melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "grenades": { 
+    vd: 7, melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "gas-grenades": { 
+    vd: "toxin", melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Armes de trait
+  "bows": { 
+    vd: "FOR+1", melee: "ok", short: "ok", medium: "ok", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de trait",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "crossbows": { 
+    vd: 4, melee: "ok", short: "ok", medium: "ok", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de trait",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Pistolets
+  "pocket-pistols": { 
+    vd: 3, melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "light-pistols": { 
+    vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "automatic-pistols": { 
+    vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "heavy-pistols": { 
+    vd: 5, melee: "ok", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Mitraillettes
+  "smgs": { 
+    vd: 5, melee: "dice", short: "ok", medium: "ok", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Mitraillettes",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Fusils
+  "assault-rifles": { 
+    vd: 7, melee: "dice", short: "ok", medium: "ok", long: "dice",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "shotguns": { 
+    vd: 8, melee: "dice", short: "ok", medium: "dice", long: "none",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "sniper-rifles": { 
+    vd: 10, melee: "none", short: "dice", medium: "dice", long: "ok",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Lance-grenades
+  "grenade-launchers": { 
+    vd: 7, melee: "none", short: "dice", medium: "ok", long: "dice",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Lance-grenades",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  // Armes à distance - Armes lourdes
+  "machine-guns": { 
+    vd: 9, melee: "none", short: "ok", medium: "ok", long: "ok",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes lourdes",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  },
+  "rocket-launchers": { 
+    vd: 12, melee: "none", short: "none", medium: "dice", long: "ok",
+    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes lourdes",
+    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+  }
 } as const;
 
 /**
