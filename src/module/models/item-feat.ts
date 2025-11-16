@@ -604,11 +604,21 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
-      // Linked specializations for weapons
+      // Linked skills and specializations for weapons (for custom weapons)
+      linkedAttackSkill: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"
+      }),
       linkedAttackSpecialization: new fields.StringField({
         required: true,
         initial: "",
         label: "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"
+      }),
+      linkedDefenseSkill: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL"
       }),
       linkedDefenseSpecialization: new fields.StringField({
         required: true,

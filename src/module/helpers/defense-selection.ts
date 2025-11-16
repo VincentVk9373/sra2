@@ -4,6 +4,7 @@
  */
 
 import * as ItemSearch from './item-search.js';
+import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
  * Defense selection result
@@ -113,17 +114,35 @@ export function convertDefenseSpecIdToName(
 
 /**
  * Get the defense specialization name from an attacking weapon
- * Handles both ID-based (old) and name-based (new) formats
+ * Uses WEAPON_TYPES for predefined weapons or custom fields for custom weapons
  */
 export function getDefenseSpecNameFromWeapon(
   attackingWeapon: any,
   allAvailableSpecializations: any[]
 ): string {
-  const linkedDefenseSpec = attackingWeapon?.system?.linkedDefenseSpecialization || '';
+  if (!attackingWeapon) return '';
   
-  if (!linkedDefenseSpec) return '';
+  const weaponType = attackingWeapon.system?.weaponType;
   
-  // Convert ID to name if needed (for backwards compatibility)
-  return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
+  // For predefined weapons, get from WEAPON_TYPES
+  if (weaponType && weaponType !== 'custom-weapon') {
+    const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+    if (weaponStats) {
+      return weaponStats.linkedDefenseSpecialization || '';
+    }
+  }
+  
+  // For custom weapons, get from system fields
+  if (weaponType === 'custom-weapon') {
+    return attackingWeapon.system?.linkedDefenseSpecialization || '';
+  }
+  
+  // Fallback: try old system (ID-based) for backwards compatibility
+  const linkedDefenseSpec = attackingWeapon.system?.linkedDefenseSpecialization || '';
+  if (linkedDefenseSpec) {
+    return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
+  }
+  
+  return '';
 }
 

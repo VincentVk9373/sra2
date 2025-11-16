@@ -298,6 +298,33 @@
           </select>
         </div>
 
+        {{#if (eq system.weaponType "custom-weapon")}}
+        <!-- Champs de liaison pour armes custom -->
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"}}</label>
+          <input type="text" name="system.linkedAttackSkill" value="{{system.linkedAttackSkill}}" placeholder="Armes à distance" />
+          <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL_HINT"}}</p>
+        </div>
+
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"}}</label>
+          <input type="text" name="system.linkedAttackSpecialization" value="{{system.linkedAttackSpecialization}}" placeholder="Spé : Pistolets" />
+          <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION_HINT"}}</p>
+        </div>
+
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL"}}</label>
+          <input type="text" name="system.linkedDefenseSkill" value="{{system.linkedDefenseSkill}}" placeholder="Athlétisme" />
+          <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL_HINT"}}</p>
+        </div>
+
+        <div class="form-group">
+          <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"}}</label>
+          <input type="text" name="system.linkedDefenseSpecialization" value="{{system.linkedDefenseSpecialization}}" placeholder="Spé : Défense à distance" />
+          <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION_HINT"}}</p>
+        </div>
+        {{/if}}
+
         {{#if system.weaponType}}
         <div class="form-group weapon-info-display">
           <label>{{localize "SRA2.FEATS.WEAPON.INFO"}}</label>

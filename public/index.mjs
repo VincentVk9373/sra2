@@ -1095,11 +1095,21 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
-      // Linked specializations for weapons
+      // Linked skills and specializations for weapons (for custom weapons)
+      linkedAttackSkill: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"
+      }),
       linkedAttackSpecialization: new fields.StringField({
         required: true,
         initial: "",
         label: "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"
+      }),
+      linkedDefenseSkill: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL"
       }),
       linkedDefenseSpecialization: new fields.StringField({
         required: true,
@@ -2019,9 +2029,22 @@ function convertDefenseSpecIdToName(linkedDefenseSpecId, allSpecializations) {
   return spec ? spec.name : "";
 }
 function getDefenseSpecNameFromWeapon(attackingWeapon, allAvailableSpecializations) {
-  const linkedDefenseSpec = attackingWeapon?.system?.linkedDefenseSpecialization || "";
-  if (!linkedDefenseSpec) return "";
-  return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
+  if (!attackingWeapon) return "";
+  const weaponType = attackingWeapon.system?.weaponType;
+  if (weaponType && weaponType !== "custom-weapon") {
+    const weaponStats = WEAPON_TYPES[weaponType];
+    if (weaponStats) {
+      return weaponStats.linkedDefenseSpecialization || "";
+    }
+  }
+  if (weaponType === "custom-weapon") {
+    return attackingWeapon.system?.linkedDefenseSpecialization || "";
+  }
+  const linkedDefenseSpec = attackingWeapon.system?.linkedDefenseSpecialization || "";
+  if (linkedDefenseSpec) {
+    return convertDefenseSpecIdToName(linkedDefenseSpec, allAvailableSpecializations);
+  }
+  return "";
 }
 function calculateNPCThreshold(actor, item, dicePool, itemType, parentSkill) {
   let totalRR = 0;
@@ -3806,10 +3829,10 @@ class CharacterSheet extends ActorSheet {
     await this._rollWeaponOrSpell(item, "weapon-spell");
   }
   /**
-   * Normalize a string for comparison (lowercase, no special chars)
+   * Normalize a string for comparison (lowercase, no special chars, no accents)
    */
   _normalizeString(str) {
-    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    return normalizeSearchText(str);
   }
   /**
    * Handle rolling dice for a weapon or spell
@@ -3818,24 +3841,40 @@ class CharacterSheet extends ActorSheet {
     const itemSystem = item.system;
     const actorSkills = this.actor.items.filter((i) => i.type === "skill");
     const actorSpecializations = this.actor.items.filter((i) => i.type === "specialization");
-    const linkedAttackSpecId = itemSystem.linkedAttackSpecialization || "";
+    let linkedSkillName = "";
+    let linkedSpecName = "";
+    const weaponType = itemSystem.weaponType;
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        linkedSkillName = weaponStats.linkedSkill || "";
+        linkedSpecName = weaponStats.linkedSpecialization || "";
+      }
+    } else if (weaponType === "custom-weapon") {
+      linkedSkillName = itemSystem.linkedAttackSkill || "";
+      linkedSpecName = itemSystem.linkedAttackSpecialization || "";
+    }
     let defaultSelection = "";
-    let linkedSpec = null;
-    if (linkedAttackSpecId) {
-      linkedSpec = actorSpecializations.find((s) => s._id === linkedAttackSpecId);
-      if (linkedSpec) {
-        defaultSelection = `spec-${linkedSpec.id}`;
-      } else {
-        linkedSpec = game.items.find((i) => i.type === "specialization" && i._id === linkedAttackSpecId);
-        if (linkedSpec) {
-          const specSkillId = linkedSpec.system.linkedSkill;
-          const gameSpecSkillName = game.items.find((i) => i.type === "skill" && i._id === specSkillId)?.system.name;
-          const gameSpecSkill = game.items.find((i) => i.type === "skill" && i.system.name === gameSpecSkillName);
-          const actorSpecSkill = actorSkills.find((s) => this._normalizeString(s.system.name) === this._normalizeString(gameSpecSkill.system.name));
-          if (actorSpecSkill) {
-            defaultSelection = `skill-${actorSpecSkill._id}`;
-          }
-        }
+    if (linkedSpecName) {
+      const foundSpec = actorSpecializations.find(
+        (s) => this._normalizeString(s.name) === this._normalizeString(linkedSpecName)
+      );
+      if (foundSpec) {
+        defaultSelection = `spec-${foundSpec.id}`;
+      }
+    }
+    if (!defaultSelection && linkedSkillName) {
+      const foundSkill = actorSkills.find(
+        (s) => this._normalizeString(s.name) === this._normalizeString(linkedSkillName)
+      );
+      if (foundSkill) {
+        defaultSelection = `skill-${foundSkill.id}`;
+      }
+    }
+    if (!defaultSelection && actorSkills.length > 0) {
+      const firstSkill = actorSkills[0];
+      if (firstSkill?.id) {
+        defaultSelection = `skill-${firstSkill.id}`;
       }
     }
     const damageValue = itemSystem.damageValue || "0";

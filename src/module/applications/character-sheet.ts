@@ -2,6 +2,7 @@ import * as DiceRoller from '../helpers/dice-roller.js';
 import * as ItemSearch from '../helpers/item-search.js';
 import * as DefenseSelection from '../helpers/defense-selection.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
+import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
  * Character Sheet Application
@@ -1974,14 +1975,10 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Normalize a string for comparison (lowercase, no special chars)
+   * Normalize a string for comparison (lowercase, no special chars, no accents)
    */
   private _normalizeString(str: string): string {
-    return str
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^a-z0-9]/g, ''); // Remove special characters
+    return ItemSearch.normalizeSearchText(str);
   }
 
   /**
@@ -1994,28 +1991,52 @@ export class CharacterSheet extends ActorSheet {
     const actorSkills = this.actor.items.filter((i: any) => i.type === 'skill');
     const actorSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
     
-    // Get linked attack specialization from weapon if available
-    const linkedAttackSpecId = itemSystem.linkedAttackSpecialization || '';
+    // Get linked attack skill and specialization names from weapon
+    let linkedSkillName = '';
+    let linkedSpecName = '';
+    
+    const weaponType = itemSystem.weaponType;
+    if (weaponType && weaponType !== 'custom-weapon') {
+      // Arme pré-définie : récupérer depuis WEAPON_TYPES
+      const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+      if (weaponStats) {
+        linkedSkillName = weaponStats.linkedSkill || '';
+        linkedSpecName = weaponStats.linkedSpecialization || '';
+      }
+    } else if (weaponType === 'custom-weapon') {
+      // Arme custom : récupérer depuis les champs du système
+      linkedSkillName = itemSystem.linkedAttackSkill || '';
+      linkedSpecName = itemSystem.linkedAttackSpecialization || '';
+    }
+    
     let defaultSelection = '';
-    let linkedSpec: any = null;
-    // if a specialization is linked, try to find it in the actor's items
-    if (linkedAttackSpecId) {
-      linkedSpec = actorSpecializations.find((s: any) => s._id === linkedAttackSpecId);
-      if(linkedSpec) {
-        defaultSelection = `spec-${linkedSpec.id}`;
-      } else {
-        linkedSpec = (game as any).items.find((i: any) => i.type === 'specialization' && i._id === linkedAttackSpecId);
-        if(linkedSpec) {
-          // get spec skill
-          const specSkillId = linkedSpec.system.linkedSkill;
-          const gameSpecSkillName = (game as any).items.find((i: any) => i.type === 'skill' && i._id === specSkillId)?.system.name;
-          const gameSpecSkill = (game as any).items.find((i: any) => i.type === 'skill' && i.system.name === gameSpecSkillName);
-          const actorSpecSkill = actorSkills.find((s: any) => this._normalizeString(s.system.name) === this._normalizeString(gameSpecSkill.system.name));
-          if(actorSpecSkill) {
-            defaultSelection = `skill-${actorSpecSkill._id}`;
-          }
-        }
-      }    
+    
+    // 1. Chercher si le personnage a la spécialisation
+    if (linkedSpecName) {
+      const foundSpec = actorSpecializations.find((s: any) => 
+        this._normalizeString(s.name) === this._normalizeString(linkedSpecName)
+      );
+      if (foundSpec) {
+        defaultSelection = `spec-${foundSpec.id}`;
+      }
+    }
+    
+    // 2. Si pas de spé trouvée, chercher la compétence
+    if (!defaultSelection && linkedSkillName) {
+      const foundSkill = actorSkills.find((s: any) => 
+        this._normalizeString(s.name) === this._normalizeString(linkedSkillName)
+      );
+      if (foundSkill) {
+        defaultSelection = `skill-${foundSkill.id}`;
+      }
+    }
+    
+    // 3. Si rien trouvé, sélectionner le premier skill
+    if (!defaultSelection && actorSkills.length > 0) {
+      const firstSkill = actorSkills[0];
+      if (firstSkill?.id) {
+        defaultSelection = `skill-${firstSkill.id}`;
+      }
     }
 
     // Get weapon/spell info
