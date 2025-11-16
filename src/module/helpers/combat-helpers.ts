@@ -48,8 +48,8 @@ export function calculateNPCThreshold(
     });
   });
   
-  // Calculate NPC threshold: floor(dice pool / 3) + RR + 1
-  const threshold = Math.floor(dicePool / 3) + totalRR + 1;
+  // Calculate NPC threshold: round(dice pool / 3) + RR + 1
+  const threshold = Math.round(dicePool / 3) + totalRR + 1;
   
   return { threshold, totalRR };
 }

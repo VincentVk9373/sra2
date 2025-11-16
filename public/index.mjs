@@ -2105,7 +2105,7 @@ function calculateNPCThreshold(actor, item, dicePool, itemType, parentSkill) {
       }
     });
   });
-  const threshold = Math.floor(dicePool / 3) + totalRR + 1;
+  const threshold = Math.round(dicePool / 3) + totalRR + 1;
   return { threshold, totalRR };
 }
 function buildSkillOptionsHtml(params) {
@@ -4254,7 +4254,7 @@ class NpcSheet extends ActorSheet {
           });
         });
       }
-      const npcThreshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      const npcThreshold = Math.round(totalDicePool / 3) + totalRR + 1;
       itemData.totalDicePool = totalDicePool;
       itemData.totalRR = totalRR;
       itemData.npcThreshold = npcThreshold;
@@ -4324,7 +4324,7 @@ class NpcSheet extends ActorSheet {
           }
         });
       });
-      const npcThreshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      const npcThreshold = Math.round(totalDicePool / 3) + totalRR + 1;
       skillData.totalDicePool = totalDicePool;
       skillData.totalRR = totalRR;
       skillData.npcThreshold = npcThreshold;
@@ -4346,7 +4346,7 @@ class NpcSheet extends ActorSheet {
             }
           });
         });
-        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
+        const specThreshold = Math.round(specDicePool / 3) + specTotalRR + 1;
         specData.totalDicePool = specDicePool;
         specData.totalRR = specTotalRR;
         specData.npcThreshold = specThreshold;
@@ -4844,13 +4844,50 @@ class NpcSheet extends ActorSheet {
    */
   async _rollNPCWeaponOrSpellWithDice(item, type, weaponVD) {
     const itemName = item.name;
-    const skills = this.actor.items.filter((i) => i.type === "skill");
-    const allSpecializations = this.actor.items.filter((i) => i.type === "specialization");
+    const itemSystem = item.system;
+    const actorSkills = this.actor.items.filter((i) => i.type === "skill");
+    const actorSpecializations = this.actor.items.filter((i) => i.type === "specialization");
+    let linkedSkillName = "";
+    let linkedSpecName = "";
+    const weaponType = itemSystem.weaponType;
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        linkedSkillName = weaponStats.linkedSkill || "";
+        linkedSpecName = weaponStats.linkedSpecialization || "";
+      }
+    } else if (weaponType === "custom-weapon") {
+      linkedSkillName = itemSystem.linkedAttackSkill || "";
+      linkedSpecName = itemSystem.linkedAttackSpecialization || "";
+    }
+    let defaultSelection = "";
+    if (linkedSpecName) {
+      const foundSpec = actorSpecializations.find(
+        (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSpecName)
+      );
+      if (foundSpec) {
+        defaultSelection = `spec-${foundSpec.id}`;
+      }
+    }
+    if (!defaultSelection && linkedSkillName) {
+      const foundSkill = actorSkills.find(
+        (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSkillName)
+      );
+      if (foundSkill) {
+        defaultSelection = `skill-${foundSkill.id}`;
+      }
+    }
+    if (!defaultSelection && actorSkills.length > 0) {
+      const firstSkill = actorSkills[0];
+      if (firstSkill?.id) {
+        defaultSelection = `skill-${firstSkill.id}`;
+      }
+    }
     const skillOptionsHtml = buildAttackSkillOptionsHtml(
       this.actor,
-      skills,
-      allSpecializations,
-      ""
+      actorSkills,
+      actorSpecializations,
+      defaultSelection
     );
     const titleKey = type === "spell" ? "SRA2.FEATS.SPELL.ROLL_TITLE" : "SRA2.FEATS.WEAPON.ROLL_TITLE";
     const weaponDamageBonus = item.system.damageValueBonus || 0;

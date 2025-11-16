@@ -1,4 +1,5 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
+import * as ItemSearch from '../helpers/item-search.js';
 import * as DefenseSelection from '../helpers/defense-selection.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
@@ -6,7 +7,7 @@ import { WEAPON_TYPES } from '../models/item-feat.js';
 /**
  * NPC Sheet Application
  * NPCs don't roll dice - they use predefined thresholds
- * Threshold = floor(dice pool / 3) + RR level + 1
+ * Threshold = round(dice pool / 3) + RR level + 1
  */
 export class NpcSheet extends ActorSheet {
   static override get defaultOptions(): DocumentSheet.Options<Actor> {
@@ -154,7 +155,7 @@ export class NpcSheet extends ActorSheet {
         });
       }
       
-      const npcThreshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      const npcThreshold = Math.round(totalDicePool / 3) + totalRR + 1;
       
       itemData.totalDicePool = totalDicePool;
       itemData.totalRR = totalRR;
@@ -260,8 +261,8 @@ export class NpcSheet extends ActorSheet {
         });
       });
       
-      // Calculate NPC threshold: floor(dice pool / 3) + RR + 1
-      const npcThreshold = Math.floor(totalDicePool / 3) + totalRR + 1;
+      // Calculate NPC threshold: round(dice pool / 3) + RR + 1
+      const npcThreshold = Math.round(totalDicePool / 3) + totalRR + 1;
       
       skillData.totalDicePool = totalDicePool;
       skillData.totalRR = totalRR;
@@ -293,7 +294,7 @@ export class NpcSheet extends ActorSheet {
         });
         
         // Calculate specialization threshold
-        const specThreshold = Math.floor(specDicePool / 3) + specTotalRR + 1;
+        const specThreshold = Math.round(specDicePool / 3) + specTotalRR + 1;
         
         specData.totalDicePool = specDicePool;
         specData.totalRR = specTotalRR;
@@ -943,17 +944,66 @@ export class NpcSheet extends ActorSheet {
    */
   private async _rollNPCWeaponOrSpellWithDice(item: any, type: 'weapon' | 'spell', weaponVD: string): Promise<void> {
     const itemName = item.name;
+    const itemSystem = item.system as any;
     
     // Get all skills and specializations
-    const skills = this.actor.items.filter((i: any) => i.type === 'skill');
-    const allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
+    const actorSkills = this.actor.items.filter((i: any) => i.type === 'skill');
+    const actorSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
+    
+    // Get linked attack skill and specialization names from weapon (same logic as character sheet)
+    let linkedSkillName = '';
+    let linkedSpecName = '';
+    
+    const weaponType = itemSystem.weaponType;
+    if (weaponType && weaponType !== 'custom-weapon') {
+      // Arme pré-définie : récupérer depuis WEAPON_TYPES
+      const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+      if (weaponStats) {
+        linkedSkillName = weaponStats.linkedSkill || '';
+        linkedSpecName = weaponStats.linkedSpecialization || '';
+      }
+    } else if (weaponType === 'custom-weapon') {
+      // Arme custom : récupérer depuis les champs du système
+      linkedSkillName = itemSystem.linkedAttackSkill || '';
+      linkedSpecName = itemSystem.linkedAttackSpecialization || '';
+    }
+    
+    let defaultSelection = '';
+    
+    // 1. Chercher si le NPC a la spécialisation
+    if (linkedSpecName) {
+      const foundSpec = actorSpecializations.find((s: any) => 
+        ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSpecName)
+      );
+      if (foundSpec) {
+        defaultSelection = `spec-${foundSpec.id}`;
+      }
+    }
+    
+    // 2. Si pas de spé trouvée, chercher la compétence
+    if (!defaultSelection && linkedSkillName) {
+      const foundSkill = actorSkills.find((s: any) => 
+        ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSkillName)
+      );
+      if (foundSkill) {
+        defaultSelection = `skill-${foundSkill.id}`;
+      }
+    }
+    
+    // 3. Si rien trouvé, sélectionner le premier skill
+    if (!defaultSelection && actorSkills.length > 0) {
+      const firstSkill = actorSkills[0];
+      if (firstSkill?.id) {
+        defaultSelection = `skill-${firstSkill.id}`;
+      }
+    }
     
     // Build skill options HTML using helper
     const skillOptionsHtml = CombatHelpers.buildAttackSkillOptionsHtml(
       this.actor,
-      skills,
-      allSpecializations,
-      ''
+      actorSkills,
+      actorSpecializations,
+      defaultSelection
     );
     
     const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
