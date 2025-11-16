@@ -3011,11 +3011,11 @@ class CharacterSheet extends ActorSheet {
             <label>${game.i18n.localize("SRA2.COMBAT.DEFENSE_METHOD")}:</label>
             <div class="radio-group">
               <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="threshold" checked />
+                <input type="radio" name="defenseMethod" value="threshold" ${defenderActor.sheet?.constructor?.name === "NpcSheet" ? "checked" : ""} />
                 <span>${game.i18n.localize("SRA2.COMBAT.USE_THRESHOLD")}</span>
               </label>
               <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="roll" />
+                <input type="radio" name="defenseMethod" value="roll" ${defenderActor.sheet?.constructor?.name === "CharacterSheet" ? "checked" : ""} />
                 <span>${game.i18n.localize("SRA2.COMBAT.ROLL_DICE")}</span>
               </label>
             </div>
@@ -4987,11 +4987,11 @@ class NpcSheet extends ActorSheet {
             <label>${game.i18n.localize("SRA2.COMBAT.DEFENSE_METHOD")}:</label>
             <div class="radio-group">
               <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="threshold" checked />
+                <input type="radio" name="defenseMethod" value="threshold" ${defenderActor.sheet?.constructor?.name === "NpcSheet" ? "checked" : ""} />
                 <span>${game.i18n.localize("SRA2.COMBAT.USE_THRESHOLD")}</span>
               </label>
               <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="roll" />
+                <input type="radio" name="defenseMethod" value="roll" ${defenderActor.sheet?.constructor?.name === "CharacterSheet" ? "checked" : ""} />
                 <span>${game.i18n.localize("SRA2.COMBAT.ROLL_DICE")}</span>
               </label>
             </div>
@@ -5078,11 +5078,11 @@ class NpcSheet extends ActorSheet {
             <label>${game.i18n.localize("SRA2.COMBAT.DEFENSE_METHOD")}:</label>
             <div class="radio-group">
               <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="threshold" checked />
+                <input type="radio" name="defenseMethod" value="threshold" ${defenderActor.sheet?.constructor?.name === "NpcSheet" ? "checked" : ""} />
                 <span>${game.i18n.localize("SRA2.COMBAT.USE_THRESHOLD")}</span>
               </label>
               <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="roll" />
+                <input type="radio" name="defenseMethod" value="roll" ${defenderActor.sheet?.constructor?.name === "CharacterSheet" ? "checked" : ""} />
                 <span>${game.i18n.localize("SRA2.COMBAT.ROLL_DICE")}</span>
               </label>
             </div>
