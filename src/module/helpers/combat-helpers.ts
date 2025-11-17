@@ -403,11 +403,6 @@ export function parseWeaponDamageValue(
 export function buildNPCAttackHtml(threshold: number, weaponDamageValue?: string, actorStrength?: number, damageValueBonus?: number): string {
   let html = '';
   
-  html += '<div class="dice-pool">';
-  html += `<strong>${game.i18n!.localize('SRA2.NPC.THRESHOLD')}:</strong> `;
-  html += `<span class="threshold-badge">${threshold}</span>`;
-  html += '</div>';
-  
   html += `<div class="successes has-success">`;
   html += `<strong>${game.i18n!.localize('SRA2.SKILLS.TOTAL_SUCCESSES')}:</strong> ${threshold}`;
   
@@ -625,8 +620,8 @@ export async function displayAttackResult(
     const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
     const netSuccesses = attackSuccesses - defenseSuccesses;
     
-    if (isDiceAttack && weaponDamageValue && weaponDamageValue !== '0') {
-      // Dice attack with weapon damage value
+    if (weaponDamageValue && weaponDamageValue !== '0') {
+      // Attack with weapon damage value (dice or threshold)
       const attackerStrength = (attacker.system as any).attributes?.strength || 0;
       const { baseVD } = parseWeaponDamageValue(weaponDamageValue, attackerStrength, damageValueBonus || 0);
       
@@ -651,7 +646,7 @@ export async function displayAttackResult(
         resultsHtml += '</div>';
       }
     } else {
-      // NPC threshold attack or no weapon damage
+      // Attack without weapon damage
       resultsHtml += `<div class="final-damage-value">`;
       resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')} : ${netSuccesses}</div>`;
       if (defenseResult) {
