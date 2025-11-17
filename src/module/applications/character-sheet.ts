@@ -624,8 +624,8 @@ export class CharacterSheet extends ActorSheet {
       content: `
         <form class="sra2-defense-roll-dialog">
           <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
-            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+            <img src="${defenderActor.img}" alt="${defenderActor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${defenderActor.name}</strong>
           </div>
           <div class="form-group">
             <p><strong>${game.i18n!.localize('SRA2.COMBAT.ATTACK_INFO')}:</strong></p>
@@ -1797,7 +1797,8 @@ export class CharacterSheet extends ActorSheet {
       type === 'spell' ? 'spell' : 'weapon',
       skillOptionsHtml,
       actorStrength,
-      weaponDamageBonus
+      weaponDamageBonus,
+      this.actor
     );
     
     const dialog = new Dialog({

@@ -2439,7 +2439,7 @@ function buildAttackSkillOptionsHtml(actor, skills, allSpecializations, defaultS
   });
   return html;
 }
-function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, type, skillOptionsHtml, actorStrength, damageValueBonus) {
+function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, type, skillOptionsHtml, actorStrength, damageValueBonus, actor) {
   const titleKey = type === "spell" ? "SRA2.FEATS.SPELL.SECTION_TITLE" : "SRA2.FEATS.WEAPON.WEAPON_NAME";
   let displayDamageValue = weaponDamageValue;
   if (weaponDamageValue !== "0" && actorStrength !== void 0) {
@@ -2448,6 +2448,12 @@ function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, ty
   }
   return `
     <form class="sra2-weapon-roll-dialog">
+      ${actor ? `
+      <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+        <img src="${actor.img}" alt="${actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+        <strong style="font-size: 1.2em;">${actor.name}</strong>
+      </div>
+      ` : ""}
       <div class="form-group">
         <label>${game.i18n.localize(titleKey)}:</label>
         <p class="weapon-name"><strong>${itemName}</strong></p>
@@ -3093,8 +3099,8 @@ class CharacterSheet extends ActorSheet {
       content: `
         <form class="sra2-defense-roll-dialog">
           <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
-            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+            <img src="${defenderActor.img}" alt="${defenderActor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${defenderActor.name}</strong>
           </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
@@ -3955,7 +3961,8 @@ class CharacterSheet extends ActorSheet {
       type === "spell" ? "spell" : "weapon",
       skillOptionsHtml,
       actorStrength,
-      weaponDamageBonus
+      weaponDamageBonus,
+      this.actor
     );
     const dialog = new Dialog({
       title: game.i18n.format(titleKey, { name: weaponName }),
@@ -4533,8 +4540,8 @@ class NpcSheet extends ActorSheet {
       content: `
         <form class="sra2-defense-roll-dialog">
           <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
-            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+            <img src="${defenderActor.img}" alt="${defenderActor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${defenderActor.name}</strong>
           </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
@@ -4834,7 +4841,8 @@ class NpcSheet extends ActorSheet {
       type,
       skillOptionsHtml,
       actorStrength,
-      weaponDamageBonus
+      weaponDamageBonus,
+      this.actor
     );
     const dialog = new Dialog({
       title: game.i18n.format(titleKey, { name: itemName }),
@@ -5011,8 +5019,8 @@ class NpcSheet extends ActorSheet {
       content: `
         <form class="sra2-defense-roll-dialog">
           <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
-            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+            <img src="${defenderActor.img}" alt="${defenderActor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${defenderActor.name}</strong>
           </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
@@ -5106,8 +5114,8 @@ class NpcSheet extends ActorSheet {
       content: `
         <form class="sra2-defense-roll-dialog">
           <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
-            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+            <img src="${defenderActor.img}" alt="${defenderActor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${defenderActor.name}</strong>
           </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>

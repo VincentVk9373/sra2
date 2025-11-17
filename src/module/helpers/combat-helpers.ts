@@ -499,7 +499,8 @@ export function createWeaponSkillSelectionDialogContent(
   type: 'weapon' | 'spell',
   skillOptionsHtml: string,
   actorStrength?: number,
-  damageValueBonus?: number
+  damageValueBonus?: number,
+  actor?: any
 ): string {
   const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.SECTION_TITLE' : 'SRA2.FEATS.WEAPON.WEAPON_NAME';
   
@@ -512,6 +513,12 @@ export function createWeaponSkillSelectionDialogContent(
   
   return `
     <form class="sra2-weapon-roll-dialog">
+      ${actor ? `
+      <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+        <img src="${actor.img}" alt="${actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+        <strong style="font-size: 1.2em;">${actor.name}</strong>
+      </div>
+      ` : ''}
       <div class="form-group">
         <label>${game.i18n!.localize(titleKey)}:</label>
         <p class="weapon-name"><strong>${itemName}</strong></p>
