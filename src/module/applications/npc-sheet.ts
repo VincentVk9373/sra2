@@ -50,6 +50,9 @@ export class NpcSheet extends ActorSheet {
     // Get actor's strength for damage value calculations
     const actorStrength = (this.actor.system as any).attributes?.strength || 0;
     
+    // Get all specializations early (needed for weapon/spell calculations)
+    let allSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
+    
     // Helper function to calculate weapon/spell stats
     const calculateWeaponSpellStats = (item: any) => {
       const itemData = {
@@ -58,8 +61,9 @@ export class NpcSheet extends ActorSheet {
         id: item.id || item._id
       };
       
-      // Get linked skill name from WEAPON_TYPES or custom fields
+      // Get linked skill name and specialization from WEAPON_TYPES or custom fields
       let linkedSkillName = '';
+      let linkedSpecializationName = '';
       const weaponType = item.system.weaponType;
       
       if (weaponType && weaponType !== 'custom-weapon') {
@@ -67,10 +71,13 @@ export class NpcSheet extends ActorSheet {
         const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
         if (weaponStats) {
           linkedSkillName = weaponStats.linkedSkill || '';
+          linkedSpecializationName = weaponStats.linkedSpecialization || '';
         }
       } else if (weaponType === 'custom-weapon') {
         // Arme custom : récupérer depuis les champs du système
         linkedSkillName = item.system.linkedAttackSkill || '';
+        // Pour les armes custom, pas de spécialisation par défaut
+        linkedSpecializationName = '';
       }
       
       // Try to find the linked skill
@@ -84,24 +91,58 @@ export class NpcSheet extends ActorSheet {
         );
         
         if (linkedSkill) {
-          const skillSystem = linkedSkill.system as any;
-          linkedAttribute = skillSystem.linkedAttribute || 'strength';
-          const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
-          const skillRating = skillSystem.rating || 0;
-          totalDicePool = attributeValue + skillRating;
+          const skillRating = (linkedSkill.system as any).rating || 0;
           
-          // Calculate RR
-          activeFeats.forEach((feat: any) => {
-            const rrList = feat.system.rrList || [];
-            rrList.forEach((rrEntry: any) => {
-              if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === linkedSkillName) {
-                totalRR += rrEntry.rrValue || 0;
-              }
-              if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
-                totalRR += rrEntry.rrValue || 0;
-              }
+          // Check if there's a specialization for this weapon/spell
+          let matchingSpec = null;
+          
+          if (linkedSpecializationName) {
+            // Look for the specific specialization by name
+            matchingSpec = allSpecializations.find((spec: any) => 
+              spec.name === linkedSpecializationName && spec.system.linkedSkill === linkedSkillName
+            );
+          }
+          
+          if (matchingSpec) {
+            // Use specialization: skill rating + spec's attribute + 2
+            linkedAttribute = matchingSpec.system.linkedAttribute || (linkedSkill.system as any).linkedAttribute || 'strength';
+            const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+            totalDicePool = skillRating + attributeValue + 2;
+            
+            // Calculate RR for specialization
+            activeFeats.forEach((feat: any) => {
+              const rrList = feat.system.rrList || [];
+              rrList.forEach((rrEntry: any) => {
+                if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === linkedSkillName) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+                if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+                if (rrEntry.rrType === 'specialization' && rrEntry.rrTarget === matchingSpec.name) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+              });
             });
-          });
+          } else {
+            // Use skill only
+            linkedAttribute = (linkedSkill.system as any).linkedAttribute || 'strength';
+            const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+            totalDicePool = attributeValue + skillRating;
+            
+            // Calculate RR
+            activeFeats.forEach((feat: any) => {
+              const rrList = feat.system.rrList || [];
+              rrList.forEach((rrEntry: any) => {
+                if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === linkedSkillName) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+                if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+              });
+            });
+          }
         }
       }
       
@@ -162,10 +203,8 @@ export class NpcSheet extends ActorSheet {
       .filter((item: any) => item.type === 'skill')
       .sort((a: any, b: any) => a.name.localeCompare(b.name));
     
-    // Get all specializations (sorted alphabetically)
-    const allSpecializations = this.actor.items
-      .filter((item: any) => item.type === 'specialization')
-      .sort((a: any, b: any) => a.name.localeCompare(b.name));
+    // Sort all specializations alphabetically (already defined above)
+    allSpecializations = allSpecializations.sort((a: any, b: any) => a.name.localeCompare(b.name));
     
     // Organize specializations by linked skill
     const specializationsBySkill = new Map<string, any[]>();

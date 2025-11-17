@@ -4198,6 +4198,7 @@ class NpcSheet extends ActorSheet {
     const allFeats = this.actor.items.filter((item) => item.type === "feat");
     const activeFeats = allFeats.filter((feat) => feat.system.active === true);
     const actorStrength = this.actor.system.attributes?.strength || 0;
+    let allSpecializations = this.actor.items.filter((i) => i.type === "specialization");
     const calculateWeaponSpellStats = (item) => {
       const itemData = {
         ...item,
@@ -4205,14 +4206,17 @@ class NpcSheet extends ActorSheet {
         id: item.id || item._id
       };
       let linkedSkillName = "";
+      let linkedSpecializationName = "";
       const weaponType = item.system.weaponType;
       if (weaponType && weaponType !== "custom-weapon") {
         const weaponStats = WEAPON_TYPES[weaponType];
         if (weaponStats) {
           linkedSkillName = weaponStats.linkedSkill || "";
+          linkedSpecializationName = weaponStats.linkedSpecialization || "";
         }
       } else if (weaponType === "custom-weapon") {
         linkedSkillName = item.system.linkedAttackSkill || "";
+        linkedSpecializationName = "";
       }
       let totalDicePool = 0;
       let totalRR = 0;
@@ -4222,22 +4226,47 @@ class NpcSheet extends ActorSheet {
           (i) => i.type === "skill" && i.name === linkedSkillName
         );
         if (linkedSkill) {
-          const skillSystem = linkedSkill.system;
-          linkedAttribute = skillSystem.linkedAttribute || "strength";
-          const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
-          const skillRating = skillSystem.rating || 0;
-          totalDicePool = attributeValue + skillRating;
-          activeFeats.forEach((feat) => {
-            const rrList = feat.system.rrList || [];
-            rrList.forEach((rrEntry) => {
-              if (rrEntry.rrType === "skill" && rrEntry.rrTarget === linkedSkillName) {
-                totalRR += rrEntry.rrValue || 0;
-              }
-              if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === linkedAttribute) {
-                totalRR += rrEntry.rrValue || 0;
-              }
+          const skillRating = linkedSkill.system.rating || 0;
+          let matchingSpec = null;
+          if (linkedSpecializationName) {
+            matchingSpec = allSpecializations.find(
+              (spec) => spec.name === linkedSpecializationName && spec.system.linkedSkill === linkedSkillName
+            );
+          }
+          if (matchingSpec) {
+            linkedAttribute = matchingSpec.system.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
+            const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+            totalDicePool = skillRating + attributeValue + 2;
+            activeFeats.forEach((feat) => {
+              const rrList = feat.system.rrList || [];
+              rrList.forEach((rrEntry) => {
+                if (rrEntry.rrType === "skill" && rrEntry.rrTarget === linkedSkillName) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+                if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === linkedAttribute) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+                if (rrEntry.rrType === "specialization" && rrEntry.rrTarget === matchingSpec.name) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+              });
             });
-          });
+          } else {
+            linkedAttribute = linkedSkill.system.linkedAttribute || "strength";
+            const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+            totalDicePool = attributeValue + skillRating;
+            activeFeats.forEach((feat) => {
+              const rrList = feat.system.rrList || [];
+              rrList.forEach((rrEntry) => {
+                if (rrEntry.rrType === "skill" && rrEntry.rrTarget === linkedSkillName) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+                if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === linkedAttribute) {
+                  totalRR += rrEntry.rrValue || 0;
+                }
+              });
+            });
+          }
         }
       }
       if (totalDicePool === 0) {
@@ -4277,7 +4306,7 @@ class NpcSheet extends ActorSheet {
     context.spells = spells;
     context.feats = otherFeats;
     const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
-    const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
+    allSpecializations = allSpecializations.sort((a, b) => a.name.localeCompare(b.name));
     const specializationsBySkill = /* @__PURE__ */ new Map();
     allSpecializations.forEach((spec) => {
       const linkedSkillName = spec.system.linkedSkill;
