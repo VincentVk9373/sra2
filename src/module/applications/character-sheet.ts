@@ -1,7 +1,5 @@
-import * as DiceRoller from '../helpers/dice-roller.js';
 import * as ItemSearch from '../helpers/item-search.js';
 import * as DefenseSelection from '../helpers/defense-selection.js';
-import * as CombatHelpers from '../helpers/combat-helpers.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
@@ -346,67 +344,13 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Handle rolling a specialization
+   * REMOVED: Specialization roll handler - dialog creation disabled
    */
   private async _onRollSpecialization(event: Event): Promise<void> {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    const effectiveRating = parseInt(element.dataset.effectiveRating || '0');
-    
-    if (!itemId) {
-      console.error("SRA2 | No specialization ID found");
-      return;
-    }
-
-    const specialization = this.actor.items.get(itemId);
-    if (!specialization || specialization.type !== 'specialization') return;
-
-    const specSystem = specialization.system as any;
-    const linkedAttribute = specSystem.linkedAttribute || 'strength';
-    
-    // Get the attribute value from the actor
-    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-    const basePool = effectiveRating + attributeValue;
-
-    if (basePool <= 0) {
-      ui.notifications?.warn(game.i18n!.localize('SRA2.SPECIALIZATIONS.NO_DICE'));
-      return;
-    }
-
-    // Get localized attribute name
-    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    
-    // Get RR sources for specialization, skill, and attribute
-    const specRRSources = this.getRRSources('specialization', specialization.name);
-    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
-    const linkedSkillName = specSystem.linkedSkill;
-    const skillRRSources = linkedSkillName ? this.getRRSources('skill', linkedSkillName) : [];
-    
-    const allRRSources = [
-      ...specRRSources,
-      ...skillRRSources.map(s => ({ ...s, featName: s.featName + ` (${linkedSkillName})` })),
-      ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
-    ];
-    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
-
-    // Create roll dialog using helper
-    const poolDescription = `(${game.i18n!.localize('SRA2.SPECIALIZATIONS.BONUS')}: ${effectiveRating} + ${attributeLabel}: ${attributeValue})`;
-    const dialog = DiceRoller.createSkillRollDialog({
-      title: game.i18n!.format('SRA2.SPECIALIZATIONS.ROLL_TITLE', { name: specialization.name }),
-      basePool,
-      poolDescription,
-      autoRR,
-      defaultRiskDice,
-      rrSources: allRRSources,
-      actor: this.actor,
-      onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        this._rollSkillDice(specialization.name, normalDice, riskDice, riskReduction, rollMode);
-      }
-    });
-    
-    dialog.render(true);
+    console.log('Specialization roll disabled', { itemId });
   }
 
   /**
@@ -427,378 +371,82 @@ export class CharacterSheet extends ActorSheet {
 
 
   /**
-   * Handle rolling an attribute
+   * REMOVED: Attribute roll handler - dialog creation disabled
    */
   private async _onRollAttribute(event: Event): Promise<void> {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const attributeName = element.dataset.attribute;
-    
-    if (!attributeName) return;
-
-    const attributeValue = (this.actor.system as any).attributes?.[attributeName] || 0;
-    
-    if (attributeValue <= 0) {
-      ui.notifications?.warn(game.i18n!.localize('SRA2.ATTRIBUTES.NO_DICE'));
-      return;
-    }
-
-    // Get RR sources for this attribute
-    const rrSources = this.getRRSources('attribute', attributeName);
-    const autoRR = Math.min(3, rrSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(attributeValue, DiceRoller.getRiskDiceByRR(autoRR));
-
-    // Get localized attribute name
-    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`);
-
-    // Create roll dialog using helper
-    const dialog = DiceRoller.createSkillRollDialog({
-      title: game.i18n!.format('SRA2.ATTRIBUTES.ROLL_TITLE', { name: attributeLabel }),
-      basePool: attributeValue,
-      poolDescription: '',
-      autoRR,
-      defaultRiskDice,
-      rrSources,
-      actor: this.actor,
-      onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        this._rollSkillDice(attributeLabel, normalDice, riskDice, riskReduction, rollMode);
-      }
-    });
-    
-    dialog.render(true);
+    console.log('Attribute roll disabled', { attributeName });
   }
 
   /**
-   * Handle rolling a skill
+   * REMOVED: Skill roll handler - dialog creation disabled
    */
   private async _onRollSkill(event: Event): Promise<void> {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    
-    if (!itemId) {
-      console.error("SRA2 | No item ID found");
-      return;
-    }
-
-    const skill = this.actor.items.get(itemId);
-    if (!skill || skill.type !== 'skill') return;
-
-    const skillSystem = skill.system as any;
-    const rating = skillSystem.rating || 0;
-    const linkedAttribute = skillSystem.linkedAttribute || 'strength';
-    
-    // Get the attribute value from the actor
-    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-    const basePool = rating + attributeValue;
-    
-    if (basePool <= 0) {
-      ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.NO_DICE'));
-      return;
-    }
-
-    // Get localized attribute name
-    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    
-    // Get RR sources for skill and attribute
-    const skillRRSources = this.getRRSources('skill', skill.name);
-    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
-    const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
-    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
-
-    // Create roll dialog using helper
-    const poolDescription = `(${game.i18n!.localize('SRA2.SKILLS.RATING')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
-    const dialog = DiceRoller.createSkillRollDialog({
-      title: game.i18n!.format('SRA2.SKILLS.ROLL_TITLE', { name: skill.name }),
-      basePool,
-      poolDescription,
-      autoRR,
-      defaultRiskDice,
-      rrSources: allRRSources,
-      actor: this.actor,
-      onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        this._rollSkillDice(skill.name, normalDice, riskDice, riskReduction, rollMode);
-      }
-    });
-    
-    dialog.render(true);
+    console.log('Skill roll disabled', { itemId });
   }
 
 
   /**
-   * Roll skill dice and display results with Dice So Nice
+   * REMOVED: Dice rolling logic
    */
   private async _rollSkillDice(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
-    // Roll dice using helper function
-    const result = await DiceRoller.rollDice(dicePool, riskDice, riskReduction, rollMode);
-    
-    // Build results HTML using helper function
-    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
-    const resultsHtml = DiceRoller.buildRollResultsHtml({
-      skillName,
-      dicePool,
-      riskDice,
-      riskReduction,
-      rollMode,
-      result,
-      weaponDamageValue,
-      actorStrength,
-      damageValueBonus
-    });
-    
-    // Post to chat using helper function
-    await DiceRoller.postRollToChat(this.actor, skillName, resultsHtml);
+    // All dice rolling and chat logic removed
+    console.log('Dice rolling disabled', { skillName, dicePool, riskDice, riskReduction, rollMode });
   }
 
   /**
-   * Roll an attack with defense system
+   * REMOVED: Attack with defense system logic
    */
   private async _rollAttackWithDefense(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any, damageValueBonus?: number): Promise<void> {
-    // First, roll the attack
-    const attackResult = await this._performDiceRoll(dicePool, riskDice, riskReduction, rollMode);
-    
-    // Check if there are any targeted tokens
-    const targets = Array.from((game as any).user?.targets || []);
-    
-    if (targets.length === 0 || !weaponDamageValue || weaponDamageValue === '0') {
-      // No target or no weapon damage, just display normal roll
-      await this._displayRollResult(skillName, attackResult, weaponDamageValue, damageValueBonus);
-      return;
-    }
-    
-    // There's at least one target, ask for defense roll
-    const target = targets[0] as any;
-    const targetActor = target.actor;
-    
-    if (!targetActor) {
-      // No actor on target, just display normal roll
-      await this._displayRollResult(skillName, attackResult, weaponDamageValue, damageValueBonus);
-      return;
-    }
-    
-    // Prepare defense dialog
-    ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.WAITING_FOR_DEFENSE', { 
-      attacker: this.actor.name,
-      defender: targetActor.name,
-      successes: attackResult.totalSuccesses
-    }));
-    
-    // Prompt defense roll, passing both the actor and the token
-    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon, damageValueBonus, target);
+    // All attack and defense rolling logic removed
+    console.log('Attack rolling disabled', { skillName, dicePool, riskDice, riskReduction, rollMode });
   }
 
   /**
-   * Prompt target to make a defense roll
+   * REMOVED: Defense roll prompt logic
    */
   private async _promptDefenseRoll(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    // Get all skills and specializations from defender
-    const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
-    const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
-    
-    // Get linked defense skill and specialization from attacking weapon
-    const { defenseSkillName, defenseSpecName } = DefenseSelection.getDefenseInfoFromWeapon(attackingWeapon, allSpecializations);
-    
-    // Use the helper to find the appropriate defense selection by NAME
-    const { defaultSelection } = DefenseSelection.findDefaultDefenseSelection(
-      defenderActor,
-      defenseSpecName,
-      defenseSkillName
-    );
-    
-    // Build skill options HTML using helper
-    const skillOptionsHtml = CombatHelpers.buildSkillOptionsHtml({
-      defenderActor,
-      skills,
-      allSpecializations,
-      defaultSelection,
-      includeThreshold: true
-    });
-    
-    // Create defense dialog
-    const dialog = new Dialog({
-      title: game.i18n!.format('SRA2.COMBAT.DEFENSE_ROLL_TITLE', { 
-        attacker: this.actor.name,
-        defender: defenderActor.name
-      }),
-      content: `
-        <form class="sra2-defense-roll-dialog">
-          <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-            <img src="${defenderActor.img}" alt="${defenderActor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
-            <strong style="font-size: 1.2em;">${defenderActor.name}</strong>
-          </div>
-          <div class="form-group">
-            <p><strong>${game.i18n!.localize('SRA2.COMBAT.ATTACK_INFO')}:</strong></p>
-            <p>${attackName}</p>
-            <p><strong>${game.i18n!.localize('SRA2.COMBAT.ATTACK_SUCCESSES')}:</strong> ${attackResult.totalSuccesses}</p>
-          </div>
-          <div class="form-group">
-            <label>${game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL')}:</label>
-            <select id="defense-skill-select" class="skill-select">
-              ${skillOptionsHtml}
-            </select>
-          </div>
-          <div class="form-group defense-method-group">
-            <label>${game.i18n!.localize('SRA2.COMBAT.DEFENSE_METHOD')}:</label>
-            <div class="radio-group">
-              <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="threshold" ${defenderActor.sheet?.constructor?.name === 'NpcSheet' ? 'checked' : ''} />
-                <span>${game.i18n!.localize('SRA2.COMBAT.USE_THRESHOLD')}</span>
-              </label>
-              <label class="radio-option">
-                <input type="radio" name="defenseMethod" value="roll" ${defenderActor.sheet?.constructor?.name === 'CharacterSheet' ? 'checked' : ''} />
-                <span>${game.i18n!.localize('SRA2.COMBAT.ROLL_DICE')}</span>
-              </label>
-            </div>
-          </div>
-        </form>
-      `,
-      buttons: {
-        roll: {
-          icon: '<i class="fas fa-shield-alt"></i>',
-          label: game.i18n!.localize('SRA2.COMBAT.DEFEND'),
-          callback: async (html: any) => {
-            const selectedValue = html.find('#defense-skill-select').val();
-            if (!selectedValue || selectedValue === '') {
-              ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED'));
-              // No defense, full damage
-              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken);
-              return;
-            }
-            
-            const [itemType, itemId] = (selectedValue as string).split('-');
-            const defenseItem = defenderActor.items.get(itemId);
-            
-            if (defenseItem) {
-              // Check which defense method was chosen
-              const defenseMethod = html.find('input[name="defenseMethod"]:checked').val();
-              const selectedOption = html.find('#defense-skill-select option:selected');
-              
-              if (defenseMethod === 'threshold') {
-                // Use threshold (no dice roll)
-                const threshold = parseInt(selectedOption.attr('data-threshold')) || 0;
-                await this._defendWithThreshold(defenseItem, itemType as 'skill' | 'spec', threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken);
-              } else {
-                // Roll dice
-                await this._rollDefenseAndCalculateDamage(defenseItem, itemType as 'skill' | 'spec', attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken);
-              }
-            }
-          }
-        },
-        noDefense: {
-          icon: '<i class="fas fa-times"></i>',
-          label: game.i18n!.localize('SRA2.COMBAT.NO_DEFENSE'),
-          callback: async () => {
-            // No defense, full damage
-            await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken);
-          }
-        }
-      },
-      default: 'roll'
-    }, { width: 500 });
-    
-    dialog.render(true);
+    // Defense dialog logic removed
+    console.log('Defense roll prompt disabled', { defenderActor: defenderActor.name, attackName });
   }
 
   /**
-   * Roll defense and calculate final damage
+   * REMOVED: Defense roll and damage calculation
    */
   private async _rollDefenseAndCalculateDamage(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    const defenseSystem = defenseItem.system as any;
-    const linkedAttribute = defenseSystem.linkedAttribute || 'strength';
-    const attributeValue = (defenderActor.system as any).attributes?.[linkedAttribute] || 0;
-    
-    let rating = 0;
-    let defenseName = defenseItem.name;
-    
-    if (itemType === 'skill') {
-      rating = defenseSystem.rating || 0;
-    } else {
-      // Specialization
-      const parentSkillName = defenseSystem.linkedSkill;
-      const parentSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === parentSkillName);
-      const parentRating = parentSkill ? (parentSkill.system.rating || 0) : 0;
-      rating = parentRating + 2;
-    }
-    
-    const basePool = rating + attributeValue;
-    
-    if (basePool <= 0) {
-      ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.NO_DICE'));
-      // No defense dice, full damage
-      await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken);
-      return;
-    }
-    
-    // Get RR for defense
-    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === 'skill' ? DiceRoller.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : DiceRoller.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
-    const attributeRRSources = DiceRoller.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
-    const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
-    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
-    
-    // Capture damageValueBonus for callback
-    const vdBonus = damageValueBonus;
-    
-    // Create defense roll dialog using helper
-    const poolDescription = `(${game.i18n!.localize(itemType === 'skill' ? 'SRA2.SKILLS.RATING' : 'SRA2.SPECIALIZATIONS.BONUS')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
-    const dialog = DiceRoller.createSkillRollDialog({
-      title: game.i18n!.format('SRA2.COMBAT.DEFENSE_ROLL_CONFIG', { skill: defenseName }),
-      basePool,
-      poolDescription,
-      autoRR,
-      defaultRiskDice,
-      rrSources: allRRSources,
-      actor: defenderActor,
-      onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
-        // Roll defense
-        const defenseResult = await this._performDiceRoll(normalDice, riskDice, riskReduction, rollMode);
-        defenseResult.skillName = defenseName;
-        
-        // Display combined result
-        await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, vdBonus, defenderToken);
-      }
-    });
-    
-    dialog.render(true);
+    // Defense rolling logic removed
+    console.log('Defense roll disabled', { defenseItem: defenseItem.name, itemType, attackName });
   }
 
 
   /**
-   * Defend with NPC threshold (no dice roll)
+   * REMOVED: Threshold defense logic
    */
   private async _defendWithThreshold(defenseItem: any, _itemType: 'skill' | 'spec', threshold: number, attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    const defenseName = defenseItem.name;
-    
-    // Create a threshold defense result using helper
-    const defenseResult = CombatHelpers.createThresholdDefenseResult(defenseName, threshold);
-    
-    // Display the attack result with threshold defense
-    await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken);
+    // Threshold defense logic removed
+    console.log('Threshold defense disabled', { defenseItem: defenseItem.name, threshold, attackName });
   }
 
   /**
-   * Perform dice roll and return results
+   * REMOVED: Dice roll execution
    */
   private async _performDiceRoll(dicePool: number, riskDice: number, riskReduction: number, rollMode: string): Promise<any> {
-    return await CombatHelpers.performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, '');
+    // Dice roll execution removed
+    console.log('Dice roll disabled', { dicePool, riskDice, riskReduction, rollMode });
+    return {};
   }
 
   /**
-   * Display attack result with optional defense
+   * REMOVED: Attack result display
    */
   private async _displayAttackResult(attackName: string, attackResult: any, defenseResult: any | null, weaponDamageValue: string, defenderName?: string, defenderActor?: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    await CombatHelpers.displayAttackResult(
-      this.actor,
-      attackName,
-      attackResult,
-      defenseResult,
-      defenderActor,
-      weaponDamageValue,
-      damageValueBonus,
-      defenderToken
-    );
+    // Attack result display removed
+    console.log('Attack result display disabled', { attackName, defenderName });
   }
 
   /**
@@ -917,21 +565,11 @@ export class CharacterSheet extends ActorSheet {
 
 
   /**
-   * Display simple roll result (without defense)
+   * REMOVED: Simple roll result display
    */
   private async _displayRollResult(skillName: string, rollResult: any, weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
-    let resultsHtml = '<div class="sra2-skill-roll">';
-    resultsHtml += CombatHelpers.buildDiceResultsHtml(rollResult, weaponDamageValue, (this.actor.system as any).attributes?.strength || 0, damageValueBonus);
-    resultsHtml += '</div>';
-    
-    const messageData = {
-      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      flavor: game.i18n!.format('SRA2.SKILLS.ROLL_FLAVOR', { name: skillName }),
-      content: resultsHtml,
-      sound: CONFIG.sounds?.dice
-    };
-    
-    await ChatMessage.create(messageData);
+    // Roll result display removed
+    console.log('Roll result display disabled', { skillName });
   }
 
 
@@ -1638,234 +1276,24 @@ export class CharacterSheet extends ActorSheet {
 
 
   /**
-   * Handle rolling dice for a weapon or spell
+   * REMOVED: Weapon or spell roll - dialog creation disabled
    */
   private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell'): Promise<void> {
-    const itemSystem = item.system as any;
-    
-    // Get all skills and specializations
-    const actorSkills = this.actor.items.filter((i: any) => i.type === 'skill');
-    const actorSpecializations = this.actor.items.filter((i: any) => i.type === 'specialization');
-    
-    // Get linked attack skill and specialization names from weapon
-    let linkedSkillName = '';
-    let linkedSpecName = '';
-    
-    const weaponType = itemSystem.weaponType;
-    if (weaponType && weaponType !== 'custom-weapon') {
-      // Arme pré-définie : récupérer depuis WEAPON_TYPES
-      const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
-      if (weaponStats) {
-        linkedSkillName = weaponStats.linkedSkill || '';
-        linkedSpecName = weaponStats.linkedSpecialization || '';
-      }
-    } else if (weaponType === 'custom-weapon') {
-      // Arme custom : récupérer depuis les champs du système
-      linkedSkillName = itemSystem.linkedAttackSkill || '';
-      linkedSpecName = itemSystem.linkedAttackSpecialization || '';
-    }
-    
-    let defaultSelection = '';
-    
-    // 1. Chercher si le personnage a la spécialisation
-    if (linkedSpecName) {
-      const foundSpec = actorSpecializations.find((s: any) => 
-        ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSpecName)
-      );
-      if (foundSpec) {
-        defaultSelection = `spec-${foundSpec.id}`;
-      }
-    }
-    
-    // 2. Si pas de spé trouvée, chercher la compétence
-    if (!defaultSelection && linkedSkillName) {
-      const foundSkill = actorSkills.find((s: any) => 
-        ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSkillName)
-      );
-      if (foundSkill) {
-        defaultSelection = `skill-${foundSkill.id}`;
-      }
-    }
-    
-    // 3. Si rien trouvé, sélectionner le premier skill
-    if (!defaultSelection && actorSkills.length > 0) {
-      const firstSkill = actorSkills[0];
-      if (firstSkill?.id) {
-        defaultSelection = `skill-${firstSkill.id}`;
-      }
-    }
-
-    // Get weapon/spell info
-    const damageValue = itemSystem.damageValue || '0';
-    const weaponName = item.name;
-    
-    // Build skill options HTML using helper
-    const skillOptionsHtml = CombatHelpers.buildAttackSkillOptionsHtml(
-      this.actor,
-      actorSkills,
-      actorSpecializations,
-      defaultSelection
-    );
-    
-    const titleKey = type === 'spell' ? 'SRA2.FEATS.SPELL.ROLL_TITLE' : 'SRA2.FEATS.WEAPON.ROLL_TITLE';
-    
-    // Get weapon damage bonus
-    const weaponDamageBonus = itemSystem.damageValueBonus || 0;
-    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
-    
-    // Create dialog to select skill/specialization
-    const dialogContent = CombatHelpers.createWeaponSkillSelectionDialogContent(
-      weaponName,
-      damageValue,
-      type === 'spell' ? 'spell' : 'weapon',
-      skillOptionsHtml,
-      actorStrength,
-      weaponDamageBonus,
-      this.actor
-    );
-    
-    const dialog = new Dialog({
-      title: game.i18n!.format(titleKey, { name: weaponName }),
-      content: dialogContent,
-      buttons: {
-        roll: {
-          icon: '<i class="fas fa-dice-d6"></i>',
-          label: game.i18n!.localize('SRA2.SKILLS.ROLL'),
-          callback: (html: any) => {
-            const selectedValue = html.find('#skill-select').val();
-            if (!selectedValue || selectedValue === '') {
-              ui.notifications?.warn(game.i18n!.localize('SRA2.FEATS.WEAPON.NO_SKILL_SELECTED'));
-              return;
-            }
-            
-            const [itemType, itemId] = (selectedValue as string).split('-');
-            
-            if (!itemId) return;
-            
-            if (itemType === 'skill') {
-              const skill = this.actor.items.get(itemId);
-              if (skill) {
-                // Trigger the skill roll with weapon name (using old method for non-combat rolls)
-                // This is kept for backward compatibility with spells and non-targeted attacks
-                this._rollSkillWithWeapon(skill, weaponName, 'skill', damageValue || '0', item);
-              }
-            } else if (itemType === 'spec') {
-              const spec = this.actor.items.get(itemId);
-              if (spec) {
-                // Trigger the specialization roll with weapon name
-                const effectiveRating = parseInt(html.find(`#skill-select option:selected`).data('effective-rating') || '0');
-                this._rollSpecializationWithWeapon(spec, weaponName, effectiveRating, damageValue || '0', item);
-              }
-            }
-          }
-        },
-        cancel: {
-          icon: '<i class="fas fa-times"></i>',
-          label: game.i18n!.localize('Cancel')
-        }
-      },
-      default: 'roll'
-    }, { width: 500 });
-    
-    dialog.render(true);
+    console.log('Weapon/spell roll disabled', { item: item.name, type });
   }
 
   /**
-   * Roll a skill with weapon context
+   * REMOVED: Skill with weapon roll - dialog creation disabled
    */
   private async _rollSkillWithWeapon(skill: any, weaponName: string, _skillType: 'skill', weaponDamageValue?: string, weapon?: any): Promise<void> {
-    const skillSystem = skill.system as any;
-    const rating = skillSystem.rating || 0;
-    const linkedAttribute = skillSystem.linkedAttribute || 'strength';
-    
-    // Get the attribute value from the actor
-    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-    const basePool = rating + attributeValue;
-    
-    if (basePool <= 0) {
-      ui.notifications?.warn(game.i18n!.localize('SRA2.SKILLS.NO_DICE'));
-      return;
-    }
-
-    // Get localized attribute name
-    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    
-    // Get RR sources for skill and attribute
-    const skillRRSources = this.getRRSources('skill', skill.name);
-    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
-    const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
-    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
-
-    // Create roll dialog using helper
-    const poolDescription = `(${game.i18n!.localize('SRA2.SKILLS.RATING')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
-    const dialog = DiceRoller.createSkillRollDialog({
-      title: game.i18n!.format('SRA2.FEATS.WEAPON.ROLL_WITH_SKILL', { weapon: weaponName, skill: skill.name }),
-      basePool,
-      poolDescription,
-      autoRR,
-      defaultRiskDice,
-      rrSources: allRRSources,
-      actor: this.actor,
-      onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        const damageBonus = (weapon?.system as any)?.damageValueBonus || 0;
-        this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon, damageBonus);
-      }
-    });
-    
-    dialog.render(true);
+    console.log('Skill with weapon roll disabled', { skill: skill.name, weaponName });
   }
 
   /**
-   * Roll a specialization with weapon context
+   * REMOVED: Specialization with weapon roll - dialog creation disabled
    */
   private async _rollSpecializationWithWeapon(specialization: any, weaponName: string, effectiveRating: number, weaponDamageValue?: string, weapon?: any): Promise<void> {
-    const specSystem = specialization.system as any;
-    const linkedAttribute = specSystem.linkedAttribute || 'strength';
-    
-    // Get the attribute value from the actor
-    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-    const basePool = effectiveRating + attributeValue;
-
-    if (basePool <= 0) {
-      ui.notifications?.warn(game.i18n!.localize('SRA2.SPECIALIZATIONS.NO_DICE'));
-      return;
-    }
-
-    // Get localized attribute name
-    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    
-    // Get RR sources for specialization, skill, and attribute
-    const specRRSources = this.getRRSources('specialization', specialization.name);
-    const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
-    const linkedSkillName = specSystem.linkedSkill;
-    const skillRRSources = linkedSkillName ? this.getRRSources('skill', linkedSkillName) : [];
-    
-    const allRRSources = [
-      ...specRRSources,
-      ...skillRRSources.map(s => ({ ...s, featName: s.featName + ` (${linkedSkillName})` })),
-      ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
-    ];
-    const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
-
-    // Create roll dialog using helper
-    const poolDescription = `(${game.i18n!.localize('SRA2.SPECIALIZATIONS.BONUS')}: ${effectiveRating} + ${attributeLabel}: ${attributeValue})`;
-    const dialog = DiceRoller.createSkillRollDialog({
-      title: game.i18n!.format('SRA2.FEATS.WEAPON.ROLL_WITH_SKILL', { weapon: weaponName, skill: specialization.name }),
-      basePool,
-      poolDescription,
-      autoRR,
-      defaultRiskDice,
-      rrSources: allRRSources,
-      actor: this.actor,
-      onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
-        const damageBonus = (weapon?.system as any)?.damageValueBonus || 0;
-        this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon, damageBonus);
-      }
-    });
-    
-    dialog.render(true);
+    console.log('Specialization with weapon roll disabled', { specialization: specialization.name, weaponName });
   }
 
 
