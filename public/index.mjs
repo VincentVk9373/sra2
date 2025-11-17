@@ -1479,7 +1479,7 @@ const RISK_DICE_BY_RR = [2, 5, 8, 12];
 function getRiskDiceByRR(rr) {
   return RISK_DICE_BY_RR[Math.min(3, Math.max(0, rr))] || 2;
 }
-function getRRSources(actor, itemType, itemName) {
+function getRRSources$1(actor, itemType, itemName) {
   const sources = [];
   const feats = actor.items.filter(
     (item) => item.type === "feat" && item.system.active === true
@@ -1502,7 +1502,7 @@ function getRRSources(actor, itemType, itemName) {
   return sources;
 }
 function getRRSourcesForActor(actor, itemType, itemName) {
-  return getRRSources(actor, itemType, itemName);
+  return getRRSources$1(actor, itemType, itemName);
 }
 function getSuccessThreshold(mode) {
   switch (mode) {
@@ -2443,6 +2443,205 @@ function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, ty
     </form>
   `;
 }
+function handleSheetUpdate(actor, formData) {
+  const expandedData = foundry.utils.expandObject(formData);
+  if (expandedData.system) {
+    const currentDamage = actor.system.damage || {};
+    if (!expandedData.system.damage) {
+      expandedData.system.damage = {};
+    }
+    if (currentDamage.light && !expandedData.system.damage.light) {
+      expandedData.system.damage.light = currentDamage.light.map(() => false);
+    } else if (expandedData.system.damage.light && currentDamage.light) {
+      for (let i = 0; i < currentDamage.light.length; i++) {
+        if (expandedData.system.damage.light[i] === void 0) {
+          expandedData.system.damage.light[i] = false;
+        }
+      }
+    }
+    if (currentDamage.severe && !expandedData.system.damage.severe) {
+      expandedData.system.damage.severe = currentDamage.severe.map(() => false);
+    } else if (expandedData.system.damage.severe && currentDamage.severe) {
+      for (let i = 0; i < currentDamage.severe.length; i++) {
+        if (expandedData.system.damage.severe[i] === void 0) {
+          expandedData.system.damage.severe[i] = false;
+        }
+      }
+    }
+    if (expandedData.system.damage.incapacitating === void 0) {
+      expandedData.system.damage.incapacitating = false;
+    }
+  }
+  return expandedData;
+}
+function calculateFinalDamageValue(damageValue, damageValueBonus, strength) {
+  if (damageValue === "FOR") {
+    const total = strength + damageValueBonus;
+    return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
+  } else if (damageValue.startsWith("FOR+")) {
+    const modifier = parseInt(damageValue.substring(4)) || 0;
+    const total = strength + modifier + damageValueBonus;
+    return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
+  } else if (damageValue === "toxin") {
+    return "selon toxine";
+  } else {
+    const base = parseInt(damageValue) || 0;
+    const total = base + damageValueBonus;
+    return damageValueBonus > 0 ? `${total} (${base}+${damageValueBonus})` : total.toString();
+  }
+}
+function organizeSpecializationsBySkill(allSpecializations, actorItems) {
+  const specializationsBySkill = /* @__PURE__ */ new Map();
+  const unlinkedSpecializations = [];
+  allSpecializations.forEach((spec) => {
+    const linkedSkillName = spec.system.linkedSkill;
+    if (linkedSkillName) {
+      const linkedSkill = actorItems.find(
+        (i) => i.type === "skill" && i.name === linkedSkillName
+      );
+      if (linkedSkill && linkedSkill.id) {
+        const skillId = linkedSkill.id;
+        if (!specializationsBySkill.has(skillId)) {
+          specializationsBySkill.set(skillId, []);
+        }
+        specializationsBySkill.get(skillId).push(spec);
+      } else {
+        unlinkedSpecializations.push(spec);
+      }
+    } else {
+      unlinkedSpecializations.push(spec);
+    }
+  });
+  return { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations };
+}
+async function handleItemDrop(event, actor, allowedTypes = ["feat", "skill", "specialization", "metatype"]) {
+  const data = TextEditor.getDragEventData(event);
+  if (data && data.type === "Item") {
+    const item = await Item.implementation.fromDropData(data);
+    if (!item) return false;
+    if (item.actor && item.actor.id === actor.id) {
+      return false;
+    }
+    if (!allowedTypes.includes(item.type)) {
+      return false;
+    }
+    if (item.type === "metatype") {
+      const existingMetatype = actor.items.find((i) => i.type === "metatype");
+      if (existingMetatype) {
+        ui.notifications?.warn(game.i18n.localize("SRA2.METATYPES.ONLY_ONE_METATYPE"));
+        return false;
+      }
+      await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+      return true;
+    }
+    if (item.type === "feat") {
+      const existingFeat = actor.items.find(
+        (i) => i.type === "feat" && i.name === item.name
+      );
+      if (existingFeat) {
+        ui.notifications?.warn(game.i18n.format("SRA2.FEATS.ALREADY_EXISTS", { name: item.name }));
+        return false;
+      }
+      await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+      return true;
+    }
+    if (item.type === "skill") {
+      const existingSkill = actor.items.find(
+        (i) => i.type === "skill" && i.name === item.name
+      );
+      if (existingSkill) {
+        ui.notifications?.warn(game.i18n.format("SRA2.SKILLS.ALREADY_EXISTS", { name: item.name }));
+        return false;
+      }
+      await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+      return true;
+    }
+    if (item.type === "specialization") {
+      const existingSpec = actor.items.find(
+        (i) => i.type === "specialization" && i.name === item.name
+      );
+      if (existingSpec) {
+        ui.notifications?.warn(game.i18n.format("SRA2.SPECIALIZATIONS.ALREADY_EXISTS", { name: item.name }));
+        return false;
+      }
+      await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+      return true;
+    }
+  }
+  return false;
+}
+function getRRSources(actor, itemType, itemName) {
+  const sources = [];
+  const feats = actor.items.filter(
+    (item) => item.type === "feat" && item.system.active === true
+  );
+  for (const feat of feats) {
+    const featSystem = feat.system;
+    const rrList = featSystem.rrList || [];
+    for (const rrEntry of rrList) {
+      const rrType = rrEntry.rrType;
+      const rrValue = rrEntry.rrValue || 0;
+      const rrTarget = rrEntry.rrTarget || "";
+      if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
+        sources.push({
+          featName: feat.name,
+          rrValue
+        });
+      }
+    }
+  }
+  return sources;
+}
+function calculateRR(actor, itemType, itemName) {
+  const sources = getRRSources(actor, itemType, itemName);
+  return sources.reduce((total, source) => total + source.rrValue, 0);
+}
+async function handleEditItem(event, actor) {
+  event.preventDefault();
+  const element = event.currentTarget;
+  const itemId = element.dataset.itemId || element.closest(".metatype-item")?.getAttribute("data-item-id");
+  if (!itemId) return;
+  const item = actor.items.get(itemId);
+  if (item) {
+    item.sheet?.render(true);
+  }
+}
+async function handleDeleteItem(event, actor, sheetRender) {
+  event.preventDefault();
+  const element = event.currentTarget;
+  const itemId = element.dataset.itemId || element.closest(".metatype-item")?.getAttribute("data-item-id");
+  if (!itemId) return;
+  const item = actor.items.get(itemId);
+  if (item) {
+    await item.delete();
+    if (sheetRender) {
+      sheetRender(false);
+    }
+  }
+}
+function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn) {
+  return feats.map((feat) => {
+    feat.rrEntries = [];
+    const rrList = feat.system.rrList || [];
+    for (let i = 0; i < rrList.length; i++) {
+      const rrEntry = rrList[i];
+      const rrType = rrEntry.rrType;
+      const rrValue = rrEntry.rrValue || 0;
+      const rrTarget = rrEntry.rrTarget || "";
+      const entry = { rrType, rrValue, rrTarget };
+      if (rrType === "attribute" && rrTarget) {
+        entry.rrTargetLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+      }
+      feat.rrEntries.push(entry);
+    }
+    if (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells") {
+      const damageValue = feat.system.damageValue || "0";
+      const damageValueBonus = feat.system.damageValueBonus || 0;
+      feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
+    }
+    return feat;
+  });
+}
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -2468,27 +2667,8 @@ class CharacterSheet extends ActorSheet {
     const metatypes = this.actor.items.filter((item) => item.type === "metatype");
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
     const actorStrength = this.actor.system.attributes?.strength || 0;
-    const allFeats = this.actor.items.filter((item) => item.type === "feat").map((feat) => {
-      feat.rrEntries = [];
-      const rrList = feat.system.rrList || [];
-      for (let i = 0; i < rrList.length; i++) {
-        const rrEntry = rrList[i];
-        const rrType = rrEntry.rrType;
-        const rrValue = rrEntry.rrValue || 0;
-        const rrTarget = rrEntry.rrTarget || "";
-        const entry = { rrType, rrValue, rrTarget };
-        if (rrType === "attribute" && rrTarget) {
-          entry.rrTargetLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
-        }
-        feat.rrEntries.push(entry);
-      }
-      if (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells") {
-        const damageValue = feat.system.damageValue || "0";
-        const damageValueBonus = feat.system.damageValueBonus || 0;
-        feat.finalDamageValue = this._calculateFinalDamageValue(damageValue, damageValueBonus, actorStrength);
-      }
-      return feat;
-    });
+    const rawFeats = this.actor.items.filter((item) => item.type === "feat");
+    const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue);
     context.featsByType = {
       trait: allFeats.filter((feat) => feat.system.featType === "trait"),
       contact: allFeats.filter((feat) => feat.system.featType === "contact"),
@@ -2505,27 +2685,7 @@ class CharacterSheet extends ActorSheet {
     context.feats = allFeats;
     const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
     const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
-    const specializationsBySkill = /* @__PURE__ */ new Map();
-    const unlinkedSpecializations = [];
-    allSpecializations.forEach((spec) => {
-      const linkedSkillName = spec.system.linkedSkill;
-      if (linkedSkillName) {
-        const linkedSkill = this.actor.items.find(
-          (i) => i.type === "skill" && i.name === linkedSkillName
-        );
-        if (linkedSkill && linkedSkill.id) {
-          const skillId = linkedSkill.id;
-          if (!specializationsBySkill.has(skillId)) {
-            specializationsBySkill.set(skillId, []);
-          }
-          specializationsBySkill.get(skillId).push(spec);
-        } else {
-          unlinkedSpecializations.push(spec);
-        }
-      } else {
-        unlinkedSpecializations.push(spec);
-      }
-    });
+    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations } = organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
     const attributesRR = {
       strength: Math.min(3, this.calculateRR("attribute", "strength")),
       agility: Math.min(3, this.calculateRR("attribute", "agility")),
@@ -2637,36 +2797,7 @@ class CharacterSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   async _updateObject(_event, formData) {
-    const actorData = {};
-    for (const [key, value] of Object.entries(formData)) {
-      if (!key.startsWith("items.")) {
-        actorData[key] = value;
-      }
-    }
-    const damageFields = ["system.damage.incapacitating"];
-    damageFields.forEach((field) => {
-      if (!(field in formData)) {
-        actorData[field] = false;
-      }
-    });
-    const currentDamage = this.actor.system.damage || {};
-    if (currentDamage.light) {
-      for (let i = 0; i < currentDamage.light.length; i++) {
-        const fieldName = `system.damage.light.${i}`;
-        if (!(fieldName in formData)) {
-          actorData[fieldName] = false;
-        }
-      }
-    }
-    if (currentDamage.severe) {
-      for (let i = 0; i < currentDamage.severe.length; i++) {
-        const fieldName = `system.damage.severe.${i}`;
-        if (!(fieldName in formData)) {
-          actorData[fieldName] = false;
-        }
-      }
-    }
-    const expandedData = foundry.utils.expandObject(actorData);
+    const expandedData = handleSheetUpdate(this.actor, formData);
     return this.actor.update(expandedData);
   }
   /**
@@ -2684,110 +2815,30 @@ class CharacterSheet extends ActorSheet {
     form.find(".content-section").removeClass("active");
     form.find(`[data-section-content="${section}"]`).addClass("active");
   }
-  /**
-   * Handle editing a metatype
-   */
+  // Generic item handlers using SheetHelpers
   async _onEditMetatype(event) {
-    event.preventDefault();
-    const metatypeId = event.currentTarget.closest(".metatype-item")?.getAttribute("data-item-id");
-    if (metatypeId) {
-      const metatype = this.actor.items.get(metatypeId);
-      if (metatype) {
-        metatype.sheet?.render(true);
-      }
-    }
+    return handleEditItem(event, this.actor);
   }
-  /**
-   * Handle deleting a metatype
-   */
   async _onDeleteMetatype(event) {
-    event.preventDefault();
-    const metatypeId = event.currentTarget.closest(".metatype-item")?.getAttribute("data-item-id");
-    if (metatypeId) {
-      const metatype = this.actor.items.get(metatypeId);
-      if (metatype) {
-        await metatype.delete();
-        this.render(false);
-      }
-    }
+    return handleDeleteItem(event, this.actor, this.render.bind(this));
   }
-  /**
-   * Handle editing a feat
-   */
   async _onEditFeat(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const feat = this.actor.items.get(itemId);
-    if (feat) {
-      feat.sheet?.render(true);
-    }
+    return handleEditItem(event, this.actor);
   }
-  /**
-   * Handle deleting a feat
-   */
   async _onDeleteFeat(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const item = this.actor.items.get(itemId);
-    if (item) {
-      await item.delete();
-    }
+    return handleDeleteItem(event, this.actor);
   }
-  /**
-   * Handle editing a skill
-   */
   async _onEditSkill(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const skill = this.actor.items.get(itemId);
-    if (skill) {
-      skill.sheet?.render(true);
-    }
+    return handleEditItem(event, this.actor);
   }
-  /**
-   * Handle deleting a skill
-   */
   async _onDeleteSkill(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const item = this.actor.items.get(itemId);
-    if (item) {
-      await item.delete();
-    }
+    return handleDeleteItem(event, this.actor);
   }
-  /**
-   * Handle editing a specialization
-   */
   async _onEditSpecialization(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const specialization = this.actor.items.get(itemId);
-    if (specialization) {
-      specialization.sheet?.render(true);
-    }
+    return handleEditItem(event, this.actor);
   }
-  /**
-   * Handle deleting a specialization
-   */
   async _onDeleteSpecialization(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const item = this.actor.items.get(itemId);
-    if (item) {
-      await item.delete();
-    }
+    return handleDeleteItem(event, this.actor);
   }
   /**
    * Get detailed RR sources for a given skill, specialization, or attribute
@@ -2799,8 +2850,7 @@ class CharacterSheet extends ActorSheet {
    * Calculate Risk Reduction (RR) from active feats for a given skill, specialization, or attribute
    */
   calculateRR(itemType, itemName) {
-    const sources = this.getRRSources(itemType, itemName);
-    return sources.reduce((total, source) => total + source.rrValue, 0);
+    return calculateRR(this.actor, itemType, itemName);
   }
   /**
    * Handle rating changes for items
@@ -2849,7 +2899,7 @@ class CharacterSheet extends ActorSheet {
       ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
     ];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize("SRA2.SPECIALIZATIONS.BONUS")}: ${effectiveRating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.SPECIALIZATIONS.ROLL_TITLE", { name: specialization.name }),
@@ -2877,12 +2927,6 @@ class CharacterSheet extends ActorSheet {
     return this._onRollSpecialization(event);
   }
   /**
-   * Get risk dice count based on RR level
-   */
-  getRiskDiceByRR(rr) {
-    return getRiskDiceByRR(rr);
-  }
-  /**
    * Handle rolling an attribute
    */
   async _onRollAttribute(event) {
@@ -2897,7 +2941,7 @@ class CharacterSheet extends ActorSheet {
     }
     const rrSources = this.getRRSources("attribute", attributeName);
     const autoRR = Math.min(3, rrSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(attributeValue, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(attributeValue, getRiskDiceByRR(autoRR));
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`);
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.ATTRIBUTES.ROLL_TITLE", { name: attributeLabel }),
@@ -2939,7 +2983,7 @@ class CharacterSheet extends ActorSheet {
     const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize("SRA2.SKILLS.RATING")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.SKILLS.ROLL_TITLE", { name: skill.name }),
@@ -3108,11 +3152,11 @@ class CharacterSheet extends ActorSheet {
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === "skill" ? this._getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : this._getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
-    const attributeRRSources = this._getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
+    const skillRRSources = itemType === "skill" ? getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
+    const attributeRRSources = getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const vdBonus = damageValueBonus;
     const poolDescription = `(${game.i18n.localize(itemType === "skill" ? "SRA2.SKILLS.RATING" : "SRA2.SPECIALIZATIONS.BONUS")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
@@ -3165,12 +3209,12 @@ class CharacterSheet extends ActorSheet {
     }
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += this._buildDiceResultsHtml(attackResult, weaponDamageValue, damageValueBonus);
+    resultsHtml += buildDiceResultsHtml(attackResult, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
     resultsHtml += "</div>";
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      resultsHtml += buildDiceResultsHtml(defenseResult);
       resultsHtml += "</div>";
     }
     resultsHtml += '<div class="combat-result">';
@@ -3296,18 +3340,11 @@ class CharacterSheet extends ActorSheet {
     }
   }
   /**
-   * Build dice results HTML
-   */
-  _buildDiceResultsHtml(rollResult, weaponDamageValue, damageValueBonus) {
-    const actorStrength = this.actor.system.attributes?.strength || 0;
-    return buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength, damageValueBonus);
-  }
-  /**
    * Display simple roll result (without defense)
    */
   async _displayRollResult(skillName, rollResult, weaponDamageValue, damageValueBonus) {
     let resultsHtml = '<div class="sra2-skill-roll">';
-    resultsHtml += this._buildDiceResultsHtml(rollResult, weaponDamageValue, damageValueBonus);
+    resultsHtml += buildDiceResultsHtml(rollResult, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
     resultsHtml += "</div>";
     const messageData = {
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
@@ -3316,12 +3353,6 @@ class CharacterSheet extends ActorSheet {
       sound: CONFIG.sounds?.dice
     };
     await ChatMessage.create(messageData);
-  }
-  /**
-   * Get RR sources for an actor
-   */
-  _getRRSourcesForActor(actor, itemType, itemName) {
-    return getRRSourcesForActor(actor, itemType, itemName);
   }
   /**
    * Handle drag start for feat items
@@ -3341,57 +3372,8 @@ class CharacterSheet extends ActorSheet {
    * Override to handle dropping feats and skills anywhere on the sheet
    */
   async _onDrop(event) {
-    const data = TextEditor.getDragEventData(event);
-    if (data && data.type === "Item") {
-      const item = await Item.implementation.fromDropData(data);
-      if (!item) return super._onDrop(event);
-      if (item.actor && item.actor.id === this.actor.id) {
-        return;
-      }
-      if (item.type === "metatype") {
-        const existingMetatype = this.actor.items.find((i) => i.type === "metatype");
-        if (existingMetatype) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.METATYPES.ONLY_ONE_METATYPE"));
-          return;
-        }
-        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-        return;
-      }
-      if (item.type === "feat") {
-        const existingFeat = this.actor.items.find(
-          (i) => i.type === "feat" && i.name === item.name
-        );
-        if (existingFeat) {
-          ui.notifications?.warn(game.i18n.format("SRA2.FEATS.ALREADY_EXISTS", { name: item.name }));
-          return;
-        }
-        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-        return;
-      }
-      if (item.type === "skill") {
-        const existingSkill = this.actor.items.find(
-          (i) => i.type === "skill" && i.name === item.name
-        );
-        if (existingSkill) {
-          ui.notifications?.warn(game.i18n.format("SRA2.SKILLS.ALREADY_EXISTS", { name: item.name }));
-          return;
-        }
-        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-        return;
-      }
-      if (item.type === "specialization") {
-        const existingSpec = this.actor.items.find(
-          (i) => i.type === "specialization" && i.name === item.name
-        );
-        if (existingSpec) {
-          ui.notifications?.warn(game.i18n.format("SRA2.SPECIALIZATIONS.ALREADY_EXISTS", { name: item.name }));
-          return;
-        }
-        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-        return;
-      }
-    }
-    return super._onDrop(event);
+    const handled = await handleItemDrop(event, this.actor);
+    return handled ? void 0 : super._onDrop(event);
   }
   /**
    * Handle skill search input
@@ -3880,12 +3862,6 @@ class CharacterSheet extends ActorSheet {
     await this._rollWeaponOrSpell(item, "weapon-spell");
   }
   /**
-   * Normalize a string for comparison (lowercase, no special chars, no accents)
-   */
-  _normalizeString(str) {
-    return normalizeSearchText(str);
-  }
-  /**
    * Handle rolling dice for a weapon or spell
    */
   async _rollWeaponOrSpell(item, type) {
@@ -3908,7 +3884,7 @@ class CharacterSheet extends ActorSheet {
     let defaultSelection = "";
     if (linkedSpecName) {
       const foundSpec = actorSpecializations.find(
-        (s) => this._normalizeString(s.name) === this._normalizeString(linkedSpecName)
+        (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSpecName)
       );
       if (foundSpec) {
         defaultSelection = `spec-${foundSpec.id}`;
@@ -3916,7 +3892,7 @@ class CharacterSheet extends ActorSheet {
     }
     if (!defaultSelection && linkedSkillName) {
       const foundSkill = actorSkills.find(
-        (s) => this._normalizeString(s.name) === this._normalizeString(linkedSkillName)
+        (s) => normalizeSearchText(s.name) === normalizeSearchText(linkedSkillName)
       );
       if (foundSkill) {
         defaultSelection = `skill-${foundSkill.id}`;
@@ -4003,7 +3979,7 @@ class CharacterSheet extends ActorSheet {
     const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize("SRA2.SKILLS.RATING")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.FEATS.WEAPON.ROLL_WITH_SKILL", { weapon: weaponName, skill: skill.name }),
@@ -4042,7 +4018,7 @@ class CharacterSheet extends ActorSheet {
       ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
     ];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize("SRA2.SPECIALIZATIONS.BONUS")}: ${effectiveRating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.FEATS.WEAPON.ROLL_WITH_SKILL", { weapon: weaponName, skill: specialization.name }),
@@ -4057,25 +4033,6 @@ class CharacterSheet extends ActorSheet {
       }
     });
     dialog.render(true);
-  }
-  /**
-   * Calculate final damage value for weapon/spell display
-   */
-  _calculateFinalDamageValue(damageValue, damageValueBonus, strength) {
-    if (damageValue === "FOR") {
-      const total = strength + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
-    } else if (damageValue.startsWith("FOR+")) {
-      const modifier = parseInt(damageValue.substring(4)) || 0;
-      const total = strength + modifier + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
-    } else if (damageValue === "toxin") {
-      return "selon toxine";
-    } else {
-      const base = parseInt(damageValue) || 0;
-      const total = base + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (${base}+${damageValueBonus})` : total.toString();
-    }
   }
   /**
    * Handle creating a new feat from search
@@ -4149,36 +4106,7 @@ class NpcSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   async _updateObject(_event, formData) {
-    const actorData = {};
-    for (const [key, value] of Object.entries(formData)) {
-      if (!key.startsWith("items.")) {
-        actorData[key] = value;
-      }
-    }
-    const damageFields = ["system.damage.incapacitating"];
-    damageFields.forEach((field) => {
-      if (!(field in formData)) {
-        actorData[field] = false;
-      }
-    });
-    const currentDamage = this.actor.system.damage || {};
-    if (currentDamage.light) {
-      for (let i = 0; i < currentDamage.light.length; i++) {
-        const fieldName = `system.damage.light.${i}`;
-        if (!(fieldName in formData)) {
-          actorData[fieldName] = false;
-        }
-      }
-    }
-    if (currentDamage.severe) {
-      for (let i = 0; i < currentDamage.severe.length; i++) {
-        const fieldName = `system.damage.severe.${i}`;
-        if (!(fieldName in formData)) {
-          actorData[fieldName] = false;
-        }
-      }
-    }
-    const expandedData = foundry.utils.expandObject(actorData);
+    const expandedData = handleSheetUpdate(this.actor, formData);
     return this.actor.update(expandedData);
   }
   getData() {
@@ -4248,7 +4176,7 @@ class NpcSheet extends ActorSheet {
       itemData.npcThreshold = npcThreshold;
       const damageValue = item.system.damageValue || "0";
       const damageValueBonus = item.system.damageValueBonus || 0;
-      itemData.finalDamageValue = this._calculateFinalDamageValue(damageValue, damageValueBonus, actorStrength);
+      itemData.finalDamageValue = calculateFinalDamageValue(damageValue, damageValueBonus, actorStrength);
       return itemData;
     };
     const rawWeapons = allFeats.filter(
@@ -4456,7 +4384,7 @@ class NpcSheet extends ActorSheet {
     const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize("SRA2.SKILLS.RATING")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.SKILLS.ROLL_TITLE", { name: skill.name }),
@@ -4505,7 +4433,7 @@ class NpcSheet extends ActorSheet {
       ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
     ];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${attributeLabel}: ${attributeValue} + ${linkedSkillName}: ${skillRating} + ${game.i18n.localize("SRA2.SPECIALIZATIONS.BONUS")}: 2)`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.SPECIALIZATIONS.ROLL_TITLE", { name: specialization.name }),
@@ -4633,11 +4561,11 @@ class NpcSheet extends ActorSheet {
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === "skill" ? this.getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : this.getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
-    const attributeRRSources = this.getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
+    const skillRRSources = itemType === "skill" ? getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
+    const attributeRRSources = getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize(itemType === "skill" ? "SRA2.SKILLS.RATING" : "SRA2.SPECIALIZATIONS.BONUS")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.COMBAT.DEFENSE_ROLL_CONFIG", { skill: defenseName }),
@@ -4647,17 +4575,11 @@ class NpcSheet extends ActorSheet {
       defaultRiskDice,
       rrSources: allRRSources,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
-        const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+        const defenseResult = await performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
         await this._displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor);
       }
     });
     dialog.render(true);
-  }
-  /**
-   * Perform defense roll
-   */
-  async _performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName) {
-    return await performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
   }
   /**
    * Display NPC attack result with defense
@@ -4678,12 +4600,13 @@ class NpcSheet extends ActorSheet {
     }
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += this._buildNPCAttackHtml(attackThreshold);
+    resultsHtml += buildNPCAttackHtml(attackThreshold);
     resultsHtml += "</div>";
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      defenseResult.isDefense = true;
+      resultsHtml += buildDiceResultsHtml(defenseResult);
       resultsHtml += "</div>";
     }
     resultsHtml += '<div class="combat-result">';
@@ -4721,25 +4644,6 @@ class NpcSheet extends ActorSheet {
       sound: CONFIG.sounds?.dice
     };
     await ChatMessage.create(messageData);
-  }
-  /**
-   * Build NPC attack HTML (threshold based)
-   */
-  _buildNPCAttackHtml(threshold) {
-    return buildNPCAttackHtml(threshold);
-  }
-  /**
-   * Build dice results HTML (same as character sheet)
-   */
-  _buildDiceResultsHtml(rollResult) {
-    rollResult.isDefense = true;
-    return buildDiceResultsHtml(rollResult);
-  }
-  /**
-   * Get RR sources for another actor
-   */
-  getRRSourcesForActor(actor, itemType, itemName) {
-    return getRRSourcesForActor(actor, itemType, itemName);
   }
   /**
    * Handle attacking with threshold (weapon)
@@ -4944,7 +4848,7 @@ class NpcSheet extends ActorSheet {
     const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize(skillType === "skill" ? "SRA2.SKILLS.RATING" : "SRA2.SPECIALIZATIONS.BONUS")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.FEATS.WEAPON.ROLL_WITH_SKILL", { weapon: weaponName, skill: skill.name }),
@@ -4963,7 +4867,7 @@ class NpcSheet extends ActorSheet {
    * Roll attack with defense system for NPC
    */
   async _rollAttackWithDefenseNPC(skillName, dicePool, riskDice = 0, riskReduction = 0, rollMode = "normal", weaponDamageValue, attackingWeapon) {
-    const attackResult = await this._performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
+    const attackResult = await performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
     const damageValueBonus = attackingWeapon?.system?.damageValueBonus || 0;
     const targets = Array.from(game.user.targets || []);
     if (targets.length === 0) {
@@ -5244,11 +5148,11 @@ class NpcSheet extends ActorSheet {
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === "skill" ? this.getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : this.getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
-    const attributeRRSources = this.getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
+    const skillRRSources = itemType === "skill" ? getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
+    const attributeRRSources = getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const vdBonus = damageValueBonus;
     const poolDescription = `(${game.i18n.localize(itemType === "skill" ? "SRA2.SKILLS.RATING" : "SRA2.SPECIALIZATIONS.BONUS")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
@@ -5259,7 +5163,7 @@ class NpcSheet extends ActorSheet {
       defaultRiskDice,
       rrSources: allRRSources,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
-        const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+        const defenseResult = await performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
         await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, vdBonus);
       }
     });
@@ -5286,12 +5190,13 @@ class NpcSheet extends ActorSheet {
     }
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += this._buildDiceResultsHtmlWithVD(attackResult, weaponDamageValue, damageValueBonus);
+    resultsHtml += buildDiceResultsHtml(attackResult, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
     resultsHtml += "</div>";
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      defenseResult.isDefense = true;
+      resultsHtml += buildDiceResultsHtml(defenseResult);
       resultsHtml += "</div>";
     }
     resultsHtml += '<div class="combat-result">';
@@ -5334,19 +5239,6 @@ class NpcSheet extends ActorSheet {
     await ChatMessage.create(messageData);
   }
   /**
-   * Build dice results HTML with VD display
-   */
-  _buildDiceResultsHtmlWithVD(rollResult, weaponDamageValue, damageValueBonus) {
-    const actorStrength = this.actor.system.attributes?.strength || 0;
-    return buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength, damageValueBonus);
-  }
-  /**
-   * Get risk dice count based on RR level
-   */
-  getRiskDiceByRR(rr) {
-    return getRiskDiceByRR(rr);
-  }
-  /**
    * Defend with threshold against weapon attack
    */
   async _defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus) {
@@ -5378,11 +5270,11 @@ class NpcSheet extends ActorSheet {
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === "skill" ? this.getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : this.getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
-    const attributeRRSources = this.getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
+    const skillRRSources = itemType === "skill" ? getRRSourcesForActor(defenderActor, "skill", defenseItem.name) : getRRSourcesForActor(defenderActor, "specialization", defenseItem.name);
+    const attributeRRSources = getRRSourcesForActor(defenderActor, "attribute", linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map((s) => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, getRiskDiceByRR(autoRR));
     const poolDescription = `(${game.i18n.localize(itemType === "skill" ? "SRA2.SKILLS.RATING" : "SRA2.SPECIALIZATIONS.BONUS")}: ${rating} + ${attributeLabel}: ${attributeValue})`;
     const dialog = createSkillRollDialog({
       title: game.i18n.format("SRA2.COMBAT.DEFENSE_ROLL_CONFIG", { skill: defenseName }),
@@ -5392,7 +5284,7 @@ class NpcSheet extends ActorSheet {
       defaultRiskDice,
       rrSources: allRRSources,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
-        const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+        const defenseResult = await performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
         await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus);
       }
     });
@@ -5419,12 +5311,13 @@ class NpcSheet extends ActorSheet {
     }
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += this._buildNPCAttackHtmlWithVD(attackThreshold, weaponDamageValue, damageValueBonus);
+    resultsHtml += buildNPCAttackHtml(attackThreshold, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
     resultsHtml += "</div>";
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      defenseResult.isDefense = true;
+      resultsHtml += buildDiceResultsHtml(defenseResult);
       resultsHtml += "</div>";
     }
     resultsHtml += '<div class="combat-result">';
@@ -5467,13 +5360,6 @@ class NpcSheet extends ActorSheet {
     await ChatMessage.create(messageData);
   }
   /**
-   * Build NPC attack HTML with VD display
-   */
-  _buildNPCAttackHtmlWithVD(threshold, weaponDamageValue, damageValueBonus) {
-    const actorStrength = this.actor.system.attributes?.strength || 0;
-    return buildNPCAttackHtml(threshold, weaponDamageValue, actorStrength, damageValueBonus);
-  }
-  /**
    * Get RR sources from active feats
    */
   getRRSources(itemType, itemName) {
@@ -5494,25 +5380,6 @@ class NpcSheet extends ActorSheet {
       actorStrength: void 0
     });
     await postRollToChat(this.actor, skillName, resultsHtml);
-  }
-  /**
-   * Calculate final damage value for weapon/spell display
-   */
-  _calculateFinalDamageValue(damageValue, damageValueBonus, strength) {
-    if (damageValue === "FOR") {
-      const total = strength + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
-    } else if (damageValue.startsWith("FOR+")) {
-      const modifier = parseInt(damageValue.substring(4)) || 0;
-      const total = strength + modifier + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
-    } else if (damageValue === "toxin") {
-      return "selon toxine";
-    } else {
-      const base = parseInt(damageValue) || 0;
-      const total = base + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (${base}+${damageValueBonus})` : total.toString();
-    }
   }
   /**
    * Show item browser dialog

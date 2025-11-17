@@ -2,6 +2,7 @@ import * as DiceRoller from '../helpers/dice-roller.js';
 import * as ItemSearch from '../helpers/item-search.js';
 import * as DefenseSelection from '../helpers/defense-selection.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
+import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
@@ -30,41 +31,7 @@ export class NpcSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
-    const actorData: any = {};
-    for (const [key, value] of Object.entries(formData)) {
-      if (!key.startsWith('items.')) {
-        actorData[key] = value;
-      }
-    }
-    
-    // Handle unchecked checkboxes for damage (they don't appear in formData)
-    const damageFields = ['system.damage.incapacitating'];
-    damageFields.forEach(field => {
-      if (!(field in formData)) {
-        actorData[field] = false;
-      }
-    });
-    
-    // Handle damage arrays
-    const currentDamage = (this.actor.system as any).damage || {};
-    if (currentDamage.light) {
-      for (let i = 0; i < currentDamage.light.length; i++) {
-        const fieldName = `system.damage.light.${i}`;
-        if (!(fieldName in formData)) {
-          actorData[fieldName] = false;
-        }
-      }
-    }
-    if (currentDamage.severe) {
-      for (let i = 0; i < currentDamage.severe.length; i++) {
-        const fieldName = `system.damage.severe.${i}`;
-        if (!(fieldName in formData)) {
-          actorData[fieldName] = false;
-        }
-      }
-    }
-    
-    const expandedData = foundry.utils.expandObject(actorData);
+    const expandedData = SheetHelpers.handleSheetUpdate(this.actor, formData);
     return this.actor.update(expandedData);
   }
 
@@ -164,7 +131,7 @@ export class NpcSheet extends ActorSheet {
       // Calculate final damage value with bonus
       const damageValue = item.system.damageValue || '0';
       const damageValueBonus = item.system.damageValueBonus || 0;
-      itemData.finalDamageValue = this._calculateFinalDamageValue(damageValue, damageValueBonus, actorStrength);
+      itemData.finalDamageValue = SheetHelpers.calculateFinalDamageValue(damageValue, damageValueBonus, actorStrength);
       
       return itemData;
     };
@@ -463,7 +430,7 @@ export class NpcSheet extends ActorSheet {
     const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
 
     // Create roll dialog using helper
     const poolDescription = `(${game.i18n!.localize('SRA2.SKILLS.RATING')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
@@ -530,7 +497,7 @@ export class NpcSheet extends ActorSheet {
       ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))
     ];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
 
     // Create roll dialog using helper
     const poolDescription = `(${attributeLabel}: ${attributeValue} + ${linkedSkillName}: ${skillRating} + ${game.i18n!.localize('SRA2.SPECIALIZATIONS.BONUS')}: 2)`;
@@ -687,11 +654,11 @@ export class NpcSheet extends ActorSheet {
     
     // Get RR for defense
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === 'skill' ? this.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : this.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
-    const attributeRRSources = this.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
+    const skillRRSources = itemType === 'skill' ? DiceRoller.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : DiceRoller.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
+    const attributeRRSources = DiceRoller.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
     
     // Create defense roll dialog using helper
     const poolDescription = `(${game.i18n!.localize(itemType === 'skill' ? 'SRA2.SKILLS.RATING' : 'SRA2.SPECIALIZATIONS.BONUS')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
@@ -704,7 +671,7 @@ export class NpcSheet extends ActorSheet {
       rrSources: allRRSources,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         // Roll defense
-        const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+        const defenseResult = await CombatHelpers.performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
         
         // Display combined result
         await this._displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor);
@@ -714,12 +681,6 @@ export class NpcSheet extends ActorSheet {
     dialog.render(true);
   }
 
-  /**
-   * Perform defense roll
-   */
-  private async _performDefenseRoll(dicePool: number, riskDice: number, riskReduction: number, rollMode: string, skillName: string): Promise<any> {
-    return await CombatHelpers.performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
-  }
 
   /**
    * Display NPC attack result with defense
@@ -746,14 +707,15 @@ export class NpcSheet extends ActorSheet {
     // Attack section
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
-    resultsHtml += this._buildNPCAttackHtml(attackThreshold);
+    resultsHtml += CombatHelpers.buildNPCAttackHtml(attackThreshold);
     resultsHtml += '</div>';
     
     // Defense section
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.DEFENSE')}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      defenseResult.isDefense = true;
+      resultsHtml += CombatHelpers.buildDiceResultsHtml(defenseResult);
       resultsHtml += '</div>';
     }
     
@@ -805,27 +767,8 @@ export class NpcSheet extends ActorSheet {
     await ChatMessage.create(messageData);
   }
 
-  /**
-   * Build NPC attack HTML (threshold based)
-   */
-  private _buildNPCAttackHtml(threshold: number): string {
-    return CombatHelpers.buildNPCAttackHtml(threshold);
-  }
 
-  /**
-   * Build dice results HTML (same as character sheet)
-   */
-  private _buildDiceResultsHtml(rollResult: any): string {
-    rollResult.isDefense = true; // Mark as defense roll for proper labels
-    return CombatHelpers.buildDiceResultsHtml(rollResult);
-  }
 
-  /**
-   * Get RR sources for another actor
-   */
-  private getRRSourcesForActor(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number }> {
-    return DiceRoller.getRRSourcesForActor(actor, itemType, itemName);
-  }
 
   /**
    * Handle attacking with threshold (weapon)
@@ -1095,7 +1038,7 @@ export class NpcSheet extends ActorSheet {
     const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
 
     // Create roll dialog using helper
     const poolDescription = `(${game.i18n!.localize(skillType === 'skill' ? 'SRA2.SKILLS.RATING' : 'SRA2.SPECIALIZATIONS.BONUS')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
@@ -1119,7 +1062,7 @@ export class NpcSheet extends ActorSheet {
    */
   private async _rollAttackWithDefenseNPC(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any): Promise<void> {
     // First, roll the attack
-    const attackResult = await this._performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
+    const attackResult = await CombatHelpers.performDefenseRoll(dicePool, riskDice, riskReduction, rollMode, skillName);
     
     // Get damage value bonus from weapon
     const damageValueBonus = (attackingWeapon?.system as any)?.damageValueBonus || 0;
@@ -1480,11 +1423,11 @@ export class NpcSheet extends ActorSheet {
     
     // Get RR for defense
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === 'skill' ? this.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : this.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
-    const attributeRRSources = this.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
+    const skillRRSources = itemType === 'skill' ? DiceRoller.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : DiceRoller.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
+    const attributeRRSources = DiceRoller.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
     
     // Capture damageValueBonus for callback
     const vdBonus = damageValueBonus;
@@ -1500,7 +1443,7 @@ export class NpcSheet extends ActorSheet {
       rrSources: allRRSources,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         // Roll defense
-        const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+        const defenseResult = await CombatHelpers.performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
         
         // Display combined result with VD
         await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, vdBonus);
@@ -1538,14 +1481,15 @@ export class NpcSheet extends ActorSheet {
     // Attack section - Build with dice results
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
-    resultsHtml += this._buildDiceResultsHtmlWithVD(attackResult, weaponDamageValue, damageValueBonus);
+    resultsHtml += CombatHelpers.buildDiceResultsHtml(attackResult, weaponDamageValue, (this.actor.system as any).attributes?.strength || 0, damageValueBonus);
     resultsHtml += '</div>';
     
     // Defense section
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.DEFENSE')}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      defenseResult.isDefense = true;
+      resultsHtml += CombatHelpers.buildDiceResultsHtml(defenseResult);
       resultsHtml += '</div>';
     }
     
@@ -1600,20 +1544,7 @@ export class NpcSheet extends ActorSheet {
     await ChatMessage.create(messageData);
   }
 
-  /**
-   * Build dice results HTML with VD display
-   */
-  private _buildDiceResultsHtmlWithVD(rollResult: any, weaponDamageValue: string, damageValueBonus?: number): string {
-    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
-    return CombatHelpers.buildDiceResultsHtml(rollResult, weaponDamageValue, actorStrength, damageValueBonus);
-  }
 
-  /**
-   * Get risk dice count based on RR level
-   */
-  private getRiskDiceByRR(rr: number): number {
-    return DiceRoller.getRiskDiceByRR(rr);
-  }
 
   /**
    * Defend with threshold against weapon attack
@@ -1660,11 +1591,11 @@ export class NpcSheet extends ActorSheet {
     
     // Get RR for defense
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-    const skillRRSources = itemType === 'skill' ? this.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : this.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
-    const attributeRRSources = this.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
+    const skillRRSources = itemType === 'skill' ? DiceRoller.getRRSourcesForActor(defenderActor, 'skill', defenseItem.name) : DiceRoller.getRRSourcesForActor(defenderActor, 'specialization', defenseItem.name);
+    const attributeRRSources = DiceRoller.getRRSourcesForActor(defenderActor, 'attribute', linkedAttribute);
     const allRRSources = [...skillRRSources, ...attributeRRSources.map(s => ({ ...s, featName: s.featName + ` (${attributeLabel})` }))];
     const autoRR = Math.min(3, allRRSources.reduce((total, s) => total + s.rrValue, 0));
-    const defaultRiskDice = Math.min(basePool, this.getRiskDiceByRR(autoRR));
+    const defaultRiskDice = Math.min(basePool, DiceRoller.getRiskDiceByRR(autoRR));
     
     // Create defense roll dialog using helper
     const poolDescription = `(${game.i18n!.localize(itemType === 'skill' ? 'SRA2.SKILLS.RATING' : 'SRA2.SPECIALIZATIONS.BONUS')}: ${rating} + ${attributeLabel}: ${attributeValue})`;
@@ -1677,7 +1608,7 @@ export class NpcSheet extends ActorSheet {
       rrSources: allRRSources,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         // Roll defense
-        const defenseResult = await this._performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
+        const defenseResult = await CombatHelpers.performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
         
         // Display combined result with VD
         await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus);
@@ -1715,14 +1646,15 @@ export class NpcSheet extends ActorSheet {
     // Attack section
     resultsHtml += '<div class="attack-section">';
     resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
-    resultsHtml += this._buildNPCAttackHtmlWithVD(attackThreshold, weaponDamageValue, damageValueBonus);
+    resultsHtml += CombatHelpers.buildNPCAttackHtml(attackThreshold, weaponDamageValue, (this.actor.system as any).attributes?.strength || 0, damageValueBonus);
     resultsHtml += '</div>';
     
     // Defense section
     if (defenseResult) {
       resultsHtml += '<div class="defense-section">';
       resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.DEFENSE')}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += this._buildDiceResultsHtml(defenseResult);
+      defenseResult.isDefense = true;
+      resultsHtml += CombatHelpers.buildDiceResultsHtml(defenseResult);
       resultsHtml += '</div>';
     }
     
@@ -1777,19 +1709,12 @@ export class NpcSheet extends ActorSheet {
     await ChatMessage.create(messageData);
   }
 
-  /**
-   * Build NPC attack HTML with VD display
-   */
-  private _buildNPCAttackHtmlWithVD(threshold: number, weaponDamageValue: string, damageValueBonus?: number): string {
-    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
-    return CombatHelpers.buildNPCAttackHtml(threshold, weaponDamageValue, actorStrength, damageValueBonus);
-  }
 
   /**
    * Get RR sources from active feats
    */
   private getRRSources(itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number }> {
-    return DiceRoller.getRRSources(this.actor, itemType, itemName);
+    return SheetHelpers.getRRSources(this.actor, itemType, itemName);
   }
 
   /**
@@ -1815,25 +1740,6 @@ export class NpcSheet extends ActorSheet {
     await DiceRoller.postRollToChat(this.actor, skillName, resultsHtml);
   }
 
-  /**
-   * Calculate final damage value for weapon/spell display
-   */
-  private _calculateFinalDamageValue(damageValue: string, damageValueBonus: number, strength: number): string {
-    if (damageValue === "FOR") {
-      const total = strength + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
-    } else if (damageValue.startsWith("FOR+")) {
-      const modifier = parseInt(damageValue.substring(4)) || 0;
-      const total = strength + modifier + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
-    } else if (damageValue === "toxin") {
-      return "selon toxine";
-    } else {
-      const base = parseInt(damageValue) || 0;
-      const total = base + damageValueBonus;
-      return damageValueBonus > 0 ? `${total} (${base}+${damageValueBonus})` : total.toString();
-    }
-  }
 
   /**
    * Show item browser dialog
