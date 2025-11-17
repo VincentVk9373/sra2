@@ -180,6 +180,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: true,
         label: "SRA2.FEATS.ACTIVE"
       }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.BOOKMARKED"
+      }),
       rrList: new fields.ArrayField(new fields.SchemaField({
         rrType: new fields.StringField({
           required: true,

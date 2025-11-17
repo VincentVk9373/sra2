@@ -357,6 +357,11 @@ class SkillDataModel extends foundry.abstract.TypeDataModel {
       description: new fields.HTMLField({
         required: true,
         initial: ""
+      }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.SKILLS.BOOKMARKED"
       })
     };
   }
@@ -670,6 +675,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: true,
         label: "SRA2.FEATS.ACTIVE"
+      }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.BOOKMARKED"
       }),
       rrList: new fields.ArrayField(new fields.SchemaField({
         rrType: new fields.StringField({
@@ -1621,9 +1631,15 @@ function generateRollDialogScript(maxDice) {
   `;
 }
 function createRollDialogContent(options) {
-  const { basePool, poolDescription, autoRR, defaultRiskDice, rrSourcesHtml } = options;
+  const { basePool, poolDescription, autoRR, defaultRiskDice, rrSourcesHtml, actorImg, actorName } = options;
   return `
     <form class="sra2-roll-dialog">
+      ${actorImg && actorName ? `
+      <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+        <img src="${actorImg}" alt="${actorName}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+        <strong style="font-size: 1.2em;">${actorName}</strong>
+      </div>
+      ` : ""}
       <div class="form-group">
         <label>${game.i18n.localize("SRA2.SKILLS.BASE_POOL")}: <strong>${basePool}</strong></label>
         ${poolDescription ? `<p class="notes">${poolDescription}</p>` : ""}
@@ -1877,23 +1893,31 @@ function buildRollResultsHtml(options) {
   return resultsHtml;
 }
 async function postRollToChat(actor, skillName, resultsHtml) {
+  const actorHeader = actor ? `
+    <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid rgba(0, 0, 0, 0.1);">
+      <img src="${actor.img}" alt="${actor.name}" style="width: 40px; height: 40px; border-radius: 4px; border: 2px solid #444; object-fit: cover;" />
+      <strong style="font-size: 1.1em;">${actor.name}</strong>
+    </div>
+  ` : "";
   const messageData = {
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor: game.i18n.format("SRA2.SKILLS.ROLL_FLAVOR", { name: skillName }),
-    content: resultsHtml,
+    content: actorHeader + resultsHtml,
     sound: CONFIG.sounds?.dice
   };
   await ChatMessage.create(messageData);
 }
 function createSkillRollDialog(params) {
-  const { title, basePool, poolDescription, autoRR, defaultRiskDice, rrSources, onRollCallback } = params;
+  const { title, basePool, poolDescription, autoRR, defaultRiskDice, rrSources, actor, onRollCallback } = params;
   const rrSourcesHtml = buildRRSourcesHtml(rrSources);
   const dialogContent = createRollDialogContent({
     basePool,
     poolDescription,
     autoRR,
     defaultRiskDice,
-    rrSourcesHtml
+    rrSourcesHtml,
+    actorImg: actor?.img,
+    actorName: actor?.name
   });
   return new Dialog({
     title,
@@ -2908,6 +2932,7 @@ class CharacterSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         this._rollSkillDice(specialization.name, normalDice, riskDice, riskReduction, rollMode);
       }
@@ -2950,6 +2975,7 @@ class CharacterSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         this._rollSkillDice(attributeLabel, normalDice, riskDice, riskReduction, rollMode);
       }
@@ -2992,6 +3018,7 @@ class CharacterSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         this._rollSkillDice(skill.name, normalDice, riskDice, riskReduction, rollMode);
       }
@@ -3037,12 +3064,12 @@ class CharacterSheet extends ActorSheet {
       defender: targetActor.name,
       successes: attackResult.totalSuccesses
     }));
-    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon, damageValueBonus);
+    await this._promptDefenseRoll(targetActor, attackResult, skillName, weaponDamageValue, attackingWeapon, damageValueBonus, target);
   }
   /**
    * Prompt target to make a defense roll
    */
-  async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon, damageValueBonus) {
+  async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon, damageValueBonus, defenderToken2) {
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
     const { defenseSkillName, defenseSpecName } = getDefenseInfoFromWeapon(attackingWeapon, allSpecializations);
@@ -3065,6 +3092,10 @@ class CharacterSheet extends ActorSheet {
       }),
       content: `
         <form class="sra2-defense-roll-dialog">
+          <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+          </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
             <p>${attackName}</p>
@@ -3099,7 +3130,7 @@ class CharacterSheet extends ActorSheet {
             const selectedValue = html.find("#defense-skill-select").val();
             if (!selectedValue || selectedValue === "") {
               ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED"));
-              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus);
+              await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken2);
               return;
             }
             const [itemType, itemId] = selectedValue.split("-");
@@ -3109,9 +3140,9 @@ class CharacterSheet extends ActorSheet {
               const selectedOption = html.find("#defense-skill-select option:selected");
               if (defenseMethod === "threshold") {
                 const threshold = parseInt(selectedOption.attr("data-threshold")) || 0;
-                await this._defendWithThreshold(defenseItem, itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus);
+                await this._defendWithThreshold(defenseItem, itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken2);
               } else {
-                await this._rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus);
+                await this._rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken2);
               }
             }
           }
@@ -3120,7 +3151,7 @@ class CharacterSheet extends ActorSheet {
           icon: '<i class="fas fa-times"></i>',
           label: game.i18n.localize("SRA2.COMBAT.NO_DEFENSE"),
           callback: async () => {
-            await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor);
+            await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken2);
           }
         }
       },
@@ -3131,7 +3162,7 @@ class CharacterSheet extends ActorSheet {
   /**
    * Roll defense and calculate final damage
    */
-  async _rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus) {
+  async _rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken2) {
     const defenseSystem = defenseItem.system;
     const linkedAttribute = defenseSystem.linkedAttribute || "strength";
     const attributeValue = defenderActor.system.attributes?.[linkedAttribute] || 0;
@@ -3148,7 +3179,7 @@ class CharacterSheet extends ActorSheet {
     const basePool = rating + attributeValue;
     if (basePool <= 0) {
       ui.notifications?.warn(game.i18n.localize("SRA2.SKILLS.NO_DICE"));
-      await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor);
+      await this._displayAttackResult(attackName, attackResult, null, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken2);
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
@@ -3166,10 +3197,11 @@ class CharacterSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: defenderActor,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         const defenseResult = await this._performDiceRoll(normalDice, riskDice, riskReduction, rollMode);
         defenseResult.skillName = defenseName;
-        await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, vdBonus);
+        await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, vdBonus, defenderToken2);
       }
     });
     dialog.render(true);
@@ -3177,10 +3209,10 @@ class CharacterSheet extends ActorSheet {
   /**
    * Defend with NPC threshold (no dice roll)
    */
-  async _defendWithThreshold(defenseItem, _itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus) {
+  async _defendWithThreshold(defenseItem, _itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken2) {
     const defenseName = defenseItem.name;
     const defenseResult = createThresholdDefenseResult(defenseName, threshold);
-    await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus);
+    await this._displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderActor.name, defenderActor, damageValueBonus, defenderToken2);
   }
   /**
    * Perform dice roll and return results
@@ -3191,7 +3223,7 @@ class CharacterSheet extends ActorSheet {
   /**
    * Display attack result with optional defense
    */
-  async _displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderName, defenderActor, damageValueBonus) {
+  async _displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderName, defenderActor, damageValueBonus, defenderToken2) {
     const strength = this.actor.system.attributes?.strength || 0;
     const { baseVD } = parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
     let resultsHtml = '<div class="sra2-combat-roll">';
@@ -3239,7 +3271,8 @@ class CharacterSheet extends ActorSheet {
           resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD</div>`;
         }
         if (defenderActor && defenderName) {
-          resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${finalDamage}" data-defender-name="${defenderName}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderName })}">`;
+          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
+          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${finalDamage}" data-defender-name="${defenderName}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderName })}">`;
           resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
           resultsHtml += `</button>`;
         }
@@ -3259,13 +3292,14 @@ class CharacterSheet extends ActorSheet {
   /**
    * Apply damage to a defender
    */
-  static async applyDamage(defenderId, damageValue, defenderName) {
-    const defender = game.actors?.get(defenderId);
+  static async applyDamage(defenderUuid, damageValue, defenderName) {
+    const defender = await fromUuid(defenderUuid);
     if (!defender) {
       ui.notifications?.error(`Cannot find defender: ${defenderName}`);
       return;
     }
-    const defenderSystem = defender.system;
+    const defenderActor = defender.actor || defender;
+    const defenderSystem = defenderActor.system;
     const damageThresholds = defenderSystem.damageThresholds?.withArmor || {
       light: 1,
       moderate: 4,
@@ -3329,7 +3363,7 @@ class CharacterSheet extends ActorSheet {
       }));
       return;
     }
-    await defender.update({ "system.damage": damage });
+    await defenderActor.update({ "system.damage": damage });
     if (damage.incapacitating === true) {
       ui.notifications?.error(game.i18n.format("SRA2.COMBAT.NOW_INCAPACITATED", { target: defenderName }));
     } else {
@@ -3988,6 +4022,7 @@ class CharacterSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         const damageBonus = weapon?.system?.damageValueBonus || 0;
         this._rollAttackWithDefense(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon, damageBonus);
@@ -4027,6 +4062,7 @@ class CharacterSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         const damageBonus = weapon?.system?.damageValueBonus || 0;
         this._rollAttackWithDefense(`${weaponName} (${specialization.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon, damageBonus);
@@ -4393,6 +4429,7 @@ class NpcSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         this._rollSkillDice(skill.name, normalDice, riskDice, riskReduction, rollMode);
       }
@@ -4442,6 +4479,7 @@ class NpcSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         this._rollSkillDice(specialization.name, normalDice, riskDice, riskReduction, rollMode);
       }
@@ -4476,7 +4514,7 @@ class NpcSheet extends ActorSheet {
   /**
    * Prompt target to make a defense roll against NPC attack
    */
-  async _promptDefenseRollForNPC(defenderActor, attackThreshold, attackName) {
+  async _promptDefenseRollForNPC(defenderActor, attackThreshold, attackName, defenderToken2) {
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
     const skillOptionsHtml = buildSkillOptionsHtml({
@@ -4494,6 +4532,10 @@ class NpcSheet extends ActorSheet {
       }),
       content: `
         <form class="sra2-defense-roll-dialog">
+          <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+          </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
             <p>${attackName}</p>
@@ -4515,13 +4557,13 @@ class NpcSheet extends ActorSheet {
             const selectedValue = html.find("#defense-skill-select").val();
             if (!selectedValue || selectedValue === "") {
               ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED"));
-              await this._displayNPCAttackResult(attackName, attackThreshold, null, defenderActor);
+              await this._displayNPCAttackResult(attackName, attackThreshold, null, defenderActor, defenderToken2);
               return;
             }
             const [itemType, itemId] = selectedValue.split("-");
             const defenseItem = defenderActor.items.get(itemId);
             if (defenseItem) {
-              await this._rollDefenseAgainstNPC(defenseItem, itemType, attackName, attackThreshold, defenderActor);
+              await this._rollDefenseAgainstNPC(defenseItem, itemType, attackName, attackThreshold, defenderActor, defenderToken2);
             }
           }
         },
@@ -4529,7 +4571,7 @@ class NpcSheet extends ActorSheet {
           icon: '<i class="fas fa-times"></i>',
           label: game.i18n.localize("SRA2.COMBAT.NO_DEFENSE"),
           callback: async () => {
-            await this._displayNPCAttackResult(attackName, attackThreshold, null, defenderActor);
+            await this._displayNPCAttackResult(attackName, attackThreshold, null, defenderActor, defenderToken2);
           }
         }
       },
@@ -4540,7 +4582,7 @@ class NpcSheet extends ActorSheet {
   /**
    * Roll defense against NPC attack and calculate damage
    */
-  async _rollDefenseAgainstNPC(defenseItem, itemType, attackName, attackThreshold, defenderActor) {
+  async _rollDefenseAgainstNPC(defenseItem, itemType, attackName, attackThreshold, defenderActor, defenderToken2) {
     const defenseSystem = defenseItem.system;
     const linkedAttribute = defenseSystem.linkedAttribute || "strength";
     const attributeValue = defenderActor.system.attributes?.[linkedAttribute] || 0;
@@ -4557,7 +4599,7 @@ class NpcSheet extends ActorSheet {
     const basePool = rating + attributeValue;
     if (basePool <= 0) {
       ui.notifications?.warn(game.i18n.localize("SRA2.SKILLS.NO_DICE"));
-      await this._displayNPCAttackResult(attackName, attackThreshold, null, defenderActor);
+      await this._displayNPCAttackResult(attackName, attackThreshold, null, defenderActor, defenderToken2);
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
@@ -4574,9 +4616,10 @@ class NpcSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: defenderActor,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         const defenseResult = await performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
-        await this._displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor);
+        await this._displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor, defenderToken2);
       }
     });
     dialog.render(true);
@@ -4584,7 +4627,7 @@ class NpcSheet extends ActorSheet {
   /**
    * Display NPC attack result with defense
    */
-  async _displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor) {
+  async _displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor, defenderToken2) {
     let resultsHtml = '<div class="sra2-combat-roll">';
     const attackSuccess = !defenseResult || defenseResult.totalSuccesses < attackThreshold;
     if (attackSuccess) {
@@ -4629,7 +4672,8 @@ class NpcSheet extends ActorSheet {
         resultsHtml += `<div class="calculation">${attackThreshold} succès</div>`;
       }
       if (defenderActor) {
-        resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${netSuccesses}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: netSuccesses, defender: defenderActor.name })}">`;
+        const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
+        resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${netSuccesses}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: netSuccesses, defender: defenderActor.name })}">`;
         resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
         resultsHtml += `</button>`;
       }
@@ -4668,7 +4712,7 @@ class NpcSheet extends ActorSheet {
     for (const target of targets) {
       const targetActor = target.actor;
       if (targetActor) {
-        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, weaponVD, weapon);
+        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, weaponVD, weapon, target);
       }
     }
   }
@@ -4695,7 +4739,7 @@ class NpcSheet extends ActorSheet {
     for (const target of targets) {
       const targetActor = target.actor;
       if (targetActor) {
-        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, spellVD, spell);
+        await this._promptDefenseRollWithVD(targetActor, threshold, itemName, spellVD, spell, target);
       }
     }
   }
@@ -4857,6 +4901,7 @@ class NpcSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: this.actor,
       onRollCallback: (normalDice, riskDice, riskReduction, rollMode) => {
         this._rollAttackWithDefenseNPC(`${weaponName} (${skill.name})`, normalDice, riskDice, riskReduction, rollMode, weaponDamageValue, weapon);
       }
@@ -4875,12 +4920,16 @@ class NpcSheet extends ActorSheet {
       return;
     }
     const target = targets[0];
+    if (!target) {
+      await this._displayRollResultWithVD(skillName, attackResult, weaponDamageValue, damageValueBonus);
+      return;
+    }
     const targetActor = target.actor;
     if (!targetActor) {
       await this._displayRollResultWithVD(skillName, attackResult, weaponDamageValue, damageValueBonus);
       return;
     }
-    await this._promptDefenseRollWithAttackResult(targetActor, attackResult, skillName, weaponDamageValue || "0", attackingWeapon, damageValueBonus);
+    await this._promptDefenseRollWithAttackResult(targetActor, attackResult, skillName, weaponDamageValue || "0", attackingWeapon, damageValueBonus, target);
   }
   /**
    * Display roll result with VD (no target)
@@ -4961,6 +5010,10 @@ class NpcSheet extends ActorSheet {
       }),
       content: `
         <form class="sra2-defense-roll-dialog">
+          <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+          </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
             <p>${attackName}</p>
@@ -4996,7 +5049,7 @@ class NpcSheet extends ActorSheet {
             const selectedValue = html.find("#defense-skill-select").val();
             if (!selectedValue || selectedValue === "") {
               ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED"));
-              await this._displayNPCDiceAttackResult(attackName, attackResult, null, defenderActor, weaponDamageValue, damageValueBonus);
+              await this._displayNPCDiceAttackResult(attackName, attackResult, null, defenderActor, weaponDamageValue, damageValueBonus, defenderToken);
               return;
             }
             const [itemType, itemId] = selectedValue.split("-");
@@ -5006,9 +5059,9 @@ class NpcSheet extends ActorSheet {
               const selectedOption = html.find("#defense-skill-select option:selected");
               if (defenseMethod === "threshold") {
                 const threshold = parseInt(selectedOption.attr("data-threshold")) || 0;
-                await this._defendWithThresholdAgainstDiceAttack(defenseItem, threshold, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus);
+                await this._defendWithThresholdAgainstDiceAttack(defenseItem, threshold, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken);
               } else {
-                await this._rollDefenseAgainstNPCDiceAttack(defenseItem, itemType, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus);
+                await this._rollDefenseAgainstNPCDiceAttack(defenseItem, itemType, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken);
               }
             }
           }
@@ -5017,7 +5070,7 @@ class NpcSheet extends ActorSheet {
           icon: '<i class="fas fa-times"></i>',
           label: game.i18n.localize("SRA2.COMBAT.NO_DEFENSE"),
           callback: async () => {
-            await this._displayNPCDiceAttackResult(attackName, attackResult, null, defenderActor, weaponDamageValue);
+            await this._displayNPCDiceAttackResult(attackName, attackResult, null, defenderActor, weaponDamageValue, damageValueBonus, defenderToken);
           }
         }
       },
@@ -5028,7 +5081,7 @@ class NpcSheet extends ActorSheet {
   /**
    * Prompt defense roll with weapon damage value (threshold attack)
    */
-  async _promptDefenseRollWithVD(defenderActor, attackThreshold, attackName, weaponDamageValue, attackingWeapon) {
+  async _promptDefenseRollWithVD(defenderActor, attackThreshold, attackName, weaponDamageValue, attackingWeapon, defenderToken2) {
     const damageValueBonus = attackingWeapon?.system?.damageValueBonus || 0;
     const skills = defenderActor.items.filter((i) => i.type === "skill");
     const allSpecializations = defenderActor.items.filter((i) => i.type === "specialization");
@@ -5052,6 +5105,10 @@ class NpcSheet extends ActorSheet {
       }),
       content: `
         <form class="sra2-defense-roll-dialog">
+          <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+            <img src="${this.actor.img}" alt="${this.actor.name}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+            <strong style="font-size: 1.2em;">${this.actor.name}</strong>
+          </div>
           <div class="form-group">
             <p><strong>${game.i18n.localize("SRA2.COMBAT.ATTACK_INFO")}:</strong></p>
             <p>${attackName}</p>
@@ -5087,7 +5144,7 @@ class NpcSheet extends ActorSheet {
             const selectedValue = html.find("#defense-skill-select").val();
             if (!selectedValue || selectedValue === "") {
               ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.NO_DEFENSE_SKILL_SELECTED"));
-              await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue, damageValueBonus);
+              await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
               return;
             }
             const [itemType, itemId] = selectedValue.split("-");
@@ -5097,9 +5154,9 @@ class NpcSheet extends ActorSheet {
               const selectedOption = html.find("#defense-skill-select option:selected");
               if (defenseMethod === "threshold") {
                 const threshold = parseInt(selectedOption.attr("data-threshold")) || 0;
-                await this._defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus);
+                await this._defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
               } else {
-                await this._rollDefenseAgainstNPCWeapon(defenseItem, itemType, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus);
+                await this._rollDefenseAgainstNPCWeapon(defenseItem, itemType, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
               }
             }
           }
@@ -5108,7 +5165,7 @@ class NpcSheet extends ActorSheet {
           icon: '<i class="fas fa-times"></i>',
           label: game.i18n.localize("SRA2.COMBAT.NO_DEFENSE"),
           callback: async () => {
-            await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue);
+            await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
           }
         }
       },
@@ -5119,15 +5176,15 @@ class NpcSheet extends ActorSheet {
   /**
    * Defend with threshold against dice attack
    */
-  async _defendWithThresholdAgainstDiceAttack(defenseItem, threshold, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus) {
+  async _defendWithThresholdAgainstDiceAttack(defenseItem, threshold, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
     const defenseName = defenseItem.name;
     const defenseResult = createThresholdDefenseResult(defenseName, threshold);
-    await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, damageValueBonus);
+    await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
   }
   /**
    * Roll defense against NPC dice attack
    */
-  async _rollDefenseAgainstNPCDiceAttack(defenseItem, itemType, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus) {
+  async _rollDefenseAgainstNPCDiceAttack(defenseItem, itemType, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
     const defenseSystem = defenseItem.system;
     const linkedAttribute = defenseSystem.linkedAttribute || "strength";
     const attributeValue = defenderActor.system.attributes?.[linkedAttribute] || 0;
@@ -5144,7 +5201,7 @@ class NpcSheet extends ActorSheet {
     const basePool = rating + attributeValue;
     if (basePool <= 0) {
       ui.notifications?.warn(game.i18n.localize("SRA2.SKILLS.NO_DICE"));
-      await this._displayNPCDiceAttackResult(attackName, attackResult, null, defenderActor, weaponDamageValue);
+      await this._displayNPCDiceAttackResult(attackName, attackResult, null, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
@@ -5162,9 +5219,10 @@ class NpcSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: defenderActor,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         const defenseResult = await performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
-        await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, vdBonus);
+        await this._displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, vdBonus, defenderToken2);
       }
     });
     dialog.render(true);
@@ -5172,7 +5230,7 @@ class NpcSheet extends ActorSheet {
   /**
    * Display NPC dice attack result (when attacker rolled dice, not just threshold)
    */
-  async _displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, damageValueBonus) {
+  async _displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
     const strength = this.actor.system.attributes?.strength || 0;
     const { baseVD } = parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
     let resultsHtml = '<div class="sra2-combat-roll">';
@@ -5221,7 +5279,8 @@ class NpcSheet extends ActorSheet {
           resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD</div>`;
         }
         if (defenderActor) {
-          resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
+          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
+          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
           resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
           resultsHtml += `</button>`;
         }
@@ -5241,15 +5300,15 @@ class NpcSheet extends ActorSheet {
   /**
    * Defend with threshold against weapon attack
    */
-  async _defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus) {
+  async _defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
     const defenseName = defenseItem.name;
     const defenseResult = createThresholdDefenseResult(defenseName, threshold);
-    await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus);
+    await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
   }
   /**
    * Roll defense against NPC weapon attack
    */
-  async _rollDefenseAgainstNPCWeapon(defenseItem, itemType, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus) {
+  async _rollDefenseAgainstNPCWeapon(defenseItem, itemType, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
     const defenseSystem = defenseItem.system;
     const linkedAttribute = defenseSystem.linkedAttribute || "strength";
     const attributeValue = defenderActor.system.attributes?.[linkedAttribute] || 0;
@@ -5266,7 +5325,7 @@ class NpcSheet extends ActorSheet {
     const basePool = rating + attributeValue;
     if (basePool <= 0) {
       ui.notifications?.warn(game.i18n.localize("SRA2.SKILLS.NO_DICE"));
-      await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue);
+      await this._displayNPCWeaponAttackResult(attackName, attackThreshold, null, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
       return;
     }
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
@@ -5283,9 +5342,10 @@ class NpcSheet extends ActorSheet {
       autoRR,
       defaultRiskDice,
       rrSources: allRRSources,
+      actor: defenderActor,
       onRollCallback: async (normalDice, riskDice, riskReduction, rollMode) => {
         const defenseResult = await performDefenseRoll(normalDice, riskDice, riskReduction, rollMode, defenseName);
-        await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus);
+        await this._displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2);
       }
     });
     dialog.render(true);
@@ -5293,7 +5353,7 @@ class NpcSheet extends ActorSheet {
   /**
    * Display NPC weapon attack result with VD
    */
-  async _displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus) {
+  async _displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
     const strength = this.actor.system.attributes?.strength || 0;
     const { baseVD } = parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
     let resultsHtml = '<div class="sra2-combat-roll">';
@@ -5342,7 +5402,8 @@ class NpcSheet extends ActorSheet {
           resultsHtml += `<div class="calculation">${attackThreshold} succès + ${baseVD} VD</div>`;
         }
         if (defenderActor) {
-          resultsHtml += `<button class="apply-damage-btn" data-defender-id="${defenderActor.id}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
+          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
+          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
           resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
           resultsHtml += `</button>`;
         }
@@ -7252,13 +7313,78 @@ class SRA2System {
       html.find(".apply-damage-btn").on("click", async (event) => {
         event.preventDefault();
         const button = $(event.currentTarget);
-        const defenderId = button.data("defender-id");
+        const defenderUuid = button.data("defender-uuid");
         const damage = parseInt(button.data("damage"));
         const defenderName = button.data("defender-name");
-        await CharacterSheet.applyDamage(defenderId, damage, defenderName);
+        await CharacterSheet.applyDamage(defenderUuid, damage, defenderName);
       });
     });
+    Hooks.on("getTokenHUDOptions", (hud, buttons, token) => {
+      const actor = token.actor;
+      if (!actor) return;
+      const bookmarkedItems = actor.items.filter(
+        (i) => (i.type === "skill" || i.type === "feat") && i.system.bookmarked
+      );
+      if (bookmarkedItems.length > 0) {
+        buttons.unshift({
+          name: "SRA2_BOOKMARKS",
+          title: game.i18n.localize("SRA2.BOOKMARKS.TITLE"),
+          icon: "fa-solid fa-star",
+          button: true,
+          onclick: () => {
+            this.showBookmarksDialog(actor);
+          }
+        });
+      }
+    });
     Hooks.once("ready", () => this.onReady());
+  }
+  /**
+   * Show bookmarks/favorites dialog for quick actions
+   */
+  showBookmarksDialog(actor) {
+    const bookmarkedSkills = actor.items.filter((i) => i.type === "skill" && i.system.bookmarked);
+    const bookmarkedFeats = actor.items.filter((i) => i.type === "feat" && i.system.bookmarked);
+    let content = '<div class="sra2-bookmark-menu">';
+    if (bookmarkedSkills.length > 0) {
+      content += "<h3>" + game.i18n.localize("SRA2.SKILLS.LABEL") + "</h3>";
+      content += '<div class="bookmark-list">';
+      bookmarkedSkills.forEach((skill) => {
+        content += `<button class="bookmark-item" data-item-id="${skill.id}" data-item-type="skill">
+          <i class="fas fa-dice-d6"></i> ${skill.name}
+        </button>`;
+      });
+      content += "</div>";
+    }
+    if (bookmarkedFeats.length > 0) {
+      content += "<h3>" + game.i18n.localize("SRA2.FEATS.LABEL") + "</h3>";
+      content += '<div class="bookmark-list">';
+      bookmarkedFeats.forEach((feat) => {
+        content += `<button class="bookmark-item" data-item-id="${feat.id}" data-item-type="feat">
+          <i class="fas fa-scroll"></i> ${feat.name}
+        </button>`;
+      });
+      content += "</div>";
+    }
+    content += "</div>";
+    new Dialog({
+      title: game.i18n.localize("SRA2.BOOKMARKS.TITLE") + " - " + actor.name,
+      content,
+      buttons: {
+        close: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n.localize("Close")
+        }
+      },
+      render: (html) => {
+        html.find(".bookmark-item").on("click", async (event) => {
+          const itemId = $(event.currentTarget).data("item-id");
+          const item = actor.items.get(itemId);
+          if (!item) return;
+          item.sheet?.render(true);
+        });
+      }
+    }, { width: 350 }).render(true);
   }
   async onReady() {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onReady");

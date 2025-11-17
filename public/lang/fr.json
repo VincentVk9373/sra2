@@ -127,6 +127,7 @@
             "INCAPACITATING": "Incapacitant"
         },
         "FEATS": {
+            "BOOKMARKED": "Favori",
             "LABEL": "Atouts",
             "NAME": "Nom de l'Atout",
             "EDIT": "Éditer l'Atout",
@@ -495,7 +496,15 @@
             "COMBAT_RESULT": "Résultat du combat : {attacker} vs {defender}",
             "NO_DEFENSE_ROLLED": "Aucune défense"
         },
+        "BOOKMARKS": {
+            "TITLE": "Actions Rapides",
+            "BOOKMARK": "Ajouter aux favoris",
+            "UNBOOKMARK": "Retirer des favoris",
+            "NO_BOOKMARKS": "Aucun favori configuré",
+            "TOGGLE": "Favori"
+        },
         "SKILLS": {
+            "BOOKMARKED": "Favori",
             "LABEL": "Compétences",
             "NAME": "Nom de la Compétence",
             "EDIT": "Éditer la Compétence",

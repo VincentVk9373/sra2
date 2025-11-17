@@ -155,15 +155,94 @@ export class SRA2System {
       html.find('.apply-damage-btn').on('click', async (event: any) => {
         event.preventDefault();
         const button = $(event.currentTarget);
-        const defenderId = button.data('defender-id');
+        const defenderUuid = button.data('defender-uuid');
         const damage = parseInt(button.data('damage'));
         const defenderName = button.data('defender-name');
         
-        await applications.CharacterSheet.applyDamage(defenderId, damage, defenderName);
+        await applications.CharacterSheet.applyDamage(defenderUuid, damage, defenderName);
       });
     });
     
+    // Register token context menu hook for bookmarks/favorites
+    Hooks.on('getTokenHUDOptions', (hud: any, buttons: any[], token: any) => {
+      const actor = token.actor;
+      if (!actor) return;
+      
+      // Get bookmarked items
+      const bookmarkedItems = actor.items.filter((i: any) => 
+        (i.type === 'skill' || i.type === 'feat') && i.system.bookmarked
+      );
+      
+      if (bookmarkedItems.length > 0) {
+        buttons.unshift({
+          name: 'SRA2_BOOKMARKS',
+          title: game.i18n!.localize('SRA2.BOOKMARKS.TITLE'),
+          icon: 'fa-solid fa-star',
+          button: true,
+          onclick: () => {
+            // Show bookmarks dialog
+            this.showBookmarksDialog(actor);
+          }
+        });
+      }
+    });
+    
     Hooks.once("ready", () => this.onReady());
+  }
+  
+  /**
+   * Show bookmarks/favorites dialog for quick actions
+   */
+  showBookmarksDialog(actor: any): void {
+    const bookmarkedSkills = actor.items.filter((i: any) => i.type === 'skill' && i.system.bookmarked);
+    const bookmarkedFeats = actor.items.filter((i: any) => i.type === 'feat' && i.system.bookmarked);
+    
+    let content = '<div class="sra2-bookmark-menu">';
+    
+    if (bookmarkedSkills.length > 0) {
+      content += '<h3>' + game.i18n!.localize('SRA2.SKILLS.LABEL') + '</h3>';
+      content += '<div class="bookmark-list">';
+      bookmarkedSkills.forEach((skill: any) => {
+        content += `<button class="bookmark-item" data-item-id="${skill.id}" data-item-type="skill">
+          <i class="fas fa-dice-d6"></i> ${skill.name}
+        </button>`;
+      });
+      content += '</div>';
+    }
+    
+    if (bookmarkedFeats.length > 0) {
+      content += '<h3>' + game.i18n!.localize('SRA2.FEATS.LABEL') + '</h3>';
+      content += '<div class="bookmark-list">';
+      bookmarkedFeats.forEach((feat: any) => {
+        content += `<button class="bookmark-item" data-item-id="${feat.id}" data-item-type="feat">
+          <i class="fas fa-scroll"></i> ${feat.name}
+        </button>`;
+      });
+      content += '</div>';
+    }
+    
+    content += '</div>';
+    
+    new Dialog({
+      title: game.i18n!.localize('SRA2.BOOKMARKS.TITLE') + ' - ' + actor.name,
+      content,
+      buttons: {
+        close: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n!.localize('Close')
+        }
+      },
+      render: (html: any) => {
+        html.find('.bookmark-item').on('click', async (event: any) => {
+          const itemId = $(event.currentTarget).data('item-id');
+          const item = actor.items.get(itemId);
+          if (!item) return;
+          
+          // Open item sheet
+          item.sheet?.render(true);
+        });
+      }
+    }, { width: 350 }).render(true);
   }
 
   async onReady(): Promise<void> {

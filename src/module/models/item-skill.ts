@@ -29,6 +29,11 @@ export class SkillDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       description: new fields.HTMLField({
         required: true,
         initial: ""
+      }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.SKILLS.BOOKMARKED"
       })
     };
   }

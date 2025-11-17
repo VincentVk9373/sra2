@@ -219,13 +219,21 @@ export interface RollDialogOptions {
   autoRR: number;
   defaultRiskDice: number;
   rrSourcesHtml: string;
+  actorImg?: string;
+  actorName?: string;
 }
 
 export function createRollDialogContent(options: RollDialogOptions): string {
-  const { basePool, poolDescription, autoRR, defaultRiskDice, rrSourcesHtml } = options;
+  const { basePool, poolDescription, autoRR, defaultRiskDice, rrSourcesHtml, actorImg, actorName } = options;
   
   return `
     <form class="sra2-roll-dialog">
+      ${actorImg && actorName ? `
+      <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+        <img src="${actorImg}" alt="${actorName}" style="width: 48px; height: 48px; border-radius: 4px; border: 2px solid #444;" />
+        <strong style="font-size: 1.2em;">${actorName}</strong>
+      </div>
+      ` : ''}
       <div class="form-group">
         <label>${game.i18n!.localize('SRA2.SKILLS.BASE_POOL')}: <strong>${basePool}</strong></label>
         ${poolDescription ? `<p class="notes">${poolDescription}</p>` : ''}
@@ -571,10 +579,18 @@ export async function postRollToChat(
   skillName: string,
   resultsHtml: string
 ): Promise<void> {
+  // Build actor header with portrait and name
+  const actorHeader = actor ? `
+    <div class="actor-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid rgba(0, 0, 0, 0.1);">
+      <img src="${actor.img}" alt="${actor.name}" style="width: 40px; height: 40px; border-radius: 4px; border: 2px solid #444; object-fit: cover;" />
+      <strong style="font-size: 1.1em;">${actor.name}</strong>
+    </div>
+  ` : '';
+  
   const messageData = {
     speaker: ChatMessage.getSpeaker({ actor }),
     flavor: game.i18n!.format('SRA2.SKILLS.ROLL_FLAVOR', { name: skillName }),
-    content: resultsHtml,
+    content: actorHeader + resultsHtml,
     sound: CONFIG.sounds?.dice
   };
   
@@ -591,6 +607,7 @@ export interface CreateSkillRollDialogParams {
   autoRR: number;
   defaultRiskDice: number;
   rrSources: RRSource[];
+  actor?: any;
   onRollCallback: (normalDice: number, riskDice: number, riskReduction: number, rollMode: string) => void;
 }
 
@@ -599,7 +616,7 @@ export interface CreateSkillRollDialogParams {
  * This eliminates the massive duplication of dialog creation code
  */
 export function createSkillRollDialog(params: CreateSkillRollDialogParams): Dialog {
-  const { title, basePool, poolDescription, autoRR, defaultRiskDice, rrSources, onRollCallback } = params;
+  const { title, basePool, poolDescription, autoRR, defaultRiskDice, rrSources, actor, onRollCallback } = params;
   
   const rrSourcesHtml = buildRRSourcesHtml(rrSources);
   const dialogContent = createRollDialogContent({
@@ -608,7 +625,9 @@ export function createSkillRollDialog(params: CreateSkillRollDialogParams): Dial
     poolDescription,
     autoRR,
     defaultRiskDice,
-    rrSourcesHtml
+    rrSourcesHtml,
+    actorImg: actor?.img,
+    actorName: actor?.name
   });
   
   return new Dialog({
