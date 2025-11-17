@@ -244,11 +244,35 @@ export class NpcSheet extends ActorSheet {
           id: spec.id || spec._id
         };
         
-        // Specialization adds +2 dice to the pool
-        const specDicePool = totalDicePool + 2;
+        // Get specialization's linked attribute (can be different from skill's attribute)
+        const specLinkedAttribute = spec.system.linkedAttribute || linkedAttribute;
+        const specAttributeValue = this.actor.system.attributes?.[specLinkedAttribute] || 0;
+        
+        // Specialization: skill rating + spec's attribute + 2
+        const specDicePool = skillRating + specAttributeValue + 2;
         
         // Calculate total RR for specialization
-        let specTotalRR = totalRR; // Inherits skill's RR
+        let specTotalRR = 0;
+        
+        // Check for skill RR
+        activeFeats.forEach((feat: any) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry: any) => {
+            if (rrEntry.rrType === 'skill' && rrEntry.rrTarget === skill.name) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
+        
+        // Check for attribute RR (using spec's attribute)
+        activeFeats.forEach((feat: any) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry: any) => {
+            if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === specLinkedAttribute) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
         
         // Check for specialization-specific RR
         activeFeats.forEach((feat: any) => {

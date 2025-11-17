@@ -4295,8 +4295,26 @@ class NpcSheet extends ActorSheet {
           // Ensure ID is present
           id: spec.id || spec._id
         };
-        const specDicePool = totalDicePool + 2;
-        let specTotalRR = totalRR;
+        const specLinkedAttribute = spec.system.linkedAttribute || linkedAttribute;
+        const specAttributeValue = this.actor.system.attributes?.[specLinkedAttribute] || 0;
+        const specDicePool = skillRating + specAttributeValue + 2;
+        let specTotalRR = 0;
+        activeFeats2.forEach((feat) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry) => {
+            if (rrEntry.rrType === "skill" && rrEntry.rrTarget === skill.name) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
+        activeFeats2.forEach((feat) => {
+          const rrList = feat.system.rrList || [];
+          rrList.forEach((rrEntry) => {
+            if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === specLinkedAttribute) {
+              specTotalRR += rrEntry.rrValue || 0;
+            }
+          });
+        });
         activeFeats2.forEach((feat) => {
           const rrList = feat.system.rrList || [];
           rrList.forEach((rrEntry) => {
