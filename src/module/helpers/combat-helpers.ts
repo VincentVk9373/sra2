@@ -539,3 +539,150 @@ export function createWeaponSkillSelectionDialogContent(
   `;
 }
 
+/**
+ * Display attack result with optional defense (unified for both dice rolls and NPC thresholds)
+ */
+export async function displayAttackResult(
+  attacker: any,
+  attackName: string,
+  attackResultOrThreshold: any | number,
+  defenseResult: any | null,
+  defenderActor: any,
+  weaponDamageValue?: string,
+  damageValueBonus?: number,
+  defenderToken?: any
+): Promise<void> {
+  // Determine if this is a dice attack or threshold attack
+  const isDiceAttack = typeof attackResultOrThreshold === 'object';
+  const attackResult = isDiceAttack ? attackResultOrThreshold : null;
+  const attackThreshold = isDiceAttack ? null : attackResultOrThreshold;
+  
+  let resultsHtml = '<div class="sra2-combat-roll">';
+  
+  // Determine outcome first
+  let attackSuccess: boolean;
+  let attackSuccesses: number;
+  
+  if (isDiceAttack) {
+    attackSuccesses = attackResult!.totalSuccesses;
+    attackSuccess = !defenseResult || defenseResult.totalSuccesses <= attackSuccesses;
+  } else {
+    attackSuccesses = attackThreshold!;
+    attackSuccess = !defenseResult || defenseResult.totalSuccesses < attackSuccesses;
+  }
+  
+  // Display outcome header FIRST
+  if (attackSuccess) {
+    resultsHtml += `<div class="combat-outcome-header attack-success">`;
+    resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
+    resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_SUCCESS')}</div>`;
+    resultsHtml += '</div>';
+  } else {
+    resultsHtml += `<div class="combat-outcome-header attack-failed">`;
+    resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
+    resultsHtml += `<div class="outcome-text">${game.i18n!.localize('SRA2.COMBAT.ATTACK_FAILED')}</div>`;
+    resultsHtml += '</div>';
+  }
+  
+  // Attack section
+  resultsHtml += '<div class="attack-section">';
+  resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.ATTACK')}: ${attackName}</h3>`;
+  
+  if (isDiceAttack) {
+    const attackerStrength = (attacker.system as any).attributes?.strength || 0;
+    resultsHtml += buildDiceResultsHtml(attackResult!, weaponDamageValue, attackerStrength, damageValueBonus);
+  } else {
+    resultsHtml += buildNPCAttackHtml(attackThreshold!);
+  }
+  
+  resultsHtml += '</div>';
+  
+  // Defense section
+  if (defenseResult) {
+    resultsHtml += '<div class="defense-section">';
+    resultsHtml += `<h3>${game.i18n!.localize('SRA2.COMBAT.DEFENSE')}: ${defenseResult.skillName}</h3>`;
+    if (!isDiceAttack) {
+      defenseResult.isDefense = true;
+    }
+    resultsHtml += buildDiceResultsHtml(defenseResult);
+    resultsHtml += '</div>';
+  }
+  
+  // Combat result
+  resultsHtml += '<div class="combat-result">';
+  
+  if (!attackSuccess) {
+    // Defense successful - ECHEC DE L'ATTAQUE
+    resultsHtml += `<div class="defense-success">`;
+    resultsHtml += `<p>${game.i18n!.format('SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK', {
+      defender: defenderActor.name || '?',
+      defenseSuccesses: defenseResult!.totalSuccesses,
+      attackSuccesses: attackSuccesses
+    })}</p>`;
+    resultsHtml += '</div>';
+  } else {
+    // Attack successful, calculate damage
+    const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
+    const netSuccesses = attackSuccesses - defenseSuccesses;
+    
+    if (isDiceAttack && weaponDamageValue && weaponDamageValue !== '0') {
+      // Dice attack with weapon damage value
+      const attackerStrength = (attacker.system as any).attributes?.strength || 0;
+      const { baseVD } = parseWeaponDamageValue(weaponDamageValue, attackerStrength, damageValueBonus || 0);
+      
+      if (baseVD >= 0) {
+        const finalDamage = baseVD + netSuccesses;
+        resultsHtml += `<div class="final-damage-value">`;
+        resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')} : ${finalDamage}</div>`;
+        if (defenseResult) {
+          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
+        } else {
+          resultsHtml += `<div class="calculation">${attackSuccesses} succès + ${baseVD} VD</div>`;
+        }
+        
+        // Add button to apply damage
+        if (defenderActor) {
+          const defenderUuid = defenderToken?.document?.uuid || defenderActor.uuid;
+          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${String(finalDamage)}" data-defender-name="${defenderActor.name}" title="${game.i18n!.format('SRA2.COMBAT.APPLY_DAMAGE_TITLE', {damage: finalDamage, defender: defenderActor.name})}">`;
+          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n!.localize('SRA2.COMBAT.APPLY_DAMAGE')}`;
+          resultsHtml += `</button>`;
+        }
+        
+        resultsHtml += '</div>';
+      }
+    } else {
+      // NPC threshold attack or no weapon damage
+      resultsHtml += `<div class="final-damage-value">`;
+      resultsHtml += `<div class="damage-label">${game.i18n!.localize('SRA2.FEATS.WEAPON.DAMAGE')} : ${netSuccesses}</div>`;
+      if (defenseResult) {
+        resultsHtml += `<div class="calculation">${attackSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
+      } else {
+        resultsHtml += `<div class="calculation">${attackSuccesses} succès</div>`;
+      }
+      
+      // Add button to apply damage
+      if (defenderActor) {
+        const defenderUuid = defenderToken?.document?.uuid || defenderActor.uuid;
+        resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${String(netSuccesses)}" data-defender-name="${defenderActor.name}" title="${game.i18n!.format('SRA2.COMBAT.APPLY_DAMAGE_TITLE', {damage: netSuccesses, defender: defenderActor.name})}">`;
+        resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n!.localize('SRA2.COMBAT.APPLY_DAMAGE')}`;
+        resultsHtml += `</button>`;
+      }
+      
+      resultsHtml += '</div>';
+    }
+  }
+  
+  resultsHtml += '</div>';
+  resultsHtml += '</div>';
+  
+  // Create the chat message
+  const messageData = {
+    speaker: ChatMessage.getSpeaker({ actor: attacker }),
+    flavor: game.i18n!.format('SRA2.COMBAT.ATTACK_ROLL', { name: attackName }),
+    content: resultsHtml,
+    sound: CONFIG.sounds?.dice
+  };
+  
+  await ChatMessage.create(messageData);
+}
+

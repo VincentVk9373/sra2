@@ -2387,10 +2387,6 @@ function buildNPCAttackHtml(threshold, weaponDamageValue, actorStrength, damageV
   html += "</div>";
   html += `<div class="successes has-success">`;
   html += `<strong>${game.i18n.localize("SRA2.SKILLS.TOTAL_SUCCESSES")}:</strong> ${threshold}`;
-  if (weaponDamageValue && weaponDamageValue !== "0" && actorStrength !== void 0) {
-    const { vdDisplay } = parseWeaponDamageValue(weaponDamageValue, actorStrength, damageValueBonus || 0);
-    html += ` | <strong>VD:</strong> <span class="vd-display">${vdDisplay}</span>`;
-  }
   html += "</div>";
   return html;
 }
@@ -2472,6 +2468,108 @@ function createWeaponSkillSelectionDialogContent(itemName, weaponDamageValue, ty
       </div>
     </form>
   `;
+}
+async function displayAttackResult(attacker, attackName, attackResultOrThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
+  const isDiceAttack = typeof attackResultOrThreshold === "object";
+  const attackResult = isDiceAttack ? attackResultOrThreshold : null;
+  const attackThreshold = isDiceAttack ? null : attackResultOrThreshold;
+  let resultsHtml = '<div class="sra2-combat-roll">';
+  let attackSuccess;
+  let attackSuccesses;
+  if (isDiceAttack) {
+    attackSuccesses = attackResult.totalSuccesses;
+    attackSuccess = !defenseResult || defenseResult.totalSuccesses <= attackSuccesses;
+  } else {
+    attackSuccesses = attackThreshold;
+    attackSuccess = !defenseResult || defenseResult.totalSuccesses < attackSuccesses;
+  }
+  if (attackSuccess) {
+    resultsHtml += `<div class="combat-outcome-header attack-success">`;
+    resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
+    resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_SUCCESS")}</div>`;
+    resultsHtml += "</div>";
+  } else {
+    resultsHtml += `<div class="combat-outcome-header attack-failed">`;
+    resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
+    resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_FAILED")}</div>`;
+    resultsHtml += "</div>";
+  }
+  resultsHtml += '<div class="attack-section">';
+  resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
+  if (isDiceAttack) {
+    const attackerStrength = attacker.system.attributes?.strength || 0;
+    resultsHtml += buildDiceResultsHtml(attackResult, weaponDamageValue, attackerStrength, damageValueBonus);
+  } else {
+    resultsHtml += buildNPCAttackHtml(attackThreshold);
+  }
+  resultsHtml += "</div>";
+  if (defenseResult) {
+    resultsHtml += '<div class="defense-section">';
+    resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
+    if (!isDiceAttack) {
+      defenseResult.isDefense = true;
+    }
+    resultsHtml += buildDiceResultsHtml(defenseResult);
+    resultsHtml += "</div>";
+  }
+  resultsHtml += '<div class="combat-result">';
+  if (!attackSuccess) {
+    resultsHtml += `<div class="defense-success">`;
+    resultsHtml += `<p>${game.i18n.format("SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK", {
+      defender: defenderActor.name || "?",
+      defenseSuccesses: defenseResult.totalSuccesses,
+      attackSuccesses
+    })}</p>`;
+    resultsHtml += "</div>";
+  } else {
+    const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
+    const netSuccesses = attackSuccesses - defenseSuccesses;
+    if (isDiceAttack && weaponDamageValue && weaponDamageValue !== "0") {
+      const attackerStrength = attacker.system.attributes?.strength || 0;
+      const { baseVD } = parseWeaponDamageValue(weaponDamageValue, attackerStrength, damageValueBonus || 0);
+      if (baseVD >= 0) {
+        const finalDamage = baseVD + netSuccesses;
+        resultsHtml += `<div class="final-damage-value">`;
+        resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")} : ${finalDamage}</div>`;
+        if (defenseResult) {
+          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
+        } else {
+          resultsHtml += `<div class="calculation">${attackSuccesses} succès + ${baseVD} VD</div>`;
+        }
+        if (defenderActor) {
+          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
+          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${String(finalDamage)}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
+          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
+          resultsHtml += `</button>`;
+        }
+        resultsHtml += "</div>";
+      }
+    } else {
+      resultsHtml += `<div class="final-damage-value">`;
+      resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")} : ${netSuccesses}</div>`;
+      if (defenseResult) {
+        resultsHtml += `<div class="calculation">${attackSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
+      } else {
+        resultsHtml += `<div class="calculation">${attackSuccesses} succès</div>`;
+      }
+      if (defenderActor) {
+        const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
+        resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${String(netSuccesses)}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: netSuccesses, defender: defenderActor.name })}">`;
+        resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
+        resultsHtml += `</button>`;
+      }
+      resultsHtml += "</div>";
+    }
+  }
+  resultsHtml += "</div>";
+  resultsHtml += "</div>";
+  const messageData = {
+    speaker: ChatMessage.getSpeaker({ actor: attacker }),
+    flavor: game.i18n.format("SRA2.COMBAT.ATTACK_ROLL", { name: attackName }),
+    content: resultsHtml,
+    sound: CONFIG.sounds?.dice
+  };
+  await ChatMessage.create(messageData);
 }
 function handleSheetUpdate(actor, formData) {
   const expandedData = foundry.utils.expandObject(formData);
@@ -3230,70 +3328,16 @@ class CharacterSheet extends ActorSheet {
    * Display attack result with optional defense
    */
   async _displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderName, defenderActor, damageValueBonus, defenderToken2) {
-    const strength = this.actor.system.attributes?.strength || 0;
-    const { baseVD } = parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
-    let resultsHtml = '<div class="sra2-combat-roll">';
-    const attackSuccess = !defenseResult || defenseResult.totalSuccesses <= attackResult.totalSuccesses;
-    if (attackSuccess) {
-      resultsHtml += `<div class="combat-outcome-header attack-success">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_SUCCESS")}</div>`;
-      resultsHtml += "</div>";
-    } else {
-      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_FAILED")}</div>`;
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="attack-section">';
-    resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += buildDiceResultsHtml(attackResult, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
-    resultsHtml += "</div>";
-    if (defenseResult) {
-      resultsHtml += '<div class="defense-section">';
-      resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      resultsHtml += buildDiceResultsHtml(defenseResult);
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="combat-result">';
-    if (!attackSuccess) {
-      resultsHtml += `<div class="defense-success">`;
-      resultsHtml += `<p>${game.i18n.format("SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK", {
-        defender: defenderName || "?",
-        defenseSuccesses: defenseResult.totalSuccesses,
-        attackSuccesses: attackResult.totalSuccesses
-      })}</p>`;
-      resultsHtml += "</div>";
-    } else {
-      const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
-      const netSuccesses = attackResult.totalSuccesses - defenseSuccesses;
-      if (baseVD >= 0) {
-        const finalDamage = baseVD + netSuccesses;
-        resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")} : ${finalDamage}</div>`;
-        if (defenseResult) {
-          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackResult.totalSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
-        } else {
-          resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD</div>`;
-        }
-        if (defenderActor && defenderName) {
-          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
-          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${finalDamage}" data-defender-name="${defenderName}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderName })}">`;
-          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
-          resultsHtml += `</button>`;
-        }
-        resultsHtml += "</div>";
-      }
-    }
-    resultsHtml += "</div>";
-    resultsHtml += "</div>";
-    const messageData = {
-      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      flavor: game.i18n.format("SRA2.COMBAT.ATTACK_ROLL", { name: attackName }),
-      content: resultsHtml,
-      sound: CONFIG.sounds?.dice
-    };
-    await ChatMessage.create(messageData);
+    await displayAttackResult(
+      this.actor,
+      attackName,
+      attackResult,
+      defenseResult,
+      defenderActor,
+      weaponDamageValue,
+      damageValueBonus,
+      defenderToken2
+    );
   }
   /**
    * Apply damage to a defender
@@ -4653,66 +4697,16 @@ class NpcSheet extends ActorSheet {
    * Display NPC attack result with defense
    */
   async _displayNPCAttackResult(attackName, attackThreshold, defenseResult, defenderActor, defenderToken2) {
-    let resultsHtml = '<div class="sra2-combat-roll">';
-    const attackSuccess = !defenseResult || defenseResult.totalSuccesses < attackThreshold;
-    if (attackSuccess) {
-      resultsHtml += `<div class="combat-outcome-header attack-success">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_SUCCESS")}</div>`;
-      resultsHtml += "</div>";
-    } else {
-      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_FAILED")}</div>`;
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="attack-section">';
-    resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += buildNPCAttackHtml(attackThreshold);
-    resultsHtml += "</div>";
-    if (defenseResult) {
-      resultsHtml += '<div class="defense-section">';
-      resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      defenseResult.isDefense = true;
-      resultsHtml += buildDiceResultsHtml(defenseResult);
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="combat-result">';
-    if (!attackSuccess) {
-      resultsHtml += `<div class="defense-success">`;
-      resultsHtml += `<p>${game.i18n.format("SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK", {
-        defender: defenderActor.name || "?",
-        defenseSuccesses: defenseResult.totalSuccesses,
-        attackSuccesses: attackThreshold
-      })}</p>`;
-      resultsHtml += "</div>";
-    } else {
-      const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
-      const netSuccesses = attackThreshold - defenseSuccesses;
-      resultsHtml += `<div class="final-damage-value">`;
-      resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")} : ${netSuccesses}</div>`;
-      if (defenseResult) {
-        resultsHtml += `<div class="calculation">${attackThreshold} succès attaque - ${defenseSuccesses} succès défense</div>`;
-      } else {
-        resultsHtml += `<div class="calculation">${attackThreshold} succès</div>`;
-      }
-      if (defenderActor) {
-        const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
-        resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${netSuccesses}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: netSuccesses, defender: defenderActor.name })}">`;
-        resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
-        resultsHtml += `</button>`;
-      }
-      resultsHtml += "</div>";
-    }
-    resultsHtml += "</div>";
-    resultsHtml += "</div>";
-    const messageData = {
-      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      flavor: game.i18n.format("SRA2.COMBAT.ATTACK_ROLL", { name: attackName }),
-      content: resultsHtml,
-      sound: CONFIG.sounds?.dice
-    };
-    await ChatMessage.create(messageData);
+    await displayAttackResult(
+      this.actor,
+      attackName,
+      attackThreshold,
+      defenseResult,
+      defenderActor,
+      void 0,
+      void 0,
+      defenderToken2
+    );
   }
   /**
    * Handle attacking with threshold (weapon)
@@ -5257,71 +5251,16 @@ class NpcSheet extends ActorSheet {
    * Display NPC dice attack result (when attacker rolled dice, not just threshold)
    */
   async _displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
-    const strength = this.actor.system.attributes?.strength || 0;
-    const { baseVD } = parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
-    let resultsHtml = '<div class="sra2-combat-roll">';
-    const attackSuccess = !defenseResult || defenseResult.totalSuccesses <= attackResult.totalSuccesses;
-    if (attackSuccess) {
-      resultsHtml += `<div class="combat-outcome-header attack-success">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_SUCCESS")}</div>`;
-      resultsHtml += "</div>";
-    } else {
-      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_FAILED")}</div>`;
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="attack-section">';
-    resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += buildDiceResultsHtml(attackResult, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
-    resultsHtml += "</div>";
-    if (defenseResult) {
-      resultsHtml += '<div class="defense-section">';
-      resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      defenseResult.isDefense = true;
-      resultsHtml += buildDiceResultsHtml(defenseResult);
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="combat-result">';
-    if (!attackSuccess) {
-      resultsHtml += `<div class="defense-success">`;
-      resultsHtml += `<p>${game.i18n.format("SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK", {
-        defender: defenderActor.name || "?",
-        defenseSuccesses: defenseResult.totalSuccesses,
-        attackSuccesses: attackResult.totalSuccesses
-      })}</p>`;
-      resultsHtml += "</div>";
-    } else {
-      const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
-      const netSuccesses = attackResult.totalSuccesses - defenseSuccesses;
-      if (baseVD >= 0) {
-        const finalDamage = baseVD + netSuccesses;
-        resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")} : ${finalDamage}</div>`;
-        if (defenseResult) {
-          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackResult.totalSuccesses} succès attaque - ${defenseSuccesses} succès défense</div>`;
-        } else {
-          resultsHtml += `<div class="calculation">${attackResult.totalSuccesses} succès + ${baseVD} VD</div>`;
-        }
-        if (defenderActor) {
-          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
-          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
-          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
-          resultsHtml += `</button>`;
-        }
-        resultsHtml += "</div>";
-      }
-    }
-    resultsHtml += "</div>";
-    resultsHtml += "</div>";
-    const messageData = {
-      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      flavor: game.i18n.format("SRA2.COMBAT.ATTACK_ROLL", { name: attackName }),
-      content: resultsHtml,
-      sound: CONFIG.sounds?.dice
-    };
-    await ChatMessage.create(messageData);
+    await displayAttackResult(
+      this.actor,
+      attackName,
+      attackResult,
+      defenseResult,
+      defenderActor,
+      weaponDamageValue,
+      damageValueBonus,
+      defenderToken2
+    );
   }
   /**
    * Defend with threshold against weapon attack
@@ -5380,71 +5319,16 @@ class NpcSheet extends ActorSheet {
    * Display NPC weapon attack result with VD
    */
   async _displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken2) {
-    const strength = this.actor.system.attributes?.strength || 0;
-    const { baseVD } = parseWeaponDamageValue(weaponDamageValue, strength, damageValueBonus || 0);
-    let resultsHtml = '<div class="sra2-combat-roll">';
-    const attackSuccess = !defenseResult || defenseResult.totalSuccesses < attackThreshold;
-    if (attackSuccess) {
-      resultsHtml += `<div class="combat-outcome-header attack-success">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-crosshairs"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_SUCCESS")}</div>`;
-      resultsHtml += "</div>";
-    } else {
-      resultsHtml += `<div class="combat-outcome-header attack-failed">`;
-      resultsHtml += `<div class="outcome-icon"><i class="fas fa-shield-alt"></i></div>`;
-      resultsHtml += `<div class="outcome-text">${game.i18n.localize("SRA2.COMBAT.ATTACK_FAILED")}</div>`;
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="attack-section">';
-    resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.ATTACK")}: ${attackName}</h3>`;
-    resultsHtml += buildNPCAttackHtml(attackThreshold, weaponDamageValue, this.actor.system.attributes?.strength || 0, damageValueBonus);
-    resultsHtml += "</div>";
-    if (defenseResult) {
-      resultsHtml += '<div class="defense-section">';
-      resultsHtml += `<h3>${game.i18n.localize("SRA2.COMBAT.DEFENSE")}: ${defenseResult.skillName}</h3>`;
-      defenseResult.isDefense = true;
-      resultsHtml += buildDiceResultsHtml(defenseResult);
-      resultsHtml += "</div>";
-    }
-    resultsHtml += '<div class="combat-result">';
-    if (!attackSuccess) {
-      resultsHtml += `<div class="defense-success">`;
-      resultsHtml += `<p>${game.i18n.format("SRA2.COMBAT.DEFENSE_BLOCKS_ATTACK", {
-        defender: defenderActor.name || "?",
-        defenseSuccesses: defenseResult.totalSuccesses,
-        attackSuccesses: attackThreshold
-      })}</p>`;
-      resultsHtml += "</div>";
-    } else {
-      const defenseSuccesses = defenseResult ? defenseResult.totalSuccesses : 0;
-      const netSuccesses = attackThreshold - defenseSuccesses;
-      if (baseVD >= 0) {
-        const finalDamage = baseVD + netSuccesses;
-        resultsHtml += `<div class="final-damage-value">`;
-        resultsHtml += `<div class="damage-label">${game.i18n.localize("SRA2.FEATS.WEAPON.DAMAGE")} : ${finalDamage}</div>`;
-        if (defenseResult) {
-          resultsHtml += `<div class="calculation">${baseVD} VD + ${attackThreshold} succès attaque - ${defenseSuccesses} succès défense</div>`;
-        } else {
-          resultsHtml += `<div class="calculation">${attackThreshold} succès + ${baseVD} VD</div>`;
-        }
-        if (defenderActor) {
-          const defenderUuid = defenderToken2?.document?.uuid || defenderActor.uuid;
-          resultsHtml += `<button class="apply-damage-btn" data-defender-uuid="${defenderUuid}" data-damage="${finalDamage}" data-defender-name="${defenderActor.name}" title="${game.i18n.format("SRA2.COMBAT.APPLY_DAMAGE_TITLE", { damage: finalDamage, defender: defenderActor.name })}">`;
-          resultsHtml += `<i class="fas fa-heart-broken"></i> ${game.i18n.localize("SRA2.COMBAT.APPLY_DAMAGE")}`;
-          resultsHtml += `</button>`;
-        }
-        resultsHtml += "</div>";
-      }
-    }
-    resultsHtml += "</div>";
-    resultsHtml += "</div>";
-    const messageData = {
-      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      flavor: game.i18n.format("SRA2.COMBAT.ATTACK_ROLL", { name: attackName }),
-      content: resultsHtml,
-      sound: CONFIG.sounds?.dice
-    };
-    await ChatMessage.create(messageData);
+    await displayAttackResult(
+      this.actor,
+      attackName,
+      attackThreshold,
+      defenseResult,
+      defenderActor,
+      weaponDamageValue,
+      damageValueBonus,
+      defenderToken2
+    );
   }
   /**
    * Get RR sources from active feats
