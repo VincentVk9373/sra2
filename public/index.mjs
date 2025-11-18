@@ -1792,18 +1792,6 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn) {
     return feat;
   });
 }
-const sheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  calculateFinalDamageValue,
-  calculateRR,
-  enrichFeats,
-  getRRSources,
-  handleDeleteItem,
-  handleEditItem,
-  handleItemDrop,
-  handleSheetUpdate,
-  organizeSpecializationsBySkill
-}, Symbol.toStringTag, { value: "Module" }));
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -2792,7 +2780,12 @@ class CharacterSheet extends ActorSheet {
         weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
       }
     }
-    const itemRRList = itemSystem.rrList || [];
+    const rawItemRRList = itemSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: item.name
+      // Add featName (the item name itself)
+    }));
     const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
@@ -2835,7 +2828,6 @@ class CharacterSheet extends ActorSheet {
     }
     const baseDamageValue = itemSystem.damageValue || "0";
     const damageValueBonus = itemSystem.damageValueBonus || 0;
-    this.actor.system.attributes?.strength || 0;
     let finalDamageValue = baseDamageValue;
     if (damageValueBonus > 0 && baseDamageValue !== "0") {
       if (baseDamageValue === "FOR") {
@@ -3412,7 +3404,12 @@ class NpcSheet extends ActorSheet {
         weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
       }
     }
-    const itemRRList = weaponSystem.rrList || [];
+    const rawItemRRList = weaponSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: weapon.name
+      // Add featName (the weapon name itself)
+    }));
     const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || "";
@@ -3531,7 +3528,12 @@ class NpcSheet extends ActorSheet {
         weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
       }
     }
-    const itemRRList = spellSystem.rrList || [];
+    const rawItemRRList = spellSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: spell.name
+      // Add featName (the spell name itself)
+    }));
     const finalAttackSkill = weaponLinkedSkill || spellSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || spellSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || spellSystem.linkedDefenseSkill || "";
@@ -3648,7 +3650,12 @@ class NpcSheet extends ActorSheet {
         weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
       }
     }
-    const itemRRList = weaponSystem.rrList || [];
+    const rawItemRRList = weaponSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: weapon.name
+      // Add featName (the weapon name itself)
+    }));
     const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || "";
@@ -3764,7 +3771,12 @@ class NpcSheet extends ActorSheet {
         weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
       }
     }
-    const itemRRList = spellSystem.rrList || [];
+    const rawItemRRList = spellSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: spell.name
+      // Add featName (the spell name itself)
+    }));
     const finalAttackSkill = weaponLinkedSkill || spellSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || spellSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || spellSystem.linkedDefenseSkill || "";
@@ -4979,6 +4991,8 @@ class RollDialog extends Application {
   rollData;
   actor = null;
   targetToken = null;
+  rrEnabled = /* @__PURE__ */ new Map();
+  // Track which RR sources are enabled
   constructor(rollData) {
     super();
     this.rollData = rollData;
@@ -5030,11 +5044,21 @@ class RollDialog extends Application {
         if (rrSource && typeof rrSource === "object") {
           const rrValue = rrSource.rrValue || 0;
           if (rrValue > 0) {
+            const featName = rrSource.featName || "Inconnu";
+            const rrId = `${featName}-${rrValue}`;
+            if (!this.rrEnabled.has(rrId)) {
+              this.rrEnabled.set(rrId, true);
+            }
+            const isEnabled = this.rrEnabled.get(rrId) || false;
             rrSources.push({
-              featName: rrSource.featName || "Inconnu",
-              rrValue
+              id: rrId,
+              featName,
+              rrValue,
+              enabled: isEnabled
             });
-            totalRR += rrValue;
+            if (isEnabled) {
+              totalRR += rrValue;
+            }
           }
         }
       }
@@ -5157,6 +5181,7 @@ class RollDialog extends Application {
         this.rollData.specLevel = void 0;
         this.rollData.linkedAttribute = linkedAttribute;
         this.updateRRForSkill(item.name, linkedAttribute, dicePool);
+        this.render();
       } else if (type === "spec") {
         const specSystem = item.system;
         const linkedAttribute = specSystem.linkedAttribute || "strength";
@@ -5174,36 +5199,83 @@ class RollDialog extends Application {
         this.rollData.specLevel = dicePool;
         this.rollData.linkedAttribute = linkedAttribute;
         this.updateRRForSpec(item.name, linkedSkillName, linkedAttribute, dicePool);
+        this.render();
       }
-      this.render();
+    });
+    html.find(".rr-checkbox").on("change", (event) => {
+      const checkbox = event.currentTarget;
+      const rrId = checkbox.dataset.rrId;
+      const enabled = checkbox.checked;
+      if (rrId) {
+        this.rrEnabled.set(rrId, enabled);
+        this.render();
+      }
+    });
+    html.find(".roll-dice-button").on("click", () => {
+      if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+        for (const rrSource of this.rollData.rrList) {
+          if (rrSource && typeof rrSource === "object") {
+            const rrValue = rrSource.rrValue || 0;
+            const featName = rrSource.featName || "Inconnu";
+            const rrId = `${featName}-${rrValue}`;
+            if (this.rrEnabled.get(rrId)) ;
+          }
+        }
+      }
+      const finalRRList = this.rollData.rrList?.filter((rr) => {
+        const rrId = `${rr.featName || "Inconnu"}-${rr.rrValue || 0}`;
+        return this.rrEnabled.get(rrId);
+      }) || [];
+      const updatedRollData = {
+        ...this.rollData,
+        rrList: finalRRList
+      };
+      console.log("=== ROLL DICE ===", updatedRollData);
+      this.close();
     });
   }
   updateRRForSkill(skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
-    Promise.resolve().then(() => sheetHelpers).then((module) => {
-      const skillRRSources = module.getRRSources(this.actor, "skill", skillName);
-      const attributeRRSources = module.getRRSources(this.actor, "attribute", linkedAttribute);
-      this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
-      if (this.rollData.threshold !== void 0) {
-        const totalRR = Math.min(3, skillRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + attributeRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0));
-        this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    const skillRRSources = getRRSources(this.actor, "skill", skillName);
+    const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
+    this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
+    this.rrEnabled.clear();
+    for (const rrSource of this.rollData.rrList) {
+      if (rrSource && typeof rrSource === "object") {
+        const rrValue = rrSource.rrValue || 0;
+        const featName = rrSource.featName || "Inconnu";
+        if (rrValue > 0) {
+          const rrId = `${featName}-${rrValue}`;
+          this.rrEnabled.set(rrId, true);
+        }
       }
-      this.render();
-    });
+    }
+    if (this.rollData.threshold !== void 0) {
+      const totalRR = Math.min(3, skillRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + attributeRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0));
+      this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    }
   }
   updateRRForSpec(specName, skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
-    Promise.resolve().then(() => sheetHelpers).then((module) => {
-      const specRRSources = module.getRRSources(this.actor, "specialization", specName);
-      const skillRRSources = module.getRRSources(this.actor, "skill", skillName);
-      const attributeRRSources = module.getRRSources(this.actor, "attribute", linkedAttribute);
-      this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
-      if (this.rollData.threshold !== void 0) {
-        const totalRR = Math.min(3, specRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + skillRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + attributeRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0));
-        this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    const specRRSources = getRRSources(this.actor, "specialization", specName);
+    const skillRRSources = getRRSources(this.actor, "skill", skillName);
+    const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
+    this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    this.rrEnabled.clear();
+    for (const rrSource of this.rollData.rrList) {
+      if (rrSource && typeof rrSource === "object") {
+        const rrValue = rrSource.rrValue || 0;
+        const featName = rrSource.featName || "Inconnu";
+        if (rrValue > 0) {
+          const rrId = `${featName}-${rrValue}`;
+          this.rrEnabled.set(rrId, true);
+        }
       }
-      this.render();
-    });
+    }
+    if (this.rollData.threshold !== void 0) {
+      const totalRR = Math.min(3, specRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + skillRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + attributeRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0));
+      this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    }
   }
 }
 const rollDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({

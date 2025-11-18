@@ -319,34 +319,95 @@
                 margin-bottom: 0.3rem;
             }
 
-            .rr-sources-list {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 0.15rem;
+             .rr-sources-list {
+                 list-style: none;
+                 padding: 0;
+                 margin: 0;
+                 display: flex;
+                 flex-direction: column;
+                 gap: 0.15rem;
 
-                .rr-source-item {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 0.2rem 0.4rem;
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 2px;
-                    font-size: 0.7rem;
+                 .rr-source-item {
+                     padding: 0.2rem 0.4rem;
+                     background: rgba(255, 255, 255, 0.05);
+                     border-radius: 2px;
+                     font-size: 0.7rem;
 
-                    .rr-source-name {
-                        color: #e0e0e0;
-                    }
+                     .rr-checkbox-label {
+                         display: flex;
+                         align-items: center;
+                         justify-content: space-between;
+                         cursor: pointer;
+                         gap: 0.5rem;
 
-                    .rr-source-value {
-                        color: #4caf50;
-                        font-weight: bold;
-                    }
-                }
-            }
+                         .rr-checkbox {
+                             cursor: pointer;
+                             margin-right: 0.3rem;
+                             width: 16px;
+                             height: 16px;
+                             accent-color: #00d4ff;
+                         }
+
+                         .rr-source-name {
+                             color: #e0e0e0;
+                             flex: 1;
+                         }
+
+                         .rr-source-value {
+                             color: #4caf50;
+                             font-weight: bold;
+                         }
+                     }
+                 }
+             }
         }
     }
 
-    /* Target Section */
+     /* Target Section */
+
+    /* Roll Dice Button Section */
+    .roll-dice-section {
+        padding: 0.75rem;
+        display: flex;
+        justify-content: center;
+        border-top: 2px solid #0f3460;
+        background: rgba(15, 52, 96, 0.2);
+
+        .roll-dice-button {
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border: 2px solid #00d4ff;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+
+            i {
+                font-size: 1.1rem;
+            }
+
+            &:hover {
+                background: linear-gradient(135deg, #00e5ff 0%, #00aadd 100%);
+                box-shadow: 0 4px 12px rgba(0, 212, 255, 0.5);
+                transform: translateY(-2px);
+            }
+
+            &:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+            }
+        }
+    }
 }

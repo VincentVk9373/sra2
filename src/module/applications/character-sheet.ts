@@ -1382,8 +1382,12 @@ export class CharacterSheet extends ActorSheet {
       }
     }
 
-    // Get all RR sources for the item
-    const itemRRList = itemSystem.rrList || [];
+    // Get all RR sources for the item and enrich with featName
+    const rawItemRRList = itemSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: item.name  // Add featName (the item name itself)
+    }));
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';
@@ -1442,7 +1446,6 @@ export class CharacterSheet extends ActorSheet {
     // Calculate final damage value (base + bonus)
     const baseDamageValue = itemSystem.damageValue || '0';
     const damageValueBonus = itemSystem.damageValueBonus || 0;
-    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
     
     let finalDamageValue = baseDamageValue;
     if (damageValueBonus > 0 && baseDamageValue !== '0') {

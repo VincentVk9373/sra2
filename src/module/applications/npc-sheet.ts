@@ -635,7 +635,12 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
-    const itemRRList = weaponSystem.rrList || [];
+    // Enrich RR list with featName
+    const rawItemRRList = weaponSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: weapon.name  // Add featName (the weapon name itself)
+    }));
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
@@ -784,7 +789,12 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
-    const itemRRList = spellSystem.rrList || [];
+    // Enrich RR list with featName
+    const rawItemRRList = spellSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: spell.name  // Add featName (the spell name itself)
+    }));
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || spellSystem.linkedAttackSkill || '';
@@ -931,7 +941,12 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
-    const itemRRList = weaponSystem.rrList || [];
+    // Enrich RR list with featName
+    const rawItemRRList = weaponSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: weapon.name  // Add featName (the weapon name itself)
+    }));
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
@@ -1076,7 +1091,12 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
-    const itemRRList = spellSystem.rrList || [];
+    // Enrich RR list with featName
+    const rawItemRRList = spellSystem.rrList || [];
+    const itemRRList = rawItemRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: spell.name  // Add featName (the spell name itself)
+    }));
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || spellSystem.linkedAttackSkill || '';

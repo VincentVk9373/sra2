@@ -1,4 +1,5 @@
 import { RollRequestData } from '../helpers/dice-roller.js';
+import * as SheetHelpers from '../helpers/sheet-helpers.js';
 
 /**
  * Roll Dialog Application
@@ -8,6 +9,7 @@ export class RollDialog extends Application {
   private rollData: RollRequestData;
   private actor: any = null;
   private targetToken: any = null;
+  private rrEnabled: Map<string, boolean> = new Map(); // Track which RR sources are enabled
 
   constructor(rollData: RollRequestData) {
     super();
@@ -66,7 +68,7 @@ export class RollDialog extends Application {
     context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || 'Aucune';
 
     // Calculate total RR and get RR sources
-    // rrList already contains RRSource objects with featName and rrValue
+    // rrList already contains RRSource objects with featName and rrValue (enriched before passing to handleRollRequest)
     let totalRR = 0;
     const rrSources: any[] = [];
     if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
@@ -74,11 +76,27 @@ export class RollDialog extends Application {
         if (rrSource && typeof rrSource === 'object') {
           const rrValue = rrSource.rrValue || 0;
           if (rrValue > 0) {
+            // featName is now always present in rrList (enriched in character-sheet.ts and npc-sheet.ts)
+            const featName = rrSource.featName || 'Inconnu';
+            const rrId = `${featName}-${rrValue}`;
+            
+            // Initialize as enabled if not already set
+            if (!this.rrEnabled.has(rrId)) {
+              this.rrEnabled.set(rrId, true);
+            }
+            
+            const isEnabled = this.rrEnabled.get(rrId) || false;
+            
             rrSources.push({
-              featName: rrSource.featName || 'Inconnu',
-              rrValue: rrValue
+              id: rrId,
+              featName: featName,
+              rrValue: rrValue,
+              enabled: isEnabled
             });
-            totalRR += rrValue;
+            
+            if (isEnabled) {
+              totalRR += rrValue;
+            }
           }
         }
       }
@@ -245,8 +263,11 @@ export class RollDialog extends Application {
         this.rollData.specLevel = undefined;
         this.rollData.linkedAttribute = linkedAttribute;
         
-        // Recalculate RR and threshold
+        // Recalculate RR and threshold (synchronously)
         this.updateRRForSkill(item.name, linkedAttribute, dicePool);
+        
+        // Re-render after RR is updated
+        this.render();
       } else if (type === 'spec') {
         const specSystem = item.system as any;
         const linkedAttribute = specSystem.linkedAttribute || 'strength';
@@ -268,55 +289,122 @@ export class RollDialog extends Application {
         this.rollData.specLevel = dicePool;
         this.rollData.linkedAttribute = linkedAttribute;
         
-        // Recalculate RR and threshold
+        // Recalculate RR and threshold (synchronously)
         this.updateRRForSpec(item.name, linkedSkillName, linkedAttribute, dicePool);
+        
+        // Re-render after RR is updated
+        this.render();
+      }
+    });
+
+    // RR checkbox toggles
+    html.find('.rr-checkbox').on('change', (event) => {
+      const checkbox = event.currentTarget as HTMLInputElement;
+      const rrId = checkbox.dataset.rrId;
+      const enabled = checkbox.checked;
+      
+      if (rrId) {
+        this.rrEnabled.set(rrId, enabled);
+        // Re-render to update total RR
+        this.render();
+      }
+    });
+
+    // Roll Dice button
+    html.find('.roll-dice-button').on('click', () => {
+      // Calculate final RR based on enabled checkboxes
+      let finalRR = 0;
+      if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+        for (const rrSource of this.rollData.rrList) {
+          if (rrSource && typeof rrSource === 'object') {
+            const rrValue = rrSource.rrValue || 0;
+            const featName = rrSource.featName || 'Inconnu';
+            const rrId = `${featName}-${rrValue}`;
+            
+            if (this.rrEnabled.get(rrId)) {
+              finalRR += rrValue;
+            }
+          }
+        }
       }
       
-      // Re-render
-      this.render();
+      // Update roll data with final RR
+      const finalRRList = this.rollData.rrList?.filter((rr: any) => {
+        const rrId = `${rr.featName || 'Inconnu'}-${rr.rrValue || 0}`;
+        return this.rrEnabled.get(rrId);
+      }) || [];
+      
+      const updatedRollData = {
+        ...this.rollData,
+        rrList: finalRRList
+      };
+      
+      // Log the roll request (for now, until dice rolling is implemented)
+      console.log('=== ROLL DICE ===', updatedRollData);
+      
+      // Close the dialog
+      this.close();
     });
   }
 
   private updateRRForSkill(skillName: string, linkedAttribute: string, dicePool: number): void {
     if (!this.actor) return;
     
-    // Import helper function
-    import('../helpers/sheet-helpers.js').then((module) => {
-      const skillRRSources = module.getRRSources(this.actor!, 'skill', skillName);
-      const attributeRRSources = module.getRRSources(this.actor!, 'attribute', linkedAttribute);
-      this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
-      
-      // Recalculate threshold if it was set
-      if (this.rollData.threshold !== undefined) {
-        const totalRR = Math.min(3, skillRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0) + 
-                                  attributeRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0));
-        this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    // Get RR sources synchronously (already imported at top)
+    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
+    const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
+    this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
+    
+    // Reset RR enabled state for new sources
+    this.rrEnabled.clear();
+    for (const rrSource of this.rollData.rrList) {
+      if (rrSource && typeof rrSource === 'object') {
+        const rrValue = rrSource.rrValue || 0;
+        const featName = rrSource.featName || 'Inconnu';
+        if (rrValue > 0) {
+          const rrId = `${featName}-${rrValue}`;
+          this.rrEnabled.set(rrId, true);
+        }
       }
-      
-      this.render();
-    });
+    }
+    
+    // Recalculate threshold if it was set
+    if (this.rollData.threshold !== undefined) {
+      const totalRR = Math.min(3, skillRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0) + 
+                                attributeRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0));
+      this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    }
   }
 
   private updateRRForSpec(specName: string, skillName: string, linkedAttribute: string, dicePool: number): void {
     if (!this.actor) return;
     
-    // Import helper function
-    import('../helpers/sheet-helpers.js').then((module) => {
-      const specRRSources = module.getRRSources(this.actor!, 'specialization', specName);
-      const skillRRSources = module.getRRSources(this.actor!, 'skill', skillName);
-      const attributeRRSources = module.getRRSources(this.actor!, 'attribute', linkedAttribute);
-      this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
-      
-      // Recalculate threshold if it was set
-      if (this.rollData.threshold !== undefined) {
-        const totalRR = Math.min(3, specRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0) + 
-                                  skillRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0) + 
-                                  attributeRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0));
-        this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    // Get RR sources synchronously (already imported at top)
+    const specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', specName);
+    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
+    const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
+    this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    
+    // Reset RR enabled state for new sources
+    this.rrEnabled.clear();
+    for (const rrSource of this.rollData.rrList) {
+      if (rrSource && typeof rrSource === 'object') {
+        const rrValue = rrSource.rrValue || 0;
+        const featName = rrSource.featName || 'Inconnu';
+        if (rrValue > 0) {
+          const rrId = `${featName}-${rrValue}`;
+          this.rrEnabled.set(rrId, true);
+        }
       }
-      
-      this.render();
-    });
+    }
+    
+    // Recalculate threshold if it was set
+    if (this.rollData.threshold !== undefined) {
+      const totalRR = Math.min(3, specRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0) + 
+                                skillRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0) + 
+                                attributeRRSources.reduce((sum: number, r: any) => sum + (r.rrValue || 0), 0));
+      this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+    }
   }
 }
 
