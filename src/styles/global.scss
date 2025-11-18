@@ -7,6 +7,9 @@
 /* Import item sheet styles */
 @use 'item-sheet.scss';
 
+/* Import roll dialog styles */
+@use 'roll-dialog.scss';
+
 
 select {
     height: 36px;

@@ -1,0 +1,129 @@
+<div class="roll-dialog-content">
+    <header class="roll-dialog-header">
+        <div class="attacker-info">
+            {{#if actor}}
+            <img class="attacker-portrait" src="{{actor.img}}" alt="{{actor.name}}" title="{{actor.name}}" />
+            <div class="attacker-name">{{actor.name}}</div>
+            {{else}}
+            <div class="attacker-portrait-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="attacker-name">{{rollData.actorName}}</div>
+            {{/if}}
+        </div>
+        <!-- Additional Info -->
+        {{#if rollData.itemName}}
+        <section class="roll-section item-section">
+            <h3 class="section-title">
+                <i class="fas fa-sword"></i> Action
+            </h3>
+            <div class="item-display">
+                <div class="item-name">{{rollData.itemName}}</div>
+                {{#if rollData.damageValue}}
+                <div class="item-damage">Dégâts: {{rollData.damageValue}}</div>
+                {{/if}}
+            </div>
+        </section>
+        {{/if}}
+        <!-- Target Information -->
+        <section class="roll-section target-section">
+            <h3 class="section-title">
+                <i class="fas fa-bullseye"></i> Cible
+            </h3>
+            <div class="target-display">
+                {{#if targetToken}}
+                <div class="target-info">
+                    <img class="target-portrait" src="{{targetToken.actor.img}}" alt="{{targetToken.actor.name}}"
+                        title="{{targetToken.actor.name}}" />
+                    <div class="target-name">{{targetToken.actor.name}}</div>
+                </div>
+                {{else}}
+                <div class="target-info no-target">
+                    <div class="target-placeholder">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="target-name">Aucune cible</div>
+                </div>
+                {{/if}}
+            </div>
+        </section>
+    </header>
+
+    <div class="roll-dialog-body">
+        <!-- Skill Selection -->
+        <section class="roll-section skill-section">
+            <h3 class="section-title">
+                <i class="fas fa-book"></i> Compétence
+            </h3>
+            <div class="skill-display">
+                {{#if dropdownOptions}}
+                <select class="skill-dropdown" name="skill-select">
+                    <option value="">-- Sélectionner --</option>
+                    {{#each dropdownOptions}}
+                    <option value="{{value}}" {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
+                    {{/each}}
+                </select>
+                {{else}}
+                <div class="selected-skill">
+                    <span class="skill-name">{{skillDisplayName}}</span>
+                    {{#if rollData.specName}}
+                    <span class="skill-type">(Spécialisation)</span>
+                    {{else if rollData.skillName}}
+                    <span class="skill-type">(Compétence)</span>
+                    {{/if}}
+                </div>
+                {{/if}}
+            </div>
+        </section>
+
+        <!-- Dice Pool -->
+        <section class="roll-section dice-section">
+            <h3 class="section-title">
+                <i class="fas fa-dice"></i> Pool de Dés
+            </h3>
+            <div class="dice-pool-display">
+                <div class="dice-count">
+                    <span class="dice-number">{{dicePool}}</span>
+                    <span class="dice-label">dés</span>
+                </div>
+                {{#if rollData.linkedAttribute}}
+                <div class="attribute-info">
+                    Attribut: {{rollData.linkedAttribute}}
+                </div>
+                {{/if}}
+            </div>
+        </section>
+
+        <!-- VD and RR Summary -->
+        <section class="roll-section summary-section">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle"></i> Résumé
+            </h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">VD</div>
+                    <div class="summary-value">{{vd}}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">RR</div>
+                    <div class="summary-value">{{totalRR}}</div>
+                </div>
+            </div>
+            {{#if rrSources.length}}
+            <div class="rr-sources">
+                <div class="rr-sources-title">Sources RR:</div>
+                <ul class="rr-sources-list">
+                    {{#each rrSources}}
+                    <li class="rr-source-item">
+                        <span class="rr-source-name">{{this.featName}}</span>
+                        <span class="rr-source-value">+{{this.rrValue}}</span>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{/if}}
+        </section>
+
+
+    </div>
+</div>

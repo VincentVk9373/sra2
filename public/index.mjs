@@ -1519,6 +1519,10 @@ function handleRollRequest(data) {
     itemActive: data.itemActive,
     rrList: data.rrList
   });
+  Promise.resolve().then(() => rollDialog).then((module) => {
+    const dialog = new module.RollDialog(data);
+    dialog.render(true);
+  });
 }
 function normalizeSearchText(text) {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -1788,6 +1792,18 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn) {
     return feat;
   });
 }
+const sheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  calculateFinalDamageValue,
+  calculateRR,
+  enrichFeats,
+  getRRSources,
+  handleDeleteItem,
+  handleEditItem,
+  handleItemDrop,
+  handleSheetUpdate,
+  organizeSpecializationsBySkill
+}, Symbol.toStringTag, { value: "Module" }));
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -4959,12 +4975,232 @@ class MetatypeSheet extends ItemSheet {
     return this.item.update(expandedData);
   }
 }
+class RollDialog extends Application {
+  rollData;
+  actor = null;
+  targetToken = null;
+  constructor(rollData) {
+    super();
+    this.rollData = rollData;
+    if (rollData.actorUuid) {
+      this.actor = fromUuidSync(rollData.actorUuid);
+    } else if (rollData.actorId) {
+      this.actor = game.actors?.get(rollData.actorId) || null;
+    }
+    const targets = Array.from(game.user?.targets || []);
+    if (targets.length > 0) {
+      this.targetToken = targets[0] || null;
+    }
+  }
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "roll-dialog"],
+      template: "systems/sra2/templates/roll-dialog.hbs",
+      width: 450,
+      height: 350,
+      resizable: true,
+      minimizable: false,
+      title: "Jet de Dés"
+    });
+  }
+  getData() {
+    const context = {
+      rollData: this.rollData,
+      actor: this.actor,
+      targetToken: this.targetToken
+    };
+    let dicePool = 0;
+    if (this.rollData.specLevel !== void 0) {
+      dicePool = this.rollData.specLevel;
+    } else if (this.rollData.skillLevel !== void 0) {
+      dicePool = this.rollData.skillLevel;
+    } else if (this.rollData.linkedAttribute) {
+      const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
+      dicePool = attributeValue;
+    }
+    context.dicePool = dicePool;
+    context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || "Aucune";
+    let totalRR = 0;
+    const rrSources = [];
+    if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+      for (const rrSource of this.rollData.rrList) {
+        if (rrSource && typeof rrSource === "object") {
+          const rrValue = rrSource.rrValue || 0;
+          if (rrValue > 0) {
+            rrSources.push({
+              featName: rrSource.featName || "Inconnu",
+              rrValue
+            });
+            totalRR += rrValue;
+          }
+        }
+      }
+    }
+    context.totalRR = Math.min(3, totalRR);
+    context.rrSources = rrSources;
+    context.vd = this.rollData.itemRating || 0;
+    if (this.actor) {
+      const skills = this.actor.items.filter((item) => item.type === "skill").map((skill) => {
+        const linkedAttribute = skill.system?.linkedAttribute || "strength";
+        const attributeValue = this.actor?.system?.attributes?.[linkedAttribute] || 0;
+        const skillRating = skill.system?.rating || 0;
+        return {
+          id: skill.id,
+          name: skill.name,
+          rating: skillRating,
+          linkedAttribute,
+          dicePool: attributeValue + skillRating,
+          type: "skill",
+          specializations: []
+        };
+      }).sort((a, b) => a.name.localeCompare(b.name));
+      const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").map((spec) => {
+        const linkedAttribute = spec.system?.linkedAttribute || "strength";
+        const linkedSkillName = spec.system?.linkedSkill;
+        const attributeValue = this.actor?.system?.attributes?.[linkedAttribute] || 0;
+        const parentSkill = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === linkedSkillName
+        );
+        const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
+        const effectiveRating = skillRating + 2;
+        return {
+          id: spec.id,
+          name: spec.name,
+          rating: effectiveRating,
+          linkedAttribute,
+          dicePool: attributeValue + effectiveRating,
+          type: "specialization",
+          linkedSkillName
+        };
+      });
+      for (const spec of allSpecializations) {
+        const parentSkill = skills.find((s) => s.name === spec.linkedSkillName);
+        if (parentSkill) {
+          parentSkill.specializations.push(spec);
+        }
+      }
+      for (const skill of skills) {
+        skill.specializations.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      const dropdownOptions = [];
+      for (const skill of skills) {
+        const skillSelected = skill.name === this.rollData.skillName || this.rollData.linkedAttackSkill && skill.name === this.rollData.linkedAttackSkill;
+        dropdownOptions.push({
+          value: `skill:${skill.id}`,
+          label: `${skill.name} (${skill.dicePool} dés)`,
+          type: "skill",
+          id: skill.id,
+          name: skill.name,
+          dicePool: skill.dicePool,
+          linkedAttribute: skill.linkedAttribute,
+          rating: skill.rating,
+          isSelected: skillSelected && !this.rollData.specName
+        });
+        for (const spec of skill.specializations) {
+          const specSelected = spec.name === this.rollData.specName || this.rollData.linkedAttackSpecialization && spec.name === this.rollData.linkedAttackSpecialization;
+          dropdownOptions.push({
+            value: `spec:${spec.id}`,
+            label: `  └ ${spec.name} (${spec.dicePool} dés)`,
+            type: "specialization",
+            id: spec.id,
+            name: spec.name,
+            dicePool: spec.dicePool,
+            linkedAttribute: spec.linkedAttribute,
+            linkedSkillName: spec.linkedSkillName,
+            rating: spec.rating,
+            isSelected: specSelected
+          });
+        }
+      }
+      context.skillsWithSpecs = skills;
+      context.dropdownOptions = dropdownOptions;
+      if (this.rollData.specName) {
+        const selectedSpec = dropdownOptions.find((opt) => opt.type === "specialization" && opt.name === this.rollData.specName);
+        context.selectedValue = selectedSpec ? selectedSpec.value : "";
+      } else if (this.rollData.skillName) {
+        const selectedSkill = dropdownOptions.find((opt) => opt.type === "skill" && opt.name === this.rollData.skillName);
+        context.selectedValue = selectedSkill ? selectedSkill.value : "";
+      } else {
+        context.selectedValue = "";
+      }
+    }
+    return context;
+  }
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find(".close-button").on("click", () => {
+      this.close();
+    });
+    html.find(".skill-dropdown").on("change", (event) => {
+      const select = event.currentTarget;
+      const value = select.value;
+      if (!value || !this.actor) return;
+      const [type, id] = value.split(":");
+      if (!type || !id) return;
+      const item = this.actor.items.get(id);
+      if (!item) return;
+      if (type === "skill") {
+        const skillSystem = item.system;
+        const linkedAttribute = skillSystem.linkedAttribute || "strength";
+        const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+        const skillRating = skillSystem.rating || 0;
+        this.rollData.skillName = item.name;
+        this.rollData.specName = void 0;
+        this.rollData.skillLevel = attributeValue + skillRating;
+        this.rollData.specLevel = void 0;
+        this.rollData.linkedAttribute = linkedAttribute;
+        this.updateRRForSkill(item.name, linkedAttribute);
+      } else if (type === "spec") {
+        const specSystem = item.system;
+        const linkedAttribute = specSystem.linkedAttribute || "strength";
+        const linkedSkillName = specSystem.linkedSkill;
+        const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+        const parentSkill = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === linkedSkillName
+        );
+        const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
+        const effectiveRating = skillRating + 2;
+        this.rollData.specName = item.name;
+        this.rollData.skillName = linkedSkillName;
+        this.rollData.skillLevel = skillRating;
+        this.rollData.specLevel = attributeValue + effectiveRating;
+        this.rollData.linkedAttribute = linkedAttribute;
+        this.updateRRForSpec(item.name, linkedSkillName, linkedAttribute);
+      }
+      this.render();
+    });
+  }
+  updateRRForSkill(skillName, linkedAttribute) {
+    if (!this.actor) return;
+    Promise.resolve().then(() => sheetHelpers).then((module) => {
+      const skillRRSources = module.getRRSources(this.actor, "skill", skillName);
+      const attributeRRSources = module.getRRSources(this.actor, "attribute", linkedAttribute);
+      this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
+      this.render();
+    });
+  }
+  updateRRForSpec(specName, skillName, linkedAttribute) {
+    if (!this.actor) return;
+    Promise.resolve().then(() => sheetHelpers).then((module) => {
+      const specRRSources = module.getRRSources(this.actor, "specialization", specName);
+      const skillRRSources = module.getRRSources(this.actor, "skill", skillName);
+      const attributeRRSources = module.getRRSources(this.actor, "attribute", linkedAttribute);
+      this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+      this.render();
+    });
+  }
+}
+const rollDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  RollDialog
+}, Symbol.toStringTag, { value: "Module" }));
 const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   CharacterSheet,
   FeatSheet,
   MetatypeSheet,
   NpcSheet,
+  RollDialog,
   SkillSheet,
   SpecializationSheet
 }, Symbol.toStringTag, { value: "Module" }));

@@ -190,7 +190,7 @@ export interface RollRequestData {
 
 /**
  * Handle roll request - central function for all roll clicks
- * For now, this just logs the roll request data
+ * Displays a roll dialog with roll information
  */
 export function handleRollRequest(data: RollRequestData): void {
   console.log('=== ROLL REQUEST ===', {
@@ -221,6 +221,12 @@ export function handleRollRequest(data: RollRequestData): void {
     itemRating: data.itemRating,
     itemActive: data.itemActive,
     rrList: data.rrList
+  });
+
+  // Import RollDialog dynamically to avoid circular dependencies
+  import('../applications/roll-dialog.js').then((module) => {
+    const dialog = new module.RollDialog(data);
+    dialog.render(true);
   });
 }
 
