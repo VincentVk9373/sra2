@@ -191,70 +191,95 @@
                 }
             }
 
-            .skill-dropdown {
-                width: 100%;
-                padding: 0.4rem 0.5rem;
-                background: rgba(0, 0, 0, 0.3);
-                border: 1px solid #00d4ff;
-                border-radius: 4px;
-                color: #e0e0e0;
-                font-size: 0.85rem;
-                cursor: pointer;
-                transition: all 0.2s;
+             .skill-dropdown {
+                 width: 100%;
+                 padding: 0.4rem 0.5rem;
+                 background: rgba(0, 0, 0, 0.3);
+                 border: 1px solid #00d4ff;
+                 border-radius: 4px;
+                 color: #e0e0e0;
+                 font-size: 0.85rem;
+                 cursor: pointer;
+                 transition: all 0.2s;
 
-                &:hover {
-                    background: rgba(0, 0, 0, 0.4);
-                    border-color: #00d4ff;
-                }
+                 &:hover:not(:disabled) {
+                     background: rgba(0, 0, 0, 0.4);
+                     border-color: #00d4ff;
+                 }
 
-                &:focus {
-                    outline: none;
-                    border-color: #00d4ff;
-                    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.3);
-                }
+                 &:focus:not(:disabled) {
+                     outline: none;
+                     border-color: #00d4ff;
+                     box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.3);
+                 }
 
-                option {
-                    background: #1a1a2e;
-                    color: #e0e0e0;
-                    padding: 0.5rem;
-                }
-            }
+                 &:disabled {
+                     opacity: 0.6;
+                     cursor: not-allowed;
+                     background: rgba(0, 0, 0, 0.2);
+                     border-color: #666;
+                 }
+
+                 option {
+                     background: #1a1a2e;
+                     color: #e0e0e0;
+                     padding: 0.5rem;
+                 }
+             }
         }
     }
 
-    /* Dice Section */
-    .dice-section {
-        .dice-pool-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.3rem;
+     /* Dice Section */
+     .dice-section {
+         .dice-pool-display {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             gap: 0.3rem;
 
-            .dice-count {
-                display: flex;
-                align-items: baseline;
-                gap: 0.3rem;
+             .dice-count {
+                 display: flex;
+                 align-items: baseline;
+                 gap: 0.3rem;
 
-                .dice-number {
-                    font-size: 2rem;
-                    font-weight: bold;
-                    color: #ffd700;
-                    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
-                }
+                 .dice-number {
+                     font-size: 2rem;
+                     font-weight: bold;
+                     color: #ffd700;
+                     text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+                 }
 
-                .dice-label {
-                    font-size: 0.9rem;
-                    color: #999;
-                }
-            }
+                 .dice-label {
+                     font-size: 0.9rem;
+                     color: #999;
+                 }
+             }
 
-            .attribute-info {
-                font-size: 0.75rem;
-                color: #999;
-                text-transform: capitalize;
-            }
-        }
-    }
+             .threshold-count {
+                 display: flex;
+                 align-items: baseline;
+                 gap: 0.3rem;
+
+                 .threshold-number {
+                     font-size: 2rem;
+                     font-weight: bold;
+                     color: #ffd700;
+                     text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+                 }
+
+                 .threshold-label {
+                     font-size: 0.9rem;
+                     color: #999;
+                 }
+             }
+
+             .attribute-info {
+                 font-size: 0.75rem;
+                 color: #999;
+                 text-transform: capitalize;
+             }
+         }
+     }
 
     /* Summary Section */
     .summary-section {
@@ -288,10 +313,6 @@
         }
 
         .rr-sources {
-            margin-top: 0.4rem;
-            padding-top: 0.4rem;
-            border-top: 1px solid #333;
-
             .rr-sources-title {
                 font-size: 0.7rem;
                 color: #999;

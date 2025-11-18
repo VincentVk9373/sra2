@@ -57,7 +57,7 @@
             </h3>
             <div class="skill-display">
                 {{#if dropdownOptions}}
-                <select class="skill-dropdown" name="skill-select">
+                <select class="skill-dropdown" name="skill-select" {{#if hasThreshold}}disabled{{/if}}>
                     <option value="">-- Sélectionner --</option>
                     {{#each dropdownOptions}}
                     <option value="{{value}}" {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
@@ -76,42 +76,47 @@
             </div>
         </section>
 
-        <!-- Dice Pool -->
+        <!-- Dice Pool or Threshold -->
         <section class="roll-section dice-section">
             <h3 class="section-title">
+                {{#if hasThreshold}}
+                <i class="fas fa-bullseye"></i> Seuil
+                {{else}}
                 <i class="fas fa-dice"></i> Pool de Dés
+                {{/if}}
             </h3>
             <div class="dice-pool-display">
+                {{#if hasThreshold}}
+                <div class="threshold-count">
+                    <span class="threshold-number">{{threshold}}</span>
+                    <span class="threshold-label">seuil</span>
+                </div>
+                {{else}}
                 <div class="dice-count">
                     <span class="dice-number">{{dicePool}}</span>
                     <span class="dice-label">dés</span>
                 </div>
-                {{#if rollData.linkedAttribute}}
+                {{/if}}
+                {{!-- {{#if rollData.linkedAttribute}}
                 <div class="attribute-info">
                     Attribut: {{rollData.linkedAttribute}}
                 </div>
-                {{/if}}
+                {{/if}} --}}
             </div>
         </section>
 
         <!-- VD and RR Summary -->
         <section class="roll-section summary-section">
             <h3 class="section-title">
-                <i class="fas fa-info-circle"></i> Résumé
+                <i class="fas fa-info-circle"></i> Réduction de risque
             </h3>
             <div class="summary-grid">
-                <div class="summary-item">
-                    <div class="summary-label">VD</div>
-                    <div class="summary-value">{{vd}}</div>
-                </div>
                 <div class="summary-item">
                     <div class="summary-label">RR</div>
                     <div class="summary-value">{{totalRR}}</div>
                 </div>
-            </div>
             {{#if rrSources.length}}
             <div class="rr-sources">
-                <div class="rr-sources-title">Sources RR:</div>
                 <ul class="rr-sources-list">
                     {{#each rrSources}}
                     <li class="rr-source-item">
@@ -122,6 +127,7 @@
                 </ul>
             </div>
             {{/if}}
+            </div>
         </section>
 
 

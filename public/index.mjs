@@ -2817,7 +2817,7 @@ class CharacterSheet extends ActorSheet {
           );
           if (parentSkill) {
             attackSkillName = parentSkill.name;
-            attackSkillLevel = parentSkill.system.rating || 0;
+            attackSkillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
             attackSpecLevel = attackSkillLevel + 2;
           }
         }
@@ -2829,8 +2829,8 @@ class CharacterSheet extends ActorSheet {
       );
       if (foundSkill) {
         attackSkillName = foundSkill.name;
-        attackSkillLevel = foundSkill.system.rating || 0;
         attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        attackSkillLevel = foundSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
       }
     }
     const baseDamageValue = itemSystem.damageValue || "0";
@@ -4997,7 +4997,7 @@ class RollDialog extends Application {
       classes: ["sra2", "roll-dialog"],
       template: "systems/sra2/templates/roll-dialog.hbs",
       width: 450,
-      height: 350,
+      height: 450,
       resizable: true,
       minimizable: false,
       title: "Jet de Dés"
@@ -5019,6 +5019,9 @@ class RollDialog extends Application {
       dicePool = attributeValue;
     }
     context.dicePool = dicePool;
+    let threshold = this.rollData.threshold;
+    context.threshold = threshold;
+    context.hasThreshold = threshold !== void 0;
     context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || "Aucune";
     let totalRR = 0;
     const rrSources = [];
@@ -5038,7 +5041,7 @@ class RollDialog extends Application {
     }
     context.totalRR = Math.min(3, totalRR);
     context.rrSources = rrSources;
-    context.vd = this.rollData.itemRating || 0;
+    context.vd = this.rollData.damageValue || 0;
     if (this.actor) {
       const skills = this.actor.items.filter((item) => item.type === "skill").map((skill) => {
         const linkedAttribute = skill.system?.linkedAttribute || "strength";
@@ -5133,6 +5136,9 @@ class RollDialog extends Application {
     });
     html.find(".skill-dropdown").on("change", (event) => {
       const select = event.currentTarget;
+      if (this.rollData.threshold !== void 0) {
+        return;
+      }
       const value = select.value;
       if (!value || !this.actor) return;
       const [type, id] = value.split(":");
@@ -5144,12 +5150,13 @@ class RollDialog extends Application {
         const linkedAttribute = skillSystem.linkedAttribute || "strength";
         const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
         const skillRating = skillSystem.rating || 0;
+        const dicePool = attributeValue + skillRating;
         this.rollData.skillName = item.name;
         this.rollData.specName = void 0;
-        this.rollData.skillLevel = attributeValue + skillRating;
+        this.rollData.skillLevel = dicePool;
         this.rollData.specLevel = void 0;
         this.rollData.linkedAttribute = linkedAttribute;
-        this.updateRRForSkill(item.name, linkedAttribute);
+        this.updateRRForSkill(item.name, linkedAttribute, dicePool);
       } else if (type === "spec") {
         const specSystem = item.system;
         const linkedAttribute = specSystem.linkedAttribute || "strength";
@@ -5160,32 +5167,41 @@ class RollDialog extends Application {
         );
         const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
         const effectiveRating = skillRating + 2;
+        const dicePool = attributeValue + effectiveRating;
         this.rollData.specName = item.name;
         this.rollData.skillName = linkedSkillName;
         this.rollData.skillLevel = skillRating;
-        this.rollData.specLevel = attributeValue + effectiveRating;
+        this.rollData.specLevel = dicePool;
         this.rollData.linkedAttribute = linkedAttribute;
-        this.updateRRForSpec(item.name, linkedSkillName, linkedAttribute);
+        this.updateRRForSpec(item.name, linkedSkillName, linkedAttribute, dicePool);
       }
       this.render();
     });
   }
-  updateRRForSkill(skillName, linkedAttribute) {
+  updateRRForSkill(skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
     Promise.resolve().then(() => sheetHelpers).then((module) => {
       const skillRRSources = module.getRRSources(this.actor, "skill", skillName);
       const attributeRRSources = module.getRRSources(this.actor, "attribute", linkedAttribute);
       this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
+      if (this.rollData.threshold !== void 0) {
+        const totalRR = Math.min(3, skillRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + attributeRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0));
+        this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+      }
       this.render();
     });
   }
-  updateRRForSpec(specName, skillName, linkedAttribute) {
+  updateRRForSpec(specName, skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
     Promise.resolve().then(() => sheetHelpers).then((module) => {
       const specRRSources = module.getRRSources(this.actor, "specialization", specName);
       const skillRRSources = module.getRRSources(this.actor, "skill", skillName);
       const attributeRRSources = module.getRRSources(this.actor, "attribute", linkedAttribute);
       this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+      if (this.rollData.threshold !== void 0) {
+        const totalRR = Math.min(3, specRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + skillRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0) + attributeRRSources.reduce((sum, r) => sum + (r.rrValue || 0), 0));
+        this.rollData.threshold = Math.round(dicePool / 3) + totalRR + 1;
+      }
       this.render();
     });
   }

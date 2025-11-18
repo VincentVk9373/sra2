@@ -1418,7 +1418,7 @@ export class CharacterSheet extends ActorSheet {
           );
           if (parentSkill) {
             attackSkillName = parentSkill.name;
-            attackSkillLevel = (parentSkill.system as any).rating || 0;
+            attackSkillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
             attackSpecLevel = attackSkillLevel + 2; // Specialization adds +2
           }
         }
@@ -1434,8 +1434,8 @@ export class CharacterSheet extends ActorSheet {
       
       if (foundSkill) {
         attackSkillName = foundSkill.name;
-        attackSkillLevel = (foundSkill.system as any).rating || 0;
         attackLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
+        attackSkillLevel = (foundSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute] || 0;
       }
     }
 
