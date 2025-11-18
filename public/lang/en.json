@@ -353,7 +353,7 @@
                 "LONG_SHORT": "Long",
                 "RANGE_NONE": "-",
                 "RANGE_OK": "OK",
-                "RANGE_DICE": "Des",
+                "RANGE_DISADVANTAGE": "Disadvantage",
                 "IMPROVE_RANGE": "Improve range",
                 "RANGE_IMPROVEMENTS": "Range improvements",
                 "DAMAGE_VALUE_BONUS": "DV Bonus",
@@ -605,7 +605,9 @@
             "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup.",
             "13_0_8_INFO": "Migration 13.0.8: Narrative effects on {count} feat(s) have been converted to the new format (with negative option).",
             "13_0_9_INFO": "Migration 13.0.9: {count} feat(s) have been updated - added value field to narrative effects and 'first feat' field to {firstFeatCount} feat(s).",
-            "13_0_10_INFO": "Migration 13.0.10: {count} feat(s) updated - simplified cost system (free 0¥, equipment 2500¥, advanced 5000¥). {specializedCount} specialized equipment converted to advanced, {featCount} feat(s) converted."
+            "13_0_10_INFO": "Migration 13.0.10: {count} feat(s) updated - simplified cost system (free 0¥, equipment 2500¥, advanced 5000¥). {specializedCount} specialized equipment converted to advanced, {featCount} feat(s) converted.",
+            "13_0_11_INFO": "Migration 13.0.11: {count} weapon(s) updated - added linked specialization fields for attack and defense.",
+            "13_0_12_INFO": "Migration 13.0.12: {count} weapon(s) updated - 'dice' ranges converted to 'disadvantage'."
         }
     }
 }

@@ -333,16 +333,16 @@
             <span class="stat-value">{{finalDamageValue}}</span>
             <span class="stat-separator">/</span>
             <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}:</span>
-            <span class="stat-value">{{#if (eq system.meleeRange "ok")}}OK{{else}}{{#if (eq system.meleeRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+            <span class="stat-value">{{#if (eq system.meleeRange "ok")}}OK{{else}}{{#if (eq system.meleeRange "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
             <span class="stat-separator">/</span>
             <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}:</span>
-            <span class="stat-value">{{#if (eq system.shortRange "ok")}}OK{{else}}{{#if (eq system.shortRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+            <span class="stat-value">{{#if (eq system.shortRange "ok")}}OK{{else}}{{#if (eq system.shortRange "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
             <span class="stat-separator">/</span>
             <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}:</span>
-            <span class="stat-value">{{#if (eq system.mediumRange "ok")}}OK{{else}}{{#if (eq system.mediumRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+            <span class="stat-value">{{#if (eq system.mediumRange "ok")}}OK{{else}}{{#if (eq system.mediumRange "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
             <span class="stat-separator">/</span>
             <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}:</span>
-            <span class="stat-value">{{#if (eq system.longRange "ok")}}OK{{else}}{{#if (eq system.longRange "dice")}}Dés{{else}}-{{/if}}{{/if}}</span>
+            <span class="stat-value">{{#if (eq system.longRange "ok")}}OK{{else}}{{#if (eq system.longRange "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
           </div>
         </div>
         {{/if}}
@@ -390,7 +390,7 @@
             <select name="system.meleeRange">
               <option value="none" {{#if (eq system.meleeRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.meleeRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.meleeRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.meleeRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.melee" {{checked system.rangeImprovements.melee}} {{#if (and (eq system.meleeRange "ok") (not system.rangeImprovements.melee))}}disabled{{/if}} />
@@ -403,7 +403,7 @@
             <select name="system.shortRange">
               <option value="none" {{#if (eq system.shortRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.shortRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.shortRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.shortRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.short" {{checked system.rangeImprovements.short}} {{#if (and (eq system.shortRange "ok") (not system.rangeImprovements.short))}}disabled{{/if}} />
@@ -416,7 +416,7 @@
             <select name="system.mediumRange">
               <option value="none" {{#if (eq system.mediumRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.mediumRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.mediumRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.mediumRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.medium" {{checked system.rangeImprovements.medium}} {{#if (and (eq system.mediumRange "ok") (not system.rangeImprovements.medium))}}disabled{{/if}} />
@@ -429,7 +429,7 @@
             <select name="system.longRange">
               <option value="none" {{#if (eq system.longRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.longRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.longRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.longRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.long" {{checked system.rangeImprovements.long}} {{#if (and (eq system.longRange "ok") (not system.rangeImprovements.long))}}disabled{{/if}} />
@@ -447,7 +447,7 @@
             <select disabled>
               <option value="none" {{#if (eq system.meleeRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.meleeRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.meleeRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.meleeRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.melee" {{checked system.rangeImprovements.melee}} {{#if (and (eq system.meleeRange "ok") (not system.rangeImprovements.melee))}}disabled{{/if}} />
@@ -460,7 +460,7 @@
             <select disabled>
               <option value="none" {{#if (eq system.shortRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.shortRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.shortRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.shortRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.short" {{checked system.rangeImprovements.short}} {{#if (and (eq system.shortRange "ok") (not system.rangeImprovements.short))}}disabled{{/if}} />
@@ -473,7 +473,7 @@
             <select disabled>
               <option value="none" {{#if (eq system.mediumRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.mediumRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.mediumRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.mediumRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.medium" {{checked system.rangeImprovements.medium}} {{#if (and (eq system.mediumRange "ok") (not system.rangeImprovements.medium))}}disabled{{/if}} />
@@ -486,7 +486,7 @@
             <select disabled>
               <option value="none" {{#if (eq system.longRange "none")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_NONE"}}</option>
               <option value="ok" {{#if (eq system.longRange "ok")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_OK"}}</option>
-              <option value="dice" {{#if (eq system.longRange "dice")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DICE"}}</option>
+              <option value="disadvantage" {{#if (eq system.longRange "disadvantage")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"}}</option>
             </select>
             <label class="range-improvement-checkbox">
               <input type="checkbox" name="system.rangeImprovements.long" {{checked system.rangeImprovements.long}} {{#if (and (eq system.longRange "ok") (not system.rangeImprovements.long))}}disabled{{/if}} />

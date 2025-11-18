@@ -141,3 +141,86 @@ export function buildRRSourcesHtml(rrSources: RRSource[]): string {
  * Dialogs and callbacks have been removed as they trigger dice rolls.
  */
 
+/**
+ * Roll Request Data Interface
+ * Contains all information needed for a roll request
+ */
+export interface RollRequestData {
+  // Item information
+  itemType?: string;
+  weaponType?: string;
+  itemName?: string;
+  itemId?: string;
+  itemRating?: number;
+  itemActive?: boolean;
+  
+  // Linked skills (merged from weapon types and custom fields)
+  linkedAttackSkill?: string;
+  linkedAttackSpecialization?: string;
+  linkedDefenseSkill?: string;
+  linkedDefenseSpecialization?: string;
+  linkedAttribute?: string;
+  
+  // Weapon properties
+  isWeaponFocus?: boolean;
+  damageValue?: string;  // FINAL damage value (base + bonus)
+  damageValueBonus?: number;  // Bonus from feat
+  meleeRange?: string;  // "none" | "ok" | "disadvantage"
+  shortRange?: string;  // "none" | "ok" | "disadvantage"
+  mediumRange?: string; // "none" | "ok" | "disadvantage"
+  longRange?: string;   // "none" | "ok" | "disadvantage"
+  
+  // Skill/Spec information (undefined if not found)
+  skillName?: string;
+  specName?: string;
+  skillLevel?: number;
+  specLevel?: number;
+  
+  // NPC threshold (when not rolling dice)
+  threshold?: number;
+  
+  // Actor information
+  actorId?: string;
+  actorUuid?: string;
+  actorName?: string;
+  
+  // RR List
+  rrList?: any[];
+}
+
+/**
+ * Handle roll request - central function for all roll clicks
+ * For now, this just logs the roll request data
+ */
+export function handleRollRequest(data: RollRequestData): void {
+  console.log('=== ROLL REQUEST ===', {
+    itemType: data.itemType,
+    weaponType: data.weaponType,
+    linkedAttackSkill: data.linkedAttackSkill,
+    linkedAttackSpecialization: data.linkedAttackSpecialization,
+    linkedDefenseSkill: data.linkedDefenseSkill,
+    linkedDefenseSpecialization: data.linkedDefenseSpecialization,
+    linkedAttribute: data.linkedAttribute,
+    isWeaponFocus: data.isWeaponFocus,
+    damageValue: data.damageValue,
+    damageValueBonus: data.damageValueBonus,
+    meleeRange: data.meleeRange,
+    shortRange: data.shortRange,
+    mediumRange: data.mediumRange,
+    longRange: data.longRange,
+    skillName: data.skillName,
+    specName: data.specName,
+    itemName: data.itemName,
+    itemId: data.itemId,
+    threshold: data.threshold,
+    actorId: data.actorId,
+    actorUuid: data.actorUuid,
+    actorName: data.actorName,
+    specLevel: data.specLevel,
+    skillLevel: data.skillLevel,
+    itemRating: data.itemRating,
+    itemActive: data.itemActive,
+    rrList: data.rrList
+  });
+}
+

@@ -39,17 +39,17 @@ export const WEAPON_TYPES = {
   },
   // Armes à distance - Armes de jet
   "throwing": { 
-    vd: "FOR+1", melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: "FOR+1", melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "grenades": { 
-    vd: 7, melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: 7, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "gas-grenades": { 
-    vd: "toxin", melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: "toxin", melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
@@ -66,50 +66,50 @@ export const WEAPON_TYPES = {
   },
   // Armes à distance - Pistolets
   "pocket-pistols": { 
-    vd: 3, melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: 3, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "light-pistols": { 
-    vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: 4, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "automatic-pistols": { 
-    vd: 4, melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: 4, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "heavy-pistols": { 
-    vd: 5, melee: "ok", short: "ok", medium: "dice", long: "none",
+    vd: 5, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Mitraillettes
   "smgs": { 
-    vd: 5, melee: "dice", short: "ok", medium: "ok", long: "none",
+    vd: 5, melee: "disadvantage", short: "ok", medium: "ok", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Mitraillettes",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Fusils
   "assault-rifles": { 
-    vd: 7, melee: "dice", short: "ok", medium: "ok", long: "dice",
+    vd: 7, melee: "disadvantage", short: "ok", medium: "ok", long: "disadvantage",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "shotguns": { 
-    vd: 8, melee: "dice", short: "ok", medium: "dice", long: "none",
+    vd: 8, melee: "disadvantage", short: "ok", medium: "disadvantage", long: "none",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "sniper-rifles": { 
-    vd: 10, melee: "none", short: "dice", medium: "dice", long: "ok",
+    vd: 10, melee: "none", short: "disadvantage", medium: "disadvantage", long: "ok",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Lance-grenades
   "grenade-launchers": { 
-    vd: 7, melee: "none", short: "dice", medium: "ok", long: "dice",
+    vd: 7, melee: "none", short: "disadvantage", medium: "ok", long: "disadvantage",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Lance-grenades",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
@@ -120,7 +120,7 @@ export const WEAPON_TYPES = {
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "rocket-launchers": { 
-    vd: 12, melee: "none", short: "none", medium: "dice", long: "ok",
+    vd: 12, melee: "none", short: "none", medium: "disadvantage", long: "ok",
     linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes lourdes",
     linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
   }
@@ -302,7 +302,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.MELEE_RANGE"
       }),
@@ -312,7 +313,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.SHORT_RANGE"
       }),
@@ -322,7 +324,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.MEDIUM_RANGE"
       }),
@@ -332,7 +335,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.LONG_RANGE"
       }),

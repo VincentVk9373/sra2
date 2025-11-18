@@ -451,7 +451,7 @@ const WEAPON_TYPES = {
     vd: "FOR+1",
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Armes de jet",
@@ -462,7 +462,7 @@ const WEAPON_TYPES = {
     vd: 7,
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Armes de jet",
@@ -473,7 +473,7 @@ const WEAPON_TYPES = {
     vd: "toxin",
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Armes de jet",
@@ -508,7 +508,7 @@ const WEAPON_TYPES = {
     vd: 3,
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Pistolets",
@@ -519,7 +519,7 @@ const WEAPON_TYPES = {
     vd: 4,
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Pistolets",
@@ -530,7 +530,7 @@ const WEAPON_TYPES = {
     vd: 4,
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Pistolets",
@@ -541,7 +541,7 @@ const WEAPON_TYPES = {
     vd: 5,
     melee: "ok",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Pistolets",
@@ -551,7 +551,7 @@ const WEAPON_TYPES = {
   // Armes à distance - Mitraillettes
   "smgs": {
     vd: 5,
-    melee: "dice",
+    melee: "disadvantage",
     short: "ok",
     medium: "ok",
     long: "none",
@@ -563,10 +563,10 @@ const WEAPON_TYPES = {
   // Armes à distance - Fusils
   "assault-rifles": {
     vd: 7,
-    melee: "dice",
+    melee: "disadvantage",
     short: "ok",
     medium: "ok",
-    long: "dice",
+    long: "disadvantage",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Fusils",
     linkedDefenseSkill: "Athlétisme",
@@ -574,9 +574,9 @@ const WEAPON_TYPES = {
   },
   "shotguns": {
     vd: 8,
-    melee: "dice",
+    melee: "disadvantage",
     short: "ok",
-    medium: "dice",
+    medium: "disadvantage",
     long: "none",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Fusils",
@@ -586,8 +586,8 @@ const WEAPON_TYPES = {
   "sniper-rifles": {
     vd: 10,
     melee: "none",
-    short: "dice",
-    medium: "dice",
+    short: "disadvantage",
+    medium: "disadvantage",
     long: "ok",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Fusils",
@@ -598,9 +598,9 @@ const WEAPON_TYPES = {
   "grenade-launchers": {
     vd: 7,
     melee: "none",
-    short: "dice",
+    short: "disadvantage",
     medium: "ok",
-    long: "dice",
+    long: "disadvantage",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Lance-grenades",
     linkedDefenseSkill: "Athlétisme",
@@ -622,7 +622,7 @@ const WEAPON_TYPES = {
     vd: 12,
     melee: "none",
     short: "none",
-    medium: "dice",
+    medium: "disadvantage",
     long: "ok",
     linkedSkill: "Armes à distance",
     linkedSpecialization: "Spé : Armes lourdes",
@@ -798,7 +798,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.MELEE_RANGE"
       }),
@@ -808,7 +809,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.SHORT_RANGE"
       }),
@@ -818,7 +820,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.MEDIUM_RANGE"
       }),
@@ -828,7 +831,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         choices: {
           "none": "SRA2.FEATS.WEAPON.RANGE_NONE",
           "ok": "SRA2.FEATS.WEAPON.RANGE_OK",
-          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE"
+          "dice": "SRA2.FEATS.WEAPON.RANGE_DICE",
+          "disadvantage": "SRA2.FEATS.WEAPON.RANGE_DISADVANTAGE"
         },
         label: "SRA2.FEATS.WEAPON.LONG_RANGE"
       }),
@@ -1485,6 +1489,37 @@ const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   __proto__: null,
   SRA2Actor
 }, Symbol.toStringTag, { value: "Module" }));
+function handleRollRequest(data) {
+  console.log("=== ROLL REQUEST ===", {
+    itemType: data.itemType,
+    weaponType: data.weaponType,
+    linkedAttackSkill: data.linkedAttackSkill,
+    linkedAttackSpecialization: data.linkedAttackSpecialization,
+    linkedDefenseSkill: data.linkedDefenseSkill,
+    linkedDefenseSpecialization: data.linkedDefenseSpecialization,
+    linkedAttribute: data.linkedAttribute,
+    isWeaponFocus: data.isWeaponFocus,
+    damageValue: data.damageValue,
+    damageValueBonus: data.damageValueBonus,
+    meleeRange: data.meleeRange,
+    shortRange: data.shortRange,
+    mediumRange: data.mediumRange,
+    longRange: data.longRange,
+    skillName: data.skillName,
+    specName: data.specName,
+    itemName: data.itemName,
+    itemId: data.itemId,
+    threshold: data.threshold,
+    actorId: data.actorId,
+    actorUuid: data.actorUuid,
+    actorName: data.actorName,
+    specLevel: data.specLevel,
+    skillLevel: data.skillLevel,
+    itemRating: data.itemRating,
+    itemActive: data.itemActive,
+    rrList: data.rrList
+  });
+}
 function normalizeSearchText(text) {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -1978,13 +2013,42 @@ class CharacterSheet extends ActorSheet {
     }
   }
   /**
-   * REMOVED: Specialization roll handler - dialog creation disabled
+   * Handle rolling a specialization
    */
   async _onRollSpecialization(event) {
     event.preventDefault();
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
-    console.log("Specialization roll disabled", { itemId });
+    const effectiveRating = parseInt(element.dataset.effectiveRating || "0");
+    if (!itemId) return;
+    const specialization = this.actor.items.get(itemId);
+    if (!specialization || specialization.type !== "specialization") return;
+    const specSystem = specialization.system;
+    const linkedAttribute = specSystem.linkedAttribute || "strength";
+    const linkedSkillName = specSystem.linkedSkill;
+    const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+    const linkedSkill = linkedSkillName ? this.actor.items.find((i) => i.type === "skill" && i.name === linkedSkillName) : null;
+    const skillRating = linkedSkill ? linkedSkill.system.rating || 0 : 0;
+    const specRRSources = this.getRRSources("specialization", specialization.name);
+    const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
+    const skillRRSources = linkedSkillName ? this.getRRSources("skill", linkedSkillName) : [];
+    const allRRSources = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    handleRollRequest({
+      itemType: "specialization",
+      itemName: specialization.name,
+      itemId: specialization.id,
+      specName: specialization.name,
+      specLevel: attributeValue + effectiveRating,
+      // Total dice pool (attribute + effectiveRating)
+      skillName: linkedSkillName,
+      skillLevel: skillRating,
+      // Just the skill rating (without attribute)
+      linkedAttribute,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: allRRSources
+    });
   }
   /**
    * Handle quick rolling a skill (from dice badge click) - opens dialog
@@ -1999,22 +2063,59 @@ class CharacterSheet extends ActorSheet {
     return this._onRollSpecialization(event);
   }
   /**
-   * REMOVED: Attribute roll handler - dialog creation disabled
+   * Handle rolling an attribute
    */
   async _onRollAttribute(event) {
     event.preventDefault();
     const element = event.currentTarget;
     const attributeName = element.dataset.attribute;
-    console.log("Attribute roll disabled", { attributeName });
+    if (!attributeName) return;
+    const attributeValue = this.actor.system.attributes?.[attributeName] || 0;
+    const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`);
+    const rrSources = this.getRRSources("attribute", attributeName);
+    handleRollRequest({
+      itemType: "attribute",
+      itemName: attributeLabel,
+      skillName: attributeLabel,
+      skillLevel: attributeValue,
+      linkedAttribute: attributeName,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: rrSources
+    });
   }
   /**
-   * REMOVED: Skill roll handler - dialog creation disabled
+   * Handle rolling a skill
    */
   async _onRollSkill(event) {
     event.preventDefault();
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
-    console.log("Skill roll disabled", { itemId });
+    if (!itemId) return;
+    const skill = this.actor.items.get(itemId);
+    if (!skill || skill.type !== "skill") return;
+    const skillSystem = skill.system;
+    const rating = skillSystem.rating || 0;
+    const linkedAttribute = skillSystem.linkedAttribute || "strength";
+    const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+    const skillRRSources = this.getRRSources("skill", skill.name);
+    const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
+    const allRRSources = [...skillRRSources, ...attributeRRSources];
+    handleRollRequest({
+      itemType: "skill",
+      itemName: skill.name,
+      itemId: skill.id,
+      itemRating: rating,
+      skillName: skill.name,
+      skillLevel: attributeValue + rating,
+      // Total dice pool (attribute + rating)
+      linkedAttribute,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: allRRSources
+    });
   }
   /**
    * REMOVED: Dice rolling logic
@@ -2657,10 +2758,114 @@ class CharacterSheet extends ActorSheet {
     await this._rollWeaponOrSpell(item, "weapon-spell");
   }
   /**
-   * REMOVED: Weapon or spell roll - dialog creation disabled
+   * Handle rolling a weapon or spell
    */
   async _rollWeaponOrSpell(item, type) {
-    console.log("Weapon/spell roll disabled", { item: item.name, type });
+    const itemSystem = item.system;
+    const weaponType = itemSystem.weaponType;
+    let weaponLinkedSkill = "";
+    let weaponLinkedSpecialization = "";
+    let weaponLinkedDefenseSkill = "";
+    let weaponLinkedDefenseSpecialization = "";
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        weaponLinkedSkill = weaponStats.linkedSkill || "";
+        weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+        weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+        weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+      }
+    }
+    const itemRRList = itemSystem.rrList || [];
+    const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
+    const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
+    const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
+    const finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
+    let attackSkillName = void 0;
+    let attackSkillLevel = void 0;
+    let attackSpecName = void 0;
+    let attackSpecLevel = void 0;
+    let attackLinkedAttribute = void 0;
+    if (finalAttackSpec) {
+      const foundSpec = this.actor.items.find(
+        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
+      );
+      if (foundSpec) {
+        const specSystem = foundSpec.system;
+        attackSpecName = foundSpec.name;
+        attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && i.name === linkedSkillName
+          );
+          if (parentSkill) {
+            attackSkillName = parentSkill.name;
+            attackSkillLevel = parentSkill.system.rating || 0;
+            attackSpecLevel = attackSkillLevel + 2;
+          }
+        }
+      }
+    }
+    if (!attackSpecName && finalAttackSkill) {
+      const foundSkill = this.actor.items.find(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (foundSkill) {
+        attackSkillName = foundSkill.name;
+        attackSkillLevel = foundSkill.system.rating || 0;
+        attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+      }
+    }
+    const baseDamageValue = itemSystem.damageValue || "0";
+    const damageValueBonus = itemSystem.damageValueBonus || 0;
+    this.actor.system.attributes?.strength || 0;
+    let finalDamageValue = baseDamageValue;
+    if (damageValueBonus > 0 && baseDamageValue !== "0") {
+      if (baseDamageValue === "FOR") {
+        finalDamageValue = `FOR+${damageValueBonus}`;
+      } else if (baseDamageValue.startsWith("FOR+")) {
+        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+      } else if (baseDamageValue !== "toxin") {
+        const baseValue = parseInt(baseDamageValue) || 0;
+        finalDamageValue = (baseValue + damageValueBonus).toString();
+      }
+    }
+    handleRollRequest({
+      itemType: type,
+      weaponType,
+      itemName: item.name,
+      itemId: item.id,
+      itemRating: itemSystem.rating || 0,
+      itemActive: itemSystem.active,
+      // Merged linked skills
+      linkedAttackSkill: finalAttackSkill,
+      linkedAttackSpecialization: finalAttackSpec,
+      linkedDefenseSkill: finalDefenseSkill,
+      linkedDefenseSpecialization: finalDefenseSpec,
+      linkedAttribute: attackLinkedAttribute,
+      // Weapon properties
+      isWeaponFocus: itemSystem.isWeaponFocus || false,
+      damageValue: finalDamageValue,
+      // FINAL damage value (base + bonus)
+      damageValueBonus,
+      meleeRange: itemSystem.meleeRange,
+      shortRange: itemSystem.shortRange,
+      mediumRange: itemSystem.mediumRange,
+      longRange: itemSystem.longRange,
+      // Attack skill/spec from actor (based on weapon links)
+      skillName: attackSkillName,
+      skillLevel: attackSkillLevel,
+      specName: attackSpecName,
+      specLevel: attackSpecLevel,
+      // Actor information
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      // RR List
+      rrList: itemRRList
+    });
   }
   /**
    * REMOVED: Skill with weapon roll - dialog creation disabled
@@ -3045,25 +3250,77 @@ class NpcSheet extends ActorSheet {
     });
   }
   /**
-   * REMOVED: Skill roll handler - dialog creation disabled
+   * Handle rolling a skill (NPC)
    */
   async _onRollSkill(event) {
     event.preventDefault();
     const element = $(event.currentTarget);
     const itemId = element.data("item-id") || element.attr("data-item-id");
-    console.log("NPC skill roll disabled", { itemId });
+    if (!itemId) return;
+    const skill = this.actor.items.get(itemId);
+    if (!skill || skill.type !== "skill") return;
+    const skillSystem = skill.system;
+    const rating = skillSystem.rating || 0;
+    const linkedAttribute = skillSystem.linkedAttribute || "strength";
+    const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+    const skillRRSources = this.getRRSources("skill", skill.name);
+    const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
+    const allRRSources = [...skillRRSources, ...attributeRRSources];
+    handleRollRequest({
+      itemType: "skill",
+      itemName: skill.name,
+      itemId: skill.id,
+      itemRating: rating,
+      skillName: skill.name,
+      skillLevel: attributeValue + rating,
+      // Total dice pool (attribute + rating)
+      linkedAttribute,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: allRRSources
+    });
   }
   /**
-   * REMOVED: Specialization roll handler - dialog creation disabled
+   * Handle rolling a specialization (NPC)
    */
   async _onRollSpecialization(event) {
     event.preventDefault();
     const element = $(event.currentTarget);
     const itemId = element.data("item-id") || element.attr("data-item-id");
-    console.log("NPC specialization roll disabled", { itemId });
+    if (!itemId) return;
+    const specialization = this.actor.items.get(itemId);
+    if (!specialization || specialization.type !== "specialization") return;
+    const specSystem = specialization.system;
+    const linkedAttribute = specSystem.linkedAttribute || "strength";
+    const linkedSkillName = specSystem.linkedSkill;
+    const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+    const linkedSkill = this.actor.items.find((i) => i.type === "skill" && i.name === linkedSkillName);
+    const skillRating = linkedSkill ? linkedSkill.system.rating || 0 : 0;
+    const effectiveRating = skillRating + 2;
+    const specRRSources = this.getRRSources("specialization", specialization.name);
+    const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
+    const skillRRSources = linkedSkillName ? this.getRRSources("skill", linkedSkillName) : [];
+    const allRRSources = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    handleRollRequest({
+      itemType: "specialization",
+      itemName: specialization.name,
+      itemId: specialization.id,
+      specName: specialization.name,
+      specLevel: attributeValue + effectiveRating,
+      // Total dice pool (attribute + effectiveRating)
+      skillName: linkedSkillName,
+      skillLevel: skillRating,
+      // Just the skill rating (without attribute)
+      linkedAttribute,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: allRRSources
+    });
   }
   /**
-   * REMOVED: Attack with threshold - dialog prompt disabled
+   * Handle attack with threshold (NPC skill/spec without weapon)
    */
   async _onAttackThreshold(event) {
     event.preventDefault();
@@ -3071,7 +3328,27 @@ class NpcSheet extends ActorSheet {
     const itemId = element.data("item-id") || element.attr("data-item-id");
     const threshold = element.data("threshold") || element.attr("data-threshold");
     const itemName = element.data("item-name") || element.attr("data-item-name");
-    console.log("NPC attack with threshold disabled", { itemId, threshold, itemName });
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    const itemSystem = item.system;
+    const itemType = item.type;
+    const linkedAttribute = itemSystem.linkedAttribute || "strength";
+    const rrSources = this.getRRSources(itemType, item.name);
+    handleRollRequest({
+      itemType,
+      itemName: itemName || item.name,
+      itemId,
+      itemRating: itemSystem.rating || 0,
+      skillName: itemType === "skill" ? item.name : void 0,
+      specName: itemType === "specialization" ? item.name : void 0,
+      linkedAttribute,
+      threshold: threshold ? parseInt(threshold) : void 0,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: rrSources
+    });
   }
   /**
    * REMOVED: Defense roll prompt for NPC attack
@@ -3092,40 +3369,474 @@ class NpcSheet extends ActorSheet {
     console.log("NPC attack result display disabled", { attackName, attackThreshold, defenderActor: defenderActor.name });
   }
   /**
-   * REMOVED: Attack with threshold weapon
+   * Handle attacking with threshold (weapon)
    */
   async _onAttackThresholdWeapon(event) {
     event.preventDefault();
     const element = $(event.currentTarget);
     const itemId = element.data("item-id") || element.attr("data-item-id");
-    console.log("NPC weapon threshold attack disabled", { itemId });
+    const threshold = element.data("threshold") || element.attr("data-threshold");
+    const itemName = element.data("item-name") || element.attr("data-item-name");
+    element.data("weapon-vd") || element.attr("data-weapon-vd") || "0";
+    if (!itemId) return;
+    const weapon = this.actor.items.get(itemId);
+    if (!weapon || weapon.type !== "feat") return;
+    const weaponSystem = weapon.system;
+    const weaponType = weaponSystem.weaponType;
+    let weaponLinkedSkill = "";
+    let weaponLinkedSpecialization = "";
+    let weaponLinkedDefenseSkill = "";
+    let weaponLinkedDefenseSpecialization = "";
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        weaponLinkedSkill = weaponStats.linkedSkill || "";
+        weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+        weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+        weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+      }
+    }
+    const itemRRList = weaponSystem.rrList || [];
+    const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
+    const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
+    const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || "";
+    const finalDefenseSpec = weaponLinkedDefenseSpecialization || weaponSystem.linkedDefenseSpecialization || "";
+    let attackSkillName = void 0;
+    let attackSkillLevel = void 0;
+    let attackSpecName = void 0;
+    let attackSpecLevel = void 0;
+    let attackLinkedAttribute = void 0;
+    if (finalAttackSpec) {
+      const foundSpec = this.actor.items.find(
+        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
+      );
+      if (foundSpec) {
+        const specSystem = foundSpec.system;
+        attackSpecName = foundSpec.name;
+        attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && i.name === linkedSkillName
+          );
+          if (parentSkill) {
+            attackSkillName = parentSkill.name;
+            const skillRating = parentSkill.system.rating || 0;
+            attackSkillLevel = skillRating;
+            attackSpecLevel = attributeValue + skillRating + 2;
+          }
+        }
+      }
+    }
+    if (!attackSpecName && finalAttackSkill) {
+      const foundSkill = this.actor.items.find(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (foundSkill) {
+        attackSkillName = foundSkill.name;
+        attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const skillRating = foundSkill.system.rating || 0;
+        attackSkillLevel = attributeValue + skillRating;
+      }
+    }
+    const baseDamageValue = weaponSystem.damageValue || "0";
+    const damageValueBonus = weaponSystem.damageValueBonus || 0;
+    let finalDamageValue = baseDamageValue;
+    if (damageValueBonus > 0 && baseDamageValue !== "0") {
+      if (baseDamageValue === "FOR") {
+        finalDamageValue = `FOR+${damageValueBonus}`;
+      } else if (baseDamageValue.startsWith("FOR+")) {
+        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+      } else if (baseDamageValue !== "toxin") {
+        const baseValue = parseInt(baseDamageValue) || 0;
+        finalDamageValue = (baseValue + damageValueBonus).toString();
+      }
+    }
+    handleRollRequest({
+      itemType: "weapon",
+      weaponType,
+      itemName: itemName || weapon.name,
+      itemId,
+      itemRating: weaponSystem.rating || 0,
+      itemActive: weaponSystem.active,
+      linkedAttackSkill: finalAttackSkill,
+      linkedAttackSpecialization: finalAttackSpec,
+      linkedDefenseSkill: finalDefenseSkill,
+      linkedDefenseSpecialization: finalDefenseSpec,
+      linkedAttribute: attackLinkedAttribute,
+      isWeaponFocus: weaponSystem.isWeaponFocus || false,
+      damageValue: finalDamageValue,
+      // FINAL damage value (base + bonus)
+      damageValueBonus,
+      meleeRange: weaponSystem.meleeRange,
+      shortRange: weaponSystem.shortRange,
+      mediumRange: weaponSystem.mediumRange,
+      longRange: weaponSystem.longRange,
+      // Attack skill/spec from actor (based on weapon links)
+      skillName: attackSkillName,
+      skillLevel: attackSkillLevel,
+      specName: attackSpecName,
+      specLevel: attackSpecLevel,
+      threshold: threshold ? parseInt(threshold) : void 0,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: itemRRList
+    });
   }
   /**
-   * REMOVED: Attack with threshold spell
+   * Handle attacking with threshold (spell)
    */
   async _onAttackThresholdSpell(event) {
     event.preventDefault();
     const element = $(event.currentTarget);
     const itemId = element.data("item-id") || element.attr("data-item-id");
-    console.log("NPC spell threshold attack disabled", { itemId });
+    const threshold = element.data("threshold") || element.attr("data-threshold");
+    const itemName = element.data("item-name") || element.attr("data-item-name");
+    element.data("spell-vd") || element.attr("data-spell-vd") || "0";
+    if (!itemId) return;
+    const spell = this.actor.items.get(itemId);
+    if (!spell || spell.type !== "feat") return;
+    const spellSystem = spell.system;
+    const weaponType = spellSystem.weaponType;
+    let weaponLinkedSkill = "";
+    let weaponLinkedSpecialization = "";
+    let weaponLinkedDefenseSkill = "";
+    let weaponLinkedDefenseSpecialization = "";
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        weaponLinkedSkill = weaponStats.linkedSkill || "";
+        weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+        weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+        weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+      }
+    }
+    const itemRRList = spellSystem.rrList || [];
+    const finalAttackSkill = weaponLinkedSkill || spellSystem.linkedAttackSkill || "";
+    const finalAttackSpec = weaponLinkedSpecialization || spellSystem.linkedAttackSpecialization || "";
+    const finalDefenseSkill = weaponLinkedDefenseSkill || spellSystem.linkedDefenseSkill || "";
+    const finalDefenseSpec = weaponLinkedDefenseSpecialization || spellSystem.linkedDefenseSpecialization || "";
+    let attackSkillName = "";
+    let attackSkillLevel = 0;
+    let attackSpecName = "";
+    let attackSpecLevel = 0;
+    let attackLinkedAttribute = "";
+    if (finalAttackSpec) {
+      const foundSpec = this.actor.items.find(
+        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
+      );
+      if (foundSpec) {
+        const specSystem = foundSpec.system;
+        attackSpecName = foundSpec.name;
+        attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && i.name === linkedSkillName
+          );
+          if (parentSkill) {
+            attackSkillName = parentSkill.name;
+            const skillRating = parentSkill.system.rating || 0;
+            attackSkillLevel = skillRating;
+            attackSpecLevel = attributeValue + skillRating + 2;
+          }
+        }
+      }
+    }
+    if (!attackSpecName && finalAttackSkill) {
+      const foundSkill = this.actor.items.find(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (foundSkill) {
+        attackSkillName = foundSkill.name;
+        attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const skillRating = foundSkill.system.rating || 0;
+        attackSkillLevel = attributeValue + skillRating;
+      }
+    }
+    const baseDamageValue = spellSystem.damageValue || "0";
+    const damageValueBonus = spellSystem.damageValueBonus || 0;
+    let finalDamageValue = baseDamageValue;
+    if (damageValueBonus > 0 && baseDamageValue !== "0") {
+      if (baseDamageValue === "FOR") {
+        finalDamageValue = `FOR+${damageValueBonus}`;
+      } else if (baseDamageValue.startsWith("FOR+")) {
+        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+      } else if (baseDamageValue !== "toxin") {
+        const baseValue = parseInt(baseDamageValue) || 0;
+        finalDamageValue = (baseValue + damageValueBonus).toString();
+      }
+    }
+    handleRollRequest({
+      itemType: "spell",
+      weaponType,
+      itemName: itemName || spell.name,
+      itemId,
+      itemRating: spellSystem.rating || 0,
+      itemActive: spellSystem.active,
+      linkedAttackSkill: finalAttackSkill,
+      linkedAttackSpecialization: finalAttackSpec,
+      linkedDefenseSkill: finalDefenseSkill,
+      linkedDefenseSpecialization: finalDefenseSpec,
+      linkedAttribute: attackLinkedAttribute,
+      isWeaponFocus: spellSystem.isWeaponFocus || false,
+      damageValue: finalDamageValue,
+      // FINAL damage value (base + bonus)
+      damageValueBonus,
+      meleeRange: spellSystem.meleeRange,
+      shortRange: spellSystem.shortRange,
+      mediumRange: spellSystem.mediumRange,
+      longRange: spellSystem.longRange,
+      // Attack skill/spec from actor (based on spell links)
+      skillName: attackSkillName,
+      skillLevel: attackSkillLevel,
+      specName: attackSpecName,
+      specLevel: attackSpecLevel,
+      threshold: threshold ? parseInt(threshold) : void 0,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: itemRRList
+    });
   }
   /**
-   * REMOVED: NPC weapon dice roll
+   * Handle rolling NPC weapon with dice
    */
   async _onRollNPCWeaponDice(event) {
     event.preventDefault();
     const element = $(event.currentTarget);
     const itemId = element.data("item-id") || element.attr("data-item-id");
-    console.log("NPC weapon dice roll disabled", { itemId });
+    element.data("weapon-vd") || element.attr("data-weapon-vd") || "0";
+    if (!itemId) return;
+    const weapon = this.actor.items.get(itemId);
+    if (!weapon || weapon.type !== "feat") return;
+    const weaponSystem = weapon.system;
+    const weaponType = weaponSystem.weaponType;
+    let weaponLinkedSkill = "";
+    let weaponLinkedSpecialization = "";
+    let weaponLinkedDefenseSkill = "";
+    let weaponLinkedDefenseSpecialization = "";
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        weaponLinkedSkill = weaponStats.linkedSkill || "";
+        weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+        weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+        weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+      }
+    }
+    const itemRRList = weaponSystem.rrList || [];
+    const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
+    const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
+    const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || "";
+    const finalDefenseSpec = weaponLinkedDefenseSpecialization || weaponSystem.linkedDefenseSpecialization || "";
+    let attackSkillName = void 0;
+    let attackSkillLevel = void 0;
+    let attackSpecName = void 0;
+    let attackSpecLevel = void 0;
+    let attackLinkedAttribute = void 0;
+    if (finalAttackSpec) {
+      const foundSpec = this.actor.items.find(
+        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
+      );
+      if (foundSpec) {
+        const specSystem = foundSpec.system;
+        attackSpecName = foundSpec.name;
+        attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && i.name === linkedSkillName
+          );
+          if (parentSkill) {
+            attackSkillName = parentSkill.name;
+            const skillRating = parentSkill.system.rating || 0;
+            attackSkillLevel = skillRating;
+            attackSpecLevel = attributeValue + skillRating + 2;
+          }
+        }
+      }
+    }
+    if (!attackSpecName && finalAttackSkill) {
+      const foundSkill = this.actor.items.find(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (foundSkill) {
+        attackSkillName = foundSkill.name;
+        attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const skillRating = foundSkill.system.rating || 0;
+        attackSkillLevel = attributeValue + skillRating;
+      }
+    }
+    const baseDamageValue = weaponSystem.damageValue || "0";
+    const damageValueBonus = weaponSystem.damageValueBonus || 0;
+    let finalDamageValue = baseDamageValue;
+    if (damageValueBonus > 0 && baseDamageValue !== "0") {
+      if (baseDamageValue === "FOR") {
+        finalDamageValue = `FOR+${damageValueBonus}`;
+      } else if (baseDamageValue.startsWith("FOR+")) {
+        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+      } else if (baseDamageValue !== "toxin") {
+        const baseValue = parseInt(baseDamageValue) || 0;
+        finalDamageValue = (baseValue + damageValueBonus).toString();
+      }
+    }
+    handleRollRequest({
+      itemType: "weapon",
+      weaponType,
+      itemName: weapon.name,
+      itemId,
+      itemRating: weaponSystem.rating || 0,
+      itemActive: weaponSystem.active,
+      linkedAttackSkill: finalAttackSkill,
+      linkedAttackSpecialization: finalAttackSpec,
+      linkedDefenseSkill: finalDefenseSkill,
+      linkedDefenseSpecialization: finalDefenseSpec,
+      linkedAttribute: attackLinkedAttribute,
+      isWeaponFocus: weaponSystem.isWeaponFocus || false,
+      damageValue: finalDamageValue,
+      // FINAL damage value (base + bonus)
+      damageValueBonus,
+      meleeRange: weaponSystem.meleeRange,
+      shortRange: weaponSystem.shortRange,
+      mediumRange: weaponSystem.mediumRange,
+      longRange: weaponSystem.longRange,
+      // Attack skill/spec from actor (based on weapon links)
+      skillName: attackSkillName,
+      skillLevel: attackSkillLevel,
+      specName: attackSpecName,
+      specLevel: attackSpecLevel,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: itemRRList
+    });
   }
   /**
-   * REMOVED: NPC spell dice roll
+   * Handle rolling NPC spell with dice
    */
   async _onRollNPCSpellDice(event) {
     event.preventDefault();
     const element = $(event.currentTarget);
     const itemId = element.data("item-id") || element.attr("data-item-id");
-    console.log("NPC spell dice roll disabled", { itemId });
+    element.data("spell-vd") || element.attr("data-spell-vd") || "0";
+    if (!itemId) return;
+    const spell = this.actor.items.get(itemId);
+    if (!spell || spell.type !== "feat") return;
+    const spellSystem = spell.system;
+    const weaponType = spellSystem.weaponType;
+    let weaponLinkedSkill = "";
+    let weaponLinkedSpecialization = "";
+    let weaponLinkedDefenseSkill = "";
+    let weaponLinkedDefenseSpecialization = "";
+    if (weaponType && weaponType !== "custom-weapon") {
+      const weaponStats = WEAPON_TYPES[weaponType];
+      if (weaponStats) {
+        weaponLinkedSkill = weaponStats.linkedSkill || "";
+        weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+        weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+        weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+      }
+    }
+    const itemRRList = spellSystem.rrList || [];
+    const finalAttackSkill = weaponLinkedSkill || spellSystem.linkedAttackSkill || "";
+    const finalAttackSpec = weaponLinkedSpecialization || spellSystem.linkedAttackSpecialization || "";
+    const finalDefenseSkill = weaponLinkedDefenseSkill || spellSystem.linkedDefenseSkill || "";
+    const finalDefenseSpec = weaponLinkedDefenseSpecialization || spellSystem.linkedDefenseSpecialization || "";
+    let attackSkillName = "";
+    let attackSkillLevel = 0;
+    let attackSpecName = "";
+    let attackSpecLevel = 0;
+    let attackLinkedAttribute = "";
+    if (finalAttackSpec) {
+      const foundSpec = this.actor.items.find(
+        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
+      );
+      if (foundSpec) {
+        const specSystem = foundSpec.system;
+        attackSpecName = foundSpec.name;
+        attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && i.name === linkedSkillName
+          );
+          if (parentSkill) {
+            attackSkillName = parentSkill.name;
+            const skillRating = parentSkill.system.rating || 0;
+            attackSkillLevel = skillRating;
+            attackSpecLevel = attributeValue + skillRating + 2;
+          }
+        }
+      }
+    }
+    if (!attackSpecName && finalAttackSkill) {
+      const foundSkill = this.actor.items.find(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (foundSkill) {
+        attackSkillName = foundSkill.name;
+        attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        const attributeValue = attackLinkedAttribute ? this.actor.system.attributes?.[attackLinkedAttribute] || 0 : 0;
+        const skillRating = foundSkill.system.rating || 0;
+        attackSkillLevel = attributeValue + skillRating;
+      }
+    }
+    const baseDamageValue = spellSystem.damageValue || "0";
+    const damageValueBonus = spellSystem.damageValueBonus || 0;
+    let finalDamageValue = baseDamageValue;
+    if (damageValueBonus > 0 && baseDamageValue !== "0") {
+      if (baseDamageValue === "FOR") {
+        finalDamageValue = `FOR+${damageValueBonus}`;
+      } else if (baseDamageValue.startsWith("FOR+")) {
+        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+      } else if (baseDamageValue !== "toxin") {
+        const baseValue = parseInt(baseDamageValue) || 0;
+        finalDamageValue = (baseValue + damageValueBonus).toString();
+      }
+    }
+    handleRollRequest({
+      itemType: "spell",
+      weaponType,
+      itemName: spell.name,
+      itemId,
+      itemRating: spellSystem.rating || 0,
+      itemActive: spellSystem.active,
+      linkedAttackSkill: finalAttackSkill,
+      linkedAttackSpecialization: finalAttackSpec,
+      linkedDefenseSkill: finalDefenseSkill,
+      linkedDefenseSpecialization: finalDefenseSpec,
+      linkedAttribute: attackLinkedAttribute,
+      isWeaponFocus: spellSystem.isWeaponFocus || false,
+      damageValue: finalDamageValue,
+      // FINAL damage value (base + bonus)
+      damageValueBonus,
+      meleeRange: spellSystem.meleeRange,
+      shortRange: spellSystem.shortRange,
+      mediumRange: spellSystem.mediumRange,
+      longRange: spellSystem.longRange,
+      // Attack skill/spec from actor (based on spell links)
+      skillName: attackSkillName,
+      skillLevel: attackSkillLevel,
+      specName: attackSpecName,
+      specLevel: attackSpecLevel,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: itemRRList
+    });
   }
   /**
    * REMOVED: NPC weapon/spell roll with dice
@@ -3650,8 +4361,8 @@ class FeatSheet extends ItemSheet {
   }
   /**
    * Handle range improvement checkbox change
-   * When checked, automatically improves the range: none -> dice, dice -> ok
-   * When unchecked, automatically downgrades the range: ok -> dice, dice -> none
+   * When checked, automatically improves the range: none -> disadvantage, disadvantage -> ok
+   * When unchecked, automatically downgrades the range: ok -> disadvantage, disadvantage -> none
    */
   _onRangeImprovementChange(event) {
     event.preventDefault();
@@ -3676,14 +4387,14 @@ class FeatSheet extends ItemSheet {
     let newValue = currentValue;
     if (isChecked) {
       if (currentValue === "none") {
-        newValue = "dice";
-      } else if (currentValue === "dice") {
+        newValue = "disadvantage";
+      } else if (currentValue === "disadvantage") {
         newValue = "ok";
       }
     } else {
       if (currentValue === "ok") {
-        newValue = "dice";
-      } else if (currentValue === "dice") {
+        newValue = "disadvantage";
+      } else if (currentValue === "disadvantage") {
         newValue = "none";
       }
     }
@@ -4987,6 +5698,67 @@ class Migration_13_0_11 extends Migration {
     }
   }
 }
+class Migration_13_0_12 extends Migration {
+  get code() {
+    return "migration-13.0.12";
+  }
+  get version() {
+    return "13.0.12";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.12: Converting 'dice' to 'disadvantage' in weapon ranges");
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        if (sourceSystem._rangeDiceToDisadvantageMigrationVersion === "13.0.12") {
+          totalSkipped++;
+          continue;
+        }
+        const hasDiceValue = sourceSystem.meleeRange === "dice" || sourceSystem.shortRange === "dice" || sourceSystem.mediumRange === "dice" || sourceSystem.longRange === "dice";
+        if (!hasDiceValue) {
+          totalSkipped++;
+          continue;
+        }
+        const update = {
+          _id: item.id,
+          "system._rangeDiceToDisadvantageMigrationVersion": "13.0.12"
+        };
+        if (sourceSystem.meleeRange === "dice") {
+          update["system.meleeRange"] = "disadvantage";
+        }
+        if (sourceSystem.shortRange === "dice") {
+          update["system.shortRange"] = "disadvantage";
+        }
+        if (sourceSystem.mediumRange === "dice") {
+          update["system.mediumRange"] = "disadvantage";
+        }
+        if (sourceSystem.longRange === "dice") {
+          update["system.longRange"] = "disadvantage";
+        }
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.12: Converting ranges for "${item.name}" (ID: ${item.id})`);
+        updates.push(update);
+        totalUpdated++;
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.12 completed - Items updated: ${totalUpdated}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalUpdated > 0) {
+      const userMessage = game.i18n ? game.i18n.format("SRA2.MIGRATION.13_0_12_INFO", { count: totalUpdated }) : `Migration 13.0.12: Converted weapon ranges from "dice" to "disadvantage" for ${totalUpdated} item(s).`;
+      ui.notifications?.info(userMessage, { permanent: false });
+      console.log(SYSTEM.LOG.HEAD + "✓ Migration complete.");
+      console.log(SYSTEM.LOG.HEAD + "✓ All weapon ranges now use 'disadvantage' instead of 'dice'");
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
   static start() {
@@ -5018,6 +5790,7 @@ class SRA2System {
       declareMigration(new Migration_13_0_9());
       declareMigration(new Migration_13_0_10());
       declareMigration(new Migration_13_0_11());
+      declareMigration(new Migration_13_0_12());
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {

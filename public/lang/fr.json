@@ -329,7 +329,7 @@
                 "LONG_SHORT": "Longue",
                 "RANGE_NONE": "-",
                 "RANGE_OK": "OK",
-                "RANGE_DICE": "Dés",
+                "RANGE_DISADVANTAGE": "Désavantage",
                 "IMPROVE_RANGE": "Améliorer portée",
                 "RANGE_IMPROVEMENTS": "Améliorations de portée",
                 "DAMAGE_VALUE_BONUS": "Bonus de VD",
@@ -624,7 +624,8 @@
             "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif).",
             "13_0_9_INFO": "Migration 13.0.9 : {count} atout(s) ont été mis à jour - ajout du champ valeur aux effets narratifs et du champ 'premier atout' à {firstFeatCount} atout(s).",
             "13_0_10_INFO": "Migration 13.0.10 : {count} atout(s) mis à jour - système de coût simplifié (gratuit 0¥, équipement 2500¥, avancé 5000¥). {specializedCount} équipement(s) spécialisé(s) converti(s) en avancé, {featCount} atout(s) converti(s).",
-            "13_0_11_INFO": "Migration 13.0.11 : {count} arme(s) mise(s) à jour - ajout des champs de liaison aux spécialisations d'attaque et de défense."
+            "13_0_11_INFO": "Migration 13.0.11 : {count} arme(s) mise(s) à jour - ajout des champs de liaison aux spécialisations d'attaque et de défense.",
+            "13_0_12_INFO": "Migration 13.0.12 : {count} arme(s) mise(s) à jour - portées 'dice' converties en 'disadvantage'."
         }
     }
 }

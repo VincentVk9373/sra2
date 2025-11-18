@@ -545,8 +545,8 @@ export class FeatSheet extends ItemSheet {
 
   /**
    * Handle range improvement checkbox change
-   * When checked, automatically improves the range: none -> dice, dice -> ok
-   * When unchecked, automatically downgrades the range: ok -> dice, dice -> none
+   * When checked, automatically improves the range: none -> disadvantage, disadvantage -> ok
+   * When unchecked, automatically downgrades the range: ok -> disadvantage, disadvantage -> none
    */
   private _onRangeImprovementChange(event: Event): void {
     event.preventDefault();
@@ -578,18 +578,18 @@ export class FeatSheet extends ItemSheet {
     let newValue = currentValue;
     
     if (isChecked) {
-      // Improve the range: none -> dice, dice -> ok
+      // Improve the range: none -> disadvantage, disadvantage -> ok
       if (currentValue === 'none') {
-        newValue = 'dice';
-      } else if (currentValue === 'dice') {
+        newValue = 'disadvantage';
+      } else if (currentValue === 'disadvantage') {
         newValue = 'ok';
       }
       // If already 'ok', keep it at 'ok'
     } else {
-      // Downgrade the range: ok -> dice, dice -> none
+      // Downgrade the range: ok -> disadvantage, disadvantage -> none
       if (currentValue === 'ok') {
-        newValue = 'dice';
-      } else if (currentValue === 'dice') {
+        newValue = 'disadvantage';
+      } else if (currentValue === 'disadvantage') {
         newValue = 'none';
       }
       // If already 'none', keep it at 'none'
