@@ -67,7 +67,7 @@ export class RollDialog extends Application {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'roll-dialog'],
       template: 'systems/sra2/templates/roll-dialog.hbs',
-      width: 650,
+      width: 760,
       height: 575,
       resizable: true,
       minimizable: false,

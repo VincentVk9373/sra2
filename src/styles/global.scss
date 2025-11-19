@@ -595,6 +595,33 @@ select {
                 i {
                     color: #667eea;
                 }
+
+                // Defense roll type
+                &.roll-type-defense {
+                    color: #2196f3;
+
+                    i {
+                        color: #2196f3;
+                    }
+                }
+
+                // Counter-attack roll type
+                &.roll-type-counterattack {
+                    color: #f44336;
+
+                    i {
+                        color: #f44336;
+                    }
+                }
+
+                // Attack roll type
+                &.roll-type-attack {
+                    color: #f44336;
+
+                    i {
+                        color: #f44336;
+                    }
+                }
             }
 
         }
@@ -743,6 +770,154 @@ select {
                 color: #ff4444;
                 box-shadow: 0 0 20px rgba(139, 0, 0, 0.8);
                 animation: pulse-disaster 1s ease-in-out infinite;
+            }
+        }
+    }
+
+    .defense-result {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+
+        .defense-comparison {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(25, 118, 210, 0.15) 100%);
+            border-radius: 8px;
+            border: 2px solid #2196f3;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+
+            .comparison-header {
+                display: flex;
+                gap:8px;
+                align-items: center;
+                justify-content: center;
+                padding-bottom: 4px;
+                margin-bottom: 8px;
+                border-bottom: 2px solid rgba(33, 150, 243, 0.3);
+                font-size: 1.1rem;
+                font-weight: bold;
+                color: #1976d2;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+
+                i {
+                    font-size: 1.2rem;
+                    color: #2196f3;
+                }
+            }
+
+            .comparison-details {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                margin-bottom: 8px;
+
+                .comparison-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding-left: 8px;
+                    background: rgba(0, 0, 0, 0.1);
+                    border-radius: 6px;
+
+                    .comparison-label {
+                        font-weight: 600;
+                        color: #ccc;
+                        font-size: 0.95rem;
+                    }
+
+                    .comparison-value {
+                        font-size: 1.5rem;
+                        font-weight: 900;
+                        padding: 0.25rem 0.75rem;
+                        border-radius: 6px;
+                        min-width: 3rem;
+                        text-align: center;
+
+                        &.attack {
+                            background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(211, 47, 47, 0.3) 100%);
+                            border: 2px solid #f44336;
+                            color: #ffebee;
+                            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+                        }
+
+                        &.defense {
+                            background: linear-gradient(135deg, rgba(33, 150, 243, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%);
+                            border: 2px solid #2196f3;
+                            color: #e3f2fd;
+                            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+                        }
+                    }
+                }
+            }
+
+            .defense-outcome {
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+
+                i {
+                    font-size: 1.3rem;
+                }
+
+                &.success {
+                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+                    border: 2px solid #4caf50;
+                    color: #c8e6c9;
+                    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+
+                    i {
+                        color: #4caf50;
+                    }
+                }
+
+                &.failed {
+                    background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(183, 28, 28, 0.3) 100%);
+                    border: 2px solid #f44336;
+                    color: #ffcdd2;
+                    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+
+                    i {
+                        color: #f44336;
+                    }
+                }
+            }
+
+            .calculated-damage {
+                padding: 8px;
+                background: linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(211, 47, 47, 0.2) 100%);
+                border-radius: 8px;
+                border: 2px solid #f44336;
+                text-align: center;
+                box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+
+                .damage-label {
+                    display: block;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    color: #ffcdd2;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    margin-bottom: 0.5rem;
+                }
+
+                .damage-value {
+                    display: block;
+                    font-size: 2.5rem;
+                    font-weight: 900;
+                    color: #ffebee;
+                    text-shadow: 0 2px 4px rgba(244, 67, 54, 0.5);
+                    line-height: 1;
+                }
             }
         }
     }

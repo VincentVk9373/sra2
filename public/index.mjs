@@ -1666,15 +1666,50 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       img: tokenImg
     };
   }
+  let defenseResult = null;
+  let calculatedDamage = null;
+  let attackFailed = false;
+  if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
+    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+    const defenseSuccesses = rollResult.totalSuccesses;
+    if (attackSuccesses >= defenseSuccesses) {
+      const damageValue = parseInt(rollData.attackRollData.damageValue || "0", 10) || 0;
+      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+      attackFailed = false;
+    } else {
+      attackFailed = true;
+      calculatedDamage = 0;
+    }
+    defenseResult = {
+      attackSuccesses,
+      defenseSuccesses,
+      calculatedDamage,
+      attackFailed
+    };
+  } else if (rollData.isCounterAttack && rollData.attackRollResult) {
+    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+    const counterAttackSuccesses = rollResult.totalSuccesses;
+    console.log("=== COUNTER-ATTACK RESULTS ===");
+    console.log("Attack Successes:", attackSuccesses);
+    console.log("Counter-Attack Successes:", counterAttackSuccesses);
+    console.log("==============================");
+    defenseResult = {
+      attackSuccesses,
+      counterAttackSuccesses
+    };
+  }
   const templateData = {
     attacker,
     defender: defenderData,
     rollData,
     rollResult,
     isAttack,
+    isDefend: rollData.isDefend || false,
+    isCounterAttack: rollData.isCounterAttack || false,
     skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || "Unknown",
     itemName: rollData.itemName,
-    damageValue: rollData.damageValue
+    damageValue: rollData.damageValue,
+    defenseResult
   };
   const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
   const messageData = {
@@ -5239,7 +5274,7 @@ class RollDialog extends Application {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "roll-dialog"],
       template: "systems/sra2/templates/roll-dialog.hbs",
-      width: 650,
+      width: 760,
       height: 575,
       resizable: true,
       minimizable: false,
@@ -6862,7 +6897,10 @@ class SRA2System {
           rrList: defenseRRList,
           // Defense flags
           isDefend: true,
-          isCounterAttack: false
+          isCounterAttack: false,
+          // Store original attack roll data for comparison
+          attackRollResult: rollResult,
+          attackRollData: rollData
         };
         const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
         const dialog = new RollDialog2(defenseRollData);
@@ -7000,7 +7038,10 @@ class SRA2System {
           rrList: counterAttackRRList,
           // Counter-attack flags
           isDefend: false,
-          isCounterAttack: true
+          isCounterAttack: true,
+          // Store original attack roll data for comparison
+          attackRollResult: rollResult,
+          attackRollData: rollData
         };
         const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
         const dialog = new RollDialog2(counterAttackRollData);

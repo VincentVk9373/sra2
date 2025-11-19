@@ -461,7 +461,11 @@ export class SRA2System {
           
           // Defense flags
           isDefend: true,
-          isCounterAttack: false
+          isCounterAttack: false,
+          
+          // Store original attack roll data for comparison
+          attackRollResult: rollResult,
+          attackRollData: rollData
         };
 
         // Import and open RollDialog
@@ -649,7 +653,11 @@ export class SRA2System {
           
           // Counter-attack flags
           isDefend: false,
-          isCounterAttack: true
+          isCounterAttack: true,
+          
+          // Store original attack roll data for comparison
+          attackRollResult: rollResult,
+          attackRollData: rollData
         };
 
         // Import and open RollDialog

@@ -3,8 +3,16 @@
         <img class="roller-portrait" src="{{attacker.img}}" alt="{{attacker.name}}" title="{{attacker.name}}" />
         <div class="roller-info">
             <div class="roller-name">{{attacker.name}}</div>
-            {{#if isAttack}}
-            <div class="roll-type">
+            {{#if isDefend}}
+            <div class="roll-type roll-type-defense">
+                <i class="fas fa-shield-alt"></i> Se défendre - {{skillName}}
+            </div>
+            {{else if isCounterAttack}}
+            <div class="roll-type roll-type-counterattack">
+                <i class="fas fa-fist-raised"></i> Contre attaqué - {{skillName}}
+            </div>
+            {{else if isAttack}}
+            <div class="roll-type roll-type-attack">
                 <i class="fas fa-sword"></i> {{#if itemName}}{{itemName}}{{else}}{{skillName}}{{/if}}{{#if damageValue}} <span class="defense-value">(VD: {{damageValue}})</span>{{/if}}
             </div>
             {{else}}
@@ -80,6 +88,42 @@
         </div>
         {{/if}}
     </div>
+
+    <!-- Defense Result -->
+    {{#if isDefend}}
+    {{#if defenseResult}}
+    <div class="defense-result">
+        <div class="defense-comparison">
+            <div class="comparison-header">
+                <i class="fas fa-balance-scale"></i> Résultat
+            </div>
+            <div class="comparison-details">
+                <div class="comparison-item">
+                    <span class="comparison-label">Succès d'attaque:</span>
+                    <span class="comparison-value attack">{{defenseResult.attackSuccesses}}</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="comparison-label">Succès de défense:</span>
+                    <span class="comparison-value defense">{{defenseResult.defenseSuccesses}}</span>
+                </div>
+            </div>
+            {{#if defenseResult.attackFailed}}
+            <div class="defense-outcome failed">
+                <i class="fas fa-times-circle"></i> L'attaque a échoué
+            </div>
+            {{else}}
+            <div class="defense-outcome success">
+                <i class="fas fa-check-circle"></i> L'attaque a réussi
+            </div>
+            <div class="calculated-damage">
+                <span class="damage-label">Dégâts:</span>
+                <span class="damage-value">{{defenseResult.calculatedDamage}}</span>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
+    {{/if}}
 
     <!-- Attack Actions (for defender) -->
     {{#if isAttack}}

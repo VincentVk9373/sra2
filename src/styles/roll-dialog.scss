@@ -83,6 +83,34 @@
             }
         }
 
+        .skill-roll-name,.counterattack-skill {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .defense-section {
+            .defense-display {
+                .defense-skill {
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    color: #e0e0e0;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.3rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 3px;
+                }
+            }
+        }
+
         .target-section {
             .target-display {
                 .target-info {

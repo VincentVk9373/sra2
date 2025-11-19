@@ -25,10 +25,64 @@
             </div>
         </section>
         {{/if}}
+        {{#if rollData.isCounterAttack}}
+        <section class="roll-section counterattack-section">
+            <h3 class="section-title">
+                <i class="fas fa-fist-raised"></i> Contre attaque
+            </h3>
+            <div class="counterattack-display">
+                <div class="counterattack-skill">
+                    {{#if rollData.specName}}
+                    {{rollData.specName}} (Spécialisation)
+                    {{else if rollData.skillName}}
+                    {{rollData.skillName}} (Compétence)
+                    {{else}}
+                    Compétence de contre-attaque
+                    {{/if}}
+                </div>
+            </div>
+        </section>
+        {{else if rollData.isDefend}}
+        <section class="roll-section defense-section">
+            <h3 class="section-title">
+                <i class="fas fa-shield-alt"></i> Se défendre
+            </h3>
+            <div class="defense-display">
+                <div class="defense-skill">
+                    {{#if rollData.specName}}
+                    {{rollData.specName}} (Spécialisation)
+                    {{else if rollData.skillName}}
+                    {{rollData.skillName}} (Compétence)
+                    {{else}}
+                    Compétence de défense
+                    {{/if}}
+                </div>
+            </div>
+        </section>
+        {{else}}
+        {{#unless rollData.itemName}}
+        {{#if rollData.skillName}}
+        <section class="roll-section skill-roll-section">
+            <h3 class="section-title">
+                <i class="fas fa-dice"></i> Faire un jet de
+            </h3>
+            <div class="skill-roll-display">
+                <div class="skill-roll-name">
+                    {{#if rollData.specName}}
+                    {{rollData.specName}} (Spécialisation)
+                    {{else}}
+                    {{rollData.skillName}} (Compétence)
+                    {{/if}}
+                </div>
+            </div>
+        </section>
+        {{/if}}
+        {{/unless}}
+        {{/if}}
         <!-- Target Information -->
         <section class="roll-section target-section">
             <h3 class="section-title">
-                <i class="fas fa-bullseye"></i> Cible
+                <i class="fas fa-bullseye"></i> {{#if rollData.isDefend}}Attaquant{{else}}Cible{{/if}}
                 {{#if distanceText}}
                 <div class="target-distance"> |
                     <i class="fas fa-ruler"></i> {{distanceText}}

@@ -205,6 +205,14 @@ export interface RollRequestData {
   
   // Roll mode
   rollMode?: 'normal' | 'disadvantage' | 'advantage';
+  
+  // Defense/Counter-attack flags
+  isDefend?: boolean;
+  isCounterAttack?: boolean;
+  
+  // Attack roll data (for defense/counter-attack rolls)
+  attackRollResult?: RollResult;
+  attackRollData?: RollRequestData;
 }
 
 /**
@@ -481,6 +489,49 @@ async function createRollChatMessage(
     };
   }
 
+  // Handle defense/counter-attack rolls
+  let defenseResult: any = null;
+  let calculatedDamage: number | null = null;
+  let attackFailed: boolean = false;
+  
+  if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
+    // Defense roll: compare with attack
+    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+    const defenseSuccesses = rollResult.totalSuccesses;
+    
+    if (attackSuccesses >= defenseSuccesses) {
+      // Attack succeeds, calculate damage
+      const damageValue = parseInt(rollData.attackRollData.damageValue || '0', 10) || 0;
+      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+      attackFailed = false;
+    } else {
+      // Attack fails
+      attackFailed = true;
+      calculatedDamage = 0;
+    }
+    
+    defenseResult = {
+      attackSuccesses: attackSuccesses,
+      defenseSuccesses: defenseSuccesses,
+      calculatedDamage: calculatedDamage,
+      attackFailed: attackFailed
+    };
+  } else if (rollData.isCounterAttack && rollData.attackRollResult) {
+    // Counter-attack: log results
+    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+    const counterAttackSuccesses = rollResult.totalSuccesses;
+    
+    console.log('=== COUNTER-ATTACK RESULTS ===');
+    console.log('Attack Successes:', attackSuccesses);
+    console.log('Counter-Attack Successes:', counterAttackSuccesses);
+    console.log('==============================');
+    
+    defenseResult = {
+      attackSuccesses: attackSuccesses,
+      counterAttackSuccesses: counterAttackSuccesses
+    };
+  }
+
   // Prepare template data
   const templateData: any = {
     attacker: attacker,
@@ -488,9 +539,12 @@ async function createRollChatMessage(
     rollData: rollData,
     rollResult: rollResult,
     isAttack: isAttack,
+    isDefend: rollData.isDefend || false,
+    isCounterAttack: rollData.isCounterAttack || false,
     skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || 'Unknown',
     itemName: rollData.itemName,
-    damageValue: rollData.damageValue
+    damageValue: rollData.damageValue,
+    defenseResult: defenseResult
   };
 
   // Render template
