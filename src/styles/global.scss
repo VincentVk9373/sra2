@@ -380,7 +380,7 @@ select {
                 }
             }
         }
-            
+
     }
 
     .combat-outcome-header {
@@ -548,7 +548,7 @@ select {
 
     .roll-header {
         display: grid;
-        grid-template-columns: 64px 1fr;
+        grid-template-columns: 48px 1fr;
         align-items: center;
         justify-content: space-between;
         padding-bottom: 0.5rem;
@@ -559,8 +559,8 @@ select {
             flex-direction: column;
 
             .roller-portrait {
-                width: 64px;
-                height: 64px;
+                width: 48px;
+                height: 48px;
                 border-radius: 50%;
                 border: 2px solid rgba(255, 255, 255, 0.2);
                 object-fit: cover;
@@ -584,6 +584,7 @@ select {
                 font-size: 1rem;
                 padding-bottom: 4px;
             }
+
             .roll-type {
                 display: flex;
                 align-items: center;
@@ -596,44 +597,6 @@ select {
                 }
             }
 
-            .defender-info {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-
-                i.fa-arrow-right {
-                    color: #667eea;
-                    font-size: 0.9rem;
-                }
-
-                .defender-portrait {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 50%;
-                    border: 2px solid rgba(255, 255, 255, 0.2);
-                    object-fit: cover;
-                }
-
-                .defender-portrait-placeholder {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.1);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 2px solid rgba(255, 255, 255, 0.2);
-                    color: #999;
-                    font-size: 1rem;
-                }
-
-                .defender-name {
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                    color: #999;
-                }
-            }
         }
 
     }
@@ -785,47 +748,84 @@ select {
     }
 
     .attack-actions {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 2px solid rgba(255, 255, 255, 0.1);
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 2px solid rgba(0, 0, 0, 0.3);
 
-        button {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
+        .defender-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
 
-            i {
-                margin-right: 0.5rem;
+            .defender-portrait {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                object-fit: cover;
             }
 
-            &.defend-button {
-                background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-                color: #fff;
-                border-color: #1565c0;
+            .defender-portrait-placeholder {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                color: #222;
+                font-size: 1rem;
+            }
 
-                &:hover {
-                    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-                    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-                    transform: translateY(-2px);
+            .defender-name {
+                font-weight: 500;
+                font-size: 0.95rem;
+                color: #222;
+            }
+        }
+
+        .attack-actions-buttons {
+            display: flex;
+            gap:4px;
+            margin-top:4px;
+            button {
+                flex: 1;
+                padding: 0.75rem 1rem;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                border: 2px solid transparent;
+
+                i {
+                    margin-right: 0.5rem;
                 }
-            }
 
-            &.counter-attack-button {
-                background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-                color: #fff;
-                border-color: #c62828;
+                &.defend-button {
+                    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+                    color: #fff;
+                    border-color: #1565c0;
 
-                &:hover {
-                    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
-                    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
-                    transform: translateY(-2px);
+                    &:hover {
+                        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+                        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+                        transform: translateY(-2px);
+                    }
+                }
+
+                &.counter-attack-button {
+                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+                    color: #fff;
+                    border-color: #c62828;
+
+                    &:hover {
+                        background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+                        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+                        transform: translateY(-2px);
+                    }
                 }
             }
         }

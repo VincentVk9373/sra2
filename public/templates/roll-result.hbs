@@ -12,19 +12,6 @@
                 <i class="fas fa-book"></i> {{skillName}}
             </div>
             {{/if}}
-            {{#if defender}}
-            <div class="defender-info">
-                <i class="fas fa-arrow-right"></i>
-                {{#if defender.img}}
-                <img class="defender-portrait" src="{{defender.img}}" alt="{{defender.name}}" title="{{defender.name}}" />
-                {{else}}
-                <div class="defender-portrait-placeholder">
-                    <i class="fas fa-user"></i>
-                </div>
-                {{/if}}
-                <span class="defender-name">{{defender.name}}</span>
-            </div>
-            {{/if}}
         </div>
     </div>
 
@@ -100,12 +87,24 @@
     <div class="attack-actions" data-attacker-id="{{attacker.id}}" data-attacker-uuid="{{attacker.uuid}}"
         data-defender-id="{{defender.id}}" data-defender-uuid="{{defender.uuid}}" data-roll-result="{{json rollResult}}"
         data-roll-data="{{json rollData}}">
-        <button type="button" class="defend-button">
-            <i class="fas fa-shield-alt"></i> {{localize "SRA2.COMBAT.DEFEND"}}
-        </button>
-        <button type="button" class="counter-attack-button">
-            <i class="fas fa-sword"></i> {{localize "SRA2.COMBAT.ATTACK"}}
-        </button>
+        <div class="defender-info">
+            {{#if defender.img}}
+            <img class="defender-portrait" src="{{defender.img}}" alt="{{defender.name}}" title="{{defender.name}}" />
+            {{else}}
+            <div class="defender-portrait-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            {{/if}}
+            <span class="defender-name">{{defender.name}}</span>
+        </div>
+        <div class="attack-actions-buttons">
+            <button type="button" class="defend-button">
+                <i class="fas fa-shield-alt"></i> {{localize "SRA2.COMBAT.DEFEND"}}
+            </button>
+            <button type="button" class="counter-attack-button">
+                <i class="fas fa-sword"></i> {{localize "SRA2.COMBAT.ATTACK"}}
+            </button>
+        </div>
     </div>
     {{/if}}
     {{/if}}
