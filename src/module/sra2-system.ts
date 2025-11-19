@@ -420,12 +420,166 @@ export class SRA2System {
           // We'll set targetToken in RollDialog constructor
           
           // RR List
-          rrList: defenseRRList
+          rrList: defenseRRList,
+          
+          // Defense flags
+          isDefend: true,
+          isCounterAttack: false
         };
 
         // Import and open RollDialog
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(defenseRollData);
+        
+        // Set target token to attacker's token
+        if (attackerToken) {
+          (dialog as any).targetToken = attackerToken;
+        }
+        
+        dialog.render(true);
+      });
+
+      // Counter-attack button handler
+      html.find('.counter-attack-button').on('click', async (event: any) => {
+        event.preventDefault();
+        
+        // Get data from message flags (more reliable)
+        const messageFlags = message.flags?.sra2;
+        if (!messageFlags) {
+          console.error('Missing message flags');
+          return;
+        }
+
+        const rollResult = messageFlags.rollResult;
+        const rollData = messageFlags.rollData;
+        
+        if (!rollResult || !rollData) {
+          console.error('Missing roll data in message flags');
+          return;
+        }
+
+        // Get actors from flags
+        let attacker: any = null;
+        let defender: any = null;
+        
+        if (messageFlags.attackerId) {
+          attacker = game.actors?.get(messageFlags.attackerId) || null;
+        } else if (messageFlags.attackerUuid) {
+          attacker = (foundry.utils as any)?.fromUuidSync?.(messageFlags.attackerUuid) || null;
+        }
+        
+        if (messageFlags.defenderId) {
+          defender = game.actors?.get(messageFlags.defenderId) || null;
+        } else if (messageFlags.defenderUuid) {
+          defender = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+        }
+
+        // Get tokens from canvas
+        let attackerToken: any = null;
+        let defenderToken: any = null;
+        
+        if (attacker) {
+          attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
+            return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
+          }) || null;
+        }
+        
+        if (defender) {
+          defenderToken = canvas?.tokens?.placeables?.find((token: any) => {
+            return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
+          }) || null;
+        }
+
+        // Open counter-attack roll dialog
+        if (!defender) {
+          console.error('Missing defender');
+          return;
+        }
+
+        // Get defender token from UUID (for NPCs, we need the token instance)
+        // For NPCs, the actor is linked to the token, so we need to use the token's actor
+        let defenderTokenForRoll: any = null;
+        let defenderActorForRoll: any = defender; // Default to defender actor
+        
+        const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || 'Unknown';
+        if (defenderTokenUuid && defenderTokenUuid !== 'Unknown') {
+          try {
+            defenderTokenForRoll = (foundry.utils as any)?.fromUuidSync?.(defenderTokenUuid) || null;
+            // For NPCs, use the token's actor (which may be different from the base actor)
+            if (defenderTokenForRoll?.actor) {
+              defenderActorForRoll = defenderTokenForRoll.actor;
+            }
+          } catch (e) {
+            // Fallback to finding token on canvas
+            defenderTokenForRoll = defenderToken;
+            if (defenderToken?.actor) {
+              defenderActorForRoll = defenderToken.actor;
+            }
+          }
+        } else {
+          defenderTokenForRoll = defenderToken;
+          if (defenderToken?.actor) {
+            defenderActorForRoll = defenderToken.actor;
+          }
+        }
+
+        // Counter-attack uses "Combat rapproché" skill
+        const counterAttackSkill = 'Combat rapproché';
+        
+        // Find the skill in defender's items
+        const counterAttackSkillItem = defenderActorForRoll.items.find((item: any) => 
+          item.type === 'skill' && item.name === counterAttackSkill
+        );
+
+        // Calculate skill level for counter-attack
+        let counterAttackSkillLevel: number | undefined = undefined;
+        let counterAttackLinkedAttribute: string | undefined = undefined;
+
+        if (counterAttackSkillItem) {
+          const skillSystem = counterAttackSkillItem.system as any;
+          const skillRating = skillSystem.rating || 0;
+          counterAttackLinkedAttribute = skillSystem.linkedAttribute || 'strength';
+          const attributeValue = counterAttackLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[counterAttackLinkedAttribute] || 0) : 0;
+          
+          counterAttackSkillLevel = attributeValue + skillRating;
+        }
+
+        // Get RR sources for counter-attack skill
+        const { getRRSources } = await import('./helpers/sheet-helpers.js');
+        let counterAttackRRList: any[] = [];
+        if (counterAttackSkillItem) {
+          const rrSources = getRRSources(defenderActorForRoll, 'skill', counterAttackSkill);
+          counterAttackRRList = rrSources.map((rr: any) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        }
+
+        // Prepare counter-attack roll data
+        const counterAttackRollData: any = {
+          // Use "Combat rapproché" skill
+          skillName: counterAttackSkill,
+          linkedAttribute: counterAttackLinkedAttribute,
+          skillLevel: counterAttackSkillLevel,
+          
+          // Actor is the defender (use token's actor UUID for NPCs)
+          actorId: defenderActorForRoll.id,
+          actorUuid: defenderActorForRoll.uuid,
+          
+          // Target is the attacker
+          // We'll set targetToken in RollDialog constructor
+          
+          // RR List
+          rrList: counterAttackRRList,
+          
+          // Counter-attack flags
+          isDefend: false,
+          isCounterAttack: true
+        };
+
+        // Import and open RollDialog
+        const { RollDialog } = await import('./applications/roll-dialog.js');
+        const dialog = new RollDialog(counterAttackRollData);
         
         // Set target token to attacker's token
         if (attackerToken) {

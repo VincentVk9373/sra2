@@ -101,9 +101,11 @@
             <button type="button" class="defend-button">
                 <i class="fas fa-shield-alt"></i> {{localize "SRA2.COMBAT.DEFEND"}}
             </button>
+            {{#if (eq rollData.skillName "Combat rapproché")}}
             <button type="button" class="counter-attack-button">
                 <i class="fas fa-sword"></i> {{localize "SRA2.COMBAT.ATTACK"}}
             </button>
+            {{/if}}
         </div>
     </div>
     {{/if}}
