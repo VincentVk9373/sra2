@@ -105,7 +105,7 @@ export class RollDialog extends Application {
         calculatedRange = 'melee';
       } else if (distance >= 3 && distance <= 15) {
         calculatedRange = 'short';
-      } else if (distance >= 16 && distance <= 60) {
+      } else if (distance > 15 && distance <= 60) {
         calculatedRange = 'medium';
       } else if (distance > 60) {
         calculatedRange = 'long';
@@ -163,7 +163,7 @@ export class RollDialog extends Application {
     context.rangeOptions = {
       melee: { label: 'Mêlée (< 3m)', value: meleeRange },
       short: { label: 'Portée courte (3-15m)', value: shortRange },
-      medium: { label: 'Portée moyenne (16-60m)', value: mediumRange },
+      medium: { label: 'Portée moyenne (15-60m)', value: mediumRange },
       long: { label: 'Portée longue (> 60m)', value: longRange }
     };
 
