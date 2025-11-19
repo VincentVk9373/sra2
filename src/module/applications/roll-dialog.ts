@@ -49,6 +49,53 @@ export class RollDialog extends Application {
       targetToken: this.targetToken
     };
 
+    // Calculate distance between protagonist and target
+    let distance: number | null = null;
+    let distanceText: string = '';
+    
+    if (this.actor && this.targetToken && canvas?.grid) {
+      // Get protagonist token
+      const protagonistToken = canvas?.tokens?.placeables?.find((token: any) => {
+        return token.actor?.id === this.actor.id || token.actor?.uuid === this.actor.uuid;
+      });
+      
+      if (protagonistToken && this.targetToken) {
+        try {
+          // Calculate distance using Foundry's grid measurement
+          const grid = canvas.grid as any;
+          const distancePixels = grid.measureDistance(
+            { x: protagonistToken.x, y: protagonistToken.y },
+            { x: this.targetToken.x, y: this.targetToken.y },
+            { gridSpaces: true }
+          );
+          
+          if (typeof distancePixels === 'number' && !isNaN(distancePixels)) {
+            distance = Math.round(distancePixels * 10) / 10; // Round to 1 decimal
+            
+            // Get grid units from scene
+            const scene = canvas?.scene;
+            const gridUnits = (scene?.grid as any)?.units || 'm';
+            distanceText = `${distance} ${gridUnits}`;
+          }
+        } catch (e) {
+          // Fallback: calculate euclidean distance
+          const dx = this.targetToken.x - protagonistToken.x;
+          const dy = this.targetToken.y - protagonistToken.y;
+          const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+          const gridSize = (canvas.grid as any)?.size || 1;
+          const gridDistance = pixelDistance / gridSize;
+          distance = Math.round(gridDistance * 10) / 10;
+          
+          const scene = canvas?.scene;
+          const gridUnits = (scene?.grid as any)?.units || 'm';
+          distanceText = `${distance} ${gridUnits}`;
+        }
+      }
+    }
+    
+    context.distance = distance;
+    context.distanceText = distanceText;
+
     // Calculate dice pool
     let dicePool = 0;
     if (this.rollData.specLevel !== undefined) {

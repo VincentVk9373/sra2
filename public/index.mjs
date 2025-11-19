@@ -5025,6 +5025,41 @@ class RollDialog extends Application {
       actor: this.actor,
       targetToken: this.targetToken
     };
+    let distance = null;
+    let distanceText = "";
+    if (this.actor && this.targetToken && canvas?.grid) {
+      const protagonistToken = canvas?.tokens?.placeables?.find((token) => {
+        return token.actor?.id === this.actor.id || token.actor?.uuid === this.actor.uuid;
+      });
+      if (protagonistToken && this.targetToken) {
+        try {
+          const grid = canvas.grid;
+          const distancePixels = grid.measureDistance(
+            { x: protagonistToken.x, y: protagonistToken.y },
+            { x: this.targetToken.x, y: this.targetToken.y },
+            { gridSpaces: true }
+          );
+          if (typeof distancePixels === "number" && !isNaN(distancePixels)) {
+            distance = Math.round(distancePixels * 10) / 10;
+            const scene = canvas?.scene;
+            const gridUnits = scene?.grid?.units || "m";
+            distanceText = `${distance} ${gridUnits}`;
+          }
+        } catch (e) {
+          const dx = this.targetToken.x - protagonistToken.x;
+          const dy = this.targetToken.y - protagonistToken.y;
+          const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+          const gridSize = canvas.grid?.size || 1;
+          const gridDistance = pixelDistance / gridSize;
+          distance = Math.round(gridDistance * 10) / 10;
+          const scene = canvas?.scene;
+          const gridUnits = scene?.grid?.units || "m";
+          distanceText = `${distance} ${gridUnits}`;
+        }
+      }
+    }
+    context.distance = distance;
+    context.distanceText = distanceText;
     let dicePool = 0;
     if (this.rollData.specLevel !== void 0) {
       dicePool = this.rollData.specLevel;

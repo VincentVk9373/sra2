@@ -29,6 +29,11 @@
         <section class="roll-section target-section">
             <h3 class="section-title">
                 <i class="fas fa-bullseye"></i> Cible
+                {{#if distanceText}}
+                <div class="target-distance"> | 
+                    <i class="fas fa-ruler"></i>  {{distanceText}}
+                </div>
+                {{/if}}
             </h3>
             <div class="target-display">
                 {{#if targetToken}}
