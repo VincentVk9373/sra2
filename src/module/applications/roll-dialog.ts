@@ -142,8 +142,10 @@ export class RollDialog extends Application {
     context.distance = distance;
     context.distanceText = distanceText;
 
-    // Calculate range based on distance and weapon range properties
+    // Calculate range based on distance for default selection (only if not already selected by user)
     let calculatedRange: string | null = null;
+    
+    // Calculate what range should be based on distance (for display purposes)
     if (distance !== null) {
       if (distance < 3) {
         calculatedRange = 'melee';
@@ -155,11 +157,18 @@ export class RollDialog extends Application {
         calculatedRange = 'long';
       }
     }
-
-    // Always update selected range based on calculated distance (if available)
-    if (calculatedRange !== null) {
-      this.selectedRange = calculatedRange;
+    
+    // Only set default range if user hasn't selected one yet
+    if (this.selectedRange === null) {
+      // For counter-attacks, always default to melee range
+      if (this.rollData.isCounterAttack) {
+        this.selectedRange = 'melee';
+      } else if (calculatedRange !== null) {
+        // For other cases, use calculated range based on distance
+        this.selectedRange = calculatedRange;
+      }
     }
+    // If selectedRange is already set, don't change it (user selection is preserved)
 
     // Get weapon range properties
     const meleeRange = this.rollData.meleeRange || 'none';

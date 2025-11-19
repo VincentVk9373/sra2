@@ -5487,8 +5487,12 @@ class RollDialog extends Application {
         calculatedRange = "long";
       }
     }
-    if (calculatedRange !== null) {
-      this.selectedRange = calculatedRange;
+    if (this.selectedRange === null) {
+      if (this.rollData.isCounterAttack) {
+        this.selectedRange = "melee";
+      } else if (calculatedRange !== null) {
+        this.selectedRange = calculatedRange;
+      }
     }
     const meleeRange = this.rollData.meleeRange || "none";
     const shortRange = this.rollData.shortRange || "none";
