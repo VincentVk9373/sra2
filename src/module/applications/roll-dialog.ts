@@ -10,6 +10,7 @@ export class RollDialog extends Application {
   private actor: any = null;
   private targetToken: any = null;
   private rrEnabled: Map<string, boolean> = new Map(); // Track which RR sources are enabled
+  private riskDiceCount: number = 2; // Number of risk dice selected (default: 2)
 
   constructor(rollData: RollRequestData) {
     super();
@@ -17,7 +18,7 @@ export class RollDialog extends Application {
     
     // Get actor from roll data
     if (rollData.actorUuid) {
-      this.actor = fromUuidSync(rollData.actorUuid);
+      this.actor = (fromUuidSync as any)(rollData.actorUuid);
     } else if (rollData.actorId) {
       this.actor = game.actors?.get(rollData.actorId) || null;
     }
@@ -33,8 +34,8 @@ export class RollDialog extends Application {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'roll-dialog'],
       template: 'systems/sra2/templates/roll-dialog.hbs',
-      width: 450,
-      height: 450,
+      width: 650,
+      height: 460,
       resizable: true,
       minimizable: false,
       title: 'Jet de Dés'
@@ -107,6 +108,48 @@ export class RollDialog extends Application {
     // Get VD (Valeur de Défense) - this would be from the target or weapon
     // For now, we'll show weapon VD if available
     context.vd = this.rollData.damageValue || 0;
+
+    // Function to determine dice color based on RR and position
+    const getDiceColor = (dicePosition: number, rr: number): string => {
+      // dicePosition is 1-indexed (first die is position 1)
+      if (rr === 0) {
+        if (dicePosition === 1) return 'green';
+        if (dicePosition >= 2 && dicePosition <= 3) return 'yellow';
+        if (dicePosition >= 4 && dicePosition <= 5) return 'orange';
+        return 'red';
+      } else if (rr === 1) {
+        if (dicePosition >= 1 && dicePosition <= 4) return 'green';
+        if (dicePosition >= 5 && dicePosition <= 6) return 'yellow';
+        if (dicePosition >= 7 && dicePosition <= 9) return 'orange';
+        return 'red';
+      } else if (rr === 2) {
+        if (dicePosition >= 1 && dicePosition <= 7) return 'green';
+        if (dicePosition >= 8 && dicePosition <= 9) return 'yellow';
+        if (dicePosition >= 10 && dicePosition <= 12) return 'orange';
+        return 'red';
+      } else if (rr === 3) {
+        if (dicePosition >= 1 && dicePosition <= 10) return 'green';
+        if (dicePosition >= 11 && dicePosition <= 12) return 'yellow';
+        if (dicePosition >= 13 && dicePosition <= 16) return 'orange';
+        return 'red';
+      }
+      // Default to green if RR is invalid
+      return 'green';
+    };
+    
+    // Generate dice list for visual display with selection state and risk color
+    context.diceList = [];
+    const currentRR = Math.min(3, totalRR); // Use the calculated RR
+    for (let i = 0; i < dicePool; i++) {
+      const dicePosition = i + 1; // 1-indexed position
+      const riskColor = getDiceColor(dicePosition, currentRR);
+      context.diceList.push({ 
+        index: i,
+        isRiskDice: i < this.riskDiceCount,  // First N dice are risk dice
+        riskColor: riskColor  // Color based on RR and position
+      });
+    }
+    context.riskDiceCount = this.riskDiceCount;
 
     // Get all skills and specializations from actor, organized hierarchically
     if (this.actor) {
@@ -310,6 +353,24 @@ export class RollDialog extends Application {
       }
     });
 
+    // Risk dice selection
+    html.find('.dice-icon').on('click', (event) => {
+      const diceIcon = $(event.currentTarget);
+      const diceIndex = parseInt(diceIcon.data('dice-index') || '0');
+      const isCurrentlySelected = diceIcon.hasClass('risk-dice');
+      
+      // If clicking on the last selected dice, deselect all
+      if (isCurrentlySelected && diceIndex === this.riskDiceCount - 1) {
+        this.riskDiceCount = 0;
+      } else {
+        // Otherwise, select all dice up to and including the clicked one
+        this.riskDiceCount = diceIndex + 1;
+      }
+      
+      // Re-render to update dice selection
+      this.render();
+    });
+
     // Roll Dice button
     html.find('.roll-dice-button').on('click', () => {
       // Calculate final RR based on enabled checkboxes
@@ -336,7 +397,8 @@ export class RollDialog extends Application {
       
       const updatedRollData = {
         ...this.rollData,
-        rrList: finalRRList
+        rrList: finalRRList,
+        riskDiceCount: this.riskDiceCount  // Add risk dice count to roll data
       };
       
       // Log the roll request (for now, until dice rolling is implemented)

@@ -4993,6 +4993,8 @@ class RollDialog extends Application {
   targetToken = null;
   rrEnabled = /* @__PURE__ */ new Map();
   // Track which RR sources are enabled
+  riskDiceCount = 2;
+  // Number of risk dice selected (default: 2)
   constructor(rollData) {
     super();
     this.rollData = rollData;
@@ -5010,8 +5012,8 @@ class RollDialog extends Application {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "roll-dialog"],
       template: "systems/sra2/templates/roll-dialog.hbs",
-      width: 450,
-      height: 450,
+      width: 650,
+      height: 460,
       resizable: true,
       minimizable: false,
       title: "Jet de Dés"
@@ -5066,6 +5068,44 @@ class RollDialog extends Application {
     context.totalRR = Math.min(3, totalRR);
     context.rrSources = rrSources;
     context.vd = this.rollData.damageValue || 0;
+    const getDiceColor = (dicePosition, rr) => {
+      if (rr === 0) {
+        if (dicePosition === 1) return "green";
+        if (dicePosition >= 2 && dicePosition <= 3) return "yellow";
+        if (dicePosition >= 4 && dicePosition <= 5) return "orange";
+        return "red";
+      } else if (rr === 1) {
+        if (dicePosition >= 1 && dicePosition <= 4) return "green";
+        if (dicePosition >= 5 && dicePosition <= 6) return "yellow";
+        if (dicePosition >= 7 && dicePosition <= 9) return "orange";
+        return "red";
+      } else if (rr === 2) {
+        if (dicePosition >= 1 && dicePosition <= 7) return "green";
+        if (dicePosition >= 8 && dicePosition <= 9) return "yellow";
+        if (dicePosition >= 10 && dicePosition <= 12) return "orange";
+        return "red";
+      } else if (rr === 3) {
+        if (dicePosition >= 1 && dicePosition <= 10) return "green";
+        if (dicePosition >= 11 && dicePosition <= 12) return "yellow";
+        if (dicePosition >= 13 && dicePosition <= 16) return "orange";
+        return "red";
+      }
+      return "green";
+    };
+    context.diceList = [];
+    const currentRR = Math.min(3, totalRR);
+    for (let i = 0; i < dicePool; i++) {
+      const dicePosition = i + 1;
+      const riskColor = getDiceColor(dicePosition, currentRR);
+      context.diceList.push({
+        index: i,
+        isRiskDice: i < this.riskDiceCount,
+        // First N dice are risk dice
+        riskColor
+        // Color based on RR and position
+      });
+    }
+    context.riskDiceCount = this.riskDiceCount;
     if (this.actor) {
       const skills = this.actor.items.filter((item) => item.type === "skill").map((skill) => {
         const linkedAttribute = skill.system?.linkedAttribute || "strength";
@@ -5211,6 +5251,17 @@ class RollDialog extends Application {
         this.render();
       }
     });
+    html.find(".dice-icon").on("click", (event) => {
+      const diceIcon = $(event.currentTarget);
+      const diceIndex = parseInt(diceIcon.data("dice-index") || "0");
+      const isCurrentlySelected = diceIcon.hasClass("risk-dice");
+      if (isCurrentlySelected && diceIndex === this.riskDiceCount - 1) {
+        this.riskDiceCount = 0;
+      } else {
+        this.riskDiceCount = diceIndex + 1;
+      }
+      this.render();
+    });
     html.find(".roll-dice-button").on("click", () => {
       if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
         for (const rrSource of this.rollData.rrList) {
@@ -5228,7 +5279,9 @@ class RollDialog extends Application {
       }) || [];
       const updatedRollData = {
         ...this.rollData,
-        rrList: finalRRList
+        rrList: finalRRList,
+        riskDiceCount: this.riskDiceCount
+        // Add risk dice count to roll data
       };
       console.log("=== ROLL DICE ===", updatedRollData);
       this.close();

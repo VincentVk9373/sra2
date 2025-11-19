@@ -1,4 +1,16 @@
 /* Roll Dialog Styles - Inspired by Character Sheet Design */
+
+/* Glow animation for risk dice */
+@keyframes risk-glow {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(139, 0, 0, 0.8), 0 0 12px rgba(139, 0, 0, 0.6), 0 0 16px rgba(139, 0, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 12px rgba(139, 0, 0, 1), 0 0 18px rgba(139, 0, 0, 0.8), 0 0 24px rgba(139, 0, 0, 0.6);
+    }
+}
+
+
 .sra2.roll-dialog {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: #e0e0e0;
@@ -26,7 +38,7 @@
     /* Header with Attacker Info */
     .roll-dialog-header {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
         padding: 0.5rem 0.75rem;
         background: rgba(15, 52, 96, 0.3);
         border-bottom: 2px solid #0f3460;
@@ -162,6 +174,11 @@
             i {
                 font-size: 0.75rem;
             }
+
+            .risk-dice-count {
+                color: #ba68c8; // Light purple color
+                font-weight: bold;
+            }
         }
     }
 
@@ -237,21 +254,118 @@
              align-items: center;
              gap: 0.3rem;
 
-             .dice-count {
+             .dice-list-container {
                  display: flex;
-                 align-items: baseline;
-                 gap: 0.3rem;
+                 flex-direction: column;
+                 align-items: center;
+                 gap: 0.4rem;
+                 width: 100%;
 
-                 .dice-number {
-                     font-size: 2rem;
-                     font-weight: bold;
-                     color: #ffd700;
-                     text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+                 .dice-list {
+                     display: flex;
+                     flex-wrap: wrap;
+                     justify-content: center;
+                     gap: 0.3rem;
+                     max-width: 100%;
+                     padding: 0.3rem;
+
+                     .dice-icon {
+                         width: 32px;
+                         height: 32px;
+                         display: flex;
+                         align-items: center;
+                         justify-content: center;
+                         border-radius: 4px;
+                         color: #fff;
+                         font-size: 1.2rem;
+                         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                         transition: all 0.2s;
+                         position: relative;
+
+                         &:hover {
+                             transform: translateY(-2px);
+                             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+                         }
+
+                         // Risk color classes (based on RR and position)
+                         &.dice-green {
+                             background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+                             border: 2px solid #4caf50;
+                         }
+
+                         &.dice-yellow {
+                             background: linear-gradient(135deg, #ffeb3b 0%, #fbc02d 100%);
+                             border: 2px solid #ffeb3b;
+                         }
+
+                         &.dice-orange {
+                             background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+                             border: 2px solid #ff6f00;
+                         }
+
+                         &.dice-red {
+                             background: linear-gradient(135deg, #f44336 0%, #b71c1c 100%);
+                             border: 2px solid #f44336;
+                         }
+
+                         // Risk dice (selected as risk dice) - purple background, risk color for icon
+                         &.risk-dice {
+                             // Purple background for risk dice
+                             background: linear-gradient(135deg, #9000a9 0%, #7a008f 100%) !important;
+                             border-color: #5a0068 !important; // Darker purple for border
+                             position: relative;
+                             
+                             // Red/dark glow effect
+                             animation: risk-glow 2s ease-in-out infinite;
+                             
+                             // Icon takes the risk color (green/yellow/orange/red)
+                             i {
+                                 color: inherit;
+                             }
+                             
+                             // Apply risk color to icon based on data attribute
+                             &[data-risk-color="green"] i {
+                                 color: #4caf50;
+                             }
+                             
+                             &[data-risk-color="yellow"] i {
+                                 color: #ffeb3b;
+                             }
+                             
+                             &[data-risk-color="orange"] i {
+                                 color: #ff6f00;
+                             }
+                             
+                             &[data-risk-color="red"] i {
+                                 color: #f44336;
+                             }
+                             
+                             &:hover {
+                                 transform: translateY(-2px);
+                             }
+                         }
+
+                         i {
+                             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+                             color: #fff; // Default white color for non-risk dice
+                         }
+                     }
                  }
 
-                 .dice-label {
-                     font-size: 0.9rem;
+                 .dice-count-label {
+                     font-size: 0.85rem;
                      color: #999;
+                     font-weight: 500;
+                     display: flex;
+                     flex-direction: column;
+                     align-items: center;
+                     gap: 0.2rem;
+
+                     .risk-dice-label {
+                         font-size: 0.75rem;
+                         color: #9c6cb1;
+                         font-weight: bold;
+                     }
                  }
              }
 
@@ -374,7 +488,6 @@
         background: rgba(15, 52, 96, 0.2);
 
         .roll-dice-button {
-            padding: 0.75rem 2rem;
             background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
             border: 2px solid #00d4ff;
             border-radius: 6px;
@@ -385,7 +498,6 @@
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
             box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
 
             i {

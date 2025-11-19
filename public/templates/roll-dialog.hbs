@@ -47,6 +47,13 @@
                 {{/if}}
             </div>
         </section>
+        <!-- Roll Dice Button -->
+        <div class="roll-dice-section">
+            <button type="button" class="roll-dice-button">
+                <i class="fas fa-dice"></i> Lancer les Dés
+            </button>
+        </div>
+
     </header>
 
     <div class="roll-dialog-body">
@@ -82,7 +89,7 @@
                 {{#if hasThreshold}}
                 <i class="fas fa-bullseye"></i> Seuil
                 {{else}}
-                <i class="fas fa-dice"></i> Pool de Dés
+                <i class="fas fa-dice"></i> Pool de Dés | {{dicePool}} dés{{#if riskDiceCount}} <span class="risk-dice-count">| {{riskDiceCount}} dés de risque</span>{{/if}}
                 {{/if}}
             </h3>
             <div class="dice-pool-display">
@@ -92,23 +99,23 @@
                     <span class="threshold-label">seuil</span>
                 </div>
                 {{else}}
-                <div class="dice-count">
-                    <span class="dice-number">{{dicePool}}</span>
-                    <span class="dice-label">dés</span>
+                <div class="dice-list-container">
+                    <div class="dice-list">
+                        {{#each diceList}}
+                        <div class="dice-icon {{#if this.isRiskDice}}risk-dice{{/if}} dice-{{this.riskColor}}" data-dice-index="{{this.index}}" style="cursor: pointer;" title="{{#if this.isRiskDice}}Dé de risque{{else}}Dé normal{{/if}}" data-risk-color="{{this.riskColor}}">
+                            <i class="fas fa-dice"></i>
+                        </div>
+                        {{/each}}
+                    </div>
                 </div>
                 {{/if}}
-                {{!-- {{#if rollData.linkedAttribute}}
-                <div class="attribute-info">
-                    Attribut: {{rollData.linkedAttribute}}
-                </div>
-                {{/if}} --}}
             </div>
         </section>
 
         <!-- VD and RR Summary -->
         <section class="roll-section summary-section">
             <h3 class="section-title">
-                <i class="fas fa-info-circle"></i> Réduction de risque
+                <i class="fas fa-info-circle"></i> Réduction de risque | {{totalRR}} RR
             </h3>
             <div class="summary-grid">
                 <div class="summary-item">
@@ -132,13 +139,6 @@
             {{/if}}
             </div>
         </section>
-
-        <!-- Roll Dice Button -->
-        <div class="roll-dice-section">
-            <button type="button" class="roll-dice-button">
-                <i class="fas fa-dice"></i> Lancer les Dés
-            </button>
-        </div>
 
 
     </div>

@@ -186,6 +186,9 @@ export interface RollRequestData {
   
   // RR List
   rrList?: any[];
+  
+  // Risk dice count (number of risk dice selected)
+  riskDiceCount?: number;
 }
 
 /**
