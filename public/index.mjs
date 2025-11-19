@@ -1524,7 +1524,7 @@ function handleRollRequest(data) {
     dialog.render(true);
   });
 }
-async function executeRoll(attacker, defender, rollData) {
+async function executeRoll(attacker, defender, defenderToken, rollData) {
   if (!attacker) {
     console.error("No attacker provided for roll");
     return;
@@ -1601,13 +1601,24 @@ async function executeRoll(attacker, defender, rollData) {
     remainingFailures,
     complication
   };
-  await createRollChatMessage(attacker, defender, rollData, rollResult);
+  await createRollChatMessage(attacker, defender, defenderToken, rollData, rollResult);
 }
-async function createRollChatMessage(attacker, defender, rollData, rollResult) {
+async function createRollChatMessage(attacker, defender, defenderToken, rollData, rollResult) {
   const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  let defenderData = null;
+  if (defender) {
+    let tokenImg = defender.img;
+    if (defenderToken) {
+      tokenImg = defenderToken.document?.texture?.src || defenderToken.document?.img || defenderToken.data?.img || defenderToken.texture?.src || defender.img;
+    }
+    defenderData = {
+      ...defender,
+      img: tokenImg
+    };
+  }
   const templateData = {
     attacker,
-    defender,
+    defender: defenderData,
     rollData,
     rollResult,
     isAttack,
@@ -5535,6 +5546,7 @@ class RollDialog extends Application {
       }
       const attacker = this.actor;
       const defender = this.targetToken?.actor || null;
+      const defenderToken = this.targetToken || null;
       const updatedRollData = {
         ...this.rollData,
         rrList: finalRRList,
@@ -5549,7 +5561,7 @@ class RollDialog extends Application {
         dicePool
       };
       const { executeRoll: executeRoll2 } = await Promise.resolve().then(() => diceRoller);
-      await executeRoll2(attacker, defender, updatedRollData);
+      await executeRoll2(attacker, defender, defenderToken, updatedRollData);
       this.close();
     });
   }

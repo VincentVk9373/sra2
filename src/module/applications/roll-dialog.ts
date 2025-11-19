@@ -574,6 +574,7 @@ export class RollDialog extends Application {
       // Get attacker and defender
       const attacker = this.actor;
       const defender = this.targetToken?.actor || null;
+      const defenderToken = this.targetToken || null;
       
       // Prepare roll data
       const updatedRollData = {
@@ -588,7 +589,7 @@ export class RollDialog extends Application {
       
       // Import and execute roll
       const { executeRoll } = await import('../helpers/dice-roller.js');
-      await executeRoll(attacker, defender, updatedRollData);
+      await executeRoll(attacker, defender, defenderToken, updatedRollData);
       
       // Close the dialog
       this.close();

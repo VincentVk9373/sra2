@@ -12,6 +12,19 @@
                 <i class="fas fa-book"></i> {{skillName}}
             </div>
             {{/if}}
+            {{#if defender}}
+            <div class="defender-info">
+                <i class="fas fa-arrow-right"></i>
+                {{#if defender.img}}
+                <img class="defender-portrait" src="{{defender.img}}" alt="{{defender.name}}" title="{{defender.name}}" />
+                {{else}}
+                <div class="defender-portrait-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+                {{/if}}
+                <span class="defender-name">{{defender.name}}</span>
+            </div>
+            {{/if}}
         </div>
     </div>
 

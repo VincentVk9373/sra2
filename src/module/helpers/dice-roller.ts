@@ -267,6 +267,7 @@ export interface RollResult {
 export async function executeRoll(
   attacker: any,
   defender: any,
+  defenderToken: any,
   rollData: RollRequestData
 ): Promise<void> {
   if (!attacker) {
@@ -370,7 +371,7 @@ export async function executeRoll(
   };
 
   // Step 5: Create chat message
-  await createRollChatMessage(attacker, defender, rollData, rollResult);
+  await createRollChatMessage(attacker, defender, defenderToken, rollData, rollResult);
 }
 
 /**
@@ -380,6 +381,7 @@ export async function executeRoll(
 async function createRollChatMessage(
   attacker: any,
   defender: any,
+  defenderToken: any,
   rollData: RollRequestData,
   rollResult: RollResult
 ): Promise<void> {
@@ -388,10 +390,30 @@ async function createRollChatMessage(
                    rollData.weaponType !== undefined ||
                    (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
 
+  // Prepare defender data with token image if available
+  let defenderData: any = null;
+  if (defender) {
+    // Get token image - try different ways to access it depending on Foundry version
+    let tokenImg = defender.img; // fallback to actor image
+    if (defenderToken) {
+      // FoundryVTT v13: token.document.texture.src or token.document.img
+      tokenImg = (defenderToken as any).document?.texture?.src || 
+                 (defenderToken as any).document?.img || 
+                 (defenderToken as any).data?.img || 
+                 (defenderToken as any).texture?.src ||
+                 defender.img;
+    }
+    
+    defenderData = {
+      ...defender,
+      img: tokenImg
+    };
+  }
+
   // Prepare template data
   const templateData: any = {
     attacker: attacker,
-    defender: defender,
+    defender: defenderData,
     rollData: rollData,
     rollResult: rollResult,
     isAttack: isAttack,

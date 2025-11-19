@@ -548,12 +548,10 @@ select {
 
     .roll-header {
         display: grid;
-        grid-template-columns: 48px 1fr;
+        grid-template-columns: 64px 1fr;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
 
         .roller-info {
             display: flex;
@@ -561,8 +559,8 @@ select {
             flex-direction: column;
 
             .roller-portrait {
-                width: 48px;
-                height: 48px;
+                width: 64px;
+                height: 64px;
                 border-radius: 50%;
                 border: 2px solid rgba(255, 255, 255, 0.2);
                 object-fit: cover;
@@ -583,7 +581,8 @@ select {
 
             .roller-name {
                 font-weight: bold;
-                font-size: 1.1rem;
+                font-size: 1rem;
+                padding-bottom: 4px;
             }
             .roll-type {
                 display: flex;
@@ -594,6 +593,45 @@ select {
 
                 i {
                     color: #667eea;
+                }
+            }
+
+            .defender-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+                i.fa-arrow-right {
+                    color: #667eea;
+                    font-size: 0.9rem;
+                }
+
+                .defender-portrait {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    border: 2px solid rgba(255, 255, 255, 0.2);
+                    object-fit: cover;
+                }
+
+                .defender-portrait-placeholder {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.1);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 2px solid rgba(255, 255, 255, 0.2);
+                    color: #999;
+                    font-size: 1rem;
+                }
+
+                .defender-name {
+                    font-weight: 500;
+                    font-size: 0.95rem;
+                    color: #999;
                 }
             }
         }
@@ -726,13 +764,13 @@ select {
             &.minor {
                 background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(245, 124, 0, 0.3) 100%);
                 border: 3px solid #ff9800;
-                color: #ff9800;
+                color: #995b00;
             }
 
             &.critical {
                 background: linear-gradient(135deg, rgba(244, 67, 54, 0.4) 0%, rgba(211, 47, 47, 0.4) 100%);
-                border: 4px solid #f44336;
-                color: #f44336;
+                border: 4px solid #a32e25;
+                color: #a32e25;
                 box-shadow: 0 4px 12px rgba(244, 67, 54, 0.5);
             }
 
