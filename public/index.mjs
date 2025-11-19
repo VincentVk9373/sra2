@@ -1672,6 +1672,8 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const defenseSuccesses = rollResult.totalSuccesses;
+    const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
+    const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
     if (attackSuccesses >= defenseSuccesses) {
       const damageValue = parseInt(rollData.attackRollData.damageValue || "0", 10) || 0;
       calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
@@ -1684,18 +1686,60 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       attackSuccesses,
       defenseSuccesses,
       calculatedDamage,
-      attackFailed
+      attackFailed,
+      originalAttackerName,
+      defenderName
     };
-  } else if (rollData.isCounterAttack && rollData.attackRollResult) {
+  } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
+    const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
+    const originalDefenderName = attackerToken?.document?.name || attackerToken?.name || attackerToken?.actor?.name || attacker?.name || "Inconnu";
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const counterAttackSuccesses = rollResult.totalSuccesses;
+    const attackDamageValue = parseInt(rollData.attackRollData.damageValue || "0", 10) || 0;
+    const counterAttackDamageValue = parseInt(rollData.damageValue || "0", 10) || 0;
+    let attackerDamage = 0;
+    let defenderDamage = 0;
+    let isTie = false;
+    let winner = "tie";
+    if (attackSuccesses > counterAttackSuccesses) {
+      winner = "attacker";
+      attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
+    } else if (counterAttackSuccesses > attackSuccesses) {
+      winner = "defender";
+      defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
+    } else {
+      isTie = true;
+      winner = "tie";
+    }
     console.log("=== COUNTER-ATTACK RESULTS ===");
     console.log("Attack Successes:", attackSuccesses);
     console.log("Counter-Attack Successes:", counterAttackSuccesses);
+    console.log("Winner:", winner);
+    console.log("Attacker Damage:", attackerDamage);
+    console.log("Defender Damage:", defenderDamage);
+    console.log("Original Attacker Name:", originalAttackerName);
+    console.log("Original Defender Name:", originalDefenderName);
+    console.log("--- Context ---");
+    console.log("Attacker param:", attacker?.name);
+    console.log("Defender param:", defender?.name);
+    console.log("AttackerToken object:", attackerToken ? "Found" : "Not found");
+    console.log("AttackerToken.name:", attackerToken?.name);
+    console.log("AttackerToken.document?.name:", attackerToken?.document?.name);
+    console.log("AttackerToken.actor?.name:", attackerToken?.actor?.name);
+    console.log("DefenderToken object:", defenderToken ? "Found" : "Not found");
+    console.log("DefenderToken.name:", defenderToken?.name);
+    console.log("DefenderToken.document?.name:", defenderToken?.document?.name);
+    console.log("DefenderToken.actor?.name:", defenderToken?.actor?.name);
     console.log("==============================");
     defenseResult = {
       attackSuccesses,
-      counterAttackSuccesses
+      counterAttackSuccesses,
+      winner,
+      attackerDamage,
+      defenderDamage,
+      isTie,
+      originalAttackerName,
+      originalDefenderName
     };
   }
   const templateData = {
@@ -5261,13 +5305,21 @@ class RollDialog extends Application {
     if (targets.length > 0) {
       this.targetToken = targets[0] || null;
     }
-    if (rollData.defenderTokenUuid && !this.targetToken) {
+    if (rollData.defenderTokenUuid) {
       try {
-        this.targetToken = foundry.utils?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
-        console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
+        const defenderTokenFromUuid = foundry.utils?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
+        if (defenderTokenFromUuid) {
+          this.targetToken = defenderTokenFromUuid;
+          console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
+        }
       } catch (e) {
         console.warn("RollDialog: Failed to load defender token from UUID:", e);
       }
+    }
+    if (!this.targetToken && rollData.defenderTokenUuid) {
+      this.targetToken = canvas?.tokens?.placeables?.find((token) => {
+        return token.uuid === rollData.defenderTokenUuid || token.document?.uuid === rollData.defenderTokenUuid;
+      }) || null;
     }
   }
   static get defaultOptions() {
@@ -7019,8 +7071,8 @@ class SRA2System {
             featName: rr.featName
           }));
         }
-        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
-        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
+        const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
+        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
         const counterAttackRollData = {
           // Use "Combat rapproché" skill
           skillName: counterAttackSkill,
@@ -7029,9 +7081,11 @@ class SRA2System {
           // Actor is the defender (use token's actor UUID for NPCs)
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
-          // Token UUIDs
-          attackerTokenUuid,
-          defenderTokenUuid,
+          // Token UUIDs - for counter-attack, the defender becomes the attacker
+          attackerTokenUuid: counterAttackerTokenUuid,
+          // Token of the defender (who is counter-attacking)
+          defenderTokenUuid: originalAttackerTokenUuid,
+          // Token of the original attacker
           // Target is the attacker
           // We'll set targetToken in RollDialog constructor
           // RR List
@@ -7045,7 +7099,7 @@ class SRA2System {
         };
         const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
         const dialog = new RollDialog2(counterAttackRollData);
-        if (attackerToken) {
+        if (attackerToken && !dialog.targetToken) {
           dialog.targetToken = attackerToken;
         }
         dialog.render(true);

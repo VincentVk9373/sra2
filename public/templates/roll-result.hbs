@@ -125,6 +125,50 @@
     {{/if}}
     {{/if}}
 
+    <!-- Counter-Attack Result -->
+    {{#if isCounterAttack}}
+    {{#if defenseResult}}
+    <div class="defense-result counterattack-result">
+        <div class="defense-comparison">
+            <div class="comparison-header">
+                <i class="fas fa-balance-scale"></i> Résultat
+            </div>
+            <div class="comparison-details">
+                <div class="comparison-item">
+                    <span class="comparison-label">Succès d'attaque:</span>
+                    <span class="comparison-value attack">{{defenseResult.attackSuccesses}}</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="comparison-label">Succès de contre-attaque:</span>
+                    <span class="comparison-value defense">{{defenseResult.counterAttackSuccesses}}</span>
+                </div>
+            </div>
+            {{#if defenseResult.isTie}}
+            <div class="defense-outcome tie">
+                <i class="fas fa-equals"></i> Aucun dégât n'est infligé
+            </div>
+            {{else if (eq defenseResult.winner "attacker")}}
+            <div class="defense-outcome success">
+                <i class="fas fa-check-circle"></i> {{defenseResult.originalAttackerName}} inflige {{defenseResult.attackerDamage}} dégâts
+            </div>
+            <div class="calculated-damage">
+                <span class="damage-label">Dégâts infligés:</span>
+                <span class="damage-value">{{defenseResult.attackerDamage}}</span>
+            </div>
+            {{else if (eq defenseResult.winner "defender")}}
+            <div class="defense-outcome counterattack-win">
+                <i class="fas fa-check-circle"></i> {{defenseResult.originalDefenderName}} inflige {{defenseResult.defenderDamage}} dégâts
+            </div>
+            <div class="calculated-damage counterattack-damage">
+                <span class="damage-label">Dégâts infligés:</span>
+                <span class="damage-value">{{defenseResult.defenderDamage}}</span>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
+    {{/if}}
+
     <!-- Attack Actions (for defender) -->
     {{#if isAttack}}
     {{#if defender}}

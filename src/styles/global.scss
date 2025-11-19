@@ -822,7 +822,7 @@ select {
 
                     .comparison-label {
                         font-weight: 600;
-                        color: #ccc;
+                        color: #ddd;
                         font-size: 0.95rem;
                     }
 
@@ -835,10 +835,10 @@ select {
                         text-align: center;
 
                         &.attack {
-                            background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(211, 47, 47, 0.3) 100%);
-                            border: 2px solid #f44336;
+                            background: linear-gradient(135deg, rgba(60, 244, 54, 0.3) 0%, rgba(61, 211, 47, 0.3) 100%);
+                            border: 2px solid #24a01f;
                             color: #ffebee;
-                            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+                            box-shadow: 0 2px 6px rgba(54, 244, 54, 0.3);
                         }
 
                         &.defense {
@@ -890,21 +890,44 @@ select {
                         color: #f44336;
                     }
                 }
+
+                &.tie {
+                    background: linear-gradient(135deg, rgba(158, 158, 158, 0.3) 0%, rgba(97, 97, 97, 0.3) 100%);
+                    border: 2px solid #9e9e9e;
+                    color: #e0e0e0;
+                    box-shadow: 0 2px 8px rgba(158, 158, 158, 0.4);
+
+                    i {
+                        color: #9e9e9e;
+                    }
+                }
+
+                &.counterattack-win {
+                    background: linear-gradient(135deg, rgba(33, 150, 243, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%);
+                    border: 2px solid #2196f3;
+                    color: #e3f2fd;
+                    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+
+                    i {
+                        color: #2196f3;
+                    }
+                }
             }
 
             .calculated-damage {
                 padding: 8px;
-                background: linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(211, 47, 47, 0.2) 100%);
                 border-radius: 8px;
-                border: 2px solid #f44336;
+                background: linear-gradient(135deg, #4caf504d, #2e7d324d);
+                border: 2px solid #4caf50;
+                color: #c8e6c9;
+                box-shadow: 0 2px 8px #4caf5066;
                 text-align: center;
-                box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
 
                 .damage-label {
                     display: block;
                     font-size: 0.9rem;
                     font-weight: 600;
-                    color: #ffcdd2;
+                    color: #cdffd8;
                     text-transform: uppercase;
                     letter-spacing: 2px;
                     margin-bottom: 0.5rem;
@@ -914,9 +937,41 @@ select {
                     display: block;
                     font-size: 2.5rem;
                     font-weight: 900;
-                    color: #ffebee;
-                    text-shadow: 0 2px 4px rgba(244, 67, 54, 0.5);
+                    color: white;
+                    text-shadow: 0 2px 4px rgba(54, 244, 86, 0.5);
                     line-height: 1;
+                }
+
+                &.counterattack-damage {
+                    background: linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(25, 118, 210, 0.2) 100%);
+                    border: 2px solid #2196f3;
+                    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+
+                    .damage-label {
+                        color: #e3f2fd;
+                    }
+
+                    .damage-value {
+                        color: #e3f2fd;
+                        text-shadow: 0 2px 4px rgba(33, 150, 243, 0.5);
+                    }
+                }
+            }
+        }
+
+        &.counterattack-result {
+            .defense-comparison {
+                background: linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(44, 16, 16, 0.15) 100%);
+                border: 2px solid #444;
+                box-shadow: 0 2px 8px rgba(26, 23, 51, 0.2);
+
+                .comparison-header {
+                    color: #444;
+                    border-bottom: 2px solid #444;
+
+                    i {
+                        color: #444;
+                    }
                 }
             }
         }

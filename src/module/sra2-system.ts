@@ -627,8 +627,10 @@ export class SRA2System {
         }
 
         // Get token UUIDs
-        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
-        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
+        // For counter-attack: the defender (counter-attacker) becomes the attacker in the roll
+        // So attackerTokenUuid should be the defender's token, and defenderTokenUuid should be the attacker's token
+        const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
+        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
         
         // Prepare counter-attack roll data
         const counterAttackRollData: any = {
@@ -641,9 +643,9 @@ export class SRA2System {
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
           
-          // Token UUIDs
-          attackerTokenUuid: attackerTokenUuid,
-          defenderTokenUuid: defenderTokenUuid,
+          // Token UUIDs - for counter-attack, the defender becomes the attacker
+          attackerTokenUuid: counterAttackerTokenUuid, // Token of the defender (who is counter-attacking)
+          defenderTokenUuid: originalAttackerTokenUuid, // Token of the original attacker
           
           // Target is the attacker
           // We'll set targetToken in RollDialog constructor
@@ -664,8 +666,9 @@ export class SRA2System {
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(counterAttackRollData);
         
-        // Set target token to attacker's token
-        if (attackerToken) {
+        // Note: targetToken should already be loaded from defenderTokenUuid in RollDialog constructor
+        // Only set it manually if it wasn't loaded from UUID (fallback)
+        if (attackerToken && !dialog.targetToken) {
           (dialog as any).targetToken = attackerToken;
         }
         

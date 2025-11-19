@@ -53,13 +53,26 @@ export class RollDialog extends Application {
     }
     
     // Also try to get defender token from rollData.defenderTokenUuid if available
-    if (rollData.defenderTokenUuid && !this.targetToken) {
+    // Priority: rollData.defenderTokenUuid > selected targets
+    if (rollData.defenderTokenUuid) {
       try {
-        this.targetToken = (foundry.utils as any)?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
-        console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
+        const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
+        if (defenderTokenFromUuid) {
+          this.targetToken = defenderTokenFromUuid;
+          console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
+        }
       } catch (e) {
         console.warn('RollDialog: Failed to load defender token from UUID:', e);
       }
+    }
+    
+    // If still no target token, try to find it on canvas based on defender info
+    if (!this.targetToken && rollData.defenderTokenUuid) {
+      // Try to find on canvas as fallback
+      this.targetToken = canvas?.tokens?.placeables?.find((token: any) => {
+        return token.uuid === rollData.defenderTokenUuid || 
+               token.document?.uuid === rollData.defenderTokenUuid;
+      }) || null;
     }
   }
 

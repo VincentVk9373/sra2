@@ -120,33 +120,6 @@ export function buildRRSourcesHtml(rrSources: RRSource[]): string {
 }
 
 /**
- * REMOVED: Roll dialog script generation
- */
-
-/**
- * REMOVED: Roll dialog content creation
- */
-
-/**
- * REMOVED: Dice rolling logic
- * All dice rolling and chat message functions have been removed.
- * Only UI triggers and threshold calculations remain.
- */
-
-/**
- * REMOVED: HTML building for dice results
- */
-
-/**
- * REMOVED: Chat message posting
- */
-
-/**
- * REMOVED: Dialog creation for rolls
- * Dialogs and callbacks have been removed as they trigger dice rolls.
- */
-
-/**
  * Roll Request Data Interface
  * Contains all information needed for a roll request
  */
@@ -496,8 +469,13 @@ async function createRollChatMessage(
   
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
     // Defense roll: compare with attack
+    // For defense: attacker = defender (one defending), defender = original attacker
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const defenseSuccesses = rollResult.totalSuccesses;
+    
+    // Get actor names (use token name if available, otherwise actor name)
+    const originalAttackerName = defenderToken?.name || defender?.name || 'Inconnu';
+    const defenderName = attackerToken?.name || attacker?.name || 'Inconnu';
     
     if (attackSuccesses >= defenseSuccesses) {
       // Attack succeeds, calculate damage
@@ -514,21 +492,87 @@ async function createRollChatMessage(
       attackSuccesses: attackSuccesses,
       defenseSuccesses: defenseSuccesses,
       calculatedDamage: calculatedDamage,
-      attackFailed: attackFailed
+      attackFailed: attackFailed,
+      originalAttackerName: originalAttackerName,
+      defenderName: defenderName
     };
-  } else if (rollData.isCounterAttack && rollData.attackRollResult) {
-    // Counter-attack: log results
+  } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
+    // Counter-attack: compare with original attack
+    // In counter-attack context:
+    // - attacker = original defender (the one doing counter-attack)
+    // - defender = original attacker (the one being counter-attacked)
+    
+    // Get actor names (use token name if available, otherwise actor name)
+    // For original attacker (defender in counter-attack context)
+    // Try: token.document.name, token.name, token.actor.name, actor.name
+    const originalAttackerName = defenderToken?.document?.name || 
+                                  (defenderToken as any)?.name || 
+                                  defenderToken?.actor?.name || 
+                                  defender?.name || 
+                                  'Inconnu';
+    // For original defender/counter-attacker (attacker in counter-attack context)
+    const originalDefenderName = attackerToken?.document?.name || 
+                                  (attackerToken as any)?.name || 
+                                  attackerToken?.actor?.name || 
+                                  attacker?.name || 
+                                  'Inconnu';
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const counterAttackSuccesses = rollResult.totalSuccesses;
+    
+    // Get damage values
+    const attackDamageValue = parseInt(rollData.attackRollData.damageValue || '0', 10) || 0;
+    const counterAttackDamageValue = parseInt(rollData.damageValue || '0', 10) || 0;
+    
+    // Determine winner and calculate damage
+    let attackerDamage = 0;
+    let defenderDamage = 0;
+    let isTie = false;
+    let winner: 'attacker' | 'defender' | 'tie' = 'tie';
+    
+    if (attackSuccesses > counterAttackSuccesses) {
+      // Attacker wins
+      winner = 'attacker';
+      attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
+    } else if (counterAttackSuccesses > attackSuccesses) {
+      // Defender (counter-attacker) wins
+      winner = 'defender';
+      defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
+    } else {
+      // Tie
+      isTie = true;
+      winner = 'tie';
+    }
     
     console.log('=== COUNTER-ATTACK RESULTS ===');
     console.log('Attack Successes:', attackSuccesses);
     console.log('Counter-Attack Successes:', counterAttackSuccesses);
+    console.log('Winner:', winner);
+    console.log('Attacker Damage:', attackerDamage);
+    console.log('Defender Damage:', defenderDamage);
+    console.log('Original Attacker Name:', originalAttackerName);
+    console.log('Original Defender Name:', originalDefenderName);
+    console.log('--- Context ---');
+    console.log('Attacker param:', attacker?.name);
+    console.log('Defender param:', defender?.name);
+    console.log('AttackerToken object:', attackerToken ? 'Found' : 'Not found');
+    console.log('AttackerToken.name:', (attackerToken as any)?.name);
+    console.log('AttackerToken.document?.name:', attackerToken?.document?.name);
+    console.log('AttackerToken.actor?.name:', attackerToken?.actor?.name);
+    console.log('DefenderToken object:', defenderToken ? 'Found' : 'Not found');
+    console.log('DefenderToken.name:', (defenderToken as any)?.name);
+    console.log('DefenderToken.document?.name:', defenderToken?.document?.name);
+    console.log('DefenderToken.actor?.name:', defenderToken?.actor?.name);
     console.log('==============================');
     
     defenseResult = {
       attackSuccesses: attackSuccesses,
-      counterAttackSuccesses: counterAttackSuccesses
+      counterAttackSuccesses: counterAttackSuccesses,
+      winner: winner,
+      attackerDamage: attackerDamage,
+      defenderDamage: defenderDamage,
+      isTie: isTie,
+      originalAttackerName: originalAttackerName,
+      originalDefenderName: originalDefenderName
     };
   }
 
