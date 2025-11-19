@@ -194,8 +194,6 @@ export class SRA2System {
       // Defense button handler
       html.find('.defend-button').on('click', async (event: any) => {
         event.preventDefault();
-        const button = $(event.currentTarget);
-        const actionsDiv = button.closest('.attack-actions');
         
         // Get data from message flags (more reliable)
         const messageFlags = message.flags?.sra2;
@@ -277,11 +275,169 @@ export class SRA2System {
         console.log('Skill d\'attaque:', attackSkill);
         console.log('Spe d\'attaque:', attackSpec);
         console.log('===================');
+
+        // Open defense roll dialog
+        if (!defender || !defenseSkill) {
+          console.error('Missing defender or defense skill');
+          return;
+        }
+
+        // Get defender token from UUID (for NPCs, we need the token instance)
+        // For NPCs, the actor is linked to the token, so we need to use the token's actor
+        let defenderTokenForRoll: any = null;
+        let defenderActorForRoll: any = defender; // Default to defender actor
+        
+        if (defenderTokenUuid && defenderTokenUuid !== 'Unknown') {
+          try {
+            defenderTokenForRoll = (foundry.utils as any)?.fromUuidSync?.(defenderTokenUuid) || null;
+            // For NPCs, use the token's actor (which may be different from the base actor)
+            if (defenderTokenForRoll?.actor) {
+              defenderActorForRoll = defenderTokenForRoll.actor;
+            }
+          } catch (e) {
+            // Fallback to finding token on canvas
+            defenderTokenForRoll = defenderToken;
+            if (defenderToken?.actor) {
+              defenderActorForRoll = defenderToken.actor;
+            }
+          }
+        } else {
+          defenderTokenForRoll = defenderToken;
+          if (defenderToken?.actor) {
+            defenderActorForRoll = defenderToken.actor;
+          }
+        }
+
+        // Determine which skill/spec to use for defense
+        // Priority: 1) defenseSpec if found, 2) defenseSkill if found, 3) fallback based on attack type
+        let finalDefenseSkill: string | null = null;
+        let finalDefenseSpec: string | null = null;
+        
+        // Try to find the defense spec first
+        if (defenseSpec) {
+          const spec = defenderActorForRoll.items.find((item: any) => 
+            item.type === 'specialization' && item.name === defenseSpec
+          );
+          if (spec) {
+            finalDefenseSpec = defenseSpec;
+            const specSystem = spec.system as any;
+            const linkedSkillName = specSystem.linkedSkill;
+            finalDefenseSkill = linkedSkillName;
+          }
+        }
+        
+        // If spec not found, try to find the defense skill
+        if (!finalDefenseSpec && defenseSkill) {
+          const skill = defenderActorForRoll.items.find((item: any) => 
+            item.type === 'skill' && item.name === defenseSkill
+          );
+          if (skill) {
+            finalDefenseSkill = defenseSkill;
+          }
+        }
+        
+        // Fallback: determine based on attack type (melee or ranged)
+        if (!finalDefenseSkill) {
+          // Check if it's a melee attack (check meleeRange in rollData)
+          const isMeleeAttack = rollData.meleeRange && rollData.meleeRange !== 'none';
+          if (isMeleeAttack) {
+            finalDefenseSkill = 'Combat rapproché';
+          } else {
+            finalDefenseSkill = 'Athlétisme';
+          }
+        }
+
+        // Calculate skill/spec levels for defender (use token's actor for NPCs)
+        let defenseSkillLevel: number | undefined = undefined;
+        let defenseSpecLevel: number | undefined = undefined;
+        let defenseLinkedAttribute: string | undefined = undefined;
+
+        if (finalDefenseSpec) {
+          const spec = defenderActorForRoll.items.find((item: any) => 
+            item.type === 'specialization' && item.name === finalDefenseSpec
+          );
+          if (spec) {
+            const specSystem = spec.system as any;
+            const linkedSkillName = specSystem.linkedSkill;
+            const linkedSkill = defenderActorForRoll.items.find((item: any) => 
+              item.type === 'skill' && item.name === linkedSkillName
+            );
+            if (linkedSkill) {
+              const skillRating = (linkedSkill.system as any).rating || 0;
+              const specRating = specSystem.rating || 0;
+              defenseLinkedAttribute = specSystem.linkedAttribute || (linkedSkill.system as any).linkedAttribute || 'strength';
+              const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
+              
+              defenseSkillLevel = attributeValue + skillRating;
+              defenseSpecLevel = defenseSkillLevel + specRating;
+            }
+          }
+        } else if (finalDefenseSkill) {
+          const skill = defenderActorForRoll.items.find((item: any) => 
+            item.type === 'skill' && item.name === finalDefenseSkill
+          );
+          if (skill) {
+            const skillSystem = skill.system as any;
+            const skillRating = skillSystem.rating || 0;
+            defenseLinkedAttribute = skillSystem.linkedAttribute || 'strength';
+            const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
+            
+            defenseSkillLevel = attributeValue + skillRating;
+          }
+        }
+
+        // Get RR sources for defense skill/spec (use token's actor for NPCs)
+        const { getRRSources } = await import('./helpers/sheet-helpers.js');
+        let defenseRRList: any[] = [];
+        if (finalDefenseSpec) {
+          const rrSources = getRRSources(defenderActorForRoll, 'specialization', finalDefenseSpec);
+          defenseRRList = rrSources.map((rr: any) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        } else if (finalDefenseSkill) {
+          const rrSources = getRRSources(defenderActorForRoll, 'skill', finalDefenseSkill);
+          defenseRRList = rrSources.map((rr: any) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        }
+
+        // Prepare defense roll data
+        const defenseRollData: any = {
+          // Use final defense skill/spec (with fallback)
+          skillName: finalDefenseSkill,
+          specName: finalDefenseSpec,
+          linkedAttribute: defenseLinkedAttribute,
+          skillLevel: defenseSkillLevel,
+          specLevel: defenseSpecLevel,
+          
+          // Actor is the defender (use token's actor UUID for NPCs)
+          actorId: defenderActorForRoll.id,
+          actorUuid: defenderActorForRoll.uuid,
+          
+          // Target is the attacker
+          // We'll set targetToken in RollDialog constructor
+          
+          // RR List
+          rrList: defenseRRList
+        };
+
+        // Import and open RollDialog
+        const { RollDialog } = await import('./applications/roll-dialog.js');
+        const dialog = new RollDialog(defenseRollData);
+        
+        // Set target token to attacker's token
+        if (attackerToken) {
+          (dialog as any).targetToken = attackerToken;
+        }
+        
+        dialog.render(true);
       });
     });
     
     // Register token context menu hook for bookmarks/favorites
-    Hooks.on('getTokenHUDOptions', (hud: any, buttons: any[], token: any) => {
+    (Hooks as any).on('getTokenHUDOptions', (_hud: any, buttons: any[], token: any) => {
       const actor = token.actor;
       if (!actor) return;
       

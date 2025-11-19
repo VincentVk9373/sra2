@@ -1922,6 +1922,18 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn) {
     return feat;
   });
 }
+const sheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  calculateFinalDamageValue,
+  calculateRR,
+  enrichFeats,
+  getRRSources,
+  handleDeleteItem,
+  handleEditItem,
+  handleItemDrop,
+  handleSheetUpdate,
+  organizeSpecializationsBySkill
+}, Symbol.toStringTag, { value: "Module" }));
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -6535,8 +6547,6 @@ class SRA2System {
       });
       html.find(".defend-button").on("click", async (event) => {
         event.preventDefault();
-        const button = $(event.currentTarget);
-        button.closest(".attack-actions");
         const messageFlags = message.flags?.sra2;
         if (!messageFlags) {
           console.error("Missing message flags");
@@ -6602,9 +6612,132 @@ class SRA2System {
         console.log("Skill d'attaque:", attackSkill);
         console.log("Spe d'attaque:", attackSpec);
         console.log("===================");
+        if (!defender || !defenseSkill) {
+          console.error("Missing defender or defense skill");
+          return;
+        }
+        let defenderTokenForRoll = null;
+        let defenderActorForRoll = defender;
+        if (defenderTokenUuid !== "Unknown") {
+          try {
+            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuid) || null;
+            if (defenderTokenForRoll?.actor) {
+              defenderActorForRoll = defenderTokenForRoll.actor;
+            }
+          } catch (e) {
+            defenderTokenForRoll = defenderToken;
+            if (defenderToken?.actor) {
+              defenderActorForRoll = defenderToken.actor;
+            }
+          }
+        } else {
+          defenderTokenForRoll = defenderToken;
+          if (defenderToken?.actor) {
+            defenderActorForRoll = defenderToken.actor;
+          }
+        }
+        let finalDefenseSkill = null;
+        let finalDefenseSpec = null;
+        if (defenseSpec) {
+          const spec = defenderActorForRoll.items.find(
+            (item) => item.type === "specialization" && item.name === defenseSpec
+          );
+          if (spec) {
+            finalDefenseSpec = defenseSpec;
+            const specSystem = spec.system;
+            const linkedSkillName = specSystem.linkedSkill;
+            finalDefenseSkill = linkedSkillName;
+          }
+        }
+        if (!finalDefenseSpec && defenseSkill) {
+          const skill = defenderActorForRoll.items.find(
+            (item) => item.type === "skill" && item.name === defenseSkill
+          );
+          if (skill) {
+            finalDefenseSkill = defenseSkill;
+          }
+        }
+        if (!finalDefenseSkill) {
+          const isMeleeAttack = rollData.meleeRange && rollData.meleeRange !== "none";
+          if (isMeleeAttack) {
+            finalDefenseSkill = "Combat rapproché";
+          } else {
+            finalDefenseSkill = "Athlétisme";
+          }
+        }
+        let defenseSkillLevel = void 0;
+        let defenseSpecLevel = void 0;
+        let defenseLinkedAttribute = void 0;
+        if (finalDefenseSpec) {
+          const spec = defenderActorForRoll.items.find(
+            (item) => item.type === "specialization" && item.name === finalDefenseSpec
+          );
+          if (spec) {
+            const specSystem = spec.system;
+            const linkedSkillName = specSystem.linkedSkill;
+            const linkedSkill = defenderActorForRoll.items.find(
+              (item) => item.type === "skill" && item.name === linkedSkillName
+            );
+            if (linkedSkill) {
+              const skillRating = linkedSkill.system.rating || 0;
+              const specRating = specSystem.rating || 0;
+              defenseLinkedAttribute = specSystem.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
+              const attributeValue = defenseLinkedAttribute ? defenderActorForRoll.system?.attributes?.[defenseLinkedAttribute] || 0 : 0;
+              defenseSkillLevel = attributeValue + skillRating;
+              defenseSpecLevel = defenseSkillLevel + specRating;
+            }
+          }
+        } else if (finalDefenseSkill) {
+          const skill = defenderActorForRoll.items.find(
+            (item) => item.type === "skill" && item.name === finalDefenseSkill
+          );
+          if (skill) {
+            const skillSystem = skill.system;
+            const skillRating = skillSystem.rating || 0;
+            defenseLinkedAttribute = skillSystem.linkedAttribute || "strength";
+            const attributeValue = defenseLinkedAttribute ? defenderActorForRoll.system?.attributes?.[defenseLinkedAttribute] || 0 : 0;
+            defenseSkillLevel = attributeValue + skillRating;
+          }
+        }
+        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => sheetHelpers);
+        let defenseRRList = [];
+        if (finalDefenseSpec) {
+          const rrSources = getRRSources2(defenderActorForRoll, "specialization", finalDefenseSpec);
+          defenseRRList = rrSources.map((rr) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        } else if (finalDefenseSkill) {
+          const rrSources = getRRSources2(defenderActorForRoll, "skill", finalDefenseSkill);
+          defenseRRList = rrSources.map((rr) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        }
+        const defenseRollData = {
+          // Use final defense skill/spec (with fallback)
+          skillName: finalDefenseSkill,
+          specName: finalDefenseSpec,
+          linkedAttribute: defenseLinkedAttribute,
+          skillLevel: defenseSkillLevel,
+          specLevel: defenseSpecLevel,
+          // Actor is the defender (use token's actor UUID for NPCs)
+          actorId: defenderActorForRoll.id,
+          actorUuid: defenderActorForRoll.uuid,
+          // Target is the attacker
+          // We'll set targetToken in RollDialog constructor
+          // RR List
+          rrList: defenseRRList
+        };
+        const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
+        const dialog = new RollDialog2(defenseRollData);
+        if (attackerToken) {
+          dialog.targetToken = attackerToken;
+        }
+        dialog.render(true);
       });
     });
-    Hooks.on("getTokenHUDOptions", (hud, buttons, token) => {
+    Hooks.on("getTokenHUDOptions", (_hud, buttons, token) => {
       const actor = token.actor;
       if (!actor) return;
       const bookmarkedItems = actor.items.filter(
