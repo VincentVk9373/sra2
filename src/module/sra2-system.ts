@@ -190,6 +190,94 @@ export class SRA2System {
         
         await applications.CharacterSheet.applyDamage(defenderUuid, damage, defenderName);
       });
+
+      // Defense button handler
+      html.find('.defend-button').on('click', async (event: any) => {
+        event.preventDefault();
+        const button = $(event.currentTarget);
+        const actionsDiv = button.closest('.attack-actions');
+        
+        // Get data from message flags (more reliable)
+        const messageFlags = message.flags?.sra2;
+        if (!messageFlags) {
+          console.error('Missing message flags');
+          return;
+        }
+
+        const rollResult = messageFlags.rollResult;
+        const rollData = messageFlags.rollData;
+        
+        if (!rollResult || !rollData) {
+          console.error('Missing roll data in message flags');
+          return;
+        }
+
+        // Get actors from flags
+        let attacker: any = null;
+        let defender: any = null;
+        
+        if (messageFlags.attackerId) {
+          attacker = game.actors?.get(messageFlags.attackerId) || null;
+        } else if (messageFlags.attackerUuid) {
+          attacker = (foundry.utils as any)?.fromUuidSync?.(messageFlags.attackerUuid) || null;
+        }
+        
+        if (messageFlags.defenderId) {
+          defender = game.actors?.get(messageFlags.defenderId) || null;
+        } else if (messageFlags.defenderUuid) {
+          defender = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+        }
+
+        // Get tokens from canvas
+        let attackerToken: any = null;
+        let defenderToken: any = null;
+        
+        if (attacker) {
+          attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
+            return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
+          }) || null;
+        }
+        
+        if (defender) {
+          defenderToken = canvas?.tokens?.placeables?.find((token: any) => {
+            return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
+          }) || null;
+        }
+
+        // Extract information
+        const success = rollResult.totalSuccesses || 0;
+        const damage = rollData.damageValue || 0;
+        const attackerName = attacker?.name || 'Unknown';
+        const attackerId = attacker?.id || messageFlags.attackerId || 'Unknown';
+        const attackerUuid = attacker?.uuid || messageFlags.attackerUuid || 'Unknown';
+        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || 'Unknown';
+        const defenderName = defender?.name || 'Unknown';
+        const defenderId = defender?.id || messageFlags.defenderId || 'Unknown';
+        const defenderUuid = defender?.uuid || messageFlags.defenderUuid || 'Unknown';
+        const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || 'Unknown';
+        const defenseSkill = rollData.linkedDefenseSkill || null;
+        const defenseSpec = rollData.linkedDefenseSpecialization || null;
+        const attackSkill = rollData.linkedAttackSkill || rollData.skillName || null;
+        const attackSpec = rollData.linkedAttackSpecialization || rollData.specName || null;
+
+        // Console log all information
+        console.log('=== DEFENSE CLICK ===');
+        console.log('Success:', success);
+        console.log('Damage:', damage);
+        console.log('Attacker:', attackerName);
+        console.log('Attacker ID:', attackerId);
+        console.log('Attacker UUID:', attackerUuid);
+        console.log('Attacker Token UUID:', attackerTokenUuid);
+        console.log('Defender:', defenderName);
+        console.log('Defender ID:', defenderId);
+        console.log('Defender UUID:', defenderUuid);
+        console.log('Defender Token UUID:', defenderTokenUuid);
+        console.log('Skill de defense:', defenseSkill);
+        console.log('Spe de defense:', defenseSpec);
+        console.log('Skill d\'attaque:', attackSkill);
+        console.log('Spe d\'attaque:', attackSpec);
+        console.log('===================');
+      });
     });
     
     // Register token context menu hook for bookmarks/favorites

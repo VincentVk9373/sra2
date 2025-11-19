@@ -5,7 +5,7 @@
             <div class="roller-name">{{attacker.name}}</div>
             {{#if isAttack}}
             <div class="roll-type">
-                <i class="fas fa-sword"></i> {{#if itemName}}{{itemName}}{{else}}{{skillName}}{{/if}}
+                <i class="fas fa-sword"></i> {{#if itemName}}{{itemName}}{{else}}{{skillName}}{{/if}}{{#if damageValue}} <span class="defense-value">(VD: {{damageValue}})</span>{{/if}}
             </div>
             {{else}}
             <div class="roll-type">

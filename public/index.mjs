@@ -6533,6 +6533,76 @@ class SRA2System {
         const defenderName = button.data("defender-name");
         await CharacterSheet.applyDamage(defenderUuid, damage, defenderName);
       });
+      html.find(".defend-button").on("click", async (event) => {
+        event.preventDefault();
+        const button = $(event.currentTarget);
+        button.closest(".attack-actions");
+        const messageFlags = message.flags?.sra2;
+        if (!messageFlags) {
+          console.error("Missing message flags");
+          return;
+        }
+        const rollResult = messageFlags.rollResult;
+        const rollData = messageFlags.rollData;
+        if (!rollResult || !rollData) {
+          console.error("Missing roll data in message flags");
+          return;
+        }
+        let attacker = null;
+        let defender = null;
+        if (messageFlags.attackerId) {
+          attacker = game.actors?.get(messageFlags.attackerId) || null;
+        } else if (messageFlags.attackerUuid) {
+          attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
+        }
+        if (messageFlags.defenderId) {
+          defender = game.actors?.get(messageFlags.defenderId) || null;
+        } else if (messageFlags.defenderUuid) {
+          defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+        }
+        let attackerToken = null;
+        let defenderToken = null;
+        if (attacker) {
+          attackerToken = canvas?.tokens?.placeables?.find((token) => {
+            return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
+          }) || null;
+        }
+        if (defender) {
+          defenderToken = canvas?.tokens?.placeables?.find((token) => {
+            return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
+          }) || null;
+        }
+        const success = rollResult.totalSuccesses || 0;
+        const damage = rollData.damageValue || 0;
+        const attackerName = attacker?.name || "Unknown";
+        const attackerId = attacker?.id || messageFlags.attackerId || "Unknown";
+        const attackerUuid = attacker?.uuid || messageFlags.attackerUuid || "Unknown";
+        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || "Unknown";
+        const defenderName = defender?.name || "Unknown";
+        const defenderId = defender?.id || messageFlags.defenderId || "Unknown";
+        const defenderUuid = defender?.uuid || messageFlags.defenderUuid || "Unknown";
+        const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || "Unknown";
+        const defenseSkill = rollData.linkedDefenseSkill || null;
+        const defenseSpec = rollData.linkedDefenseSpecialization || null;
+        const attackSkill = rollData.linkedAttackSkill || rollData.skillName || null;
+        const attackSpec = rollData.linkedAttackSpecialization || rollData.specName || null;
+        console.log("=== DEFENSE CLICK ===");
+        console.log("Success:", success);
+        console.log("Damage:", damage);
+        console.log("Attacker:", attackerName);
+        console.log("Attacker ID:", attackerId);
+        console.log("Attacker UUID:", attackerUuid);
+        console.log("Attacker Token UUID:", attackerTokenUuid);
+        console.log("Defender:", defenderName);
+        console.log("Defender ID:", defenderId);
+        console.log("Defender UUID:", defenderUuid);
+        console.log("Defender Token UUID:", defenderTokenUuid);
+        console.log("Skill de defense:", defenseSkill);
+        console.log("Spe de defense:", defenseSpec);
+        console.log("Skill d'attaque:", attackSkill);
+        console.log("Spe d'attaque:", attackSpec);
+        console.log("===================");
+      });
     });
     Hooks.on("getTokenHUDOptions", (hud, buttons, token) => {
       const actor = token.actor;
