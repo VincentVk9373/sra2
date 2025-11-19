@@ -171,6 +171,8 @@
 
     <!-- Attack Actions (for defender) -->
     {{#if isAttack}}
+    {{#unless isDefend}}
+    {{#unless isCounterAttack}}
     {{#if defender}}
     <div class="attack-actions" data-attacker-id="{{attacker.id}}" data-attacker-uuid="{{attacker.uuid}}"
         data-defender-id="{{defender.id}}" data-defender-uuid="{{defender.uuid}}" data-roll-result="{{json rollResult}}"
@@ -197,5 +199,7 @@
         </div>
     </div>
     {{/if}}
+    {{/unless}}
+    {{/unless}}
     {{/if}}
 </div>

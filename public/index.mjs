@@ -1380,6 +1380,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     this.recommendedLevelBreakdown = recommendedLevelBreakdown;
   }
 }
+const itemFeat = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  FeatDataModel,
+  VEHICLE_TYPES,
+  WEAPON_TYPES
+}, Symbol.toStringTag, { value: "Module" }));
 class SpecializationDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -1696,7 +1702,44 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const counterAttackSuccesses = rollResult.totalSuccesses;
     const attackDamageValue = parseInt(rollData.attackRollData.damageValue || "0", 10) || 0;
-    const counterAttackDamageValue = parseInt(rollData.damageValue || "0", 10) || 0;
+    let counterAttackDamageValue = 0;
+    const damageValueStr = rollData.damageValue || "0";
+    const damageValueBonus = rollData.damageValueBonus || 0;
+    if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
+      const actorStrength = attacker.system?.attributes?.strength || 1;
+      if (damageValueStr === "FOR") {
+        counterAttackDamageValue = actorStrength;
+      } else if (damageValueStr.startsWith("FOR+")) {
+        const bonus = parseInt(damageValueStr.substring(4)) || 0;
+        counterAttackDamageValue = actorStrength + bonus;
+      }
+    } else {
+      counterAttackDamageValue = parseInt(damageValueStr, 10) || 0;
+    }
+    counterAttackDamageValue += damageValueBonus;
+    if (!counterAttackDamageValue && attacker) {
+      const selectedWeaponId = rollData.selectedWeaponId;
+      if (selectedWeaponId) {
+        const weapon = attacker.items.find((item) => item.id === selectedWeaponId);
+        if (weapon) {
+          const weaponSystem = weapon.system;
+          const weaponDamageValueStr = weaponSystem.damageValue || "0";
+          const weaponDamageValueBonus = weaponSystem.damageValueBonus || 0;
+          if (weaponDamageValueStr === "FOR" || weaponDamageValueStr.startsWith("FOR+")) {
+            const actorStrength = attacker.system?.attributes?.strength || 1;
+            if (weaponDamageValueStr === "FOR") {
+              counterAttackDamageValue = actorStrength;
+            } else if (weaponDamageValueStr.startsWith("FOR+")) {
+              const bonus = parseInt(weaponDamageValueStr.substring(4)) || 0;
+              counterAttackDamageValue = actorStrength + bonus;
+            }
+          } else {
+            counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
+          }
+          counterAttackDamageValue += weaponDamageValueBonus;
+        }
+      }
+    }
     let attackerDamage = 0;
     let defenderDamage = 0;
     let isTie = false;
@@ -1714,6 +1757,8 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     console.log("=== COUNTER-ATTACK RESULTS ===");
     console.log("Attack Successes:", attackSuccesses);
     console.log("Counter-Attack Successes:", counterAttackSuccesses);
+    console.log("Attack Damage Value:", attackDamageValue);
+    console.log("Counter-Attack Damage Value:", counterAttackDamageValue);
     console.log("Winner:", winner);
     console.log("Attacker Damage:", attackerDamage);
     console.log("Defender Damage:", defenderDamage);
@@ -5395,30 +5440,24 @@ class RollDialog extends Application {
     const longRange = this.rollData.longRange || "none";
     const isWeaponRoll = this.rollData.itemType === "weapon" || this.rollData.weaponType !== void 0 || (meleeRange !== "none" || shortRange !== "none" || mediumRange !== "none" || longRange !== "none");
     let selectedRangeValue = null;
-    let isRangeValid = false;
     if (this.selectedRange === "melee") {
       selectedRangeValue = meleeRange;
-      isRangeValid = meleeRange !== "none";
     } else if (this.selectedRange === "short") {
       selectedRangeValue = shortRange;
-      isRangeValid = shortRange !== "none";
     } else if (this.selectedRange === "medium") {
       selectedRangeValue = mediumRange;
-      isRangeValid = mediumRange !== "none";
     } else if (this.selectedRange === "long") {
       selectedRangeValue = longRange;
-      isRangeValid = longRange !== "none";
     }
     if (selectedRangeValue === "disadvantage") {
       this.rollMode = "disadvantage";
     } else if (selectedRangeValue === "ok") {
       this.rollMode = "normal";
-    } else ;
+    }
     context.isWeaponRoll = isWeaponRoll;
     context.calculatedRange = calculatedRange;
     context.selectedRange = this.selectedRange;
     context.selectedRangeValue = selectedRangeValue;
-    context.isRangeValid = isRangeValid;
     context.rollMode = this.rollMode;
     context.rangeOptions = {
       melee: { label: "Mêlée (< 3m)", value: meleeRange },
@@ -5598,6 +5637,84 @@ class RollDialog extends Application {
     super.activateListeners(html);
     html.find(".close-button").on("click", () => {
       this.close();
+    });
+    html.find(".weapon-select").on("change", async (event) => {
+      const select = event.currentTarget;
+      const weaponId = select.value;
+      if (!weaponId || !this.rollData.availableWeapons || !this.actor) return;
+      const selectedWeapon = this.rollData.availableWeapons.find((w) => w.id === weaponId);
+      if (!selectedWeapon) return;
+      const actualWeapon = this.actor.items.find((item) => item.id === weaponId);
+      const weaponSystem = actualWeapon?.system;
+      let baseSkillName = weaponSystem?.linkedAttackSkill || selectedWeapon.linkedAttackSkill;
+      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization;
+      const damageValue = selectedWeapon.damageValue;
+      const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+      if (!baseSkillName) {
+        baseSkillName = "Combat rapproché";
+      }
+      const linkedSkillItem = this.actor.items.find(
+        (item) => item.type === "skill" && item.name === baseSkillName
+      );
+      const linkedSpecs = this.actor.items.filter(
+        (item) => item.type === "specialization" && item.system.linkedSkill === baseSkillName
+      );
+      let preferredSpecName = void 0;
+      if (weaponLinkedSpecialization) {
+        const specExists = linkedSpecs.find(
+          (spec) => spec.name === weaponLinkedSpecialization
+        );
+        if (specExists) {
+          preferredSpecName = weaponLinkedSpecialization;
+        }
+      }
+      let skillLevel = void 0;
+      let specLevel = void 0;
+      let linkedAttribute = void 0;
+      let skillName = baseSkillName;
+      let specName = void 0;
+      if (linkedSkillItem) {
+        const skillSystem = linkedSkillItem.system;
+        const skillRating = skillSystem.rating || 0;
+        linkedAttribute = skillSystem.linkedAttribute || "strength";
+        const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
+        skillLevel = attributeValue + skillRating;
+      }
+      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => sheetHelpers);
+      let rrList = [];
+      if (preferredSpecName) {
+        specName = preferredSpecName;
+        const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
+        const parentSkill = linkedSkillItem;
+        const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
+        specLevel = attributeValue + skillRating + 2;
+        const rrSources = getRRSources2(this.actor, "specialization", specName);
+        rrList = rrSources.map((rr) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+      } else {
+        if (skillName) {
+          const rrSources = getRRSources2(this.actor, "skill", skillName);
+          rrList = rrSources.map((rr) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        }
+      }
+      this.rollData.skillName = skillName;
+      this.rollData.specName = specName;
+      this.rollData.linkedAttackSkill = baseSkillName;
+      this.rollData.linkedAttribute = linkedAttribute;
+      this.rollData.skillLevel = skillLevel;
+      this.rollData.specLevel = specLevel;
+      this.rollData.itemName = selectedWeapon.name;
+      this.rollData.itemType = "weapon";
+      this.rollData.damageValue = damageValue;
+      this.rollData.damageValueBonus = damageValueBonus;
+      this.rollData.rrList = rrList;
+      this.rollData.selectedWeaponId = weaponId;
+      this.render();
     });
     html.find(".skill-dropdown").on("change", (event) => {
       const select = event.currentTarget;
@@ -7049,35 +7166,113 @@ class SRA2System {
             defenderActorForRoll = defenderToken.actor;
           }
         }
-        const counterAttackSkill = "Combat rapproché";
-        const counterAttackSkillItem = defenderActorForRoll.items.find(
-          (item) => item.type === "skill" && item.name === counterAttackSkill
-        );
-        let counterAttackSkillLevel = void 0;
-        let counterAttackLinkedAttribute = void 0;
-        if (counterAttackSkillItem) {
-          const skillSystem = counterAttackSkillItem.system;
-          const skillRating = skillSystem.rating || 0;
-          counterAttackLinkedAttribute = skillSystem.linkedAttribute || "strength";
-          const attributeValue = counterAttackLinkedAttribute ? defenderActorForRoll.system?.attributes?.[counterAttackLinkedAttribute] || 0 : 0;
-          counterAttackSkillLevel = attributeValue + skillRating;
+        const allWeapons = defenderActorForRoll.items.filter((item) => {
+          const isFeat = item.type === "feat";
+          const isWeapon = item.system?.featType === "weapon" || item.system?.featType === "weapons-spells";
+          return isFeat && isWeapon;
+        });
+        const { WEAPON_TYPES: WEAPON_TYPES2 } = await Promise.resolve().then(() => itemFeat);
+        const defenderWeapons = allWeapons.filter((weapon) => {
+          const weaponSystem = weapon.system;
+          const weaponType = weaponSystem.weaponType;
+          const meleeRange = weaponSystem.meleeRange || "none";
+          const hasMeleeInSystem = meleeRange === "ok" || meleeRange === "disadvantage";
+          let hasMeleeInType = false;
+          if (weaponType && weaponType !== "custom-weapon") {
+            const weaponStats = WEAPON_TYPES2[weaponType];
+            if (weaponStats && weaponStats.melee) {
+              hasMeleeInType = weaponStats.melee === "ok" || weaponStats.melee === "disadvantage";
+            }
+          }
+          if (!hasMeleeInSystem && !hasMeleeInType) {
+            return false;
+          }
+          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
+          if (!linkedAttackSkill && weaponType && weaponType !== "custom-weapon") {
+            const weaponStats = WEAPON_TYPES2[weaponType];
+            if (weaponStats) {
+              linkedAttackSkill = weaponStats.linkedSkill;
+            }
+          }
+          if (linkedAttackSkill === "Combat rapproché") {
+            return true;
+          }
+          const combatRapprocheSpecs = defenderActorForRoll.items.filter(
+            (item) => item.type === "specialization" && item.system.linkedSkill === "Combat rapproché"
+          );
+          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
+            const hasCombatRapprocheSpec = combatRapprocheSpecs.some(
+              (spec) => spec.name === linkedAttackSkill
+            );
+            if (hasCombatRapprocheSpec) {
+              return true;
+            }
+          }
+          const linkedAttackSpecialization = weaponSystem.linkedAttackSpecialization;
+          if (linkedAttackSpecialization) {
+            const hasCombatRapprocheSpec = combatRapprocheSpecs.some(
+              (spec) => spec.name === linkedAttackSpecialization
+            );
+            if (hasCombatRapprocheSpec) {
+              return true;
+            }
+          }
+          return false;
+        });
+        console.log("Counter-attack: Filtered weapons with melee capability:", defenderWeapons.length, defenderWeapons.map((w) => ({
+          name: w.name,
+          meleeRange: w.system?.meleeRange,
+          weaponType: w.system?.weaponType,
+          meleeInType: w.system?.weaponType ? WEAPON_TYPES2[w.system.weaponType]?.melee : null
+        })));
+        if (defenderWeapons.length === 0) {
+          console.error("Counter-attack: No weapons with melee capability. All items:", defenderActorForRoll.items.map((i) => ({
+            name: i.name,
+            type: i.type,
+            featType: i.system?.featType,
+            meleeRange: i.system?.meleeRange,
+            weaponType: i.system?.weaponType
+          })));
+          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS") || "Aucune arme disponible pour la contre-attaque");
+          return;
         }
-        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => sheetHelpers);
-        let counterAttackRRList = [];
-        if (counterAttackSkillItem) {
-          const rrSources = getRRSources2(defenderActorForRoll, "skill", counterAttackSkill);
-          counterAttackRRList = rrSources.map((rr) => ({
-            ...rr,
-            featName: rr.featName
-          }));
-        }
+        const availableWeapons = defenderWeapons.map((weapon) => {
+          const weaponSystem = weapon.system;
+          const weaponType = weaponSystem.weaponType;
+          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
+          if (!linkedAttackSkill && weaponType && weaponType !== "custom-weapon") {
+            const weaponStats = WEAPON_TYPES2[weaponType];
+            if (weaponStats) {
+              linkedAttackSkill = weaponStats.linkedSkill;
+            }
+          }
+          const combatRapprocheSpecs = defenderActorForRoll.items.filter(
+            (item) => item.type === "specialization" && item.system.linkedSkill === "Combat rapproché"
+          );
+          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
+            const isCombatRapprocheSpec = combatRapprocheSpecs.some(
+              (spec) => spec.name === linkedAttackSkill
+            );
+            if (isCombatRapprocheSpec) ;
+            else if (linkedAttackSkill !== "Combat rapproché") {
+              linkedAttackSkill = "Combat rapproché";
+            }
+          } else {
+            linkedAttackSkill = "Combat rapproché";
+          }
+          return {
+            id: weapon.id,
+            name: weapon.name,
+            linkedAttackSkill,
+            damageValue: weaponSystem.damageValue || "0",
+            damageValueBonus: weaponSystem.damageValueBonus || 0,
+            weaponType,
+            meleeRange: weaponSystem.meleeRange || "none"
+          };
+        });
         const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
         const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
         const counterAttackRollData = {
-          // Use "Combat rapproché" skill
-          skillName: counterAttackSkill,
-          linkedAttribute: counterAttackLinkedAttribute,
-          skillLevel: counterAttackSkillLevel,
           // Actor is the defender (use token's actor UUID for NPCs)
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
@@ -7086,10 +7281,8 @@ class SRA2System {
           // Token of the defender (who is counter-attacking)
           defenderTokenUuid: originalAttackerTokenUuid,
           // Token of the original attacker
-          // Target is the attacker
-          // We'll set targetToken in RollDialog constructor
-          // RR List
-          rrList: counterAttackRRList,
+          // Available weapons for selection
+          availableWeapons,
           // Counter-attack flags
           isDefend: false,
           isCounterAttack: true,

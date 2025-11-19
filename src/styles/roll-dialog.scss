@@ -83,6 +83,61 @@
             }
         }
 
+        .counterattack-weapon-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 0; // Allow flex item to shrink below content size
+            overflow: hidden;
+
+            .weapon-select-label {
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 0.9rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .weapon-select {
+                padding: 0.5rem;
+                background: rgba(244, 67, 54, 0.1);
+                border: 2px solid rgba(244, 67, 54, 0.3);
+                border-radius: 6px;
+                color: #fff;
+                font-size: 0.85rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+
+                &:hover {
+                    border-color: rgba(244, 67, 54, 0.5);
+                    background: rgba(244, 67, 54, 0.15);
+                }
+
+                &:focus {
+                    outline: none;
+                    border-color: rgba(244, 67, 54, 0.7);
+                    box-shadow: 0 0 8px rgba(244, 67, 54, 0.3);
+                }
+
+                option {
+                    background: #1a1a2e;
+                    color: #fff;
+                    padding: 0.5rem;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            }
+        }
+
         .skill-roll-name,.counterattack-skill {
             font-size: 0.8rem;
             font-weight: 500;
@@ -435,7 +490,7 @@
                         }
 
                         &.dice-red {
-                            background: linear-gradient(135deg, #f44336 0%, #b71c1c 100%);
+                            background: linear-gradient(135deg, #7d2a24 0%, #b71c1c 100%);
                             border: 2px solid #f44336;
                         }
 

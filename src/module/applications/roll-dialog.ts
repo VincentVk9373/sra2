@@ -174,35 +174,28 @@ export class RollDialog extends Application {
 
     // Get range value for selected range
     let selectedRangeValue: string | null = null;
-    let isRangeValid: boolean = false;
     if (this.selectedRange === 'melee') {
       selectedRangeValue = meleeRange;
-      isRangeValid = meleeRange !== 'none';
     } else if (this.selectedRange === 'short') {
       selectedRangeValue = shortRange;
-      isRangeValid = shortRange !== 'none';
     } else if (this.selectedRange === 'medium') {
       selectedRangeValue = mediumRange;
-      isRangeValid = mediumRange !== 'none';
     } else if (this.selectedRange === 'long') {
       selectedRangeValue = longRange;
-      isRangeValid = longRange !== 'none';
     }
 
-    // Determine roll mode based on range value
+    // Determine roll mode based on range value (but allow user to override)
     if (selectedRangeValue === 'disadvantage') {
       this.rollMode = 'disadvantage';
     } else if (selectedRangeValue === 'ok') {
       this.rollMode = 'normal';
-    } else if (selectedRangeValue === 'none' || selectedRangeValue === null) {
-      // Invalid range, keep current mode but disable roll
     }
+    // Allow selection even if range is 'none' - user can still roll
 
     context.isWeaponRoll = isWeaponRoll;
     context.calculatedRange = calculatedRange;
     context.selectedRange = this.selectedRange;
     context.selectedRangeValue = selectedRangeValue;
-    context.isRangeValid = isRangeValid;
     context.rollMode = this.rollMode;
     context.rangeOptions = {
       melee: { label: 'Mêlée (< 3m)', value: meleeRange },
@@ -433,6 +426,118 @@ export class RollDialog extends Application {
     // Close button
     html.find('.close-button').on('click', () => {
       this.close();
+    });
+
+    // Weapon selection for counter-attack
+    html.find('.weapon-select').on('change', async (event) => {
+      const select = event.currentTarget as HTMLSelectElement;
+      const weaponId = select.value;
+      
+      if (!weaponId || !this.rollData.availableWeapons || !this.actor) return;
+      
+      const selectedWeapon = this.rollData.availableWeapons.find((w: any) => w.id === weaponId);
+      if (!selectedWeapon) return;
+
+      // Get the actual weapon item to check its linkedAttackSkill and linkedAttackSpecialization
+      const actualWeapon = this.actor.items.find((item: any) => item.id === weaponId);
+      const weaponSystem = actualWeapon?.system as any;
+      
+      // Get linkedAttackSkill from weapon (this should be the base skill name)
+      let baseSkillName = weaponSystem?.linkedAttackSkill || selectedWeapon.linkedAttackSkill;
+      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization;
+      
+      const damageValue = selectedWeapon.damageValue;
+      const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+
+      // Default to "Combat rapproché" if no skill found
+      if (!baseSkillName) {
+        baseSkillName = 'Combat rapproché';
+      }
+
+      // Find the linked skill in actor's items
+      const linkedSkillItem = this.actor.items.find((item: any) => 
+        item.type === 'skill' && item.name === baseSkillName
+      );
+
+      // Find specializations for the linked skill
+      const linkedSpecs = this.actor.items.filter((item: any) => 
+        item.type === 'specialization' && 
+        item.system.linkedSkill === baseSkillName
+      );
+      
+      // Check if weapon has a specialization and if actor has that specialization
+      let preferredSpecName: string | undefined = undefined;
+      if (weaponLinkedSpecialization) {
+        const specExists = linkedSpecs.find((spec: any) => 
+          spec.name === weaponLinkedSpecialization
+        );
+        if (specExists) {
+          preferredSpecName = weaponLinkedSpecialization;
+        }
+      }
+
+      // Calculate skill level and linked attribute
+      let skillLevel: number | undefined = undefined;
+      let specLevel: number | undefined = undefined;
+      let linkedAttribute: string | undefined = undefined;
+      let skillName: string | undefined = baseSkillName;
+      let specName: string | undefined = undefined;
+
+      if (linkedSkillItem) {
+        const skillSystem = linkedSkillItem.system as any;
+        const skillRating = skillSystem.rating || 0;
+        linkedAttribute = skillSystem.linkedAttribute || 'strength';
+        const attributeValue = linkedAttribute ? ((this.actor.system as any)?.attributes?.[linkedAttribute] || 0) : 0;
+        
+        skillLevel = attributeValue + skillRating;
+      }
+
+      // Get RR sources
+      const { getRRSources } = await import('../helpers/sheet-helpers.js');
+      let rrList: any[] = [];
+      
+      // Simple logic: if weapon has a specialization and actor has it, use it
+      // Otherwise, use the skill
+      if (preferredSpecName) {
+        // Weapon has a specialization and actor has it - use the specialization
+        specName = preferredSpecName;
+        const attributeValue = linkedAttribute ? ((this.actor.system as any)?.attributes?.[linkedAttribute] || 0) : 0;
+        const parentSkill = linkedSkillItem;
+        const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
+        specLevel = attributeValue + skillRating + 2;
+        
+        const rrSources = getRRSources(this.actor, 'specialization', specName);
+        rrList = rrSources.map((rr: any) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+      } else {
+        // Use skill (no specialization or actor doesn't have the specialization)
+        if (skillName) {
+          const rrSources = getRRSources(this.actor, 'skill', skillName);
+          rrList = rrSources.map((rr: any) => ({
+            ...rr,
+            featName: rr.featName
+          }));
+        }
+      }
+
+      // Update roll data with weapon information
+      this.rollData.skillName = skillName;
+      this.rollData.specName = specName;
+      this.rollData.linkedAttackSkill = baseSkillName;
+      this.rollData.linkedAttribute = linkedAttribute;
+      this.rollData.skillLevel = skillLevel;
+      this.rollData.specLevel = specLevel;
+      this.rollData.itemName = selectedWeapon.name;
+      this.rollData.itemType = 'weapon';
+      this.rollData.damageValue = damageValue;
+      this.rollData.damageValueBonus = damageValueBonus;
+      this.rollData.rrList = rrList;
+      this.rollData.selectedWeaponId = weaponId; // Store selected weapon ID for template
+
+      // Re-render to update the UI
+      this.render();
     });
 
     // Skill/Spec selection dropdown (only if no threshold)

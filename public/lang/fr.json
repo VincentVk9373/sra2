@@ -478,6 +478,11 @@
             "ATTACK_SUCCESS": "ATTAQUE RÉUSSIE",
             "ATTACK_FAILED": "ATTAQUE RATÉE",
             "DEFENSE_BLOCKS_ATTACK": "{defender} bloque l'attaque ! ({defenseSuccesses} succès défense > {attackSuccesses} succès attaque)",
+            "COUNTER_ATTACK": {
+                "TITLE": "Contre-attaque - Sélection d'arme",
+                "SELECT_WEAPON": "Sélectionnez une arme pour la contre-attaque:",
+                "NO_WEAPONS": "Aucune arme disponible pour la contre-attaque"
+            },
             "APPLY_DAMAGE": "Appliquer les dégâts",
             "APPLY_DAMAGE_TITLE": "Appliquer {damage} de dégâts à {defender}",
             "DAMAGE_APPLIED": "{damage} dégâts appliqués à {target}",

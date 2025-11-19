@@ -186,6 +186,16 @@ export interface RollRequestData {
   // Attack roll data (for defense/counter-attack rolls)
   attackRollResult?: RollResult;
   attackRollData?: RollRequestData;
+  availableWeapons?: Array<{
+    id: string;
+    name: string;
+    linkedAttackSkill: string;
+    damageValue: string;
+    damageValueBonus: number;
+    weaponType?: string;
+    meleeRange?: string;
+  }>;
+  selectedWeaponId?: string; // ID of selected weapon for counter-attack
 }
 
 /**
@@ -521,7 +531,56 @@ async function createRollChatMessage(
     
     // Get damage values
     const attackDamageValue = parseInt(rollData.attackRollData.damageValue || '0', 10) || 0;
-    const counterAttackDamageValue = parseInt(rollData.damageValue || '0', 10) || 0;
+    
+    // Get counter-attack damage value from rollData
+    // rollData.damageValue should already be set from the selected weapon
+    let counterAttackDamageValue = 0;
+    const damageValueStr = rollData.damageValue || '0';
+    const damageValueBonus = rollData.damageValueBonus || 0;
+    
+    // Handle "FOR" or "FOR+X" damage values
+    if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
+      const actorStrength = (attacker.system as any)?.attributes?.strength || 1;
+      if (damageValueStr === 'FOR') {
+        counterAttackDamageValue = actorStrength;
+      } else if (damageValueStr.startsWith('FOR+')) {
+        const bonus = parseInt(damageValueStr.substring(4)) || 0;
+        counterAttackDamageValue = actorStrength + bonus;
+      }
+    } else {
+      counterAttackDamageValue = parseInt(damageValueStr, 10) || 0;
+    }
+    
+    // Add damage value bonus
+    counterAttackDamageValue += damageValueBonus;
+    
+    // If still no damage value, try to find weapon (fallback)
+    if (!counterAttackDamageValue && attacker) {
+      // Find weapon matching the counter-attack skill/item
+      const selectedWeaponId = (rollData as any).selectedWeaponId;
+      if (selectedWeaponId) {
+        const weapon = attacker.items.find((item: any) => item.id === selectedWeaponId);
+        if (weapon) {
+          const weaponSystem = weapon.system as any;
+          const weaponDamageValueStr = weaponSystem.damageValue || '0';
+          const weaponDamageValueBonus = weaponSystem.damageValueBonus || 0;
+          
+          if (weaponDamageValueStr === 'FOR' || weaponDamageValueStr.startsWith('FOR+')) {
+            const actorStrength = (attacker.system as any)?.attributes?.strength || 1;
+            if (weaponDamageValueStr === 'FOR') {
+              counterAttackDamageValue = actorStrength;
+            } else if (weaponDamageValueStr.startsWith('FOR+')) {
+              const bonus = parseInt(weaponDamageValueStr.substring(4)) || 0;
+              counterAttackDamageValue = actorStrength + bonus;
+            }
+          } else {
+            counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
+          }
+          
+          counterAttackDamageValue += weaponDamageValueBonus;
+        }
+      }
+    }
     
     // Determine winner and calculate damage
     let attackerDamage = 0;
@@ -546,6 +605,8 @@ async function createRollChatMessage(
     console.log('=== COUNTER-ATTACK RESULTS ===');
     console.log('Attack Successes:', attackSuccesses);
     console.log('Counter-Attack Successes:', counterAttackSuccesses);
+    console.log('Attack Damage Value:', attackDamageValue);
+    console.log('Counter-Attack Damage Value:', counterAttackDamageValue);
     console.log('Winner:', winner);
     console.log('Attacker Damage:', attackerDamage);
     console.log('Defender Damage:', defenderDamage);

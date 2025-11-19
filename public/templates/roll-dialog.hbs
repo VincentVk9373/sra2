@@ -13,6 +13,7 @@
         </div>
         <!-- Additional Info -->
         {{#if rollData.itemName}}
+        {{#unless rollData.isCounterAttack}}
         <section class="roll-section item-section">
             <h3 class="section-title">
                 <i class="fas fa-sword"></i> Action
@@ -24,12 +25,26 @@
                 {{/if}}
             </div>
         </section>
+        {{/unless}}
         {{/if}}
         {{#if rollData.isCounterAttack}}
         <section class="roll-section counterattack-section">
             <h3 class="section-title">
                 <i class="fas fa-fist-raised"></i> Contre attaque
             </h3>
+            {{#if rollData.availableWeapons}}
+            <div class="counterattack-weapon-selection">
+                <label class="weapon-select-label">Sélectionnez une arme:</label>
+                <select class="weapon-select" name="selectedWeapon">
+                    <option value="">-- Choisissez une arme --</option>
+                    {{#each rollData.availableWeapons}}
+                    <option value="{{this.id}}" {{#if (eq this.id ../rollData.selectedWeaponId)}}selected{{/if}} data-linked-skill="{{this.linkedAttackSkill}}" data-damage-value="{{this.damageValue}}" data-damage-bonus="{{this.damageValueBonus}}">
+                        {{this.name}} ({{this.linkedAttackSkill}} - VD: {{this.damageValue}})
+                    </option>
+                    {{/each}}
+                </select>
+            </div>
+            {{else}}
             <div class="counterattack-display">
                 <div class="counterattack-skill">
                     {{#if rollData.specName}}
@@ -41,6 +56,7 @@
                     {{/if}}
                 </div>
             </div>
+            {{/if}}
         </section>
         {{else if rollData.isDefend}}
         <section class="roll-section defense-section">
@@ -109,8 +125,7 @@
 
         <!-- Roll Dice Button -->
         <div class="roll-dice-section">
-            <button type="button" class="roll-dice-button" {{#if isWeaponRoll}}{{#unless
-                isRangeValid}}disabled{{/unless}}{{/if}}>
+            <button type="button" class="roll-dice-button">
                 <i class="fas fa-dice"></i> Lancer les Dés
             </button>
         </div>
@@ -208,36 +223,28 @@
 
             <!-- Range Selection (for weapons) -->
             <section class="roll-section range-section no-border-left">
-                <h3 class="section-title {{#unless isRangeValid}}invalid-range{{/unless}}">
+                <h3 class="section-title">
                     <i class="fas fa-crosshairs"></i> Portée
                 </h3>
                 <div class="range-display">
-                    <select class="range-dropdown {{#unless isRangeValid}}invalid{{/unless}}" name="range-select">
+                    <select class="range-dropdown" name="range-select">
                         <option value="">-- Sélectionner --</option>
-                        {{#if (ne rangeOptions.melee.value "none")}}
                         <option value="melee" {{#if (eq selectedRange "melee" )}}selected{{/if}}>
                             {{rangeOptions.melee.label}} ({{#if (eq rangeOptions.melee.value "ok")}}OK{{else if (eq
                             rangeOptions.melee.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
                         </option>
-                        {{/if}}
-                        {{#if (ne rangeOptions.short.value "none")}}
                         <option value="short" {{#if (eq selectedRange "short" )}}selected{{/if}}>
                             {{rangeOptions.short.label}} ({{#if (eq rangeOptions.short.value "ok")}}OK{{else if (eq
                             rangeOptions.short.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
                         </option>
-                        {{/if}}
-                        {{#if (ne rangeOptions.medium.value "none")}}
                         <option value="medium" {{#if (eq selectedRange "medium" )}}selected{{/if}}>
                             {{rangeOptions.medium.label}} ({{#if (eq rangeOptions.medium.value "ok")}}OK{{else if (eq
                             rangeOptions.medium.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
                         </option>
-                        {{/if}}
-                        {{#if (ne rangeOptions.long.value "none")}}
                         <option value="long" {{#if (eq selectedRange "long" )}}selected{{/if}}>
                             {{rangeOptions.long.label}} ({{#if (eq rangeOptions.long.value "ok")}}OK{{else if (eq
                             rangeOptions.long.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
                         </option>
-                        {{/if}}
                     </select>
                     {{#unless isRangeValid}}
                     <div class="range-error">Portée invalide - Sélectionnez une portée valide</div>

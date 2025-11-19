@@ -84,6 +84,11 @@
             "ATTACK_SUCCESS": "ATTACK SUCCESS",
             "ATTACK_FAILED": "ATTACK FAILED",
             "DEFENSE_BLOCKS_ATTACK": "{defender} blocks the attack! ({defenseSuccesses} defense successes > {attackSuccesses} attack successes)",
+            "COUNTER_ATTACK": {
+                "TITLE": "Counter-Attack - Weapon Selection",
+                "SELECT_WEAPON": "Select a weapon for the counter-attack:",
+                "NO_WEAPONS": "No weapons available for counter-attack"
+            },
             "APPLY_DAMAGE": "Apply Damage",
             "APPLY_DAMAGE_TITLE": "Apply {damage} damage to {defender}",
             "DAMAGE_APPLIED": "{damage} damage applied to {target}",

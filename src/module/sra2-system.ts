@@ -594,51 +594,161 @@ export class SRA2System {
           }
         }
 
-        // Counter-attack uses "Combat rapproché" skill
-        const counterAttackSkill = 'Combat rapproché';
-        
-        // Find the skill in defender's items
-        const counterAttackSkillItem = defenderActorForRoll.items.find((item: any) => 
-          item.type === 'skill' && item.name === counterAttackSkill
-        );
+        // Get all weapons from defender's items for counter-attack
+        // Get all items of type 'feat' with featType 'weapon' or 'weapons-spells'
+        const allWeapons = defenderActorForRoll.items.filter((item: any) => {
+          const isFeat = item.type === 'feat';
+          const isWeapon = item.system?.featType === 'weapon' || item.system?.featType === 'weapons-spells';
+          return isFeat && isWeapon;
+        });
 
-        // Calculate skill level for counter-attack
-        let counterAttackSkillLevel: number | undefined = undefined;
-        let counterAttackLinkedAttribute: string | undefined = undefined;
+        // Import WEAPON_TYPES to check melee capability
+        const { WEAPON_TYPES } = await import('./models/item-feat.js');
 
-        if (counterAttackSkillItem) {
-          const skillSystem = counterAttackSkillItem.system as any;
-          const skillRating = skillSystem.rating || 0;
-          counterAttackLinkedAttribute = skillSystem.linkedAttribute || 'strength';
-          const attributeValue = counterAttackLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[counterAttackLinkedAttribute] || 0) : 0;
+        // Filter weapons that:
+        // 1. Have melee "ok" or "disadvantage"
+        // 2. Are linked to "Combat rapproché" skill or a specialization of "Combat rapproché"
+        const defenderWeapons = allWeapons.filter((weapon: any) => {
+          const weaponSystem = weapon.system as any;
+          const weaponType = weaponSystem.weaponType;
           
-          counterAttackSkillLevel = attributeValue + skillRating;
+          // Check meleeRange in weapon system
+          const meleeRange = weaponSystem.meleeRange || 'none';
+          const hasMeleeInSystem = meleeRange === 'ok' || meleeRange === 'disadvantage';
+          
+          // Check melee in weapon type
+          let hasMeleeInType = false;
+          if (weaponType && weaponType !== 'custom-weapon') {
+            const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+            if (weaponStats && weaponStats.melee) {
+              hasMeleeInType = weaponStats.melee === 'ok' || weaponStats.melee === 'disadvantage';
+            }
+          }
+          
+          // Must have melee capability
+          if (!hasMeleeInSystem && !hasMeleeInType) {
+            return false;
+          }
+          
+          // Get linked attack skill
+          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
+          
+          // If no linkedAttackSkill, try to get it from weapon type
+          if (!linkedAttackSkill && weaponType && weaponType !== 'custom-weapon') {
+            const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+            if (weaponStats) {
+              linkedAttackSkill = weaponStats.linkedSkill;
+            }
+          }
+          
+          // Must be linked to "Combat rapproché" skill
+          if (linkedAttackSkill === 'Combat rapproché') {
+            return true;
+          }
+          
+          // Check if weapon has a specialization linked to "Combat rapproché"
+          // Look for specializations linked to "Combat rapproché" in the actor's items
+          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) => 
+            item.type === 'specialization' && 
+            item.system.linkedSkill === 'Combat rapproché'
+          );
+          
+          // Check if weapon's linkedAttackSkill matches any specialization name
+          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
+            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) => 
+              spec.name === linkedAttackSkill
+            );
+            if (hasCombatRapprocheSpec) {
+              return true;
+            }
+          }
+          
+          // Also check weapon's linkedAttackSpecialization
+          const linkedAttackSpecialization = weaponSystem.linkedAttackSpecialization;
+          if (linkedAttackSpecialization) {
+            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) => 
+              spec.name === linkedAttackSpecialization
+            );
+            if (hasCombatRapprocheSpec) {
+              return true;
+            }
+          }
+          
+          return false;
+        });
+
+        console.log('Counter-attack: Filtered weapons with melee capability:', defenderWeapons.length, defenderWeapons.map((w: any) => ({
+          name: w.name,
+          meleeRange: w.system?.meleeRange,
+          weaponType: w.system?.weaponType,
+          meleeInType: w.system?.weaponType ? WEAPON_TYPES[w.system.weaponType as keyof typeof WEAPON_TYPES]?.melee : null
+        })));
+
+        if (defenderWeapons.length === 0) {
+          console.error('Counter-attack: No weapons with melee capability. All items:', defenderActorForRoll.items.map((i: any) => ({
+            name: i.name,
+            type: i.type,
+            featType: i.system?.featType,
+            meleeRange: i.system?.meleeRange,
+            weaponType: i.system?.weaponType
+          })));
+          ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS') || 'Aucune arme disponible pour la contre-attaque');
+          return;
         }
 
-        // Get RR sources for counter-attack skill
-        const { getRRSources } = await import('./helpers/sheet-helpers.js');
-        let counterAttackRRList: any[] = [];
-        if (counterAttackSkillItem) {
-          const rrSources = getRRSources(defenderActorForRoll, 'skill', counterAttackSkill);
-          counterAttackRRList = rrSources.map((rr: any) => ({
-            ...rr,
-            featName: rr.featName
-          }));
-        }
+        // Prepare available weapons data for RollDialog
+        const availableWeapons = defenderWeapons.map((weapon: any) => {
+          const weaponSystem = weapon.system as any;
+          const weaponType = weaponSystem.weaponType;
+          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
+          
+          // If no linkedAttackSkill, try to get it from weapon type
+          if (!linkedAttackSkill && weaponType && weaponType !== 'custom-weapon') {
+            const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+            if (weaponStats) {
+              linkedAttackSkill = weaponStats.linkedSkill;
+            }
+          }
+          
+          // Check if linkedAttackSkill is a specialization of "Combat rapproché"
+          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) => 
+            item.type === 'specialization' && 
+            item.system.linkedSkill === 'Combat rapproché'
+          );
+          
+          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
+            const isCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) => 
+              spec.name === linkedAttackSkill
+            );
+            if (isCombatRapprocheSpec) {
+              // Keep the specialization name, but the skill is "Combat rapproché"
+              // We'll use this in the weapon selection to show both
+            } else if (linkedAttackSkill !== 'Combat rapproché') {
+              // Not a specialization of Combat rapproché, use "Combat rapproché" as base skill
+              linkedAttackSkill = 'Combat rapproché';
+            }
+          } else {
+            // Default to "Combat rapproché" if still no skill
+            linkedAttackSkill = 'Combat rapproché';
+          }
+          
+          return {
+            id: weapon.id,
+            name: weapon.name,
+            linkedAttackSkill: linkedAttackSkill,
+            damageValue: weaponSystem.damageValue || '0',
+            damageValueBonus: weaponSystem.damageValueBonus || 0,
+            weaponType: weaponType,
+            meleeRange: weaponSystem.meleeRange || 'none'
+          };
+        });
 
         // Get token UUIDs
-        // For counter-attack: the defender (counter-attacker) becomes the attacker in the roll
-        // So attackerTokenUuid should be the defender's token, and defenderTokenUuid should be the attacker's token
         const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
         const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
         
-        // Prepare counter-attack roll data
+        // Prepare counter-attack roll data with available weapons
         const counterAttackRollData: any = {
-          // Use "Combat rapproché" skill
-          skillName: counterAttackSkill,
-          linkedAttribute: counterAttackLinkedAttribute,
-          skillLevel: counterAttackSkillLevel,
-          
           // Actor is the defender (use token's actor UUID for NPCs)
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
@@ -647,11 +757,8 @@ export class SRA2System {
           attackerTokenUuid: counterAttackerTokenUuid, // Token of the defender (who is counter-attacking)
           defenderTokenUuid: originalAttackerTokenUuid, // Token of the original attacker
           
-          // Target is the attacker
-          // We'll set targetToken in RollDialog constructor
-          
-          // RR List
-          rrList: counterAttackRRList,
+          // Available weapons for selection
+          availableWeapons: availableWeapons,
           
           // Counter-attack flags
           isDefend: false,
