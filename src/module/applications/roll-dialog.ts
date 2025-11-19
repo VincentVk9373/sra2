@@ -537,7 +537,7 @@ export class RollDialog extends Application {
     });
 
     // Roll Dice button
-    html.find('.roll-dice-button').on('click', () => {
+    html.find('.roll-dice-button').on('click', async () => {
       // Calculate final RR based on enabled checkboxes
       let finalRR = 0;
       if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
@@ -560,16 +560,35 @@ export class RollDialog extends Application {
         return this.rrEnabled.get(rrId);
       }) || [];
       
+      // Calculate dice pool
+      let dicePool = 0;
+      if (this.rollData.specLevel !== undefined) {
+        dicePool = this.rollData.specLevel;
+      } else if (this.rollData.skillLevel !== undefined) {
+        dicePool = this.rollData.skillLevel;
+      } else if (this.rollData.linkedAttribute) {
+        const attributeValue = (this.actor?.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
+        dicePool = attributeValue;
+      }
+      
+      // Get attacker and defender
+      const attacker = this.actor;
+      const defender = this.targetToken?.actor || null;
+      
+      // Prepare roll data
       const updatedRollData = {
         ...this.rollData,
         rrList: finalRRList,
         riskDiceCount: this.riskDiceCount,  // Add risk dice count to roll data
         selectedRange: this.selectedRange,  // Add selected range
-        rollMode: this.rollMode  // Add roll mode (normal/disadvantage/advantage)
+        rollMode: this.rollMode,  // Add roll mode (normal/disadvantage/advantage)
+        finalRR: Math.min(3, finalRR),  // Final RR (capped at 3)
+        dicePool: dicePool
       };
       
-      // Log the roll request (for now, until dice rolling is implemented)
-      console.log('=== ROLL DICE ===', updatedRollData);
+      // Import and execute roll
+      const { executeRoll } = await import('../helpers/dice-roller.js');
+      await executeRoll(attacker, defender, updatedRollData);
       
       // Close the dialog
       this.close();

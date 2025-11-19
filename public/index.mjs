@@ -1524,6 +1524,125 @@ function handleRollRequest(data) {
     dialog.render(true);
   });
 }
+async function executeRoll(attacker, defender, rollData) {
+  if (!attacker) {
+    console.error("No attacker provided for roll");
+    return;
+  }
+  const dicePool = rollData.dicePool || 0;
+  const riskDiceCount = rollData.riskDiceCount || 0;
+  const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
+  const rollMode = rollData.rollMode || "normal";
+  const finalRR = Math.min(3, rollData.finalRR || 0);
+  let normalRoll = null;
+  let riskRoll = null;
+  if (normalDiceCount > 0) {
+    normalRoll = new Roll(`${normalDiceCount}d6`);
+    await normalRoll.evaluate();
+    if (game.dice3d && normalRoll) {
+      game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+    }
+  }
+  if (riskDiceCount > 0) {
+    riskRoll = new Roll(`${riskDiceCount}d6`);
+    await riskRoll.evaluate();
+    if (game.dice3d && riskRoll) {
+      const dice3dConfig = {
+        colorset: "purple",
+        theme: "default"
+      };
+      game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+    }
+  }
+  const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+  const riskResults = riskRoll ? riskRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+  let normalSuccesses = 0;
+  for (const result of normalResults) {
+    if (rollMode === "advantage" && result >= 4) {
+      normalSuccesses++;
+    } else if (rollMode === "disadvantage" && result === 6) {
+      normalSuccesses++;
+    } else if (rollMode === "normal" && result >= 5) {
+      normalSuccesses++;
+    }
+  }
+  let riskSuccesses = 0;
+  let criticalFailures = 0;
+  for (const result of riskResults) {
+    if (result === 1) {
+      criticalFailures++;
+    } else if (rollMode === "advantage" && result >= 4) {
+      riskSuccesses++;
+    } else if (rollMode === "disadvantage" && result === 6) {
+      riskSuccesses++;
+    } else if (rollMode === "normal" && result >= 5) {
+      riskSuccesses++;
+    }
+  }
+  const totalRiskSuccesses = riskSuccesses * 2;
+  const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+  const remainingFailures = Math.max(0, criticalFailures - finalRR);
+  let complication = "none";
+  if (remainingFailures === 1) {
+    complication = "minor";
+  } else if (remainingFailures === 2) {
+    complication = "critical";
+  } else if (remainingFailures >= 3) {
+    complication = "disaster";
+  }
+  const rollResult = {
+    normalDice: normalResults,
+    riskDice: riskResults,
+    normalSuccesses,
+    riskSuccesses,
+    totalSuccesses,
+    criticalFailures,
+    finalRR,
+    remainingFailures,
+    complication
+  };
+  await createRollChatMessage(attacker, defender, rollData, rollResult);
+}
+async function createRollChatMessage(attacker, defender, rollData, rollResult) {
+  const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  const templateData = {
+    attacker,
+    defender,
+    rollData,
+    rollResult,
+    isAttack,
+    skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || "Unknown",
+    itemName: rollData.itemName,
+    damageValue: rollData.damageValue
+  };
+  const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
+  const messageData = {
+    user: game.user?.id,
+    speaker: {
+      actor: attacker?.id,
+      alias: attacker?.name
+    },
+    content: html,
+    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    flags: {
+      sra2: {
+        rollType: isAttack ? "attack" : "skill",
+        attackerId: attacker?.id,
+        attackerUuid: attacker?.uuid,
+        defenderId: defender?.id,
+        defenderUuid: defender?.uuid,
+        rollResult,
+        rollData
+      }
+    }
+  };
+  await ChatMessage.create(messageData);
+}
+const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  executeRoll,
+  handleRollRequest
+}, Symbol.toStringTag, { value: "Module" }));
 function normalizeSearchText(text) {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -5387,14 +5506,17 @@ class RollDialog extends Application {
       }
       this.render();
     });
-    html.find(".roll-dice-button").on("click", () => {
+    html.find(".roll-dice-button").on("click", async () => {
+      let finalRR = 0;
       if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
         for (const rrSource of this.rollData.rrList) {
           if (rrSource && typeof rrSource === "object") {
             const rrValue = rrSource.rrValue || 0;
             const featName = rrSource.featName || "Inconnu";
             const rrId = `${featName}-${rrValue}`;
-            if (this.rrEnabled.get(rrId)) ;
+            if (this.rrEnabled.get(rrId)) {
+              finalRR += rrValue;
+            }
           }
         }
       }
@@ -5402,6 +5524,17 @@ class RollDialog extends Application {
         const rrId = `${rr.featName || "Inconnu"}-${rr.rrValue || 0}`;
         return this.rrEnabled.get(rrId);
       }) || [];
+      let dicePool = 0;
+      if (this.rollData.specLevel !== void 0) {
+        dicePool = this.rollData.specLevel;
+      } else if (this.rollData.skillLevel !== void 0) {
+        dicePool = this.rollData.skillLevel;
+      } else if (this.rollData.linkedAttribute) {
+        const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
+        dicePool = attributeValue;
+      }
+      const attacker = this.actor;
+      const defender = this.targetToken?.actor || null;
       const updatedRollData = {
         ...this.rollData,
         rrList: finalRRList,
@@ -5409,10 +5542,14 @@ class RollDialog extends Application {
         // Add risk dice count to roll data
         selectedRange: this.selectedRange,
         // Add selected range
-        rollMode: this.rollMode
+        rollMode: this.rollMode,
         // Add roll mode (normal/disadvantage/advantage)
+        finalRR: Math.min(3, finalRR),
+        // Final RR (capped at 3)
+        dicePool
       };
-      console.log("=== ROLL DICE ===", updatedRollData);
+      const { executeRoll: executeRoll2 } = await Promise.resolve().then(() => diceRoller);
+      await executeRoll2(attacker, defender, updatedRollData);
       this.close();
     });
   }
@@ -6356,6 +6493,24 @@ class SRA2System {
     });
     Handlebars.registerHelper("uppercase", function(str) {
       return str ? str.toUpperCase() : "";
+    });
+    Handlebars.registerHelper("isSuccess", function(result, rollMode) {
+      if (rollMode === "advantage") {
+        return result >= 4;
+      } else if (rollMode === "disadvantage") {
+        return result === 6;
+      } else {
+        return result >= 5;
+      }
+    });
+    Handlebars.registerHelper("multiply", function(a, b) {
+      return a * b;
+    });
+    Handlebars.registerHelper("ne", function(a, b) {
+      return a !== b;
+    });
+    Handlebars.registerHelper("json", function(context) {
+      return JSON.stringify(context);
     });
     Hooks.on("renderChatMessage", (message, html) => {
       html.find(".apply-damage-btn").on("click", async (event) => {

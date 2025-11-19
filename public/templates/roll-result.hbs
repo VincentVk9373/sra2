@@ -1,0 +1,99 @@
+<div class="sra2-roll-result">
+    <div class="roll-header">
+        <img class="roller-portrait" src="{{attacker.img}}" alt="{{attacker.name}}" title="{{attacker.name}}" />
+        <div class="roller-info">
+            <div class="roller-name">{{attacker.name}}</div>
+            {{#if isAttack}}
+            <div class="roll-type">
+                <i class="fas fa-sword"></i> {{#if itemName}}{{itemName}}{{else}}{{skillName}}{{/if}}
+            </div>
+            {{else}}
+            <div class="roll-type">
+                <i class="fas fa-book"></i> {{skillName}}
+            </div>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="roll-results">
+        <div class="total-successes">
+            <span class="successes-label">{{localize "SRA2.ROLL_DIALOG.SUCCESSES"}}:</span>
+            <span class="successes-value">{{rollResult.totalSuccesses}}</span>
+        </div>
+
+        <!-- Normal Dice Results -->
+        {{#if rollResult.normalDice.length}}
+        <div class="dice-results normal-dice">
+            <div class="dice-results-header">
+                <span class="dice-type-label">{{localize "SRA2.ROLL_DIALOG.NORMAL_DICE"}}</span>
+                <span class="dice-successes">{{rollResult.normalSuccesses}} {{localize
+                    "SRA2.SKILLS.SUCCESSES_SHORT"}}</span>
+            </div>
+            <div class="dice-list">
+                {{#each rollResult.normalDice}}
+                <div class="dice-result {{#if (isSuccess this ../rollData.rollMode)}}success{{else}}failure{{/if}}"
+                    data-dice-value="{{this}}">
+                    {{this}}
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+
+        <!-- Risk Dice Results -->
+        {{#if rollResult.riskDice.length}}
+        <div class="dice-results risk-dice">
+            <div class="dice-results-header">
+                <span class="dice-type-label risk-label">{{localize "SRA2.ROLL_DIALOG.RISK_DICE"}}</span>
+                <span class="dice-successes">{{rollResult.riskSuccesses}} × 2 = {{multiply rollResult.riskSuccesses 2}}
+                    {{localize "SRA2.SKILLS.SUCCESSES_SHORT"}}</span>
+            </div>
+            <div class="dice-list">
+                {{#each rollResult.riskDice}}
+                <div
+                    class="dice-result risk {{#if (eq this 1)}}critical-failure{{else if (isSuccess this ../rollData.rollMode)}}success{{else}}failure{{/if}}">
+                    {{this}}
+                </div>
+                {{/each}}
+            </div>
+            {{#if rollResult.criticalFailures}}
+            <div class="critical-failures">
+                {{localize "SRA2.SKILLS.CRITICAL_FAILURES"}}: {{rollResult.criticalFailures}}
+                {{#if rollResult.finalRR}}
+                - {{localize "SRA2.ROLL_DIALOG.RR"}} {{rollResult.finalRR}} = {{rollResult.remainingFailures}}
+                {{/if}}
+            </div>
+            {{/if}}
+        </div>
+        {{/if}}
+
+        <!-- Complications -->
+        {{#if (ne rollResult.complication "none")}}
+        <div class="complication {{rollResult.complication}}">
+            {{#if (eq rollResult.complication "minor")}}
+            <i class="fas fa-exclamation-triangle"></i> {{localize "SRA2.SKILLS.MINOR_COMPLICATION"}}
+            {{else if (eq rollResult.complication "critical")}}
+            <i class="fas fa-exclamation-circle"></i> {{localize "SRA2.SKILLS.CRITICAL_COMPLICATION"}}
+            {{else if (eq rollResult.complication "disaster")}}
+            <i class="fas fa-skull"></i> {{localize "SRA2.SKILLS.DISASTER"}}
+            {{/if}}
+        </div>
+        {{/if}}
+    </div>
+
+    <!-- Attack Actions (for defender) -->
+    {{#if isAttack}}
+    {{#if defender}}
+    <div class="attack-actions" data-attacker-id="{{attacker.id}}" data-attacker-uuid="{{attacker.uuid}}"
+        data-defender-id="{{defender.id}}" data-defender-uuid="{{defender.uuid}}" data-roll-result="{{json rollResult}}"
+        data-roll-data="{{json rollData}}">
+        <button type="button" class="defend-button">
+            <i class="fas fa-shield-alt"></i> {{localize "SRA2.COMBAT.DEFEND"}}
+        </button>
+        <button type="button" class="counter-attack-button">
+            <i class="fas fa-sword"></i> {{localize "SRA2.COMBAT.ATTACK"}}
+        </button>
+    </div>
+    {{/if}}
+    {{/if}}
+</div>

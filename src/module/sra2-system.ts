@@ -153,6 +153,32 @@ export class SRA2System {
       return str ? str.toUpperCase() : '';
     });
     
+    // Helper to check if a dice result is a success based on roll mode
+    Handlebars.registerHelper('isSuccess', function(result: number, rollMode: string) {
+      if (rollMode === 'advantage') {
+        return result >= 4;
+      } else if (rollMode === 'disadvantage') {
+        return result === 6;
+      } else {
+        return result >= 5;
+      }
+    });
+    
+    // Helper to multiply two numbers
+    Handlebars.registerHelper('multiply', function(a: number, b: number) {
+      return a * b;
+    });
+    
+    // Helper to check if two values are not equal
+    Handlebars.registerHelper('ne', function(a: any, b: any) {
+      return a !== b;
+    });
+    
+    // Helper to stringify JSON
+    Handlebars.registerHelper('json', function(context: any) {
+      return JSON.stringify(context);
+    });
+    
     // Register chat message hook for apply damage buttons
     Hooks.on('renderChatMessage', (message: any, html: any) => {
       html.find('.apply-damage-btn').on('click', async (event: any) => {

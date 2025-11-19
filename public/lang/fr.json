@@ -464,7 +464,7 @@
         "COMBAT": {
             "ATTACK": "Attaque",
             "DEFENSE": "Défense",
-            "DEFEND": "Se défendre",
+            "DEFEND": "Défense",
             "NO_DEFENSE": "Pas de défense",
             "WAITING_FOR_DEFENSE": "{attacker} attaque {defender} avec {successes} succès. En attente de la défense...",
             "DEFENSE_ROLL_TITLE": "Défense de {defender} contre {attacker}",
@@ -656,7 +656,9 @@
             "RANGE_OK": "OK",
             "RANGE_NONE": "Aucun",
             "RISK_REDUCTION": "Réduction de risque",
-            "RR": "RR"
+            "RR": "RR",
+            "SUCCESSES": "Succès",
+            "NORMAL_DICE": "Dés normaux"
         }
     }
 }

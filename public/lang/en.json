@@ -638,7 +638,9 @@
             "RANGE_OK": "OK",
             "RANGE_NONE": "None",
             "RISK_REDUCTION": "Risk Reduction",
-            "RR": "RR"
+            "RR": "RR",
+            "SUCCESSES": "Successes",
+            "NORMAL_DICE": "Normal Dice"
         }
     }
 }
