@@ -1524,11 +1524,27 @@ function handleRollRequest(data) {
     dialog.render(true);
   });
 }
-async function executeRoll(attacker, defender, defenderToken, rollData) {
+async function executeRoll(attacker, defender, attackerToken, defenderToken, rollData) {
   if (!attacker) {
     console.error("No attacker provided for roll");
     return;
   }
+  console.log("=== EXECUTE ROLL ===");
+  console.log("Attacker:", attacker?.name || "Unknown");
+  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
+  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
+  console.log("Attacker Token UUID:", attackerToken?.uuid || attackerToken?.document?.uuid || rollData.attackerTokenUuid || "Unknown");
+  if (attackerToken?.actor) {
+    console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
+  }
+  console.log("Defender:", defender?.name || "None");
+  console.log("Defender UUID:", defender?.uuid || "Unknown");
+  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
+  console.log("Defender Token UUID:", defenderToken?.uuid || defenderToken?.document?.uuid || rollData.defenderTokenUuid || "Unknown");
+  if (defenderToken?.actor) {
+    console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
+  }
+  console.log("===================");
   const dicePool = rollData.dicePool || 0;
   const riskDiceCount = rollData.riskDiceCount || 0;
   const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
@@ -1601,10 +1617,44 @@ async function executeRoll(attacker, defender, defenderToken, rollData) {
     remainingFailures,
     complication
   };
-  await createRollChatMessage(attacker, defender, defenderToken, rollData, rollResult);
+  await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
 }
-async function createRollChatMessage(attacker, defender, defenderToken, rollData, rollResult) {
+async function createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult) {
   const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  console.log("=== CREATE ROLL CHAT MESSAGE ===");
+  console.log("Attacker:", attacker?.name || "Unknown");
+  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
+  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
+  let attackerTokenUuid = void 0;
+  if (attackerToken) {
+    attackerTokenUuid = attackerToken.uuid || attackerToken.document?.uuid || void 0;
+    console.log("Attacker Token UUID:", attackerTokenUuid || "Unknown");
+    if (attackerToken.actor) {
+      console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
+    }
+  } else if (rollData.attackerTokenUuid) {
+    attackerTokenUuid = rollData.attackerTokenUuid;
+    console.log("Attacker Token UUID (from rollData):", attackerTokenUuid);
+  }
+  const finalAttackerUuid = attackerToken?.actor?.uuid || attacker?.uuid;
+  console.log("Final Attacker UUID (token actor or actor):", finalAttackerUuid || "Unknown");
+  console.log("Defender:", defender?.name || "None");
+  console.log("Defender UUID:", defender?.uuid || "Unknown");
+  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
+  let defenderTokenUuid = void 0;
+  if (defenderToken) {
+    defenderTokenUuid = defenderToken.uuid || defenderToken.document?.uuid || void 0;
+    console.log("Defender Token UUID:", defenderTokenUuid || "Unknown");
+    if (defenderToken.actor) {
+      console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
+    }
+  } else if (rollData.defenderTokenUuid) {
+    defenderTokenUuid = rollData.defenderTokenUuid;
+    console.log("Defender Token UUID (from rollData):", defenderTokenUuid);
+  }
+  const finalDefenderUuid = defenderToken?.actor?.uuid || defender?.uuid;
+  console.log("Final Defender UUID (token actor or actor):", finalDefenderUuid || "Unknown");
+  console.log("================================");
   let defenderData = null;
   if (defender) {
     let tokenImg = defender.img;
@@ -1639,9 +1689,15 @@ async function createRollChatMessage(attacker, defender, defenderToken, rollData
       sra2: {
         rollType: isAttack ? "attack" : "skill",
         attackerId: attacker?.id,
-        attackerUuid: attacker?.uuid,
+        attackerUuid: finalAttackerUuid,
+        // Use token's actor UUID if token exists, otherwise actor UUID
+        attackerTokenUuid,
+        // Store token UUID
         defenderId: defender?.id,
-        defenderUuid: defender?.uuid,
+        defenderUuid: finalDefenderUuid,
+        // Use token's actor UUID if token exists, otherwise actor UUID
+        defenderTokenUuid,
+        // Store token UUID
         rollResult,
         rollData
       }
@@ -5132,6 +5188,7 @@ class MetatypeSheet extends ItemSheet {
 class RollDialog extends Application {
   rollData;
   actor = null;
+  attackerToken = null;
   targetToken = null;
   rrEnabled = /* @__PURE__ */ new Map();
   // Track which RR sources are enabled
@@ -5149,9 +5206,33 @@ class RollDialog extends Application {
     } else if (rollData.actorId) {
       this.actor = game.actors?.get(rollData.actorId) || null;
     }
+    if (rollData.attackerTokenUuid) {
+      try {
+        this.attackerToken = foundry.utils?.fromUuidSync?.(rollData.attackerTokenUuid) || null;
+        console.log("RollDialog: Attacker token loaded from UUID:", rollData.attackerTokenUuid);
+      } catch (e) {
+        console.warn("RollDialog: Failed to load attacker token from UUID:", e);
+      }
+    }
+    if (!this.attackerToken && this.actor) {
+      this.attackerToken = canvas?.tokens?.placeables?.find((token) => {
+        return token.actor?.id === this.actor.id || token.actor?.uuid === this.actor.uuid;
+      }) || null;
+      if (this.attackerToken) {
+        console.log("RollDialog: Attacker token found on canvas");
+      }
+    }
     const targets = Array.from(game.user?.targets || []);
     if (targets.length > 0) {
       this.targetToken = targets[0] || null;
+    }
+    if (rollData.defenderTokenUuid && !this.targetToken) {
+      try {
+        this.targetToken = foundry.utils?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
+        console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
+      } catch (e) {
+        console.warn("RollDialog: Failed to load defender token from UUID:", e);
+      }
     }
   }
   static get defaultOptions() {
@@ -5557,8 +5638,25 @@ class RollDialog extends Application {
         dicePool = attributeValue;
       }
       const attacker = this.actor;
+      const attackerToken = this.attackerToken || null;
       const defender = this.targetToken?.actor || null;
       const defenderToken = this.targetToken || null;
+      const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
+      const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
+      console.log("=== ROLL DICE BUTTON ===");
+      console.log("Attacker:", attacker?.name || "Unknown");
+      console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
+      console.log("Attacker Token UUID:", attackerTokenUuid || "Unknown");
+      if (attackerToken?.actor) {
+        console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
+      }
+      console.log("Defender:", defender?.name || "None");
+      console.log("Defender Token:", defenderToken ? "Found" : "Not found");
+      console.log("Defender Token UUID:", defenderTokenUuid || "Unknown");
+      if (defenderToken?.actor) {
+        console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
+      }
+      console.log("========================");
       const updatedRollData = {
         ...this.rollData,
         rrList: finalRRList,
@@ -5570,10 +5668,14 @@ class RollDialog extends Application {
         // Add roll mode (normal/disadvantage/advantage)
         finalRR: Math.min(3, finalRR),
         // Final RR (capped at 3)
-        dicePool
+        dicePool,
+        attackerTokenUuid,
+        // Add attacker token UUID
+        defenderTokenUuid
+        // Add defender token UUID
       };
       const { executeRoll: executeRoll2 } = await Promise.resolve().then(() => diceRoller);
-      await executeRoll2(attacker, defender, defenderToken, updatedRollData);
+      await executeRoll2(attacker, defender, attackerToken, defenderToken, updatedRollData);
       this.close();
     });
   }
@@ -6558,40 +6660,64 @@ class SRA2System {
           console.error("Missing roll data in message flags");
           return;
         }
-        let attacker = null;
-        let defender = null;
-        if (messageFlags.attackerId) {
-          attacker = game.actors?.get(messageFlags.attackerId) || null;
-        } else if (messageFlags.attackerUuid) {
-          attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
-        }
-        if (messageFlags.defenderId) {
-          defender = game.actors?.get(messageFlags.defenderId) || null;
-        } else if (messageFlags.defenderUuid) {
-          defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-        }
         let attackerToken = null;
         let defenderToken = null;
-        if (attacker) {
-          attackerToken = canvas?.tokens?.placeables?.find((token) => {
-            return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
-          }) || null;
+        let attacker = null;
+        let defender = null;
+        if (messageFlags.attackerTokenUuid) {
+          try {
+            attackerToken = foundry.utils?.fromUuidSync?.(messageFlags.attackerTokenUuid) || null;
+            if (attackerToken?.actor) {
+              attacker = attackerToken.actor;
+              console.log("Defense button: Attacker token loaded from UUID, using token actor");
+            }
+          } catch (e) {
+            console.warn("Defense button: Failed to load attacker token from UUID:", e);
+          }
         }
-        if (defender) {
-          defenderToken = canvas?.tokens?.placeables?.find((token) => {
-            return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
-          }) || null;
+        if (!attacker) {
+          if (messageFlags.attackerId) {
+            attacker = game.actors?.get(messageFlags.attackerId) || null;
+          } else if (messageFlags.attackerUuid) {
+            attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
+          }
+          if (attacker && !attackerToken) {
+            attackerToken = canvas?.tokens?.placeables?.find((token) => {
+              return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
+            }) || null;
+          }
+        }
+        if (messageFlags.defenderTokenUuid) {
+          try {
+            defenderToken = foundry.utils?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
+            if (defenderToken?.actor) {
+              defender = defenderToken.actor;
+              console.log("Defense button: Defender token loaded from UUID, using token actor");
+            }
+          } catch (e) {
+            console.warn("Defense button: Failed to load defender token from UUID:", e);
+          }
+        }
+        if (!defender) {
+          if (messageFlags.defenderId) {
+            defender = game.actors?.get(messageFlags.defenderId) || null;
+          } else if (messageFlags.defenderUuid) {
+            defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+          }
+          if (defender && !defenderToken) {
+            defenderToken = canvas?.tokens?.placeables?.find((token) => {
+              return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
+            }) || null;
+          }
         }
         const success = rollResult.totalSuccesses || 0;
         const damage = rollData.damageValue || 0;
         const attackerName = attacker?.name || "Unknown";
         const attackerId = attacker?.id || messageFlags.attackerId || "Unknown";
         const attackerUuid = attacker?.uuid || messageFlags.attackerUuid || "Unknown";
-        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || "Unknown";
         const defenderName = defender?.name || "Unknown";
         const defenderId = defender?.id || messageFlags.defenderId || "Unknown";
         const defenderUuid = defender?.uuid || messageFlags.defenderUuid || "Unknown";
-        const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || "Unknown";
         const defenseSkill = rollData.linkedDefenseSkill || null;
         const defenseSpec = rollData.linkedDefenseSpecialization || null;
         const attackSkill = rollData.linkedAttackSkill || rollData.skillName || null;
@@ -6602,11 +6728,11 @@ class SRA2System {
         console.log("Attacker:", attackerName);
         console.log("Attacker ID:", attackerId);
         console.log("Attacker UUID:", attackerUuid);
-        console.log("Attacker Token UUID:", attackerTokenUuid);
+        console.log("Attacker Token UUID:", attackerToken?.uuid || attackerToken?.document?.uuid || "Unknown");
         console.log("Defender:", defenderName);
         console.log("Defender ID:", defenderId);
         console.log("Defender UUID:", defenderUuid);
-        console.log("Defender Token UUID:", defenderTokenUuid);
+        console.log("Defender Token UUID:", defenderToken?.uuid || defenderToken?.document?.uuid || "Unknown");
         console.log("Skill de defense:", defenseSkill);
         console.log("Spe de defense:", defenseSpec);
         console.log("Skill d'attaque:", attackSkill);
@@ -6618,9 +6744,10 @@ class SRA2System {
         }
         let defenderTokenForRoll = null;
         let defenderActorForRoll = defender;
-        if (defenderTokenUuid !== "Unknown") {
+        const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
+        if (defenderTokenUuidFromFlags) {
           try {
-            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuid) || null;
+            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
             if (defenderTokenForRoll?.actor) {
               defenderActorForRoll = defenderTokenForRoll.actor;
             }
@@ -6714,6 +6841,8 @@ class SRA2System {
             featName: rr.featName
           }));
         }
+        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
+        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
         const defenseRollData = {
           // Use final defense skill/spec (with fallback)
           skillName: finalDefenseSkill,
@@ -6724,6 +6853,9 @@ class SRA2System {
           // Actor is the defender (use token's actor UUID for NPCs)
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
+          // Token UUIDs
+          attackerTokenUuid,
+          defenderTokenUuid,
           // Target is the attacker
           // We'll set targetToken in RollDialog constructor
           // RR List
@@ -6752,29 +6884,55 @@ class SRA2System {
           console.error("Missing roll data in message flags");
           return;
         }
-        let attacker = null;
-        let defender = null;
-        if (messageFlags.attackerId) {
-          attacker = game.actors?.get(messageFlags.attackerId) || null;
-        } else if (messageFlags.attackerUuid) {
-          attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
-        }
-        if (messageFlags.defenderId) {
-          defender = game.actors?.get(messageFlags.defenderId) || null;
-        } else if (messageFlags.defenderUuid) {
-          defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-        }
         let attackerToken = null;
         let defenderToken = null;
-        if (attacker) {
-          attackerToken = canvas?.tokens?.placeables?.find((token) => {
-            return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
-          }) || null;
+        let attacker = null;
+        let defender = null;
+        if (messageFlags.attackerTokenUuid) {
+          try {
+            attackerToken = foundry.utils?.fromUuidSync?.(messageFlags.attackerTokenUuid) || null;
+            if (attackerToken?.actor) {
+              attacker = attackerToken.actor;
+              console.log("Counter-attack button: Attacker token loaded from UUID, using token actor");
+            }
+          } catch (e) {
+            console.warn("Counter-attack button: Failed to load attacker token from UUID:", e);
+          }
         }
-        if (defender) {
-          defenderToken = canvas?.tokens?.placeables?.find((token) => {
-            return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
-          }) || null;
+        if (!attacker) {
+          if (messageFlags.attackerId) {
+            attacker = game.actors?.get(messageFlags.attackerId) || null;
+          } else if (messageFlags.attackerUuid) {
+            attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
+          }
+          if (attacker && !attackerToken) {
+            attackerToken = canvas?.tokens?.placeables?.find((token) => {
+              return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
+            }) || null;
+          }
+        }
+        if (messageFlags.defenderTokenUuid) {
+          try {
+            defenderToken = foundry.utils?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
+            if (defenderToken?.actor) {
+              defender = defenderToken.actor;
+              console.log("Counter-attack button: Defender token loaded from UUID, using token actor");
+            }
+          } catch (e) {
+            console.warn("Counter-attack button: Failed to load defender token from UUID:", e);
+          }
+        }
+        if (!defender) {
+          if (messageFlags.defenderId) {
+            defender = game.actors?.get(messageFlags.defenderId) || null;
+          } else if (messageFlags.defenderUuid) {
+            defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+          }
+          if (defender && !defenderToken) {
+            defenderToken = canvas?.tokens?.placeables?.find((token) => {
+              return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
+            }) || null;
+          }
         }
         if (!defender) {
           console.error("Missing defender");
@@ -6782,10 +6940,10 @@ class SRA2System {
         }
         let defenderTokenForRoll = null;
         let defenderActorForRoll = defender;
-        const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || "Unknown";
-        if (defenderTokenUuid !== "Unknown") {
+        const defenderTokenUuidForCounter = defenderToken?.uuid || defenderToken?.document?.uuid || messageFlags.defenderTokenUuid || "Unknown";
+        if (defenderTokenUuidForCounter !== "Unknown") {
           try {
-            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuid) || null;
+            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuidForCounter) || null;
             if (defenderTokenForRoll?.actor) {
               defenderActorForRoll = defenderTokenForRoll.actor;
             }
@@ -6823,6 +6981,8 @@ class SRA2System {
             featName: rr.featName
           }));
         }
+        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
+        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
         const counterAttackRollData = {
           // Use "Combat rapproché" skill
           skillName: counterAttackSkill,
@@ -6831,6 +6991,9 @@ class SRA2System {
           // Actor is the defender (use token's actor UUID for NPCs)
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
+          // Token UUIDs
+          attackerTokenUuid,
+          defenderTokenUuid,
           // Target is the attacker
           // We'll set targetToken in RollDialog constructor
           // RR List

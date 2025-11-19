@@ -189,6 +189,10 @@ export interface RollRequestData {
   actorUuid?: string;
   actorName?: string;
   
+  // Token information
+  attackerTokenUuid?: string;
+  defenderTokenUuid?: string;
+  
   // RR List
   rrList?: any[];
   
@@ -267,6 +271,7 @@ export interface RollResult {
 export async function executeRoll(
   attacker: any,
   defender: any,
+  attackerToken: any,
   defenderToken: any,
   rollData: RollRequestData
 ): Promise<void> {
@@ -274,6 +279,24 @@ export async function executeRoll(
     console.error('No attacker provided for roll');
     return;
   }
+
+  // Log token information
+  console.log('=== EXECUTE ROLL ===');
+  console.log('Attacker:', attacker?.name || 'Unknown');
+  console.log('Attacker UUID:', attacker?.uuid || 'Unknown');
+  console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
+  console.log('Attacker Token UUID:', attackerToken?.uuid || attackerToken?.document?.uuid || rollData.attackerTokenUuid || 'Unknown');
+  if (attackerToken?.actor) {
+    console.log('Attacker Token Actor UUID:', attackerToken.actor.uuid || 'Unknown');
+  }
+  console.log('Defender:', defender?.name || 'None');
+  console.log('Defender UUID:', defender?.uuid || 'Unknown');
+  console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
+  console.log('Defender Token UUID:', defenderToken?.uuid || defenderToken?.document?.uuid || rollData.defenderTokenUuid || 'Unknown');
+  if (defenderToken?.actor) {
+    console.log('Defender Token Actor UUID:', defenderToken.actor.uuid || 'Unknown');
+  }
+  console.log('===================');
 
   const dicePool = rollData.dicePool || 0;
   const riskDiceCount = rollData.riskDiceCount || 0;
@@ -371,7 +394,7 @@ export async function executeRoll(
   };
 
   // Step 5: Create chat message
-  await createRollChatMessage(attacker, defender, defenderToken, rollData, rollResult);
+  await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
 }
 
 /**
@@ -381,6 +404,7 @@ export async function executeRoll(
 async function createRollChatMessage(
   attacker: any,
   defender: any,
+  attackerToken: any,
   defenderToken: any,
   rollData: RollRequestData,
   rollResult: RollResult
@@ -389,6 +413,53 @@ async function createRollChatMessage(
   const isAttack = rollData.itemType === 'weapon' || 
                    rollData.weaponType !== undefined ||
                    (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+
+  // Log token information
+  console.log('=== CREATE ROLL CHAT MESSAGE ===');
+  console.log('Attacker:', attacker?.name || 'Unknown');
+  console.log('Attacker UUID:', attacker?.uuid || 'Unknown');
+  console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
+  
+  // Get attacker token UUID (priority: token > rollData)
+  let attackerTokenUuid: string | undefined = undefined;
+  if (attackerToken) {
+    attackerTokenUuid = attackerToken.uuid || attackerToken.document?.uuid || undefined;
+    console.log('Attacker Token UUID:', attackerTokenUuid || 'Unknown');
+    // If token exists, use token's actor UUID (for NPCs)
+    if (attackerToken.actor) {
+      console.log('Attacker Token Actor UUID:', attackerToken.actor.uuid || 'Unknown');
+    }
+  } else if (rollData.attackerTokenUuid) {
+    attackerTokenUuid = rollData.attackerTokenUuid;
+    console.log('Attacker Token UUID (from rollData):', attackerTokenUuid);
+  }
+  
+  // Determine final attacker UUID: if token exists, use token's actor UUID, otherwise use actor UUID
+  const finalAttackerUuid = attackerToken?.actor?.uuid || attacker?.uuid;
+  console.log('Final Attacker UUID (token actor or actor):', finalAttackerUuid || 'Unknown');
+  
+  console.log('Defender:', defender?.name || 'None');
+  console.log('Defender UUID:', defender?.uuid || 'Unknown');
+  console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
+  
+  // Get defender token UUID (priority: token > rollData)
+  let defenderTokenUuid: string | undefined = undefined;
+  if (defenderToken) {
+    defenderTokenUuid = defenderToken.uuid || defenderToken.document?.uuid || undefined;
+    console.log('Defender Token UUID:', defenderTokenUuid || 'Unknown');
+    // If token exists, use token's actor UUID (for NPCs)
+    if (defenderToken.actor) {
+      console.log('Defender Token Actor UUID:', defenderToken.actor.uuid || 'Unknown');
+    }
+  } else if (rollData.defenderTokenUuid) {
+    defenderTokenUuid = rollData.defenderTokenUuid;
+    console.log('Defender Token UUID (from rollData):', defenderTokenUuid);
+  }
+  
+  // Determine final defender UUID: if token exists, use token's actor UUID, otherwise use actor UUID
+  const finalDefenderUuid = defenderToken?.actor?.uuid || defender?.uuid;
+  console.log('Final Defender UUID (token actor or actor):', finalDefenderUuid || 'Unknown');
+  console.log('================================');
 
   // Prepare defender data with token image if available
   let defenderData: any = null;
@@ -438,9 +509,11 @@ async function createRollChatMessage(
       sra2: {
         rollType: isAttack ? 'attack' : 'skill',
         attackerId: attacker?.id,
-        attackerUuid: attacker?.uuid,
+        attackerUuid: finalAttackerUuid, // Use token's actor UUID if token exists, otherwise actor UUID
+        attackerTokenUuid: attackerTokenUuid, // Store token UUID
         defenderId: defender?.id,
-        defenderUuid: defender?.uuid,
+        defenderUuid: finalDefenderUuid, // Use token's actor UUID if token exists, otherwise actor UUID
+        defenderTokenUuid: defenderTokenUuid, // Store token UUID
         rollResult: rollResult,
         rollData: rollData
       }

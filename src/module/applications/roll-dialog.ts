@@ -8,6 +8,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 export class RollDialog extends Application {
   private rollData: RollRequestData;
   private actor: any = null;
+  private attackerToken: any = null;
   private targetToken: any = null;
   private rrEnabled: Map<string, boolean> = new Map(); // Track which RR sources are enabled
   private riskDiceCount: number = 2; // Number of risk dice selected (default: 2)
@@ -25,10 +26,40 @@ export class RollDialog extends Application {
       this.actor = game.actors?.get(rollData.actorId) || null;
     }
     
+    // Get attacker token (priority: rollData.attackerTokenUuid > canvas search)
+    if (rollData.attackerTokenUuid) {
+      try {
+        this.attackerToken = (foundry.utils as any)?.fromUuidSync?.(rollData.attackerTokenUuid) || null;
+        console.log('RollDialog: Attacker token loaded from UUID:', rollData.attackerTokenUuid);
+      } catch (e) {
+        console.warn('RollDialog: Failed to load attacker token from UUID:', e);
+      }
+    }
+    
+    // If no attacker token from UUID, try to find it on canvas
+    if (!this.attackerToken && this.actor) {
+      this.attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
+        return token.actor?.id === this.actor.id || token.actor?.uuid === this.actor.uuid;
+      }) || null;
+      if (this.attackerToken) {
+        console.log('RollDialog: Attacker token found on canvas');
+      }
+    }
+    
     // Get target token (first targeted token)
     const targets = Array.from(game.user?.targets || []);
     if (targets.length > 0) {
       this.targetToken = targets[0] || null;
+    }
+    
+    // Also try to get defender token from rollData.defenderTokenUuid if available
+    if (rollData.defenderTokenUuid && !this.targetToken) {
+      try {
+        this.targetToken = (foundry.utils as any)?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
+        console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
+      } catch (e) {
+        console.warn('RollDialog: Failed to load defender token from UUID:', e);
+      }
     }
   }
 
@@ -573,8 +604,29 @@ export class RollDialog extends Application {
       
       // Get attacker and defender
       const attacker = this.actor;
+      const attackerToken = this.attackerToken || null;
       const defender = this.targetToken?.actor || null;
       const defenderToken = this.targetToken || null;
+      
+      // Get token UUIDs
+      const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
+      const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
+      
+      // Log token information
+      console.log('=== ROLL DICE BUTTON ===');
+      console.log('Attacker:', attacker?.name || 'Unknown');
+      console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
+      console.log('Attacker Token UUID:', attackerTokenUuid || 'Unknown');
+      if (attackerToken?.actor) {
+        console.log('Attacker Token Actor UUID:', attackerToken.actor.uuid || 'Unknown');
+      }
+      console.log('Defender:', defender?.name || 'None');
+      console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
+      console.log('Defender Token UUID:', defenderTokenUuid || 'Unknown');
+      if (defenderToken?.actor) {
+        console.log('Defender Token Actor UUID:', defenderToken.actor.uuid || 'Unknown');
+      }
+      console.log('========================');
       
       // Prepare roll data
       const updatedRollData = {
@@ -584,12 +636,14 @@ export class RollDialog extends Application {
         selectedRange: this.selectedRange,  // Add selected range
         rollMode: this.rollMode,  // Add roll mode (normal/disadvantage/advantage)
         finalRR: Math.min(3, finalRR),  // Final RR (capped at 3)
-        dicePool: dicePool
+        dicePool: dicePool,
+        attackerTokenUuid: attackerTokenUuid,  // Add attacker token UUID
+        defenderTokenUuid: defenderTokenUuid   // Add defender token UUID
       };
       
       // Import and execute roll
       const { executeRoll } = await import('../helpers/dice-roller.js');
-      await executeRoll(attacker, defender, defenderToken, updatedRollData);
+      await executeRoll(attacker, defender, attackerToken, defenderToken, updatedRollData);
       
       // Close the dialog
       this.close();
