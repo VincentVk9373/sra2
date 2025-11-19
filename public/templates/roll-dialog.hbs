@@ -30,8 +30,8 @@
             <h3 class="section-title">
                 <i class="fas fa-bullseye"></i> Cible
                 {{#if distanceText}}
-                <div class="target-distance"> | 
-                    <i class="fas fa-ruler"></i>  {{distanceText}}
+                <div class="target-distance"> |
+                    <i class="fas fa-ruler"></i> {{distanceText}}
                 </div>
                 {{/if}}
             </h3>
@@ -52,9 +52,11 @@
                 {{/if}}
             </div>
         </section>
+
         <!-- Roll Dice Button -->
         <div class="roll-dice-section">
-            <button type="button" class="roll-dice-button">
+            <button type="button" class="roll-dice-button" {{#if isWeaponRoll}}{{#unless
+                isRangeValid}}disabled{{/unless}}{{/if}}>
                 <i class="fas fa-dice"></i> Lancer les Dés
             </button>
         </div>
@@ -62,6 +64,39 @@
     </header>
 
     <div class="roll-dialog-body">
+
+        <!-- Dice Pool or Threshold -->
+        <section class="roll-section dice-section">
+            <h3 class="section-title">
+                {{#if hasThreshold}}
+                <i class="fas fa-bullseye"></i> Seuil
+                {{else}}
+                <i class="fas fa-dice"></i> Pool de Dés | {{dicePool}} dés{{#if riskDiceCount}} <span
+                    class="risk-dice-count">| {{riskDiceCount}} dés de risque</span>{{/if}}
+                {{/if}}
+            </h3>
+            <div class="dice-pool-display">
+                {{#if hasThreshold}}
+                <div class="threshold-count">
+                    <span class="threshold-number">{{threshold}}</span>
+                    <span class="threshold-label">seuil</span>
+                </div>
+                {{else}}
+                <div class="dice-list-container">
+                    <div class="dice-list">
+                        {{#each diceList}}
+                        <div class="dice-icon {{#if this.isRiskDice}}risk-dice{{/if}} dice-{{this.riskColor}}"
+                            data-dice-index="{{this.index}}" style="cursor: pointer;"
+                            title="{{#if this.isRiskDice}}Dé de risque{{else}}Dé normal{{/if}}"
+                            data-risk-color="{{this.riskColor}}">
+                            <i class="fas fa-dice"></i>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+            </div>
+        </section>
         <!-- Skill Selection -->
         <section class="roll-section skill-section">
             <h3 class="section-title">
@@ -88,34 +123,75 @@
             </div>
         </section>
 
-        <!-- Dice Pool or Threshold -->
-        <section class="roll-section dice-section">
-            <h3 class="section-title">
-                {{#if hasThreshold}}
-                <i class="fas fa-bullseye"></i> Seuil
-                {{else}}
-                <i class="fas fa-dice"></i> Pool de Dés | {{dicePool}} dés{{#if riskDiceCount}} <span class="risk-dice-count">| {{riskDiceCount}} dés de risque</span>{{/if}}
-                {{/if}}
-            </h3>
-            <div class="dice-pool-display">
-                {{#if hasThreshold}}
-                <div class="threshold-count">
-                    <span class="threshold-number">{{threshold}}</span>
-                    <span class="threshold-label">seuil</span>
-                </div>
-                {{else}}
-                <div class="dice-list-container">
-                    <div class="dice-list">
-                        {{#each diceList}}
-                        <div class="dice-icon {{#if this.isRiskDice}}risk-dice{{/if}} dice-{{this.riskColor}}" data-dice-index="{{this.index}}" style="cursor: pointer;" title="{{#if this.isRiskDice}}Dé de risque{{else}}Dé normal{{/if}}" data-risk-color="{{this.riskColor}}">
-                            <i class="fas fa-dice"></i>
-                        </div>
-                        {{/each}}
+        <!-- Roll Mode Selection -->
+        {{#if isWeaponRoll}}
+        <div style="display: grid; grid-template-columns: 1fr 1fr;">
+
+            <section class="roll-section roll-mode-section">
+                <h3 class="section-title">
+                    <i class="fas fa-adjust"></i> Mode de Jet
+                </h3>
+                <div class="roll-mode-display">
+                    <div class="roll-mode-options">
+                        <label class="roll-mode-option">
+                            <input type="radio" name="roll-mode" value="normal" {{#if (eq rollMode "normal"
+                                )}}checked{{/if}} />
+                            <span>Normal</span>
+                        </label>
+                        <label class="roll-mode-option disadvantage">
+                            <input type="radio" name="roll-mode" value="disadvantage" {{#if (eq rollMode "disadvantage"
+                                )}}checked{{/if}} />
+                            <span>Désavantage</span>
+                        </label>
+                        <label class="roll-mode-option advantage">
+                            <input type="radio" name="roll-mode" value="advantage" {{#if (eq rollMode "advantage"
+                                )}}checked{{/if}} />
+                            <span>Avantage</span>
+                        </label>
                     </div>
                 </div>
-                {{/if}}
-            </div>
-        </section>
+            </section>
+
+            <!-- Range Selection (for weapons) -->
+            <section class="roll-section range-section no-border-left">
+                <h3 class="section-title {{#unless isRangeValid}}invalid-range{{/unless}}">
+                    <i class="fas fa-crosshairs"></i> Portée
+                </h3>
+                <div class="range-display">
+                    <select class="range-dropdown {{#unless isRangeValid}}invalid{{/unless}}" name="range-select">
+                        <option value="">-- Sélectionner --</option>
+                        {{#if (ne rangeOptions.melee.value "none")}}
+                        <option value="melee" {{#if (eq selectedRange "melee" )}}selected{{/if}}>
+                            {{rangeOptions.melee.label}} ({{#if (eq rangeOptions.melee.value "ok")}}OK{{else if (eq
+                            rangeOptions.melee.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                        </option>
+                        {{/if}}
+                        {{#if (ne rangeOptions.short.value "none")}}
+                        <option value="short" {{#if (eq selectedRange "short" )}}selected{{/if}}>
+                            {{rangeOptions.short.label}} ({{#if (eq rangeOptions.short.value "ok")}}OK{{else if (eq
+                            rangeOptions.short.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                        </option>
+                        {{/if}}
+                        {{#if (ne rangeOptions.medium.value "none")}}
+                        <option value="medium" {{#if (eq selectedRange "medium" )}}selected{{/if}}>
+                            {{rangeOptions.medium.label}} ({{#if (eq rangeOptions.medium.value "ok")}}OK{{else if (eq
+                            rangeOptions.medium.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                        </option>
+                        {{/if}}
+                        {{#if (ne rangeOptions.long.value "none")}}
+                        <option value="long" {{#if (eq selectedRange "long" )}}selected{{/if}}>
+                            {{rangeOptions.long.label}} ({{#if (eq rangeOptions.long.value "ok")}}OK{{else if (eq
+                            rangeOptions.long.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                        </option>
+                        {{/if}}
+                    </select>
+                    {{#unless isRangeValid}}
+                    <div class="range-error">Portée invalide - Sélectionnez une portée valide</div>
+                    {{/unless}}
+                </div>
+            </section>
+        </div>
+        {{/if}}
 
         <!-- VD and RR Summary -->
         <section class="roll-section summary-section">
@@ -127,21 +203,22 @@
                     <div class="summary-label">RR</div>
                     <div class="summary-value">{{totalRR}}</div>
                 </div>
-            {{#if rrSources.length}}
-            <div class="rr-sources">
-                <ul class="rr-sources-list">
-                    {{#each rrSources}}
-                    <li class="rr-source-item">
-                        <label class="rr-checkbox-label">
-                            <input type="checkbox" class="rr-checkbox" data-rr-id="{{this.id}}" {{#if this.enabled}}checked{{/if}} />
-                            <span class="rr-source-name">{{this.featName}}</span>
-                            <span class="rr-source-value">+{{this.rrValue}}</span>
-                        </label>
-                    </li>
-                    {{/each}}
-                </ul>
-            </div>
-            {{/if}}
+                {{#if rrSources.length}}
+                <div class="rr-sources">
+                    <ul class="rr-sources-list">
+                        {{#each rrSources}}
+                        <li class="rr-source-item">
+                            <label class="rr-checkbox-label">
+                                <input type="checkbox" class="rr-checkbox" data-rr-id="{{this.id}}" {{#if
+                                    this.enabled}}checked{{/if}} />
+                                <span class="rr-source-name">{{this.featName}}</span>
+                                <span class="rr-source-value">+{{this.rrValue}}</span>
+                            </label>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+                {{/if}}
             </div>
         </section>
 

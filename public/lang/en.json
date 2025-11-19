@@ -608,6 +608,37 @@
             "13_0_10_INFO": "Migration 13.0.10: {count} feat(s) updated - simplified cost system (free 0¥, equipment 2500¥, advanced 5000¥). {specializedCount} specialized equipment converted to advanced, {featCount} feat(s) converted.",
             "13_0_11_INFO": "Migration 13.0.11: {count} weapon(s) updated - added linked specialization fields for attack and defense.",
             "13_0_12_INFO": "Migration 13.0.12: {count} weapon(s) updated - 'dice' ranges converted to 'disadvantage'."
+        },
+        "ROLL_DIALOG": {
+            "TITLE": "Dice Roll",
+            "ACTION": "Action",
+            "DAMAGE": "Damage",
+            "TARGET": "Target",
+            "NO_TARGET": "No target",
+            "ROLL_DICE": "Roll Dice",
+            "THRESHOLD": "Threshold",
+            "DICE_POOL": "Dice Pool",
+            "DICE": "dice",
+            "RISK_DICE": "risk dice",
+            "RISK_DIE": "Risk die",
+            "NORMAL_DIE": "Normal die",
+            "SKILL": "Skill",
+            "SELECT": "-- Select --",
+            "SPECIALIZATION": "Specialization",
+            "ROLL_MODE": "Roll Mode",
+            "ROLL_MODE_NORMAL": "Normal",
+            "ROLL_MODE_DISADVANTAGE": "Disadvantage",
+            "ROLL_MODE_ADVANTAGE": "Advantage",
+            "RANGE": "Range",
+            "RANGE_INVALID": "Invalid range - Please select a valid range",
+            "RANGE_MELEE": "Melee (< 3m)",
+            "RANGE_SHORT": "Short range (3-15m)",
+            "RANGE_MEDIUM": "Medium range (16-60m)",
+            "RANGE_LONG": "Long range (> 60m)",
+            "RANGE_OK": "OK",
+            "RANGE_NONE": "None",
+            "RISK_REDUCTION": "Risk Reduction",
+            "RR": "RR"
         }
     }
 }

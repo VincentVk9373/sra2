@@ -4995,6 +4995,10 @@ class RollDialog extends Application {
   // Track which RR sources are enabled
   riskDiceCount = 2;
   // Number of risk dice selected (default: 2)
+  selectedRange = null;
+  // Selected range: 'melee', 'short', 'medium', 'long'
+  rollMode = "normal";
+  // Roll mode
   constructor(rollData) {
     super();
     this.rollData = rollData;
@@ -5013,7 +5017,7 @@ class RollDialog extends Application {
       classes: ["sra2", "roll-dialog"],
       template: "systems/sra2/templates/roll-dialog.hbs",
       width: 650,
-      height: 460,
+      height: 575,
       resizable: true,
       minimizable: false,
       title: "Jet de Dés"
@@ -5060,6 +5064,58 @@ class RollDialog extends Application {
     }
     context.distance = distance;
     context.distanceText = distanceText;
+    let calculatedRange = null;
+    if (distance !== null) {
+      if (distance < 3) {
+        calculatedRange = "melee";
+      } else if (distance >= 3 && distance <= 15) {
+        calculatedRange = "short";
+      } else if (distance >= 16 && distance <= 60) {
+        calculatedRange = "medium";
+      } else if (distance > 60) {
+        calculatedRange = "long";
+      }
+    }
+    if (calculatedRange !== null) {
+      this.selectedRange = calculatedRange;
+    }
+    const meleeRange = this.rollData.meleeRange || "none";
+    const shortRange = this.rollData.shortRange || "none";
+    const mediumRange = this.rollData.mediumRange || "none";
+    const longRange = this.rollData.longRange || "none";
+    const isWeaponRoll = this.rollData.itemType === "weapon" || this.rollData.weaponType !== void 0 || (meleeRange !== "none" || shortRange !== "none" || mediumRange !== "none" || longRange !== "none");
+    let selectedRangeValue = null;
+    let isRangeValid = false;
+    if (this.selectedRange === "melee") {
+      selectedRangeValue = meleeRange;
+      isRangeValid = meleeRange !== "none";
+    } else if (this.selectedRange === "short") {
+      selectedRangeValue = shortRange;
+      isRangeValid = shortRange !== "none";
+    } else if (this.selectedRange === "medium") {
+      selectedRangeValue = mediumRange;
+      isRangeValid = mediumRange !== "none";
+    } else if (this.selectedRange === "long") {
+      selectedRangeValue = longRange;
+      isRangeValid = longRange !== "none";
+    }
+    if (selectedRangeValue === "disadvantage") {
+      this.rollMode = "disadvantage";
+    } else if (selectedRangeValue === "ok") {
+      this.rollMode = "normal";
+    } else ;
+    context.isWeaponRoll = isWeaponRoll;
+    context.calculatedRange = calculatedRange;
+    context.selectedRange = this.selectedRange;
+    context.selectedRangeValue = selectedRangeValue;
+    context.isRangeValid = isRangeValid;
+    context.rollMode = this.rollMode;
+    context.rangeOptions = {
+      melee: { label: "Mêlée (< 3m)", value: meleeRange },
+      short: { label: "Portée courte (3-15m)", value: shortRange },
+      medium: { label: "Portée moyenne (16-60m)", value: mediumRange },
+      long: { label: "Portée longue (> 60m)", value: longRange }
+    };
     let dicePool = 0;
     if (this.rollData.specLevel !== void 0) {
       dicePool = this.rollData.specLevel;
@@ -5286,6 +5342,40 @@ class RollDialog extends Application {
         this.render();
       }
     });
+    html.find(".range-dropdown").on("change", (event) => {
+      const select = event.currentTarget;
+      const rangeValue = select.value;
+      this.selectedRange = rangeValue || null;
+      if (this.selectedRange) {
+        const meleeRange = this.rollData.meleeRange || "none";
+        const shortRange = this.rollData.shortRange || "none";
+        const mediumRange = this.rollData.mediumRange || "none";
+        const longRange = this.rollData.longRange || "none";
+        let rangeValueForSelected = "none";
+        if (this.selectedRange === "melee") {
+          rangeValueForSelected = meleeRange;
+        } else if (this.selectedRange === "short") {
+          rangeValueForSelected = shortRange;
+        } else if (this.selectedRange === "medium") {
+          rangeValueForSelected = mediumRange;
+        } else if (this.selectedRange === "long") {
+          rangeValueForSelected = longRange;
+        }
+        if (rangeValueForSelected === "disadvantage") {
+          this.rollMode = "disadvantage";
+        } else if (rangeValueForSelected === "ok") {
+          this.rollMode = "normal";
+        }
+      }
+      this.render();
+    });
+    html.find('input[name="roll-mode"]').on("change", (event) => {
+      const radio = event.currentTarget;
+      const modeValue = radio.value;
+      if (modeValue === "normal" || modeValue === "disadvantage" || modeValue === "advantage") {
+        this.rollMode = modeValue;
+      }
+    });
     html.find(".dice-icon").on("click", (event) => {
       const diceIcon = $(event.currentTarget);
       const diceIndex = parseInt(diceIcon.data("dice-index") || "0");
@@ -5315,8 +5405,12 @@ class RollDialog extends Application {
       const updatedRollData = {
         ...this.rollData,
         rrList: finalRRList,
-        riskDiceCount: this.riskDiceCount
+        riskDiceCount: this.riskDiceCount,
         // Add risk dice count to roll data
+        selectedRange: this.selectedRange,
+        // Add selected range
+        rollMode: this.rollMode
+        // Add roll mode (normal/disadvantage/advantage)
       };
       console.log("=== ROLL DICE ===", updatedRollData);
       this.close();

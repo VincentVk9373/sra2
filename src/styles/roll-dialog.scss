@@ -2,9 +2,12 @@
 
 /* Glow animation for risk dice */
 @keyframes risk-glow {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 8px rgba(139, 0, 0, 0.8), 0 0 12px rgba(139, 0, 0, 0.6), 0 0 16px rgba(139, 0, 0, 0.4);
     }
+
     50% {
         box-shadow: 0 0 12px rgba(139, 0, 0, 1), 0 0 18px rgba(139, 0, 0, 0.8), 0 0 24px rgba(139, 0, 0, 0.6);
     }
@@ -156,6 +159,7 @@
                 }
             }
         }
+
     }
 
     /* Body */
@@ -168,6 +172,85 @@
         gap: 0.5rem;
     }
 
+    .section-title.invalid-range {
+        color: #f44336;
+        border-bottom-color: #f44336;
+    }
+
+    .range-error {
+        margin-top: 0.3rem;
+        padding: 0.3rem;
+        background: rgba(244, 67, 54, 0.2);
+        border: 1px solid #f44336;
+        border-radius: 3px;
+        color: #f44336;
+        font-size: 0.75rem;
+        text-align: center;
+    }
+
+    .range-dropdown {
+        width: 100%;
+        padding: 0.4rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid #00d4ff;
+        border-radius: 3px;
+        color: #e0e0e0;
+        font-size: 0.8rem;
+
+        &.invalid {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        option {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+    }
+
+
+    .roll-mode-options {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-around;
+
+        .roll-mode-option {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #00d4ff;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            color: #e0e0e0;
+
+            &.disadvantage {
+                border-color: #f44336;
+            }
+
+            &.advantage {
+                border-color: #4caf50;
+            }
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            input[type="radio"] {
+                cursor: pointer;
+            }
+
+            input[type="radio"]:checked+span {
+                color: #00d4ff;
+                font-weight: bold;
+            }
+        }
+    }
+
+
     /* Section Styles */
     .roll-section {
         background: rgba(0, 0, 0, 0.2);
@@ -175,6 +258,10 @@
         border-radius: 4px;
         padding: 0.5rem;
         border-left: 3px solid #00d4ff;
+
+        &.no-border-left {
+            border-left: none;
+        }
 
         .section-title {
             font-size: 0.85rem;
@@ -224,198 +311,198 @@
                 }
             }
 
-             .skill-dropdown {
-                 width: 100%;
-                 padding: 0.4rem 0.5rem;
-                 background: rgba(0, 0, 0, 0.3);
-                 border: 1px solid #00d4ff;
-                 border-radius: 4px;
-                 color: #e0e0e0;
-                 font-size: 0.85rem;
-                 cursor: pointer;
-                 transition: all 0.2s;
+            .skill-dropdown {
+                width: 100%;
+                padding: 0.4rem 0.5rem;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid #00d4ff;
+                border-radius: 4px;
+                color: #e0e0e0;
+                font-size: 0.85rem;
+                cursor: pointer;
+                transition: all 0.2s;
 
-                 &:hover:not(:disabled) {
-                     background: rgba(0, 0, 0, 0.4);
-                     border-color: #00d4ff;
-                 }
+                &:hover:not(:disabled) {
+                    background: rgba(0, 0, 0, 0.4);
+                    border-color: #00d4ff;
+                }
 
-                 &:focus:not(:disabled) {
-                     outline: none;
-                     border-color: #00d4ff;
-                     box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.3);
-                 }
+                &:focus:not(:disabled) {
+                    outline: none;
+                    border-color: #00d4ff;
+                    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.3);
+                }
 
-                 &:disabled {
-                     opacity: 0.6;
-                     cursor: not-allowed;
-                     background: rgba(0, 0, 0, 0.2);
-                     border-color: #666;
-                 }
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                    background: rgba(0, 0, 0, 0.2);
+                    border-color: #666;
+                }
 
-                 option {
-                     background: #1a1a2e;
-                     color: #e0e0e0;
-                     padding: 0.5rem;
-                 }
-             }
+                option {
+                    background: #1a1a2e;
+                    color: #e0e0e0;
+                    padding: 0.5rem;
+                }
+            }
         }
     }
 
-     /* Dice Section */
-     .dice-section {
-         .dice-pool-display {
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             gap: 0.3rem;
+    /* Dice Section */
+    .dice-section {
+        .dice-pool-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
 
-             .dice-list-container {
-                 display: flex;
-                 flex-direction: column;
-                 align-items: center;
-                 gap: 0.4rem;
-                 width: 100%;
+            .dice-list-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.4rem;
+                width: 100%;
 
-                 .dice-list {
-                     display: flex;
-                     flex-wrap: wrap;
-                     justify-content: center;
-                     gap: 0.3rem;
-                     max-width: 100%;
-                     padding: 0.3rem;
+                .dice-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 0.3rem;
+                    max-width: 100%;
+                    padding: 0.3rem;
 
-                     .dice-icon {
-                         width: 32px;
-                         height: 32px;
-                         display: flex;
-                         align-items: center;
-                         justify-content: center;
-                         border-radius: 4px;
-                         color: #fff;
-                         font-size: 1.2rem;
-                         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                         transition: all 0.2s;
-                         position: relative;
+                    .dice-icon {
+                        width: 32px;
+                        height: 32px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 1.2rem;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                        transition: all 0.2s;
+                        position: relative;
 
-                         &:hover {
-                             transform: translateY(-2px);
-                             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-                         }
+                        &:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+                        }
 
-                         // Risk color classes (based on RR and position)
-                         &.dice-green {
-                             background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-                             border: 2px solid #4caf50;
-                         }
+                        // Risk color classes (based on RR and position)
+                        &.dice-green {
+                            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+                            border: 2px solid #4caf50;
+                        }
 
-                         &.dice-yellow {
-                             background: linear-gradient(135deg, #ffeb3b 0%, #fbc02d 100%);
-                             border: 2px solid #ffeb3b;
-                         }
+                        &.dice-yellow {
+                            background: linear-gradient(135deg, #ffeb3b 0%, #fbc02d 100%);
+                            border: 2px solid #ffeb3b;
+                        }
 
-                         &.dice-orange {
-                             background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
-                             border: 2px solid #ff6f00;
-                         }
+                        &.dice-orange {
+                            background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+                            border: 2px solid #ff6f00;
+                        }
 
-                         &.dice-red {
-                             background: linear-gradient(135deg, #f44336 0%, #b71c1c 100%);
-                             border: 2px solid #f44336;
-                         }
+                        &.dice-red {
+                            background: linear-gradient(135deg, #f44336 0%, #b71c1c 100%);
+                            border: 2px solid #f44336;
+                        }
 
-                         // Risk dice (selected as risk dice) - purple background, risk color for icon
-                         &.risk-dice {
-                             // Purple background for risk dice
-                             background: linear-gradient(135deg, #9000a9 0%, #7a008f 100%) !important;
-                             border-color: #5a0068 !important; // Darker purple for border
-                             position: relative;
-                             
-                             // Red/dark glow effect
-                             animation: risk-glow 2s ease-in-out infinite;
-                             
-                             // Icon takes the risk color (green/yellow/orange/red)
-                             i {
-                                 color: inherit;
-                             }
-                             
-                             // Apply risk color to icon based on data attribute
-                             &[data-risk-color="green"] i {
-                                 color: #4caf50;
-                             }
-                             
-                             &[data-risk-color="yellow"] i {
-                                 color: #ffeb3b;
-                             }
-                             
-                             &[data-risk-color="orange"] i {
-                                 color: #ff6f00;
-                             }
-                             
-                             &[data-risk-color="red"] i {
-                                 color: #f44336;
-                             }
-                             
-                             &:hover {
-                                 transform: translateY(-2px);
-                             }
-                         }
+                        // Risk dice (selected as risk dice) - purple background, risk color for icon
+                        &.risk-dice {
+                            // Purple background for risk dice
+                            background: linear-gradient(135deg, #9000a9 0%, #7a008f 100%) !important;
+                            border-color: #5a0068 !important; // Darker purple for border
+                            position: relative;
 
-                         i {
-                             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-                             color: #fff; // Default white color for non-risk dice
-                         }
-                     }
-                 }
+                            // Red/dark glow effect
+                            animation: risk-glow 2s ease-in-out infinite;
 
-                 .dice-count-label {
-                     font-size: 0.85rem;
-                     color: #999;
-                     font-weight: 500;
-                     display: flex;
-                     flex-direction: column;
-                     align-items: center;
-                     gap: 0.2rem;
+                            // Icon takes the risk color (green/yellow/orange/red)
+                            i {
+                                color: inherit;
+                            }
 
-                     .risk-dice-label {
-                         font-size: 0.75rem;
-                         color: #9c6cb1;
-                         font-weight: bold;
-                     }
-                 }
-             }
+                            // Apply risk color to icon based on data attribute
+                            &[data-risk-color="green"] i {
+                                color: #4caf50;
+                            }
 
-             .threshold-count {
-                 display: flex;
-                 align-items: baseline;
-                 gap: 0.3rem;
+                            &[data-risk-color="yellow"] i {
+                                color: #ffeb3b;
+                            }
 
-                 .threshold-number {
-                     font-size: 2rem;
-                     font-weight: bold;
-                     color: #ffd700;
-                     text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
-                 }
+                            &[data-risk-color="orange"] i {
+                                color: #ff6f00;
+                            }
 
-                 .threshold-label {
-                     font-size: 0.9rem;
-                     color: #999;
-                 }
-             }
+                            &[data-risk-color="red"] i {
+                                color: #f44336;
+                            }
 
-             .attribute-info {
-                 font-size: 0.75rem;
-                 color: #999;
-                 text-transform: capitalize;
-             }
-         }
-     }
+                            &:hover {
+                                transform: translateY(-2px);
+                            }
+                        }
+
+                        i {
+                            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+                            color: #fff; // Default white color for non-risk dice
+                        }
+                    }
+                }
+
+                .dice-count-label {
+                    font-size: 0.85rem;
+                    color: #999;
+                    font-weight: 500;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.2rem;
+
+                    .risk-dice-label {
+                        font-size: 0.75rem;
+                        color: #9c6cb1;
+                        font-weight: bold;
+                    }
+                }
+            }
+
+            .threshold-count {
+                display: flex;
+                align-items: baseline;
+                gap: 0.3rem;
+
+                .threshold-number {
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #ffd700;
+                    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+                }
+
+                .threshold-label {
+                    font-size: 0.9rem;
+                    color: #999;
+                }
+            }
+
+            .attribute-info {
+                font-size: 0.75rem;
+                color: #999;
+                text-transform: capitalize;
+            }
+        }
+    }
 
     /* Summary Section */
     .summary-section {
         .summary-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 50px 1fr;
             gap: 0.5rem;
             margin-bottom: 0.4rem;
 
@@ -426,7 +513,6 @@
                 padding: 0.4rem;
                 background: rgba(0, 212, 255, 0.1);
                 border-radius: 3px;
-                border: 1px solid #00d4ff;
 
                 .summary-label {
                     font-size: 0.7rem;
@@ -449,51 +535,51 @@
                 margin-bottom: 0.3rem;
             }
 
-             .rr-sources-list {
-                 list-style: none;
-                 padding: 0;
-                 margin: 0;
-                 display: flex;
-                 flex-direction: column;
-                 gap: 0.15rem;
+            .rr-sources-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.15rem;
 
-                 .rr-source-item {
-                     padding: 0.2rem 0.4rem;
-                     background: rgba(255, 255, 255, 0.05);
-                     border-radius: 2px;
-                     font-size: 0.7rem;
+                .rr-source-item {
+                    padding: 0.2rem 0.4rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 2px;
+                    font-size: 0.7rem;
 
-                     .rr-checkbox-label {
-                         display: flex;
-                         align-items: center;
-                         justify-content: space-between;
-                         cursor: pointer;
-                         gap: 0.5rem;
+                    .rr-checkbox-label {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        cursor: pointer;
+                        gap: 0.5rem;
 
-                         .rr-checkbox {
-                             cursor: pointer;
-                             margin-right: 0.3rem;
-                             width: 16px;
-                             height: 16px;
-                             accent-color: #00d4ff;
-                         }
+                        .rr-checkbox {
+                            cursor: pointer;
+                            margin-right: 0.3rem;
+                            width: 16px;
+                            height: 16px;
+                            accent-color: #00d4ff;
+                        }
 
-                         .rr-source-name {
-                             color: #e0e0e0;
-                             flex: 1;
-                         }
+                        .rr-source-name {
+                            color: #e0e0e0;
+                            flex: 1;
+                        }
 
-                         .rr-source-value {
-                             color: #4caf50;
-                             font-weight: bold;
-                         }
-                     }
-                 }
-             }
+                        .rr-source-value {
+                            color: #4caf50;
+                            font-weight: bold;
+                        }
+                    }
+                }
+            }
         }
     }
 
-     /* Target Section */
+    /* Target Section */
 
     /* Roll Dice Button Section */
     .roll-dice-section {
@@ -504,6 +590,19 @@
         background: rgba(15, 52, 96, 0.2);
 
         .roll-dice-button {
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: rgba(255, 255, 255, 0.1) !important;
+                border-color: #666 !important;
+                color: #999 !important;
+
+                &:hover {
+                    transform: none;
+                    box-shadow: none;
+                }
+            }
+
             background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
             border: 2px solid #00d4ff;
             border-radius: 6px;

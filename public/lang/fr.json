@@ -626,6 +626,37 @@
             "13_0_10_INFO": "Migration 13.0.10 : {count} atout(s) mis à jour - système de coût simplifié (gratuit 0¥, équipement 2500¥, avancé 5000¥). {specializedCount} équipement(s) spécialisé(s) converti(s) en avancé, {featCount} atout(s) converti(s).",
             "13_0_11_INFO": "Migration 13.0.11 : {count} arme(s) mise(s) à jour - ajout des champs de liaison aux spécialisations d'attaque et de défense.",
             "13_0_12_INFO": "Migration 13.0.12 : {count} arme(s) mise(s) à jour - portées 'dice' converties en 'disadvantage'."
+        },
+        "ROLL_DIALOG": {
+            "TITLE": "Jet de Dés",
+            "ACTION": "Action",
+            "DAMAGE": "Dégâts",
+            "TARGET": "Cible",
+            "NO_TARGET": "Aucune cible",
+            "ROLL_DICE": "Lancer les Dés",
+            "THRESHOLD": "Seuil",
+            "DICE_POOL": "Pool de Dés",
+            "DICE": "dés",
+            "RISK_DICE": "dés de risque",
+            "RISK_DIE": "Dé de risque",
+            "NORMAL_DIE": "Dé normal",
+            "SKILL": "Compétence",
+            "SELECT": "-- Sélectionner --",
+            "SPECIALIZATION": "Spécialisation",
+            "ROLL_MODE": "Mode de Jet",
+            "ROLL_MODE_NORMAL": "Normal",
+            "ROLL_MODE_DISADVANTAGE": "Désavantage",
+            "ROLL_MODE_ADVANTAGE": "Avantage",
+            "RANGE": "Portée",
+            "RANGE_INVALID": "Portée invalide - Sélectionnez une portée valide",
+            "RANGE_MELEE": "Mêlée (< 3m)",
+            "RANGE_SHORT": "Portée courte (3-15m)",
+            "RANGE_MEDIUM": "Portée moyenne (16-60m)",
+            "RANGE_LONG": "Portée longue (> 60m)",
+            "RANGE_OK": "OK",
+            "RANGE_NONE": "Aucun",
+            "RISK_REDUCTION": "Réduction de risque",
+            "RR": "RR"
         }
     }
 }
