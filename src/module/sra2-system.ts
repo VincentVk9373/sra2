@@ -604,7 +604,7 @@ export class SRA2System {
 
         // Import WEAPON_TYPES to check melee capability
         const { WEAPON_TYPES } = await import('./models/item-feat.js');
-
+        
         // Filter weapons that:
         // 1. Have melee "ok" or "disadvantage"
         // 2. Are linked to "Combat rapproché" skill or a specialization of "Combat rapproché"
@@ -632,7 +632,7 @@ export class SRA2System {
           
           // Get linked attack skill
           let linkedAttackSkill = weaponSystem.linkedAttackSkill;
-          
+
           // If no linkedAttackSkill, try to get it from weapon type
           if (!linkedAttackSkill && weaponType && weaponType !== 'custom-weapon') {
             const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
@@ -708,8 +708,8 @@ export class SRA2System {
             if (weaponStats) {
               linkedAttackSkill = weaponStats.linkedSkill;
             }
-          }
-          
+        }
+
           // Check if linkedAttackSkill is a specialization of "Combat rapproché"
           const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) => 
             item.type === 'specialization' && 

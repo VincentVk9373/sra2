@@ -2102,7 +2102,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn) {
     return feat;
   });
 }
-const sheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   calculateFinalDamageValue,
   calculateRR,
@@ -3790,6 +3790,20 @@ class NpcSheet extends ActorSheet {
         finalDamageValue = (baseValue + damageValueBonus).toString();
       }
     }
+    const { getRRSources: getRRSources2 } = SheetHelpers;
+    let skillRRSources = [];
+    let specRRSources = [];
+    let attributeRRSources = [];
+    if (attackSpecName) {
+      specRRSources = getRRSources2(this.actor, "specialization", attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources2(this.actor, "skill", attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources2(this.actor, "attribute", attackLinkedAttribute);
+    }
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     handleRollRequest({
       itemType: "weapon",
       weaponType,
@@ -3819,7 +3833,7 @@ class NpcSheet extends ActorSheet {
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
   /**
@@ -3914,6 +3928,20 @@ class NpcSheet extends ActorSheet {
         finalDamageValue = (baseValue + damageValueBonus).toString();
       }
     }
+    const { getRRSources: getRRSources2 } = SheetHelpers;
+    let skillRRSources = [];
+    let specRRSources = [];
+    let attributeRRSources = [];
+    if (attackSpecName) {
+      specRRSources = getRRSources2(this.actor, "specialization", attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources2(this.actor, "skill", attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources2(this.actor, "attribute", attackLinkedAttribute);
+    }
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     handleRollRequest({
       itemType: "spell",
       weaponType,
@@ -3943,7 +3971,7 @@ class NpcSheet extends ActorSheet {
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
   /**
@@ -4036,6 +4064,20 @@ class NpcSheet extends ActorSheet {
         finalDamageValue = (baseValue + damageValueBonus).toString();
       }
     }
+    const { getRRSources: getRRSources2 } = SheetHelpers;
+    let skillRRSources = [];
+    let specRRSources = [];
+    let attributeRRSources = [];
+    if (attackSpecName) {
+      specRRSources = getRRSources2(this.actor, "specialization", attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources2(this.actor, "skill", attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources2(this.actor, "attribute", attackLinkedAttribute);
+    }
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     handleRollRequest({
       itemType: "weapon",
       weaponType,
@@ -4064,7 +4106,7 @@ class NpcSheet extends ActorSheet {
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
   /**
@@ -4157,6 +4199,20 @@ class NpcSheet extends ActorSheet {
         finalDamageValue = (baseValue + damageValueBonus).toString();
       }
     }
+    const { getRRSources: getRRSources2 } = SheetHelpers;
+    let skillRRSources = [];
+    let specRRSources = [];
+    let attributeRRSources = [];
+    if (attackSpecName) {
+      specRRSources = getRRSources2(this.actor, "specialization", attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources2(this.actor, "skill", attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources2(this.actor, "attribute", attackLinkedAttribute);
+    }
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     handleRollRequest({
       itemType: "spell",
       weaponType,
@@ -4185,7 +4241,7 @@ class NpcSheet extends ActorSheet {
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
   /**
@@ -5680,7 +5736,7 @@ class RollDialog extends Application {
         const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
         skillLevel = attributeValue + skillRating;
       }
-      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => sheetHelpers);
+      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
       let rrList = [];
       if (preferredSpecName) {
         specName = preferredSpecName;
@@ -7030,7 +7086,7 @@ class SRA2System {
             defenseSkillLevel = attributeValue + skillRating;
           }
         }
-        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => sheetHelpers);
+        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
         let defenseRRList = [];
         if (finalDefenseSpec) {
           const rrSources = getRRSources2(defenderActorForRoll, "specialization", finalDefenseSpec);

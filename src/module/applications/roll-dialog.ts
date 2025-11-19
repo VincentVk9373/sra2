@@ -59,7 +59,7 @@ export class RollDialog extends Application {
         const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
         if (defenderTokenFromUuid) {
           this.targetToken = defenderTokenFromUuid;
-          console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
+        console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
         }
       } catch (e) {
         console.warn('RollDialog: Failed to load defender token from UUID:', e);

@@ -717,6 +717,25 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
+    // Get RR sources from skill/specialization/attribute
+    const { getRRSources } = SheetHelpers;
+    let skillRRSources: Array<{featName: string, rrValue: number}> = [];
+    let specRRSources: Array<{featName: string, rrValue: number}> = [];
+    let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
+    
+    if (attackSpecName) {
+      specRRSources = getRRSources(this.actor, 'specialization', attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources(this.actor, 'skill', attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources(this.actor, 'attribute', attackLinkedAttribute);
+    }
+    
+    // Merge all RR sources
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+
     DiceRoller.handleRollRequest({
       itemType: 'weapon',
       weaponType: weaponType,
@@ -751,7 +770,7 @@ export class NpcSheet extends ActorSheet {
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
 
@@ -871,6 +890,25 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
+    // Get RR sources from skill/specialization/attribute
+    const { getRRSources } = SheetHelpers;
+    let skillRRSources: Array<{featName: string, rrValue: number}> = [];
+    let specRRSources: Array<{featName: string, rrValue: number}> = [];
+    let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
+    
+    if (attackSpecName) {
+      specRRSources = getRRSources(this.actor, 'specialization', attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources(this.actor, 'skill', attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources(this.actor, 'attribute', attackLinkedAttribute);
+    }
+    
+    // Merge all RR sources
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+
     DiceRoller.handleRollRequest({
       itemType: 'spell',
       weaponType: weaponType,
@@ -905,7 +943,7 @@ export class NpcSheet extends ActorSheet {
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
 
@@ -1023,6 +1061,25 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
+    // Get RR sources from skill/specialization/attribute
+    const { getRRSources } = SheetHelpers;
+    let skillRRSources: Array<{featName: string, rrValue: number}> = [];
+    let specRRSources: Array<{featName: string, rrValue: number}> = [];
+    let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
+    
+    if (attackSpecName) {
+      specRRSources = getRRSources(this.actor, 'specialization', attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources(this.actor, 'skill', attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources(this.actor, 'attribute', attackLinkedAttribute);
+    }
+    
+    // Merge all RR sources
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+
     DiceRoller.handleRollRequest({
       itemType: 'weapon',
       weaponType: weaponType,
@@ -1055,7 +1112,7 @@ export class NpcSheet extends ActorSheet {
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
 
@@ -1173,6 +1230,25 @@ export class NpcSheet extends ActorSheet {
       }
     }
 
+    // Get RR sources from skill/specialization/attribute
+    const { getRRSources } = SheetHelpers;
+    let skillRRSources: Array<{featName: string, rrValue: number}> = [];
+    let specRRSources: Array<{featName: string, rrValue: number}> = [];
+    let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
+    
+    if (attackSpecName) {
+      specRRSources = getRRSources(this.actor, 'specialization', attackSpecName);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources(this.actor, 'skill', attackSkillName);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources(this.actor, 'attribute', attackLinkedAttribute);
+    }
+    
+    // Merge all RR sources
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+
     DiceRoller.handleRollRequest({
       itemType: 'spell',
       weaponType: weaponType,
@@ -1205,7 +1281,7 @@ export class NpcSheet extends ActorSheet {
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       
-      rrList: itemRRList
+      rrList: allRRSources
     });
   }
 
