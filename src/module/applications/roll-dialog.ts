@@ -1,5 +1,6 @@
 import { RollRequestData } from '../helpers/dice-roller.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
+import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
  * Roll Dialog Application
@@ -490,9 +491,13 @@ export class RollDialog extends Application {
       const actualWeapon = this.actor.items.find((item: any) => item.id === weaponId);
       const weaponSystem = actualWeapon?.system as any;
       
-      // Get linkedAttackSkill from weapon (this should be the base skill name)
-      let baseSkillName = weaponSystem?.linkedAttackSkill || selectedWeapon.linkedAttackSkill;
-      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization;
+      // Get weapon type data from WEAPON_TYPES if available
+      const wepTypeName = weaponSystem?.weaponType;
+      const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName as keyof typeof WEAPON_TYPES] : undefined;
+      
+      // Get linkedAttackSkill and linkedAttackSpecialization from weapon, fallback to weapon type
+      let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
+      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
       
       const damageValue = selectedWeapon.damageValue;
       const damageValueBonus = selectedWeapon.damageValueBonus || 0;
@@ -540,9 +545,17 @@ export class RollDialog extends Application {
         skillLevel = attributeValue + skillRating;
       }
 
-      // Get RR sources
+      // Get RR sources (weapon RR + skill/spec/attribute RR)
       const { getRRSources } = await import('../helpers/sheet-helpers.js');
-      let rrList: any[] = [];
+      
+      // Get RR from weapon itself
+      const weaponRRList = weaponSystem?.rrList || [];
+      const itemRRList = weaponRRList.map((rrEntry: any) => ({
+        ...rrEntry,
+        featName: selectedWeapon.name
+      }));
+      
+      let skillSpecRRList: any[] = [];
       
       // Simple logic: if weapon has a specialization and actor has it, use it
       // Otherwise, use the skill
@@ -554,22 +567,31 @@ export class RollDialog extends Application {
         const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
         specLevel = attributeValue + skillRating + 2;
         
-        const rrSources = getRRSources(this.actor, 'specialization', specName);
-        rrList = rrSources.map((rr: any) => ({
-          ...rr,
-          featName: rr.featName
-        }));
+        const specRRSources = getRRSources(this.actor, 'specialization', specName);
+        const skillRRSources = linkedSkillItem ? getRRSources(this.actor, 'skill', baseSkillName) : [];
+        const attributeRRSources = linkedAttribute ? getRRSources(this.actor, 'attribute', linkedAttribute) : [];
+        
+        skillSpecRRList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
       } else {
         // Use skill (no specialization or actor doesn't have the specialization)
         if (skillName) {
-          const rrSources = getRRSources(this.actor, 'skill', skillName);
-          rrList = rrSources.map((rr: any) => ({
-            ...rr,
-            featName: rr.featName
-          }));
+          const skillRRSources = getRRSources(this.actor, 'skill', skillName);
+          const attributeRRSources = linkedAttribute ? getRRSources(this.actor, 'attribute', linkedAttribute) : [];
+          
+          skillSpecRRList = [...skillRRSources, ...attributeRRSources];
         }
       }
+      
+      // Merge weapon RR with skill/spec/attribute RR
+      const rrList = [...itemRRList, ...skillSpecRRList];
 
+      // Get weapon ranges from selected weapon or weapon type
+      // Use the same wepTypeName and wepTypeData from above
+      const meleeRange = (selectedWeapon as any).meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || 'none';
+      const shortRange = (selectedWeapon as any).shortRange || weaponSystem?.shortRange || wepTypeData?.short || 'none';
+      const mediumRange = (selectedWeapon as any).mediumRange || weaponSystem?.mediumRange || wepTypeData?.medium || 'none';
+      const longRange = (selectedWeapon as any).longRange || weaponSystem?.longRange || wepTypeData?.long || 'none';
+      
       // Update roll data with weapon information
       this.rollData.skillName = skillName;
       this.rollData.specName = specName;
@@ -583,6 +605,13 @@ export class RollDialog extends Application {
       this.rollData.damageValueBonus = damageValueBonus;
       this.rollData.rrList = rrList;
       this.rollData.selectedWeaponId = weaponId; // Store selected weapon ID for template
+      
+      // Update weapon ranges
+      this.rollData.meleeRange = meleeRange;
+      this.rollData.shortRange = shortRange;
+      this.rollData.mediumRange = mediumRange;
+      this.rollData.longRange = longRange;
+      this.rollData.weaponType = wepTypeName;
 
       // Re-render to update the UI
       this.render();

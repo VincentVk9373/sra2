@@ -5970,8 +5970,10 @@ class RollDialog extends Application {
       if (!selectedWeapon) return;
       const actualWeapon = this.actor.items.find((item) => item.id === weaponId);
       const weaponSystem = actualWeapon?.system;
-      let baseSkillName = weaponSystem?.linkedAttackSkill || selectedWeapon.linkedAttackSkill;
-      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization;
+      const wepTypeName = weaponSystem?.weaponType;
+      const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName] : void 0;
+      let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
+      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
       const damageValue = selectedWeapon.damageValue;
       const damageValueBonus = selectedWeapon.damageValueBonus || 0;
       if (!baseSkillName) {
@@ -6005,27 +6007,34 @@ class RollDialog extends Application {
         skillLevel = attributeValue + skillRating;
       }
       const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
-      let rrList = [];
+      const weaponRRList = weaponSystem?.rrList || [];
+      const itemRRList = weaponRRList.map((rrEntry) => ({
+        ...rrEntry,
+        featName: selectedWeapon.name
+      }));
+      let skillSpecRRList = [];
       if (preferredSpecName) {
         specName = preferredSpecName;
         const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
         const parentSkill = linkedSkillItem;
         const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
         specLevel = attributeValue + skillRating + 2;
-        const rrSources = getRRSources2(this.actor, "specialization", specName);
-        rrList = rrSources.map((rr) => ({
-          ...rr,
-          featName: rr.featName
-        }));
+        const specRRSources = getRRSources2(this.actor, "specialization", specName);
+        const skillRRSources = linkedSkillItem ? getRRSources2(this.actor, "skill", baseSkillName) : [];
+        const attributeRRSources = linkedAttribute ? getRRSources2(this.actor, "attribute", linkedAttribute) : [];
+        skillSpecRRList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
       } else {
         if (skillName) {
-          const rrSources = getRRSources2(this.actor, "skill", skillName);
-          rrList = rrSources.map((rr) => ({
-            ...rr,
-            featName: rr.featName
-          }));
+          const skillRRSources = getRRSources2(this.actor, "skill", skillName);
+          const attributeRRSources = linkedAttribute ? getRRSources2(this.actor, "attribute", linkedAttribute) : [];
+          skillSpecRRList = [...skillRRSources, ...attributeRRSources];
         }
       }
+      const rrList = [...itemRRList, ...skillSpecRRList];
+      const meleeRange = selectedWeapon.meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || "none";
+      const shortRange = selectedWeapon.shortRange || weaponSystem?.shortRange || wepTypeData?.short || "none";
+      const mediumRange = selectedWeapon.mediumRange || weaponSystem?.mediumRange || wepTypeData?.medium || "none";
+      const longRange = selectedWeapon.longRange || weaponSystem?.longRange || wepTypeData?.long || "none";
       this.rollData.skillName = skillName;
       this.rollData.specName = specName;
       this.rollData.linkedAttackSkill = baseSkillName;
@@ -6038,6 +6047,11 @@ class RollDialog extends Application {
       this.rollData.damageValueBonus = damageValueBonus;
       this.rollData.rrList = rrList;
       this.rollData.selectedWeaponId = weaponId;
+      this.rollData.meleeRange = meleeRange;
+      this.rollData.shortRange = shortRange;
+      this.rollData.mediumRange = mediumRange;
+      this.rollData.longRange = longRange;
+      this.rollData.weaponType = wepTypeName;
       this.render();
     });
     html.find(".skill-dropdown").on("change", (event) => {
@@ -7631,9 +7645,9 @@ class SRA2System {
           const weaponType = weaponSystem.weaponType;
           let linkedAttackSkill = weaponSystem.linkedAttackSkill;
           if (!linkedAttackSkill && weaponType && weaponType !== "custom-weapon") {
-            const weaponStats = WEAPON_TYPES2[weaponType];
-            if (weaponStats) {
-              linkedAttackSkill = weaponStats.linkedSkill;
+            const weaponStats2 = WEAPON_TYPES2[weaponType];
+            if (weaponStats2) {
+              linkedAttackSkill = weaponStats2.linkedSkill;
             }
           }
           const combatRapprocheSpecs = defenderActorForRoll.items.filter(
@@ -7650,6 +7664,7 @@ class SRA2System {
           } else {
             linkedAttackSkill = "Combat rapproché";
           }
+          const weaponStats = weaponType && weaponType !== "custom-weapon" ? WEAPON_TYPES2[weaponType] : void 0;
           return {
             id: weapon.id,
             name: weapon.name,
@@ -7657,7 +7672,10 @@ class SRA2System {
             damageValue: weaponSystem.damageValue || "0",
             damageValueBonus: weaponSystem.damageValueBonus || 0,
             weaponType,
-            meleeRange: weaponSystem.meleeRange || "none"
+            meleeRange: weaponSystem.meleeRange || weaponStats?.melee || "none",
+            shortRange: weaponSystem.shortRange || weaponStats?.short || "none",
+            mediumRange: weaponSystem.mediumRange || weaponStats?.medium || "none",
+            longRange: weaponSystem.longRange || weaponStats?.long || "none"
           };
         });
         const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;

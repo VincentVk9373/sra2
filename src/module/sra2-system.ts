@@ -749,6 +749,11 @@ export class SRA2System {
             linkedAttackSkill = 'Combat rapproché';
           }
           
+          // Get weapon stats from WEAPON_TYPES if weapon type exists
+          const weaponStats = weaponType && weaponType !== 'custom-weapon' 
+            ? WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES] 
+            : undefined;
+          
           return {
             id: weapon.id,
             name: weapon.name,
@@ -756,7 +761,10 @@ export class SRA2System {
             damageValue: weaponSystem.damageValue || '0',
             damageValueBonus: weaponSystem.damageValueBonus || 0,
             weaponType: weaponType,
-            meleeRange: weaponSystem.meleeRange || 'none'
+            meleeRange: weaponSystem.meleeRange || weaponStats?.melee || 'none',
+            shortRange: weaponSystem.shortRange || weaponStats?.short || 'none',
+            mediumRange: weaponSystem.mediumRange || weaponStats?.medium || 'none',
+            longRange: weaponSystem.longRange || weaponStats?.long || 'none'
           };
         });
 
@@ -792,7 +800,7 @@ export class SRA2System {
         
         // Note: targetToken should already be loaded from defenderTokenUuid in RollDialog constructor
         // Only set it manually if it wasn't loaded from UUID (fallback)
-        if (attackerToken && !dialog.targetToken) {
+        if (attackerToken && !(dialog as any).targetToken) {
           (dialog as any).targetToken = attackerToken;
         }
         
