@@ -277,25 +277,107 @@ export async function handleDeleteItem(event: Event, actor: any, sheetRender?: (
 /**
  * Enrich feats with RR entries and final damage values
  */
-export function enrichFeats(feats: any[], actorStrength: number, calculateFinalDamageValueFn: (dv: string, bonus: number, str: number) => string): any[] {
+export function enrichFeats(feats: any[], actorStrength: number, calculateFinalDamageValueFn: (dv: string, bonus: number, str: number) => string, actor?: any): any[] {
   return feats.map((feat: any) => {
     // Add translated labels for attribute targets in RR entries
     feat.rrEntries = [];
-    const rrList = feat.system.rrList || [];
+    const itemRRList = feat.system.rrList || [];
     
-    for (let i = 0; i < rrList.length; i++) {
-      const rrEntry = rrList[i];
+    // For weapons and spells, also include RR from linked skills/specs/attributes
+    let allRRList = [...itemRRList];
+    
+    if (actor && (feat.system.featType === 'weapon' || feat.system.featType === 'spell' || feat.system.featType === 'weapons-spells')) {
+      const { normalizeSearchText } = ItemSearch;
+      
+      // Get linked skill and specialization from weapon
+      const linkedAttackSkill = feat.system.linkedAttackSkill || '';
+      const linkedAttackSpec = feat.system.linkedAttackSpecialization || '';
+      
+      let attackSpecName: string | undefined = undefined;
+      let attackSkillName: string | undefined = undefined;
+      let attackLinkedAttribute: string | undefined = undefined;
+      
+      // Try to find the linked attack specialization first
+      if (linkedAttackSpec) {
+        const foundSpec = actor.items.find((i: any) => 
+          i.type === 'specialization' && 
+          normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSpec)
+        );
+        
+        if (foundSpec) {
+          const specSystem = foundSpec.system as any;
+          attackSpecName = foundSpec.name;
+          attackLinkedAttribute = specSystem.linkedAttribute || 'strength';
+          
+          // Get parent skill for specialization
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = actor.items.find((i: any) => 
+              i.type === 'skill' && i.name === linkedSkillName
+            );
+            if (parentSkill) {
+              attackSkillName = parentSkill.name;
+            }
+          }
+        }
+      }
+      
+      // If no specialization found, try to find the linked attack skill
+      if (!attackSpecName && linkedAttackSkill) {
+        const foundSkill = actor.items.find((i: any) => 
+          i.type === 'skill' && 
+          normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSkill)
+        );
+        
+        if (foundSkill) {
+          attackSkillName = foundSkill.name;
+          attackLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
+        }
+      }
+      
+      // Get RR sources from skill/specialization/attribute
+      if (attackSpecName) {
+        const specRRSources = getRRSources(actor, 'specialization', attackSpecName);
+        allRRList = [...allRRList, ...specRRSources.map(rr => ({
+          rrType: 'specialization',
+          rrValue: rr.rrValue,
+          rrTarget: attackSpecName
+        }))];
+      }
+      if (attackSkillName) {
+        const skillRRSources = getRRSources(actor, 'skill', attackSkillName);
+        allRRList = [...allRRList, ...skillRRSources.map(rr => ({
+          rrType: 'skill',
+          rrValue: rr.rrValue,
+          rrTarget: attackSkillName
+        }))];
+      }
+      if (attackLinkedAttribute) {
+        const attributeRRSources = getRRSources(actor, 'attribute', attackLinkedAttribute);
+        allRRList = [...allRRList, ...attributeRRSources.map(rr => ({
+          rrType: 'attribute',
+          rrValue: rr.rrValue,
+          rrTarget: attackLinkedAttribute
+        }))];
+      }
+    }
+    
+    // Process all RR entries (item RR + skill/spec/attribute RR)
+    for (let i = 0; i < allRRList.length; i++) {
+      const rrEntry = allRRList[i];
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || '';
       
-      const entry: any = { rrType, rrValue, rrTarget };
-      
-      if (rrType === 'attribute' && rrTarget) {
-        entry.rrTargetLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+      if (rrValue > 0) {
+        const entry: any = { rrType, rrValue, rrTarget };
+        
+        if (rrType === 'attribute' && rrTarget) {
+          entry.rrTargetLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+        }
+        
+        feat.rrEntries.push(entry);
       }
-      
-      feat.rrEntries.push(entry);
     }
     
     // Calculate final damage value for weapons and spells

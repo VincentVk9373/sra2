@@ -1885,6 +1885,22 @@ function searchItemsInWorld(itemType, searchTerm, existingItemsCheck) {
   }
   return results;
 }
+function searchItemsOnActor(actor, itemType, searchTerm) {
+  const results = [];
+  if (!actor) return results;
+  for (const item of actor.items) {
+    if (item.type === itemType && normalizeSearchText(item.name).includes(searchTerm)) {
+      results.push({
+        name: item.name,
+        uuid: item.uuid,
+        id: item.id,
+        source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
+        type: itemType
+      });
+    }
+  }
+  return results;
+}
 async function searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck) {
   const results = [];
   const seenNames = /* @__PURE__ */ new Set();
@@ -1911,6 +1927,13 @@ async function searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck
 async function searchItemsEverywhere(itemType, searchTerm, actor, existingItemsCheck) {
   const results = [];
   const seenNames = /* @__PURE__ */ new Set();
+  if (actor) {
+    const actorResults = searchItemsOnActor(actor, itemType, searchTerm);
+    actorResults.forEach((result) => {
+      results.push(result);
+      seenNames.add(result.name);
+    });
+  }
   const worldResults = searchItemsInWorld(itemType, searchTerm, existingItemsCheck);
   worldResults.forEach((result) => {
     if (!seenNames.has(result.name)) {
@@ -1927,12 +1950,117 @@ async function searchItemsEverywhere(itemType, searchTerm, actor, existingItemsC
   });
   return results;
 }
+function buildSearchResultsHtml(options) {
+  const { results, lastSearchTerm, noResultsMessage, typeLabel } = options;
+  const normalizedLastSearch = normalizeSearchText(lastSearchTerm);
+  const exactMatch = results.find((r) => normalizeSearchText(r.name) === normalizedLastSearch);
+  let html = "";
+  if (results.length === 0) {
+    html = `
+      <div class="search-result-item no-results">
+        <div class="no-results-text">
+          ${noResultsMessage}
+        </div>
+      </div>
+    `;
+  } else {
+    if (exactMatch) {
+      html += buildSingleResultHtml(exactMatch, typeLabel, true);
+    }
+    const otherResults = exactMatch ? results.filter((r) => r.name !== exactMatch.name) : results;
+    for (const result of otherResults) {
+      html += buildSingleResultHtml(result, typeLabel, false);
+    }
+  }
+  return html;
+}
+function buildSingleResultHtml(result, typeLabel, isExactMatch) {
+  const alreadyExistsClass = result.alreadyExists ? "already-exists" : "";
+  const exactMatchClass = isExactMatch ? "exact-match" : "";
+  let html = `
+    <div class="search-result-item ${alreadyExistsClass} ${exactMatchClass}" 
+         data-result-name="${result.name}" 
+         data-result-uuid="${result.uuid}">
+      <div class="result-info">
+        <span class="result-name">${result.name}</span>
+        <span class="result-pack">${result.source} - ${typeLabel}</span>
+      </div>
+  `;
+  if (result.alreadyExists) {
+    html += `
+      <span class="already-exists-label">
+        ${game.i18n.localize("SRA2.SKILLS.ALREADY_EXISTS")}
+      </span>
+    `;
+  } else {
+    html += `
+      <button class="add-item-btn" 
+              data-item-name="${result.name}" 
+              data-item-uuid="${result.uuid}">
+        ${game.i18n.localize("SRA2.SKILLS.ADD")}
+      </button>
+    `;
+  }
+  html += `</div>`;
+  return html;
+}
+function createDebouncedSearch(searchFunction, delay = 300) {
+  let timeoutId = null;
+  return (searchTerm) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(async () => {
+      await searchFunction(searchTerm);
+    }, delay);
+  };
+}
+function toggleSearchResults(resultsDiv, show) {
+  if (show) {
+    resultsDiv.style.display = "block";
+  } else {
+    resultsDiv.style.display = "none";
+  }
+}
 function itemExistsOnActor(actor, itemType, itemName) {
   if (!actor) return false;
   return actor.items.some(
     (item) => item.type === itemType && item.name === itemName
   );
 }
+async function addItemToActorFromUuid(actor, itemUuid) {
+  try {
+    const item = await fromUuid(itemUuid);
+    if (!item) {
+      ui.notifications?.error(game.i18n.localize("SRA2.SKILLS.ITEM_NOT_FOUND"));
+      return false;
+    }
+    if (itemExistsOnActor(actor, item.type, item.name)) {
+      ui.notifications?.warn(game.i18n.format("SRA2.ALREADY_EXISTS", { name: item.name }));
+      return false;
+    }
+    await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+    ui.notifications?.info(game.i18n.format("SRA2.SKILLS.ADDED", { name: item.name }));
+    return true;
+  } catch (error) {
+    console.error("SRA2 | Error adding item to actor:", error);
+    ui.notifications?.error(game.i18n.localize("SRA2.SKILLS.ERROR_ADDING"));
+    return false;
+  }
+}
+const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  addItemToActorFromUuid,
+  buildSearchResultsHtml,
+  createDebouncedSearch,
+  itemExistsOnActor,
+  normalizeSearchText,
+  searchItemsEverywhere,
+  searchItemsInCompendiums,
+  searchItemsInWorld,
+  searchItemsOnActor,
+  toggleSearchResults
+}, Symbol.toStringTag, { value: "Module" }));
 function handleSheetUpdate(actor, formData) {
   const expandedData = foundry.utils.expandObject(formData);
   if (expandedData.system) {
@@ -2111,20 +2239,83 @@ async function handleDeleteItem(event, actor, sheetRender) {
     }
   }
 }
-function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn) {
+function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat) => {
     feat.rrEntries = [];
-    const rrList = feat.system.rrList || [];
-    for (let i = 0; i < rrList.length; i++) {
-      const rrEntry = rrList[i];
+    const itemRRList = feat.system.rrList || [];
+    let allRRList = [...itemRRList];
+    if (actor && (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells")) {
+      const { normalizeSearchText: normalizeSearchText2 } = ItemSearch;
+      const linkedAttackSkill = feat.system.linkedAttackSkill || "";
+      const linkedAttackSpec = feat.system.linkedAttackSpecialization || "";
+      let attackSpecName = void 0;
+      let attackSkillName = void 0;
+      let attackLinkedAttribute = void 0;
+      if (linkedAttackSpec) {
+        const foundSpec = actor.items.find(
+          (i) => i.type === "specialization" && normalizeSearchText2(i.name) === normalizeSearchText2(linkedAttackSpec)
+        );
+        if (foundSpec) {
+          const specSystem = foundSpec.system;
+          attackSpecName = foundSpec.name;
+          attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = actor.items.find(
+              (i) => i.type === "skill" && i.name === linkedSkillName
+            );
+            if (parentSkill) {
+              attackSkillName = parentSkill.name;
+            }
+          }
+        }
+      }
+      if (!attackSpecName && linkedAttackSkill) {
+        const foundSkill = actor.items.find(
+          (i) => i.type === "skill" && normalizeSearchText2(i.name) === normalizeSearchText2(linkedAttackSkill)
+        );
+        if (foundSkill) {
+          attackSkillName = foundSkill.name;
+          attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        }
+      }
+      if (attackSpecName) {
+        const specRRSources = getRRSources(actor, "specialization", attackSpecName);
+        allRRList = [...allRRList, ...specRRSources.map((rr) => ({
+          rrType: "specialization",
+          rrValue: rr.rrValue,
+          rrTarget: attackSpecName
+        }))];
+      }
+      if (attackSkillName) {
+        const skillRRSources = getRRSources(actor, "skill", attackSkillName);
+        allRRList = [...allRRList, ...skillRRSources.map((rr) => ({
+          rrType: "skill",
+          rrValue: rr.rrValue,
+          rrTarget: attackSkillName
+        }))];
+      }
+      if (attackLinkedAttribute) {
+        const attributeRRSources = getRRSources(actor, "attribute", attackLinkedAttribute);
+        allRRList = [...allRRList, ...attributeRRSources.map((rr) => ({
+          rrType: "attribute",
+          rrValue: rr.rrValue,
+          rrTarget: attackLinkedAttribute
+        }))];
+      }
+    }
+    for (let i = 0; i < allRRList.length; i++) {
+      const rrEntry = allRRList[i];
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || "";
-      const entry = { rrType, rrValue, rrTarget };
-      if (rrType === "attribute" && rrTarget) {
-        entry.rrTargetLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+      if (rrValue > 0) {
+        const entry = { rrType, rrValue, rrTarget };
+        if (rrType === "attribute" && rrTarget) {
+          entry.rrTargetLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+        }
+        feat.rrEntries.push(entry);
       }
-      feat.rrEntries.push(entry);
     }
     if (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells") {
       const damageValue = feat.system.damageValue || "0";
@@ -2172,7 +2363,7 @@ class CharacterSheet extends ActorSheet {
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
     const actorStrength = this.actor.system.attributes?.strength || 0;
     const rawFeats = this.actor.items.filter((item) => item.type === "feat");
-    const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue);
+    const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue, this.actor);
     context.featsByType = {
       trait: allFeats.filter((feat) => feat.system.featType === "trait"),
       contact: allFeats.filter((feat) => feat.system.featType === "contact"),
@@ -3140,9 +3331,6 @@ class CharacterSheet extends ActorSheet {
       featName: item.name
       // Add featName (the item name itself)
     }));
-    console.log("=== WEAPON RR DEBUG ===");
-    console.log("Weapon:", item.name);
-    console.log("Item RR List (from weapon):", itemRRList);
     const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
@@ -3165,10 +3353,11 @@ class CharacterSheet extends ActorSheet {
           const parentSkill = this.actor.items.find(
             (i) => i.type === "skill" && i.name === linkedSkillName
           );
-          if (parentSkill) {
+          if (parentSkill && attackLinkedAttribute) {
             attackSkillName = parentSkill.name;
-            attackSkillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-            attackSpecLevel = attackSkillLevel + 2;
+            const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+            attackSkillLevel = skillLevel;
+            attackSpecLevel = skillLevel + 2;
           }
         }
       }
@@ -3179,8 +3368,9 @@ class CharacterSheet extends ActorSheet {
       );
       if (foundSkill) {
         attackSkillName = foundSkill.name;
-        attackLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
-        attackSkillLevel = foundSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+        const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+        attackLinkedAttribute = foundLinkedAttribute;
+        attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
       }
     }
     const baseDamageValue = itemSystem.damageValue || "0";
@@ -3202,19 +3392,14 @@ class CharacterSheet extends ActorSheet {
     let attributeRRSources = [];
     if (attackSpecName) {
       specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
-      console.log("Spec RR Sources for", attackSpecName, ":", specRRSources);
     }
     if (attackSkillName) {
       skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
-      console.log("Skill RR Sources for", attackSkillName, ":", skillRRSources);
     }
     if (attackLinkedAttribute) {
       attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
-      console.log("Attribute RR Sources for", attackLinkedAttribute, ":", attributeRRSources);
     }
     const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-    console.log("All RR Sources (merged):", allRRSources);
-    console.log("=======================");
     handleRollRequest({
       itemType: type,
       weaponType,
@@ -3245,7 +3430,7 @@ class CharacterSheet extends ActorSheet {
       // Actor information
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
-      actorName: this.actor.name,
+      actorName: this.actor.name || "",
       // RR List (merged: item RR + skill/spec/attribute RR)
       rrList: allRRSources
     });

@@ -42,7 +42,7 @@ export class CharacterSheet extends ActorSheet {
     
     // Get feats and enrich with RR target labels and calculated damage values
     const rawFeats = this.actor.items.filter((item: any) => item.type === 'feat');
-    const allFeats = SheetHelpers.enrichFeats(rawFeats, actorStrength, SheetHelpers.calculateFinalDamageValue);
+    const allFeats = SheetHelpers.enrichFeats(rawFeats, actorStrength, SheetHelpers.calculateFinalDamageValue, this.actor);
     
     // Group feats by type
     context.featsByType = {
@@ -1387,10 +1387,6 @@ export class CharacterSheet extends ActorSheet {
       ...rrEntry,
       featName: item.name  // Add featName (the item name itself)
     }));
-    
-    console.log('=== WEAPON RR DEBUG ===');
-    console.log('Weapon:', item.name);
-    console.log('Item RR List (from weapon):', itemRRList);
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';
@@ -1423,10 +1419,11 @@ export class CharacterSheet extends ActorSheet {
           const parentSkill = this.actor.items.find((i: any) => 
             i.type === 'skill' && i.name === linkedSkillName
           );
-          if (parentSkill) {
+          if (parentSkill && attackLinkedAttribute) {
             attackSkillName = parentSkill.name;
-            attackSkillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
-            attackSpecLevel = attackSkillLevel + 2; // Specialization adds +2
+            const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
+            attackSkillLevel = skillLevel;
+            attackSpecLevel = skillLevel + 2; // Specialization adds +2
           }
         }
       }
@@ -1441,8 +1438,9 @@ export class CharacterSheet extends ActorSheet {
       
       if (foundSkill) {
         attackSkillName = foundSkill.name;
-        attackLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
-        attackSkillLevel = (foundSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute] || 0;
+        const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
+        attackLinkedAttribute = foundLinkedAttribute;
+        attackSkillLevel = ((foundSkill.system as any).rating || 0) + ((this.actor.system as any).attributes?.[foundLinkedAttribute] || 0);
       }
     }
 
@@ -1470,21 +1468,16 @@ export class CharacterSheet extends ActorSheet {
     
     if (attackSpecName) {
       specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
-      console.log('Spec RR Sources for', attackSpecName, ':', specRRSources);
     }
     if (attackSkillName) {
       skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
-      console.log('Skill RR Sources for', attackSkillName, ':', skillRRSources);
     }
     if (attackLinkedAttribute) {
       attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
-      console.log('Attribute RR Sources for', attackLinkedAttribute, ':', attributeRRSources);
     }
     
     // Merge all RR sources (item RR + skill/spec/attribute RR)
     const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-    console.log('All RR Sources (merged):', allRRSources);
-    console.log('=======================');
 
     DiceRoller.handleRollRequest({
       itemType: type,
@@ -1519,7 +1512,7 @@ export class CharacterSheet extends ActorSheet {
       // Actor information
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
-      actorName: this.actor.name,
+      actorName: this.actor.name || '',
       
       // RR List (merged: item RR + skill/spec/attribute RR)
       rrList: allRRSources
