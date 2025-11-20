@@ -24,9 +24,14 @@
     </div>
 
     <div class="roll-results">
-        <div class="total-successes">
+        <div class="total-successes {{#if (eq rollResult.totalSuccesses 0)}}failed-attack{{/if}}">
             <span class="successes-label">{{localize "SRA2.ROLL_DIALOG.SUCCESSES"}}:</span>
             <span class="successes-value">{{rollResult.totalSuccesses}}</span>
+            {{#if (and isAttack (eq rollResult.totalSuccesses 0))}}
+            <div class="attack-failed-message">
+                <i class="fas fa-times-circle"></i> {{localize "SRA2.COMBAT.ATTACK_FAILED"}}
+            </div>
+            {{/if}}
         </div>
 
         <!-- Normal Dice Results -->
@@ -188,9 +193,11 @@
             <span class="defender-name">{{defender.name}}</span>
         </div>
         <div class="attack-actions-buttons">
+            {{#if (gt rollResult.totalSuccesses 0)}}
             <button type="button" class="defend-button">
                 <i class="fas fa-shield-alt"></i> {{localize "SRA2.COMBAT.DEFEND"}}
             </button>
+            {{/if}}
             {{#if (eq rollData.skillName "Combat rapproché")}}
             <button type="button" class="counter-attack-button">
                 <i class="fas fa-sword"></i> {{localize "SRA2.COMBAT.ATTACK"}}
