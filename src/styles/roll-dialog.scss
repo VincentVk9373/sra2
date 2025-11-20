@@ -280,9 +280,11 @@
         color: #e0e0e0;
         font-size: 0.8rem;
 
-        &.invalid {
+        &.invalid,
+        &.invalid-range {
             border-color: #f44336;
             background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
         }
 
         option {

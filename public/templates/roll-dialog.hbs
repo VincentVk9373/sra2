@@ -232,7 +232,7 @@
                     <i class="fas fa-crosshairs"></i> Portée
                 </h3>
                 <div class="range-display">
-                    <select class="range-dropdown" name="range-select">
+                    <select class="range-dropdown {{#if (eq selectedRangeValue "none")}}invalid-range{{/if}}" name="range-select">
                         <option value="">-- Sélectionner --</option>
                         <option value="melee" {{#if (eq selectedRange "melee" )}}selected{{/if}}>
                             {{rangeOptions.melee.label}} ({{#if (eq rangeOptions.melee.value "ok")}}OK{{else if (eq

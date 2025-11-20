@@ -6171,6 +6171,28 @@ class RollDialog extends Application {
           return;
         }
       }
+      if (this.rollData.itemType === "weapon" || this.rollData.itemType === "spell" || this.rollData.itemType === "weapons-spells") {
+        if (!this.rollData.isDefend && this.selectedRange) {
+          let selectedRangeValue = null;
+          const meleeRange = this.rollData.meleeRange || "none";
+          const shortRange = this.rollData.shortRange || "none";
+          const mediumRange = this.rollData.mediumRange || "none";
+          const longRange = this.rollData.longRange || "none";
+          if (this.selectedRange === "melee") {
+            selectedRangeValue = meleeRange;
+          } else if (this.selectedRange === "short") {
+            selectedRangeValue = shortRange;
+          } else if (this.selectedRange === "medium") {
+            selectedRangeValue = mediumRange;
+          } else if (this.selectedRange === "long") {
+            selectedRangeValue = longRange;
+          }
+          if (selectedRangeValue === "none") {
+            ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.INVALID_RANGE") || "La portée sélectionnée n'est pas disponible pour cette arme. Veuillez sélectionner une portée valide.");
+            return;
+          }
+        }
+      }
       const attacker = this.actor;
       const attackerToken = this.attackerToken || null;
       const defender = this.targetToken?.actor || null;

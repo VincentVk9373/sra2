@@ -654,6 +654,7 @@
             "ROLL_MODE_ADVANTAGE": "Avantage",
             "RANGE": "Portée",
             "RANGE_INVALID": "Portée invalide - Sélectionnez une portée valide",
+            "INVALID_RANGE": "La portée sélectionnée n'est pas disponible pour cette arme. Veuillez sélectionner une portée valide.",
             "RANGE_MELEE": "Mêlée (< 3m)",
             "RANGE_SHORT": "Portée courte (3-15m)",
             "RANGE_MEDIUM": "Portée moyenne (16-60m)",

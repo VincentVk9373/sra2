@@ -636,6 +636,7 @@
             "ROLL_MODE_ADVANTAGE": "Advantage",
             "RANGE": "Range",
             "RANGE_INVALID": "Invalid range - Please select a valid range",
+            "INVALID_RANGE": "The selected range is not available for this weapon. Please select a valid range.",
             "RANGE_MELEE": "Melee (< 3m)",
             "RANGE_SHORT": "Short range (3-15m)",
             "RANGE_MEDIUM": "Medium range (16-60m)",
