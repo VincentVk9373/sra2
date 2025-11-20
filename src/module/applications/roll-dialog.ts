@@ -233,7 +233,46 @@ export class RollDialog extends Application {
     context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || 'Aucune';
 
     // Calculate total RR and get RR sources
+    // For defense rolls, always recalculate rrList from defender's skill/spec to ensure we use the correct actor
+    // For attack rolls, use rollData.rrList as passed from character-sheet/npc-sheet (already merged: item RR + skill/spec/attribute RR)
     // rrList already contains RRSource objects with featName and rrValue (enriched before passing to handleRollRequest)
+    
+    // For defense rolls, always recalculate rrList from this.actor (the defender) to ensure correctness
+    if (this.rollData.isDefend && this.actor) {
+      const { getRRSources } = SheetHelpers;
+      let defenseRRList: any[] = [];
+      
+      if (this.rollData.specName) {
+        const rrSources = getRRSources(this.actor, 'specialization', this.rollData.specName);
+        defenseRRList = rrSources.map((rr: any) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+      } else if (this.rollData.skillName) {
+        const rrSources = getRRSources(this.actor, 'skill', this.rollData.skillName);
+        defenseRRList = rrSources.map((rr: any) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+      }
+      
+      // Also add attribute RR if linkedAttribute is set
+      if (this.rollData.linkedAttribute) {
+        const attributeRRSources = getRRSources(this.actor, 'attribute', this.rollData.linkedAttribute);
+        const attributeRRList = attributeRRSources.map((rr: any) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+        defenseRRList = [...defenseRRList, ...attributeRRList];
+      }
+      
+      // Always update rollData with correct rrList from defender
+      this.rollData.rrList = defenseRRList;
+    }
+    // For attack rolls (not defense), use rollData.rrList as is (already merged in character-sheet.ts/npc-sheet.ts)
+    // The rrList should already contain: item RR + skill/spec/attribute RR
+    // No need to recalculate here, it's already correct from the sheet
+    
     let totalRR = 0;
     const rrSources: any[] = [];
     if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
@@ -729,6 +768,14 @@ export class RollDialog extends Application {
         dicePool = attributeValue;
       }
       
+      // Block defense roll if no skill/spec is selected (unless using threshold for NPCs)
+      if (this.rollData.isDefend && !this.rollData.threshold) {
+        if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.NO_SKILL_SELECTED') || 'Veuillez sélectionner une compétence pour la défense');
+          return;
+        }
+      }
+      
       // Get attacker and defender
       const attacker = this.actor;
       const attackerToken = this.attackerToken || null;
@@ -778,12 +825,33 @@ export class RollDialog extends Application {
   }
 
   private updateRRForSkill(skillName: string, linkedAttribute: string, dicePool: number): void {
+    // For defense, always use this.actor (the defender)
+    // For other rolls, also use this.actor (the one making the roll)
     if (!this.actor) return;
     
     // Get RR sources synchronously (already imported at top)
+    // Always use this.actor which is correctly set to the defender for defense rolls
     const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
     const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
-    this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
+    
+    // For weapon rolls, preserve the weapon's rrList (from item) and merge with skill/attribute RR
+    // For non-weapon rolls, use only skill/attribute RR
+    let itemRRList: any[] = [];
+    if (this.rollData.itemId && this.rollData.itemType === 'weapon') {
+      // Get the weapon item to extract its rrList
+      const weapon = this.actor.items.get(this.rollData.itemId);
+      if (weapon) {
+        const weaponSystem = weapon.system as any;
+        const rawItemRRList = weaponSystem.rrList || [];
+        itemRRList = rawItemRRList.map((rrEntry: any) => ({
+          ...rrEntry,
+          featName: weapon.name  // Add featName (the weapon name itself)
+        }));
+      }
+    }
+    
+    // Merge item RR (if weapon) + skill RR + attribute RR
+    this.rollData.rrList = [...itemRRList, ...skillRRSources, ...attributeRRSources];
     
     // Reset RR enabled state for new sources
     this.rrEnabled.clear();
@@ -807,13 +875,34 @@ export class RollDialog extends Application {
   }
 
   private updateRRForSpec(specName: string, skillName: string, linkedAttribute: string, dicePool: number): void {
+    // For defense, always use this.actor (the defender)
+    // For other rolls, also use this.actor (the one making the roll)
     if (!this.actor) return;
     
     // Get RR sources synchronously (already imported at top)
+    // Always use this.actor which is correctly set to the defender for defense rolls
     const specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', specName);
     const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
     const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
-    this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    
+    // For weapon rolls, preserve the weapon's rrList (from item) and merge with spec/skill/attribute RR
+    // For non-weapon rolls, use only spec/skill/attribute RR
+    let itemRRList: any[] = [];
+    if (this.rollData.itemId && this.rollData.itemType === 'weapon') {
+      // Get the weapon item to extract its rrList
+      const weapon = this.actor.items.get(this.rollData.itemId);
+      if (weapon) {
+        const weaponSystem = weapon.system as any;
+        const rawItemRRList = weaponSystem.rrList || [];
+        itemRRList = rawItemRRList.map((rrEntry: any) => ({
+          ...rrEntry,
+          featName: weapon.name  // Add featName (the weapon name itself)
+        }));
+      }
+    }
+    
+    // Merge item RR (if weapon) + spec RR + skill RR + attribute RR
+    this.rollData.rrList = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     
     // Reset RR enabled state for new sources
     this.rrEnabled.clear();

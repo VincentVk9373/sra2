@@ -338,12 +338,29 @@ export class SRA2System {
         }
 
         // Determine which skill/spec to use for defense
-        // Priority: 1) defenseSpec if found, 2) defenseSkill if found, 3) fallback based on attack type
+        // Priority: 1) attack spec from weapon (if using weapon for defense), 2) defenseSpec if found, 3) defenseSkill if found, 4) fallback based on attack type
         let finalDefenseSkill: string | null = null;
         let finalDefenseSpec: string | null = null;
         
-        // Try to find the defense spec first
-        if (defenseSpec) {
+        // First, try to use the attack specialization from the weapon (if defending with a weapon)
+        // This allows using "Lames" specialization when defending with a short weapon
+        // Priority: use attack spec over defense spec when defending with a weapon
+        if (attackSpec) {
+          // Check if this attack spec exists in the defender's items and is linked to "Combat rapproché"
+          const spec = defenderActorForRoll.items.find((item: any) => {
+            if (item.type !== 'specialization') return false;
+            const specSystem = item.system as any;
+            return item.name === attackSpec && specSystem.linkedSkill === 'Combat rapproché';
+          });
+          if (spec) {
+            finalDefenseSpec = spec.name;
+            const specSystem = spec.system as any;
+            finalDefenseSkill = specSystem.linkedSkill;
+          }
+        }
+        
+        // Try to find the defense spec (from weapon's linkedDefenseSpecialization)
+        if (!finalDefenseSpec && defenseSpec) {
           const spec = defenderActorForRoll.items.find((item: any) => 
             item.type === 'specialization' && item.name === defenseSpec
           );

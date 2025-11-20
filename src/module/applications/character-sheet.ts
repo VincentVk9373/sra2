@@ -1,6 +1,5 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
 import * as ItemSearch from '../helpers/item-search.js';
-import * as DefenseSelection from '../helpers/defense-selection.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
@@ -1388,6 +1387,10 @@ export class CharacterSheet extends ActorSheet {
       ...rrEntry,
       featName: item.name  // Add featName (the item name itself)
     }));
+    
+    console.log('=== WEAPON RR DEBUG ===');
+    console.log('Weapon:', item.name);
+    console.log('Item RR List (from weapon):', itemRRList);
 
     // Merge weapon type links with custom fields (weapon type has priority)
     const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';
@@ -1460,6 +1463,29 @@ export class CharacterSheet extends ActorSheet {
       }
     }
 
+    // Get RR sources from skill/specialization/attribute (same as NPCs)
+    let skillRRSources: Array<{featName: string, rrValue: number}> = [];
+    let specRRSources: Array<{featName: string, rrValue: number}> = [];
+    let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
+    
+    if (attackSpecName) {
+      specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
+      console.log('Spec RR Sources for', attackSpecName, ':', specRRSources);
+    }
+    if (attackSkillName) {
+      skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
+      console.log('Skill RR Sources for', attackSkillName, ':', skillRRSources);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
+      console.log('Attribute RR Sources for', attackLinkedAttribute, ':', attributeRRSources);
+    }
+    
+    // Merge all RR sources (item RR + skill/spec/attribute RR)
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+    console.log('All RR Sources (merged):', allRRSources);
+    console.log('=======================');
+
     DiceRoller.handleRollRequest({
       itemType: type,
       weaponType: weaponType,
@@ -1495,8 +1521,8 @@ export class CharacterSheet extends ActorSheet {
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       
-      // RR List
-      rrList: itemRRList
+      // RR List (merged: item RR + skill/spec/attribute RR)
+      rrList: allRRSources
     });
   }
 

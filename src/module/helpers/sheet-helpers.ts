@@ -203,6 +203,9 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
     item.system.active === true
   );
   
+  // Normalize the search name for comparison (case-insensitive, accent-insensitive)
+  const normalizedItemName = ItemSearch.normalizeSearchText(itemName);
+  
   for (const feat of feats) {
     const featSystem = feat.system as any;
     const rrList = featSystem.rrList || [];
@@ -212,7 +215,11 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || '';
       
-      if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
+      // Normalize the RR target for comparison
+      const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
+      
+      // Compare normalized names for better matching (handles custom skills/specs with variations)
+      if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
         sources.push({
           featName: feat.name,
           rrValue: rrValue

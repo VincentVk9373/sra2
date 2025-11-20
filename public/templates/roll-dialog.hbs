@@ -126,7 +126,11 @@
         <!-- Roll Dice Button -->
         <div class="roll-dice-section">
             <button type="button" class="roll-dice-button">
+                {{#if hasThreshold}}
+                <i class="fas fa-bullseye"></i> Appliquer le seuil
+                {{else}}
                 <i class="fas fa-dice"></i> Lancer les Dés
+                {{/if}}
             </button>
         </div>
 
@@ -193,7 +197,7 @@
         </section>
 
         <!-- Roll Mode Selection -->
-        {{#if isWeaponRoll}}
+        {{#if (or isWeaponRoll rollData.isDefend)}}
         <div style="display: grid; grid-template-columns: 1fr 1fr;">
 
             <section class="roll-section roll-mode-section">
@@ -221,7 +225,8 @@
                 </div>
             </section>
 
-            <!-- Range Selection (for weapons) -->
+            <!-- Range Selection (for weapons, not for defense) -->
+            {{#unless rollData.isDefend}}
             <section class="roll-section range-section no-border-left">
                 <h3 class="section-title">
                     <i class="fas fa-crosshairs"></i> Portée
@@ -248,6 +253,7 @@
                     </select>
                 </div>
             </section>
+            {{/unless}}
         </div>
         {{/if}}
 

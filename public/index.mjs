@@ -1556,73 +1556,89 @@ async function executeRoll(attacker, defender, attackerToken, defenderToken, rol
   const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
   const rollMode = rollData.rollMode || "normal";
   const finalRR = Math.min(3, rollData.finalRR || 0);
-  let normalRoll = null;
-  let riskRoll = null;
-  if (normalDiceCount > 0) {
-    normalRoll = new Roll(`${normalDiceCount}d6`);
-    await normalRoll.evaluate();
-    if (game.dice3d && normalRoll) {
-      game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+  const threshold = rollData.threshold;
+  let rollResult;
+  if (threshold !== void 0) {
+    rollResult = {
+      normalDice: [],
+      riskDice: [],
+      normalSuccesses: threshold,
+      riskSuccesses: 0,
+      totalSuccesses: threshold,
+      criticalFailures: 0,
+      finalRR,
+      remainingFailures: 0,
+      complication: "none"
+    };
+  } else {
+    let normalRoll = null;
+    let riskRoll = null;
+    if (normalDiceCount > 0) {
+      normalRoll = new Roll(`${normalDiceCount}d6`);
+      await normalRoll.evaluate();
+      if (game.dice3d && normalRoll) {
+        game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+      }
     }
-  }
-  if (riskDiceCount > 0) {
-    riskRoll = new Roll(`${riskDiceCount}d6`);
-    await riskRoll.evaluate();
-    if (game.dice3d && riskRoll) {
-      const dice3dConfig = {
-        colorset: "purple",
-        theme: "default"
-      };
-      game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+    if (riskDiceCount > 0) {
+      riskRoll = new Roll(`${riskDiceCount}d6`);
+      await riskRoll.evaluate();
+      if (game.dice3d && riskRoll) {
+        const dice3dConfig = {
+          colorset: "purple",
+          theme: "default"
+        };
+        game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+      }
     }
-  }
-  const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
-  const riskResults = riskRoll ? riskRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
-  let normalSuccesses = 0;
-  for (const result of normalResults) {
-    if (rollMode === "advantage" && result >= 4) {
-      normalSuccesses++;
-    } else if (rollMode === "disadvantage" && result === 6) {
-      normalSuccesses++;
-    } else if (rollMode === "normal" && result >= 5) {
-      normalSuccesses++;
+    const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+    const riskResults = riskRoll ? riskRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+    let normalSuccesses = 0;
+    for (const result of normalResults) {
+      if (rollMode === "advantage" && result >= 4) {
+        normalSuccesses++;
+      } else if (rollMode === "disadvantage" && result === 6) {
+        normalSuccesses++;
+      } else if (rollMode === "normal" && result >= 5) {
+        normalSuccesses++;
+      }
     }
-  }
-  let riskSuccesses = 0;
-  let criticalFailures = 0;
-  for (const result of riskResults) {
-    if (result === 1) {
-      criticalFailures++;
-    } else if (rollMode === "advantage" && result >= 4) {
-      riskSuccesses++;
-    } else if (rollMode === "disadvantage" && result === 6) {
-      riskSuccesses++;
-    } else if (rollMode === "normal" && result >= 5) {
-      riskSuccesses++;
+    let riskSuccesses = 0;
+    let criticalFailures = 0;
+    for (const result of riskResults) {
+      if (result === 1) {
+        criticalFailures++;
+      } else if (rollMode === "advantage" && result >= 4) {
+        riskSuccesses++;
+      } else if (rollMode === "disadvantage" && result === 6) {
+        riskSuccesses++;
+      } else if (rollMode === "normal" && result >= 5) {
+        riskSuccesses++;
+      }
     }
+    const totalRiskSuccesses = riskSuccesses * 2;
+    const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+    const remainingFailures = Math.max(0, criticalFailures - finalRR);
+    let complication = "none";
+    if (remainingFailures === 1) {
+      complication = "minor";
+    } else if (remainingFailures === 2) {
+      complication = "critical";
+    } else if (remainingFailures >= 3) {
+      complication = "disaster";
+    }
+    rollResult = {
+      normalDice: normalResults,
+      riskDice: riskResults,
+      normalSuccesses,
+      riskSuccesses,
+      totalSuccesses,
+      criticalFailures,
+      finalRR,
+      remainingFailures,
+      complication
+    };
   }
-  const totalRiskSuccesses = riskSuccesses * 2;
-  const totalSuccesses = normalSuccesses + totalRiskSuccesses;
-  const remainingFailures = Math.max(0, criticalFailures - finalRR);
-  let complication = "none";
-  if (remainingFailures === 1) {
-    complication = "minor";
-  } else if (remainingFailures === 2) {
-    complication = "critical";
-  } else if (remainingFailures >= 3) {
-    complication = "disaster";
-  }
-  const rollResult = {
-    normalDice: normalResults,
-    riskDice: riskResults,
-    normalSuccesses,
-    riskSuccesses,
-    totalSuccesses,
-    criticalFailures,
-    finalRR,
-    remainingFailures,
-    complication
-  };
   await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
 }
 async function createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult) {
@@ -1681,7 +1697,21 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
     const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
     if (attackSuccesses >= defenseSuccesses) {
-      const damageValue = parseInt(rollData.attackRollData.damageValue || "0", 10) || 0;
+      let damageValue = 0;
+      const damageValueStr = rollData.attackRollData.damageValue || "0";
+      const damageValueBonus = rollData.attackRollData.damageValueBonus || 0;
+      if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
+        const attackerStrength = defender?.system?.attributes?.strength || 1;
+        if (damageValueStr === "FOR") {
+          damageValue = attackerStrength;
+        } else if (damageValueStr.startsWith("FOR+")) {
+          const bonus = parseInt(damageValueStr.substring(4)) || 0;
+          damageValue = attackerStrength + bonus;
+        }
+      } else {
+        damageValue = parseInt(damageValueStr, 10) || 0;
+      }
+      damageValue += damageValueBonus;
       calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
       attackFailed = false;
     } else {
@@ -2035,6 +2065,7 @@ function getRRSources(actor, itemType, itemName) {
   const feats = actor.items.filter(
     (item) => item.type === "feat" && item.system.active === true
   );
+  const normalizedItemName = normalizeSearchText(itemName);
   for (const feat of feats) {
     const featSystem = feat.system;
     const rrList = featSystem.rrList || [];
@@ -2042,7 +2073,8 @@ function getRRSources(actor, itemType, itemName) {
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || "";
-      if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
+      const normalizedRRTarget = normalizeSearchText(rrTarget);
+      if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
         sources.push({
           featName: feat.name,
           rrValue
@@ -3108,6 +3140,9 @@ class CharacterSheet extends ActorSheet {
       featName: item.name
       // Add featName (the item name itself)
     }));
+    console.log("=== WEAPON RR DEBUG ===");
+    console.log("Weapon:", item.name);
+    console.log("Item RR List (from weapon):", itemRRList);
     const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
     const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
     const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
@@ -3162,6 +3197,24 @@ class CharacterSheet extends ActorSheet {
         finalDamageValue = (baseValue + damageValueBonus).toString();
       }
     }
+    let skillRRSources = [];
+    let specRRSources = [];
+    let attributeRRSources = [];
+    if (attackSpecName) {
+      specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
+      console.log("Spec RR Sources for", attackSpecName, ":", specRRSources);
+    }
+    if (attackSkillName) {
+      skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
+      console.log("Skill RR Sources for", attackSkillName, ":", skillRRSources);
+    }
+    if (attackLinkedAttribute) {
+      attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
+      console.log("Attribute RR Sources for", attackLinkedAttribute, ":", attributeRRSources);
+    }
+    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+    console.log("All RR Sources (merged):", allRRSources);
+    console.log("=======================");
     handleRollRequest({
       itemType: type,
       weaponType,
@@ -3193,8 +3246,8 @@ class CharacterSheet extends ActorSheet {
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
-      // RR List
-      rrList: itemRRList
+      // RR List (merged: item RR + skill/spec/attribute RR)
+      rrList: allRRSources
     });
   }
   /**
@@ -5539,6 +5592,32 @@ class RollDialog extends Application {
     context.threshold = threshold;
     context.hasThreshold = threshold !== void 0;
     context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || "Aucune";
+    if (this.rollData.isDefend && this.actor) {
+      const { getRRSources: getRRSources2 } = SheetHelpers;
+      let defenseRRList = [];
+      if (this.rollData.specName) {
+        const rrSources2 = getRRSources2(this.actor, "specialization", this.rollData.specName);
+        defenseRRList = rrSources2.map((rr) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+      } else if (this.rollData.skillName) {
+        const rrSources2 = getRRSources2(this.actor, "skill", this.rollData.skillName);
+        defenseRRList = rrSources2.map((rr) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+      }
+      if (this.rollData.linkedAttribute) {
+        const attributeRRSources = getRRSources2(this.actor, "attribute", this.rollData.linkedAttribute);
+        const attributeRRList = attributeRRSources.map((rr) => ({
+          ...rr,
+          featName: rr.featName
+        }));
+        defenseRRList = [...defenseRRList, ...attributeRRList];
+      }
+      this.rollData.rrList = defenseRRList;
+    }
     let totalRR = 0;
     const rrSources = [];
     if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
@@ -5901,6 +5980,12 @@ class RollDialog extends Application {
         const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
         dicePool = attributeValue;
       }
+      if (this.rollData.isDefend && !this.rollData.threshold) {
+        if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.NO_SKILL_SELECTED") || "Veuillez sélectionner une compétence pour la défense");
+          return;
+        }
+      }
       const attacker = this.actor;
       const attackerToken = this.attackerToken || null;
       const defender = this.targetToken?.actor || null;
@@ -5947,7 +6032,20 @@ class RollDialog extends Application {
     if (!this.actor) return;
     const skillRRSources = getRRSources(this.actor, "skill", skillName);
     const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
-    this.rollData.rrList = [...skillRRSources, ...attributeRRSources];
+    let itemRRList = [];
+    if (this.rollData.itemId && this.rollData.itemType === "weapon") {
+      const weapon = this.actor.items.get(this.rollData.itemId);
+      if (weapon) {
+        const weaponSystem = weapon.system;
+        const rawItemRRList = weaponSystem.rrList || [];
+        itemRRList = rawItemRRList.map((rrEntry) => ({
+          ...rrEntry,
+          featName: weapon.name
+          // Add featName (the weapon name itself)
+        }));
+      }
+    }
+    this.rollData.rrList = [...itemRRList, ...skillRRSources, ...attributeRRSources];
     this.rrEnabled.clear();
     for (const rrSource of this.rollData.rrList) {
       if (rrSource && typeof rrSource === "object") {
@@ -5969,7 +6067,20 @@ class RollDialog extends Application {
     const specRRSources = getRRSources(this.actor, "specialization", specName);
     const skillRRSources = getRRSources(this.actor, "skill", skillName);
     const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
-    this.rollData.rrList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    let itemRRList = [];
+    if (this.rollData.itemId && this.rollData.itemType === "weapon") {
+      const weapon = this.actor.items.get(this.rollData.itemId);
+      if (weapon) {
+        const weaponSystem = weapon.system;
+        const rawItemRRList = weaponSystem.rrList || [];
+        itemRRList = rawItemRRList.map((rrEntry) => ({
+          ...rrEntry,
+          featName: weapon.name
+          // Add featName (the weapon name itself)
+        }));
+      }
+    }
+    this.rollData.rrList = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     this.rrEnabled.clear();
     for (const rrSource of this.rollData.rrList) {
       if (rrSource && typeof rrSource === "object") {
@@ -7029,7 +7140,19 @@ class SRA2System {
         }
         let finalDefenseSkill = null;
         let finalDefenseSpec = null;
-        if (defenseSpec) {
+        if (attackSpec) {
+          const spec = defenderActorForRoll.items.find((item) => {
+            if (item.type !== "specialization") return false;
+            const specSystem = item.system;
+            return item.name === attackSpec && specSystem.linkedSkill === "Combat rapproché";
+          });
+          if (spec) {
+            finalDefenseSpec = spec.name;
+            const specSystem = spec.system;
+            finalDefenseSkill = specSystem.linkedSkill;
+          }
+        }
+        if (!finalDefenseSpec && defenseSpec) {
           const spec = defenderActorForRoll.items.find(
             (item) => item.type === "specialization" && item.name === defenseSpec
           );
