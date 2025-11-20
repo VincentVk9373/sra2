@@ -1731,7 +1731,21 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     const originalDefenderName = attackerToken?.document?.name || attackerToken?.name || attackerToken?.actor?.name || attacker?.name || "Inconnu";
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const counterAttackSuccesses = rollResult.totalSuccesses;
-    const attackDamageValue = parseInt(rollData.attackRollData.damageValue || "0", 10) || 0;
+    let attackDamageValue = 0;
+    const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
+    const attackDamageValueBonus = rollData.attackRollData.damageValueBonus || 0;
+    if (attackDamageValueStr === "FOR" || attackDamageValueStr.startsWith("FOR+")) {
+      const attackerStrength = defender?.system?.attributes?.strength || 1;
+      if (attackDamageValueStr === "FOR") {
+        attackDamageValue = attackerStrength;
+      } else if (attackDamageValueStr.startsWith("FOR+")) {
+        const bonus = parseInt(attackDamageValueStr.substring(4)) || 0;
+        attackDamageValue = attackerStrength + bonus;
+      }
+    } else {
+      attackDamageValue = parseInt(attackDamageValueStr, 10) || 0;
+    }
+    attackDamageValue += attackDamageValueBonus;
     let counterAttackDamageValue = 0;
     const damageValueStr = rollData.damageValue || "0";
     const damageValueBonus = rollData.damageValueBonus || 0;

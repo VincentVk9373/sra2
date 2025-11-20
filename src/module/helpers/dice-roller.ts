@@ -567,8 +567,26 @@ async function createRollChatMessage(
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const counterAttackSuccesses = rollResult.totalSuccesses;
     
-    // Get damage values
-    const attackDamageValue = parseInt(rollData.attackRollData.damageValue || '0', 10) || 0;
+    // Get damage values for the original attacker
+    let attackDamageValue = 0;
+    const attackDamageValueStr = rollData.attackRollData.damageValue || '0';
+    const attackDamageValueBonus = rollData.attackRollData.damageValueBonus || 0;
+    
+    // Handle "FOR" or "FOR+X" damage values for the attacker (defender in counter-attack context)
+    if (attackDamageValueStr === 'FOR' || attackDamageValueStr.startsWith('FOR+')) {
+      const attackerStrength = (defender?.system as any)?.attributes?.strength || 1; // defender = original attacker
+      if (attackDamageValueStr === 'FOR') {
+        attackDamageValue = attackerStrength;
+      } else if (attackDamageValueStr.startsWith('FOR+')) {
+        const bonus = parseInt(attackDamageValueStr.substring(4)) || 0;
+        attackDamageValue = attackerStrength + bonus;
+      }
+    } else {
+      attackDamageValue = parseInt(attackDamageValueStr, 10) || 0;
+    }
+    
+    // Add damage value bonus
+    attackDamageValue += attackDamageValueBonus;
     
     // Get counter-attack damage value from rollData
     // rollData.damageValue should already be set from the selected weapon
