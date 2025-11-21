@@ -5674,6 +5674,162 @@ class RollDialog extends Application {
         return token.uuid === rollData.defenderTokenUuid || token.document?.uuid === rollData.defenderTokenUuid;
       }) || null;
     }
+    if (rollData.isCounterAttack && rollData.availableWeapons && rollData.availableWeapons.length > 0 && this.actor) {
+      this.autoSelectWeaponForCounterAttack();
+    }
+  }
+  /**
+   * Auto-select the best weapon for counter-attack
+   * Priority: 1) Weapon with highest damage value, 2) Combat rapproché skill
+   */
+  autoSelectWeaponForCounterAttack() {
+    if (!this.rollData.availableWeapons || !this.actor) return;
+    let bestWeapon = null;
+    let highestDamage = -1;
+    for (const weapon of this.rollData.availableWeapons) {
+      const damageValueStr = weapon.damageValue || "0";
+      let damageValue = 0;
+      if (damageValueStr === "FOR") {
+        damageValue = this.actor.system?.attributes?.strength || 1;
+      } else if (damageValueStr.startsWith("FOR+")) {
+        const bonus = parseInt(damageValueStr.substring(4)) || 0;
+        damageValue = (this.actor.system?.attributes?.strength || 1) + bonus;
+      } else {
+        damageValue = parseInt(damageValueStr, 10) || 0;
+      }
+      damageValue += weapon.damageValueBonus || 0;
+      if (damageValue > highestDamage) {
+        highestDamage = damageValue;
+        bestWeapon = weapon;
+      }
+    }
+    if (bestWeapon && highestDamage > 0) {
+      this.selectWeaponForCounterAttack(bestWeapon.id);
+    } else {
+      this.selectCombatRapprocheSkill();
+    }
+  }
+  /**
+   * Select a specific weapon for counter-attack
+   */
+  selectWeaponForCounterAttack(weaponId) {
+    if (!this.rollData.availableWeapons || !this.actor) return;
+    const selectedWeapon = this.rollData.availableWeapons.find((w) => w.id === weaponId);
+    if (!selectedWeapon) return;
+    const actualWeapon = this.actor.items.find((item) => item.id === weaponId);
+    const weaponSystem = actualWeapon?.system;
+    const wepTypeName = weaponSystem?.weaponType;
+    const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName] : void 0;
+    let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
+    const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
+    const damageValue = selectedWeapon.damageValue;
+    const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+    if (!baseSkillName) {
+      baseSkillName = "Combat rapproché";
+    }
+    const linkedSkillItem = this.actor.items.find(
+      (item) => item.type === "skill" && item.name === baseSkillName
+    );
+    const linkedSpecs = this.actor.items.filter(
+      (item) => item.type === "specialization" && item.system.linkedSkill === baseSkillName
+    );
+    let preferredSpecName = void 0;
+    if (weaponLinkedSpecialization) {
+      const specExists = linkedSpecs.find(
+        (spec) => spec.name === weaponLinkedSpecialization
+      );
+      if (specExists) {
+        preferredSpecName = weaponLinkedSpecialization;
+      }
+    }
+    let skillLevel = void 0;
+    let specLevel = void 0;
+    let linkedAttribute = void 0;
+    let skillName = baseSkillName;
+    let specName = void 0;
+    if (linkedSkillItem) {
+      const skillSystem = linkedSkillItem.system;
+      const skillRating = skillSystem.rating || 0;
+      linkedAttribute = skillSystem.linkedAttribute || "strength";
+      const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
+      skillLevel = attributeValue + skillRating;
+    }
+    let rrList = [];
+    const weaponRRList = weaponSystem?.rrList || [];
+    const itemRRList = weaponRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: selectedWeapon.name
+    }));
+    let skillSpecRRList = [];
+    if (preferredSpecName) {
+      specName = preferredSpecName;
+      const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
+      const parentSkill = linkedSkillItem;
+      const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
+      specLevel = attributeValue + skillRating + 2;
+      const specRRSources = getRRSources(this.actor, "specialization", specName);
+      const skillRRSources = linkedSkillItem ? getRRSources(this.actor, "skill", baseSkillName) : [];
+      const attributeRRSources = linkedAttribute ? getRRSources(this.actor, "attribute", linkedAttribute) : [];
+      skillSpecRRList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    } else {
+      if (skillName) {
+        const skillRRSources = getRRSources(this.actor, "skill", skillName);
+        const attributeRRSources = linkedAttribute ? getRRSources(this.actor, "attribute", linkedAttribute) : [];
+        skillSpecRRList = [...skillRRSources, ...attributeRRSources];
+      }
+    }
+    rrList = [...itemRRList, ...skillSpecRRList];
+    const meleeRange = selectedWeapon.meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || "none";
+    const shortRange = selectedWeapon.shortRange || weaponSystem?.shortRange || wepTypeData?.short || "none";
+    const mediumRange = selectedWeapon.mediumRange || weaponSystem?.mediumRange || wepTypeData?.medium || "none";
+    const longRange = selectedWeapon.longRange || weaponSystem?.longRange || wepTypeData?.long || "none";
+    this.rollData.skillName = skillName;
+    this.rollData.specName = specName;
+    this.rollData.linkedAttackSkill = baseSkillName;
+    this.rollData.linkedAttribute = linkedAttribute;
+    this.rollData.skillLevel = skillLevel;
+    this.rollData.specLevel = specLevel;
+    this.rollData.itemName = selectedWeapon.name;
+    this.rollData.itemType = "weapon";
+    this.rollData.damageValue = damageValue;
+    this.rollData.damageValueBonus = damageValueBonus;
+    this.rollData.rrList = rrList;
+    this.rollData.selectedWeaponId = weaponId;
+    this.rollData.meleeRange = meleeRange;
+    this.rollData.shortRange = shortRange;
+    this.rollData.mediumRange = mediumRange;
+    this.rollData.longRange = longRange;
+    this.rollData.weaponType = wepTypeName;
+  }
+  /**
+   * Select Combat rapproché skill for counter-attack
+   */
+  selectCombatRapprocheSkill() {
+    if (!this.actor) return;
+    const combatRapprocheSkill = this.actor.items.find(
+      (item) => item.type === "skill" && item.name === "Combat rapproché"
+    );
+    if (!combatRapprocheSkill) return;
+    const skillSystem = combatRapprocheSkill.system;
+    const skillRating = skillSystem.rating || 0;
+    const linkedAttribute = skillSystem.linkedAttribute || "strength";
+    const attributeValue = this.actor.system?.attributes?.[linkedAttribute] || 0;
+    const skillLevel = attributeValue + skillRating;
+    const skillRRSources = getRRSources(this.actor, "skill", "Combat rapproché");
+    const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
+    const rrList = [...skillRRSources, ...attributeRRSources];
+    this.rollData.skillName = "Combat rapproché";
+    this.rollData.specName = void 0;
+    this.rollData.linkedAttackSkill = "Combat rapproché";
+    this.rollData.linkedAttribute = linkedAttribute;
+    this.rollData.skillLevel = skillLevel;
+    this.rollData.specLevel = void 0;
+    this.rollData.itemName = void 0;
+    this.rollData.itemType = void 0;
+    this.rollData.damageValue = "FOR";
+    this.rollData.damageValueBonus = 0;
+    this.rollData.rrList = rrList;
+    this.rollData.selectedWeaponId = void 0;
   }
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -6196,6 +6352,16 @@ class RollDialog extends Application {
       if (this.rollData.isDefend && !this.rollData.threshold) {
         if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
           ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.NO_SKILL_SELECTED") || "Veuillez sélectionner une compétence pour la défense");
+          return;
+        }
+      }
+      if (this.rollData.isCounterAttack && !this.rollData.threshold) {
+        if (!this.rollData.selectedWeaponId && !this.rollData.skillName && !this.rollData.specName) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPON_SELECTED") || "Veuillez sélectionner une arme pour la contre-attaque");
+          return;
+        }
+        if (dicePool === 0) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_DICE_POOL") || "La réserve de dés pour la contre-attaque est de 0. Veuillez sélectionner une arme valide.");
           return;
         }
       }
@@ -7718,6 +7884,30 @@ class SRA2System {
           dialog.targetToken = attackerToken;
         }
         dialog.render(true);
+      });
+      html.find(".apply-damage-button").on("click", async (event) => {
+        event.preventDefault();
+        const button = $(event.currentTarget);
+        const damage = parseInt(button.data("damage")) || 0;
+        const targetName = button.data("target-name") || "Inconnu";
+        const targetUuid = button.data("target-uuid");
+        if (!targetUuid) {
+          ui.notifications?.error("Impossible de trouver la cible pour appliquer les dégâts");
+          return;
+        }
+        if (damage <= 0) {
+          ui.notifications?.info("Aucun dégât à appliquer");
+          return;
+        }
+        button.prop("disabled", true);
+        try {
+          await CharacterSheet.applyDamage(targetUuid, damage, targetName);
+        } catch (error) {
+          console.error("Error applying damage:", error);
+          ui.notifications?.error("Erreur lors de l'application des dégâts");
+        } finally {
+          setTimeout(() => button.prop("disabled", false), 1e3);
+        }
       });
     });
     Hooks.on("getTokenHUDOptions", (_hud, buttons, token) => {

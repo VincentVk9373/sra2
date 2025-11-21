@@ -990,6 +990,53 @@ select {
                     }
                 }
             }
+            
+            .apply-damage-button {
+                margin-top: 0.75rem;
+                width: 100%;
+                padding: 0.75rem 1rem;
+                background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+                border: 2px solid #c62828;
+                border-radius: 6px;
+                color: white;
+                font-weight: bold;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+
+                i {
+                    font-size: 1.1rem;
+                }
+
+                &:hover {
+                    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+                    border-color: #b71c1c;
+                    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.6);
+                    transform: translateY(-1px);
+                }
+
+                &:active {
+                    transform: translateY(0);
+                    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.4);
+                }
+
+                &:disabled {
+                    background: #666;
+                    border-color: #555;
+                    cursor: not-allowed;
+                    opacity: 0.5;
+                    box-shadow: none;
+
+                    &:hover {
+                        transform: none;
+                    }
+                }
+            }
         }
 
         &.counterattack-result {

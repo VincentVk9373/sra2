@@ -481,7 +481,9 @@
             "COUNTER_ATTACK": {
                 "TITLE": "Contre-attaque - Sélection d'arme",
                 "SELECT_WEAPON": "Sélectionnez une arme pour la contre-attaque:",
-                "NO_WEAPONS": "Aucune arme disponible pour la contre-attaque"
+                "NO_WEAPONS": "Aucune arme disponible pour la contre-attaque",
+                "NO_WEAPON_SELECTED": "Veuillez sélectionner une arme pour la contre-attaque",
+                "NO_DICE_POOL": "La réserve de dés pour la contre-attaque est de 0. Veuillez sélectionner une arme valide."
             },
             "APPLY_DAMAGE": "Appliquer les dégâts",
             "APPLY_DAMAGE_TITLE": "Appliquer {damage} de dégâts à {defender}",

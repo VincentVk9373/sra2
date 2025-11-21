@@ -75,8 +75,225 @@ export class RollDialog extends Application {
                token.document?.uuid === rollData.defenderTokenUuid;
       }) || null;
     }
+    
+    // Auto-select best weapon for counter-attack
+    if (rollData.isCounterAttack && rollData.availableWeapons && rollData.availableWeapons.length > 0 && this.actor) {
+      this.autoSelectWeaponForCounterAttack();
+    }
   }
 
+  /**
+   * Auto-select the best weapon for counter-attack
+   * Priority: 1) Weapon with highest damage value, 2) Combat rapproché skill
+   */
+  private autoSelectWeaponForCounterAttack(): void {
+    if (!this.rollData.availableWeapons || !this.actor) return;
+    
+    // Find weapon with highest damage value
+    let bestWeapon: any = null;
+    let highestDamage = -1;
+    
+    for (const weapon of this.rollData.availableWeapons) {
+      const damageValueStr = weapon.damageValue || '0';
+      let damageValue = 0;
+      
+      // Parse damage value (handle FOR, FOR+X, or numeric)
+      if (damageValueStr === 'FOR') {
+        damageValue = (this.actor.system as any)?.attributes?.strength || 1;
+      } else if (damageValueStr.startsWith('FOR+')) {
+        const bonus = parseInt(damageValueStr.substring(4)) || 0;
+        damageValue = ((this.actor.system as any)?.attributes?.strength || 1) + bonus;
+      } else {
+        damageValue = parseInt(damageValueStr, 10) || 0;
+      }
+      
+      // Add bonus
+      damageValue += weapon.damageValueBonus || 0;
+      
+      if (damageValue > highestDamage) {
+        highestDamage = damageValue;
+        bestWeapon = weapon;
+      }
+    }
+    
+    // If we found a weapon with damage, select it
+    if (bestWeapon && highestDamage > 0) {
+      this.selectWeaponForCounterAttack(bestWeapon.id);
+    } else {
+      // Otherwise, select "Combat rapproché" skill
+      this.selectCombatRapprocheSkill();
+    }
+  }
+  
+  /**
+   * Select a specific weapon for counter-attack
+   */
+  private selectWeaponForCounterAttack(weaponId: string): void {
+    if (!this.rollData.availableWeapons || !this.actor) return;
+    
+    const selectedWeapon = this.rollData.availableWeapons.find((w: any) => w.id === weaponId);
+    if (!selectedWeapon) return;
+    
+    // Get the actual weapon item
+    const actualWeapon = this.actor.items.find((item: any) => item.id === weaponId);
+    const weaponSystem = actualWeapon?.system as any;
+    
+    // Get weapon type data from WEAPON_TYPES if available
+    const wepTypeName = weaponSystem?.weaponType;
+    const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName as keyof typeof WEAPON_TYPES] : undefined;
+    
+    // Get linkedAttackSkill and linkedAttackSpecialization
+    let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
+    const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
+    
+    const damageValue = selectedWeapon.damageValue;
+    const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+    
+    // Default to "Combat rapproché" if no skill found
+    if (!baseSkillName) {
+      baseSkillName = 'Combat rapproché';
+    }
+    
+    // Find the linked skill in actor's items
+    const linkedSkillItem = this.actor.items.find((item: any) => 
+      item.type === 'skill' && item.name === baseSkillName
+    );
+    
+    // Find specializations for the linked skill
+    const linkedSpecs = this.actor.items.filter((item: any) => 
+      item.type === 'specialization' && 
+      item.system.linkedSkill === baseSkillName
+    );
+    
+    // Check if weapon has a specialization and if actor has that specialization
+    let preferredSpecName: string | undefined = undefined;
+    if (weaponLinkedSpecialization) {
+      const specExists = linkedSpecs.find((spec: any) => 
+        spec.name === weaponLinkedSpecialization
+      );
+      if (specExists) {
+        preferredSpecName = weaponLinkedSpecialization;
+      }
+    }
+    
+    // Calculate skill level and linked attribute
+    let skillLevel: number | undefined = undefined;
+    let specLevel: number | undefined = undefined;
+    let linkedAttribute: string | undefined = undefined;
+    let skillName: string | undefined = baseSkillName;
+    let specName: string | undefined = undefined;
+    
+    if (linkedSkillItem) {
+      const skillSystem = linkedSkillItem.system as any;
+      const skillRating = skillSystem.rating || 0;
+      linkedAttribute = skillSystem.linkedAttribute || 'strength';
+      const attributeValue = linkedAttribute ? ((this.actor.system as any)?.attributes?.[linkedAttribute] || 0) : 0;
+      
+      skillLevel = attributeValue + skillRating;
+    }
+    
+    // Get RR sources
+    let rrList: any[] = [];
+    
+    // Get RR from weapon itself
+    const weaponRRList = weaponSystem?.rrList || [];
+    const itemRRList = weaponRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: selectedWeapon.name
+    }));
+    
+    let skillSpecRRList: any[] = [];
+    
+    if (preferredSpecName) {
+      // Use specialization
+      specName = preferredSpecName;
+      const attributeValue = linkedAttribute ? ((this.actor.system as any)?.attributes?.[linkedAttribute] || 0) : 0;
+      const parentSkill = linkedSkillItem;
+      const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
+      specLevel = attributeValue + skillRating + 2;
+      
+      const specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', specName);
+      const skillRRSources = linkedSkillItem ? SheetHelpers.getRRSources(this.actor, 'skill', baseSkillName) : [];
+      const attributeRRSources = linkedAttribute ? SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute) : [];
+      
+      skillSpecRRList = [...specRRSources, ...skillRRSources, ...attributeRRSources];
+    } else {
+      // Use skill
+      if (skillName) {
+        const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
+        const attributeRRSources = linkedAttribute ? SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute) : [];
+        
+        skillSpecRRList = [...skillRRSources, ...attributeRRSources];
+      }
+    }
+    
+    // Merge weapon RR with skill/spec/attribute RR
+    rrList = [...itemRRList, ...skillSpecRRList];
+    
+    // Get weapon ranges
+    const meleeRange = (selectedWeapon as any).meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || 'none';
+    const shortRange = (selectedWeapon as any).shortRange || weaponSystem?.shortRange || wepTypeData?.short || 'none';
+    const mediumRange = (selectedWeapon as any).mediumRange || weaponSystem?.mediumRange || wepTypeData?.medium || 'none';
+    const longRange = (selectedWeapon as any).longRange || weaponSystem?.longRange || wepTypeData?.long || 'none';
+    
+    // Update roll data
+    this.rollData.skillName = skillName;
+    this.rollData.specName = specName;
+    this.rollData.linkedAttackSkill = baseSkillName;
+    this.rollData.linkedAttribute = linkedAttribute;
+    this.rollData.skillLevel = skillLevel;
+    this.rollData.specLevel = specLevel;
+    this.rollData.itemName = selectedWeapon.name;
+    this.rollData.itemType = 'weapon';
+    this.rollData.damageValue = damageValue;
+    this.rollData.damageValueBonus = damageValueBonus;
+    this.rollData.rrList = rrList;
+    this.rollData.selectedWeaponId = weaponId;
+    this.rollData.meleeRange = meleeRange;
+    this.rollData.shortRange = shortRange;
+    this.rollData.mediumRange = mediumRange;
+    this.rollData.longRange = longRange;
+    this.rollData.weaponType = wepTypeName;
+  }
+  
+  /**
+   * Select Combat rapproché skill for counter-attack
+   */
+  private selectCombatRapprocheSkill(): void {
+    if (!this.actor) return;
+    
+    const combatRapprocheSkill = this.actor.items.find((item: any) => 
+      item.type === 'skill' && item.name === 'Combat rapproché'
+    );
+    
+    if (!combatRapprocheSkill) return;
+    
+    const skillSystem = combatRapprocheSkill.system as any;
+    const skillRating = skillSystem.rating || 0;
+    const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+    const attributeValue = (this.actor.system as any)?.attributes?.[linkedAttribute] || 0;
+    const skillLevel = attributeValue + skillRating;
+    
+    // Get RR sources
+    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', 'Combat rapproché');
+    const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
+    const rrList = [...skillRRSources, ...attributeRRSources];
+    
+    // Update roll data
+    this.rollData.skillName = 'Combat rapproché';
+    this.rollData.specName = undefined;
+    this.rollData.linkedAttackSkill = 'Combat rapproché';
+    this.rollData.linkedAttribute = linkedAttribute;
+    this.rollData.skillLevel = skillLevel;
+    this.rollData.specLevel = undefined;
+    this.rollData.itemName = undefined;
+    this.rollData.itemType = undefined;
+    this.rollData.damageValue = 'FOR'; // Bare hands damage
+    this.rollData.damageValueBonus = 0;
+    this.rollData.rrList = rrList;
+    this.rollData.selectedWeaponId = undefined;
+  }
+  
   static override get defaultOptions(): any {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'roll-dialog'],
@@ -801,6 +1018,18 @@ export class RollDialog extends Application {
       if (this.rollData.isDefend && !this.rollData.threshold) {
         if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
           ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.NO_SKILL_SELECTED') || 'Veuillez sélectionner une compétence pour la défense');
+          return;
+        }
+      }
+      
+      // Block counter-attack roll if no weapon or skill is selected
+      if (this.rollData.isCounterAttack && !this.rollData.threshold) {
+        if (!this.rollData.selectedWeaponId && !this.rollData.skillName && !this.rollData.specName) {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPON_SELECTED') || 'Veuillez sélectionner une arme pour la contre-attaque');
+          return;
+        }
+        if (dicePool === 0) {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.COUNTER_ATTACK.NO_DICE_POOL') || 'La réserve de dés pour la contre-attaque est de 0. Veuillez sélectionner une arme valide.');
           return;
         }
       }

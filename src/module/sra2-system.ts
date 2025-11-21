@@ -806,6 +806,41 @@ export class SRA2System {
         
         dialog.render(true);
       });
+      
+      // Apply damage button handler
+      html.find('.apply-damage-button').on('click', async (event: any) => {
+        event.preventDefault();
+        const button = $(event.currentTarget);
+        
+        // Get damage and target information from button data attributes
+        const damage = parseInt(button.data('damage')) || 0;
+        const targetName = button.data('target-name') || 'Inconnu';
+        const targetUuid = button.data('target-uuid');
+        
+        if (!targetUuid) {
+          ui.notifications?.error('Impossible de trouver la cible pour appliquer les dégâts');
+          return;
+        }
+        
+        if (damage <= 0) {
+          ui.notifications?.info('Aucun dégât à appliquer');
+          return;
+        }
+        
+        // Disable button to prevent double-click
+        button.prop('disabled', true);
+        
+        try {
+          // Apply damage using the CharacterSheet method
+          await applications.CharacterSheet.applyDamage(targetUuid, damage, targetName);
+        } catch (error) {
+          console.error('Error applying damage:', error);
+          ui.notifications?.error('Erreur lors de l\'application des dégâts');
+        } finally {
+          // Re-enable button after a short delay
+          setTimeout(() => button.prop('disabled', false), 1000);
+        }
+      });
     });
     
     // Register token context menu hook for bookmarks/favorites
