@@ -15,6 +15,11 @@ select {
     height: 36px;
 }
 
+.window-content {
+    background: none;
+    padding: 0;
+}
+
 /* Dice Roll Results in Chat */
 .sra2-skill-roll,
 .sra2-combat-roll {

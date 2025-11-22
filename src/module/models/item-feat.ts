@@ -156,6 +156,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: ""
       }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.BOOKMARKS.TOGGLE"
+      }),
       rating: new fields.NumberField({
         required: true,
         initial: 0,

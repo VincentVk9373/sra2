@@ -109,6 +109,14 @@
             "COMBAT_RESULT": "Combat result: {attacker} vs {defender}",
             "NO_DEFENSE_ROLLED": "No defense"
         },
+        "BOOKMARKS": {
+            "TITLE": "Quick Actions",
+            "BOOKMARK": "Add to favorites",
+            "UNBOOKMARK": "Remove from favorites",
+            "NO_BOOKMARKS": "No favorites configured",
+            "TOGGLE": "Favorite",
+            "CLICK_TO_ROLL": "Click to roll"
+        },
         "CONFIRM_DELETE": "Are you sure you want to delete {name}?",
         "ATTRIBUTES": {
             "LABEL": "Attributes",

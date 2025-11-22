@@ -652,6 +652,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: ""
       }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.BOOKMARKS.TOGGLE"
+      }),
       rating: new fields.NumberField({
         required: true,
         initial: 0,
@@ -1410,6 +1415,11 @@ class SpecializationDataModel extends foundry.abstract.TypeDataModel {
       description: new fields.HTMLField({
         required: true,
         initial: ""
+      }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.BOOKMARKS.TOGGLE"
       })
     };
   }
@@ -2392,6 +2402,10 @@ class CharacterSheet extends ActorSheet {
       spell: allFeats.filter((feat) => feat.system.featType === "spell")
     };
     context.feats = allFeats;
+    const bookmarkedItems = this.actor.items.filter(
+      (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true
+    );
+    context.bookmarkedItems = bookmarkedItems;
     const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
     const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
     const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations } = organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
@@ -2465,6 +2479,8 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="roll-specialization"]').on("click", this._onRollSpecialization.bind(this));
     html.find('[data-action="quick-roll-specialization"]').on("click", this._onQuickRollSpecialization.bind(this));
     html.find('[data-action="send-catchphrase"]').on("click", this._onSendCatchphrase.bind(this));
+    html.on("click", '[data-action="toggle-bookmark"]', this._onToggleBookmark.bind(this));
+    html.find(".bookmark-item").on("click", this._onBookmarkItemClick.bind(this));
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
@@ -3274,6 +3290,95 @@ class CharacterSheet extends ActorSheet {
       content: `<div class="sra2-catchphrase">${catchphrase}</div>`
     };
     await ChatMessage.create(messageData);
+  }
+  /**
+   * Handle toggling bookmark on an item
+   */
+  async _onToggleBookmark(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    const target = event.target;
+    let element = target.closest('[data-action="toggle-bookmark"]');
+    if (!element && target.tagName === "I" && target.parentElement) {
+      element = target.parentElement;
+      if (!element.hasAttribute("data-action")) {
+        element = element.closest('[data-action="toggle-bookmark"]');
+      }
+    }
+    if (!element) return;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    const currentBookmarkState = item.system.bookmarked || false;
+    try {
+      await item.update({ "system.bookmarked": !currentBookmarkState });
+      this.render(false);
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      ui.notifications?.error(game.i18n?.localize("SRA2.BOOKMARKS.ERROR") || "Erreur lors de la mise à jour du bookmark");
+    }
+  }
+  /**
+   * Handle clicking on a bookmarked item in the header
+   */
+  async _onBookmarkItemClick(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    const itemType = element.dataset.itemType;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    if (itemType === "skill") {
+      const fakeEvent = {
+        preventDefault: () => {
+        },
+        currentTarget: { dataset: { itemId } }
+      };
+      await this._onRollSkill(fakeEvent);
+    } else if (itemType === "specialization") {
+      const specSystem = item.system;
+      const linkedSkillName = specSystem.linkedSkill;
+      const parentSkill = this.actor.items.find((i) => i.type === "skill" && i.name === linkedSkillName);
+      const effectiveRating = parentSkill ? parentSkill.system.rating || 0 : 0;
+      const fakeEvent = {
+        preventDefault: () => {
+        },
+        currentTarget: {
+          dataset: {
+            itemId,
+            effectiveRating: effectiveRating.toString()
+          }
+        }
+      };
+      await this._onRollSpecialization(fakeEvent);
+    } else if (itemType === "feat") {
+      const featType = item.system.featType;
+      if (featType === "weapon") {
+        const fakeEvent = {
+          preventDefault: () => {
+          },
+          currentTarget: { dataset: { itemId } }
+        };
+        await this._onRollWeapon(fakeEvent);
+      } else if (featType === "spell") {
+        const fakeEvent = {
+          preventDefault: () => {
+          },
+          currentTarget: { dataset: { itemId } }
+        };
+        await this._onRollSpell(fakeEvent);
+      } else if (featType === "weapons-spells") {
+        const fakeEvent = {
+          preventDefault: () => {
+          },
+          currentTarget: { dataset: { itemId } }
+        };
+        await this._onRollWeaponSpell(fakeEvent);
+      }
+    }
   }
   /**
    * Handle rolling a weapon

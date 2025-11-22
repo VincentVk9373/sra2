@@ -27,6 +27,11 @@ export class SpecializationDataModel extends foundry.abstract.TypeDataModel<any,
       description: new fields.HTMLField({
         required: true,
         initial: ""
+      }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.BOOKMARKS.TOGGLE"
       })
     };
   }

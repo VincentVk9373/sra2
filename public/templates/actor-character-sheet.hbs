@@ -2,11 +2,72 @@
   <header class="sheet-header">
     <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
     <div class="header-fields">
+      <div class="damage-anarchy-tracker">
+        <div class="damage-track">
+          <div class="damage-group light">
+            <span class="track-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
+            <div class="track-boxes">
+              {{#each system.damage.light}}
+              <label class="track-box {{#if this}}checked{{/if}}">
+                <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
+                <span class="box-circle"></span>
+              </label>
+              {{/each}}
+            </div>
+          </div>
+          <div class="damage-group severe">
+            <span class="track-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
+            <div class="track-boxes">
+              {{#each system.damage.severe}}
+              <label class="track-box {{#if this}}checked{{/if}}">
+                <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                <span class="box-circle"></span>
+              </label>
+              {{/each}}
+            </div>
+          </div>
+          <div class="damage-group incapacitating">
+            <span class="track-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
+            <div class="track-boxes">
+              <label class="track-box {{#if system.damage.incapacitating}}checked{{/if}}">
+                <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
+                <span class="box-circle"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="anarchy-track">
+          <span class="track-label">{{localize "SRA2.RESOURCES.ANARCHY"}}</span>
+          <div class="track-boxes">
+            {{#each system.anarchySpent}}
+            <label class="track-box {{#if this}}checked{{/if}}">
+              <input type="checkbox" name="system.anarchySpent.{{@index}}" {{#if this}}checked{{/if}} />
+              <span class="box-circle"></span>
+            </label>
+            {{/each}}
+          </div>
+        </div>
+      </div>
       <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'SRA2.ACTOR.CHARACTER_NAME'}}"/></h1>
       <div class="total-cost">
         <span class="total-label">{{localize "SRA2.TOTAL_COST"}}: </span>
         <span class="total-value">{{system.totalCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
       </div>
+      {{#if bookmarkedItems}}
+      <div class="bookmarks-list">
+        <div class="bookmarks-header">
+          <i class="fas fa-star"></i> {{localize "SRA2.BOOKMARKS.TITLE"}}
+        </div>
+        <div class="bookmarks-items">
+          {{#each bookmarkedItems}}
+          <div class="bookmark-item" data-item-id="{{this._id}}" data-item-type="{{this.type}}" title="{{localize 'SRA2.BOOKMARKS.CLICK_TO_ROLL'}}">
+            <i class="fas fa-dice-d6"></i>
+            <span class="bookmark-name">{{this.name}}</span>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
     </div>
   </header>
 
@@ -399,6 +460,9 @@
               <div class="skill-item" data-item-id="{{this._id}}" draggable="true">
                 <div class="skill-header">
                   <div class="skill-title">
+                    <a class="bookmark-toggle {{#if this.system.bookmarked}}bookmarked{{/if}}" data-action="toggle-bookmark" data-item-id="{{this._id}}" title="{{localize 'SRA2.BOOKMARKS.TOGGLE'}}">
+                      <i class="{{#if this.system.bookmarked}}fas{{else}}far{{/if}} fa-star"></i>
+                    </a>
                     <h4>{{this.name}} <span class="skill-attribute">({{this.linkedAttributeLabel}})</span> {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}} <span class="dice-pool-badge clickable" data-action="quick-roll-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span></h4>
                     <input type="number" class="rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" max="8" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.RATING'}}" />
                     <span class="skill-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
@@ -426,6 +490,9 @@
                   <div class="specialization-item" data-item-id="{{this._id}}" draggable="true">
                     <div class="specialization-header">
                       <div class="specialization-title">
+                        <a class="bookmark-toggle {{#if this.system.bookmarked}}bookmarked{{/if}}" data-action="toggle-bookmark" data-item-id="{{this._id}}" title="{{localize 'SRA2.BOOKMARKS.TOGGLE'}}">
+                          <i class="{{#if this.system.bookmarked}}fas{{else}}far{{/if}} fa-star"></i>
+                        </a>
                         <i class="fas fa-angle-right"></i>
                         <span class="spec-name">{{this.name}}</span>
                         <span class="spec-info">({{this.parentSkillName}} + {{this.linkedAttributeLabel}})</span>
@@ -460,6 +527,9 @@
               <div class="specialization-item unlinked" data-item-id="{{this._id}}" draggable="true">
                 <div class="specialization-header">
                   <div class="specialization-title">
+                    <a class="bookmark-toggle {{#if this.system.bookmarked}}bookmarked{{/if}}" data-action="toggle-bookmark" data-item-id="{{this._id}}" title="{{localize 'SRA2.BOOKMARKS.TOGGLE'}}">
+                      <i class="{{#if this.system.bookmarked}}fas{{else}}far{{/if}} fa-star"></i>
+                    </a>
                     <i class="fas fa-exclamation-triangle"></i>
                     <h4>{{this.name}} <span class="spec-attribute">({{this.linkedAttributeLabel}})</span> {{#if (gt this.rr 0)}}<span class="rr-badge" title="Risk Reduction">RR {{this.rr}}</span>{{/if}} <span class="dice-pool-badge clickable" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="0" title="{{localize 'SRA2.SPECIALIZATIONS.ROLL'}}"><i class="fas fa-dice"></i> {{this.totalDicePool}}</span> <span class="specialization-cost">{{this.system.calculatedCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span></h4>
                   </div>
@@ -809,6 +879,9 @@
                 <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
                   <div class="feat-header">
                     <div class="feat-title">
+                      <a class="bookmark-toggle {{#if this.system.bookmarked}}bookmarked{{/if}}" data-action="toggle-bookmark" data-item-id="{{this._id}}" title="{{localize 'SRA2.BOOKMARKS.TOGGLE'}}">
+                        <i class="{{#if this.system.bookmarked}}fas{{else}}far{{/if}} fa-star"></i>
+                      </a>
                       <h4 class="weapon-name-clickable" data-action="roll-weapon-spell" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.WEAPON.CLICK_TO_ROLL'}}">{{this.name}}
                         {{#if this.rrEntries}}
                           {{#each this.rrEntries}}
@@ -931,6 +1004,9 @@
                 <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
                   <div class="feat-header">
                     <div class="feat-title">
+                      <a class="bookmark-toggle {{#if this.system.bookmarked}}bookmarked{{/if}}" data-action="toggle-bookmark" data-item-id="{{this._id}}" title="{{localize 'SRA2.BOOKMARKS.TOGGLE'}}">
+                        <i class="{{#if this.system.bookmarked}}fas{{else}}far{{/if}} fa-star"></i>
+                      </a>
                       <h4 class="weapon-name-clickable" data-action="roll-weapon" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.WEAPON.CLICK_TO_ROLL'}}">{{this.name}}
                         {{#if this.rrEntries}}
                           {{#each this.rrEntries}}
@@ -1053,6 +1129,9 @@
                 <div class="feat-item" data-item-id="{{this._id}}" draggable="true">
                   <div class="feat-header">
                     <div class="feat-title">
+                      <a class="bookmark-toggle {{#if this.system.bookmarked}}bookmarked{{/if}}" data-action="toggle-bookmark" data-item-id="{{this._id}}" title="{{localize 'SRA2.BOOKMARKS.TOGGLE'}}">
+                        <i class="{{#if this.system.bookmarked}}fas{{else}}far{{/if}} fa-star"></i>
+                      </a>
                       <h4 class="spell-name-clickable" data-action="roll-spell" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.SPELL.CLICK_TO_ROLL'}}">{{this.name}}
                         {{#if this.rrEntries}}
                           {{#each this.rrEntries}}

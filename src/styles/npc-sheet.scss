@@ -1,13 +1,43 @@
-/* NPC Sheet Styles */
+/* NPC Sheet Styles - Matching Roll Dialog Theme */
 
 .sra2-npc-sheet {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+  
+  /* General form input styles for dark theme */
+  input[type="text"],
+  input[type="number"],
+  textarea,
+  select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #0f3460;
+    color: #e0e0e0;
+    border-radius: 4px;
+    
+    &:focus {
+      outline: none;
+      border-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.1);
+      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  input[type="checkbox"] {
+    accent-color: #00d4ff;
+  }
+  
   .sheet-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-bottom: 2px solid #5a67d8;
+    background: linear-gradient(135deg, #0f3460 0%, #00d4ff 100%);
+    border-bottom: 2px solid #00d4ff;
     
     .profile-img {
       width: 60px;
@@ -69,7 +99,7 @@
     h2 {
       margin: 0 0 0.75rem 0;
       padding-bottom: 0.5rem;
-      border-bottom: 2px solid #667eea;
+      border-bottom: 2px solid #00d4ff;
       color: #2c3e50;
       font-size: 1.1rem;
       display: flex;
@@ -77,7 +107,7 @@
       gap: 0.4rem;
       
       i {
-        color: #667eea;
+        color: #00d4ff;
         font-size: 1rem;
       }
     }
@@ -109,11 +139,11 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         background: #f8f9fa;
-        color: #667eea;
+        color: #00d4ff;
         transition: all 0.2s;
         
         &:focus {
-          border-color: #667eea;
+          border-color: #00d4ff;
           background: white;
         }
       }
@@ -146,12 +176,12 @@
       background: white;
       
       &:focus {
-        border-color: #667eea;
+        border-color: #00d4ff;
       }
     }
     
     .armor-cost {
-      color: #666;
+      color: #e0e0e0;
       font-size: 0.75rem;
       
       .yen-symbol {
@@ -232,7 +262,7 @@
       overflow: hidden;
       
       thead {
-        background: #667eea;
+        background: #00d4ff;
         color: white;
         
         th {
@@ -271,7 +301,7 @@
             
             &:not(:first-child) {
               font-weight: bold;
-              color: #667eea;
+              color: #00d4ff;
               font-size: 0.95rem;
             }
           }
@@ -347,12 +377,12 @@
         height: 24px;
         border-radius: 3px;
         object-fit: cover;
-        border: 1px solid #ccc;
+        border: 1px solid #555;
       }
       
       .skill-attribute {
         font-size: 0.7rem;
-        color: #666;
+        color: #e0e0e0;
         font-weight: normal;
       }
     }
@@ -374,7 +404,7 @@
       }
       
       i {
-        color: #666;
+        color: #e0e0e0;
         font-size: 0.75rem;
       }
     }
@@ -551,7 +581,7 @@
       input[type="number"] {
         width: 60px;
         padding: 0.4rem;
-        border: 1px solid #ccc;
+        border: 1px solid #555;
         border-radius: 4px;
         text-align: center;
         font-weight: bold;
@@ -559,7 +589,7 @@
       
       .state-separator {
         font-weight: bold;
-        color: #999;
+        color: #a0c4ff;
       }
     }
   }
@@ -578,7 +608,7 @@
   .empty-feats {
     text-align: center;
     padding: 1rem;
-    color: #999;
+    color: #a0c4ff;
     background: #f8f9fa;
     border: 2px dashed #ddd;
     border-radius: 4px;
@@ -604,7 +634,7 @@
     
     &:hover {
       background: #f8f9fa;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(15, 52, 96, 0.2);
     }
     
     &.active {
@@ -622,7 +652,7 @@
         height: 28px;
         border-radius: 3px;
         object-fit: cover;
-        border: 1px solid #ccc;
+        border: 1px solid #555;
       }
       
       .feat-info {
@@ -657,7 +687,7 @@
             
             .stat-label {
               font-weight: 500;
-              color: #666;
+              color: #e0e0e0;
             }
             
             .stat-value {
@@ -699,7 +729,7 @@
   .empty-skills {
     text-align: center;
     padding: 1rem;
-    color: #999;
+    color: #a0c4ff;
     background: #f8f9fa;
     border: 2px dashed #ddd;
     border-radius: 4px;
@@ -719,24 +749,24 @@
     padding: 0.3rem 0.5rem;
     border-radius: 4px;
     background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(15, 52, 96, 0.2);
     
     .threshold-value {
       color: white !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      text-shadow: 0 1px 2px rgba(15, 52, 96, 0.3);
       font-weight: bold;
       font-size: 1.2rem !important;
     }
     
     &:hover {
       background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 8px rgba(15, 52, 96, 0.3);
       transform: translateY(-2px);
     }
     
     &:active {
       transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px rgba(15, 52, 96, 0.2);
     }
   }
 
@@ -826,7 +856,7 @@
         width: 28px;
         height: 28px;
         border-radius: 4px;
-        border: 1px solid #ccc;
+        border: 1px solid #555;
         object-fit: cover;
       }
       
@@ -862,7 +892,7 @@
     font-weight: bold;
     font-size: 1.1rem;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(15, 52, 96, 0.3);
     margin-left: 0.3rem;
   }
   

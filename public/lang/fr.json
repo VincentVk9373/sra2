@@ -508,7 +508,8 @@
             "BOOKMARK": "Ajouter aux favoris",
             "UNBOOKMARK": "Retirer des favoris",
             "NO_BOOKMARKS": "Aucun favori configuré",
-            "TOGGLE": "Favori"
+            "TOGGLE": "Favori",
+            "CLICK_TO_ROLL": "Cliquer pour lancer un jet"
         },
         "SKILLS": {
             "BOOKMARKED": "Favori",

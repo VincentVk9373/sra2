@@ -62,6 +62,13 @@ export class CharacterSheet extends ActorSheet {
     // Keep the feats array for backwards compatibility
     context.feats = allFeats;
     
+    // Get bookmarked items (skills, specializations, weapons, spells)
+    const bookmarkedItems = this.actor.items.filter((item: any) => 
+      (item.type === 'skill' || item.type === 'specialization' || item.type === 'feat') && 
+      item.system.bookmarked === true
+    );
+    context.bookmarkedItems = bookmarkedItems;
+    
     // Get skills (sorted alphabetically)
     const skills = this.actor.items
       .filter((item: any) => item.type === 'skill')
@@ -212,6 +219,12 @@ export class CharacterSheet extends ActorSheet {
 
     // Send catchphrase to chat
     html.find('[data-action="send-catchphrase"]').on('click', this._onSendCatchphrase.bind(this));
+    
+    // Toggle bookmark - use event delegation to work with dynamically rendered items
+    html.on('click', '[data-action="toggle-bookmark"]', this._onToggleBookmark.bind(this));
+    
+    // Click on bookmarked item in header
+    html.find('.bookmark-item').on('click', this._onBookmarkItemClick.bind(this));
 
     // Roll weapon
     html.find('[data-action="roll-weapon"]').on('click', this._onRollWeapon.bind(this));
@@ -1297,6 +1310,109 @@ export class CharacterSheet extends ActorSheet {
     };
     
     await ChatMessage.create(messageData as any);
+  }
+  
+  /**
+   * Handle toggling bookmark on an item
+   */
+  private async _onToggleBookmark(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    
+    // With event delegation, find the closest element with data-action="toggle-bookmark"
+    const target = event.target as HTMLElement;
+    let element = target.closest('[data-action="toggle-bookmark"]') as HTMLElement;
+    
+    // If target is the icon itself, get the parent link
+    if (!element && target.tagName === 'I' && target.parentElement) {
+      element = target.parentElement as HTMLElement;
+      if (!element.hasAttribute('data-action')) {
+        element = element.closest('[data-action="toggle-bookmark"]') as HTMLElement;
+      }
+    }
+    
+    if (!element) return;
+    
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    
+    const currentBookmarkState = (item.system as any).bookmarked || false;
+    
+    try {
+      await (item as any).update({ 'system.bookmarked': !currentBookmarkState });
+      // Re-render to update UI
+      this.render(false);
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Erreur lors de la mise à jour du bookmark');
+    }
+  }
+  
+  /**
+   * Handle clicking on a bookmarked item in the header
+   */
+  private async _onBookmarkItemClick(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    const itemType = element.dataset.itemType;
+    
+    if (!itemId) return;
+    
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    
+    // Roll the item based on its type
+    if (itemType === 'skill') {
+      // Call _onRollSkill with a fake event containing the item ID
+      const fakeEvent = { 
+        preventDefault: () => {}, 
+        currentTarget: { dataset: { itemId: itemId } } 
+      } as any;
+      await this._onRollSkill(fakeEvent);
+    } else if (itemType === 'specialization') {
+      // Find the effective rating for this specialization
+      const specSystem = item.system as any;
+      const linkedSkillName = specSystem.linkedSkill;
+      const parentSkill = this.actor.items.find((i: any) => i.type === 'skill' && i.name === linkedSkillName);
+      const effectiveRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
+      
+      const fakeEvent = { 
+        preventDefault: () => {}, 
+        currentTarget: { 
+          dataset: { 
+            itemId: itemId,
+            effectiveRating: effectiveRating.toString()
+          } 
+        } 
+      } as any;
+      await this._onRollSpecialization(fakeEvent);
+    } else if (itemType === 'feat') {
+      const featType = (item.system as any).featType;
+      if (featType === 'weapon') {
+        const fakeEvent = { 
+          preventDefault: () => {}, 
+          currentTarget: { dataset: { itemId: itemId } } 
+        } as any;
+        await this._onRollWeapon(fakeEvent);
+      } else if (featType === 'spell') {
+        const fakeEvent = { 
+          preventDefault: () => {}, 
+          currentTarget: { dataset: { itemId: itemId } } 
+        } as any;
+        await this._onRollSpell(fakeEvent);
+      } else if (featType === 'weapons-spells') {
+        const fakeEvent = { 
+          preventDefault: () => {}, 
+          currentTarget: { dataset: { itemId: itemId } } 
+        } as any;
+        await this._onRollWeaponSpell(fakeEvent);
+      }
+    }
   }
 
   /**
