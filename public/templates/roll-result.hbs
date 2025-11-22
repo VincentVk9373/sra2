@@ -127,8 +127,8 @@
             <button type="button" class="apply-damage-button" 
                     data-damage="{{defenseResult.calculatedDamage}}"
                     data-target-name="{{defenseResult.defenderName}}"
-                    data-target-uuid="{{defender.uuid}}"
-                    data-attacker-uuid="{{attacker.uuid}}">
+                    data-target-uuid="{{defenseResult.defenderUuid}}"
+                    data-attacker-uuid="{{defenseResult.originalAttackerUuid}}">
                 <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.defenderName}}
             </button>
             {{/if}}
@@ -169,10 +169,10 @@
             </div>
             <button type="button" class="apply-damage-button" 
                     data-damage="{{defenseResult.attackerDamage}}"
-                    data-target-name="{{defenseResult.originalDefenderName}}"
-                    data-target-uuid="{{attacker.uuid}}"
-                    data-attacker-uuid="{{defender.uuid}}">
-                <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.originalDefenderName}}
+                    data-target-name="{{defenseResult.damageReceiverName}}"
+                    data-target-uuid="{{defenseResult.damageReceiverUuid}}"
+                    data-attacker-uuid="{{defenseResult.damageInflicterUuid}}">
+                <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.damageReceiverName}}
             </button>
             {{else if (eq defenseResult.winner "defender")}}
             <div class="defense-outcome counterattack-win">
@@ -184,10 +184,10 @@
             </div>
             <button type="button" class="apply-damage-button" 
                     data-damage="{{defenseResult.defenderDamage}}"
-                    data-target-name="{{defenseResult.originalAttackerName}}"
-                    data-target-uuid="{{defender.uuid}}"
-                    data-attacker-uuid="{{attacker.uuid}}">
-                <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.originalAttackerName}}
+                    data-target-name="{{defenseResult.damageReceiverName}}"
+                    data-target-uuid="{{defenseResult.damageReceiverUuid}}"
+                    data-attacker-uuid="{{defenseResult.damageInflicterUuid}}">
+                <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.damageReceiverName}}
             </button>
             {{/if}}
         </div>

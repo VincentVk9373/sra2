@@ -541,13 +541,25 @@ async function createRollChatMessage(
       calculatedDamage = 0;
     }
     
+    // For defense: attacker = defender (one defending), defender = original attacker
+    // If attack succeeds, original attacker (defender in context) inflicts damage to defender (attacker in context)
+    const originalAttackerUuid = finalDefenderUuid; // Original attacker is defender in defense context
+    const defenderUuid = finalAttackerUuid; // Defender is attacker in defense context
+    
+    console.log('Defense: Attack succeeds - original attacker inflicts damage to defender');
+    console.log('  Original attacker (inflicter):', originalAttackerName, '(', originalAttackerUuid, ')');
+    console.log('  Defender (receiver):', defenderName, '(', defenderUuid, ')');
+    
     defenseResult = {
       attackSuccesses: attackSuccesses,
       defenseSuccesses: defenseSuccesses,
       calculatedDamage: calculatedDamage,
       attackFailed: attackFailed,
       originalAttackerName: originalAttackerName,
-      defenderName: defenderName
+      defenderName: defenderName,
+      // UUIDs for applying damage
+      originalAttackerUuid: originalAttackerUuid, // Who inflicts damage if attack succeeds
+      defenderUuid: defenderUuid // Who receives damage if attack succeeds
     };
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     // Counter-attack: compare with original attack
@@ -691,6 +703,39 @@ async function createRollChatMessage(
     console.log('defenderTokenUuid (final):', defenderTokenUuid || 'Unknown');
     console.log('==============================');
     
+    // For counter-attack: attacker = counter-attacker (original defender), defender = original attacker
+    // Winner is determined by who has more successes
+    const originalAttackerUuid = finalDefenderUuid; // Original attacker is defender in counter-attack context
+    const originalDefenderUuid = finalAttackerUuid; // Original defender/counter-attacker is attacker in counter-attack context
+    
+    // Determine who inflicts damage based on winner
+    let damageInflicterUuid: string | undefined = undefined;
+    let damageReceiverUuid: string | undefined = undefined;
+    let damageInflicterName: string = '';
+    let damageReceiverName: string = '';
+    
+    if (winner === 'attacker') {
+      // Original attacker wins (attackSuccesses > counterAttackSuccesses)
+      // Original attacker inflicts damage to counter-attacker
+      damageInflicterUuid = originalAttackerUuid;
+      damageReceiverUuid = originalDefenderUuid;
+      damageInflicterName = originalAttackerName;
+      damageReceiverName = originalDefenderName;
+      console.log('Counter-attack: Original attacker wins - inflicts damage to counter-attacker');
+      console.log('  Inflicter:', damageInflicterName, '(', damageInflicterUuid, ')');
+      console.log('  Receiver:', damageReceiverName, '(', damageReceiverUuid, ')');
+    } else if (winner === 'defender') {
+      // Counter-attacker wins (counterAttackSuccesses > attackSuccesses)
+      // Counter-attacker inflicts damage to original attacker
+      damageInflicterUuid = originalDefenderUuid;
+      damageReceiverUuid = originalAttackerUuid;
+      damageInflicterName = originalDefenderName;
+      damageReceiverName = originalAttackerName;
+      console.log('Counter-attack: Counter-attacker wins - inflicts damage to original attacker');
+      console.log('  Inflicter:', damageInflicterName, '(', damageInflicterUuid, ')');
+      console.log('  Receiver:', damageReceiverName, '(', damageReceiverUuid, ')');
+    }
+    
     defenseResult = {
       attackSuccesses: attackSuccesses,
       counterAttackSuccesses: counterAttackSuccesses,
@@ -699,7 +744,14 @@ async function createRollChatMessage(
       defenderDamage: defenderDamage,
       isTie: isTie,
       originalAttackerName: originalAttackerName,
-      originalDefenderName: originalDefenderName
+      originalDefenderName: originalDefenderName,
+      // UUIDs for applying damage
+      originalAttackerUuid: originalAttackerUuid,
+      originalDefenderUuid: originalDefenderUuid,
+      damageInflicterUuid: damageInflicterUuid,
+      damageReceiverUuid: damageReceiverUuid,
+      damageInflicterName: damageInflicterName,
+      damageReceiverName: damageReceiverName
     };
   }
 

@@ -181,12 +181,23 @@ export class SRA2System {
     
     // Register chat message hook for apply damage buttons
     Hooks.on('renderChatMessage', (message: any, html: any) => {
+      // Remove existing handlers first to prevent duplicates
+      html.find('.apply-damage-button').off('click');
+      
       html.find('.apply-damage-button').on('click', async (event: any) => {
         event.preventDefault();
+        event.stopImmediatePropagation(); // Prevent other handlers from executing
+        
         const button = $(event.currentTarget);
+        
+        // Check if button is already disabled to prevent double-clicks
+        if (button.prop('disabled')) {
+          return;
+        }
+        
         // Template uses data-target-uuid, not data-defender-uuid
         const targetUuid = button.data('target-uuid') || button.data('defender-uuid');
-        const damage = parseInt(button.data('damage'));
+        const damage = parseInt(button.data('damage')) || 0;
         const targetName = button.data('target-name') || button.data('defender-name');
         
         if (!targetUuid) {
@@ -195,11 +206,30 @@ export class SRA2System {
           return;
         }
         
+        if (damage <= 0) {
+          ui.notifications?.info('Aucun dégât à appliquer');
+          return;
+        }
+        
+        // Disable button to prevent double-click
+        button.prop('disabled', true);
+        
         console.log('Apply damage button clicked:', { targetUuid, targetName, damage });
-        await applications.CharacterSheet.applyDamage(targetUuid, damage, targetName);
+        
+        try {
+          await applications.CharacterSheet.applyDamage(targetUuid, damage, targetName);
+        } catch (error) {
+          console.error('Error applying damage:', error);
+          ui.notifications?.error('Erreur lors de l\'application des dégâts');
+        } finally {
+          // Re-enable button after a short delay
+          setTimeout(() => button.prop('disabled', false), 1000);
+        }
       });
 
-      // Defense button handler
+      // Defense button handler - remove existing handlers first to prevent duplicates
+      html.find('.defend-button').off('click');
+      
       html.find('.defend-button').on('click', async (event: any) => {
         event.preventDefault();
         
@@ -503,10 +533,14 @@ export class SRA2System {
         }
 
         // Get token UUIDs
-        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
-        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
+        // For defense: attacker = defender (one defending), defender = original attacker
+        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || messageFlags.attackerTokenUuid || undefined;
+        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || messageFlags.defenderTokenUuid || undefined;
         
-        // Prepare defense roll data - use UUIDs directly from flags (already correctly calculated)
+        // Prepare defense roll data
+        // In defense context:
+        // - attacker = defender (one defending) -> attackerTokenUuid should be defender's token
+        // - defender = original attacker -> defenderTokenUuid should be original attacker's token
         const defenseRollData: any = {
           // Use final defense skill/spec (with fallback)
           skillName: finalDefenseSkill,
@@ -519,12 +553,9 @@ export class SRA2System {
           actorId: defenderActorForRoll.id,
           actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid, // Use flag UUID first
           
-          // Token UUIDs - use directly from flags (already correctly calculated)
-          attackerTokenUuid: messageFlags.attackerTokenUuid || attackerTokenUuid, // Use flag UUID first
-          defenderTokenUuid: messageFlags.defenderTokenUuid || defenderTokenUuid, // Use flag UUID first
-          
-          // Target is the attacker
-          // We'll set targetToken in RollDialog constructor
+          // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
+          attackerTokenUuid: defenderTokenUuid, // Defender's token (one defending) - this is what will be attacker in RollDialog
+          defenderTokenUuid: originalAttackerTokenUuid, // Original attacker's token (target) - this is what will be target/defender in RollDialog
           
           // RR List
           rrList: defenseRRList,
@@ -542,7 +573,7 @@ export class SRA2System {
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(defenseRollData);
         
-        // Set target token to attacker's token
+        // Set target token to original attacker's token (in defense context, target = original attacker)
         if (attackerToken) {
           (dialog as any).targetToken = attackerToken;
         }
@@ -550,7 +581,9 @@ export class SRA2System {
         dialog.render(true);
       });
 
-      // Counter-attack button handler
+      // Counter-attack button handler - remove existing handlers first to prevent duplicates
+      html.find('.counter-attack-button').off('click');
+      
       html.find('.counter-attack-button').on('click', async (event: any) => {
         event.preventDefault();
         
@@ -906,41 +939,6 @@ export class SRA2System {
         }
         
         dialog.render(true);
-      });
-      
-      // Apply damage button handler
-      html.find('.apply-damage-button').on('click', async (event: any) => {
-        event.preventDefault();
-        const button = $(event.currentTarget);
-        
-        // Get damage and target information from button data attributes
-        const damage = parseInt(button.data('damage')) || 0;
-        const targetName = button.data('target-name') || 'Inconnu';
-        const targetUuid = button.data('target-uuid');
-        
-        if (!targetUuid) {
-          ui.notifications?.error('Impossible de trouver la cible pour appliquer les dégâts');
-          return;
-        }
-        
-        if (damage <= 0) {
-          ui.notifications?.info('Aucun dégât à appliquer');
-          return;
-        }
-        
-        // Disable button to prevent double-click
-        button.prop('disabled', true);
-        
-        try {
-          // Apply damage using the CharacterSheet method
-          await applications.CharacterSheet.applyDamage(targetUuid, damage, targetName);
-        } catch (error) {
-          console.error('Error applying damage:', error);
-          ui.notifications?.error('Erreur lors de l\'application des dégâts');
-        } finally {
-          // Re-enable button after a short delay
-          setTimeout(() => button.prop('disabled', false), 1000);
-        }
       });
     });
     

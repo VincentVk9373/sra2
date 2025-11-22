@@ -525,65 +525,6 @@ export class CharacterSheet extends ActorSheet {
     });
   }
 
-
-  /**
-   * REMOVED: Dice rolling logic
-   */
-  private async _rollSkillDice(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
-    // All dice rolling and chat logic removed
-    console.log('Dice rolling disabled', { skillName, dicePool, riskDice, riskReduction, rollMode });
-  }
-
-  /**
-   * REMOVED: Attack with defense system logic
-   */
-  private async _rollAttackWithDefense(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any, damageValueBonus?: number): Promise<void> {
-    // All attack and defense rolling logic removed
-    console.log('Attack rolling disabled', { skillName, dicePool, riskDice, riskReduction, rollMode });
-  }
-
-  /**
-   * REMOVED: Defense roll prompt logic
-   */
-  private async _promptDefenseRoll(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    // Defense dialog logic removed
-    console.log('Defense roll prompt disabled', { defenderActor: defenderActor.name, attackName });
-  }
-
-  /**
-   * REMOVED: Defense roll and damage calculation
-   */
-  private async _rollDefenseAndCalculateDamage(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    // Defense rolling logic removed
-    console.log('Defense roll disabled', { defenseItem: defenseItem.name, itemType, attackName });
-  }
-
-
-  /**
-   * REMOVED: Threshold defense logic
-   */
-  private async _defendWithThreshold(defenseItem: any, _itemType: 'skill' | 'spec', threshold: number, attackName: string, attackResult: any, weaponDamageValue: string, defenderActor: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    // Threshold defense logic removed
-    console.log('Threshold defense disabled', { defenseItem: defenseItem.name, threshold, attackName });
-  }
-
-  /**
-   * REMOVED: Dice roll execution
-   */
-  private async _performDiceRoll(dicePool: number, riskDice: number, riskReduction: number, rollMode: string): Promise<any> {
-    // Dice roll execution removed
-    console.log('Dice roll disabled', { dicePool, riskDice, riskReduction, rollMode });
-    return {};
-  }
-
-  /**
-   * REMOVED: Attack result display
-   */
-  private async _displayAttackResult(attackName: string, attackResult: any, defenseResult: any | null, weaponDamageValue: string, defenderName?: string, defenderActor?: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    // Attack result display removed
-    console.log('Attack result display disabled', { attackName, defenderName });
-  }
-
   /**
    * Apply damage to a defender
    */
