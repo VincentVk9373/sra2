@@ -293,7 +293,7 @@ export class RollDialog extends Application {
     this.rollData.rrList = rrList;
     this.rollData.selectedWeaponId = undefined;
   }
-  
+
   static override get defaultOptions(): any {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'roll-dialog'],
@@ -375,7 +375,7 @@ export class RollDialog extends Application {
         calculatedRange = 'long';
       }
     }
-    
+
     // Only set default range if user hasn't selected one yet
     if (this.selectedRange === null) {
       // For counter-attacks, always default to melee range
@@ -383,8 +383,8 @@ export class RollDialog extends Application {
         this.selectedRange = 'melee';
       } else if (calculatedRange !== null) {
         // For other cases, use calculated range based on distance
-        this.selectedRange = calculatedRange;
-      }
+      this.selectedRange = calculatedRange;
+    }
     }
     // If selectedRange is already set, don't change it (user selection is preserved)
 

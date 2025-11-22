@@ -616,11 +616,11 @@ export class CharacterSheet extends ActorSheet {
     let overflow = false;
     
     // Determine damage type based on thresholds
-    if (damageValue >= damageThresholds.severe) {
+    if (damageValue > damageThresholds.severe) {
       // Incapacitating wound
       damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
       damage.incapacitating = true;
-    } else if (damageValue >= damageThresholds.moderate) {
+    } else if (damageValue > damageThresholds.moderate) {
       // Severe wound
       damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
       
@@ -640,7 +640,7 @@ export class CharacterSheet extends ActorSheet {
         damage.incapacitating = true;
         overflow = true;
       }
-    } else if (damageValue >= damageThresholds.light) {
+    } else if (damageValue > damageThresholds.light) {
       // Light wound
       damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
       

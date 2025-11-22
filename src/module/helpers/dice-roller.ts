@@ -312,94 +312,94 @@ export async function executeRoll(
       complication: 'none'
     };
   } else {
-    // Step 2: Create and roll dice
-    let normalRoll: any = null;
-    let riskRoll: any = null;
+  // Step 2: Create and roll dice
+  let normalRoll: any = null;
+  let riskRoll: any = null;
 
-    // Roll normal dice
-    if (normalDiceCount > 0) {
-      normalRoll = new Roll(`${normalDiceCount}d6`);
-      await normalRoll.evaluate();
-      
-      // Show DiceSoNice animation for normal dice
-      if ((game as any).dice3d && normalRoll) {
-        (game as any).dice3d.showForRoll(normalRoll, game.user, true, null, false);
-      }
-    }
-
-    // Roll risk dice with purple color
-    if (riskDiceCount > 0) {
-      riskRoll = new Roll(`${riskDiceCount}d6`);
-      await riskRoll.evaluate();
-      
-      // Show DiceSoNice animation for risk dice with purple color
-      if ((game as any).dice3d && riskRoll) {
-        const dice3dConfig = {
-          colorset: 'purple',
-          theme: 'default'
-        };
-        (game as any).dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
-      }
-    }
-
-    // Step 3: Calculate results
-    const normalResults: number[] = normalRoll ? (normalRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
-    const riskResults: number[] = riskRoll ? (riskRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
+  // Roll normal dice
+  if (normalDiceCount > 0) {
+    normalRoll = new Roll(`${normalDiceCount}d6`);
+    await normalRoll.evaluate();
     
-    // Calculate successes for normal dice
-    let normalSuccesses = 0;
-    for (const result of normalResults) {
-      if (rollMode === 'advantage' && result >= 4) {
-        normalSuccesses++;
-      } else if (rollMode === 'disadvantage' && result === 6) {
-        normalSuccesses++;
-      } else if (rollMode === 'normal' && result >= 5) {
-        normalSuccesses++;
-      }
+    // Show DiceSoNice animation for normal dice
+    if ((game as any).dice3d && normalRoll) {
+      (game as any).dice3d.showForRoll(normalRoll, game.user, true, null, false);
     }
+  }
 
-    // Calculate successes and critical failures for risk dice
-    let riskSuccesses = 0;
-    let criticalFailures = 0;
-    for (const result of riskResults) {
-      if (result === 1) {
-        criticalFailures++;
-      } else if (rollMode === 'advantage' && result >= 4) {
-        riskSuccesses++;
-      } else if (rollMode === 'disadvantage' && result === 6) {
-        riskSuccesses++;
-      } else if (rollMode === 'normal' && result >= 5) {
-        riskSuccesses++;
-      }
-    }
-
-    // Risk dice successes count double
-    const totalRiskSuccesses = riskSuccesses * 2;
-    const totalSuccesses = normalSuccesses + totalRiskSuccesses;
-
-    // Step 4: Calculate complications
-    const remainingFailures = Math.max(0, criticalFailures - finalRR);
+  // Roll risk dice with purple color
+  if (riskDiceCount > 0) {
+    riskRoll = new Roll(`${riskDiceCount}d6`);
+    await riskRoll.evaluate();
     
-    let complication: 'none' | 'minor' | 'critical' | 'disaster' = 'none';
-    if (remainingFailures === 1) {
-      complication = 'minor';
-    } else if (remainingFailures === 2) {
-      complication = 'critical';
-    } else if (remainingFailures >= 3) {
-      complication = 'disaster';
+    // Show DiceSoNice animation for risk dice with purple color
+    if ((game as any).dice3d && riskRoll) {
+      const dice3dConfig = {
+        colorset: 'purple',
+        theme: 'default'
+      };
+      (game as any).dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
     }
+  }
+
+  // Step 3: Calculate results
+  const normalResults: number[] = normalRoll ? (normalRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
+  const riskResults: number[] = riskRoll ? (riskRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
+  
+  // Calculate successes for normal dice
+  let normalSuccesses = 0;
+  for (const result of normalResults) {
+    if (rollMode === 'advantage' && result >= 4) {
+      normalSuccesses++;
+    } else if (rollMode === 'disadvantage' && result === 6) {
+      normalSuccesses++;
+    } else if (rollMode === 'normal' && result >= 5) {
+      normalSuccesses++;
+    }
+  }
+
+  // Calculate successes and critical failures for risk dice
+  let riskSuccesses = 0;
+  let criticalFailures = 0;
+  for (const result of riskResults) {
+    if (result === 1) {
+      criticalFailures++;
+    } else if (rollMode === 'advantage' && result >= 4) {
+      riskSuccesses++;
+    } else if (rollMode === 'disadvantage' && result === 6) {
+      riskSuccesses++;
+    } else if (rollMode === 'normal' && result >= 5) {
+      riskSuccesses++;
+    }
+  }
+
+  // Risk dice successes count double
+  const totalRiskSuccesses = riskSuccesses * 2;
+  const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+
+  // Step 4: Calculate complications
+  const remainingFailures = Math.max(0, criticalFailures - finalRR);
+  
+  let complication: 'none' | 'minor' | 'critical' | 'disaster' = 'none';
+  if (remainingFailures === 1) {
+    complication = 'minor';
+  } else if (remainingFailures === 2) {
+    complication = 'critical';
+  } else if (remainingFailures >= 3) {
+    complication = 'disaster';
+  }
 
     rollResult = {
-      normalDice: normalResults,
-      riskDice: riskResults,
-      normalSuccesses: normalSuccesses,
-      riskSuccesses: riskSuccesses,
-      totalSuccesses: totalSuccesses,
-      criticalFailures: criticalFailures,
-      finalRR: finalRR,
-      remainingFailures: remainingFailures,
-      complication: complication
-    };
+    normalDice: normalResults,
+    riskDice: riskResults,
+    normalSuccesses: normalSuccesses,
+    riskSuccesses: riskSuccesses,
+    totalSuccesses: totalSuccesses,
+    criticalFailures: criticalFailures,
+    finalRR: finalRR,
+    remainingFailures: remainingFailures,
+    complication: complication
+  };
   }
 
   // Step 5: Create chat message
@@ -468,6 +468,11 @@ async function createRollChatMessage(
   // Determine final defender UUID: if token exists, use token's actor UUID, otherwise use actor UUID
   const finalDefenderUuid = defenderToken?.actor?.uuid || defender?.uuid;
   console.log('Final Defender UUID (token actor or actor):', finalDefenderUuid || 'Unknown');
+  console.log('--- UUIDs to be stored in flags ---');
+  console.log('attackerUuid (final):', finalAttackerUuid || 'Unknown');
+  console.log('attackerTokenUuid (final):', attackerTokenUuid || 'Unknown');
+  console.log('defenderUuid (final):', finalDefenderUuid || 'Unknown');
+  console.log('defenderTokenUuid (final):', defenderTokenUuid || 'Unknown');
   console.log('================================');
 
   // Prepare defender data with token image if available
@@ -679,6 +684,11 @@ async function createRollChatMessage(
     console.log('DefenderToken.name:', (defenderToken as any)?.name);
     console.log('DefenderToken.document?.name:', defenderToken?.document?.name);
     console.log('DefenderToken.actor?.name:', defenderToken?.actor?.name);
+    console.log('--- UUIDs to be stored in flags ---');
+    console.log('attackerUuid (final):', finalAttackerUuid || 'Unknown');
+    console.log('attackerTokenUuid (final):', attackerTokenUuid || 'Unknown');
+    console.log('defenderUuid (final):', finalDefenderUuid || 'Unknown');
+    console.log('defenderTokenUuid (final):', defenderTokenUuid || 'Unknown');
     console.log('==============================');
     
     defenseResult = {
@@ -694,9 +704,20 @@ async function createRollChatMessage(
   }
 
   // Prepare template data
+  // Create attacker and defender objects with correct UUIDs (token actor UUID for NPCs)
+  const attackerWithUuid = attacker ? {
+    ...attacker,
+    uuid: finalAttackerUuid || attacker.uuid // Use calculated UUID (token actor UUID for NPCs)
+  } : null;
+  
+  const defenderWithUuid = defenderData ? {
+    ...defenderData,
+    uuid: finalDefenderUuid || defenderData.uuid // Use calculated UUID (token actor UUID for NPCs)
+  } : null;
+  
   const templateData: any = {
-    attacker: attacker,
-    defender: defenderData,
+    attacker: attackerWithUuid,
+    defender: defenderWithUuid,
     rollData: rollData,
     rollResult: rollResult,
     isAttack: isAttack,
@@ -705,7 +726,12 @@ async function createRollChatMessage(
     skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || 'Unknown',
     itemName: rollData.itemName,
     damageValue: rollData.damageValue,
-    defenseResult: defenseResult
+    defenseResult: defenseResult,
+    // Also pass UUIDs directly for template convenience
+    attackerUuid: finalAttackerUuid,
+    defenderUuid: finalDefenderUuid,
+    attackerTokenUuid: attackerTokenUuid,
+    defenderTokenUuid: defenderTokenUuid
   };
 
   // Render template

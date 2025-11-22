@@ -370,13 +370,13 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       const rrTarget = rrEntry.rrTarget || '';
       
       if (rrValue > 0) {
-        const entry: any = { rrType, rrValue, rrTarget };
-        
-        if (rrType === 'attribute' && rrTarget) {
-          entry.rrTargetLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
-        }
-        
-        feat.rrEntries.push(entry);
+      const entry: any = { rrType, rrValue, rrTarget };
+      
+      if (rrType === 'attribute' && rrTarget) {
+        entry.rrTargetLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+      }
+      
+      feat.rrEntries.push(entry);
       }
     }
     
