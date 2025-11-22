@@ -32,6 +32,42 @@ export class CharacterSheet extends ActorSheet {
 
     // Ensure system data is available
     context.system = this.actor.system;
+    
+    // Ensure damage arrays are properly initialized
+    const systemData = context.system as any;
+    if (!systemData.damage) {
+      systemData.damage = {
+        light: [false, false],
+        severe: [false],
+        incapacitating: false
+      };
+    } else {
+      // Ensure arrays exist and have at least the minimum length
+      if (!Array.isArray(systemData.damage.light)) {
+        systemData.damage.light = [false, false];
+      } else if (systemData.damage.light.length < 2) {
+        while (systemData.damage.light.length < 2) {
+          systemData.damage.light.push(false);
+        }
+      }
+      
+      if (!Array.isArray(systemData.damage.severe)) {
+        systemData.damage.severe = [false];
+      }
+      
+      if (typeof systemData.damage.incapacitating !== 'boolean') {
+        systemData.damage.incapacitating = false;
+      }
+    }
+    
+    // Ensure anarchySpent array is properly initialized
+    if (!Array.isArray(systemData.anarchySpent)) {
+      systemData.anarchySpent = [false, false, false];
+    } else if (systemData.anarchySpent.length < 3) {
+      while (systemData.anarchySpent.length < 3) {
+        systemData.anarchySpent.push(false);
+      }
+    }
 
     // Get metatype (there should be only one)
     const metatypes = this.actor.items.filter((item: any) => item.type === 'metatype');
@@ -225,6 +261,10 @@ export class CharacterSheet extends ActorSheet {
     
     // Click on bookmarked item in header
     html.find('.bookmark-item').on('click', this._onBookmarkItemClick.bind(this));
+    
+    // Handle damage tracker checkboxes - explicit handler to ensure data is saved
+    html.find('input[name^="system.damage"]').on('change', this._onDamageChange.bind(this));
+    html.find('input[name^="system.anarchySpent"]').on('change', this._onAnarchyChange.bind(this));
 
     // Roll weapon
     html.find('[data-action="roll-weapon"]').on('click', this._onRollWeapon.bind(this));
@@ -1310,6 +1350,98 @@ export class CharacterSheet extends ActorSheet {
     };
     
     await ChatMessage.create(messageData as any);
+  }
+  
+  /**
+   * Handle damage tracker checkbox changes
+   */
+  private async _onDamageChange(event: Event): Promise<void> {
+    event.stopPropagation(); // Prevent form auto-submit to avoid double update
+    
+    const input = event.currentTarget as HTMLInputElement;
+    const name = input.name;
+    const checked = input.checked;
+    
+    // Parse the name to extract the path
+    // Expected format: system.damage.light.0, system.damage.severe.0, or system.damage.incapacitating
+    const match = name.match(/^system\.damage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+    if (!match) return;
+    
+    const damageType = match[1];
+    const index = match[2] ? parseInt(match[2], 10) : null;
+    
+    // Ensure damage structure exists
+    const currentDamage = (this.actor.system as any).damage || {
+      light: [false, false],
+      severe: [false],
+      incapacitating: false
+    };
+    
+    // Create a deep copy to avoid mutating directly
+    const updateData: any = {
+      'system.damage': {
+        light: [...(currentDamage.light || [false, false])],
+        severe: [...(currentDamage.severe || [false])],
+        incapacitating: currentDamage.incapacitating !== undefined ? currentDamage.incapacitating : false
+      }
+    };
+    
+    // Ensure arrays have minimum length
+    while (updateData['system.damage'].light.length < 2) {
+      updateData['system.damage'].light.push(false);
+    }
+    while (updateData['system.damage'].severe.length < 1) {
+      updateData['system.damage'].severe.push(false);
+    }
+    
+    // Update the appropriate field
+    if (damageType === 'incapacitating') {
+      updateData['system.damage'].incapacitating = checked;
+    } else if (damageType === 'light' && index !== null && index < updateData['system.damage'].light.length) {
+      updateData['system.damage'].light[index] = checked;
+    } else if (damageType === 'severe' && index !== null && index < updateData['system.damage'].severe.length) {
+      updateData['system.damage'].severe[index] = checked;
+    } else {
+      return; // Invalid index or type
+    }
+    
+    // Update the actor
+    await this.actor.update(updateData);
+  }
+  
+  /**
+   * Handle anarchy tracker checkbox changes
+   */
+  private async _onAnarchyChange(event: Event): Promise<void> {
+    event.stopPropagation(); // Prevent form auto-submit to avoid double update
+    
+    const input = event.currentTarget as HTMLInputElement;
+    const name = input.name;
+    const checked = input.checked;
+    
+    // Parse the name to extract the index
+    // Expected format: system.anarchySpent.0, system.anarchySpent.1, etc.
+    const match = name.match(/^system\.anarchySpent\.(\d+)$/);
+    if (!match || !match[1]) return;
+    
+    const index = parseInt(match[1], 10);
+    
+    // Ensure anarchySpent array exists
+    const currentAnarchySpent = (this.actor.system as any).anarchySpent || [false, false, false];
+    const anarchySpent = [...currentAnarchySpent];
+    
+    // Ensure array has minimum length
+    while (anarchySpent.length < 3) {
+      anarchySpent.push(false);
+    }
+    
+    // Update the appropriate index
+    if (index >= 0 && index < anarchySpent.length) {
+      anarchySpent[index] = checked;
+      
+      // Update the actor
+      await (this.actor as any).update({ 'system.anarchySpent': anarchySpent });
+    }
   }
   
   /**

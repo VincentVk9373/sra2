@@ -2383,6 +2383,35 @@ class CharacterSheet extends ActorSheet {
   getData() {
     const context = super.getData();
     context.system = this.actor.system;
+    const systemData = context.system;
+    if (!systemData.damage) {
+      systemData.damage = {
+        light: [false, false],
+        severe: [false],
+        incapacitating: false
+      };
+    } else {
+      if (!Array.isArray(systemData.damage.light)) {
+        systemData.damage.light = [false, false];
+      } else if (systemData.damage.light.length < 2) {
+        while (systemData.damage.light.length < 2) {
+          systemData.damage.light.push(false);
+        }
+      }
+      if (!Array.isArray(systemData.damage.severe)) {
+        systemData.damage.severe = [false];
+      }
+      if (typeof systemData.damage.incapacitating !== "boolean") {
+        systemData.damage.incapacitating = false;
+      }
+    }
+    if (!Array.isArray(systemData.anarchySpent)) {
+      systemData.anarchySpent = [false, false, false];
+    } else if (systemData.anarchySpent.length < 3) {
+      while (systemData.anarchySpent.length < 3) {
+        systemData.anarchySpent.push(false);
+      }
+    }
     const metatypes = this.actor.items.filter((item) => item.type === "metatype");
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
     const actorStrength = this.actor.system.attributes?.strength || 0;
@@ -2481,6 +2510,8 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="send-catchphrase"]').on("click", this._onSendCatchphrase.bind(this));
     html.on("click", '[data-action="toggle-bookmark"]', this._onToggleBookmark.bind(this));
     html.find(".bookmark-item").on("click", this._onBookmarkItemClick.bind(this));
+    html.find('input[name^="system.damage"]').on("change", this._onDamageChange.bind(this));
+    html.find('input[name^="system.anarchySpent"]').on("change", this._onAnarchyChange.bind(this));
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
@@ -3290,6 +3321,68 @@ class CharacterSheet extends ActorSheet {
       content: `<div class="sra2-catchphrase">${catchphrase}</div>`
     };
     await ChatMessage.create(messageData);
+  }
+  /**
+   * Handle damage tracker checkbox changes
+   */
+  async _onDamageChange(event) {
+    event.stopPropagation();
+    const input = event.currentTarget;
+    const name = input.name;
+    const checked = input.checked;
+    const match = name.match(/^system\.damage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+    if (!match) return;
+    const damageType = match[1];
+    const index = match[2] ? parseInt(match[2], 10) : null;
+    const currentDamage = this.actor.system.damage || {
+      light: [false, false],
+      severe: [false],
+      incapacitating: false
+    };
+    const updateData = {
+      "system.damage": {
+        light: [...currentDamage.light || [false, false]],
+        severe: [...currentDamage.severe || [false]],
+        incapacitating: currentDamage.incapacitating !== void 0 ? currentDamage.incapacitating : false
+      }
+    };
+    while (updateData["system.damage"].light.length < 2) {
+      updateData["system.damage"].light.push(false);
+    }
+    while (updateData["system.damage"].severe.length < 1) {
+      updateData["system.damage"].severe.push(false);
+    }
+    if (damageType === "incapacitating") {
+      updateData["system.damage"].incapacitating = checked;
+    } else if (damageType === "light" && index !== null && index < updateData["system.damage"].light.length) {
+      updateData["system.damage"].light[index] = checked;
+    } else if (damageType === "severe" && index !== null && index < updateData["system.damage"].severe.length) {
+      updateData["system.damage"].severe[index] = checked;
+    } else {
+      return;
+    }
+    await this.actor.update(updateData);
+  }
+  /**
+   * Handle anarchy tracker checkbox changes
+   */
+  async _onAnarchyChange(event) {
+    event.stopPropagation();
+    const input = event.currentTarget;
+    const name = input.name;
+    const checked = input.checked;
+    const match = name.match(/^system\.anarchySpent\.(\d+)$/);
+    if (!match || !match[1]) return;
+    const index = parseInt(match[1], 10);
+    const currentAnarchySpent = this.actor.system.anarchySpent || [false, false, false];
+    const anarchySpent = [...currentAnarchySpent];
+    while (anarchySpent.length < 3) {
+      anarchySpent.push(false);
+    }
+    if (index >= 0 && index < anarchySpent.length) {
+      anarchySpent[index] = checked;
+      await this.actor.update({ "system.anarchySpent": anarchySpent });
+    }
   }
   /**
    * Handle toggling bookmark on an item
