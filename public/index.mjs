@@ -1733,13 +1733,23 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       attackFailed = true;
       calculatedDamage = 0;
     }
+    const originalAttackerUuid = finalDefenderUuid;
+    const defenderUuid = finalAttackerUuid;
+    console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
+    console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
+    console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
     defenseResult = {
       attackSuccesses,
       defenseSuccesses,
       calculatedDamage,
       attackFailed,
       originalAttackerName,
-      defenderName
+      defenderName,
+      // UUIDs for applying damage
+      originalAttackerUuid,
+      // Who inflicts damage if attack succeeds
+      defenderUuid
+      // Who receives damage if attack succeeds
     };
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
@@ -1840,6 +1850,29 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
     console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
     console.log("==============================");
+    const originalAttackerUuid = finalDefenderUuid;
+    const originalDefenderUuid = finalAttackerUuid;
+    let damageInflicterUuid = void 0;
+    let damageReceiverUuid = void 0;
+    let damageInflicterName = "";
+    let damageReceiverName = "";
+    if (winner === "attacker") {
+      damageInflicterUuid = originalAttackerUuid;
+      damageReceiverUuid = originalDefenderUuid;
+      damageInflicterName = originalAttackerName;
+      damageReceiverName = originalDefenderName;
+      console.log("Counter-attack: Original attacker wins - inflicts damage to counter-attacker");
+      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
+      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
+    } else if (winner === "defender") {
+      damageInflicterUuid = originalDefenderUuid;
+      damageReceiverUuid = originalAttackerUuid;
+      damageInflicterName = originalDefenderName;
+      damageReceiverName = originalAttackerName;
+      console.log("Counter-attack: Counter-attacker wins - inflicts damage to original attacker");
+      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
+      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
+    }
     defenseResult = {
       attackSuccesses,
       counterAttackSuccesses,
@@ -1848,7 +1881,14 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       defenderDamage,
       isTie,
       originalAttackerName,
-      originalDefenderName
+      originalDefenderName,
+      // UUIDs for applying damage
+      originalAttackerUuid,
+      originalDefenderUuid,
+      damageInflicterUuid,
+      damageReceiverUuid,
+      damageInflicterName,
+      damageReceiverName
     };
   }
   const attackerWithUuid = attacker ? {
@@ -2751,49 +2791,6 @@ class CharacterSheet extends ActorSheet {
       actorName: this.actor.name,
       rrList: allRRSources
     });
-  }
-  /**
-   * REMOVED: Dice rolling logic
-   */
-  async _rollSkillDice(skillName, dicePool, riskDice = 0, riskReduction = 0, rollMode = "normal", weaponDamageValue, damageValueBonus) {
-    console.log("Dice rolling disabled", { skillName, dicePool, riskDice, riskReduction, rollMode });
-  }
-  /**
-   * REMOVED: Attack with defense system logic
-   */
-  async _rollAttackWithDefense(skillName, dicePool, riskDice = 0, riskReduction = 0, rollMode = "normal", weaponDamageValue, attackingWeapon, damageValueBonus) {
-    console.log("Attack rolling disabled", { skillName, dicePool, riskDice, riskReduction, rollMode });
-  }
-  /**
-   * REMOVED: Defense roll prompt logic
-   */
-  async _promptDefenseRoll(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon, damageValueBonus, defenderToken) {
-    console.log("Defense roll prompt disabled", { defenderActor: defenderActor.name, attackName });
-  }
-  /**
-   * REMOVED: Defense roll and damage calculation
-   */
-  async _rollDefenseAndCalculateDamage(defenseItem, itemType, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken) {
-    console.log("Defense roll disabled", { defenseItem: defenseItem.name, itemType, attackName });
-  }
-  /**
-   * REMOVED: Threshold defense logic
-   */
-  async _defendWithThreshold(defenseItem, _itemType, threshold, attackName, attackResult, weaponDamageValue, defenderActor, damageValueBonus, defenderToken) {
-    console.log("Threshold defense disabled", { defenseItem: defenseItem.name, threshold, attackName });
-  }
-  /**
-   * REMOVED: Dice roll execution
-   */
-  async _performDiceRoll(dicePool, riskDice, riskReduction, rollMode) {
-    console.log("Dice roll disabled", { dicePool, riskDice, riskReduction, rollMode });
-    return {};
-  }
-  /**
-   * REMOVED: Attack result display
-   */
-  async _displayAttackResult(attackName, attackResult, defenseResult, weaponDamageValue, defenderName, defenderActor, damageValueBonus, defenderToken) {
-    console.log("Attack result display disabled", { attackName, defenderName });
   }
   /**
    * Apply damage to a defender
@@ -5887,6 +5884,7 @@ class RollDialog extends Application {
         if (defenderTokenFromUuid) {
           this.targetToken = defenderTokenFromUuid;
           console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
+          console.log("RollDialog: Defender token name:", defenderTokenFromUuid?.name || defenderTokenFromUuid?.document?.name || defenderTokenFromUuid?.actor?.name);
         }
       } catch (e) {
         console.warn("RollDialog: Failed to load defender token from UUID:", e);
@@ -7638,20 +7636,38 @@ class SRA2System {
       return JSON.stringify(context);
     });
     Hooks.on("renderChatMessage", (message, html) => {
+      html.find(".apply-damage-button").off("click");
       html.find(".apply-damage-button").on("click", async (event) => {
         event.preventDefault();
+        event.stopImmediatePropagation();
         const button = $(event.currentTarget);
+        if (button.prop("disabled")) {
+          return;
+        }
         const targetUuid = button.data("target-uuid") || button.data("defender-uuid");
-        const damage = parseInt(button.data("damage"));
+        const damage = parseInt(button.data("damage")) || 0;
         const targetName = button.data("target-name") || button.data("defender-name");
         if (!targetUuid) {
           console.error("Apply damage button: No target UUID found in button data attributes");
           ui.notifications?.error("Impossible de trouver la cible pour appliquer les dégâts");
           return;
         }
+        if (damage <= 0) {
+          ui.notifications?.info("Aucun dégât à appliquer");
+          return;
+        }
+        button.prop("disabled", true);
         console.log("Apply damage button clicked:", { targetUuid, targetName, damage });
-        await CharacterSheet.applyDamage(targetUuid, damage, targetName);
+        try {
+          await CharacterSheet.applyDamage(targetUuid, damage, targetName);
+        } catch (error) {
+          console.error("Error applying damage:", error);
+          ui.notifications?.error("Erreur lors de l'application des dégâts");
+        } finally {
+          setTimeout(() => button.prop("disabled", false), 1e3);
+        }
       });
+      html.find(".defend-button").off("click");
       html.find(".defend-button").on("click", async (event) => {
         event.preventDefault();
         const messageFlags = message.flags?.sra2;
@@ -7891,8 +7907,8 @@ class SRA2System {
             featName: rr.featName
           }));
         }
-        const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
-        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
+        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || messageFlags.attackerTokenUuid || void 0;
+        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || messageFlags.defenderTokenUuid || void 0;
         const defenseRollData = {
           // Use final defense skill/spec (with fallback)
           skillName: finalDefenseSkill,
@@ -7904,13 +7920,11 @@ class SRA2System {
           actorId: defenderActorForRoll.id,
           actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid,
           // Use flag UUID first
-          // Token UUIDs - use directly from flags (already correctly calculated)
-          attackerTokenUuid: messageFlags.attackerTokenUuid || attackerTokenUuid,
-          // Use flag UUID first
-          defenderTokenUuid: messageFlags.defenderTokenUuid || defenderTokenUuid,
-          // Use flag UUID first
-          // Target is the attacker
-          // We'll set targetToken in RollDialog constructor
+          // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
+          attackerTokenUuid: defenderTokenUuid,
+          // Defender's token (one defending) - this is what will be attacker in RollDialog
+          defenderTokenUuid: originalAttackerTokenUuid,
+          // Original attacker's token (target) - this is what will be target/defender in RollDialog
           // RR List
           rrList: defenseRRList,
           // Defense flags
@@ -7927,6 +7941,7 @@ class SRA2System {
         }
         dialog.render(true);
       });
+      html.find(".counter-attack-button").off("click");
       html.find(".counter-attack-button").on("click", async (event) => {
         event.preventDefault();
         const messageFlags = message.flags?.sra2;
@@ -8184,30 +8199,6 @@ class SRA2System {
           dialog.targetToken = attackerToken;
         }
         dialog.render(true);
-      });
-      html.find(".apply-damage-button").on("click", async (event) => {
-        event.preventDefault();
-        const button = $(event.currentTarget);
-        const damage = parseInt(button.data("damage")) || 0;
-        const targetName = button.data("target-name") || "Inconnu";
-        const targetUuid = button.data("target-uuid");
-        if (!targetUuid) {
-          ui.notifications?.error("Impossible de trouver la cible pour appliquer les dégâts");
-          return;
-        }
-        if (damage <= 0) {
-          ui.notifications?.info("Aucun dégât à appliquer");
-          return;
-        }
-        button.prop("disabled", true);
-        try {
-          await CharacterSheet.applyDamage(targetUuid, damage, targetName);
-        } catch (error) {
-          console.error("Error applying damage:", error);
-          ui.notifications?.error("Erreur lors de l'application des dégâts");
-        } finally {
-          setTimeout(() => button.prop("disabled", false), 1e3);
-        }
       });
     });
     Hooks.on("getTokenHUDOptions", (_hud, buttons, token) => {
