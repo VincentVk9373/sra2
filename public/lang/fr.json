@@ -72,6 +72,7 @@
             "RR": "RR",
             "ROLL_WEAPON": "Lancer les dés pour cette arme",
             "ADD_WEAPON": "Ajouter une arme",
+            "ONLY_WEAPONS_ALLOWED": "Seules les armes peuvent être ajoutées aux véhicules",
             "BONUSES_AND_OPTIONS": "Bonus et Options",
             "NARRATIVE_EFFECTS": "Effets Narratifs",
             "NARRATIVE_EFFECTS_HINT": "Chaque effet narratif coûte 5000¥",

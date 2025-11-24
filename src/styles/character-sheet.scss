@@ -1295,22 +1295,6 @@
           }
         }
         
-        .weapon-cost {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.85rem;
-          color: #00d4ff;
-          font-weight: 500;
-          
-          .cost-value {
-            padding: 0.2rem 0.5rem;
-            background: rgba(0, 212, 255, 0.2);
-            border: 1px solid #00d4ff;
-            border-radius: 4px;
-          }
-        }
-        
         /* Anarchy attribute special styling */
         .anarchy-attribute {
           .attribute-controls {
@@ -2231,6 +2215,212 @@
           p {
             margin: 0;
             font-style: italic;
+          }
+        }
+      }
+    }
+    
+    /* Weapons Section */
+    .weapons-section {
+      margin-top: 1rem;
+      
+      .weapons-controls {
+        margin-bottom: 1rem;
+        
+        .add-world-weapon-button {
+          padding: 0.75rem 1rem;
+          background: linear-gradient(135deg, #00d4ff 0%, #4dd0e1 100%);
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          font-size: 0.95rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          
+          i {
+            font-size: 1rem;
+          }
+          
+          &:hover {
+            background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+          }
+          
+          &:active {
+            transform: translateY(0);
+          }
+        }
+      }
+      
+      .weapons-list {
+        margin-top: 0.5rem;
+        
+        .skills-header {
+          display: grid;
+          grid-template-columns: 1fr 60px 80px 60px 100px 80px;
+          gap: 0.4rem;
+          padding: 0.4rem 0.5rem;
+          background: linear-gradient(135deg, rgba(15, 52, 96, 0.4) 0%, rgba(0, 212, 255, 0.3) 100%);
+          color: white;
+          font-weight: bold;
+          border-radius: 4px 4px 0 0;
+          
+          > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+          }
+          
+          .skill-header-name {
+            justify-content: flex-start;
+            padding-left: 0.5rem;
+          }
+        }
+        
+        .weapon-item {
+          display: grid;
+          grid-template-columns: 1fr 60px 80px 60px 100px 80px;
+          gap: 0.4rem;
+          align-items: center;
+          padding: 0.4rem 0.5rem;
+          border: 1px solid #0f3460;
+          border-top: none;
+          background: rgba(255, 255, 255, 0.05);
+          transition: background-color 0.2s;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+          }
+          
+          &:last-child {
+            border-radius: 0 0 4px 4px;
+          }
+          
+          .weapon-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            
+            .weapon-img {
+              width: 28px;
+              height: 28px;
+              border-radius: 4px;
+              border: 1px solid #555;
+              object-fit: cover;
+            }
+            
+            span {
+              font-weight: 600;
+              font-size: 0.9rem;
+              color: #e0e0e0;
+            }
+          }
+          
+          .weapon-vd {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            .vd-value {
+              font-weight: bold;
+              font-size: 0.9rem;
+              color: #e74c3c;
+            }
+          }
+          
+          .skill-dice-pool {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            
+            &:hover {
+              background: rgba(0, 212, 255, 0.2);
+            }
+            
+            .dice-value {
+              font-weight: bold;
+              font-size: 0.95rem;
+              color: #00d4ff;
+            }
+            
+            i {
+              color: #00d4ff;
+              font-size: 0.75rem;
+            }
+          }
+          
+          .skill-rr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem;
+            font-size: 0.8rem;
+            
+            .rr-value {
+              font-weight: bold;
+              font-size: 0.95rem;
+              color: #29db31;
+            }
+          }
+          
+          .weapon-cost {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: #00d4ff;
+            font-weight: 500;
+            
+            .cost-value {
+              padding: 0.2rem 0.5rem;
+              background: rgba(0, 212, 255, 0.2);
+              border: 1px solid #00d4ff;
+              border-radius: 4px;
+            }
+          }
+          
+          .skill-controls {
+            display: flex;
+            gap: 0.2rem;
+            justify-content: center;
+            
+            a {
+              padding: 0.2rem 0.4rem;
+              border-radius: 3px;
+              cursor: pointer;
+              transition: all 0.2s;
+              
+              &:hover {
+                background: rgba(0, 212, 255, 0.2);
+              }
+              
+              i {
+                font-size: 0.75rem;
+                color: #e0e0e0;
+              }
+              
+              &.weapon-delete:hover i {
+                color: #e74c3c;
+              }
+              
+              &.weapon-edit:hover i {
+                color: #00d4ff;
+              }
+            }
           }
         }
       }

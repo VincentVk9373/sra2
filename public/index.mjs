@@ -5091,9 +5091,9 @@ class VehicleSheet extends ActorSheet {
       height: 700,
       tabs: [],
       dragDrop: [
-        { dragSelector: ".feat-item", dropSelector: null }
+        { dragSelector: ".item", dropSelector: ".sheet-body" }
       ],
-      submitOnChange: true
+      submitOnChange: false
     });
   }
   /**
@@ -5144,7 +5144,7 @@ class VehicleSheet extends ActorSheet {
   activateListeners(html) {
     super.activateListeners(html);
     html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
-    html.find(".feat-edit").on("click", (event) => {
+    html.find(".feat-edit, .weapon-edit").on("click", (event) => {
       event.preventDefault();
       const itemId = $(event.currentTarget).data("item-id");
       const item = this.actor.items.get(itemId);
@@ -5152,7 +5152,7 @@ class VehicleSheet extends ActorSheet {
         item.sheet?.render(true);
       }
     });
-    html.find(".feat-delete").on("click", async (event) => {
+    html.find(".feat-delete, .weapon-delete").on("click", async (event) => {
       event.preventDefault();
       const itemId = $(event.currentTarget).data("item-id");
       const item = this.actor.items.get(itemId);
@@ -5287,6 +5287,31 @@ class VehicleSheet extends ActorSheet {
       },
       default: "add"
     }).render(true);
+  }
+  /**
+   * Handle dropping items onto the sheet
+   */
+  async _onDrop(event) {
+    let data;
+    try {
+      data = JSON.parse(event.dataTransfer?.getData("text/plain") || "{}");
+    } catch (err) {
+      return super._onDrop(event);
+    }
+    if (data.type === "Item") {
+      const item = await Item.fromDropData(data);
+      if (item && item.type === "feat") {
+        const featType = item.system.featType;
+        if (featType === "weapon" || featType === "weapons-spells") {
+          await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+          return false;
+        } else {
+          ui.notifications?.warn(game.i18n.localize("SRA2.VEHICLE.ONLY_WEAPONS_ALLOWED"));
+          return false;
+        }
+      }
+    }
+    return super._onDrop(event);
   }
 }
 class FeatSheet extends ItemSheet {

@@ -13,9 +13,9 @@ export class VehicleSheet extends ActorSheet {
       height: 700,
       tabs: [],
       dragDrop: [
-        { dragSelector: '.feat-item', dropSelector: null }
+        { dragSelector: '.item', dropSelector: '.sheet-body' }
       ],
-      submitOnChange: true,
+      submitOnChange: false,
     });
   }
 
@@ -97,8 +97,8 @@ export class VehicleSheet extends ActorSheet {
     // Section navigation
     html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
 
-    // Edit feat
-    html.find('.feat-edit').on('click', (event) => {
+    // Edit feat/weapon
+    html.find('.feat-edit, .weapon-edit').on('click', (event) => {
       event.preventDefault();
       const itemId = $(event.currentTarget).data('item-id');
       const item = this.actor.items.get(itemId);
@@ -107,8 +107,8 @@ export class VehicleSheet extends ActorSheet {
       }
     });
 
-    // Delete feat
-    html.find('.feat-delete').on('click', async (event) => {
+    // Delete feat/weapon
+    html.find('.feat-delete, .weapon-delete').on('click', async (event) => {
       event.preventDefault();
       const itemId = $(event.currentTarget).data('item-id');
       const item = this.actor.items.get(itemId);
@@ -271,6 +271,38 @@ export class VehicleSheet extends ActorSheet {
       },
       default: 'add'
     }).render(true);
+  }
+
+  /**
+   * Handle dropping items onto the sheet
+   */
+  protected override async _onDrop(event: DragEvent): Promise<boolean | void> {
+    // Get the dropped data
+    let data;
+    try {
+      data = JSON.parse(event.dataTransfer?.getData('text/plain') || '{}');
+    } catch (err) {
+      return super._onDrop(event);
+    }
+    
+    // Only allow weapons (feats of type weapon or weapons-spells)
+    if (data.type === 'Item') {
+      const item = await Item.fromDropData(data);
+      if (item && item.type === 'feat') {
+        const featType = (item.system as any).featType;
+        if (featType === 'weapon' || featType === 'weapons-spells') {
+          // Create the item on the actor
+          await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
+          return false; // Prevent default behavior and refresh
+        } else {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_WEAPONS_ALLOWED'));
+          return false; // Prevent default behavior
+        }
+      }
+    }
+    
+    // Fall back to default behavior for other item types
+    return super._onDrop(event);
   }
 }
 

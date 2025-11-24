@@ -79,6 +79,7 @@
             "RR": "RR",
             "ROLL_WEAPON": "Roll dice for this weapon",
             "ADD_WEAPON": "Add Weapon",
+            "ONLY_WEAPONS_ALLOWED": "Only weapons can be added to vehicles",
             "BONUSES_AND_OPTIONS": "Bonuses and Options",
             "NARRATIVE_EFFECTS": "Narrative Effects",
             "NARRATIVE_EFFECTS_HINT": "Each narrative effect costs 5000¥",
