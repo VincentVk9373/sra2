@@ -193,6 +193,66 @@ export async function handleItemDrop(
 }
 
 /**
+ * Handle vehicle actor drop on character sheet
+ * Adds the vehicle actor UUID to the character's linkedVehicles array
+ */
+export async function handleVehicleActorDrop(
+  event: DragEvent,
+  actor: any
+): Promise<boolean> {
+  const data = TextEditor.getDragEventData(event) as any;
+  
+  // Handle Actor drops (specifically vehicle actors)
+  if (data && data.type === 'Actor') {
+    try {
+      const vehicleActor = await fromUuid(data.uuid) as any;
+      
+      if (!vehicleActor) return false;
+      
+      // Check if it's a vehicle actor
+      if (vehicleActor.type !== 'vehicle') return false;
+      
+      // Get current linked vehicles
+      const linkedVehicles = (actor.system as any).linkedVehicles || [];
+      
+      // Check if this vehicle is already linked
+      if (linkedVehicles.includes(vehicleActor.uuid)) {
+        ui.notifications?.warn(game.i18n!.format('SRA2.FEATS.VEHICLE_ALREADY_EXISTS', { name: vehicleActor.name }));
+        return false;
+      }
+      
+      // Add the vehicle UUID to the linked vehicles array
+      const updatedLinkedVehicles = [...linkedVehicles, vehicleActor.uuid];
+      await actor.update({ 'system.linkedVehicles': updatedLinkedVehicles });
+      
+      // Configure the vehicle's token prototype to be linked to the character actor
+      const prototypeToken = vehicleActor.prototypeToken || {};
+      const updateData: any = {
+        'prototypeToken.actorLink': true
+      };
+      
+      // If the vehicle doesn't have a prototype token yet, initialize it
+      if (!vehicleActor.prototypeToken) {
+        updateData['prototypeToken'] = foundry.utils.mergeObject(
+          foundry.data.PrototypeToken.defaults,
+          { actorLink: true }
+        );
+      }
+      
+      await vehicleActor.update(updateData);
+      
+      ui.notifications?.info(game.i18n!.format('SRA2.FEATS.VEHICLE_ADDED', { name: vehicleActor.name }));
+      return true;
+    } catch (error) {
+      console.error('Error handling vehicle actor drop:', error);
+      return false;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Get RR for a specific item type and name (wrapper for DiceRoller)
  */
 export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{featName: string, rrValue: number}> {

@@ -28,7 +28,7 @@ export class CharacterSheet extends ActorSheet {
     });
   }
 
-  override getData(): any {
+  override async getData(): Promise<any> {
     const context = super.getData() as any;
 
     // Ensure system data is available
@@ -81,7 +81,40 @@ export class CharacterSheet extends ActorSheet {
     const rawFeats = this.actor.items.filter((item: any) => item.type === 'feat');
     const allFeats = SheetHelpers.enrichFeats(rawFeats, actorStrength, SheetHelpers.calculateFinalDamageValue, this.actor);
     
-    // Group feats by type
+    // Get linked vehicle actors
+    const linkedVehicleUuids = (this.actor.system as any).linkedVehicles || [];
+    const linkedVehicles: any[] = [];
+    for (const uuid of linkedVehicleUuids) {
+      try {
+        const vehicleActor = await fromUuid(uuid) as any;
+        if (vehicleActor && vehicleActor.type === 'vehicle') {
+          // Format vehicle actor data to match feat structure for template compatibility
+          linkedVehicles.push({
+            _id: vehicleActor.id,
+            uuid: vehicleActor.uuid,
+            name: vehicleActor.name,
+            img: vehicleActor.img,
+            type: 'vehicle-actor',
+            system: {
+              featType: 'vehicle',
+              autopilot: vehicleActor.system?.attributes?.autopilot || 0,
+              structure: vehicleActor.system?.attributes?.structure || 0,
+              handling: vehicleActor.system?.attributes?.handling || 0,
+              speed: vehicleActor.system?.attributes?.speed || 0,
+              armor: vehicleActor.system?.attributes?.armor || 0,
+              weaponInfo: vehicleActor.system?.weaponInfo || '',
+              calculatedCost: vehicleActor.system?.calculatedCost || 0,
+              description: vehicleActor.system?.description || ''
+            }
+          });
+        }
+      } catch (error) {
+        console.warn(`Failed to load vehicle actor ${uuid}:`, error);
+      }
+    }
+    
+    // Group feats by type (vehicle feats + linked vehicle actors)
+    const vehicleFeats = allFeats.filter((feat: any) => feat.system.featType === 'vehicle');
     context.featsByType = {
       trait: allFeats.filter((feat: any) => feat.system.featType === 'trait'),
       contact: allFeats.filter((feat: any) => feat.system.featType === 'contact'),
@@ -90,7 +123,7 @@ export class CharacterSheet extends ActorSheet {
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck'),
-      vehicle: allFeats.filter((feat: any) => feat.system.featType === 'vehicle'),
+      vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon'),
       spell: allFeats.filter((feat: any) => feat.system.featType === 'spell')
@@ -227,6 +260,12 @@ export class CharacterSheet extends ActorSheet {
     // Delete feat
     html.find('[data-action="delete-feat"]').on('click', this._onDeleteFeat.bind(this));
 
+    // Open vehicle sheet
+    html.find('[data-action="open-vehicle"]').on('click', this._onOpenVehicle.bind(this));
+
+    // Unlink vehicle
+    html.find('[data-action="unlink-vehicle"]').on('click', this._onUnlinkVehicle.bind(this));
+
     // Edit skill
     html.find('[data-action="edit-skill"]').on('click', this._onEditSkill.bind(this));
 
@@ -324,6 +363,12 @@ export class CharacterSheet extends ActorSheet {
       item.setAttribute('draggable', 'true');
       item.addEventListener('dragstart', this._onDragStart.bind(this));
     });
+
+    // Make vehicle actor items draggable
+    html.find('.vehicle-actor-item').each((_index, item) => {
+      item.setAttribute('draggable', 'true');
+      item.addEventListener('dragstart', this._onDragStart.bind(this));
+    });
   }
 
   /**
@@ -365,6 +410,56 @@ export class CharacterSheet extends ActorSheet {
   private async _onDeleteSkill(event: Event): Promise<void> { return SheetHelpers.handleDeleteItem(event, this.actor); }
   private async _onEditSpecialization(event: Event): Promise<void> { return SheetHelpers.handleEditItem(event, this.actor); }
   private async _onDeleteSpecialization(event: Event): Promise<void> { return SheetHelpers.handleDeleteItem(event, this.actor); }
+
+  /**
+   * Handle opening a linked vehicle actor sheet
+   */
+  private async _onOpenVehicle(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    
+    if (!vehicleUuid) return;
+    
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      if (vehicleActor && vehicleActor.sheet) {
+        vehicleActor.sheet.render(true);
+      }
+    } catch (error) {
+      console.error('Error opening vehicle sheet:', error);
+      ui.notifications?.error('Erreur lors de l\'ouverture de la fiche du véhicule');
+    }
+  }
+
+  /**
+   * Handle unlinking a vehicle actor from the character
+   */
+  private async _onUnlinkVehicle(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    
+    if (!vehicleUuid) return;
+    
+    const linkedVehicles = (this.actor.system as any).linkedVehicles || [];
+    const updatedLinkedVehicles = linkedVehicles.filter((uuid: string) => uuid !== vehicleUuid);
+    
+    await this.actor.update({ 'system.linkedVehicles': updatedLinkedVehicles });
+    
+    // Optionally unlink the vehicle's token prototype (set actorLink to false)
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      if (vehicleActor) {
+        await vehicleActor.update({ 'prototypeToken.actorLink': false });
+      }
+    } catch (error) {
+      console.warn('Could not update vehicle token prototype:', error);
+      // Continue anyway - unlinking from character is more important
+    }
+    
+    ui.notifications?.info(game.i18n!.localize('SRA2.FEATS.VEHICLE_UNLINKED'));
+  }
 
   /**
    * Get detailed RR sources for a given skill, specialization, or attribute
@@ -535,15 +630,43 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Handle drag start for feat items
+   * Handle drag start for feat items and vehicle actors
+   * For vehicle actors, allow dragging them to the map
    */
   protected override _onDragStart(event: DragEvent): void {
     const itemId = (event.currentTarget as HTMLElement).dataset.itemId;
+    const vehicleUuid = (event.currentTarget as HTMLElement).dataset.vehicleUuid;
+    
+    // Check if this is a linked vehicle actor
+    if (vehicleUuid) {
+      const dragData = {
+        type: 'Actor',
+        uuid: vehicleUuid,
+      };
+      event.dataTransfer?.setData('text/plain', JSON.stringify(dragData));
+      return;
+    }
+    
     if (!itemId) return;
 
     const item = this.actor.items.get(itemId);
     if (!item) return;
 
+    // Check if this is a vehicle feat that references a vehicle actor
+    if (item.type === 'feat' && (item.system as any).featType === 'vehicle') {
+      const vehicleActorUuid = (item.system as any).vehicleActorUuid;
+      if (vehicleActorUuid) {
+        // Allow dragging the vehicle actor to the map
+        const dragData = {
+          type: 'Actor',
+          uuid: vehicleActorUuid,
+        };
+        event.dataTransfer?.setData('text/plain', JSON.stringify(dragData));
+        return;
+      }
+    }
+
+    // Default: drag the item itself
     const dragData = {
       type: 'Item',
       uuid: item.uuid,
@@ -553,11 +676,18 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Override to handle dropping feats and skills anywhere on the sheet
+   * Override to handle dropping feats, skills, and vehicle actors anywhere on the sheet
    */
   protected override async _onDrop(event: DragEvent): Promise<any> {
+    // First try to handle item drops (feats, skills, etc.)
     const handled = await SheetHelpers.handleItemDrop(event, this.actor);
-    return handled ? undefined : super._onDrop(event);
+    if (handled) return undefined;
+    
+    // Then try to handle vehicle actor drops
+    const vehicleHandled = await SheetHelpers.handleVehicleActorDrop(event, this.actor);
+    if (vehicleHandled) return undefined;
+    
+    return super._onDrop(event);
   }
 
   /**

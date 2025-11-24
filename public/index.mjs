@@ -210,6 +210,15 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
           required: true,
           initial: ""
         })
+      }),
+      // Linked vehicle actors (UUIDs)
+      linkedVehicles: new fields.ArrayField(new fields.StringField({
+        required: true,
+        initial: ""
+      }), {
+        required: true,
+        initial: [],
+        label: "SRA2.CHARACTER.LINKED_VEHICLES"
       })
     };
   }
@@ -969,6 +978,13 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         max: 3,
         integer: true,
         label: "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT"
+      }),
+      // Reference to vehicle actor when feat is created from dragging a vehicle actor
+      vehicleActorUuid: new fields.StringField({
+        required: false,
+        initial: "",
+        nullable: true,
+        label: "SRA2.FEATS.VEHICLE.ACTOR_UUID"
       }),
       // Cyberdeck specific fields
       firewall: new fields.NumberField({
@@ -2551,6 +2567,40 @@ async function handleItemDrop(event, actor, allowedTypes = ["feat", "skill", "sp
   }
   return false;
 }
+async function handleVehicleActorDrop(event, actor) {
+  const data = TextEditor.getDragEventData(event);
+  if (data && data.type === "Actor") {
+    try {
+      const vehicleActor = await fromUuid(data.uuid);
+      if (!vehicleActor) return false;
+      if (vehicleActor.type !== "vehicle") return false;
+      const linkedVehicles = actor.system.linkedVehicles || [];
+      if (linkedVehicles.includes(vehicleActor.uuid)) {
+        ui.notifications?.warn(game.i18n.format("SRA2.FEATS.VEHICLE_ALREADY_EXISTS", { name: vehicleActor.name }));
+        return false;
+      }
+      const updatedLinkedVehicles = [...linkedVehicles, vehicleActor.uuid];
+      await actor.update({ "system.linkedVehicles": updatedLinkedVehicles });
+      const prototypeToken = vehicleActor.prototypeToken || {};
+      const updateData = {
+        "prototypeToken.actorLink": true
+      };
+      if (!vehicleActor.prototypeToken) {
+        updateData["prototypeToken"] = foundry.utils.mergeObject(
+          foundry.data.PrototypeToken.defaults,
+          { actorLink: true }
+        );
+      }
+      await vehicleActor.update(updateData);
+      ui.notifications?.info(game.i18n.format("SRA2.FEATS.VEHICLE_ADDED", { name: vehicleActor.name }));
+      return true;
+    } catch (error) {
+      console.error("Error handling vehicle actor drop:", error);
+      return false;
+    }
+  }
+  return false;
+}
 function getRRSources(actor, itemType, itemName) {
   const sources = [];
   const feats = actor.items.filter(
@@ -2698,6 +2748,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   handleEditItem,
   handleItemDrop,
   handleSheetUpdate,
+  handleVehicleActorDrop,
   organizeSpecializationsBySkill
 }, Symbol.toStringTag, { value: "Module" }));
 function prepareVehicleWeaponAttack(vehicleActor, weapon) {
@@ -2959,7 +3010,7 @@ class CharacterSheet extends ActorSheet {
       submitOnChange: true
     });
   }
-  getData() {
+  async getData() {
     const context = super.getData();
     context.system = this.actor.system;
     const systemData = context.system;
@@ -2996,6 +3047,36 @@ class CharacterSheet extends ActorSheet {
     const actorStrength = this.actor.system.attributes?.strength || 0;
     const rawFeats = this.actor.items.filter((item) => item.type === "feat");
     const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue, this.actor);
+    const linkedVehicleUuids = this.actor.system.linkedVehicles || [];
+    const linkedVehicles = [];
+    for (const uuid of linkedVehicleUuids) {
+      try {
+        const vehicleActor = await fromUuid(uuid);
+        if (vehicleActor && vehicleActor.type === "vehicle") {
+          linkedVehicles.push({
+            _id: vehicleActor.id,
+            uuid: vehicleActor.uuid,
+            name: vehicleActor.name,
+            img: vehicleActor.img,
+            type: "vehicle-actor",
+            system: {
+              featType: "vehicle",
+              autopilot: vehicleActor.system?.attributes?.autopilot || 0,
+              structure: vehicleActor.system?.attributes?.structure || 0,
+              handling: vehicleActor.system?.attributes?.handling || 0,
+              speed: vehicleActor.system?.attributes?.speed || 0,
+              armor: vehicleActor.system?.attributes?.armor || 0,
+              weaponInfo: vehicleActor.system?.weaponInfo || "",
+              calculatedCost: vehicleActor.system?.calculatedCost || 0,
+              description: vehicleActor.system?.description || ""
+            }
+          });
+        }
+      } catch (error) {
+        console.warn(`Failed to load vehicle actor ${uuid}:`, error);
+      }
+    }
+    const vehicleFeats = allFeats.filter((feat) => feat.system.featType === "vehicle");
     context.featsByType = {
       trait: allFeats.filter((feat) => feat.system.featType === "trait"),
       contact: allFeats.filter((feat) => feat.system.featType === "contact"),
@@ -3004,7 +3085,8 @@ class CharacterSheet extends ActorSheet {
       equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
       cyberdeck: allFeats.filter((feat) => feat.system.featType === "cyberdeck"),
-      vehicle: allFeats.filter((feat) => feat.system.featType === "vehicle"),
+      vehicle: [...vehicleFeats, ...linkedVehicles],
+      // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
       weapon: allFeats.filter((feat) => feat.system.featType === "weapon"),
       spell: allFeats.filter((feat) => feat.system.featType === "spell")
@@ -3077,6 +3159,8 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="delete-metatype"]').on("click", this._onDeleteMetatype.bind(this));
     html.find('[data-action="edit-feat"]').on("click", this._onEditFeat.bind(this));
     html.find('[data-action="delete-feat"]').on("click", this._onDeleteFeat.bind(this));
+    html.find('[data-action="open-vehicle"]').on("click", this._onOpenVehicle.bind(this));
+    html.find('[data-action="unlink-vehicle"]').on("click", this._onUnlinkVehicle.bind(this));
     html.find('[data-action="edit-skill"]').on("click", this._onEditSkill.bind(this));
     html.find('[data-action="delete-skill"]').on("click", this._onDeleteSkill.bind(this));
     html.find('[data-action="edit-specialization"]').on("click", this._onEditSpecialization.bind(this));
@@ -3127,6 +3211,10 @@ class CharacterSheet extends ActorSheet {
       item.setAttribute("draggable", "true");
       item.addEventListener("dragstart", this._onDragStart.bind(this));
     });
+    html.find(".vehicle-actor-item").each((_index, item) => {
+      item.setAttribute("draggable", "true");
+      item.addEventListener("dragstart", this._onDragStart.bind(this));
+    });
   }
   /**
    * Handle form submission to update actor data
@@ -3174,6 +3262,45 @@ class CharacterSheet extends ActorSheet {
   }
   async _onDeleteSpecialization(event) {
     return handleDeleteItem(event, this.actor);
+  }
+  /**
+   * Handle opening a linked vehicle actor sheet
+   */
+  async _onOpenVehicle(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    if (!vehicleUuid) return;
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid);
+      if (vehicleActor && vehicleActor.sheet) {
+        vehicleActor.sheet.render(true);
+      }
+    } catch (error) {
+      console.error("Error opening vehicle sheet:", error);
+      ui.notifications?.error("Erreur lors de l'ouverture de la fiche du véhicule");
+    }
+  }
+  /**
+   * Handle unlinking a vehicle actor from the character
+   */
+  async _onUnlinkVehicle(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    if (!vehicleUuid) return;
+    const linkedVehicles = this.actor.system.linkedVehicles || [];
+    const updatedLinkedVehicles = linkedVehicles.filter((uuid) => uuid !== vehicleUuid);
+    await this.actor.update({ "system.linkedVehicles": updatedLinkedVehicles });
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid);
+      if (vehicleActor) {
+        await vehicleActor.update({ "prototypeToken.actorLink": false });
+      }
+    } catch (error) {
+      console.warn("Could not update vehicle token prototype:", error);
+    }
+    ui.notifications?.info(game.i18n.localize("SRA2.FEATS.VEHICLE_UNLINKED"));
   }
   /**
    * Get detailed RR sources for a given skill, specialization, or attribute
@@ -3314,13 +3441,34 @@ class CharacterSheet extends ActorSheet {
     return applyDamage(defenderUuid, damageValue, defenderName);
   }
   /**
-   * Handle drag start for feat items
+   * Handle drag start for feat items and vehicle actors
+   * For vehicle actors, allow dragging them to the map
    */
   _onDragStart(event) {
     const itemId = event.currentTarget.dataset.itemId;
+    const vehicleUuid = event.currentTarget.dataset.vehicleUuid;
+    if (vehicleUuid) {
+      const dragData2 = {
+        type: "Actor",
+        uuid: vehicleUuid
+      };
+      event.dataTransfer?.setData("text/plain", JSON.stringify(dragData2));
+      return;
+    }
     if (!itemId) return;
     const item = this.actor.items.get(itemId);
     if (!item) return;
+    if (item.type === "feat" && item.system.featType === "vehicle") {
+      const vehicleActorUuid = item.system.vehicleActorUuid;
+      if (vehicleActorUuid) {
+        const dragData2 = {
+          type: "Actor",
+          uuid: vehicleActorUuid
+        };
+        event.dataTransfer?.setData("text/plain", JSON.stringify(dragData2));
+        return;
+      }
+    }
     const dragData = {
       type: "Item",
       uuid: item.uuid
@@ -3328,11 +3476,14 @@ class CharacterSheet extends ActorSheet {
     event.dataTransfer?.setData("text/plain", JSON.stringify(dragData));
   }
   /**
-   * Override to handle dropping feats and skills anywhere on the sheet
+   * Override to handle dropping feats, skills, and vehicle actors anywhere on the sheet
    */
   async _onDrop(event) {
     const handled = await handleItemDrop(event, this.actor);
-    return handled ? void 0 : super._onDrop(event);
+    if (handled) return void 0;
+    const vehicleHandled = await handleVehicleActorDrop(event, this.actor);
+    if (vehicleHandled) return void 0;
+    return super._onDrop(event);
   }
   /**
    * Handle skill search input

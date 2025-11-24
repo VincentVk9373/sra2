@@ -159,6 +159,15 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
           required: true,
           initial: ""
         })
+      }),
+      // Linked vehicle actors (UUIDs)
+      linkedVehicles: new fields.ArrayField(new fields.StringField({
+        required: true,
+        initial: ""
+      }), {
+        required: true,
+        initial: [],
+        label: "SRA2.CHARACTER.LINKED_VEHICLES"
       })
     };
   }

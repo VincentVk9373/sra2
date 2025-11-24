@@ -475,6 +475,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT"
       }),
+      // Reference to vehicle actor when feat is created from dragging a vehicle actor
+      vehicleActorUuid: new fields.StringField({
+        required: false,
+        initial: "",
+        nullable: true,
+        label: "SRA2.FEATS.VEHICLE.ACTOR_UUID"
+      }),
       // Cyberdeck specific fields
       firewall: new fields.NumberField({
         required: true,

@@ -32,7 +32,8 @@
                 "COMBAT": "Combat",
                 "SKILLS": "Compétences",
                 "FEATS": "Atouts"
-            }
+            },
+            "LINKED_VEHICLES": "Véhicules liés"
         },
         "TOTAL_COST": "Coût Total",
         "NPC": {
@@ -187,6 +188,9 @@
             "IS_FIRST_FEAT_HINT": "Cochez cette case si c'est le premier trait du personnage (traits seulement : coûte 0 au niveau 0, sinon coûte 3)",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} est déjà sur ce personnage",
+            "VEHICLE_ALREADY_EXISTS": "Le véhicule {name} est déjà sur ce personnage",
+            "VEHICLE_ADDED": "Le véhicule {name} a été ajouté",
+            "VEHICLE_UNLINKED": "Le véhicule a été délié",
             "ONLY_FEATS": "Seuls les atouts peuvent être déposés dans la section des atouts",
             "SEARCH_PLACEHOLDER": "Rechercher un atout...",
             "SEARCH_NO_RESULTS": "Aucun atout trouvé",
@@ -460,6 +464,9 @@
                 "AUTOPILOT_UNLOCKED_HINT": "Autopilote débridé : +3 niveaux",
                 "ADDITIONAL_DRONE_COUNT": "Drones supplémentaires identiques",
                 "ADDITIONAL_DRONE_COUNT_HINT": "Nombre de drones supplémentaires identiques (max 3) : +2 niveaux par drone",
+                "ACTOR_UUID": "UUID de l'acteur véhicule",
+                "OPEN_SHEET": "Ouvrir la fiche du véhicule",
+                "UNLINK": "Délier le véhicule",
                 "TYPES": {
                     "MICRODRONE": "Microdrone (Autopilote 6, Structure 0, Maniabilité 10, Vitesse 0 (vol 1), Blindage 0, aucune monture d'arme)",
                     "SMALL_DRONE": "Petit drone (Autopilote 6, Structure 1, Maniabilité 9, Vitesse 2 (vol 4), Blindage 0, mitraillette au maximum)",
