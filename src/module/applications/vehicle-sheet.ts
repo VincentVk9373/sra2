@@ -33,6 +33,41 @@ export class VehicleSheet extends ActorSheet {
     // Ensure system data is available
     context.system = this.actor.system;
 
+    // Ensure damage arrays are properly initialized
+    const systemData = context.system as any;
+    if (!systemData.damage) {
+      systemData.damage = {
+        light: [false, false],
+        severe: [false],
+        incapacitating: false
+      };
+    } else {
+      // Ensure arrays are properly sized
+      if (!Array.isArray(systemData.damage.light)) {
+        systemData.damage.light = [false, false];
+      }
+      while (systemData.damage.light.length < 2) {
+        systemData.damage.light.push(false);
+      }
+      while (systemData.damage.light.length > 2) {
+        systemData.damage.light.pop();
+      }
+      
+      if (!Array.isArray(systemData.damage.severe)) {
+        systemData.damage.severe = [false];
+      }
+      while (systemData.damage.severe.length < 1) {
+        systemData.damage.severe.push(false);
+      }
+      while (systemData.damage.severe.length > 1) {
+        systemData.damage.severe.pop();
+      }
+      
+      if (typeof systemData.damage.incapacitating !== 'boolean') {
+        systemData.damage.incapacitating = false;
+      }
+    }
+
     // Add vehicle types for selection
     context.vehicleTypes = VEHICLE_TYPES;
 
@@ -174,6 +209,91 @@ export class VehicleSheet extends ActorSheet {
       await this.actor.update({
         'system.narrativeEffects': narrativeEffects
       } as any);
+    });
+
+    // Handle damage checkbox changes (both in header and combat section)
+    html.find('input[name^="system.damage."]').on('change', async (event) => {
+      const input = event.currentTarget as HTMLInputElement;
+      const name = input.name;
+      const checked = input.checked;
+      
+      // Save current active section before update
+      const activeNavItem = html.find('.section-nav .nav-item.active');
+      const activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : null;
+      
+      // Parse the name to get the path (e.g., "system.damage.light.0" -> ["damage", "light", "0"])
+      const pathParts = name.split('.').slice(1); // Remove "system"
+      
+      if (pathParts.length >= 2 && pathParts[0] === 'damage') {
+        const damageType = pathParts[1]; // "light", "severe", or "incapacitating"
+        
+        // Update data without triggering full render
+        if (damageType === 'incapacitating') {
+          // For incapacitating, it's a boolean, not an array
+          await this.actor.updateSource({
+            'system.damage.incapacitating': checked
+          } as any);
+        } else if (damageType === 'light' || damageType === 'severe') {
+          // For light and severe, it's an array
+          if (pathParts.length >= 3 && pathParts[2]) {
+            const index = parseInt(pathParts[2]);
+            const damage = (this.actor.system as any).damage || {};
+            const damageArray = [...(damage[damageType] || [])];
+            
+            // Ensure array is long enough
+            while (damageArray.length <= index) {
+              damageArray.push(false);
+            }
+            
+            damageArray[index] = checked;
+            
+            await this.actor.updateSource({
+              [`system.damage.${damageType}`]: damageArray
+            } as any);
+          }
+        }
+        
+        // Update the actor to persist changes, but don't re-render
+        await this.actor.update({}, { render: false });
+        
+        // Synchronize all checkboxes with the same name
+        html.find(`input[name="${name}"]`).prop('checked', checked);
+        
+        // Update visual state for track-boxes in header
+        if (damageType === 'incapacitating') {
+          html.find(`label.track-box input[name="system.damage.incapacitating"]`).prop('checked', checked);
+          html.find(`label.track-box input[name="system.damage.incapacitating"]`).closest('label.track-box')
+            .toggleClass('checked', checked);
+        } else {
+          html.find(`input[name="${name}"]`).each((_, checkbox) => {
+            const $checkbox = $(checkbox);
+            $checkbox.prop('checked', checked);
+            $checkbox.closest('label.track-box').toggleClass('checked', checked);
+          });
+        }
+        
+        // Restore active section after update
+        if (activeSection) {
+          setTimeout(() => {
+            const currentHtml = $(this.element);
+            const form = currentHtml.closest('form')[0];
+            if (form) {
+              const navButton = form.querySelector(`[data-section="${activeSection}"]`);
+              if (navButton) {
+                // Manually set active section without triggering navigation
+                form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
+                navButton.classList.add('active');
+                
+                form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
+                const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
+                if (targetSection) {
+                  targetSection.classList.add('active');
+                }
+              }
+            }
+          }, 10);
+        }
+      }
     });
   }
 
