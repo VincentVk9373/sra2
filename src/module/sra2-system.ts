@@ -74,6 +74,7 @@ export class SRA2System {
     // Register Actor data models
     CONFIG.Actor.dataModels = {
       character: models.CharacterDataModel,
+      vehicle: models.VehicleDataModel,
     };
     
     // Register Item data models
@@ -96,6 +97,13 @@ export class SRA2System {
       types: ["character"],
       makeDefault: false,
       label: "SRA2.SHEET.NPC"
+    });
+    
+    // Register vehicle sheet
+    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.VehicleSheet, {
+      types: ["vehicle"],
+      makeDefault: true,
+      label: "SRA2.SHEET.VEHICLE"
     });
     
     // Register feat sheet

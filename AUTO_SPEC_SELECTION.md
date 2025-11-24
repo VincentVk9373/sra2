@@ -176,3 +176,4 @@ Les deux personnages bénéficient de la présélection automatique pendant le c
 - Mémoriser les préférences du joueur par arme
 - Ajouter un raccourci clavier pour valider directement avec la présélection
 
+

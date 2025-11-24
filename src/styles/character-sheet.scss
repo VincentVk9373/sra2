@@ -595,6 +595,29 @@
         }
       }
       
+      .vehicle-cost {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+        color: #e0e0e0;
+        margin-top: 0.25rem;
+        
+        .cost-label {
+          font-weight: 500;
+          color: #a0c4ff;
+        }
+        
+        .cost-value {
+          font-weight: bold;
+          color: #00d4ff;
+          padding: 0.2rem 0.5rem;
+          background: rgba(0, 212, 255, 0.2);
+          border: 1px solid #00d4ff;
+          border-radius: 4px;
+        }
+      }
+      
       .total-cost {
         font-size: 1.1rem;
         color: #e0e0e0;
@@ -928,6 +951,55 @@
             margin-top: 0.25rem;
           }
           
+          .attribute-description {
+            font-size: 0.75rem;
+            color: #a0c4ff;
+            text-align: center;
+            margin-top: 0.25rem;
+            font-style: italic;
+            opacity: 0.8;
+          }
+          
+          .attribute-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00d4ff;
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid #0f3460;
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 4px;
+            min-width: 60px;
+            display: inline-block;
+          }
+          
+          .attribute-bonus {
+            font-size: 0.85rem;
+            color: #ffd700;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            padding: 0.2rem 0.4rem;
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid #ffd700;
+            border-radius: 3px;
+          }
+          
+          .attribute-base {
+            font-size: 0.7rem;
+            color: #a0c4ff;
+            text-align: center;
+            margin-top: 0.25rem;
+            font-style: italic;
+            opacity: 0.7;
+          }
+          
+          .attribute-status {
+            font-size: 0.75rem;
+            color: #ff6b6b;
+            margin-left: 0.5rem;
+            font-style: italic;
+          }
+          
           .attribute-totals {
             display: flex;
             gap: 0.5rem;
@@ -953,6 +1025,289 @@
               border-radius: 10px;
               border: 1px solid #00d4ff;
             }
+          }
+        }
+        
+        /* Vehicle Type Selection */
+        .vehicle-type-section {
+          margin-bottom: 1.5rem;
+          padding: 1rem;
+          background: rgba(15, 52, 96, 0.3);
+          border: 1px solid #00d4ff;
+          border-radius: 6px;
+          
+          h2 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1.1rem;
+            color: #00d4ff;
+          }
+          
+          .vehicle-type-select {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #0f3460;
+            border-radius: 4px;
+            color: #e0e0e0;
+            
+            &:focus {
+              outline: none;
+              border-color: #00d4ff;
+              background: rgba(0, 212, 255, 0.1);
+            }
+          }
+        }
+        
+        /* Vehicle Bonuses Section */
+        .vehicle-bonuses-section {
+          margin-top: 1.5rem;
+          padding: 1rem;
+          background: rgba(15, 52, 96, 0.2);
+          border: 1px solid #0f3460;
+          border-radius: 6px;
+          
+          h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            color: #00d4ff;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 0.5rem;
+          }
+          
+          .bonuses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            
+            .bonus-field {
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+              
+              label {
+                font-size: 0.9rem;
+                color: #e0e0e0;
+                font-weight: 500;
+              }
+              
+              input {
+                padding: 0.5rem;
+                text-align: center;
+                font-size: 1rem;
+                font-weight: bold;
+              }
+            }
+          }
+          
+          .vehicle-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            
+            .option-field {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              
+              label {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.9rem;
+                color: #e0e0e0;
+                cursor: pointer;
+                
+                input[type="checkbox"] {
+                  width: 20px;
+                  height: 20px;
+                  cursor: pointer;
+                }
+                
+                input[type="number"] {
+                  width: 60px;
+                  padding: 0.4rem;
+                  text-align: center;
+                  margin-left: 0.5rem;
+                }
+              }
+            }
+          }
+          
+          .weapon-mount-section {
+            padding: 0.75rem;
+            background: rgba(15, 52, 96, 0.3);
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            
+            h3 {
+              margin: 0 0 0.75rem 0;
+              font-size: 1rem;
+              color: #00d4ff;
+            }
+            
+            .weapon-mount-info {
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+              
+              .weapon-mount-value {
+                padding: 0.5rem 1rem;
+                background: rgba(0, 212, 255, 0.2);
+                border: 1px solid #00d4ff;
+                border-radius: 4px;
+                font-weight: bold;
+                color: #00d4ff;
+                min-width: 100px;
+                text-align: center;
+              }
+              
+              input {
+                flex: 1;
+                padding: 0.5rem;
+              }
+            }
+          }
+        }
+        
+        .no-vehicle-type {
+          text-align: center;
+          padding: 2rem;
+          color: #a0c4ff;
+          font-style: italic;
+        }
+        
+        /* Narrative Effects Section */
+        .narrative-effects-section {
+          margin-top: 1rem;
+          
+          .narrative-effects-hint {
+            font-size: 0.85rem;
+            color: #a0c4ff;
+            font-style: italic;
+            margin-bottom: 1rem;
+          }
+          
+          .narrative-effects-list {
+            margin-bottom: 1rem;
+            
+            .narrative-effect-item {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 0.5rem;
+              
+              input[type="text"] {
+                flex: 1;
+                padding: 0.5rem;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid #0f3460;
+                border-radius: 4px;
+                color: #e0e0e0;
+                
+                &:focus {
+                  outline: none;
+                  border-color: #00d4ff;
+                  background: rgba(0, 212, 255, 0.1);
+                }
+              }
+              
+              .remove-narrative-effect {
+                padding: 0.5rem;
+                background: rgba(220, 53, 69, 0.2);
+                border: 1px solid #dc3545;
+                border-radius: 4px;
+                color: #dc3545;
+                cursor: pointer;
+                transition: all 0.2s;
+                
+                &:hover {
+                  background: rgba(220, 53, 69, 0.3);
+                  transform: scale(1.1);
+                }
+              }
+            }
+          }
+          
+          .add-narrative-effect-button {
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #00d4ff 0%, #4dd0e1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            
+            i {
+              font-size: 1rem;
+            }
+            
+            &:hover {
+              background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+            }
+            
+            &:active {
+              transform: translateY(0);
+            }
+          }
+        }
+        
+        /* Weapons Controls */
+        .weapons-controls {
+          margin-bottom: 1rem;
+          
+          .add-world-weapon-button {
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #00d4ff 0%, #4dd0e1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            
+            i {
+              font-size: 1rem;
+            }
+            
+            &:hover {
+              background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+            }
+            
+            &:active {
+              transform: translateY(0);
+            }
+          }
+        }
+        
+        .weapon-cost {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.85rem;
+          color: #00d4ff;
+          font-weight: 500;
+          
+          .cost-value {
+            padding: 0.2rem 0.5rem;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid #00d4ff;
+            border-radius: 4px;
           }
         }
         

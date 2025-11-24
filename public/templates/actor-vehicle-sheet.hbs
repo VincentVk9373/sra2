@@ -1,0 +1,375 @@
+<form class="{{cssClass}} sra2-character-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="header-fields">
+      <div class="damage-anarchy-tracker">
+        <div class="damage-track">
+          <div class="damage-group light">
+            <span class="track-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
+            <div class="track-boxes">
+              {{#each system.damage.light}}
+              <label class="track-box {{#if this}}checked{{/if}}">
+                <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
+                <span class="box-circle"></span>
+              </label>
+              {{/each}}
+            </div>
+          </div>
+          <div class="damage-group severe">
+            <span class="track-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
+            <div class="track-boxes">
+              {{#each system.damage.severe}}
+              <label class="track-box {{#if this}}checked{{/if}}">
+                <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                <span class="box-circle"></span>
+              </label>
+              {{/each}}
+            </div>
+          </div>
+          <div class="damage-group incapacitating">
+            <span class="track-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
+            <div class="track-boxes">
+              <label class="track-box {{#if system.damage.incapacitating}}checked{{/if}}">
+                <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
+                <span class="box-circle"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'SRA2.VEHICLE.NAME'}}"/></h1>
+      {{#if system.calculatedCost}}
+      <div class="vehicle-cost">
+        <span class="cost-label">{{localize "SRA2.VEHICLE.COST"}}:</span>
+        <span class="cost-value">{{system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+      </div>
+      {{/if}}
+    </div>
+  </header>
+
+  <div class="sheet-content">
+    <!-- Left Sidebar Navigation -->
+    <nav class="section-nav">
+      <button type="button" class="nav-item active" data-section="attributes" title="{{localize 'SRA2.VEHICLE.ATTRIBUTES.LABEL'}}">
+        <i class="fas fa-chart-bar"></i>
+      </button>
+      <button type="button" class="nav-item" data-section="weapons" title="{{localize 'SRA2.VEHICLE.SECTION.WEAPONS'}}">
+        <i class="fas fa-crosshairs"></i>
+      </button>
+      <button type="button" class="nav-item" data-section="combat" title="{{localize 'SRA2.VEHICLE.SECTION.COMBAT'}}">
+        <i class="fas fa-shield-alt"></i>
+      </button>
+      <button type="button" class="nav-item" data-section="feats" title="{{localize 'SRA2.VEHICLE.SECTION.FEATS'}}">
+        <i class="fas fa-star"></i>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="section-content">
+      <!-- Attributes Section -->
+      <section class="content-section active" data-section-content="attributes">
+        <h2><i class="fas fa-chart-bar"></i> {{localize "SRA2.VEHICLE.ATTRIBUTES.LABEL"}}</h2>
+        
+        <section class="sheet-body">
+          <!-- Vehicle Type Selection -->
+          <div class="vehicle-type-section">
+            <h2>{{localize "SRA2.VEHICLE.VEHICLE_TYPE"}}</h2>
+            <select name="system.vehicleType" class="vehicle-type-select">
+              <option value="">{{localize "SRA2.VEHICLE.SELECT_TYPE"}}</option>
+              {{#each vehicleTypes}}
+              <option value="{{@key}}" {{#if (eq @key ../system.vehicleType)}}selected{{/if}}>{{@key}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <!-- Calculated Attributes (Read-only) -->
+          {{#if system.vehicleType}}
+          <div class="attributes">
+            <h2>{{localize "SRA2.VEHICLE.ATTRIBUTES.LABEL"}}</h2>
+            <div class="attribute-grid">
+              <div class="attribute">
+                <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT"}}</label>
+                <div class="attribute-controls">
+                  <span class="attribute-value">{{system.attributes.autopilot}}</span>
+                  {{#if (gt system.autopilotBonus 0)}}
+                  <span class="attribute-bonus">+{{system.autopilotBonus}}</span>
+                  {{/if}}
+                </div>
+                <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT_DESC"}}</span>
+                <span class="attribute-base">Base: {{system.baseAttributes.autopilot}}</span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.STRUCTURE"}}</label>
+                <div class="attribute-controls">
+                  <span class="attribute-value">{{system.attributes.structure}}</span>
+                </div>
+                <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.STRUCTURE_DESC"}}</span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.ARMOR"}}</label>
+                <div class="attribute-controls">
+                  <span class="attribute-value">{{system.attributes.armor}}</span>
+                  {{#if (gt system.armorBonus 0)}}
+                  <span class="attribute-bonus">+{{system.armorBonus}}</span>
+                  {{/if}}
+                </div>
+                <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.ARMOR_DESC"}}</span>
+                <span class="attribute-base">Base: {{system.baseAttributes.armor}}</span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.HANDLING"}}</label>
+                <div class="attribute-controls">
+                  <span class="attribute-value">{{system.attributes.handling}}</span>
+                  {{#if (gt system.handlingBonus 0)}}
+                  <span class="attribute-bonus">+{{system.handlingBonus}}</span>
+                  {{/if}}
+                </div>
+                <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.HANDLING_DESC"}}</span>
+                <span class="attribute-base">Base: {{system.baseAttributes.handling}}</span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.SPEED"}}</label>
+                <div class="attribute-controls">
+                  <span class="attribute-value">{{system.attributes.speed}}</span>
+                  {{#if (gt system.speedBonus 0)}}
+                  <span class="attribute-bonus">+{{system.speedBonus}}</span>
+                  {{/if}}
+                  {{#if system.isFixed}}
+                  <span class="attribute-status">({{localize "SRA2.FEATS.VEHICLE.IS_FIXED"}})</span>
+                  {{/if}}
+                </div>
+                <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.SPEED_DESC"}}</span>
+                <span class="attribute-base">Base: {{system.baseAttributes.speed}}</span>
+              </div>
+              {{#if (gt system.attributes.flyingSpeed 0)}}
+              <div class="attribute">
+                <label>{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED"}}</label>
+                <div class="attribute-controls">
+                  <span class="attribute-value">{{system.attributes.flyingSpeed}}</span>
+                </div>
+                <span class="attribute-description">{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED_DESC"}}</span>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+
+          <!-- Vehicle Bonuses and Options -->
+          <div class="vehicle-bonuses-section">
+            <h2>{{localize "SRA2.VEHICLE.BONUSES_AND_OPTIONS"}}</h2>
+            
+            <div class="bonuses-grid">
+              <div class="bonus-field">
+                <label>{{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_BONUS"}}</label>
+                <input type="number" name="system.autopilotBonus" value="{{system.autopilotBonus}}" min="0" max="6" />
+              </div>
+              <div class="bonus-field">
+                <label>{{localize "SRA2.FEATS.VEHICLE.SPEED_BONUS"}}</label>
+                <input type="number" name="system.speedBonus" value="{{system.speedBonus}}" min="0" max="3" />
+              </div>
+              <div class="bonus-field">
+                <label>{{localize "SRA2.FEATS.VEHICLE.HANDLING_BONUS"}}</label>
+                <input type="number" name="system.handlingBonus" value="{{system.handlingBonus}}" min="0" max="3" />
+              </div>
+              <div class="bonus-field">
+                <label>{{localize "SRA2.FEATS.VEHICLE.ARMOR_BONUS"}}</label>
+                <input type="number" name="system.armorBonus" value="{{system.armorBonus}}" min="0" />
+              </div>
+            </div>
+
+            <div class="vehicle-options">
+              <div class="option-field">
+                <label>
+                  <input type="checkbox" name="system.isFixed" {{#if system.isFixed}}checked{{/if}} />
+                  {{localize "SRA2.FEATS.VEHICLE.IS_FIXED"}}
+                </label>
+              </div>
+              <div class="option-field">
+                <label>
+                  <input type="checkbox" name="system.isFlying" {{#if system.isFlying}}checked{{/if}} />
+                  {{localize "SRA2.FEATS.VEHICLE.IS_FLYING"}}
+                </label>
+              </div>
+              <div class="option-field">
+                <label>
+                  <input type="checkbox" name="system.weaponMountImprovement" {{#if system.weaponMountImprovement}}checked{{/if}} />
+                  {{localize "SRA2.FEATS.VEHICLE.WEAPON_MOUNT_IMPROVEMENT"}}
+                </label>
+              </div>
+              <div class="option-field">
+                <label>
+                  <input type="checkbox" name="system.autopilotUnlocked" {{#if system.autopilotUnlocked}}checked{{/if}} />
+                  {{localize "SRA2.FEATS.VEHICLE.AUTOPILOT_UNLOCKED"}}
+                </label>
+              </div>
+              <div class="option-field">
+                <label>
+                  {{localize "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT"}}
+                  <input type="number" name="system.additionalDroneCount" value="{{system.additionalDroneCount}}" min="0" max="3" />
+                </label>
+              </div>
+            </div>
+
+            <div class="weapon-mount-section">
+              <h3>{{localize "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"}}</h3>
+              <div class="weapon-mount-info">
+                <span class="weapon-mount-value">{{system.weaponMount}}</span>
+                <input type="text" name="system.weaponInfo" value="{{system.weaponInfo}}" placeholder="{{localize 'SRA2.FEATS.VEHICLE.WEAPON_INFO'}}" />
+              </div>
+            </div>
+          </div>
+          {{else}}
+          <div class="no-vehicle-type">
+            <p>{{localize "SRA2.VEHICLE.SELECT_TYPE_FIRST"}}</p>
+          </div>
+          {{/if}}
+        </section>
+      </section>
+
+      <!-- Weapons Section -->
+      <section class="content-section" data-section-content="weapons">
+        <h2><i class="fas fa-crosshairs"></i> {{localize "SRA2.VEHICLE.SECTION.WEAPONS"}}</h2>
+        
+        <section class="sheet-body">
+          <div class="weapons-controls">
+            <button type="button" class="add-world-weapon-button" data-action="add-world-weapon" title="{{localize 'SRA2.VEHICLE.ADD_WEAPON'}}">
+              <i class="fas fa-search"></i> {{localize "SRA2.VEHICLE.ADD_WEAPON"}}
+            </button>
+          </div>
+          
+          {{#if weapons}}
+          <div class="weapons-list">
+            <div class="skills-header">
+              <div class="skill-header-name">{{localize "SRA2.FEATS.NAME"}}</div>
+              <div class="skill-header-vd">{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE_SHORT"}}</div>
+              <div class="skill-header-dice">{{localize "SRA2.VEHICLE.DICE_POOL"}}</div>
+              <div class="skill-header-rr">{{localize "SRA2.VEHICLE.RR"}}</div>
+              <div class="skill-header-cost">{{localize "SRA2.VEHICLE.COST"}}</div>
+              <div class="skill-header-actions"></div>
+            </div>
+            {{#each weapons}}
+            <div class="weapon-item npc-skill-item" data-item-id="{{this._id}}">
+              <div class="weapon-name">
+                <img class="weapon-img" src="{{this.img}}" alt="{{this.name}}" />
+                <span>{{this.name}}</span>
+              </div>
+              <div class="weapon-vd">
+                <span class="vd-value">{{this.finalDamageValue}}</span>
+              </div>
+              <div class="skill-dice-pool clickable weapon-dice-pool" data-item-id="{{this._id}}" title="{{localize 'SRA2.VEHICLE.ROLL_WEAPON'}}">
+                <span class="dice-value">{{this.totalDicePool}}</span>
+                <i class="fas fa-dice-d6"></i>
+              </div>
+              <div class="skill-rr">
+                <span class="rr-value">{{this.totalRR}}</span>
+              </div>
+              <div class="weapon-cost">
+                <span class="cost-value">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+              </div>
+              <div class="skill-controls">
+                <a class="weapon-edit" data-action="edit-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.EDIT'}}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a class="weapon-delete" data-action="delete-feat" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.DELETE'}}">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          {{else}}
+          <div class="empty-skills">
+            <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
+          </div>
+          {{/if}}
+        </section>
+      </section>
+
+      <!-- Combat Section -->
+      <section class="content-section" data-section-content="combat">
+        <h2><i class="fas fa-shield-alt"></i> {{localize "SRA2.VEHICLE.SECTION.COMBAT"}}</h2>
+        
+        <section class="sheet-body">
+          <div class="armor-thresholds-section">
+            <div class="damage-tracking">
+              <label class="damage-label">{{localize "SRA2.DAMAGE.LABEL"}}</label>
+              <div class="damage-checkboxes">
+                <div class="damage-group light">
+                  <span class="damage-type-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
+                  {{#each system.damage.light}}
+                    <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
+                  {{/each}}
+                </div>
+                <div class="damage-group severe">
+                  <span class="damage-type-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
+                  {{#each system.damage.severe}}
+                    <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                  {{/each}}
+                </div>
+                <div class="damage-group incapacitating">
+                  <span class="damage-type-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
+                  <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
+                </div>
+              </div>
+            </div>
+            
+            <div class="thresholds-table">
+              <h3>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.LABEL"}}</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.TYPE"}}</th>
+                    <th>{{localize "SRA2.ARMOR_THRESHOLDS.LIGHT"}}</th>
+                    <th>{{localize "SRA2.ARMOR_THRESHOLDS.SEVERE"}}</th>
+                    <th>{{localize "SRA2.DAMAGE.INCAPACITATING"}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.DAMAGE"}}</td>
+                    <td>{{system.damageThresholds.light}}</td>
+                    <td>{{system.damageThresholds.severe}}</td>
+                    <td>{{system.damageThresholds.incapacitating}}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="thresholds-formula">
+                <p><strong>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.FORMULA"}}:</strong></p>
+                <ul>
+                  <li>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.LIGHT_FORMULA"}}</li>
+                  <li>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.SEVERE_FORMULA"}}</li>
+                  <li>{{localize "SRA2.VEHICLE.DAMAGE_THRESHOLDS.INCAPACITATING_FORMULA"}}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Narrative Effects Section -->
+      <section class="content-section" data-section-content="feats">
+        <h2><i class="fas fa-star"></i> {{localize "SRA2.VEHICLE.NARRATIVE_EFFECTS"}}</h2>
+        
+        <section class="sheet-body">
+          <div class="narrative-effects-section">
+            <p class="narrative-effects-hint">{{localize "SRA2.VEHICLE.NARRATIVE_EFFECTS_HINT"}}</p>
+            
+            <div class="narrative-effects-list">
+              {{#each system.narrativeEffects}}
+              <div class="narrative-effect-item">
+                <input type="text" name="system.narrativeEffects.{{@index}}" value="{{this}}" placeholder="{{localize 'SRA2.VEHICLE.NARRATIVE_EFFECT_PLACEHOLDER'}}" />
+                <button type="button" class="remove-narrative-effect" data-index="{{@index}}" title="{{localize 'SRA2.VEHICLE.REMOVE_EFFECT'}}">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              {{/each}}
+            </div>
+            
+            <button type="button" class="add-narrative-effect-button" data-action="add-narrative-effect">
+              <i class="fas fa-plus"></i> {{localize "SRA2.VEHICLE.ADD_NARRATIVE_EFFECT"}}
+            </button>
+          </div>
+        </section>
+      </section>
+    </div>
+  </div>
+</form>

@@ -330,52 +330,24 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     }
   }
 }
-class SkillDataModel extends foundry.abstract.TypeDataModel {
-  static defineSchema() {
-    const fields = foundry.data.fields;
-    return {
-      rating: new fields.NumberField({
-        required: true,
-        initial: 1,
-        min: 0,
-        max: 8,
-        integer: true,
-        label: "SRA2.SKILLS.RATING"
-      }),
-      linkedAttribute: new fields.StringField({
-        required: true,
-        initial: "strength",
-        choices: {
-          strength: "SRA2.ATTRIBUTES.STRENGTH",
-          agility: "SRA2.ATTRIBUTES.AGILITY",
-          willpower: "SRA2.ATTRIBUTES.WILLPOWER",
-          logic: "SRA2.ATTRIBUTES.LOGIC",
-          charisma: "SRA2.ATTRIBUTES.CHARISMA"
-        },
-        label: "SRA2.SKILLS.LINKED_ATTRIBUTE"
-      }),
-      description: new fields.HTMLField({
-        required: true,
-        initial: ""
-      }),
-      bookmarked: new fields.BooleanField({
-        required: true,
-        initial: false,
-        label: "SRA2.SKILLS.BOOKMARKED"
-      })
-    };
-  }
-  prepareDerivedData() {
-    const rating = this.rating || 0;
-    let calculatedCost = 0;
-    if (rating <= 5) {
-      calculatedCost = rating * 2500;
-    } else {
-      calculatedCost = 5 * 2500 + (rating - 5) * 5e3;
-    }
-    this.calculatedCost = calculatedCost;
-  }
-}
+const microdrone = { "autopilot": 6, "structure": 0, "handling": 10, "speed": 0, "flyingSpeed": 1, "armor": 0, "weaponMount": "none" };
+const chopper = { "autopilot": 6, "structure": 5, "handling": 2, "speed": 5, "flyingSpeed": 0, "armor": 0, "weaponMount": "rifle" };
+const sedan = { "autopilot": 6, "structure": 6, "handling": 2, "speed": 4, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
+const van = { "autopilot": 6, "structure": 8, "handling": 1, "speed": 3, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
+const vehicleTypesData = {
+  microdrone,
+  "small-drone": { "autopilot": 6, "structure": 1, "handling": 9, "speed": 2, "flyingSpeed": 4, "armor": 0, "weaponMount": "smg" },
+  "medium-drone": { "autopilot": 6, "structure": 2, "handling": 7, "speed": 3, "flyingSpeed": 6, "armor": 0, "weaponMount": "rifle" },
+  "large-drone": { "autopilot": 6, "structure": 4, "handling": 4, "speed": 4, "flyingSpeed": 8, "armor": 0, "weaponMount": "rifle" },
+  "racing-motorcycle": { "autopilot": 6, "structure": 4, "handling": 2, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "rifle" },
+  "offroad-motorcycle": { "autopilot": 6, "structure": 4, "handling": 3, "speed": 5, "flyingSpeed": 0, "armor": 0, "weaponMount": "rifle" },
+  chopper,
+  "sports-car": { "autopilot": 6, "structure": 5, "handling": 2, "speed": 5, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
+  sedan,
+  "suv-pickup": { "autopilot": 6, "structure": 7, "handling": 1, "speed": 4, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
+  van,
+  "bus-truck": { "autopilot": 6, "structure": 10, "handling": 0, "speed": 2, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" }
+};
 const WEAPON_TYPES = {
   "custom-weapon": {
     vd: "0",
@@ -630,20 +602,7 @@ const WEAPON_TYPES = {
     linkedDefenseSpecialization: "Spé : Défense à distance"
   }
 };
-const VEHICLE_TYPES = {
-  "microdrone": { autopilot: 6, structure: 0, handling: 10, speed: 0, flyingSpeed: 1, armor: 0, weaponMount: "none" },
-  "small-drone": { autopilot: 6, structure: 1, handling: 9, speed: 2, flyingSpeed: 4, armor: 0, weaponMount: "smg" },
-  "medium-drone": { autopilot: 6, structure: 2, handling: 7, speed: 3, flyingSpeed: 6, armor: 0, weaponMount: "rifle" },
-  "large-drone": { autopilot: 6, structure: 4, handling: 4, speed: 4, flyingSpeed: 8, armor: 0, weaponMount: "rifle" },
-  "racing-motorcycle": { autopilot: 6, structure: 4, handling: 2, speed: 6, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
-  "offroad-motorcycle": { autopilot: 6, structure: 4, handling: 3, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
-  "chopper": { autopilot: 6, structure: 5, handling: 2, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
-  "sports-car": { autopilot: 6, structure: 5, handling: 2, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "sedan": { autopilot: 6, structure: 6, handling: 2, speed: 4, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "suv-pickup": { autopilot: 6, structure: 7, handling: 1, speed: 4, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "van": { autopilot: 6, structure: 8, handling: 1, speed: 3, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "bus-truck": { autopilot: 6, structure: 10, handling: 0, speed: 2, flyingSpeed: 0, armor: 0, weaponMount: "none" }
-};
+const VEHICLE_TYPES = vehicleTypesData;
 class FeatDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -680,11 +639,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: true,
         label: "SRA2.FEATS.ACTIVE"
-      }),
-      bookmarked: new fields.BooleanField({
-        required: true,
-        initial: false,
-        label: "SRA2.FEATS.BOOKMARKED"
       }),
       rrList: new fields.ArrayField(new fields.SchemaField({
         rrType: new fields.StringField({
@@ -1391,6 +1345,279 @@ const itemFeat = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProp
   VEHICLE_TYPES,
   WEAPON_TYPES
 }, Symbol.toStringTag, { value: "Module" }));
+class VehicleDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const vehicleTypeChoices = {};
+    Object.keys(VEHICLE_TYPES).forEach((key) => {
+      vehicleTypeChoices[key] = key;
+    });
+    return {
+      vehicleType: new fields.StringField({
+        required: false,
+        nullable: true,
+        choices: vehicleTypeChoices,
+        label: "SRA2.VEHICLE.VEHICLE_TYPE"
+      }),
+      // Vehicle bonuses
+      autopilotBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 6,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.AUTOPILOT_BONUS"
+      }),
+      speedBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 3,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.SPEED_BONUS"
+      }),
+      handlingBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 3,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.HANDLING_BONUS"
+      }),
+      armorBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.ARMOR_BONUS"
+      }),
+      isFixed: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.IS_FIXED"
+      }),
+      isFlying: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.IS_FLYING"
+      }),
+      weaponMountImprovement: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.WEAPON_MOUNT_IMPROVEMENT"
+      }),
+      autopilotUnlocked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.VEHICLE.AUTOPILOT_UNLOCKED"
+      }),
+      additionalDroneCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 3,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.ADDITIONAL_DRONE_COUNT"
+      }),
+      weaponMount: new fields.StringField({
+        required: true,
+        initial: "none",
+        label: "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"
+      }),
+      weaponInfo: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.FEATS.VEHICLE.WEAPON_INFO"
+      }),
+      narrativeEffects: new fields.ArrayField(new fields.StringField({
+        required: false,
+        initial: ""
+      }), {
+        initial: [],
+        label: "SRA2.VEHICLE.NARRATIVE_EFFECTS"
+      }),
+      damage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      })
+    };
+  }
+  prepareDerivedData() {
+    const vehicleType = this.vehicleType || "";
+    const vehicleStats = vehicleType && VEHICLE_TYPES[vehicleType] ? VEHICLE_TYPES[vehicleType] : null;
+    const baseAutopilot = vehicleStats?.autopilot || 6;
+    const baseStructure = vehicleStats?.structure || 2;
+    const baseHandling = vehicleStats?.handling || 5;
+    const baseSpeed = vehicleStats?.speed || 3;
+    const baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
+    const baseArmor = vehicleStats?.armor || 0;
+    const baseWeaponMount = vehicleStats?.weaponMount || "none";
+    const autopilotBonus = this.autopilotBonus || 0;
+    const speedBonus = this.speedBonus || 0;
+    const handlingBonus = this.handlingBonus || 0;
+    const armorBonus = this.armorBonus || 0;
+    const isFlying = this.isFlying || false;
+    const isFixed = this.isFixed || false;
+    const weaponMountImprovement = this.weaponMountImprovement || false;
+    const autopilotUnlocked = this.autopilotUnlocked || false;
+    const additionalDroneCount = this.additionalDroneCount || 0;
+    const finalAutopilot = Math.min(12, baseAutopilot + autopilotBonus);
+    const finalHandling = baseHandling + handlingBonus;
+    const finalSpeed = isFixed ? 0 : baseSpeed + speedBonus;
+    const finalFlyingSpeed = isFlying ? baseFlyingSpeed > 0 ? baseFlyingSpeed : 1 : 0;
+    const finalArmor = Math.min(baseStructure, baseArmor + armorBonus);
+    let finalWeaponMount = baseWeaponMount;
+    if (weaponMountImprovement) {
+      if (baseWeaponMount === "none") {
+        finalWeaponMount = "smg";
+      } else if (baseWeaponMount === "smg") {
+        finalWeaponMount = "rifle";
+      }
+    }
+    this.attributes = {
+      autopilot: finalAutopilot,
+      structure: baseStructure,
+      handling: finalHandling,
+      speed: finalSpeed,
+      flyingSpeed: finalFlyingSpeed,
+      armor: finalArmor
+    };
+    this.baseAttributes = {
+      autopilot: baseAutopilot,
+      structure: baseStructure,
+      handling: baseHandling,
+      speed: baseSpeed,
+      flyingSpeed: baseFlyingSpeed,
+      armor: baseArmor
+    };
+    this.weaponMount = finalWeaponMount;
+    this.damageThresholds = {
+      light: baseStructure + finalArmor,
+      severe: 2 * baseStructure + finalArmor,
+      incapacitating: 3 * baseStructure + finalArmor
+    };
+    const damage = this.damage || {};
+    const totalLightBoxes = 2;
+    const totalSevereBoxes = 1;
+    if (!Array.isArray(damage.light)) {
+      damage.light = [false, false];
+    }
+    while (damage.light.length < totalLightBoxes) {
+      damage.light.push(false);
+    }
+    while (damage.light.length > totalLightBoxes) {
+      damage.light.pop();
+    }
+    if (!Array.isArray(damage.severe)) {
+      damage.severe = [false];
+    }
+    while (damage.severe.length < totalSevereBoxes) {
+      damage.severe.push(false);
+    }
+    while (damage.severe.length > totalSevereBoxes) {
+      damage.severe.pop();
+    }
+    this.totalLightBoxes = totalLightBoxes;
+    this.totalSevereBoxes = totalSevereBoxes;
+    let calculatedCost = 5e3;
+    calculatedCost += autopilotBonus * 5e3;
+    calculatedCost += speedBonus * 5e3;
+    calculatedCost += handlingBonus * 5e3;
+    calculatedCost += armorBonus * 5e3;
+    if (isFlying) {
+      calculatedCost += 5e3;
+    }
+    if (weaponMountImprovement) {
+      calculatedCost += 5e3;
+    }
+    if (autopilotUnlocked) {
+      calculatedCost += 15e3;
+    }
+    if (additionalDroneCount > 0) {
+      calculatedCost += additionalDroneCount * 1e4;
+    }
+    if (isFixed) {
+      calculatedCost -= 5e3;
+    }
+    const narrativeEffects = this.narrativeEffects || [];
+    const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
+    calculatedCost += narrativeEffectsCount * 5e3;
+    const actor = this.parent;
+    if (actor && actor.items) {
+      const weapons = actor.items.filter((item) => {
+        const featType = item.system?.featType;
+        return featType === "weapon" || featType === "weapons-spells";
+      });
+      weapons.forEach((weapon) => {
+        const weaponCost = weapon.system?.calculatedCost || 0;
+        calculatedCost += weaponCost;
+      });
+    }
+    this.calculatedCost = calculatedCost;
+  }
+}
+class SkillDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    return {
+      rating: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 0,
+        max: 8,
+        integer: true,
+        label: "SRA2.SKILLS.RATING"
+      }),
+      linkedAttribute: new fields.StringField({
+        required: true,
+        initial: "strength",
+        choices: {
+          strength: "SRA2.ATTRIBUTES.STRENGTH",
+          agility: "SRA2.ATTRIBUTES.AGILITY",
+          willpower: "SRA2.ATTRIBUTES.WILLPOWER",
+          logic: "SRA2.ATTRIBUTES.LOGIC",
+          charisma: "SRA2.ATTRIBUTES.CHARISMA"
+        },
+        label: "SRA2.SKILLS.LINKED_ATTRIBUTE"
+      }),
+      description: new fields.HTMLField({
+        required: true,
+        initial: ""
+      }),
+      bookmarked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.SKILLS.BOOKMARKED"
+      })
+    };
+  }
+  prepareDerivedData() {
+    const rating = this.rating || 0;
+    let calculatedCost = 0;
+    if (rating <= 5) {
+      calculatedCost = rating * 2500;
+    } else {
+      calculatedCost = 5 * 2500 + (rating - 5) * 5e3;
+    }
+    this.calculatedCost = calculatedCost;
+  }
+}
 class SpecializationDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -1494,7 +1721,8 @@ const models = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   FeatDataModel,
   MetatypeDataModel,
   SkillDataModel,
-  SpecializationDataModel
+  SpecializationDataModel,
+  VehicleDataModel
 }, Symbol.toStringTag, { value: "Module" }));
 class SRA2Actor extends Actor {
   get feats() {
@@ -4854,6 +5082,213 @@ class NpcSheet extends ActorSheet {
     return await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
   }
 }
+class VehicleSheet extends ActorSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "sheet", "actor", "vehicle"],
+      template: "systems/sra2/templates/actor-vehicle-sheet.hbs",
+      width: 800,
+      height: 700,
+      tabs: [],
+      dragDrop: [
+        { dragSelector: ".feat-item", dropSelector: null }
+      ],
+      submitOnChange: true
+    });
+  }
+  /**
+   * Handle form submission to update actor data
+   */
+  async _updateObject(_event, formData) {
+    const expandedData = handleSheetUpdate(this.actor, formData);
+    return this.actor.update(expandedData);
+  }
+  getData() {
+    const context = super.getData();
+    context.system = this.actor.system;
+    context.vehicleTypes = VEHICLE_TYPES;
+    const allFeats = this.actor.items.filter((item) => item.type === "feat");
+    const activeFeats = allFeats.filter((feat) => feat.system.active === true);
+    const vehicleStructure = this.actor.system.attributes?.structure || 0;
+    const calculateWeaponStats = (item) => {
+      const itemData = {
+        ...item,
+        _id: item.id || item._id,
+        id: item.id || item._id
+      };
+      const autopilot = this.actor.system.attributes?.autopilot || 0;
+      let totalDicePool = autopilot;
+      let totalRR = 0;
+      activeFeats.forEach((feat) => {
+        const rrList = feat.system.rrList || [];
+        rrList.forEach((rrEntry) => {
+          if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
+            totalRR += rrEntry.rrValue || 0;
+          }
+        });
+      });
+      itemData.totalDicePool = totalDicePool;
+      itemData.totalRR = totalRR;
+      const damageValue = item.system.damageValue || "0";
+      const damageValueBonus = item.system.damageValueBonus || 0;
+      itemData.finalDamageValue = calculateFinalDamageValue(damageValue, damageValueBonus, vehicleStructure);
+      return itemData;
+    };
+    const rawWeapons = allFeats.filter(
+      (feat) => feat.system.featType === "weapon" || feat.system.featType === "weapons-spells"
+    );
+    const weapons = rawWeapons.map((weapon) => calculateWeaponStats(weapon));
+    context.weapons = weapons;
+    return context;
+  }
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
+    html.find(".feat-edit").on("click", (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        item.sheet?.render(true);
+      }
+    });
+    html.find(".feat-delete").on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        const confirmed = await Dialog.confirm({
+          title: game.i18n.format("SRA2.CONFIRM_DELETE", { name: item.name }),
+          content: "",
+          yes: () => true,
+          no: () => false,
+          defaultYes: false
+        });
+        if (confirmed) {
+          await item.delete();
+        }
+      }
+    });
+    html.find(".add-world-weapon-button").on("click", async (event) => {
+      event.preventDefault();
+      this._showItemBrowser("feat", true);
+    });
+    html.find(".weapon-dice-pool").on("click", async (event) => {
+      event.preventDefault();
+      const itemId = $(event.currentTarget).data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        const autopilot = this.actor.system.attributes?.autopilot || 0;
+        if (autopilot <= 0) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.ATTRIBUTES.NO_DICE"));
+          return;
+        }
+        ui.notifications?.info(game.i18n.format("SRA2.VEHICLE.ROLLING_WEAPON", {
+          weapon: item.name,
+          dice: autopilot
+        }));
+      }
+    });
+    html.find(".vehicle-type-select").on("change", this._onVehicleTypeChange.bind(this));
+    html.find(".add-narrative-effect-button").on("click", async (event) => {
+      event.preventDefault();
+      const narrativeEffects = [...this.actor.system.narrativeEffects || []];
+      narrativeEffects.push("");
+      await this.actor.update({
+        "system.narrativeEffects": narrativeEffects
+      });
+    });
+    html.find(".remove-narrative-effect").on("click", async (event) => {
+      event.preventDefault();
+      const index = parseInt($(event.currentTarget).data("index") || "0");
+      const narrativeEffects = [...this.actor.system.narrativeEffects || []];
+      narrativeEffects.splice(index, 1);
+      await this.actor.update({
+        "system.narrativeEffects": narrativeEffects
+      });
+    });
+  }
+  /**
+   * Handle section navigation
+   */
+  _onSectionNavigation(event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const section = button.dataset.section;
+    if (!section) return;
+    const form = button.closest("form");
+    if (!form) return;
+    form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    form.querySelectorAll(".content-section").forEach((section2) => section2.classList.remove("active"));
+    const targetSection = form.querySelector(`[data-section-content="${section}"]`);
+    if (targetSection) {
+      targetSection.classList.add("active");
+    }
+  }
+  /**
+   * Handle vehicle type selection change
+   */
+  async _onVehicleTypeChange(event) {
+    event.preventDefault();
+    const vehicleType = event.currentTarget.value;
+    if (!vehicleType || !VEHICLE_TYPES[vehicleType]) {
+      return;
+    }
+    await this.actor.update({
+      "system.vehicleType": vehicleType
+    });
+    this.render(false);
+  }
+  /**
+   * Show item browser dialog
+   */
+  async _showItemBrowser(itemType, weaponsOnly = false) {
+    let items = game.items.filter((item) => item.type === itemType);
+    if (weaponsOnly) {
+      items = items.filter((item) => {
+        const featType = item.system?.featType;
+        return featType === "weapon" || featType === "weapons-spells";
+      });
+    }
+    const itemOptions = items.map((item) => {
+      return `<option value="${item.id}">${item.name}</option>`;
+    }).join("");
+    const content = `
+      <div class="form-group">
+        <label>${game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.WORLD_ITEMS`)}</label>
+        <select id="item-select" style="width: 100%;">
+          <option value="">${game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.SEARCH_PLACEHOLDER`)}</option>
+          ${itemOptions}
+        </select>
+      </div>
+    `;
+    new Dialog({
+      title: game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.ADD_${itemType.toUpperCase()}`),
+      content,
+      buttons: {
+        add: {
+          icon: '<i class="fas fa-plus"></i>',
+          label: game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.ADD_${itemType.toUpperCase()}`),
+          callback: async (html) => {
+            const itemId = html.find("#item-select").val();
+            if (itemId) {
+              const item = game.items.get(itemId);
+              if (item) {
+                await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+              }
+            }
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n.localize("Cancel")
+        }
+      },
+      default: "add"
+    }).render(true);
+  }
+}
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
@@ -6766,7 +7201,8 @@ const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   NpcSheet,
   RollDialog,
   SkillSheet,
-  SpecializationSheet
+  SpecializationSheet,
+  VehicleSheet
 }, Symbol.toStringTag, { value: "Module" }));
 const HOOKS = {
   MIGRATIONS: "sra2-declareMigration"
@@ -7594,7 +8030,8 @@ class SRA2System {
     });
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {
-      character: CharacterDataModel
+      character: CharacterDataModel,
+      vehicle: VehicleDataModel
     };
     CONFIG.Item.dataModels = {
       skill: SkillDataModel,
@@ -7611,6 +8048,11 @@ class SRA2System {
       types: ["character"],
       makeDefault: false,
       label: "SRA2.SHEET.NPC"
+    });
+    DocumentSheetConfig.registerSheet(Actor, "sra2", VehicleSheet, {
+      types: ["vehicle"],
+      makeDefault: true,
+      label: "SRA2.SHEET.VEHICLE"
     });
     DocumentSheetConfig.registerSheet(Item, "sra2", FeatSheet, {
       types: ["feat"],

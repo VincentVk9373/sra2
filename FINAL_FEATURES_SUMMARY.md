@@ -254,3 +254,4 @@ Tous les messages de combat utilisent la **même structure HTML** :
 **Date** : Novembre 2025
 **Développé par** : Half
 
+

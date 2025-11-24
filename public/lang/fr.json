@@ -1,7 +1,8 @@
 {
     "TYPES": {
         "Actor": {
-            "character": "Personnage"
+            "character": "Personnage",
+            "vehicle": "Véhicule / Drone"
         },
         "Item": {
             "skill": "Compétence",
@@ -14,6 +15,7 @@
         "SHEET": {
             "CHARACTER": "Feuille de Personnage SRA2",
             "NPC": "Feuille de PNJ SRA2",
+            "VEHICLE": "Feuille de Véhicule/Drone SRA2",
             "FEAT": "Feuille d'Atout SRA2",
             "SKILL": "Feuille de Compétence SRA2",
             "SPECIALIZATION": "Feuille de Spécialisation SRA2",
@@ -59,6 +61,50 @@
             "ATTACK_WITH_WEAPON": "Attaquer avec cette arme",
             "CAST_SPELL": "Lancer ce sort",
             "ATTACK": "Attaquer"
+        },
+        "VEHICLE": {
+            "NAME": "Nom du Véhicule/Drone",
+            "COST": "Coût",
+            "VEHICLE_TYPE": "Type de Véhicule",
+            "SELECT_TYPE": "Sélectionner un type...",
+            "SELECT_TYPE_FIRST": "Veuillez d'abord sélectionner un type de véhicule",
+            "DICE_POOL": "Dés",
+            "RR": "RR",
+            "ROLL_WEAPON": "Lancer les dés pour cette arme",
+            "ADD_WEAPON": "Ajouter une arme",
+            "BONUSES_AND_OPTIONS": "Bonus et Options",
+            "NARRATIVE_EFFECTS": "Effets Narratifs",
+            "NARRATIVE_EFFECTS_HINT": "Chaque effet narratif coûte 5000¥",
+            "NARRATIVE_EFFECT_PLACEHOLDER": "Entrer un effet narratif...",
+            "ADD_NARRATIVE_EFFECT": "Ajouter un effet narratif",
+            "REMOVE_EFFECT": "Supprimer cet effet",
+            "ATTRIBUTES": {
+                "LABEL": "Attributs",
+                "AUTOPILOT": "Autopilote",
+                "AUTOPILOT_DESC": "Utilisé seul comme réserve de dés lorsque le drone est autonome",
+                "STRUCTURE": "Structure",
+                "STRUCTURE_DESC": "Mesure grossière du gabarit du véhicule, utilisée de façon similaire à la Force des personnages",
+                "ARMOR": "Blindage",
+                "ARMOR_DESC": "Utilisée pour résister aux dommages, de façon similaire à l'Armure des personnages",
+                "HANDLING": "Maniabilité",
+                "HANDLING_DESC": "Capacité du véhicule à prendre des virages serrés et rapides. Utilisé lors des poursuites",
+                "SPEED": "Vitesse",
+                "SPEED_DESC": "Vitesse et accélération du véhicule. Utilisé lors des poursuites"
+            },
+            "SECTION": {
+                "WEAPONS": "Armes",
+                "COMBAT": "Combat",
+                "FEATS": "Atouts"
+            },
+            "DAMAGE_THRESHOLDS": {
+                "LABEL": "Seuils de Dégâts",
+                "TYPE": "Type",
+                "DAMAGE": "Dégâts",
+                "FORMULA": "Formules des seuils",
+                "LIGHT_FORMULA": "Léger : VD > Structure + Blindage",
+                "SEVERE_FORMULA": "Grave : VD > (2 × Structure) + Blindage",
+                "INCAPACITATING_FORMULA": "Incapacitant : VD > (3 × Structure) + Blindage"
+            }
         },
         "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer {name} ?",
         "ATTRIBUTES": {
@@ -387,6 +433,7 @@
                 "SPEED": "Vitesse",
                 "SPEED_SHORT": "Vit",
                 "FLYING_SPEED": "Vitesse Vol",
+                "FLYING_SPEED_DESC": "Vitesse de vol du véhicule/drone",
                 "FLYING_SHORT": "vol",
                 "ARMOR": "Blindage",
                 "ARMOR_SHORT": "Blind",

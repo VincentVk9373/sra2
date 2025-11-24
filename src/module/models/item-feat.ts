@@ -128,21 +128,22 @@ export const WEAPON_TYPES = {
 
 /**
  * Vehicle/Drone types configuration with their stats
+ * Imported from JSON file
  */
-export const VEHICLE_TYPES = {
-  "microdrone": { autopilot: 6, structure: 0, handling: 10, speed: 0, flyingSpeed: 1, armor: 0, weaponMount: "none" },
-  "small-drone": { autopilot: 6, structure: 1, handling: 9, speed: 2, flyingSpeed: 4, armor: 0, weaponMount: "smg" },
-  "medium-drone": { autopilot: 6, structure: 2, handling: 7, speed: 3, flyingSpeed: 6, armor: 0, weaponMount: "rifle" },
-  "large-drone": { autopilot: 6, structure: 4, handling: 4, speed: 4, flyingSpeed: 8, armor: 0, weaponMount: "rifle" },
-  "racing-motorcycle": { autopilot: 6, structure: 4, handling: 2, speed: 6, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
-  "offroad-motorcycle": { autopilot: 6, structure: 4, handling: 3, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
-  "chopper": { autopilot: 6, structure: 5, handling: 2, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "rifle" },
-  "sports-car": { autopilot: 6, structure: 5, handling: 2, speed: 5, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "sedan": { autopilot: 6, structure: 6, handling: 2, speed: 4, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "suv-pickup": { autopilot: 6, structure: 7, handling: 1, speed: 4, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "van": { autopilot: 6, structure: 8, handling: 1, speed: 3, flyingSpeed: 0, armor: 0, weaponMount: "none" },
-  "bus-truck": { autopilot: 6, structure: 10, handling: 0, speed: 2, flyingSpeed: 0, armor: 0, weaponMount: "none" }
-} as const;
+import vehicleTypesData from '../config/vehicle-types.json';
+
+export type VehicleType = keyof typeof vehicleTypesData;
+export type VehicleStats = {
+  autopilot: number;
+  structure: number;
+  handling: number;
+  speed: number;
+  flyingSpeed: number;
+  armor: number;
+  weaponMount: string;
+};
+
+export const VEHICLE_TYPES: Record<VehicleType, VehicleStats> = vehicleTypesData as Record<VehicleType, VehicleStats>;
 
 /**
  * Data model for Feat items
@@ -184,11 +185,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: true,
         label: "SRA2.FEATS.ACTIVE"
-      }),
-      bookmarked: new fields.BooleanField({
-        required: true,
-        initial: false,
-        label: "SRA2.FEATS.BOOKMARKED"
       }),
       rrList: new fields.ArrayField(new fields.SchemaField({
         rrType: new fields.StringField({

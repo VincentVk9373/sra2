@@ -71,3 +71,4 @@ Maintenant, les recherches suivantes fonctionneront :
 - Les espaces et la ponctuation sont conservés (seuls les accents sont supprimés)
 - La normalisation n'affecte pas le stockage des données, seulement la recherche
 
+
