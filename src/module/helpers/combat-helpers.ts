@@ -4,6 +4,7 @@
  */
 
 import * as ItemSearch from './item-search.js';
+import { VEHICLE_TYPES } from '../models/item-feat.js';
 
 /**
  * Calculate NPC threshold for a skill or specialization
@@ -245,6 +246,154 @@ export function buildAttackSkillOptionsHtml(
 /**
  * REMOVED: Attack result display and chat message creation
  */
+
+/**
+ * Prepare vehicle/drone weapon attack data for dice rolling
+ * Vehicles use autopilot as dice pool instead of skills
+ */
+export function prepareVehicleWeaponAttack(
+  vehicleActor: any,
+  weapon: any
+): {
+  dicePool: number;
+  rrList: Array<{ featName: string; rrValue: number }>;
+  damageValue: string;
+  damageValueBonus: number;
+} {
+  const vehicleSystem = vehicleActor.system as any;
+  const weaponSystem = weapon.system as any;
+  
+  // Get autopilot as base dice pool (with bonus included)
+  // attributes.autopilot should already contain finalAutopilot = baseAutopilot + autopilotBonus (max 12)
+  // But to ensure bonus is always included, we recalculate it if needed
+  let autopilot = vehicleSystem.attributes?.autopilot;
+  
+  // Always recalculate to ensure autopilotBonus is included (in case prepareDerivedData wasn't called)
+  const vehicleType = vehicleSystem.vehicleType || "";
+  const vehicleStats = vehicleType && VEHICLE_TYPES[vehicleType as keyof typeof VEHICLE_TYPES] 
+    ? VEHICLE_TYPES[vehicleType as keyof typeof VEHICLE_TYPES] 
+    : null;
+  const baseAutopilot = vehicleStats?.autopilot || 6;
+  const autopilotBonus = vehicleSystem.autopilotBonus || 0;
+  const calculatedAutopilot = Math.min(12, baseAutopilot + autopilotBonus);
+  
+  // Use calculated value to ensure bonus is always included
+  autopilot = calculatedAutopilot;
+  const dicePool = autopilot;
+  
+  // Get all active feats for RR calculation
+  const activeFeats = vehicleActor.items.filter((item: any) => 
+    item.type === 'feat' && item.system.active === true
+  );
+  
+  // Calculate RR from active feats (only autopilot attribute RR applies)
+  const rrList: Array<{ featName: string; rrValue: number }> = [];
+  activeFeats.forEach((feat: any) => {
+    const featRRList = feat.system.rrList || [];
+    featRRList.forEach((rrEntry: any) => {
+      if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === 'autopilot') {
+        rrList.push({
+          featName: feat.name,
+          rrValue: rrEntry.rrValue || 0
+        });
+      }
+    });
+  });
+  
+  // Also check weapon's own RR list and enrich with featName
+  const weaponRRList = weaponSystem.rrList || [];
+  weaponRRList.forEach((rrEntry: any) => {
+    if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === 'autopilot') {
+      rrList.push({
+        featName: weapon.name,
+        rrValue: rrEntry.rrValue || 0
+      });
+    }
+  });
+  
+  // Calculate final damage value (base + bonus)
+  const damageValue = weaponSystem.damageValue || '0';
+  const damageValueBonus = weaponSystem.damageValueBonus || 0;
+  
+  return {
+    dicePool,
+    rrList,
+    damageValue,
+    damageValueBonus
+  };
+}
+
+/**
+ * Prepare complete vehicle/drone weapon roll request data for DiceRoller
+ * Uses prepareVehicleWeaponAttack and adds weapon type links
+ */
+export function prepareVehicleWeaponRollRequest(
+  vehicleActor: any,
+  weapon: any,
+  WEAPON_TYPES: any
+): any {
+  const weaponSystem = weapon.system as any;
+  const weaponType = weaponSystem.weaponType || 'custom-weapon';
+  
+  // Get weapon attack data using existing helper
+  const attackData = prepareVehicleWeaponAttack(vehicleActor, weapon);
+  
+  // Get weapon type links for defense skills
+  let weaponLinkedDefenseSkill = '';
+  let weaponLinkedDefenseSpecialization = '';
+  
+  if (weaponType && weaponType !== 'custom-weapon') {
+    const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+    if (weaponStats) {
+      weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || '';
+      weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || '';
+    }
+  }
+  
+  // Merge with custom fields (weapon type has priority)
+  const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || '';
+  const finalDefenseSpec = weaponLinkedDefenseSpecialization || weaponSystem.linkedDefenseSpecialization || '';
+  
+  // Return complete roll request data
+  return {
+    itemType: 'weapon',
+    weaponType: weaponType,
+    itemName: weapon.name,
+    itemId: weapon.id,
+    itemRating: weaponSystem.rating || 0,
+    itemActive: weaponSystem.active,
+    
+    // No linked attack skill/spec for vehicles (uses autopilot directly)
+    linkedAttackSkill: '',
+    linkedAttackSpecialization: '',
+    linkedDefenseSkill: finalDefenseSkill,
+    linkedDefenseSpecialization: finalDefenseSpec,
+    linkedAttribute: 'autopilot', // Vehicles use autopilot attribute
+    
+    // Weapon properties
+    isWeaponFocus: weaponSystem.isWeaponFocus || false,
+    damageValue: attackData.damageValue,
+    damageValueBonus: attackData.damageValueBonus,
+    meleeRange: weaponSystem.meleeRange,
+    shortRange: weaponSystem.shortRange,
+    mediumRange: weaponSystem.mediumRange,
+    longRange: weaponSystem.longRange,
+    
+    // Attack skill/spec (empty for vehicles, dice pool comes from autopilot)
+    skillName: undefined,
+    skillLevel: attackData.dicePool, // Use autopilot as skill level for dice pool
+    specName: undefined,
+    specLevel: undefined,
+    
+    // Actor information
+    actorId: vehicleActor.id,
+    actorUuid: vehicleActor.uuid,
+    actorName: vehicleActor.name || '',
+    
+    // RR List
+    rrList: attackData.rrList
+  };
+}
 
 /**
  * Apply damage to a defender (character, NPC, or vehicle/drone)

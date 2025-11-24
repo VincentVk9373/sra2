@@ -1,5 +1,7 @@
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
-import { VEHICLE_TYPES } from '../models/item-feat.js';
+import * as CombatHelpers from '../helpers/combat-helpers.js';
+import * as DiceRoller from '../helpers/dice-roller.js';
+import { VEHICLE_TYPES, WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
  * Vehicle/Drone Sheet Application
@@ -172,19 +174,23 @@ export class VehicleSheet extends ActorSheet {
       event.preventDefault();
       const itemId = $(event.currentTarget).data('item-id');
       const item = this.actor.items.get(itemId);
-      if (item) {
-        const autopilot = (this.actor.system as any).attributes?.autopilot || 0;
-        if (autopilot <= 0) {
-          ui.notifications?.warn(game.i18n!.localize('SRA2.ATTRIBUTES.NO_DICE'));
-          return;
-        }
-        // Use dice roller with autopilot as dice pool
-        // This would need to be implemented based on your dice roller system
-        ui.notifications?.info(game.i18n!.format('SRA2.VEHICLE.ROLLING_WEAPON', { 
-          weapon: item.name,
-          dice: autopilot
-        }));
+      if (!item) return;
+      
+      const autopilot = (this.actor.system as any).attributes?.autopilot || 0;
+      if (autopilot <= 0) {
+        ui.notifications?.warn(game.i18n!.localize('SRA2.ATTRIBUTES.NO_DICE'));
+        return;
       }
+      
+      // Prepare complete weapon roll request data using combat-helpers
+      const rollRequestData = CombatHelpers.prepareVehicleWeaponRollRequest(
+        this.actor,
+        item,
+        WEAPON_TYPES
+      );
+      
+      // Call dice roller with prepared data
+      DiceRoller.handleRollRequest(rollRequestData);
     });
 
     // Handle vehicle type change

@@ -2695,6 +2695,101 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   handleSheetUpdate,
   organizeSpecializationsBySkill
 }, Symbol.toStringTag, { value: "Module" }));
+function prepareVehicleWeaponAttack(vehicleActor, weapon) {
+  const vehicleSystem = vehicleActor.system;
+  const weaponSystem = weapon.system;
+  let autopilot = vehicleSystem.attributes?.autopilot;
+  const vehicleType = vehicleSystem.vehicleType || "";
+  const vehicleStats = vehicleType && VEHICLE_TYPES[vehicleType] ? VEHICLE_TYPES[vehicleType] : null;
+  const baseAutopilot = vehicleStats?.autopilot || 6;
+  const autopilotBonus = vehicleSystem.autopilotBonus || 0;
+  const calculatedAutopilot = Math.min(12, baseAutopilot + autopilotBonus);
+  autopilot = calculatedAutopilot;
+  const dicePool = autopilot;
+  const activeFeats = vehicleActor.items.filter(
+    (item) => item.type === "feat" && item.system.active === true
+  );
+  const rrList = [];
+  activeFeats.forEach((feat) => {
+    const featRRList = feat.system.rrList || [];
+    featRRList.forEach((rrEntry) => {
+      if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
+        rrList.push({
+          featName: feat.name,
+          rrValue: rrEntry.rrValue || 0
+        });
+      }
+    });
+  });
+  const weaponRRList = weaponSystem.rrList || [];
+  weaponRRList.forEach((rrEntry) => {
+    if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
+      rrList.push({
+        featName: weapon.name,
+        rrValue: rrEntry.rrValue || 0
+      });
+    }
+  });
+  const damageValue = weaponSystem.damageValue || "0";
+  const damageValueBonus = weaponSystem.damageValueBonus || 0;
+  return {
+    dicePool,
+    rrList,
+    damageValue,
+    damageValueBonus
+  };
+}
+function prepareVehicleWeaponRollRequest(vehicleActor, weapon, WEAPON_TYPES2) {
+  const weaponSystem = weapon.system;
+  const weaponType = weaponSystem.weaponType || "custom-weapon";
+  const attackData = prepareVehicleWeaponAttack(vehicleActor, weapon);
+  let weaponLinkedDefenseSkill = "";
+  let weaponLinkedDefenseSpecialization = "";
+  if (weaponType !== "custom-weapon") {
+    const weaponStats = WEAPON_TYPES2[weaponType];
+    if (weaponStats) {
+      weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+      weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+    }
+  }
+  const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || "";
+  const finalDefenseSpec = weaponLinkedDefenseSpecialization || weaponSystem.linkedDefenseSpecialization || "";
+  return {
+    itemType: "weapon",
+    weaponType,
+    itemName: weapon.name,
+    itemId: weapon.id,
+    itemRating: weaponSystem.rating || 0,
+    itemActive: weaponSystem.active,
+    // No linked attack skill/spec for vehicles (uses autopilot directly)
+    linkedAttackSkill: "",
+    linkedAttackSpecialization: "",
+    linkedDefenseSkill: finalDefenseSkill,
+    linkedDefenseSpecialization: finalDefenseSpec,
+    linkedAttribute: "autopilot",
+    // Vehicles use autopilot attribute
+    // Weapon properties
+    isWeaponFocus: weaponSystem.isWeaponFocus || false,
+    damageValue: attackData.damageValue,
+    damageValueBonus: attackData.damageValueBonus,
+    meleeRange: weaponSystem.meleeRange,
+    shortRange: weaponSystem.shortRange,
+    mediumRange: weaponSystem.mediumRange,
+    longRange: weaponSystem.longRange,
+    // Attack skill/spec (empty for vehicles, dice pool comes from autopilot)
+    skillName: void 0,
+    skillLevel: attackData.dicePool,
+    // Use autopilot as skill level for dice pool
+    specName: void 0,
+    specLevel: void 0,
+    // Actor information
+    actorId: vehicleActor.id,
+    actorUuid: vehicleActor.uuid,
+    actorName: vehicleActor.name || "",
+    // RR List
+    rrList: attackData.rrList
+  };
+}
 async function applyDamage(defenderUuid, damageValue, defenderName) {
   const defender = await fromUuid(defenderUuid);
   if (!defender) {
@@ -5238,17 +5333,18 @@ class VehicleSheet extends ActorSheet {
       event.preventDefault();
       const itemId = $(event.currentTarget).data("item-id");
       const item = this.actor.items.get(itemId);
-      if (item) {
-        const autopilot = this.actor.system.attributes?.autopilot || 0;
-        if (autopilot <= 0) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.ATTRIBUTES.NO_DICE"));
-          return;
-        }
-        ui.notifications?.info(game.i18n.format("SRA2.VEHICLE.ROLLING_WEAPON", {
-          weapon: item.name,
-          dice: autopilot
-        }));
+      if (!item) return;
+      const autopilot = this.actor.system.attributes?.autopilot || 0;
+      if (autopilot <= 0) {
+        ui.notifications?.warn(game.i18n.localize("SRA2.ATTRIBUTES.NO_DICE"));
+        return;
       }
+      const rollRequestData = prepareVehicleWeaponRollRequest(
+        this.actor,
+        item,
+        WEAPON_TYPES
+      );
+      handleRollRequest(rollRequestData);
     });
     html.find(".vehicle-type-select").on("change", this._onVehicleTypeChange.bind(this));
     html.find(".add-narrative-effect-button").on("click", async (event) => {
