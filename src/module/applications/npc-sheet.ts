@@ -751,7 +751,6 @@ export class NpcSheet extends ActorSheet {
       
       isWeaponFocus: weaponSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus)
-      damageValueBonus: damageValueBonus,
       meleeRange: weaponSystem.meleeRange,
       shortRange: weaponSystem.shortRange,
       mediumRange: weaponSystem.mediumRange,
@@ -924,7 +923,6 @@ export class NpcSheet extends ActorSheet {
       
       isWeaponFocus: spellSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus)
-      damageValueBonus: damageValueBonus,
       meleeRange: spellSystem.meleeRange,
       shortRange: spellSystem.shortRange,
       mediumRange: spellSystem.mediumRange,
@@ -1095,7 +1093,6 @@ export class NpcSheet extends ActorSheet {
       
       isWeaponFocus: weaponSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus)
-      damageValueBonus: damageValueBonus,
       meleeRange: weaponSystem.meleeRange,
       shortRange: weaponSystem.shortRange,
       mediumRange: weaponSystem.mediumRange,
@@ -1264,7 +1261,6 @@ export class NpcSheet extends ActorSheet {
       
       isWeaponFocus: spellSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus)
-      damageValueBonus: damageValueBonus,
       meleeRange: spellSystem.meleeRange,
       shortRange: spellSystem.shortRange,
       mediumRange: spellSystem.mediumRange,

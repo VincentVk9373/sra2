@@ -1983,7 +1983,6 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     if (attackSuccesses >= defenseSuccesses) {
       let damageValue = 0;
       const damageValueStr = rollData.attackRollData.damageValue || "0";
-      const damageValueBonus = rollData.attackRollData.damageValueBonus || 0;
       if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
         const attackerStrength = defender?.system?.attributes?.strength || 1;
         if (damageValueStr === "FOR") {
@@ -1995,7 +1994,6 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       } else {
         damageValue = parseInt(damageValueStr, 10) || 0;
       }
-      damageValue += damageValueBonus;
       calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
       attackFailed = false;
     } else {
@@ -2027,7 +2025,6 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     const counterAttackSuccesses = rollResult.totalSuccesses;
     let attackDamageValue = 0;
     const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
-    const attackDamageValueBonus = rollData.attackRollData.damageValueBonus || 0;
     if (attackDamageValueStr === "FOR" || attackDamageValueStr.startsWith("FOR+")) {
       const attackerStrength = defender?.system?.attributes?.strength || 1;
       if (attackDamageValueStr === "FOR") {
@@ -2039,10 +2036,8 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     } else {
       attackDamageValue = parseInt(attackDamageValueStr, 10) || 0;
     }
-    attackDamageValue += attackDamageValueBonus;
     let counterAttackDamageValue = 0;
     const damageValueStr = rollData.damageValue || "0";
-    const damageValueBonus = rollData.damageValueBonus || 0;
     if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
       const actorStrength = attacker.system?.attributes?.strength || 1;
       if (damageValueStr === "FOR") {
@@ -2054,15 +2049,26 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     } else {
       counterAttackDamageValue = parseInt(damageValueStr, 10) || 0;
     }
-    counterAttackDamageValue += damageValueBonus;
     if (!counterAttackDamageValue && attacker) {
       const selectedWeaponId = rollData.selectedWeaponId;
       if (selectedWeaponId) {
         const weapon = attacker.items.find((item) => item.id === selectedWeaponId);
         if (weapon) {
           const weaponSystem = weapon.system;
-          const weaponDamageValueStr = weaponSystem.damageValue || "0";
-          const weaponDamageValueBonus = weaponSystem.damageValueBonus || 0;
+          const baseDamageValue = weaponSystem.damageValue || "0";
+          const damageValueBonus = weaponSystem.damageValueBonus || 0;
+          let weaponDamageValueStr = baseDamageValue;
+          if (damageValueBonus > 0 && baseDamageValue !== "0") {
+            if (baseDamageValue === "FOR") {
+              weaponDamageValueStr = `FOR+${damageValueBonus}`;
+            } else if (baseDamageValue.startsWith("FOR+")) {
+              const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+              weaponDamageValueStr = `FOR+${baseModifier + damageValueBonus}`;
+            } else if (baseDamageValue !== "toxin") {
+              const baseValue = parseInt(baseDamageValue) || 0;
+              weaponDamageValueStr = (baseValue + damageValueBonus).toString();
+            }
+          }
           if (weaponDamageValueStr === "FOR" || weaponDamageValueStr.startsWith("FOR+")) {
             const actorStrength = attacker.system?.attributes?.strength || 1;
             if (weaponDamageValueStr === "FOR") {
@@ -2074,7 +2080,6 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
           } else {
             counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
           }
-          counterAttackDamageValue += weaponDamageValueBonus;
         }
       }
     }
@@ -2730,13 +2735,13 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
       });
     }
   });
-  const damageValue = weaponSystem.damageValue || "0";
-  const damageValueBonus = weaponSystem.damageValueBonus || 0;
+  const baseDamageValue = parseInt(weaponSystem.damageValue || "0") || 0;
+  const damageValueBonus = parseInt(weaponSystem.damageValueBonus || "0") || 0;
+  let finalDamageValue = baseDamageValue + damageValueBonus;
   return {
     dicePool,
     rrList,
-    damageValue,
-    damageValueBonus
+    damageValue: finalDamageValue.toString()
   };
 }
 function prepareVehicleWeaponRollRequest(vehicleActor, weapon, WEAPON_TYPES2) {
@@ -2771,7 +2776,7 @@ function prepareVehicleWeaponRollRequest(vehicleActor, weapon, WEAPON_TYPES2) {
     // Weapon properties
     isWeaponFocus: weaponSystem.isWeaponFocus || false,
     damageValue: attackData.damageValue,
-    damageValueBonus: attackData.damageValueBonus,
+    // Already includes bonus
     meleeRange: weaponSystem.meleeRange,
     shortRange: weaponSystem.shortRange,
     mediumRange: weaponSystem.mediumRange,
@@ -4077,7 +4082,6 @@ class CharacterSheet extends ActorSheet {
       isWeaponFocus: itemSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
       // FINAL damage value (base + bonus)
-      damageValueBonus,
       meleeRange: itemSystem.meleeRange,
       shortRange: itemSystem.shortRange,
       mediumRange: itemSystem.mediumRange,
@@ -4717,7 +4721,6 @@ class NpcSheet extends ActorSheet {
       isWeaponFocus: weaponSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
       // FINAL damage value (base + bonus)
-      damageValueBonus,
       meleeRange: weaponSystem.meleeRange,
       shortRange: weaponSystem.shortRange,
       mediumRange: weaponSystem.mediumRange,
@@ -4855,7 +4858,6 @@ class NpcSheet extends ActorSheet {
       isWeaponFocus: spellSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
       // FINAL damage value (base + bonus)
-      damageValueBonus,
       meleeRange: spellSystem.meleeRange,
       shortRange: spellSystem.shortRange,
       mediumRange: spellSystem.mediumRange,
@@ -4991,7 +4993,6 @@ class NpcSheet extends ActorSheet {
       isWeaponFocus: weaponSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
       // FINAL damage value (base + bonus)
-      damageValueBonus,
       meleeRange: weaponSystem.meleeRange,
       shortRange: weaponSystem.shortRange,
       mediumRange: weaponSystem.mediumRange,
@@ -5126,7 +5127,6 @@ class NpcSheet extends ActorSheet {
       isWeaponFocus: spellSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
       // FINAL damage value (base + bonus)
-      damageValueBonus,
       meleeRange: spellSystem.meleeRange,
       shortRange: spellSystem.shortRange,
       mediumRange: spellSystem.mediumRange,

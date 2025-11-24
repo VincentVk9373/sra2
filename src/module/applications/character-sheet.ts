@@ -1571,7 +1571,6 @@ export class CharacterSheet extends ActorSheet {
       // Weapon properties
       isWeaponFocus: itemSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus)
-      damageValueBonus: damageValueBonus,
       meleeRange: itemSystem.meleeRange,
       shortRange: itemSystem.shortRange,
       mediumRange: itemSystem.mediumRange,

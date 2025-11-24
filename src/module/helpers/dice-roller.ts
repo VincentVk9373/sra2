@@ -512,9 +512,9 @@ async function createRollChatMessage(
     
     if (attackSuccesses >= defenseSuccesses) {
       // Attack succeeds, calculate damage
+      // damageValue already includes bonus (finalDamageValue)
       let damageValue = 0;
       const damageValueStr = rollData.attackRollData.damageValue || '0';
-      const damageValueBonus = rollData.attackRollData.damageValueBonus || 0;
       
       // Handle "FOR" or "FOR+X" damage values
       if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
@@ -529,9 +529,6 @@ async function createRollChatMessage(
       } else {
         damageValue = parseInt(damageValueStr, 10) || 0;
       }
-      
-      // Add damage value bonus
-      damageValue += damageValueBonus;
       
       calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
       attackFailed = false;
@@ -585,9 +582,9 @@ async function createRollChatMessage(
     const counterAttackSuccesses = rollResult.totalSuccesses;
     
     // Get damage values for the original attacker
+    // damageValue already includes bonus (finalDamageValue)
     let attackDamageValue = 0;
     const attackDamageValueStr = rollData.attackRollData.damageValue || '0';
-    const attackDamageValueBonus = rollData.attackRollData.damageValueBonus || 0;
     
     // Handle "FOR" or "FOR+X" damage values for the attacker (defender in counter-attack context)
     if (attackDamageValueStr === 'FOR' || attackDamageValueStr.startsWith('FOR+')) {
@@ -602,14 +599,10 @@ async function createRollChatMessage(
       attackDamageValue = parseInt(attackDamageValueStr, 10) || 0;
     }
     
-    // Add damage value bonus
-    attackDamageValue += attackDamageValueBonus;
-    
     // Get counter-attack damage value from rollData
-    // rollData.damageValue should already be set from the selected weapon
+    // rollData.damageValue should already be set from the selected weapon (includes bonus)
     let counterAttackDamageValue = 0;
     const damageValueStr = rollData.damageValue || '0';
-    const damageValueBonus = rollData.damageValueBonus || 0;
     
     // Handle "FOR" or "FOR+X" damage values
     if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
@@ -624,33 +617,42 @@ async function createRollChatMessage(
       counterAttackDamageValue = parseInt(damageValueStr, 10) || 0;
     }
     
-    // Add damage value bonus
-    counterAttackDamageValue += damageValueBonus;
-    
     // If still no damage value, try to find weapon (fallback)
     if (!counterAttackDamageValue && attacker) {
       // Find weapon matching the counter-attack skill/item
       const selectedWeaponId = (rollData as any).selectedWeaponId;
       if (selectedWeaponId) {
-        const weapon = attacker.items.find((item: any) => item.id === selectedWeaponId);
-        if (weapon) {
-          const weaponSystem = weapon.system as any;
-          const weaponDamageValueStr = weaponSystem.damageValue || '0';
-          const weaponDamageValueBonus = weaponSystem.damageValueBonus || 0;
-          
-          if (weaponDamageValueStr === 'FOR' || weaponDamageValueStr.startsWith('FOR+')) {
-            const actorStrength = (attacker.system as any)?.attributes?.strength || 1;
-            if (weaponDamageValueStr === 'FOR') {
-              counterAttackDamageValue = actorStrength;
-            } else if (weaponDamageValueStr.startsWith('FOR+')) {
-              const bonus = parseInt(weaponDamageValueStr.substring(4)) || 0;
-              counterAttackDamageValue = actorStrength + bonus;
+          const weapon = attacker.items.find((item: any) => item.id === selectedWeaponId);
+          if (weapon) {
+            const weaponSystem = weapon.system as any;
+            // Calculate finalDamageValue from weapon (same logic as character-sheet.ts)
+            const baseDamageValue = weaponSystem.damageValue || '0';
+            const damageValueBonus = weaponSystem.damageValueBonus || 0;
+            let weaponDamageValueStr = baseDamageValue;
+            
+            if (damageValueBonus > 0 && baseDamageValue !== '0') {
+              if (baseDamageValue === 'FOR') {
+                weaponDamageValueStr = `FOR+${damageValueBonus}`;
+              } else if (baseDamageValue.startsWith('FOR+')) {
+                const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+                weaponDamageValueStr = `FOR+${baseModifier + damageValueBonus}`;
+              } else if (baseDamageValue !== 'toxin') {
+                const baseValue = parseInt(baseDamageValue) || 0;
+                weaponDamageValueStr = (baseValue + damageValueBonus).toString();
+              }
             }
-          } else {
-            counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
-          }
-          
-          counterAttackDamageValue += weaponDamageValueBonus;
+            
+            if (weaponDamageValueStr === 'FOR' || weaponDamageValueStr.startsWith('FOR+')) {
+              const actorStrength = (attacker.system as any)?.attributes?.strength || 1;
+              if (weaponDamageValueStr === 'FOR') {
+                counterAttackDamageValue = actorStrength;
+              } else if (weaponDamageValueStr.startsWith('FOR+')) {
+                const bonus = parseInt(weaponDamageValueStr.substring(4)) || 0;
+                counterAttackDamageValue = actorStrength + bonus;
+              }
+            } else {
+              counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
+            }
         }
       }
     }

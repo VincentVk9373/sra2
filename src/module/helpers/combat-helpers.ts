@@ -258,7 +258,6 @@ export function prepareVehicleWeaponAttack(
   dicePool: number;
   rrList: Array<{ featName: string; rrValue: number }>;
   damageValue: string;
-  damageValueBonus: number;
 } {
   const vehicleSystem = vehicleActor.system as any;
   const weaponSystem = weapon.system as any;
@@ -311,15 +310,16 @@ export function prepareVehicleWeaponAttack(
     }
   });
   
-  // Calculate final damage value (base + bonus)
-  const damageValue = weaponSystem.damageValue || '0';
-  const damageValueBonus = weaponSystem.damageValueBonus || 0;
+  // Calculate final damage value (base + bonus) - same logic as character-sheet.ts
+  const baseDamageValue = parseInt(weaponSystem.damageValue || '0') || 0;
+  const damageValueBonus = parseInt(weaponSystem.damageValueBonus || '0') || 0;
+  
+  let finalDamageValue = baseDamageValue + damageValueBonus;
   
   return {
     dicePool,
     rrList,
-    damageValue,
-    damageValueBonus
+    damageValue: finalDamageValue.toString()
   };
 }
 
@@ -372,8 +372,7 @@ export function prepareVehicleWeaponRollRequest(
     
     // Weapon properties
     isWeaponFocus: weaponSystem.isWeaponFocus || false,
-    damageValue: attackData.damageValue,
-    damageValueBonus: attackData.damageValueBonus,
+    damageValue: attackData.damageValue, // Already includes bonus
     meleeRange: weaponSystem.meleeRange,
     shortRange: weaponSystem.shortRange,
     mediumRange: weaponSystem.mediumRange,
