@@ -294,6 +294,23 @@
     }
 
 
+    .severe-wound-warning {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        background: rgba(139, 0, 0, 0.3);
+        border: 1px solid rgba(139, 0, 0, 0.6);
+        border-radius: 4px;
+        color: #ff6b6b;
+        font-size: 0.85rem;
+        
+        i {
+            color: #ff6b6b;
+        }
+    }
+
     .roll-mode-options {
         display: flex;
         gap: 0.5rem;
@@ -320,17 +337,40 @@
                 border-color: #4caf50;
             }
 
-            &:hover {
+            &:hover:not(.disabled):not(.forced) {
                 background: rgba(255, 255, 255, 0.1);
+            }
+
+            &.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                border-color: #666;
+            }
+
+            &.forced {
+                border-color: #ff6b6b;
+                background: rgba(139, 0, 0, 0.2);
+                
+                &.disadvantage {
+                    border-color: #ff6b6b;
+                }
             }
 
             input[type="radio"] {
                 cursor: pointer;
+                
+                &:disabled {
+                    cursor: not-allowed;
+                }
             }
 
             input[type="radio"]:checked+span {
                 color: #00d4ff;
                 font-weight: bold;
+            }
+
+            &.forced input[type="radio"]:checked+span {
+                color: #ff6b6b;
             }
         }
     }

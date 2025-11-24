@@ -203,22 +203,27 @@
             <section class="roll-section roll-mode-section">
                 <h3 class="section-title">
                     <i class="fas fa-adjust"></i> Mode de Jet
+                    {{#if hasSevereWound}}
+                    <span class="severe-wound-warning" title="Blessure grave: désavantage forcé">
+                        <i class="fas fa-exclamation-triangle"></i> Désavantage forcé (blessure grave)
+                    </span>
+                    {{/if}}
                 </h3>
                 <div class="roll-mode-display">
                     <div class="roll-mode-options">
-                        <label class="roll-mode-option">
+                        <label class="roll-mode-option {{#if hasSevereWound}}disabled{{/if}}">
                             <input type="radio" name="roll-mode" value="normal" {{#if (eq rollMode "normal"
-                                )}}checked{{/if}} />
+                                )}}checked{{/if}} {{#if hasSevereWound}}disabled{{/if}} />
                             <span>Normal</span>
                         </label>
-                        <label class="roll-mode-option disadvantage">
+                        <label class="roll-mode-option disadvantage {{#if hasSevereWound}}forced{{/if}}">
                             <input type="radio" name="roll-mode" value="disadvantage" {{#if (eq rollMode "disadvantage"
-                                )}}checked{{/if}} />
-                            <span>Désavantage</span>
+                                )}}checked{{/if}} {{#if hasSevereWound}}disabled{{/if}} />
+                            <span>Désavantage{{#if hasSevereWound}} (forcé){{/if}}</span>
                         </label>
-                        <label class="roll-mode-option advantage">
+                        <label class="roll-mode-option advantage {{#if hasSevereWound}}disabled{{/if}}">
                             <input type="radio" name="roll-mode" value="advantage" {{#if (eq rollMode "advantage"
-                                )}}checked{{/if}} />
+                                )}}checked{{/if}} {{#if hasSevereWound}}disabled{{/if}} />
                             <span>Avantage</span>
                         </label>
                     </div>

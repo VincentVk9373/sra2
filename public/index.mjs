@@ -6143,11 +6143,22 @@ class RollDialog extends Application {
     } else if (selectedRangeValue === "ok") {
       this.rollMode = "normal";
     }
+    let hasSevereWound = false;
+    if (this.actor) {
+      const actorSystem = this.actor.system;
+      if (actorSystem.damage && actorSystem.damage.severe) {
+        hasSevereWound = Array.isArray(actorSystem.damage.severe) && actorSystem.damage.severe.some((wound) => wound === true);
+      }
+    }
+    if (hasSevereWound) {
+      this.rollMode = "disadvantage";
+    }
     context.isWeaponRoll = isWeaponRoll;
     context.calculatedRange = calculatedRange;
     context.selectedRange = this.selectedRange;
     context.selectedRangeValue = selectedRangeValue;
     context.rollMode = this.rollMode;
+    context.hasSevereWound = hasSevereWound;
     context.rangeOptions = {
       melee: { label: "Mêlée (< 3m)", value: meleeRange },
       short: { label: "Portée courte (3-15m)", value: shortRange },
@@ -6517,15 +6528,38 @@ class RollDialog extends Application {
         } else if (this.selectedRange === "long") {
           rangeValueForSelected = longRange;
         }
-        if (rangeValueForSelected === "disadvantage") {
+        let hasSevereWound = false;
+        if (this.actor) {
+          const actorSystem = this.actor.system;
+          if (actorSystem.damage && actorSystem.damage.severe) {
+            hasSevereWound = Array.isArray(actorSystem.damage.severe) && actorSystem.damage.severe.some((wound) => wound === true);
+          }
+        }
+        if (hasSevereWound) {
           this.rollMode = "disadvantage";
-        } else if (rangeValueForSelected === "ok") {
-          this.rollMode = "normal";
+        } else {
+          if (rangeValueForSelected === "disadvantage") {
+            this.rollMode = "disadvantage";
+          } else if (rangeValueForSelected === "ok") {
+            this.rollMode = "normal";
+          }
         }
       }
       this.render();
     });
     html.find('input[name="roll-mode"]').on("change", (event) => {
+      let hasSevereWound = false;
+      if (this.actor) {
+        const actorSystem = this.actor.system;
+        if (actorSystem.damage && actorSystem.damage.severe) {
+          hasSevereWound = Array.isArray(actorSystem.damage.severe) && actorSystem.damage.severe.some((wound) => wound === true);
+        }
+      }
+      if (hasSevereWound) {
+        this.rollMode = "disadvantage";
+        this.render();
+        return;
+      }
       const radio = event.currentTarget;
       const modeValue = radio.value;
       if (modeValue === "normal" || modeValue === "disadvantage" || modeValue === "advantage") {

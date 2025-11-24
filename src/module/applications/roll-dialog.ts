@@ -420,11 +420,28 @@ export class RollDialog extends Application {
     }
     // Allow selection even if range is 'none' - user can still roll
 
+    // Check if actor has severe wound - force disadvantage mode
+    let hasSevereWound = false;
+    if (this.actor) {
+      const actorSystem = this.actor.system as any;
+      if (actorSystem.damage && actorSystem.damage.severe) {
+        // Check if at least one severe wound is marked (true)
+        hasSevereWound = Array.isArray(actorSystem.damage.severe) && 
+                         actorSystem.damage.severe.some((wound: boolean) => wound === true);
+      }
+    }
+    
+    // Force disadvantage mode if actor has severe wound
+    if (hasSevereWound) {
+      this.rollMode = 'disadvantage';
+    }
+
     context.isWeaponRoll = isWeaponRoll;
     context.calculatedRange = calculatedRange;
     context.selectedRange = this.selectedRange;
     context.selectedRangeValue = selectedRangeValue;
     context.rollMode = this.rollMode;
+    context.hasSevereWound = hasSevereWound; // Pass to template to disable mode selection
     context.rangeOptions = {
       melee: { label: 'Mêlée (< 3m)', value: meleeRange },
       short: { label: 'Portée courte (3-15m)', value: shortRange },
@@ -940,11 +957,26 @@ export class RollDialog extends Application {
           rangeValueForSelected = longRange;
         }
         
+        // Check if actor has severe wound - if so, always force disadvantage
+        let hasSevereWound = false;
+        if (this.actor) {
+          const actorSystem = this.actor.system as any;
+          if (actorSystem.damage && actorSystem.damage.severe) {
+            hasSevereWound = Array.isArray(actorSystem.damage.severe) && 
+                             actorSystem.damage.severe.some((wound: boolean) => wound === true);
+          }
+        }
+        
         // Auto-set roll mode based on range value (can be overridden by user)
-        if (rangeValueForSelected === 'disadvantage') {
+        // But if actor has severe wound, always force disadvantage
+        if (hasSevereWound) {
           this.rollMode = 'disadvantage';
-        } else if (rangeValueForSelected === 'ok') {
-          this.rollMode = 'normal';
+        } else {
+          if (rangeValueForSelected === 'disadvantage') {
+            this.rollMode = 'disadvantage';
+          } else if (rangeValueForSelected === 'ok') {
+            this.rollMode = 'normal';
+          }
         }
       }
       
@@ -954,6 +986,24 @@ export class RollDialog extends Application {
 
     // Roll mode selection
     html.find('input[name="roll-mode"]').on('change', (event) => {
+      // Check if actor has severe wound - prevent changing mode
+      let hasSevereWound = false;
+      if (this.actor) {
+        const actorSystem = this.actor.system as any;
+        if (actorSystem.damage && actorSystem.damage.severe) {
+          hasSevereWound = Array.isArray(actorSystem.damage.severe) && 
+                           actorSystem.damage.severe.some((wound: boolean) => wound === true);
+        }
+      }
+      
+      // If actor has severe wound, force disadvantage and prevent change
+      if (hasSevereWound) {
+        this.rollMode = 'disadvantage';
+        // Re-render to reset the selection
+        this.render();
+        return;
+      }
+      
       const radio = event.currentTarget as HTMLInputElement;
       const modeValue = radio.value;
       
