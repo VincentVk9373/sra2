@@ -1,6 +1,7 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
 import * as ItemSearch from '../helpers/item-search.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
+import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
@@ -527,127 +528,11 @@ export class CharacterSheet extends ActorSheet {
 
   /**
    * Apply damage to a defender
+   * Delegates to CombatHelpers.applyDamage
    */
   static async applyDamage(defenderUuid: string, damageValue: number, defenderName: string): Promise<void> {
-    // Use fromUuid to get the token's actor if it's a token UUID, or the actor if it's an actor UUID
-    const defender = await fromUuid(defenderUuid) as any;
-    
-    if (!defender) {
-      ui.notifications?.error(`Cannot find defender: ${defenderName}`);
-      return;
-    }
-    
-    // If this is a token, get its actor
-    const defenderActor = defender.actor || defender;
-    
-    const defenderSystem = defenderActor.system as any;
-    const damageThresholds = defenderSystem.damageThresholds?.withArmor || {
-      light: 1,
-      moderate: 4,
-      severe: 7
-    };
-    
-    // Deep copy of damage object with arrays
-    let damage = {
-      light: [...(defenderSystem.damage?.light || [])],
-      severe: [...(defenderSystem.damage?.severe || [])],
-      incapacitating: defenderSystem.damage?.incapacitating || false
-    };
-    let damageType = '';
-    let overflow = false;
-    
-    // Determine damage type based on thresholds
-    if (damageValue > damageThresholds.severe) {
-      // Incapacitating wound
-      damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
-      damage.incapacitating = true;
-    } else if (damageValue > damageThresholds.moderate) {
-      // Severe wound
-      damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
-      
-      // Find first empty severe box
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in severe, overflow to incapacitating
-      if (!applied) {
-        ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
-        damage.incapacitating = true;
-        overflow = true;
-      }
-    } else if (damageValue > damageThresholds.light) {
-      // Light wound
-      damageType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
-      
-      // Find first empty light box
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in light, overflow to severe
-      if (!applied) {
-        ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT'));
-        
-        // Try to apply to severe
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        
-        // If no space in severe either, overflow to incapacitating
-        if (!severeApplied) {
-          ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
-          damage.incapacitating = true;
-        }
-        overflow = true;
-      }
-    } else {
-      // Damage below light threshold, no wound
-      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
-        damage: `${damageValue} (en dessous du seuil)`,
-        target: defenderName 
-      }));
-      return;
-    }
-    
-    // Update the actor's damage (use defenderActor to update the token's actor data)
-    await defenderActor.update({ 'system.damage': damage });
-    
-    // Check if now incapacitated
-    if (damage.incapacitating === true) {
-      ui.notifications?.error(game.i18n!.format('SRA2.COMBAT.NOW_INCAPACITATED', { target: defenderName }));
-    } else {
-      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
-        damage: overflow ? `${damageType} (débordement)` : damageType,
-        target: defenderName 
-      }));
-    }
+    return CombatHelpers.applyDamage(defenderUuid, damageValue, defenderName);
   }
-
-
-  /**
-   * REMOVED: Simple roll result display
-   */
-  private async _displayRollResult(skillName: string, rollResult: any, weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
-    // Roll result display removed
-    console.log('Roll result display disabled', { skillName });
-  }
-
 
   /**
    * Handle drag start for feat items

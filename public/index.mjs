@@ -1553,20 +1553,19 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
       severe: 2 * baseStructure + finalArmor,
       incapacitating: 3 * baseStructure + finalArmor
     };
-    const damage = this.damage || {};
+    const existingDamage = this.damage || {};
     const totalLightBoxes = 2;
     const totalSevereBoxes = 1;
-    if (!Array.isArray(damage.light)) {
-      damage.light = [false, false];
-    }
+    const damage = {
+      light: Array.isArray(existingDamage.light) ? [...existingDamage.light] : [false, false],
+      severe: Array.isArray(existingDamage.severe) ? [...existingDamage.severe] : [false],
+      incapacitating: typeof existingDamage.incapacitating === "boolean" ? existingDamage.incapacitating : false
+    };
     while (damage.light.length < totalLightBoxes) {
       damage.light.push(false);
     }
     while (damage.light.length > totalLightBoxes) {
       damage.light.pop();
-    }
-    if (!Array.isArray(damage.severe)) {
-      damage.severe = [false];
     }
     while (damage.severe.length < totalSevereBoxes) {
       damage.severe.push(false);
@@ -1574,6 +1573,7 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
     while (damage.severe.length > totalSevereBoxes) {
       damage.severe.pop();
     }
+    this.damage = damage;
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
     let calculatedCost = 5e3;
@@ -2695,6 +2695,151 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   handleSheetUpdate,
   organizeSpecializationsBySkill
 }, Symbol.toStringTag, { value: "Module" }));
+async function applyDamage(defenderUuid, damageValue, defenderName) {
+  const defender = await fromUuid(defenderUuid);
+  if (!defender) {
+    ui.notifications?.error(`Cannot find defender: ${defenderName}`);
+    return;
+  }
+  const defenderActor = defender.actor || defender;
+  const defenderSystem = defenderActor.system;
+  const isVehicle = defenderActor.type === "vehicle";
+  let damageThresholds;
+  if (isVehicle) {
+    damageThresholds = defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 4,
+      incapacitating: 7
+    };
+  } else {
+    damageThresholds = defenderSystem.damageThresholds?.withArmor || {
+      light: 1,
+      moderate: 4,
+      severe: 7
+    };
+  }
+  let damage = {
+    light: [...defenderSystem.damage?.light || []],
+    severe: [...defenderSystem.damage?.severe || []],
+    incapacitating: defenderSystem.damage?.incapacitating || false
+  };
+  let damageType = "";
+  let overflow = false;
+  if (isVehicle) {
+    if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
+      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
+      damage.incapacitating = true;
+    } else if (damageValue > damageThresholds.severe) {
+      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
+      let applied = false;
+      for (let i = 0; i < damage.severe.length; i++) {
+        if (!damage.severe[i]) {
+          damage.severe[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      if (!applied) {
+        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
+        damage.incapacitating = true;
+        overflow = true;
+      }
+    } else if (damageValue > damageThresholds.light) {
+      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
+      let applied = false;
+      for (let i = 0; i < damage.light.length; i++) {
+        if (!damage.light[i]) {
+          damage.light[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      if (!applied) {
+        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
+        let severeApplied = false;
+        for (let i = 0; i < damage.severe.length; i++) {
+          if (!damage.severe[i]) {
+            damage.severe[i] = true;
+            severeApplied = true;
+            break;
+          }
+        }
+        if (!severeApplied) {
+          ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
+          damage.incapacitating = true;
+        }
+        overflow = true;
+      }
+    } else {
+      ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
+        damage: `${damageValue} (en dessous du seuil)`,
+        target: defenderName
+      }));
+      return;
+    }
+  } else {
+    if (damageValue > damageThresholds.severe) {
+      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
+      damage.incapacitating = true;
+    } else if (damageThresholds.moderate && damageValue > damageThresholds.moderate) {
+      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
+      let applied = false;
+      for (let i = 0; i < damage.severe.length; i++) {
+        if (!damage.severe[i]) {
+          damage.severe[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      if (!applied) {
+        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
+        damage.incapacitating = true;
+        overflow = true;
+      }
+    } else if (damageValue > damageThresholds.light) {
+      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
+      let applied = false;
+      for (let i = 0; i < damage.light.length; i++) {
+        if (!damage.light[i]) {
+          damage.light[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      if (!applied) {
+        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
+        let severeApplied = false;
+        for (let i = 0; i < damage.severe.length; i++) {
+          if (!damage.severe[i]) {
+            damage.severe[i] = true;
+            severeApplied = true;
+            break;
+          }
+        }
+        if (!severeApplied) {
+          ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
+          damage.incapacitating = true;
+        }
+        overflow = true;
+      }
+    } else {
+      ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
+        damage: `${damageValue} (en dessous du seuil)`,
+        target: defenderName
+      }));
+      return;
+    }
+  }
+  await defenderActor.update({ "system.damage": damage });
+  if (damage.incapacitating === true) {
+    ui.notifications?.error(game.i18n.format("SRA2.COMBAT.NOW_INCAPACITATED", { target: defenderName }));
+  } else {
+    ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
+      damage: overflow ? `${damageType} (débordement)` : damageType,
+      target: defenderName
+    }));
+  }
+}
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -3063,93 +3208,10 @@ class CharacterSheet extends ActorSheet {
   }
   /**
    * Apply damage to a defender
+   * Delegates to CombatHelpers.applyDamage
    */
   static async applyDamage(defenderUuid, damageValue, defenderName) {
-    const defender = await fromUuid(defenderUuid);
-    if (!defender) {
-      ui.notifications?.error(`Cannot find defender: ${defenderName}`);
-      return;
-    }
-    const defenderActor = defender.actor || defender;
-    const defenderSystem = defenderActor.system;
-    const damageThresholds = defenderSystem.damageThresholds?.withArmor || {
-      light: 1,
-      moderate: 4,
-      severe: 7
-    };
-    let damage = {
-      light: [...defenderSystem.damage?.light || []],
-      severe: [...defenderSystem.damage?.severe || []],
-      incapacitating: defenderSystem.damage?.incapacitating || false
-    };
-    let damageType = "";
-    let overflow = false;
-    if (damageValue > damageThresholds.severe) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
-      damage.incapacitating = true;
-    } else if (damageValue > damageThresholds.moderate) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
-        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
-        damage.incapacitating = true;
-        overflow = true;
-      }
-    } else if (damageValue > damageThresholds.light) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
-        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        if (!severeApplied) {
-          ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
-          damage.incapacitating = true;
-        }
-        overflow = true;
-      }
-    } else {
-      ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
-        damage: `${damageValue} (en dessous du seuil)`,
-        target: defenderName
-      }));
-      return;
-    }
-    await defenderActor.update({ "system.damage": damage });
-    if (damage.incapacitating === true) {
-      ui.notifications?.error(game.i18n.format("SRA2.COMBAT.NOW_INCAPACITATED", { target: defenderName }));
-    } else {
-      ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
-        damage: overflow ? `${damageType} (débordement)` : damageType,
-        target: defenderName
-      }));
-    }
-  }
-  /**
-   * REMOVED: Simple roll result display
-   */
-  async _displayRollResult(skillName, rollResult, weaponDamageValue, damageValueBonus) {
-    console.log("Roll result display disabled", { skillName });
+    return applyDamage(defenderUuid, damageValue, defenderName);
   }
   /**
    * Handle drag start for feat items
@@ -4984,78 +5046,6 @@ class NpcSheet extends ActorSheet {
       actorName: this.actor.name,
       rrList: allRRSources
     });
-  }
-  /**
-   * REMOVED: NPC weapon/spell roll with dice
-   */
-  async _rollNPCWeaponOrSpellWithDice(item, type, weaponVD) {
-    console.log("NPC weapon/spell dice roll disabled", { item: item.name, type, weaponVD });
-  }
-  /**
-   * REMOVED: Skill with weapon roll for NPC
-   */
-  async _rollSkillWithWeapon(skill, weaponName, skillType, weaponDamageValue, weapon) {
-    console.log("NPC skill with weapon roll disabled", { skill: skill.name, weaponName, skillType });
-  }
-  /**
-   * REMOVED: Attack with defense system for NPC
-   */
-  async _rollAttackWithDefenseNPC(skillName, dicePool, riskDice = 0, riskReduction = 0, rollMode = "normal", weaponDamageValue, attackingWeapon) {
-    console.log("NPC attack with defense disabled", { skillName, dicePool, riskDice, riskReduction, rollMode });
-  }
-  /**
-   * REMOVED: Display roll result with VD
-   */
-  async _displayRollResultWithVD(skillName, rollResult, weaponDamageValue, damageValueBonus) {
-    console.log("NPC roll result display disabled", { skillName, weaponDamageValue });
-  }
-  /**
-   * REMOVED: Defense roll prompt with attack result
-   */
-  async _promptDefenseRollWithAttackResult(defenderActor, attackResult, attackName, weaponDamageValue, attackingWeapon, damageValueBonus, defenderToken) {
-    console.log("Defense roll prompt with attack result disabled", { defenderActor: defenderActor.name, attackName });
-  }
-  /**
-   * REMOVED: Defense roll prompt with VD
-   */
-  async _promptDefenseRollWithVD(defenderActor, attackThreshold, attackName, weaponDamageValue, attackingWeapon, defenderToken) {
-    console.log("Defense roll prompt with VD disabled", { defenderActor: defenderActor.name, attackName, weaponDamageValue });
-  }
-  /**
-   * REMOVED: Threshold defense against dice attack
-   */
-  async _defendWithThresholdAgainstDiceAttack(defenseItem, threshold, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken) {
-    console.log("Threshold defense against dice attack disabled", { defenseItem: defenseItem.name, threshold, attackName });
-  }
-  /**
-   * REMOVED: Defense roll against NPC dice attack
-   */
-  async _rollDefenseAgainstNPCDiceAttack(defenseItem, itemType, attackName, attackResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken) {
-    console.log("Defense roll against NPC dice attack disabled", { defenseItem: defenseItem.name, itemType, attackName });
-  }
-  /**
-   * REMOVED: NPC dice attack result display
-   */
-  async _displayNPCDiceAttackResult(attackName, attackResult, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken) {
-    console.log("NPC dice attack result display disabled", { attackName, defenderActor: defenderActor.name, weaponDamageValue });
-  }
-  /**
-   * REMOVED: Threshold defense against weapon attack
-   */
-  async _defendWithThresholdAgainstWeapon(defenseItem, threshold, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus, defenderToken) {
-    console.log("Threshold defense against weapon attack disabled", { defenseItem: defenseItem.name, threshold, attackName });
-  }
-  /**
-   * REMOVED: Defense roll against NPC weapon attack
-   */
-  async _rollDefenseAgainstNPCWeapon(defenseItem, itemType, attackName, attackThreshold, defenderActor, weaponDamageValue, damageValueBonus, defenderToken) {
-    console.log("Defense roll against NPC weapon attack disabled", { defenseItem: defenseItem.name, itemType, attackName });
-  }
-  /**
-   * REMOVED: NPC weapon attack result display
-   */
-  async _displayNPCWeaponAttackResult(attackName, attackThreshold, defenseResult, defenderActor, weaponDamageValue, damageValueBonus, defenderToken) {
-    console.log("NPC weapon attack result display disabled", { attackName, attackThreshold, defenderActor: defenderActor.name });
   }
   /**
    * Get RR sources from active feats
@@ -8294,7 +8284,7 @@ class SRA2System {
         button.prop("disabled", true);
         console.log("Apply damage button clicked:", { targetUuid, targetName, damage });
         try {
-          await CharacterSheet.applyDamage(targetUuid, damage, targetName);
+          await applyDamage(targetUuid, damage, targetName);
         } catch (error) {
           console.error("Error applying damage:", error);
           ui.notifications?.error("Erreur lors de l'application des dégâts");

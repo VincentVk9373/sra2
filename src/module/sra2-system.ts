@@ -7,6 +7,7 @@ globalThis.SYSTEM = SYSTEM;
 import * as models from "./models/_module.ts";
 import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
+import * as CombatHelpers from "./helpers/combat-helpers.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
 // @ts-ignore - JavaScript module without type declarations
@@ -234,7 +235,7 @@ export class SRA2System {
         console.log('Apply damage button clicked:', { targetUuid, targetName, damage });
         
         try {
-          await applications.CharacterSheet.applyDamage(targetUuid, damage, targetName);
+          await CombatHelpers.applyDamage(targetUuid, damage, targetName);
         } catch (error) {
           console.error('Error applying damage:', error);
           ui.notifications?.error('Erreur lors de l\'application des dégâts');

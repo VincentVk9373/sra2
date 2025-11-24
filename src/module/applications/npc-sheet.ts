@@ -1,6 +1,5 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
 import * as ItemSearch from '../helpers/item-search.js';
-import * as DefenseSelection from '../helpers/defense-selection.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
@@ -1284,93 +1283,6 @@ export class NpcSheet extends ActorSheet {
       rrList: allRRSources
     });
   }
-
-  /**
-   * REMOVED: NPC weapon/spell roll with dice
-   */
-  private async _rollNPCWeaponOrSpellWithDice(item: any, type: 'weapon' | 'spell', weaponVD: string): Promise<void> {
-    console.log('NPC weapon/spell dice roll disabled', { item: item.name, type, weaponVD });
-  }
-
-  /**
-   * REMOVED: Skill with weapon roll for NPC
-   */
-  private async _rollSkillWithWeapon(skill: any, weaponName: string, skillType: string, weaponDamageValue: string, weapon?: any): Promise<void> {
-    console.log('NPC skill with weapon roll disabled', { skill: skill.name, weaponName, skillType });
-  }
-
-  /**
-   * REMOVED: Attack with defense system for NPC
-   */
-  private async _rollAttackWithDefenseNPC(skillName: string, dicePool: number, riskDice: number = 0, riskReduction: number = 0, rollMode: string = 'normal', weaponDamageValue?: string, attackingWeapon?: any): Promise<void> {
-    console.log('NPC attack with defense disabled', { skillName, dicePool, riskDice, riskReduction, rollMode });
-  }
-
-  /**
-   * REMOVED: Display roll result with VD
-   */
-  private async _displayRollResultWithVD(skillName: string, rollResult: any, weaponDamageValue?: string, damageValueBonus?: number): Promise<void> {
-    console.log('NPC roll result display disabled', { skillName, weaponDamageValue });
-  }
-
-  /**
-   * REMOVED: Defense roll prompt with attack result
-   */
-  private async _promptDefenseRollWithAttackResult(defenderActor: any, attackResult: any, attackName: string, weaponDamageValue: string, attackingWeapon?: any, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('Defense roll prompt with attack result disabled', { defenderActor: defenderActor.name, attackName });
-  }
-
-  /**
-   * REMOVED: Defense roll prompt with VD
-   */
-  private async _promptDefenseRollWithVD(defenderActor: any, attackThreshold: number, attackName: string, weaponDamageValue: string, attackingWeapon?: any, defenderToken?: any): Promise<void> {
-    console.log('Defense roll prompt with VD disabled', { defenderActor: defenderActor.name, attackName, weaponDamageValue });
-  }
-
-  /**
-   * REMOVED: Threshold defense against dice attack
-   */
-  private async _defendWithThresholdAgainstDiceAttack(defenseItem: any, threshold: number, attackName: string, attackResult: any, defenderActor: any, weaponDamageValue: string, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('Threshold defense against dice attack disabled', { defenseItem: defenseItem.name, threshold, attackName });
-  }
-
-  /**
-   * REMOVED: Defense roll against NPC dice attack
-   */
-  private async _rollDefenseAgainstNPCDiceAttack(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackResult: any, defenderActor: any, weaponDamageValue: string, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('Defense roll against NPC dice attack disabled', { defenseItem: defenseItem.name, itemType, attackName });
-  }
-
-  /**
-   * REMOVED: NPC dice attack result display
-   */
-  private async _displayNPCDiceAttackResult(attackName: string, attackResult: any, defenseResult: any | null, defenderActor: any, weaponDamageValue: string, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('NPC dice attack result display disabled', { attackName, defenderActor: defenderActor.name, weaponDamageValue });
-  }
-
-
-
-  /**
-   * REMOVED: Threshold defense against weapon attack
-   */
-  private async _defendWithThresholdAgainstWeapon(defenseItem: any, threshold: number, attackName: string, attackThreshold: number, defenderActor: any, weaponDamageValue: string, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('Threshold defense against weapon attack disabled', { defenseItem: defenseItem.name, threshold, attackName });
-  }
-
-  /**
-   * REMOVED: Defense roll against NPC weapon attack
-   */
-  private async _rollDefenseAgainstNPCWeapon(defenseItem: any, itemType: 'skill' | 'spec', attackName: string, attackThreshold: number, defenderActor: any, weaponDamageValue: string, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('Defense roll against NPC weapon attack disabled', { defenseItem: defenseItem.name, itemType, attackName });
-  }
-
-  /**
-   * REMOVED: NPC weapon attack result display
-   */
-  private async _displayNPCWeaponAttackResult(attackName: string, attackThreshold: number, defenseResult: any | null, defenderActor: any, weaponDamageValue: string, damageValueBonus?: number, defenderToken?: any): Promise<void> {
-    console.log('NPC weapon attack result display disabled', { attackName, attackThreshold, defenderActor: defenderActor.name });
-  }
-
 
   /**
    * Get RR sources from active feats
