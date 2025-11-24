@@ -196,6 +196,12 @@ export class VehicleSheet extends ActorSheet {
     // Handle vehicle type change
     html.find('.vehicle-type-select').on('change', this._onVehicleTypeChange.bind(this));
 
+    // Handle bonus changes - update attributes in real-time
+    html.find('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').on('change', this._onBonusChange.bind(this));
+    
+    // Handle option changes - update attributes in real-time
+    html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on('change', this._onOptionChange.bind(this));
+
     // Add narrative effect
     html.find('.add-narrative-effect-button').on('click', async (event) => {
       event.preventDefault();
@@ -343,6 +349,99 @@ export class VehicleSheet extends ActorSheet {
     } as any);
     
     this.render(false);
+  }
+
+  /**
+   * Handle bonus changes - update actor and re-render to show updated attributes
+   */
+  private async _onBonusChange(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const name = input.name;
+    const value = parseInt(input.value) || 0;
+    
+    // Save current active section before update
+    const activeNavItem = $(this.element).find('.section-nav .nav-item.active');
+    const activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : 'attributes';
+    
+    // Update the actor - prepareDerivedData will recalculate attributes
+    await this.actor.update({
+      [name]: value
+    } as any);
+    
+    // Re-render to show updated calculated attributes
+    await this.render(false);
+    
+    // Restore active section after render
+    if (activeSection) {
+      setTimeout(() => {
+        const currentHtml = $(this.element);
+        const form = currentHtml.closest('form')[0];
+        if (form) {
+          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
+          if (navButton) {
+            form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
+            navButton.classList.add('active');
+            
+            form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
+            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
+            if (targetSection) {
+              targetSection.classList.add('active');
+            }
+          }
+        }
+      }, 10);
+    }
+  }
+
+  /**
+   * Handle option changes (isFixed, isFlying, weaponMountImprovement, etc.) - update actor and re-render
+   */
+  private async _onOptionChange(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const name = input.name;
+    
+    // Save current active section before update
+    const activeNavItem = $(this.element).find('.section-nav .nav-item.active');
+    const activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : 'attributes';
+    
+    // Determine value based on input type
+    let value: any;
+    if (input.type === 'checkbox') {
+      value = input.checked;
+    } else if (input.type === 'number') {
+      value = parseInt(input.value) || 0;
+    } else {
+      value = input.value;
+    }
+    
+    // Update the actor - prepareDerivedData will recalculate attributes
+    await this.actor.update({
+      [name]: value
+    } as any);
+    
+    // Re-render to show updated calculated attributes
+    await this.render(false);
+    
+    // Restore active section after render
+    if (activeSection) {
+      setTimeout(() => {
+        const currentHtml = $(this.element);
+        const form = currentHtml.closest('form')[0];
+        if (form) {
+          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
+          if (navButton) {
+            form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
+            navButton.classList.add('active');
+            
+            form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
+            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
+            if (targetSection) {
+              targetSection.classList.add('active');
+            }
+          }
+        }
+      }, 10);
+    }
   }
 
   /**

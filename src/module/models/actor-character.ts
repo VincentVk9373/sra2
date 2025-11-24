@@ -370,6 +370,42 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         });
       }
       
+      // Add linked vehicles cost
+      const linkedVehicles = (this as any).linkedVehicles || [];
+      if (linkedVehicles.length > 0) {
+        for (const vehicleUuid of linkedVehicles) {
+          try {
+            // Try to load vehicle actor synchronously (for actors in world) or from game.actors
+            let vehicleActor: any = null;
+            
+            // First try fromUuidSync if available (Foundry VTT v13+)
+            if ((foundry.utils as any)?.fromUuidSync) {
+              try {
+                vehicleActor = (foundry.utils as any).fromUuidSync(vehicleUuid);
+              } catch (e) {
+                // fromUuidSync might fail for compendium items, try game.actors
+              }
+            }
+            
+            // Fallback: try to find in game.actors by UUID or ID
+            if (!vehicleActor && game.actors) {
+              const uuidParts = vehicleUuid.split('.');
+              if (uuidParts.length >= 3) {
+                const actorId = uuidParts[uuidParts.length - 1];
+                vehicleActor = (game.actors as any).get(actorId);
+              }
+            }
+            
+            if (vehicleActor && vehicleActor.type === 'vehicle') {
+              const vehicleCost = vehicleActor.system?.calculatedCost || 0;
+              totalCost += vehicleCost;
+            }
+          } catch (error) {
+            console.warn(`Failed to load linked vehicle ${vehicleUuid} for cost calculation:`, error);
+          }
+        }
+      }
+      
       (this as any).totalCost = totalCost;
     }
   }

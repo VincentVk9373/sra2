@@ -376,6 +376,33 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
           }
         });
       }
+      const linkedVehicles = this.linkedVehicles || [];
+      if (linkedVehicles.length > 0) {
+        for (const vehicleUuid of linkedVehicles) {
+          try {
+            let vehicleActor = null;
+            if (foundry.utils?.fromUuidSync) {
+              try {
+                vehicleActor = foundry.utils.fromUuidSync(vehicleUuid);
+              } catch (e) {
+              }
+            }
+            if (!vehicleActor && game.actors) {
+              const uuidParts = vehicleUuid.split(".");
+              if (uuidParts.length >= 3) {
+                const actorId = uuidParts[uuidParts.length - 1];
+                vehicleActor = game.actors.get(actorId);
+              }
+            }
+            if (vehicleActor && vehicleActor.type === "vehicle") {
+              const vehicleCost = vehicleActor.system?.calculatedCost || 0;
+              totalCost += vehicleCost;
+            }
+          } catch (error) {
+            console.warn(`Failed to load linked vehicle ${vehicleUuid} for cost calculation:`, error);
+          }
+        }
+      }
       this.totalCost = totalCost;
     }
   }
@@ -5498,6 +5525,8 @@ class VehicleSheet extends ActorSheet {
       handleRollRequest(rollRequestData);
     });
     html.find(".vehicle-type-select").on("change", this._onVehicleTypeChange.bind(this));
+    html.find('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').on("change", this._onBonusChange.bind(this));
+    html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on("change", this._onOptionChange.bind(this));
     html.find(".add-narrative-effect-button").on("click", async (event) => {
       event.preventDefault();
       const narrativeEffects = [...this.actor.system.narrativeEffects || []];
@@ -5606,6 +5635,77 @@ class VehicleSheet extends ActorSheet {
       "system.vehicleType": vehicleType
     });
     this.render(false);
+  }
+  /**
+   * Handle bonus changes - update actor and re-render to show updated attributes
+   */
+  async _onBonusChange(event) {
+    const input = event.currentTarget;
+    const name = input.name;
+    const value = parseInt(input.value) || 0;
+    const activeNavItem = $(this.element).find(".section-nav .nav-item.active");
+    const activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : "attributes";
+    await this.actor.update({
+      [name]: value
+    });
+    await this.render(false);
+    if (activeSection) {
+      setTimeout(() => {
+        const currentHtml = $(this.element);
+        const form = currentHtml.closest("form")[0];
+        if (form) {
+          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
+          if (navButton) {
+            form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
+            navButton.classList.add("active");
+            form.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"));
+            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+            }
+          }
+        }
+      }, 10);
+    }
+  }
+  /**
+   * Handle option changes (isFixed, isFlying, weaponMountImprovement, etc.) - update actor and re-render
+   */
+  async _onOptionChange(event) {
+    const input = event.currentTarget;
+    const name = input.name;
+    const activeNavItem = $(this.element).find(".section-nav .nav-item.active");
+    const activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : "attributes";
+    let value;
+    if (input.type === "checkbox") {
+      value = input.checked;
+    } else if (input.type === "number") {
+      value = parseInt(input.value) || 0;
+    } else {
+      value = input.value;
+    }
+    await this.actor.update({
+      [name]: value
+    });
+    await this.render(false);
+    if (activeSection) {
+      setTimeout(() => {
+        const currentHtml = $(this.element);
+        const form = currentHtml.closest("form")[0];
+        if (form) {
+          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
+          if (navButton) {
+            form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
+            navButton.classList.add("active");
+            form.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"));
+            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+            }
+          }
+        }
+      }, 10);
+    }
   }
   /**
    * Show item browser dialog
