@@ -1,0 +1,41 @@
+  @import "../commons/typography-mixin.less";
+  
+h1.title {
+  .sr-heading-main();
+}
+
+h4.divider {
+  .sr-heading-divider();
+}
+
+/* === Various Foundry labels === */
+.directory,
+.standard-form .form-group > label,
+.standard-form .form-group > span.label,
+.settings-sidebar .info > div .value {
+  color: var(--sr-text-color-light);
+}
+
+.standard-form .hint,
+.standard-form .form-fields > input[type="checkbox"], 
+.standard-form .form-fields > input[type="radio"], 
+.standard-form .form-fields > label,
+.standard-form .form-group > label > .units, 
+.standard-form .form-group > span.label > .units,
+.settings-sidebar .info .subtitle,
+.settings-sidebar .info > div .label {
+  color: var(--sr-text-color-grey);
+}
+
+.standard-form fieldset {
+  border-color: var(--sr-ui-border-color);
+  border-style: solid;
+
+  legend {
+    color: var(--sr-text-color-light);
+  }
+}
+
+.sheet .standard-form header.img-name input {
+  font-family: var(--sr-font-title-alt);
+}

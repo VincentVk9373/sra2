@@ -1,0 +1,35 @@
+@import "commons/button-mixin.less";
+@import "commons/select-mixin.less";
+@import "commons/input-mixin.less";
+@import "commons/checkbox-mixin.less";
+@import "commons/layout-mixin.less";
+@import "commons/typography-mixin.less";
+
+body[class^="sr-theme-"],
+body[class*=" sr-theme-"] {
+  * {
+    scrollbar-color: var(--sr-ui-scrollbar-thumb) var(--sr-ui-scrollbar-track);
+  }
+  font-family: var(--sr-font-body);
+
+  @import "components/controls.less";
+  @import "components/typography.less";
+  @import "components/context-menu.less";
+  @import "components/hotbar.less";
+  @import "components/players.less";
+  @import "components/scene-navigation.less";
+  @import "components/chat-message.less";
+  @import "components/sidebar.less";
+  @import "components/roll-table.less";
+  @import "components/card-deck.less";
+  @import "components/prose-mirror.less";
+  @import "components/pause.less";
+  @import "components/journal.less";
+  @import "components/tooltype.less";
+  @import "components/window.less";
+
+ /* === WINDOW BACKGROUND === */
+  
+
+  
+}

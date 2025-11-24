@@ -1,0 +1,59 @@
+@import "../commons/layout-mixin.less";
+
+/* === Chat message input === */
+#chat-message {
+  .sr-block-boxed();
+  --input-placeholder-color: var(--sr-text-color-grey);
+    
+  &:focus {
+    .sr-block-boxed-hover();
+    outline: none;
+  }
+}
+
+
+/* === Chat bubble === */
+.chat-bubble {
+  background: var(--sr-ui-bg-color-dark);
+  border: var(--sr-ui-color);
+  color: var(--sr-ui-color);
+}
+
+/* === Chat message === */
+#chat, #chat-notifications, #chat-popout {
+  .chat-message {
+    background: var(--sr-ui-bg-color);
+    padding: 0;
+
+    header {
+      padding: 8px;
+      color: var(--sr-text-color-grey);
+      background: var(--sr-ui-bg-color-dark);
+      border-radius: 6px 6px 0px 0px;
+
+      h4 {
+        font-family: var(--sr-font-title);
+        font-size: var(--sr-font-size-small);
+      }
+
+      a {
+        color: var(--sr-ui-color);
+
+        &:hover{
+          color: var(--sr-ui-color-active);
+          text-shadow: none;
+        }
+      }
+    }
+
+    .message-content {
+      border-top: 1px solid var(--sr-ui-border-color);
+      padding: 8px;
+      color: var(--sr-text-color-light);
+
+      &:has(*) {
+        padding: 0;
+      }
+    }
+  }
+}

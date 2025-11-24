@@ -1,0 +1,28 @@
+//Common mixin for select elements
+
+.sr-select-base() {
+  color: var(--sr-ui-color);
+  background: var(--sr-ui-bg-color);
+  border: 1px solid var(--sr-ui-border-color);
+  outline: none;
+}
+
+.sr-select-focus() {
+  color: var(--sr-ui-color-active);
+  background: var(--sr-ui-bg-color-hover);
+  border: 1px solid var(--sr-ui-border-color-active);
+  outline: none;
+}
+
+// Style des options du menu déroulant
+.sr-select-options() {
+  background-color: var(--sr-ui-bg-color-dark);
+  color: var(--sr-ui-color);
+
+  &:checked,
+  &:hover,
+  &:focus {
+    background-color: var(--sr-ui-bg-color-active);
+    color: var(--sr-ui-color-active);
+  }
+}

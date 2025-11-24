@@ -1,0 +1,41 @@
+@import "../commons/layout-mixin.less";
+
+prose-mirror.editor {
+  menu {
+    background: none;
+    padding: 0px;
+  }
+
+  .editor-container {
+    border: 1px solid var(--sr-ui-border-color);
+    border-radius: 4px;
+    
+  }
+
+  .editor-content.ProseMirror {
+    padding-left: 0.5rem;
+    color: var(--sr-ui-color);
+
+    &:focus {
+      color: var(--sr-ui-color-active);
+      border: 1px solid var(--sr-ui-border-color-active);
+      background-color: var(--sr-ui-bg-color-hover);
+    }
+  }
+  
+}
+
+  #prosemirror-dropdown {
+    ul {
+      border: 1px solid var(--sr-ui-border-color);
+      color: var(--sr-ui-color);
+      background-color: var(--sr-ui-bg-color-dark);
+    }
+
+    li {
+      &:hover {
+        color: var(--sr-ui-color-active);
+        background: var(--sr-ui-bg-color-hover);
+      }
+    }
+  }

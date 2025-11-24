@@ -1,0 +1,76 @@
+//Generic surface mixin
+.sr-block-boxed() {
+  background-color: var(--sr-ui-bg-color);
+  border: 1px solid var(--sr-ui-border-color);
+  color: var(--sr-ui-color);
+}
+
+.sr-block-boxed-hover(){
+  color: var(--sr-ui-color-active);
+  border: 1px solid var(--sr-ui-border-color-active);
+  background-color: var(--sr-ui-bg-color-hover);
+}
+
+.sr-block-boxed-active(){
+  color: var(--sr-ui-color-active);
+  border: 1px solid var(--sr-ui-border-color-active);
+  background-color: var(--sr-ui-bg-color-active);
+}
+
+.sr-block(){
+  color: var(--sr-ui-color);
+  background-color: var(--sr-ui-bg-color);
+  border-bottom: 1px solid var(--sr-ui-border-color);
+  border-top: 1px solid var(--sr-ui-border-color);
+}
+
+.sr-block-hover(){
+  color: var(--sr-ui-color-active);
+  background-color: var(--sr-ui-bg-color-hover);
+  border-bottom: 1px solid var(--sr-ui-border-color-active);
+  border-top: 1px solid var(--sr-ui-border-color-active);
+}
+
+.sr-block-active(){
+  color: var(--sr-ui-color-active);
+  background-color: var(--sr-ui-bg-color-active);
+  border-bottom: 1px solid var(--sr-ui-border-color-active);
+  border-top: 1px solid var(--sr-ui-border-color-active);
+}
+
+.sr-block-window() {
+  border: 1px solid var(--sr-ui-border-color);
+  background-image: var(--sr-window-background);
+  background-origin: border-box;
+  background-size: cover;
+}
+
+.sr-block-sidebar() {
+  background-image: var(--sr-sidebar-background);
+  background-origin: border-box;
+  background-size: cover;
+  margin: 0px 0px 5px 5px;
+  padding: 5px 5px 5px 5px;
+  border-left: 1px solid var(--sr-ui-border-color);
+
+  .sidebar-tab{
+    background: none;
+  }
+}
+
+// Surface variant "slot" (hotbar, scene, etc.)
+.sr-block-slot() {
+  background-color: var(--sr-ui-bg-color);
+  border: 1px solid var(--sr-ui-border-color);
+}
+
+.sr-block-header() {
+  text-transform: uppercase;
+  font-family: var(--sr-font-title);
+  background: var(--sr-header-bg);
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-top: 1px solid var(--sr-header-border);
+  border-bottom: 1px solid var(--sr-header-border);
+  color: var(--sr-text-color-light);
+}

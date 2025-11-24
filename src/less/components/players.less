@@ -1,0 +1,19 @@
+@import "../commons/layout-mixin.less";
+ /* === Players UI === */
+  #players {
+    #players-active, #players-inactive {
+      .sr-block-slot();
+
+      .player-name{
+        color: var(--sr-ui-color);
+      }
+    }
+    
+    #latency, #fps {
+      color: var(--sr-text-color-light);
+
+      .average{
+        color: var(--sr-ui-color);
+      }
+    }
+  }

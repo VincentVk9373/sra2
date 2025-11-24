@@ -1,4 +1,5 @@
 import { SYSTEM } from "./config/system.ts";
+import { setSidebarIcons, setControlIcons, setCompendiumBanners } from "./config/ui-config.ts";
 
 // Expose the SYSTEM object to the global scope
 globalThis.SYSTEM = SYSTEM;
@@ -52,6 +53,14 @@ export class SRA2System {
         documents,
       };
     }
+    
+    // Register theme setting
+    this.registerThemeSetting();
+    
+    // Configure UI elements (icons, banners)
+    setSidebarIcons();
+    setControlIcons();
+    setCompendiumBanners();
     
     // Register migrations
     new Migrations();
@@ -1032,8 +1041,60 @@ export class SRA2System {
     }, { width: 350 }).render(true);
   }
 
+  /**
+   * Register the UI theme setting
+   */
+  registerThemeSetting(): void {
+    game.settings.register(SYSTEM.id, 'uiTheme', {
+      name: 'SRA2.SETTINGS.THEME.TITLE',
+      hint: 'SRA2.SETTINGS.THEME.DESC',
+      scope: 'client',
+      config: true,
+      type: String,
+      choices: () => {
+        return {
+          'sra2': game.i18n.localize('SRA2.SETTINGS.THEME.SRA2'),
+        };
+      },
+      default: 'sra2',
+      onChange: (value: string) => {
+        this.applyTheme(value);
+      }
+    });
+  }
+
+  /**
+   * Apply the selected theme to the body element
+   */
+  applyTheme(theme?: string): void {
+    if (!document.body) {
+      console.warn(SYSTEM.LOG.HEAD + 'Cannot apply theme: document.body is not available');
+      return;
+    }
+
+    // Get theme from setting if not provided
+    if (!theme) {
+      theme = game.settings.get(SYSTEM.id, 'uiTheme') as string || 'sra2';
+    }
+
+    // List of all possible theme classes
+    const themeClasses = ['sr-theme-sra2', 'sr-theme-sr6', 'sr-theme-sr5'];
+
+    // Remove all theme classes
+    document.body.classList.remove(...themeClasses);
+
+    // Add the selected theme class
+    const themeClass = `sr-theme-${theme}`;
+    document.body.classList.add(themeClass);
+
+    console.log(SYSTEM.LOG.HEAD + `Applied theme: ${themeClass}`);
+  }
+
   async onReady(): Promise<void> {
     console.log(SYSTEM.LOG.HEAD + 'SRA2System.onReady');
+    
+    // Apply theme from setting
+    this.applyTheme();
     
     // Run migrations
     const migrations = new Migrations();

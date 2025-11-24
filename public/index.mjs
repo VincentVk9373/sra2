@@ -12,6 +12,47 @@ const SYSTEM$1 = {
     ASSETS: `systems/${SYSTEM_ID}/assets`
   }
 };
+function setSidebarIcons() {
+  CONFIG.Actor.sidebarIcon = "fas fa-user";
+  CONFIG.Adventure.sidebarIcon = "fas fa-tree";
+  CONFIG.Cards.sidebarIcon = "fa-solid fa-cards";
+  CONFIG.ChatMessage.sidebarIcon = "fas fa-comments";
+  CONFIG.Combat.sidebarIcon = "fas fa-gun";
+  CONFIG.Folder.sidebarIcon = "fas fa-folder";
+  CONFIG.Item.sidebarIcon = "fas fa-suitcase";
+  CONFIG.JournalEntry.sidebarIcon = "fas fa-book-open";
+  CONFIG.JournalEntryPage.sidebarIcon = "fas fa-book-open";
+  CONFIG.Macro.sidebarIcon = "fas fa-code";
+  CONFIG.Playlist.sidebarIcon = "fas fa-music";
+  CONFIG.PlaylistSound.sidebarIcon = "fas fa-music";
+  CONFIG.RollTable.sidebarIcon = "fas fa-th-list";
+  CONFIG.Scene.sidebarIcon = "fas fa-map";
+  console.log(SYSTEM$1.LOG.HEAD + "Configured sidebar icons");
+}
+function setControlIcons() {
+  CONFIG.controlIcons = {
+    combat: "icons/svg/combat.svg",
+    visibility: "icons/svg/cowled.svg",
+    effects: "icons/svg/aura.svg",
+    lock: "icons/svg/padlock.svg",
+    up: "icons/svg/up.svg",
+    down: "icons/svg/down.svg",
+    defeated: "icons/svg/skull.svg",
+    light: "icons/svg/light.svg",
+    lightOff: "icons/svg/light-off.svg",
+    template: "icons/svg/explosion.svg",
+    sound: "icons/svg/sound-off.svg",
+    soundOff: "icons/svg/combat.svg",
+    doorClosed: "icons/svg/door-closed-outline.svg",
+    doorOpen: "icons/svg/door-open-outline.svg",
+    doorSecret: "icons/svg/door-secret-outline.svg",
+    doorLocked: "icons/svg/door-locked-outline.svg"
+  };
+  console.log(SYSTEM$1.LOG.HEAD + "Configured control icons");
+}
+function setCompendiumBanners() {
+  console.log(SYSTEM$1.LOG.HEAD + "Configured compendium banners");
+}
 class CharacterDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -8040,6 +8081,10 @@ class SRA2System {
         documents
       };
     }
+    this.registerThemeSetting();
+    setSidebarIcons();
+    setControlIcons();
+    setCompendiumBanners();
     new Migrations();
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration) => {
       declareMigration(new Migration_13_0_3());
@@ -8769,8 +8814,47 @@ class SRA2System {
       }
     }, { width: 350 }).render(true);
   }
+  /**
+   * Register the UI theme setting
+   */
+  registerThemeSetting() {
+    game.settings.register(SYSTEM$1.id, "uiTheme", {
+      name: "SRA2.SETTINGS.THEME.TITLE",
+      hint: "SRA2.SETTINGS.THEME.DESC",
+      scope: "client",
+      config: true,
+      type: String,
+      choices: () => {
+        return {
+          "sra2": game.i18n.localize("SRA2.SETTINGS.THEME.SRA2")
+        };
+      },
+      default: "sra2",
+      onChange: (value) => {
+        this.applyTheme(value);
+      }
+    });
+  }
+  /**
+   * Apply the selected theme to the body element
+   */
+  applyTheme(theme) {
+    if (!document.body) {
+      console.warn(SYSTEM$1.LOG.HEAD + "Cannot apply theme: document.body is not available");
+      return;
+    }
+    if (!theme) {
+      theme = game.settings.get(SYSTEM$1.id, "uiTheme") || "sra2";
+    }
+    const themeClasses = ["sr-theme-sra2", "sr-theme-sr6", "sr-theme-sr5"];
+    document.body.classList.remove(...themeClasses);
+    const themeClass = `sr-theme-${theme}`;
+    document.body.classList.add(themeClass);
+    console.log(SYSTEM$1.LOG.HEAD + `Applied theme: ${themeClass}`);
+  }
   async onReady() {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onReady");
+    this.applyTheme();
     const migrations = new Migrations();
     migrations.migrate();
     await this.migrateFeatsToArrayFormat();

@@ -1,0 +1,56 @@
+// commons/checkbox-mixin.less
+
+.sr-checkbox-base() {
+  border: none;
+  background: none;
+
+  &:focus {
+    border: none;
+    background: none;
+  }
+}
+
+.sr-checkbox-icon() {
+  &::before {
+    outline: none;
+    color: var(--sr-ui-color);
+    font-weight: normal
+  }
+}
+
+
+.sr-checkbox-checked() {
+
+  &:hover::before {
+    color: var(--sr-ui-border-color-active);
+  }
+
+  &:checked::before {
+    color: var(--sr-ui-color-active);
+  }
+
+  &:checked::after {
+    content: "\f0c8";
+    color: var(--sr-ui-color-active);
+    
+  }
+}
+
+.sr-checkbox-focus() {
+  &:focus-visible {
+    outline: 2px solid var(--sr-ui-border-color-active);
+    outline-offset: 1px;
+  }
+}
+
+.sr-checkbox-disabled() {
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+// Style label
+.sr-checkbox-label() {
+  color: var(--sr-text-color-light);
+}

@@ -672,6 +672,15 @@
             "13_0_11_INFO": "Migration 13.0.11: {count} weapon(s) updated - added linked specialization fields for attack and defense.",
             "13_0_12_INFO": "Migration 13.0.12: {count} weapon(s) updated - 'dice' ranges converted to 'disadvantage'."
         },
+        "SETTINGS": {
+            "THEME": {
+                "TITLE": "UI Theme",
+                "DESC": "Choose the visual theme for the system user interface.",
+                "SRA2": "Shadowrun Anarchy 2",
+                "SR6": "Shadowrun 6",
+                "SR5": "Shadowrun 5"
+            }
+        },
         "ROLL_DIALOG": {
             "TITLE": "Dice Roll",
             "ACTION": "Action",

@@ -683,6 +683,15 @@
             "13_0_11_INFO": "Migration 13.0.11 : {count} arme(s) mise(s) à jour - ajout des champs de liaison aux spécialisations d'attaque et de défense.",
             "13_0_12_INFO": "Migration 13.0.12 : {count} arme(s) mise(s) à jour - portées 'dice' converties en 'disadvantage'."
         },
+        "SETTINGS": {
+            "THEME": {
+                "TITLE": "Thème de l'Interface",
+                "DESC": "Choisissez le thème visuel pour l'interface utilisateur du système.",
+                "SRA2": "Shadowrun Anarchy 2",
+                "SR6": "Shadowrun 6",
+                "SR5": "Shadowrun 5"
+            }
+        },
         "ROLL_DIALOG": {
             "TITLE": "Jet de Dés",
             "ACTION": "Action",

@@ -1,0 +1,21 @@
+@import "layout-mixin.less";
+//Common mixin for buttons
+.sr-button-base() {
+  font-family: var(--sr-font-body);
+  .sr-block-boxed();
+}
+
+// States
+.sr-button-hover() {
+  .sr-block-boxed-hover();
+}
+
+.sr-button-active() {
+  .sr-block-boxed-active();
+}
+
+.sr-button-focus() {
+  outline: 1px solid var(--sr-ui-color-active);
+  color: var(--sr-ui-color-active);
+  box-shadow: none;
+}

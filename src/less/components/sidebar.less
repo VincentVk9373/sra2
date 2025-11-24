@@ -1,0 +1,83 @@
+@import "../commons/layout-mixin.less";
+
+/* === Sidebar === */
+#items-popout, #actors-popout, #combat-popout, #scenes-popout, #journal-popout, #tables-popout, #cards-popout, #macros-popout, #playlists-popout, #compendium-popout, #settings-popout,
+#sidebar {
+
+  #sidebar-content.expanded {
+    .sr-block-sidebar();
+  }
+
+  /* === Folder and item list === */
+  .directory-list {
+    .directory-item.document {
+      border-bottom: 1px solid transparent;
+      border-top: 1px solid var(--sr-ui-border-color);
+  
+      &:hover {
+        background-color: var(--sr-ui-bg-color-hover);
+        border-top: 1px solid var(--sr-ui-border-color-active);
+        border-bottom: 1px solid var(--sr-ui-border-color-active);
+      }
+  
+      a {
+        color: var(--sr-ui-color);
+  
+        &:hover {
+          color: var(--sr-ui-color-active)
+        }
+      }
+    } 
+    
+    .directory-item.folder {
+      header {
+        background: none;
+        color: var(--sr-ui-color);
+        border-top: var(--sr-border-color);
+        border-bottom: var(--sr-border-color);
+
+        &:hover {
+          background-color: var(--sr-ui-bg-color-hover);
+          border-top: var(--sr-ui-border-color-active);
+          border-bottom: var(--sr-ui-border-color-active);
+          color: var(--sr-ui-color-active);
+        }
+      }
+    }
+  }
+
+  li.folder > .folder-header {
+    color: var(--sr-ui-color);
+    text-shadow: none;
+    background: none;
+  }
+
+  .directory .directory-item:is(.context, .active)::after{
+    border: 1px solid var(--sr-ui-border-color-active);
+  }
+
+  /* === Playlist sidebar === */
+  .global-volume header{
+    .sr-block();
+
+    &:hover {
+      .sr-block-hover();
+    }
+  }
+
+  .global-volume.expanded header {
+    .sr-block-hover();
+  }
+
+  .playlist-header {
+    color: var(--sr-ui-color);
+
+    &:hover {
+      color: var(--sr-ui-color-active);
+    }
+  }
+}
+
+#items-popout, #actors-popout, #combat-popout, #scenes-popout, #journal-popout, #tables-popout, #cards-popout, #macros-popout, #playlists-popout, #compendium-popout, #settings-popout {
+  .sr-block-sidebar();
+}

@@ -1,0 +1,110 @@
+@import "../commons/button-mixin.less";
+@import "../commons/select-mixin.less";
+@import "../commons/input-mixin.less";
+@import "../commons/checkbox-mixin.less";
+
+/* === Buttons === */
+  button,
+  a.button, a.ui-control,
+  input[type="button"],
+  input[type="submit"] {
+    .sr-button-base();
+  }
+
+  button:hover,
+  a.button:hover, a.ui-control:hover,
+  input[type="button"]:hover,
+  input[type="submit"]:hover {
+    .sr-button-hover();
+  }
+
+  button.ui-control[aria-pressed=true], 
+  a.ui-control[aria-pressed=true], 
+  li.ui-control[aria-pressed=true], 
+  .placeable-hud 
+  .control-icon[aria-pressed=true], 
+  .placeable-hud input[aria-pressed=true],
+  button:active, button.active,
+  a.button:active,
+  input[type="button"]:active,
+  input[type="submit"]:active {
+   .sr-button-active();
+  }
+
+  a:hover {
+    text-shadow: none;
+  }
+
+  /* === Icons buttons === */
+  button.icon,
+  a.button.icon {
+    font-family: var(--font-awesome);
+
+    &:focus {
+      .sr-button-focus();
+    }
+  }
+
+  /* === Select === */
+  select,
+  .standard-form select,
+  .form-group select {
+    .sr-select-base();
+  }
+
+  select:focus,
+  .standard-form select:focus,
+  .form-group select:focus {
+    .sr-select-focus();
+  }
+
+  /* === Select Options === */
+  select option,
+  .standard-form select option,
+  .form-group select option {
+    .sr-select-options();
+  }
+
+  /* === INPUTS === */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"],
+  input:not([type]),
+  .standard-form input,
+  .form-group input {
+    .sr-input-base();
+    .sr-input-placeholder();
+  }
+
+  input:focus,
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="password"]:focus,
+  .standard-form input:focus,
+  .form-group input:focus {
+    .sr-input-focus();
+  }
+
+  /* === CHECKBOXES === */
+  input[type="checkbox"] {
+    .sr-checkbox-base();
+    .sr-checkbox-icon();
+    .sr-checkbox-checked();
+    .sr-checkbox-focus();
+    .sr-checkbox-disabled();
+  }
+
+  label.checkbox,
+  .form-group label.checkbox {
+    .sr-checkbox-label();
+  }
+
+  /* === RANGE INPUTS (sliders) === */
+  input[type="range"],
+  .form-group input[type="range"],
+  .standard-form input[type="range"] {
+    .sr-range-base();
+  }

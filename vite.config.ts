@@ -44,11 +44,15 @@ const config: UserConfig = {
             scss: {
                 // Add global SCSS variables/mixins here if needed
                 // additionalData: `@import "./src/styles/variables.scss";`
+            },
+            less: {
+                // Less preprocessor options
+                javascriptEnabled: true,
             }
         }
     },
     resolve: {
-        extensions: ['.ts', '.mjs', '.js', '.json', '.scss']
+        extensions: ['.ts', '.mjs', '.js', '.json', '.scss', '.less']
     },
     plugins: [
         visualizer({

@@ -14,6 +14,7 @@
     "@foundryvtt/foundryvtt-cli": "^2.0.0",
     "@league-of-foundry-developers/foundry-vtt-types": "^v13.345.1",
     "@types/node": "^24.10.0",
+    "less": "^4.4.2",
     "nodemon": "^3.1.10",
     "sass": "^1.91.0",
     "typescript": "^5.9.3",

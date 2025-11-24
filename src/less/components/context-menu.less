@@ -1,0 +1,16 @@
+@import "../commons/layout-mixin.less";
+
+/* === Context-Menu === */
+#context-menu {
+  .sr-block-window();
+  color: var(--sr-ui-color);
+
+  li.context-item{
+    border: 1px solid var(--sr-ui-border-color);
+
+    &:hover{
+      .sr-block-boxed-hover();
+        text-shadow: none;   
+    }
+  }
+}

@@ -1,0 +1,31 @@
+#pause {
+  background: transparent;
+  
+  figcaption {
+    font-family: var(--sr-font-title-alt);
+    text-shadow: none;
+    color: var(--sr-pause-color);
+    letter-spacing: 2px;
+    animation: neon1 2.5s ease-in-out infinite alternate;
+  }
+
+
+  @keyframes neon1 {
+    from {
+      text-shadow: 0 0 10px var(--sr-pause-color-effect-1), 0 0 20px var(--sr-pause-color-effect-1), 0 0 30px var(--sr-pause-color-effect-1), 0 0 40px var(--sr-pause-color-effect-2),
+        0 0 70px var(--sr-pause-color-effect-2), 0 0 80px var(--sr-pause-color-effect-2), 0 0 100px var(--sr-pause-color-effect-2), 0 0 150px var(--sr-pause-color-effect-2);
+    }
+    to {
+      text-shadow: 0 0 5px var(--sr-pause-color-effect-1), 0 0 10px var(--sr-pause-color-effect-1), 0 0 15px var(--sr-pause-color-effect-1), 0 0 20pxv ar(--sr-pause-color-effect-2),
+        0 0 35px var(--sr-pause-color-effect-2), 0 0 40px var(--sr-pause-color-effect-2), 0 0 50px var(--sr-pause-color-effect-2), 0 0 75px var(--sr-pause-color-effect-2);
+    }
+  }
+
+  img {
+    content: var(--sr-logo);
+    animation: none;
+    transform: translate(0, 20px);
+    opacity: 1;
+    filter: drop-shadow(0px 0px 10px var(--sr-ui-bg-color-dark));
+  }
+}

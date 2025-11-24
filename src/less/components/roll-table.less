@@ -1,0 +1,25 @@
+@import "../commons/layout-mixin.less";
+
+table {
+  background: none;
+  color: var(--sr-text-color-light);
+}
+
+table thead, table tfoot {
+  .sr-block-header();
+}
+
+.roll-table-sheet.view-mode header.sheet-header h4 {
+  font-family: var(--sr-font-title);
+  color: var(--sr-text-color-grey);
+}
+
+.roll-table-sheet.view-mode header.sheet-header h1 {
+  font-family: var(--sr-font-title-alt);
+  font-size: var(--sr-font-size-h0);
+  color: var(--sr-text-color-flash);
+}
+
+table tbody tr:nth-child(even) {
+  background-color: var(--sr-table-bg-even);
+}

@@ -1,0 +1,25 @@
+@import "../commons/layout-mixin.less";
+/* === Hot bar === */
+  #hotbar {
+    .slot {
+      .sr-block-slot();
+
+      &:hover {
+        .sr-block-boxed-hover();
+
+        &.open .key {  
+          color: var(--sr-ui-color-active);
+        }
+      }
+
+      &.full .key {
+        background-color: transparent;
+        color: var(--sr-ui-color-active);
+      }
+
+      &.open .key {
+        background-color: transparent;
+        color: var(--sr-ui-color);
+      }
+    }
+  }

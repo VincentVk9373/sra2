@@ -1,0 +1,30 @@
+@import "../commons/layout-mixin.less";
+@import "../commons/button-mixin.less";
+
+/* === Scene navigation === */
+#scene-navigation {
+
+  &.expanded a {
+    .sr-button-focus();
+  }
+    
+  .scene{
+    .sr-block-boxed();
+
+    &:hover {
+      border: var(--sr-ui-border-color-active);
+    }
+
+    &::after {
+      color: var(--sr-ui-color);
+    }
+
+    &.view {
+      .sr-block-boxed-hover();
+
+      &::after {
+        color: var(--sr-ui-color-active);
+      }
+    }
+  }
+}

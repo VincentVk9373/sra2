@@ -1,0 +1,95 @@
+@import "../theme-mixins.less";
+
+.theme-sra2() {
+
+  //Fonts
+  @font-face {
+    font-family: "sra2_foundry_title";
+    src: url("/systems/sra2/fonts/sra2/sra2_foundry_title.ttf");
+  }
+  @font-face {
+    font-family: "sra2_foundry_title_alt";
+    src: url("/systems/sra2/fonts/sra2/sra2_foundry_title_alt.otf");
+  }
+  @font-face {
+    font-family: "sra2_foundry_text";
+    src: url("/systems/sra2/fonts/sra2/sra2_foundry_text.ttf");
+  }
+
+  @font-face {
+    font-family: "sra2_foundry_text_journal";
+    src: url("/systems/sra2/fonts/sra2/sra2_foundry_journal_regular.otf");
+  }
+
+  @font-body: "sra2_foundry_text";
+  @font-title: "sra2_foundry_title";
+  @font-title-alt : "sra2_foundry_title_alt";
+  @font-journal: "sra2_foundry_text_journal";
+  @font-journal-shadowtalk: "sra2_foundry_text";
+  @font-journal-shadowtalk-arrow:  "sra2_foundry_text";
+
+  @font-size-h0: 30px;
+  @font-size-h1: 30px;
+  @font-size-h4: 20px;
+  @font-size-small: 12px;
+
+   //Main color
+  @blue: rgb(57, 77, 115); // Magenta
+  @lightBlue : rgb(0, 229, 255); // Light Blue
+  @black: rgb(0, 0, 0); // Pink
+  @yellow: rgb(242, 188, 0); // yellow
+  @neutralLight : rgb(170, 249, 241);  // White
+  @darkBlue: rgb(14, 8, 40); // Dark blue
+
+  //UI colors
+  @ui-color: fade(@lightBlue, 75%);
+  @ui-color-active: fade(@yellow, 100%);
+  @ui-bg-color: fade(@darkBlue, 50%);
+  @ui-bg-color-hover: fade(@black, 75%);
+  @ui-bg-color-active: fade(@black, 75%);
+  @ui-bg-color-dark: @darkBlue;
+  @ui-border-color: fade(@blue, 100%);
+  @ui-border-color-active: fade(@yellow, 100%);
+  @ui-scrollbar-track: fade(@lightBlue, 25%);
+  @ui-scrollbar-thumb: fade(@lightBlue, 35%);
+  @ui-scrollbar-thumb-over: fade(@lightBlue, 100%);
+  @window-header-border: @blue;
+  @header-bg: fade(@blue, 50%);
+  @header-border: @lightBlue;
+  @table-bg-even: fade(@blue, 25%);
+
+  //Pause button
+  @ui-pause-color: @yellow;
+  @ui-pause-color-effect-1: @darkBlue;
+  @ui-pause-color-effect-2: @black;
+
+  //Journal color
+  @jounal-bg-color: @black;
+  @shadowtalk-arrow-color: @yellow;
+
+  //Text colors
+  @text-color-light: @neutralLight;
+  @text-color-grey: fade(@neutralLight, 50%);
+  @text-color-dark: @darkBlue;
+  @text-color-flash: @yellow;
+
+  //Img
+  @sr-logo: "/systems/sra2/img/interface/sra2/sra2_logo.svg";
+  @sidebar-background: "/systems/sra2/img/interface/sra2/sra2_background_window_dark.webp";
+  @window-background: "/systems/sra2/img/interface/sra2/sra2_background_window_dark.webp";
+  @sheet-background: "/systems/sra2/img/interface/sra2/sra2_background_window_dark.webp";
+
+
+  //Apply cation of common theme variables
+  body.sr-theme-sra2.theme-dark {
+    .theme-vars();
+  }
+
+  body.sr-theme-sra2.theme-light {
+    .theme-vars();
+  }
+}
+
+
+//Activate the SR6 theme
+.theme-sra2();

@@ -1,0 +1,29 @@
+@import "../commons/layout-mixin.less";
+@import "controls.less";
+
+[id^="CardDeckConfig-Cards-"] {
+  .cards-header{
+    .sr-block-header();
+    font-weight: normal;
+
+    .name{
+      font-weight: normal;
+    }
+  }
+
+  .tab.cards{
+    a {
+      color: var(--sr-ui-color);
+
+      &:hover{
+        color: var(--sr-ui-color-active);
+        text-shadow: none;
+      }
+    }
+  }
+
+  .cards.scrollable{
+    color: var(--sr-text-color-light);
+  }
+   
+}
