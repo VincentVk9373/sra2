@@ -141,6 +141,82 @@ export class SRA2System {
         }, 100);
       }
     });
+
+    // Hook to update character sheets when items are created/deleted on linked vehicles
+    // This ensures the cost is recalculated when weapons are added/removed
+    Hooks.on('createItem', (item: any, options: any, userId: string) => {
+      const actor = item.parent;
+      if (!actor || actor.type !== 'vehicle') return;
+
+      // Check if this is a weapon item
+      const featType = item.system?.featType;
+      if (featType !== 'weapon' && featType !== 'weapons-spells') return;
+
+      // Force vehicle to recalculate its cost first
+      if (actor.system) {
+        (actor.system as any).prepareDerivedData();
+      }
+
+      // Find all character actors that have this vehicle linked
+      if (game.actors) {
+        const vehicleUuid = actor.uuid;
+        const characterActors = (game.actors as any).filter((char: any) => {
+          if (char.type !== 'character') return false;
+          const linkedVehicles = (char.system as any)?.linkedVehicles || [];
+          return linkedVehicles.includes(vehicleUuid);
+        });
+
+        // Force recalculation of derived data and re-render character sheets
+        characterActors.forEach((char: any) => {
+          // Force prepareDerivedData to recalculate
+          if (char.system) {
+            (char.system as any).prepareDerivedData();
+          }
+          if (char.sheet && char.sheet.rendered) {
+            setTimeout(() => {
+              char.sheet.render(false);
+            }, 100);
+          }
+        });
+      }
+    });
+
+    Hooks.on('deleteItem', (item: any, options: any, userId: string) => {
+      const actor = item.parent;
+      if (!actor || actor.type !== 'vehicle') return;
+
+      // Check if this was a weapon item
+      const featType = item.system?.featType;
+      if (featType !== 'weapon' && featType !== 'weapons-spells') return;
+
+      // Force vehicle to recalculate its cost first
+      if (actor.system) {
+        (actor.system as any).prepareDerivedData();
+      }
+
+      // Find all character actors that have this vehicle linked
+      if (game.actors) {
+        const vehicleUuid = actor.uuid;
+        const characterActors = (game.actors as any).filter((char: any) => {
+          if (char.type !== 'character') return false;
+          const linkedVehicles = (char.system as any)?.linkedVehicles || [];
+          return linkedVehicles.includes(vehicleUuid);
+        });
+
+        // Force recalculation of derived data and re-render character sheets
+        characterActors.forEach((char: any) => {
+          // Force prepareDerivedData to recalculate
+          if (char.system) {
+            (char.system as any).prepareDerivedData();
+          }
+          if (char.sheet && char.sheet.rendered) {
+            setTimeout(() => {
+              char.sheet.render(false);
+            }, 100);
+          }
+        });
+      }
+    });
     
     // Also handle when vehicle is deleted
     Hooks.on('deleteActor', (actor: any, options: any, userId: string) => {
@@ -458,9 +534,12 @@ export class SRA2System {
         console.log('Spe d\'attaque:', attackSpec);
         console.log('===================');
 
+        // Check if defender is a vehicle (vehicles use autopilot instead of defense skill)
+        const isVehicleDefender = defender?.type === 'vehicle';
+        
         // Open defense roll dialog
-        if (!defender || !defenseSkill) {
-          console.error('Missing defender or defense skill');
+        if (!defender) {
+          console.error('Missing defender');
           return;
         }
 
@@ -536,71 +615,91 @@ export class SRA2System {
           }
         }
         
-        // Fallback: determine based on attack type (melee or ranged)
-        if (!finalDefenseSkill) {
-          // Check if it's a melee attack (check meleeRange in rollData)
-          const isMeleeAttack = rollData.meleeRange && rollData.meleeRange !== 'none';
-          if (isMeleeAttack) {
-            finalDefenseSkill = 'Combat rapproché';
-          } else {
-            finalDefenseSkill = 'Athlétisme';
-          }
-        }
-
         // Calculate skill/spec levels for defender (use token's actor for NPCs)
         let defenseSkillLevel: number | undefined = undefined;
         let defenseSpecLevel: number | undefined = undefined;
         let defenseLinkedAttribute: string | undefined = undefined;
 
-        if (finalDefenseSpec) {
-          const spec = defenderActorForRoll.items.find((item: any) => 
-            item.type === 'specialization' && item.name === finalDefenseSpec
-          );
-          if (spec) {
-            const specSystem = spec.system as any;
-            const linkedSkillName = specSystem.linkedSkill;
-            const linkedSkill = defenderActorForRoll.items.find((item: any) => 
-              item.type === 'skill' && item.name === linkedSkillName
+        // For vehicles, use autopilot instead of defense skill
+        if (isVehicleDefender) {
+          // Vehicles use autopilot for defense
+          const autopilot = (defenderActorForRoll.system as any)?.attributes?.autopilot || 0;
+          finalDefenseSkill = 'Autopilot'; // Special skill name for vehicles
+          defenseSkillLevel = autopilot;
+          defenseLinkedAttribute = undefined; // Vehicles don't use attributes
+        } else {
+          // Fallback: determine based on attack type (melee or ranged)
+          if (!finalDefenseSkill) {
+            // Check if it's a melee attack (check meleeRange in rollData)
+            const isMeleeAttack = rollData.meleeRange && rollData.meleeRange !== 'none';
+            if (isMeleeAttack) {
+              finalDefenseSkill = 'Combat rapproché';
+            } else {
+              finalDefenseSkill = 'Athlétisme';
+            }
+          }
+
+          // Calculate skill/spec levels for defender
+          if (finalDefenseSpec) {
+            const spec = defenderActorForRoll.items.find((item: any) => 
+              item.type === 'specialization' && item.name === finalDefenseSpec
             );
-            if (linkedSkill) {
-              const skillRating = (linkedSkill.system as any).rating || 0;
-              const specRating = specSystem.rating || 0;
-              defenseLinkedAttribute = specSystem.linkedAttribute || (linkedSkill.system as any).linkedAttribute || 'strength';
+            if (spec) {
+              const specSystem = spec.system as any;
+              const linkedSkillName = specSystem.linkedSkill;
+              const linkedSkill = defenderActorForRoll.items.find((item: any) => 
+                item.type === 'skill' && item.name === linkedSkillName
+              );
+              if (linkedSkill) {
+                const skillRating = (linkedSkill.system as any).rating || 0;
+                const specRating = specSystem.rating || 0;
+                defenseLinkedAttribute = specSystem.linkedAttribute || (linkedSkill.system as any).linkedAttribute || 'strength';
+                const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
+                
+                defenseSkillLevel = attributeValue + skillRating;
+                defenseSpecLevel = defenseSkillLevel + specRating;
+              }
+            }
+          } else if (finalDefenseSkill) {
+            const skill = defenderActorForRoll.items.find((item: any) => 
+              item.type === 'skill' && item.name === finalDefenseSkill
+            );
+            if (skill) {
+              const skillSystem = skill.system as any;
+              const skillRating = skillSystem.rating || 0;
+              defenseLinkedAttribute = skillSystem.linkedAttribute || 'strength';
               const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
               
               defenseSkillLevel = attributeValue + skillRating;
-              defenseSpecLevel = defenseSkillLevel + specRating;
             }
-          }
-        } else if (finalDefenseSkill) {
-          const skill = defenderActorForRoll.items.find((item: any) => 
-            item.type === 'skill' && item.name === finalDefenseSkill
-          );
-          if (skill) {
-            const skillSystem = skill.system as any;
-            const skillRating = skillSystem.rating || 0;
-            defenseLinkedAttribute = skillSystem.linkedAttribute || 'strength';
-            const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
-            
-            defenseSkillLevel = attributeValue + skillRating;
           }
         }
 
+        // Final check: ensure we have a defense skill (or autopilot for vehicles)
+        if (!finalDefenseSkill && !isVehicleDefender) {
+          console.error('Could not determine defense skill for non-vehicle defender');
+          return;
+        }
+
         // Get RR sources for defense skill/spec (use token's actor for NPCs)
+        // Note: Vehicles don't have RR sources for autopilot
         const { getRRSources } = await import('./helpers/sheet-helpers.js');
         let defenseRRList: any[] = [];
-        if (finalDefenseSpec) {
-          const rrSources = getRRSources(defenderActorForRoll, 'specialization', finalDefenseSpec);
-          defenseRRList = rrSources.map((rr: any) => ({
-            ...rr,
-            featName: rr.featName
-          }));
-        } else if (finalDefenseSkill) {
-          const rrSources = getRRSources(defenderActorForRoll, 'skill', finalDefenseSkill);
-          defenseRRList = rrSources.map((rr: any) => ({
-            ...rr,
-            featName: rr.featName
-          }));
+        if (!isVehicleDefender) {
+          // Only get RR sources for non-vehicles
+          if (finalDefenseSpec) {
+            const rrSources = getRRSources(defenderActorForRoll, 'specialization', finalDefenseSpec);
+            defenseRRList = rrSources.map((rr: any) => ({
+              ...rr,
+              featName: rr.featName
+            }));
+          } else if (finalDefenseSkill) {
+            const rrSources = getRRSources(defenderActorForRoll, 'skill', finalDefenseSkill);
+            defenseRRList = rrSources.map((rr: any) => ({
+              ...rr,
+              featName: rr.featName
+            }));
+          }
         }
 
         // Get token UUIDs

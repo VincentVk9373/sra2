@@ -48,10 +48,12 @@
           </div>
         </div>
       </div>
+      <div class="charname-cost">
       <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'SRA2.ACTOR.CHARACTER_NAME'}}"/></h1>
       <div class="total-cost">
         <span class="total-label">{{localize "SRA2.TOTAL_COST"}}: </span>
         <span class="total-value">{{system.totalCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+      </div>
       </div>
       {{#if bookmarkedItems}}
       <div class="bookmarks-list">

@@ -38,14 +38,16 @@
           </div>
         </div>
       </div>
-      <h1 class="charname"><input name="name" type="text" value="{{actor.name}}"
-          placeholder="{{localize 'SRA2.VEHICLE.NAME'}}" /></h1>
-      {{#if system.calculatedCost}}
-      <div class="vehicle-cost">
-        <span class="cost-label">{{localize "SRA2.VEHICLE.COST"}}:</span>
-        <span class="cost-value">{{system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+      <div class="charname-cost">
+        <h1 class="charname"><input name="name" type="text" value="{{actor.name}}"
+            placeholder="{{localize 'SRA2.VEHICLE.NAME'}}" /></h1>
+        {{#if system.calculatedCost}}
+        <div class="vehicle-cost">
+          <span class="cost-label">{{localize "SRA2.VEHICLE.COST"}}:</span>
+          <span class="cost-value">{{system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+        </div>
+        {{/if}}
       </div>
-      {{/if}}
     </div>
   </header>
 
