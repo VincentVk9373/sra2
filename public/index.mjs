@@ -3970,29 +3970,25 @@ class CharacterSheet extends ActorSheet {
       severe: [false],
       incapacitating: false
     };
-    const updateData = {
-      "system.damage": {
-        light: [...currentDamage.light || [false, false]],
-        severe: [...currentDamage.severe || [false]],
-        incapacitating: currentDamage.incapacitating !== void 0 ? currentDamage.incapacitating : false
-      }
-    };
-    while (updateData["system.damage"].light.length < 2) {
-      updateData["system.damage"].light.push(false);
-    }
-    while (updateData["system.damage"].severe.length < 1) {
-      updateData["system.damage"].severe.push(false);
-    }
     if (damageType === "incapacitating") {
-      updateData["system.damage"].incapacitating = checked;
-    } else if (damageType === "light" && index !== null && index < updateData["system.damage"].light.length) {
-      updateData["system.damage"].light[index] = checked;
-    } else if (damageType === "severe" && index !== null && index < updateData["system.damage"].severe.length) {
-      updateData["system.damage"].severe[index] = checked;
-    } else {
-      return;
+      await this.actor.updateSource({
+        "system.damage.incapacitating": checked
+      });
+    } else if (damageType === "light" || damageType === "severe") {
+      if (index !== null) {
+        const damageArray = [...currentDamage[damageType] || []];
+        while (damageArray.length <= index) {
+          damageArray.push(false);
+        }
+        damageArray[index] = checked;
+        await this.actor.updateSource({
+          [`system.damage.${damageType}`]: damageArray
+        });
+      }
     }
-    await this.actor.update(updateData);
+    await this.actor.update({}, { render: false });
+    const html = $(this.element);
+    html.find(`input[name="${name}"]`).prop("checked", checked);
   }
   /**
    * Handle anarchy tracker checkbox changes

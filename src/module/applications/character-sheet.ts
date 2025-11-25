@@ -1326,43 +1326,44 @@ export class CharacterSheet extends ActorSheet {
     const damageType = match[1];
     const index = match[2] ? parseInt(match[2], 10) : null;
     
-    // Ensure damage structure exists
-    const currentDamage = (this.actor.system as any).damage || {
+    // Get current damage from actor data
+    // Read from _source to get persisted values, fallback to system if not available
+    const actorSource = (this.actor as any)._source;
+    const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
       light: [false, false],
       severe: [false],
       incapacitating: false
     };
     
-    // Create a deep copy to avoid mutating directly
-    const updateData: any = {
-      'system.damage': {
-        light: [...(currentDamage.light || [false, false])],
-        severe: [...(currentDamage.severe || [false])],
-        incapacitating: currentDamage.incapacitating !== undefined ? currentDamage.incapacitating : false
-      }
+    // Create a copy of the damage object to update
+    const updatedDamage: any = {
+      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
+      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
+      incapacitating: typeof currentDamage.incapacitating === 'boolean' ? currentDamage.incapacitating : false
     };
-    
-    // Ensure arrays have minimum length
-    while (updateData['system.damage'].light.length < 2) {
-      updateData['system.damage'].light.push(false);
-    }
-    while (updateData['system.damage'].severe.length < 1) {
-      updateData['system.damage'].severe.push(false);
-    }
     
     // Update the appropriate field
     if (damageType === 'incapacitating') {
-      updateData['system.damage'].incapacitating = checked;
-    } else if (damageType === 'light' && index !== null && index < updateData['system.damage'].light.length) {
-      updateData['system.damage'].light[index] = checked;
-    } else if (damageType === 'severe' && index !== null && index < updateData['system.damage'].severe.length) {
-      updateData['system.damage'].severe[index] = checked;
-    } else {
-      return; // Invalid index or type
+      updatedDamage.incapacitating = checked;
+    } else if (damageType === 'light' || damageType === 'severe') {
+      if (index !== null) {
+        // Ensure array is long enough
+        while (updatedDamage[damageType].length <= index) {
+          updatedDamage[damageType].push(false);
+        }
+        updatedDamage[damageType][index] = checked;
+      }
     }
     
-    // Update the actor
-    await this.actor.update(updateData);
+    // Update the actor with the complete damage object
+    // This ensures the data is persisted correctly
+    await this.actor.update({
+      'system.damage': updatedDamage
+    } as any, { render: false });
+    
+    // Synchronize all checkboxes with the same name
+    const html = $(this.element);
+    html.find(`input[name="${name}"]`).prop('checked', checked);
   }
   
   /**

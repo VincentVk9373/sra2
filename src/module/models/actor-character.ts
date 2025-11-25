@@ -264,13 +264,22 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     const totalLightBoxes = 2 + bonusLightDamage;
     const totalSevereBoxes = 1 + bonusSevereDamage;
     
-    // Ensure damage arrays match the required size
-    const damage = (this as any).damage || {};
+    // Ensure damage arrays match the required size (preserve existing values)
+    // CRITICAL: Read from source data first to preserve persisted values
+    // In Foundry v13, when prepareDerivedData() is called, (this as any).damage
+    // should already contain the persisted values from _source, but we need to
+    // ensure we're working with a copy to avoid mutating the source
+    const parent = (this as any).parent;
+    const sourceDamage = parent?._source?.system?.damage || (this as any).damage || {};
     
-    // Adjust light damage array
-    if (!Array.isArray(damage.light)) {
-      damage.light = [false, false];
-    }
+    // Create a copy from source to preserve persisted values
+    const damage: any = {
+      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
+      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
+      incapacitating: typeof sourceDamage.incapacitating === 'boolean' ? sourceDamage.incapacitating : false
+    };
+    
+    // Adjust light damage array size (preserve existing values, only pad or trim from end)
     while (damage.light.length < totalLightBoxes) {
       damage.light.push(false);
     }
@@ -278,16 +287,16 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       damage.light.pop();
     }
     
-    // Adjust severe damage array
-    if (!Array.isArray(damage.severe)) {
-      damage.severe = [false];
-    }
+    // Adjust severe damage array size (preserve existing values, only pad or trim from end)
     while (damage.severe.length < totalSevereBoxes) {
       damage.severe.push(false);
     }
     while (damage.severe.length > totalSevereBoxes) {
       damage.severe.pop();
     }
+    
+    // Assign the damage object (this updates derived data, source data remains unchanged)
+    (this as any).damage = damage;
     
     (this as any).totalLightBoxes = totalLightBoxes;
     (this as any).totalSevereBoxes = totalSevereBoxes;

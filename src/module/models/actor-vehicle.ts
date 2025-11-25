@@ -200,20 +200,25 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
     };
     
     // Ensure damage arrays are properly sized (preserve existing values)
-    const existingDamage = (this as any).damage || {};
+    // CRITICAL: Read from source data first to preserve persisted values
+    // In Foundry v13, when prepareDerivedData() is called, (this as any).damage
+    // should already contain the persisted values from _source, but we need to
+    // ensure we're working with a copy to avoid mutating the source
+    const parent = (this as any).parent;
+    const sourceDamage = parent?._source?.system?.damage || (this as any).damage || {};
     
     // Base: 2 light, 1 severe, 1 incapacitating
     const totalLightBoxes = 2;
     const totalSevereBoxes = 1;
     
-    // Create a copy of damage to avoid mutating the original
+    // Create a copy from source to preserve persisted values
     const damage: any = {
-      light: Array.isArray(existingDamage.light) ? [...existingDamage.light] : [false, false],
-      severe: Array.isArray(existingDamage.severe) ? [...existingDamage.severe] : [false],
-      incapacitating: typeof existingDamage.incapacitating === 'boolean' ? existingDamage.incapacitating : false
+      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
+      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
+      incapacitating: typeof sourceDamage.incapacitating === 'boolean' ? sourceDamage.incapacitating : false
     };
     
-    // Adjust light damage array (preserve existing values, only pad or trim)
+    // Adjust light damage array size (preserve existing values, only pad or trim from end)
     while (damage.light.length < totalLightBoxes) {
       damage.light.push(false);
     }
@@ -221,7 +226,7 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
       damage.light.pop();
     }
     
-    // Adjust severe damage array (preserve existing values, only pad or trim)
+    // Adjust severe damage array size (preserve existing values, only pad or trim from end)
     while (damage.severe.length < totalSevereBoxes) {
       damage.severe.push(false);
     }
@@ -229,7 +234,7 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
       damage.severe.pop();
     }
     
-    // Reassign the damage object to ensure it's properly stored
+    // Assign the damage object (this updates derived data, source data remains unchanged)
     (this as any).damage = damage;
     
     (this as any).totalLightBoxes = totalLightBoxes;

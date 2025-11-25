@@ -269,34 +269,41 @@ export class VehicleSheet extends ActorSheet {
       if (pathParts.length >= 2 && pathParts[0] === 'damage') {
         const damageType = pathParts[1]; // "light", "severe", or "incapacitating"
         
-        // Update data without triggering full render
+        // Get current damage from actor data
+        // Read from _source to get persisted values, fallback to system if not available
+        const actorSource = (this.actor as any)._source;
+        const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
+          light: [false, false],
+          severe: [false],
+          incapacitating: false
+        };
+        
+        // Create a copy of the damage object to update
+        const updatedDamage: any = {
+          light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
+          severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
+          incapacitating: typeof currentDamage.incapacitating === 'boolean' ? currentDamage.incapacitating : false
+        };
+        
+        // Update the appropriate field
         if (damageType === 'incapacitating') {
-          // For incapacitating, it's a boolean, not an array
-          await this.actor.updateSource({
-            'system.damage.incapacitating': checked
-          } as any);
+          updatedDamage.incapacitating = checked;
         } else if (damageType === 'light' || damageType === 'severe') {
-          // For light and severe, it's an array
           if (pathParts.length >= 3 && pathParts[2]) {
             const index = parseInt(pathParts[2]);
-            const damage = (this.actor.system as any).damage || {};
-            const damageArray = [...(damage[damageType] || [])];
-            
             // Ensure array is long enough
-            while (damageArray.length <= index) {
-              damageArray.push(false);
+            while (updatedDamage[damageType].length <= index) {
+              updatedDamage[damageType].push(false);
             }
-            
-            damageArray[index] = checked;
-            
-            await this.actor.updateSource({
-              [`system.damage.${damageType}`]: damageArray
-            } as any);
+            updatedDamage[damageType][index] = checked;
           }
         }
         
-        // Update the actor to persist changes, but don't re-render
-        await this.actor.update({}, { render: false });
+        // Update the actor with the complete damage object
+        // This ensures the data is persisted correctly
+        await this.actor.update({
+          'system.damage': updatedDamage
+        } as any, { render: false });
         
         // Synchronize all checkboxes with the same name
         html.find(`input[name="${name}"]`).prop('checked', checked);
