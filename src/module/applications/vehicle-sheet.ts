@@ -7,6 +7,8 @@ import { VEHICLE_TYPES, WEAPON_TYPES } from '../models/item-feat.js';
  * Vehicle/Drone Sheet Application
  */
 export class VehicleSheet extends ActorSheet {
+  private _activeSection: string | null = null;
+
   static override get defaultOptions(): DocumentSheet.Options<Actor> {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'sheet', 'actor', 'vehicle'],
@@ -131,6 +133,26 @@ export class VehicleSheet extends ActorSheet {
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
+    // Restore active section if it was saved
+    if (this._activeSection) {
+      setTimeout(() => {
+        const form = html.closest('form')[0];
+        if (form) {
+          const navButton = form.querySelector(`[data-section="${this._activeSection}"]`);
+          if (navButton) {
+            form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
+            navButton.classList.add('active');
+            
+            form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
+            const targetSection = form.querySelector(`[data-section-content="${this._activeSection}"]`);
+            if (targetSection) {
+              targetSection.classList.add('active');
+            }
+          }
+        }
+      }, 10);
+    }
+
     // Section navigation
     html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
 
@@ -147,6 +169,10 @@ export class VehicleSheet extends ActorSheet {
     // Delete feat/weapon
     html.find('.feat-delete, .weapon-delete').on('click', async (event) => {
       event.preventDefault();
+      // Save current active section before deletion
+      const activeNavItem = html.find('.section-nav .nav-item.active');
+      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : null;
+      
       const itemId = $(event.currentTarget).data('item-id');
       const item = this.actor.items.get(itemId);
       if (item) {
@@ -159,6 +185,7 @@ export class VehicleSheet extends ActorSheet {
         });
         if (confirmed) {
           await item.delete();
+          // The sheet will auto-render, and activateListeners will restore the section
         }
       }
     });
@@ -166,6 +193,9 @@ export class VehicleSheet extends ActorSheet {
     // Add world weapon (only weapons allowed)
     html.find('.add-world-weapon-button').on('click', async (event) => {
       event.preventDefault();
+      // Save current active section before opening browser
+      const activeNavItem = html.find('.section-nav .nav-item.active');
+      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : null;
       this._showItemBrowser('feat', true); // true = weapons only
     });
 
@@ -317,6 +347,9 @@ export class VehicleSheet extends ActorSheet {
     const button = event.currentTarget as HTMLElement;
     const section = button.dataset.section;
     if (!section) return;
+
+    // Save the active section
+    this._activeSection = section;
 
     const form = button.closest('form');
     if (!form) return;
@@ -484,6 +517,7 @@ export class VehicleSheet extends ActorSheet {
             if (itemId) {
               const item = game.items!.get(itemId);
               if (item) {
+                // The sheet will auto-render, and activateListeners will restore the section
                 await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
               }
             }
@@ -502,6 +536,10 @@ export class VehicleSheet extends ActorSheet {
    * Handle dropping items onto the sheet
    */
   protected override async _onDrop(event: DragEvent): Promise<boolean | void> {
+    // Save current active section before drop
+    const activeNavItem = $(this.element).find('.section-nav .nav-item.active');
+    this._activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : 'attributes';
+    
     // Get the dropped data
     let data;
     try {
@@ -517,8 +555,10 @@ export class VehicleSheet extends ActorSheet {
         const featType = (item.system as any).featType;
         if (featType === 'weapon' || featType === 'weapons-spells') {
           // Create the item on the actor
+          // The sheet will auto-render, and activateListeners will restore the section
           await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
-          return false; // Prevent default behavior and refresh
+          
+          return false; // Prevent default behavior
         } else {
           ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_WEAPONS_ALLOWED'));
           return false; // Prevent default behavior

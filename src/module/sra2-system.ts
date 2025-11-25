@@ -116,6 +116,59 @@ export class SRA2System {
       label: "SRA2.SHEET.VEHICLE"
     });
     
+    // Hook to update character sheets when linked vehicles are updated
+    Hooks.on('updateActor', (actor: any, updateData: any, options: any, userId: string) => {
+      // Only process vehicle actors
+      if (actor.type !== 'vehicle') return;
+      
+      // Find all character actors that have this vehicle linked
+      if (game.actors) {
+        const vehicleUuid = actor.uuid;
+        const characterActors = (game.actors as any).filter((char: any) => {
+          if (char.type !== 'character') return false;
+          const linkedVehicles = (char.system as any)?.linkedVehicles || [];
+          return linkedVehicles.includes(vehicleUuid);
+        });
+        
+        // Re-render character sheets that have this vehicle linked
+        // Use a small delay to ensure derived data is recalculated
+        setTimeout(() => {
+          characterActors.forEach((char: any) => {
+            if (char.sheet && char.sheet.rendered) {
+              char.sheet.render(false);
+            }
+          });
+        }, 100);
+      }
+    });
+    
+    // Also handle when vehicle is deleted
+    Hooks.on('deleteActor', (actor: any, options: any, userId: string) => {
+      // Only process vehicle actors
+      if (actor.type !== 'vehicle') return;
+      
+      // Find all character actors that have this vehicle linked and remove it
+      if (game.actors) {
+        const vehicleUuid = actor.uuid;
+        const characterActors = (game.actors as any).filter((char: any) => {
+          if (char.type !== 'character') return false;
+          const linkedVehicles = (char.system as any)?.linkedVehicles || [];
+          return linkedVehicles.includes(vehicleUuid);
+        });
+        
+        // Remove the vehicle from linked vehicles and re-render
+        characterActors.forEach(async (char: any) => {
+          const linkedVehicles = (char.system as any)?.linkedVehicles || [];
+          const updatedLinkedVehicles = linkedVehicles.filter((uuid: string) => uuid !== vehicleUuid);
+          await char.update({ 'system.linkedVehicles': updatedLinkedVehicles });
+          
+          if (char.sheet && char.sheet.rendered) {
+            char.sheet.render(false);
+          }
+        });
+      }
+    });
+    
     // Register feat sheet
     DocumentSheetConfig.registerSheet(Item, "sra2", applications.FeatSheet, {
       types: ["feat"],

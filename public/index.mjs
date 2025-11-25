@@ -5387,6 +5387,7 @@ class NpcSheet extends ActorSheet {
   }
 }
 class VehicleSheet extends ActorSheet {
+  _activeSection = null;
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "actor", "vehicle"],
@@ -5477,6 +5478,23 @@ class VehicleSheet extends ActorSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
+    if (this._activeSection) {
+      setTimeout(() => {
+        const form = html.closest("form")[0];
+        if (form) {
+          const navButton = form.querySelector(`[data-section="${this._activeSection}"]`);
+          if (navButton) {
+            form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
+            navButton.classList.add("active");
+            form.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"));
+            const targetSection = form.querySelector(`[data-section-content="${this._activeSection}"]`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+            }
+          }
+        }
+      }, 10);
+    }
     html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
     html.find(".feat-edit, .weapon-edit").on("click", (event) => {
       event.preventDefault();
@@ -5488,6 +5506,8 @@ class VehicleSheet extends ActorSheet {
     });
     html.find(".feat-delete, .weapon-delete").on("click", async (event) => {
       event.preventDefault();
+      const activeNavItem = html.find(".section-nav .nav-item.active");
+      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : null;
       const itemId = $(event.currentTarget).data("item-id");
       const item = this.actor.items.get(itemId);
       if (item) {
@@ -5505,6 +5525,8 @@ class VehicleSheet extends ActorSheet {
     });
     html.find(".add-world-weapon-button").on("click", async (event) => {
       event.preventDefault();
+      const activeNavItem = html.find(".section-nav .nav-item.active");
+      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : null;
       this._showItemBrowser("feat", true);
     });
     html.find(".weapon-dice-pool").on("click", async (event) => {
@@ -5612,6 +5634,7 @@ class VehicleSheet extends ActorSheet {
     const button = event.currentTarget;
     const section = button.dataset.section;
     if (!section) return;
+    this._activeSection = section;
     const form = button.closest("form");
     if (!form) return;
     form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
@@ -5759,6 +5782,8 @@ class VehicleSheet extends ActorSheet {
    * Handle dropping items onto the sheet
    */
   async _onDrop(event) {
+    const activeNavItem = $(this.element).find(".section-nav .nav-item.active");
+    this._activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : "attributes";
     let data;
     try {
       data = JSON.parse(event.dataTransfer?.getData("text/plain") || "{}");
@@ -8549,6 +8574,43 @@ class SRA2System {
       types: ["vehicle"],
       makeDefault: true,
       label: "SRA2.SHEET.VEHICLE"
+    });
+    Hooks.on("updateActor", (actor, updateData, options, userId) => {
+      if (actor.type !== "vehicle") return;
+      if (game.actors) {
+        const vehicleUuid = actor.uuid;
+        const characterActors = game.actors.filter((char) => {
+          if (char.type !== "character") return false;
+          const linkedVehicles = char.system?.linkedVehicles || [];
+          return linkedVehicles.includes(vehicleUuid);
+        });
+        setTimeout(() => {
+          characterActors.forEach((char) => {
+            if (char.sheet && char.sheet.rendered) {
+              char.sheet.render(false);
+            }
+          });
+        }, 100);
+      }
+    });
+    Hooks.on("deleteActor", (actor, options, userId) => {
+      if (actor.type !== "vehicle") return;
+      if (game.actors) {
+        const vehicleUuid = actor.uuid;
+        const characterActors = game.actors.filter((char) => {
+          if (char.type !== "character") return false;
+          const linkedVehicles = char.system?.linkedVehicles || [];
+          return linkedVehicles.includes(vehicleUuid);
+        });
+        characterActors.forEach(async (char) => {
+          const linkedVehicles = char.system?.linkedVehicles || [];
+          const updatedLinkedVehicles = linkedVehicles.filter((uuid) => uuid !== vehicleUuid);
+          await char.update({ "system.linkedVehicles": updatedLinkedVehicles });
+          if (char.sheet && char.sheet.rendered) {
+            char.sheet.render(false);
+          }
+        });
+      }
     });
     DocumentSheetConfig.registerSheet(Item, "sra2", FeatSheet, {
       types: ["feat"],
