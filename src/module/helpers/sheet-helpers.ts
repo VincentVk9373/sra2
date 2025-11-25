@@ -12,41 +12,61 @@ export function handleSheetUpdate(actor: any, formData: any): any {
   // Expand the form data first to handle nested properties properly
   const expandedData = foundry.utils.expandObject(formData) as any;
   
-  // Ensure damage structure exists and handle unchecked checkboxes
-  if (expandedData.system) {
+  // Only process damage if it's present in the formData (indicates damage fields were changed)
+  if (expandedData.system && expandedData.system.damage !== undefined) {
     const currentDamage = (actor.system as any).damage || {};
     
     // Initialize damage object if not present
-    if (!expandedData.system.damage) {
+    if (!expandedData.system.damage || typeof expandedData.system.damage !== 'object') {
       expandedData.system.damage = {};
     }
     
-    // Handle light damage checkboxes - if array not in formData, it means all are unchecked
-    if (currentDamage.light && !expandedData.system.damage.light) {
-      expandedData.system.damage.light = currentDamage.light.map(() => false);
-    } else if (expandedData.system.damage.light && currentDamage.light) {
-      // Fill missing indices with false
-      for (let i = 0; i < currentDamage.light.length; i++) {
-        if (expandedData.system.damage.light[i] === undefined) {
-          expandedData.system.damage.light[i] = false;
+    // Helper function to convert object with numeric keys to array
+    const convertToArray = (obj: any, expectedLength: number): boolean[] => {
+      if (Array.isArray(obj)) {
+        // Already an array, ensure all indices are filled and convert to boolean
+        const arr: boolean[] = [];
+        for (let i = 0; i < expectedLength; i++) {
+          if (obj[i] !== undefined) {
+            arr[i] = obj[i] === true || obj[i] === 'true' || obj[i] === 'on';
+          } else {
+            arr[i] = false;
+          }
         }
+        return arr;
       }
+      if (obj && typeof obj === 'object') {
+        // Object with numeric keys (e.g., {"0": true, "1": false}), convert to array
+        const arr: boolean[] = [];
+        for (let i = 0; i < expectedLength; i++) {
+          const key = i.toString();
+          arr[i] = obj[key] === true || obj[key] === 'true' || obj[key] === 'on';
+        }
+        return arr;
+      }
+      // Not present or invalid, return array of false
+      return Array(expectedLength).fill(false);
+    };
+    
+    // Get expected lengths from current damage or defaults
+    const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
+    const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
+    
+    // Handle light damage checkboxes - process if present in formData
+    if (expandedData.system.damage.light !== undefined) {
+      expandedData.system.damage.light = convertToArray(expandedData.system.damage.light, currentLightLength);
     }
     
-    // Handle severe damage checkboxes
-    if (currentDamage.severe && !expandedData.system.damage.severe) {
-      expandedData.system.damage.severe = currentDamage.severe.map(() => false);
-    } else if (expandedData.system.damage.severe && currentDamage.severe) {
-      for (let i = 0; i < currentDamage.severe.length; i++) {
-        if (expandedData.system.damage.severe[i] === undefined) {
-          expandedData.system.damage.severe[i] = false;
-        }
-      }
+    // Handle severe damage checkboxes - process if present in formData
+    if (expandedData.system.damage.severe !== undefined) {
+      expandedData.system.damage.severe = convertToArray(expandedData.system.damage.severe, currentSevereLength);
     }
     
-    // Handle incapacitating - if not in formData, set to false
-    if (expandedData.system.damage.incapacitating === undefined) {
-      expandedData.system.damage.incapacitating = false;
+    // Handle incapacitating - convert to boolean if present
+    if (expandedData.system.damage.incapacitating !== undefined) {
+      expandedData.system.damage.incapacitating = expandedData.system.damage.incapacitating === true || 
+                                                  expandedData.system.damage.incapacitating === 'true' || 
+                                                  expandedData.system.damage.incapacitating === 'on';
     }
   }
   

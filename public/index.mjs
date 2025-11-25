@@ -297,18 +297,17 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.narrationsDetails = narrationsDetails;
     const totalLightBoxes = 2 + bonusLightDamage;
     const totalSevereBoxes = 1 + bonusSevereDamage;
-    const damage = this.damage || {};
-    if (!Array.isArray(damage.light)) {
-      damage.light = [false, false];
-    }
+    const sourceDamage = parent?._source?.system?.damage || this.damage || {};
+    const damage = {
+      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
+      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
+      incapacitating: typeof sourceDamage.incapacitating === "boolean" ? sourceDamage.incapacitating : false
+    };
     while (damage.light.length < totalLightBoxes) {
       damage.light.push(false);
     }
     while (damage.light.length > totalLightBoxes) {
       damage.light.pop();
-    }
-    if (!Array.isArray(damage.severe)) {
-      damage.severe = [false];
     }
     while (damage.severe.length < totalSevereBoxes) {
       damage.severe.push(false);
@@ -316,6 +315,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     while (damage.severe.length > totalSevereBoxes) {
       damage.severe.pop();
     }
+    this.damage = damage;
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
     const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
@@ -1596,13 +1596,14 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
       severe: 2 * baseStructure + finalArmor,
       incapacitating: 3 * baseStructure + finalArmor
     };
-    const existingDamage = this.damage || {};
+    const parent = this.parent;
+    const sourceDamage = parent?._source?.system?.damage || this.damage || {};
     const totalLightBoxes = 2;
     const totalSevereBoxes = 1;
     const damage = {
-      light: Array.isArray(existingDamage.light) ? [...existingDamage.light] : [false, false],
-      severe: Array.isArray(existingDamage.severe) ? [...existingDamage.severe] : [false],
-      incapacitating: typeof existingDamage.incapacitating === "boolean" ? existingDamage.incapacitating : false
+      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
+      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
+      incapacitating: typeof sourceDamage.incapacitating === "boolean" ? sourceDamage.incapacitating : false
     };
     while (damage.light.length < totalLightBoxes) {
       damage.light.push(false);
@@ -2469,31 +2470,43 @@ const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 }, Symbol.toStringTag, { value: "Module" }));
 function handleSheetUpdate(actor, formData) {
   const expandedData = foundry.utils.expandObject(formData);
-  if (expandedData.system) {
+  if (expandedData.system && expandedData.system.damage !== void 0) {
     const currentDamage = actor.system.damage || {};
-    if (!expandedData.system.damage) {
+    if (!expandedData.system.damage || typeof expandedData.system.damage !== "object") {
       expandedData.system.damage = {};
     }
-    if (currentDamage.light && !expandedData.system.damage.light) {
-      expandedData.system.damage.light = currentDamage.light.map(() => false);
-    } else if (expandedData.system.damage.light && currentDamage.light) {
-      for (let i = 0; i < currentDamage.light.length; i++) {
-        if (expandedData.system.damage.light[i] === void 0) {
-          expandedData.system.damage.light[i] = false;
+    const convertToArray = (obj, expectedLength) => {
+      if (Array.isArray(obj)) {
+        const arr = [];
+        for (let i = 0; i < expectedLength; i++) {
+          if (obj[i] !== void 0) {
+            arr[i] = obj[i] === true || obj[i] === "true" || obj[i] === "on";
+          } else {
+            arr[i] = false;
+          }
         }
+        return arr;
       }
-    }
-    if (currentDamage.severe && !expandedData.system.damage.severe) {
-      expandedData.system.damage.severe = currentDamage.severe.map(() => false);
-    } else if (expandedData.system.damage.severe && currentDamage.severe) {
-      for (let i = 0; i < currentDamage.severe.length; i++) {
-        if (expandedData.system.damage.severe[i] === void 0) {
-          expandedData.system.damage.severe[i] = false;
+      if (obj && typeof obj === "object") {
+        const arr = [];
+        for (let i = 0; i < expectedLength; i++) {
+          const key = i.toString();
+          arr[i] = obj[key] === true || obj[key] === "true" || obj[key] === "on";
         }
+        return arr;
       }
+      return Array(expectedLength).fill(false);
+    };
+    const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
+    const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
+    if (expandedData.system.damage.light !== void 0) {
+      expandedData.system.damage.light = convertToArray(expandedData.system.damage.light, currentLightLength);
     }
-    if (expandedData.system.damage.incapacitating === void 0) {
-      expandedData.system.damage.incapacitating = false;
+    if (expandedData.system.damage.severe !== void 0) {
+      expandedData.system.damage.severe = convertToArray(expandedData.system.damage.severe, currentSevereLength);
+    }
+    if (expandedData.system.damage.incapacitating !== void 0) {
+      expandedData.system.damage.incapacitating = expandedData.system.damage.incapacitating === true || expandedData.system.damage.incapacitating === "true" || expandedData.system.damage.incapacitating === "on";
     }
   }
   return expandedData;
@@ -3247,7 +3260,10 @@ class CharacterSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   async _updateObject(_event, formData) {
-    const expandedData = handleSheetUpdate(this.actor, formData);
+    const expandedData = foundry.utils.expandObject(formData);
+    if (expandedData.system?.damage !== void 0) {
+      delete expandedData.system.damage;
+    }
     return this.actor.update(expandedData);
   }
   /**
@@ -3965,28 +3981,30 @@ class CharacterSheet extends ActorSheet {
     if (!match) return;
     const damageType = match[1];
     const index = match[2] ? parseInt(match[2], 10) : null;
-    const currentDamage = this.actor.system.damage || {
+    const actorSource = this.actor._source;
+    const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
       light: [false, false],
       severe: [false],
       incapacitating: false
     };
+    const updatedDamage = {
+      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
+      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
+      incapacitating: typeof currentDamage.incapacitating === "boolean" ? currentDamage.incapacitating : false
+    };
     if (damageType === "incapacitating") {
-      await this.actor.updateSource({
-        "system.damage.incapacitating": checked
-      });
+      updatedDamage.incapacitating = checked;
     } else if (damageType === "light" || damageType === "severe") {
       if (index !== null) {
-        const damageArray = [...currentDamage[damageType] || []];
-        while (damageArray.length <= index) {
-          damageArray.push(false);
+        while (updatedDamage[damageType].length <= index) {
+          updatedDamage[damageType].push(false);
         }
-        damageArray[index] = checked;
-        await this.actor.updateSource({
-          [`system.damage.${damageType}`]: damageArray
-        });
+        updatedDamage[damageType][index] = checked;
       }
     }
-    await this.actor.update({}, { render: false });
+    await this.actor.update({
+      "system.damage": updatedDamage
+    }, { render: false });
     const html = $(this.element);
     html.find(`input[name="${name}"]`).prop("checked", checked);
   }
@@ -5571,25 +5589,31 @@ class VehicleSheet extends ActorSheet {
       const pathParts = name.split(".").slice(1);
       if (pathParts.length >= 2 && pathParts[0] === "damage") {
         const damageType = pathParts[1];
+        const actorSource = this.actor._source;
+        const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
+          light: [false, false],
+          severe: [false],
+          incapacitating: false
+        };
+        const updatedDamage = {
+          light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
+          severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
+          incapacitating: typeof currentDamage.incapacitating === "boolean" ? currentDamage.incapacitating : false
+        };
         if (damageType === "incapacitating") {
-          await this.actor.updateSource({
-            "system.damage.incapacitating": checked
-          });
+          updatedDamage.incapacitating = checked;
         } else if (damageType === "light" || damageType === "severe") {
           if (pathParts.length >= 3 && pathParts[2]) {
             const index = parseInt(pathParts[2]);
-            const damage = this.actor.system.damage || {};
-            const damageArray = [...damage[damageType] || []];
-            while (damageArray.length <= index) {
-              damageArray.push(false);
+            while (updatedDamage[damageType].length <= index) {
+              updatedDamage[damageType].push(false);
             }
-            damageArray[index] = checked;
-            await this.actor.updateSource({
-              [`system.damage.${damageType}`]: damageArray
-            });
+            updatedDamage[damageType][index] = checked;
           }
         }
-        await this.actor.update({}, { render: false });
+        await this.actor.update({
+          "system.damage": updatedDamage
+        }, { render: false });
         html.find(`input[name="${name}"]`).prop("checked", checked);
         if (damageType === "incapacitating") {
           html.find(`label.track-box input[name="system.damage.incapacitating"]`).prop("checked", checked);

@@ -375,7 +375,13 @@ export class CharacterSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
-    const expandedData = SheetHelpers.handleSheetUpdate(this.actor, formData);
+    // Expand form data (handles nested properties like "system.attribute.strength")
+    const expandedData = foundry.utils.expandObject(formData) as any;
+    // Don't process damage here - _onDamageChange handles it directly
+    // Remove damage from expandedData if present to avoid conflicts
+    if (expandedData.system?.damage !== undefined) {
+      delete expandedData.system.damage;
+    }
     return this.actor.update(expandedData);
   }
 

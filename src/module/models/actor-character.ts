@@ -269,7 +269,6 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     // In Foundry v13, when prepareDerivedData() is called, (this as any).damage
     // should already contain the persisted values from _source, but we need to
     // ensure we're working with a copy to avoid mutating the source
-    const parent = (this as any).parent;
     const sourceDamage = parent?._source?.system?.damage || (this as any).damage || {};
     
     // Create a copy from source to preserve persisted values
