@@ -585,9 +585,12 @@ select {
             }
 
             .roller-name {
+                color: gold;
+                font-family: var(--sr-font-title-alt);
                 font-weight: bold;
                 font-size: 1rem;
                 padding-bottom: 4px;
+                letter-spacing: 2px;
             }
 
             .roll-type {
@@ -996,10 +999,30 @@ select {
                 }
             }
             
+        }
+
+        &.counterattack-result {
+            .defense-comparison {
+                background: linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(44, 16, 16, 0.15) 100%);
+                border: 2px solid #444;
+                box-shadow: 0 2px 8px rgba(26, 23, 51, 0.2);
+
+                .comparison-header {
+                    color: #444;
+                    border-bottom: 2px solid #444;
+
+                    i {
+                        color: #444;
+                    }
+                }
+            }
+        }
+    }
+
             .apply-damage-button {
                 margin-top: 0.75rem;
                 width: 100%;
-                padding: 0.75rem 1rem;
+                padding: 2rem;
                 background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
                 border: 2px solid #c62828;
                 border-radius: 6px;
@@ -1042,27 +1065,8 @@ select {
                     }
                 }
             }
-        }
 
-        &.counterattack-result {
-            .defense-comparison {
-                background: linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(44, 16, 16, 0.15) 100%);
-                border: 2px solid #444;
-                box-shadow: 0 2px 8px rgba(26, 23, 51, 0.2);
-
-                .comparison-header {
-                    color: #444;
-                    border-bottom: 2px solid #444;
-
-                    i {
-                        color: #444;
-                    }
-                }
-            }
-        }
-    }
-
-    .attack-actions {
+    .attack-actions, .spell-direct-damage {
         margin-top: 8px;
         padding-top: 8px;
         border-top: 2px solid rgba(0, 0, 0, 0.3);
@@ -1097,7 +1101,9 @@ select {
             .defender-name {
                 font-weight: 500;
                 font-size: 0.95rem;
-                color: #222;
+                color: gold;
+                letter-spacing: 2px;
+                font-family: var(--sr-font-title-alt);
             }
         }
 
