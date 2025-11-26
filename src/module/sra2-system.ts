@@ -116,6 +116,55 @@ export class SRA2System {
       label: "SRA2.SHEET.VEHICLE"
     });
     
+    // Hook to ensure all vehicle actors are available in game.actors before cost calculations
+    // This runs after all actors are loaded to ensure vehicles are accessible synchronously
+    Hooks.on('ready', () => {
+      if (!game.actors) return;
+      
+      // Find all character actors and ensure their linked vehicles have calculatedCost
+      const characterActors = (game.actors as any).filter((actor: any) => actor.type === 'character');
+      
+      for (const charActor of characterActors) {
+        const linkedVehicles = (charActor.system as any)?.linkedVehicles || [];
+        
+        // Ensure all linked vehicles have their costs calculated
+        for (const vehicleUuid of linkedVehicles) {
+          try {
+            // Find vehicle in game.actors (should be available at 'ready' hook)
+            let vehicleActor = (game.actors as any).find((actor: any) => actor.uuid === vehicleUuid);
+            
+            // If not found by UUID, try by ID
+            if (!vehicleActor) {
+              const uuidParts = vehicleUuid.split('.');
+              if (uuidParts.length >= 3) {
+                const actorId = uuidParts[uuidParts.length - 1];
+                vehicleActor = (game.actors as any).get(actorId);
+              }
+            }
+            
+            // If vehicle found and it's a vehicle type, ensure its cost is calculated
+            if (vehicleActor && vehicleActor.type === 'vehicle') {
+              // Trigger prepareDerivedData on vehicle if not already calculated
+              if (vehicleActor.system && (vehicleActor.system as any).prepareDerivedData) {
+                (vehicleActor.system as any).prepareDerivedData();
+              }
+            }
+          } catch (error) {
+            console.debug(`Vehicle ${vehicleUuid} not found in game.actors (may be in compendium)`);
+          }
+        }
+        
+        // Now trigger prepareDerivedData on character to recalculate cost with vehicles
+        try {
+          if (charActor.system && (charActor.system as any).prepareDerivedData) {
+            (charActor.system as any).prepareDerivedData();
+          }
+        } catch (error) {
+          console.debug(`Failed to recalculate cost for character ${charActor.name}:`, error);
+        }
+      }
+    });
+    
     // Hook to update character sheets when linked vehicles are updated
     Hooks.on('updateActor', (actor: any, updateData: any, options: any, userId: string) => {
       // Only process vehicle actors

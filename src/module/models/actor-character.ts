@@ -381,6 +381,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       // Add linked vehicles cost
       const linkedVehicles = (this as any).linkedVehicles || [];
       if (linkedVehicles.length > 0) {
+        console.log(linkedVehicles)
         for (const vehicleUuid of linkedVehicles) {
           try {
             // Try to load vehicle actor synchronously (for actors in world) or from game.actors
@@ -397,10 +398,16 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
             
             // Fallback: try to find in game.actors by UUID or ID
             if (!vehicleActor && game.actors) {
-              const uuidParts = vehicleUuid.split('.');
-              if (uuidParts.length >= 3) {
-                const actorId = uuidParts[uuidParts.length - 1];
-                vehicleActor = (game.actors as any).get(actorId);
+              // First try to find by full UUID match
+              vehicleActor = (game.actors as any).find((actor: any) => actor.uuid === vehicleUuid);
+              
+              // If not found, try by ID (last part of UUID)
+              if (!vehicleActor) {
+                const uuidParts = vehicleUuid.split('.');
+                if (uuidParts.length >= 3) {
+                  const actorId = uuidParts[uuidParts.length - 1];
+                  vehicleActor = (game.actors as any).get(actorId);
+                }
               }
             }
             

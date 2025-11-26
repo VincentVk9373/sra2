@@ -378,6 +378,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       }
       const linkedVehicles = this.linkedVehicles || [];
       if (linkedVehicles.length > 0) {
+        console.log(linkedVehicles);
         for (const vehicleUuid of linkedVehicles) {
           try {
             let vehicleActor = null;
@@ -388,10 +389,13 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
               }
             }
             if (!vehicleActor && game.actors) {
-              const uuidParts = vehicleUuid.split(".");
-              if (uuidParts.length >= 3) {
-                const actorId = uuidParts[uuidParts.length - 1];
-                vehicleActor = game.actors.get(actorId);
+              vehicleActor = game.actors.find((actor) => actor.uuid === vehicleUuid);
+              if (!vehicleActor) {
+                const uuidParts = vehicleUuid.split(".");
+                if (uuidParts.length >= 3) {
+                  const actorId = uuidParts[uuidParts.length - 1];
+                  vehicleActor = game.actors.get(actorId);
+                }
               }
             }
             if (vehicleActor && vehicleActor.type === "vehicle") {
@@ -8594,6 +8598,39 @@ class SRA2System {
       types: ["vehicle"],
       makeDefault: true,
       label: "SRA2.SHEET.VEHICLE"
+    });
+    Hooks.on("ready", () => {
+      if (!game.actors) return;
+      const characterActors = game.actors.filter((actor) => actor.type === "character");
+      for (const charActor of characterActors) {
+        const linkedVehicles = charActor.system?.linkedVehicles || [];
+        for (const vehicleUuid of linkedVehicles) {
+          try {
+            let vehicleActor = game.actors.find((actor) => actor.uuid === vehicleUuid);
+            if (!vehicleActor) {
+              const uuidParts = vehicleUuid.split(".");
+              if (uuidParts.length >= 3) {
+                const actorId = uuidParts[uuidParts.length - 1];
+                vehicleActor = game.actors.get(actorId);
+              }
+            }
+            if (vehicleActor && vehicleActor.type === "vehicle") {
+              if (vehicleActor.system && vehicleActor.system.prepareDerivedData) {
+                vehicleActor.system.prepareDerivedData();
+              }
+            }
+          } catch (error) {
+            console.debug(`Vehicle ${vehicleUuid} not found in game.actors (may be in compendium)`);
+          }
+        }
+        try {
+          if (charActor.system && charActor.system.prepareDerivedData) {
+            charActor.system.prepareDerivedData();
+          }
+        } catch (error) {
+          console.debug(`Failed to recalculate cost for character ${charActor.name}:`, error);
+        }
+      }
     });
     Hooks.on("updateActor", (actor, updateData, options, userId) => {
       if (actor.type !== "vehicle") return;
