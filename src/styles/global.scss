@@ -23,6 +23,12 @@ select {
     padding: 0;
 }
 
+.chat-log {
+            background-image: url('../../public/images/backgrounds/character-sheet-background.png');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+}
 /* Dice Roll Results in Chat */
 .sra2-skill-roll,
 .sra2-combat-roll {

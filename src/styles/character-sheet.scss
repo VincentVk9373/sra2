@@ -1,6 +1,9 @@
 /* Character Sheet Styles - Matching Roll Dialog Theme */
 .sra2-character-sheet {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background-image: url('../../public/images/backgrounds/character-sheet-background.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   color: #e0e0e0;
 
   /* General form input styles for dark theme */
@@ -343,20 +346,24 @@
     }
   }
 
-  /* Sidebar Layout for Tabbed Navigation */
-  .sheet-content {
+  .sheet-wrapper {
     display: flex;
-    min-height: 500px;
+    flex-direction: row;
+    position: absolute;
+    top: 220px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
 
     .section-nav {
-      position: fixed;
+      top: 0px;
+      position: sticky;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
       padding: 1rem 0.75rem;
       background: rgba(15, 52, 96, 0.3);
       border-right: 2px solid #0f3460;
-      min-width: 60px;
 
       .nav-item {
         width: 44px;
@@ -397,12 +404,18 @@
         }
       }
     }
+  }
+
+  .sheet-content {
+    width: 100%;
+    display: flex;
+    min-height: calc(100% - 191px);
+
 
     .section-content {
       flex: 1;
       padding: 0;
       overflow-y: auto;
-      padding-left: 71px;
 
       .content-section {
         display: none;
@@ -412,6 +425,8 @@
         }
 
         >h2 {
+          position: sticky;
+          top: 0;
           font-size: 1.3rem;
           margin: 0;
           padding: 1rem 1rem 0.75rem;
@@ -420,7 +435,7 @@
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: rgba(15, 52, 96, 0.3);
+          background: #05101E;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 
           i {
@@ -551,9 +566,9 @@
     top: 0;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 8px;
     padding: 0 1rem 1rem 1rem;
-    background: #152342;
+    background: #152342ad;
     border-bottom: 2px solid #0f3460;
     margin-bottom: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -570,6 +585,25 @@
       &:hover {
         border-color: #ffd700;
         box-shadow: 0 2px 12px rgba(255, 215, 0, 0.6);
+      }
+    }
+
+    .yens-field {
+      margin-top:1rem;
+      width:87px;
+      color:gold;
+      font-weight: bold;
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+
+      input {
+        width: 100%;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: bold;
       }
     }
 
