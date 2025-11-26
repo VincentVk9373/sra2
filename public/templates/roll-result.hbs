@@ -32,10 +32,15 @@
                 <i class="fas fa-times-circle"></i> {{localize "SRA2.COMBAT.ATTACK_FAILED"}}
             </div>
             {{/if}}
+            {{#if (and isAttack (eq rollData.itemType "ice-attack"))}}
+            <div class="ice-threshold-info">
+                <i class="fas fa-info-circle"></i> Seuil fixe (GLACE) : {{rollData.threshold}} succès
+            </div>
+            {{/if}}
         </div>
 
         <!-- Normal Dice Results -->
-        {{#if rollResult.normalDice.length}}
+        {{#if (and rollResult.normalDice.length (ne rollData.itemType "ice-attack"))}}
         <div class="dice-results normal-dice">
             <div class="dice-results-header">
                 <span class="dice-type-label">{{localize "SRA2.ROLL_DIALOG.NORMAL_DICE"}}</span>
@@ -54,7 +59,7 @@
         {{/if}}
 
         <!-- Risk Dice Results -->
-        {{#if rollResult.riskDice.length}}
+        {{#if (and rollResult.riskDice.length (ne rollData.itemType "ice-attack"))}}
         <div class="dice-results risk-dice">
             <div class="dice-results-header">
                 <span class="dice-type-label risk-label">{{localize "SRA2.ROLL_DIALOG.RISK_DICE"}}</span>
@@ -120,6 +125,73 @@
             <div class="defense-outcome success">
                 <i class="fas fa-check-circle"></i> L'attaque a réussi
             </div>
+            {{#if defenseResult.isIceAttack}}
+            <!-- ICE Attack Effects -->
+            <div class="ice-effects">
+                {{#if (eq defenseResult.iceType "blaster")}}
+                <div class="ice-effect">
+                    <i class="fas fa-lock"></i> <strong>Verrouillage de connexion</strong> : La cible ne peut pas se déconnecter pendant un tour
+                </div>
+                {{#if (gt defenseResult.calculatedDamage 0)}}
+                <div class="calculated-damage">
+                    <span class="damage-label">Dégâts matriciels:</span>
+                    <span class="damage-value">{{defenseResult.calculatedDamage}}</span>
+                </div>
+                <button type="button" class="apply-damage-button" 
+                        data-damage="{{defenseResult.calculatedDamage}}"
+                        data-target-name="{{defenseResult.defenderName}}"
+                        data-target-uuid="{{defenseResult.defenderUuid}}"
+                        data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
+                        data-damage-type="physical">
+                    <i class="fas fa-heart-broken"></i> Appliquer les dégâts matriciels à {{defenseResult.defenderName}}
+                </button>
+                {{/if}}
+                {{else if (eq defenseResult.iceType "black")}}
+                <div class="calculated-damage">
+                    <span class="damage-label">Dégâts de biofeedback:</span>
+                    <span class="damage-value">{{defenseResult.calculatedDamage}}</span>
+                </div>
+                <button type="button" class="apply-damage-button" 
+                        data-damage="{{defenseResult.calculatedDamage}}"
+                        data-target-name="{{defenseResult.defenderName}}"
+                        data-target-uuid="{{defenseResult.defenderUuid}}"
+                        data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
+                        data-damage-type="physical">
+                    <i class="fas fa-heart-broken"></i> Appliquer les dégâts de biofeedback à {{defenseResult.defenderName}}
+                </button>
+                {{else if (eq defenseResult.iceType "killer")}}
+                <div class="calculated-damage">
+                    <span class="damage-label">Dégâts matriciels:</span>
+                    <span class="damage-value">{{defenseResult.calculatedDamage}}</span>
+                </div>
+                <button type="button" class="apply-damage-button" 
+                        data-damage="{{defenseResult.calculatedDamage}}"
+                        data-target-name="{{defenseResult.defenderName}}"
+                        data-target-uuid="{{defenseResult.defenderUuid}}"
+                        data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
+                        data-damage-type="physical">
+                    <i class="fas fa-heart-broken"></i> Appliquer les dégâts matriciels à {{defenseResult.defenderName}}
+                </button>
+                {{else if (eq defenseResult.iceType "acid")}}
+                <div class="ice-effect">
+                    <i class="fas fa-shield-alt"></i> <strong>Réduction de Firewall</strong> : Le Firewall de la cible est réduit de 1 pour la durée de la Scène
+                </div>
+                {{else if (eq defenseResult.iceType "blocker")}}
+                <div class="ice-effect">
+                    <i class="fas fa-sword"></i> <strong>Réduction d'Attaque</strong> : L'Attaque de la cible est réduite de 1 pour la durée de la Scène
+                </div>
+                {{else if (eq defenseResult.iceType "glue")}}
+                <div class="ice-effect">
+                    <i class="fas fa-lock"></i> <strong>Verrouillage de connexion</strong> : La cible ne peut pas se déconnecter pendant un tour
+                </div>
+                {{else if (eq defenseResult.iceType "tracker")}}
+                <div class="ice-effect">
+                    <i class="fas fa-map-marker-alt"></i> <strong>Localisation découverte</strong> : La localisation physique de la cible a été découverte
+                </div>
+                {{/if}}
+            </div>
+            {{else}}
+            <!-- Normal Attack Damage -->
             <div class="calculated-damage">
                 <span class="damage-label">Dégâts:</span>
                 <span class="damage-value">{{defenseResult.calculatedDamage}}</span>
@@ -132,6 +204,7 @@
                     data-damage-type="{{#if (and rollData.attackRollData (eq rollData.attackRollData.spellType "direct"))}}mental{{else}}physical{{/if}}">
                 <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.defenderName}}
             </button>
+            {{/if}}
             {{/if}}
         </div>
     </div>

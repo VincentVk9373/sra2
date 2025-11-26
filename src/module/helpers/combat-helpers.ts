@@ -402,6 +402,138 @@ export function prepareVehicleWeaponRollRequest(
  * @param defenderName - Name of the defender (for notifications)
  * @param damageType - Type of damage: 'physical' (default) or 'mental' (for direct spells)
  */
+/**
+ * Create an ICE attack message in chat
+ * ICEs have a fixed threshold (server index) instead of rolling dice
+ */
+export async function createIceAttackMessage(
+  iceActor: any,
+  iceToken: any,
+  defender: any,
+  defenderToken: any
+): Promise<void> {
+  const iceSystem = iceActor.system as any;
+  const iceType = iceSystem.iceType;
+  const serverIndex = iceSystem.serverIndex || 1;
+  const threshold = iceSystem.threshold || serverIndex;
+  const damageValue = iceSystem.damageValue || 0;
+  
+  // Only ICEs that can attack (not Patrol, Acid, Blocker, Glue, Tracker)
+  const attackingIceTypes = ['blaster', 'black', 'killer'];
+  if (!attackingIceTypes.includes(iceType)) {
+    ui.notifications?.warn(game.i18n!.localize('SRA2.ICE.CANNOT_ATTACK'));
+    return;
+  }
+  
+  // Get token UUIDs
+  const iceTokenUuid = iceToken?.uuid || iceToken?.document?.uuid;
+  const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid;
+  
+  // Determine final UUIDs (token actor UUID for NPCs)
+  const finalIceUuid = iceToken?.actor?.uuid || iceActor.uuid;
+  const finalDefenderUuid = defenderToken?.actor?.uuid || defender.uuid;
+  
+  // Create a fake roll result with fixed threshold
+  const rollResult = {
+    normalDice: [],
+    riskDice: [],
+    normalSuccesses: 0,
+    riskSuccesses: 0,
+    totalSuccesses: threshold, // ICE uses fixed threshold
+    criticalFailures: 0,
+    finalRR: 0,
+    remainingFailures: 0,
+    complication: 'none'
+  };
+  
+  // Prepare roll data for ICE attack
+  const rollData = {
+    itemType: 'ice-attack',
+    iceType: iceType,
+    serverIndex: serverIndex,
+    threshold: threshold,
+    damageValue: damageValue.toString(),
+    iceDamageValue: damageValue, // Store separately for defense calculation
+    skillName: 'Cybercombat (GLACE)',
+    itemName: iceActor.name,
+    isAttack: true,
+    isDefend: false,
+    isCounterAttack: false,
+    isSpellDirect: false
+  };
+  
+  // Prepare defender data with token image
+  let defenderData: any = null;
+  if (defender) {
+    let tokenImg = defender.img;
+    if (defenderToken) {
+      tokenImg = (defenderToken as any).document?.texture?.src || 
+                 (defenderToken as any).document?.img || 
+                 (defenderToken as any).data?.img || 
+                 (defenderToken as any).texture?.src ||
+                 defender.img;
+    }
+    
+    defenderData = {
+      ...defender,
+      img: tokenImg
+    };
+  }
+  
+  // Prepare template data
+  const templateData: any = {
+    attacker: {
+      ...iceActor,
+      uuid: finalIceUuid
+    },
+    defender: defenderData,
+    rollData: rollData,
+    rollResult: rollResult,
+    isAttack: true,
+    isDefend: false,
+    isCounterAttack: false,
+    skillName: 'Cybercombat (GLACE)',
+    itemName: iceActor.name,
+    damageValue: damageValue.toString(),
+    attackerUuid: finalIceUuid,
+    defenderUuid: finalDefenderUuid,
+    attackerTokenUuid: iceTokenUuid,
+    defenderTokenUuid: defenderTokenUuid
+  };
+  
+  // Render template
+  const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);
+  
+  // Create chat message
+  const messageData: any = {
+    user: game.user?.id,
+    speaker: {
+      actor: iceActor.id,
+      alias: iceActor.name
+    },
+    content: html,
+    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    flags: {
+      sra2: {
+        rollType: 'ice-attack',
+        attackerId: iceActor.id,
+        attackerUuid: finalIceUuid,
+        attackerTokenUuid: iceTokenUuid,
+        defenderId: defender?.id,
+        defenderUuid: finalDefenderUuid,
+        defenderTokenUuid: defenderTokenUuid,
+        rollResult: rollResult,
+        rollData: rollData,
+        iceType: iceType,
+        iceThreshold: threshold,
+        iceDamageValue: damageValue
+      }
+    }
+  };
+  
+  await ChatMessage.create(messageData);
+}
+
 export async function applyDamage(defenderUuid: string, damageValue: number, defenderName: string, damageType: 'physical' | 'mental' = 'physical'): Promise<void> {
   // Use fromUuid to get the token's actor if it's a token UUID, or the actor if it's an actor UUID
   const defender = await fromUuid(defenderUuid as any) as any;
@@ -416,10 +548,18 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   
   const defenderSystem = defenderActor.system as any;
   const isVehicle = defenderActor.type === 'vehicle';
+  const isIce = defenderActor.type === 'ice';
   
   // Get damage thresholds based on actor type and damage type
   let damageThresholds: { light: number; moderate?: number; severe: number; incapacitating?: number };
-  if (isVehicle) {
+  if (isIce) {
+    // For ICE, thresholds are based on FW = 1: light = 1, severe = 2, incapacitating = 3
+    damageThresholds = defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 2,
+      incapacitating: 3
+    };
+  } else if (isVehicle) {
     // For vehicles/drones, thresholds are directly in damageThresholds
     // Vehicles don't have mental damage thresholds, use physical
     damageThresholds = defenderSystem.damageThresholds || {
@@ -455,10 +595,80 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   let overflow = false;
   
   // Determine damage type based on thresholds
+  // For ICE: light = 1, severe = 2, incapacitating = 3 (based on FW = 1)
   // For vehicles: light = Structure + Armor, severe = (2 × Structure) + Armor, incapacitating = (3 × Structure) + Armor
   // For characters: light, moderate, severe from withArmor thresholds
   
-  if (isVehicle) {
+  if (isIce) {
+    // ICE damage thresholds
+    if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
+      // Incapacitating wound: VD > 3
+      woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
+      damage.incapacitating = true;
+    } else if (damageValue > damageThresholds.severe) {
+      // Severe wound: VD > 2
+      woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
+      
+      // Find first empty severe box
+      let applied = false;
+      for (let i = 0; i < damage.severe.length; i++) {
+        if (!damage.severe[i]) {
+          damage.severe[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      
+      // If no space in severe, overflow to incapacitating
+      if (!applied) {
+        ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
+        damage.incapacitating = true;
+        overflow = true;
+      }
+    } else if (damageValue > damageThresholds.light) {
+      // Light wound: VD > 1
+      woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
+      
+      // Find first empty light box
+      let applied = false;
+      for (let i = 0; i < damage.light.length; i++) {
+        if (!damage.light[i]) {
+          damage.light[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      
+      // If no space in light, overflow to severe
+      if (!applied) {
+        ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT'));
+        
+        // Try to apply to severe
+        let severeApplied = false;
+        for (let i = 0; i < damage.severe.length; i++) {
+          if (!damage.severe[i]) {
+            damage.severe[i] = true;
+            severeApplied = true;
+            break;
+          }
+        }
+        
+        // If no space in severe either, overflow to incapacitating
+        if (!severeApplied) {
+          ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
+          damage.incapacitating = true;
+        }
+        overflow = true;
+      }
+    } else {
+      // Damage below light threshold, no wound: VD ≤ 1
+      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
+        damage: `${damageValue} (en dessous du seuil)`,
+        target: defenderName 
+      }));
+      return;
+    }
+  } else if (isVehicle) {
     // Vehicle/drone damage thresholds
     if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
       // Incapacitating wound: VD > (3 × Structure) + Blindage

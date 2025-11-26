@@ -76,7 +76,8 @@
   "documentTypes": {
     "Actor": {
       "character": {},
-      "vehicle": {}
+      "vehicle": {},
+      "ice": {}
     },
     "Item": {
       "skill": {},

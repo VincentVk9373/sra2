@@ -517,32 +517,52 @@ async function createRollChatMessage(
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const defenseSuccesses = rollResult.totalSuccesses;
     
+    // Check if this is an ICE attack
+    const isIceAttack = rollData.attackRollData.itemType === 'ice-attack' || rollData.attackRollData.iceType;
+    const iceType = rollData.attackRollData.iceType;
+    
     // Get actor names (use token name if available, otherwise actor name)
     const originalAttackerName = defenderToken?.name || defender?.name || 'Inconnu';
     const defenderName = attackerToken?.name || attacker?.name || 'Inconnu';
     
     if (attackSuccesses >= defenseSuccesses) {
-      // Attack succeeds, calculate damage
-      // damageValue already includes bonus (finalDamageValue)
-      let damageValue = 0;
-      const damageValueStr = rollData.attackRollData.damageValue || '0';
-      
-      // Handle "FOR" or "FOR+X" damage values
-      if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
-        // Get original attacker's strength (defender in defense context is the original attacker)
-        const attackerStrength = (defender?.system as any)?.attributes?.strength || 1;
-        if (damageValueStr === 'FOR') {
-          damageValue = attackerStrength;
-        } else if (damageValueStr.startsWith('FOR+')) {
-          const bonus = parseInt(damageValueStr.substring(4)) || 0;
-          damageValue = attackerStrength + bonus;
+      // Attack succeeds
+      if (isIceAttack) {
+        // For ICE attacks, calculate damage based on type
+        let damageValue = 0;
+        const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
+        
+        // ICE damage calculation: VD + (succès ICE - succès défense)
+        // But for some ICE types, there's no damage, only effects
+        if (iceType === 'blaster' || iceType === 'black' || iceType === 'killer') {
+          damageValue = iceDamageValue + attackSuccesses - defenseSuccesses;
         }
+        // Other ICE types (acid, blocker, glue, tracker) don't deal damage
+        
+        calculatedDamage = damageValue;
+        attackFailed = false;
       } else {
-        damageValue = parseInt(damageValueStr, 10) || 0;
+        // Normal attack damage calculation
+        let damageValue = 0;
+        const damageValueStr = rollData.attackRollData.damageValue || '0';
+        
+        // Handle "FOR" or "FOR+X" damage values
+        if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
+          // Get original attacker's strength (defender in defense context is the original attacker)
+          const attackerStrength = (defender?.system as any)?.attributes?.strength || 1;
+          if (damageValueStr === 'FOR') {
+            damageValue = attackerStrength;
+          } else if (damageValueStr.startsWith('FOR+')) {
+            const bonus = parseInt(damageValueStr.substring(4)) || 0;
+            damageValue = attackerStrength + bonus;
+          }
+        } else {
+          damageValue = parseInt(damageValueStr, 10) || 0;
+        }
+        
+        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        attackFailed = false;
       }
-      
-      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
-      attackFailed = false;
     } else {
       // Attack fails
       attackFailed = true;
@@ -567,7 +587,10 @@ async function createRollChatMessage(
       defenderName: defenderName,
       // UUIDs for applying damage
       originalAttackerUuid: originalAttackerUuid, // Who inflicts damage if attack succeeds
-      defenderUuid: defenderUuid // Who receives damage if attack succeeds
+      defenderUuid: defenderUuid, // Who receives damage if attack succeeds
+      // ICE-specific fields
+      isIceAttack: isIceAttack,
+      iceType: iceType
     };
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     // Counter-attack: compare with original attack

@@ -2,7 +2,8 @@
     "TYPES": {
         "Actor": {
             "character": "Personnage",
-            "vehicle": "Véhicule / Drone"
+            "vehicle": "Véhicule / Drone",
+            "ice": "GLACE"
         },
         "Item": {
             "skill": "Compétence",
@@ -16,6 +17,7 @@
             "CHARACTER": "Feuille de Personnage SRA2",
             "NPC": "Feuille de PNJ SRA2",
             "VEHICLE": "Feuille de Véhicule/Drone SRA2",
+            "ICE": "Feuille de GLACE SRA2",
             "FEAT": "Feuille d'Atout SRA2",
             "SKILL": "Feuille de Compétence SRA2",
             "SPECIALIZATION": "Feuille de Spécialisation SRA2",
@@ -112,6 +114,41 @@
                 "LIGHT_FORMULA": "Léger : VD > Structure + Blindage",
                 "SEVERE_FORMULA": "Grave : VD > (2 × Structure) + Blindage",
                 "INCAPACITATING_FORMULA": "Incapacitant : VD > (3 × Structure) + Blindage"
+            }
+        },
+        "ICE": {
+            "NAME": "Nom de la GLACE",
+            "ICE_TYPE": "Type de GLACE",
+            "SELECT_TYPE": "Sélectionner un type...",
+            "SELECT_TYPE_FIRST": "Veuillez d'abord sélectionner un type de GLACE",
+            "ATTRIBUTES": {
+                "LABEL": "Attributs",
+                "SERVER_INDEX": "Indice du Serveur",
+                "SERVER_INDEX_DESC": "Détermine le seuil de succès (égal à l'indice du serveur)",
+                "FIREWALL": "Pare-feu",
+                "FIREWALL_DESC": "Toujours égal à 1 pour les GLACES",
+                "THRESHOLD": "Seuil",
+                "THRESHOLD_DESC": "Nombre de succès sur les tests (égal à l'indice du serveur)",
+                "DAMAGE_VALUE": "Valeur de Dégâts",
+                "DAMAGE_VALUE_DESC": "VD calculé selon le type de GLACE"
+            },
+            "DESCRIPTION": {
+                "LABEL": "Description",
+                "PATROL": "Analyse les personas connectés au serveur. Test de Perception (matricielle) opposé au test de Furtivité (discrétion matricielle) + Logique du decker.",
+                "ACID": "Chaque attaque réussie réduit le Firewall de la cible de 1 pour la durée de la Scène (aucun dommage infligé).",
+                "BLASTER": "Verrouillage de connexion (la cible ne peut pas se déconnecter pendant un tour) + dommages matriciels, VD = Indice du serveur/2 (arrondi au supérieur).",
+                "BLOCKER": "Chaque attaque réussie réduit l'Attaque de la cible de 1 pour la durée de la Scène (aucun dommage infligé).",
+                "BLACK": "Dommages de biofeedback, VD = Indice du serveur/2 (arrondi supérieur).",
+                "GLUE": "Verrouillage de connexion (la cible ne peut pas se déconnecter pendant un tour, aucun dommage infligé).",
+                "TRACKER": "Découvre la localisation physique de la cible (aucun dommage infligé).",
+                "KILLER": "Dommages matriciels, VD = Indice du serveur."
+            },
+            "ATTACK": {
+                "LABEL": "Attaque",
+                "BUTTON": "Lancer une attaque",
+                "HINT": "Sélectionnez un token cible sur la scène, puis cliquez sur ce bouton pour lancer une attaque.",
+                "NO_TARGET": "Veuillez sélectionner un token cible sur la scène.",
+                "CANNOT_ATTACK": "Ce type de GLACE ne peut pas attaquer directement."
             }
         },
         "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer {name} ?",

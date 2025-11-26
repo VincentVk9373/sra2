@@ -10,6 +10,9 @@
 /* Import roll dialog styles */
 @use 'roll-dialog.scss';
 
+/* Import ICE sheet styles */
+@use 'ice-sheet.scss';
+
 
 select {
     height: 36px;
@@ -644,21 +647,21 @@ select {
             background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(46, 125, 50, 0.2) 100%);
             border-radius: 6px;
             border: 2px solid #4caf50;
-            
+
             // Failed attack (0 successes) styling
             &.failed-attack {
                 background: linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(211, 47, 47, 0.2) 100%);
                 border-color: #f44336;
-                
+
                 .successes-label {
                     color: #f44336;
                 }
-                
+
                 .successes-value {
                     color: #f44336;
                 }
             }
-            
+
             .attack-failed-message {
                 margin-top: 0.5rem;
                 padding: 0.5rem;
@@ -672,7 +675,7 @@ select {
                 align-items: center;
                 justify-content: center;
                 gap: 0.5rem;
-                
+
                 i {
                     font-size: 1.1rem;
                 }
@@ -829,7 +832,7 @@ select {
 
             .comparison-header {
                 display: flex;
-                gap:8px;
+                gap: 8px;
                 align-items: center;
                 justify-content: center;
                 padding-bottom: 4px;
@@ -998,7 +1001,7 @@ select {
                     }
                 }
             }
-            
+
         }
 
         &.counterattack-result {
@@ -1019,54 +1022,98 @@ select {
         }
     }
 
-            .apply-damage-button {
-                margin-top: 0.75rem;
-                width: 100%;
-                padding: 2rem;
-                background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-                border: 2px solid #c62828;
-                border-radius: 6px;
-                color: white;
-                font-weight: bold;
-                font-size: 0.95rem;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-                box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+    .ice-effects {
+        margin-top: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
 
-                i {
-                    font-size: 1.1rem;
-                }
+        .ice-effect {
+            padding: 0.75rem;
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            border-radius: 4px;
+            color: #ffc107;
+            font-size: 0.9rem;
+            line-height: 1.5;
 
-                &:hover {
-                    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
-                    border-color: #b71c1c;
-                    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.6);
-                    transform: translateY(-1px);
-                }
-
-                &:active {
-                    transform: translateY(0);
-                    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.4);
-                }
-
-                &:disabled {
-                    background: #666;
-                    border-color: #555;
-                    cursor: not-allowed;
-                    opacity: 0.5;
-                    box-shadow: none;
-
-                    &:hover {
-                        transform: none;
-                    }
-                }
+            i {
+                margin-right: 0.5rem;
+                color: #ffc107;
             }
 
-    .attack-actions, .spell-direct-damage {
+            strong {
+                color: #ffc107;
+                font-weight: 600;
+            }
+        }
+    }
+
+    .ice-threshold-info {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(0, 212, 255, 0.1);
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        border-radius: 4px;
+        color: #00d4ff;
+        font-size: 0.85rem;
+        font-style: italic;
+
+        i {
+            margin-right: 0.25rem;
+            color: #00d4ff;
+        }
+    }
+
+    .apply-damage-button {
+        margin-top: 0.75rem;
+        width: 100%;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        border: 2px solid #c62828;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+
+        i {
+            font-size: 1.1rem;
+        }
+
+        &:hover {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            border-color: #b71c1c;
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.6);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.4);
+        }
+
+        &:disabled {
+            background: #666;
+            border-color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+
+            &:hover {
+                transform: none;
+            }
+        }
+    }
+
+    .attack-actions,
+    .spell-direct-damage {
         margin-top: 8px;
         padding-top: 8px;
         border-top: 2px solid rgba(0, 0, 0, 0.3);
@@ -1109,8 +1156,9 @@ select {
 
         .attack-actions-buttons {
             display: flex;
-            gap:4px;
-            margin-top:4px;
+            gap: 4px;
+            margin-top: 4px;
+
             button {
                 flex: 1;
                 padding: 0.75rem 1rem;

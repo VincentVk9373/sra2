@@ -2,7 +2,8 @@
     "TYPES": {
         "Actor": {
             "character": "Character",
-            "vehicle": "Vehicle / Drone"
+            "vehicle": "Vehicle / Drone",
+            "ice": "ICE"
         },
         "Item": {
             "skill": "Skill",
@@ -16,6 +17,7 @@
             "CHARACTER": "SRA2 Character Sheet",
             "NPC": "SRA2 NPC Sheet",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
+            "ICE": "SRA2 ICE Sheet",
             "FEAT": "SRA2 Feat Sheet",
             "SKILL": "SRA2 Skill Sheet",
             "SPECIALIZATION": "SRA2 Specialization Sheet",
@@ -118,6 +120,41 @@
                 "LIGHT_FORMULA": "Light: VD > Structure + Armor",
                 "SEVERE_FORMULA": "Severe: VD > (2 × Structure) + Armor",
                 "INCAPACITATING_FORMULA": "Incapacitating: VD > (3 × Structure) + Armor"
+            }
+        },
+        "ICE": {
+            "NAME": "ICE Name",
+            "ICE_TYPE": "ICE Type",
+            "SELECT_TYPE": "Select a type...",
+            "SELECT_TYPE_FIRST": "Please select an ICE type first",
+            "ATTRIBUTES": {
+                "LABEL": "Attributes",
+                "SERVER_INDEX": "Server Index",
+                "SERVER_INDEX_DESC": "Determines the success threshold (equal to server index)",
+                "FIREWALL": "Firewall",
+                "FIREWALL_DESC": "Always equal to 1 for ICEs",
+                "THRESHOLD": "Threshold",
+                "THRESHOLD_DESC": "Number of successes on tests (equal to server index)",
+                "DAMAGE_VALUE": "Damage Value",
+                "DAMAGE_VALUE_DESC": "DV calculated according to ICE type"
+            },
+            "DESCRIPTION": {
+                "LABEL": "Description",
+                "PATROL": "Analyzes personas connected to the server. Perception (matrix) test opposed to Stealth (matrix stealth) + Logic of the decker.",
+                "ACID": "Each successful attack reduces the target's Firewall by 1 for the duration of the Scene (no damage dealt).",
+                "BLASTER": "Connection lock (target cannot disconnect for one turn) + matrix damage, DV = Server Index/2 (rounded up).",
+                "BLOCKER": "Each successful attack reduces the target's Attack by 1 for the duration of the Scene (no damage dealt).",
+                "BLACK": "Biofeedback damage, DV = Server Index/2 (rounded up).",
+                "GLUE": "Connection lock (target cannot disconnect for one turn, no damage dealt).",
+                "TRACKER": "Discovers the physical location of the target (no damage dealt).",
+                "KILLER": "Matrix damage, DV = Server Index."
+            },
+            "ATTACK": {
+                "LABEL": "Attack",
+                "BUTTON": "Launch Attack",
+                "HINT": "Select a target token on the scene, then click this button to launch an attack.",
+                "NO_TARGET": "Please select a target token on the scene.",
+                "CANNOT_ATTACK": "This ICE type cannot attack directly."
             }
         },
         "COMBAT": {

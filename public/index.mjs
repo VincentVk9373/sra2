@@ -1688,6 +1688,82 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
     this.calculatedCost = calculatedCost;
   }
 }
+const ICE_TYPES = {
+  patrol: "Patrouilleuse",
+  acid: "Acide",
+  blaster: "Blaster",
+  blocker: "Bloqueuse",
+  black: "Noire",
+  glue: "Pot de colle",
+  tracker: "Traqueuse",
+  killer: "Tueuse"
+};
+class IceDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const iceTypeChoices = {};
+    Object.entries(ICE_TYPES).forEach(([key, value]) => {
+      iceTypeChoices[key] = value;
+    });
+    return {
+      iceType: new fields.StringField({
+        required: false,
+        nullable: true,
+        choices: iceTypeChoices,
+        label: "SRA2.ICE.ICE_TYPE"
+      }),
+      serverIndex: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 1,
+        max: 12,
+        integer: true,
+        label: "SRA2.ICE.SERVER_INDEX"
+      }),
+      damage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      })
+    };
+  }
+  prepareDerivedData() {
+    const serverIndex = this.serverIndex || 1;
+    const firewall = 1;
+    this.attributes = {
+      firewall
+    };
+    this.threshold = serverIndex;
+    this.damageThresholds = {
+      light: 1,
+      severe: 2,
+      incapacitating: 3
+    };
+    const iceType = this.iceType || "";
+    let damageValue = 0;
+    if (iceType === "blaster" || iceType === "black") {
+      damageValue = Math.ceil(serverIndex / 2);
+    } else if (iceType === "killer") {
+      damageValue = serverIndex;
+    }
+    this.damageValue = damageValue;
+  }
+}
 class SkillDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -1835,6 +1911,7 @@ const models = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   CharacterDataModel,
   FeatDataModel,
+  IceDataModel,
   MetatypeDataModel,
   SkillDataModel,
   SpecializationDataModel,
@@ -1843,6 +1920,14 @@ const models = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
 class SRA2Actor extends Actor {
   get feats() {
     return this.items.filter((item) => item.type === "feat");
+  }
+  _preCreate(data, options, user) {
+    super._preCreate(data, options, user);
+    if (data.type === "ice") {
+      if (!data.img || data.img === "icons/svg/mystery-man.svg" || data.img === "") {
+        foundry.utils.mergeObject(data, { img: "systems/sra2/icons/items/powersprite.svg" });
+      }
+    }
   }
 }
 const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -2053,24 +2138,36 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
     const attackSuccesses = rollData.attackRollResult.totalSuccesses;
     const defenseSuccesses = rollResult.totalSuccesses;
+    const isIceAttack = rollData.attackRollData.itemType === "ice-attack" || rollData.attackRollData.iceType;
+    const iceType = rollData.attackRollData.iceType;
     const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
     const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
     if (attackSuccesses >= defenseSuccesses) {
-      let damageValue = 0;
-      const damageValueStr = rollData.attackRollData.damageValue || "0";
-      if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
-        const attackerStrength = defender?.system?.attributes?.strength || 1;
-        if (damageValueStr === "FOR") {
-          damageValue = attackerStrength;
-        } else if (damageValueStr.startsWith("FOR+")) {
-          const bonus = parseInt(damageValueStr.substring(4)) || 0;
-          damageValue = attackerStrength + bonus;
+      if (isIceAttack) {
+        let damageValue = 0;
+        const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
+        if (iceType === "blaster" || iceType === "black" || iceType === "killer") {
+          damageValue = iceDamageValue + attackSuccesses - defenseSuccesses;
         }
+        calculatedDamage = damageValue;
+        attackFailed = false;
       } else {
-        damageValue = parseInt(damageValueStr, 10) || 0;
+        let damageValue = 0;
+        const damageValueStr = rollData.attackRollData.damageValue || "0";
+        if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
+          const attackerStrength = defender?.system?.attributes?.strength || 1;
+          if (damageValueStr === "FOR") {
+            damageValue = attackerStrength;
+          } else if (damageValueStr.startsWith("FOR+")) {
+            const bonus = parseInt(damageValueStr.substring(4)) || 0;
+            damageValue = attackerStrength + bonus;
+          }
+        } else {
+          damageValue = parseInt(damageValueStr, 10) || 0;
+        }
+        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        attackFailed = false;
       }
-      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
-      attackFailed = false;
     } else {
       attackFailed = true;
       calculatedDamage = 0;
@@ -2090,8 +2187,11 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       // UUIDs for applying damage
       originalAttackerUuid,
       // Who inflicts damage if attack succeeds
-      defenderUuid
+      defenderUuid,
       // Who receives damage if attack succeeds
+      // ICE-specific fields
+      isIceAttack,
+      iceType
     };
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
@@ -2919,6 +3019,106 @@ function prepareVehicleWeaponRollRequest(vehicleActor, weapon, WEAPON_TYPES2) {
     rrList: attackData.rrList
   };
 }
+async function createIceAttackMessage(iceActor, iceToken, defender, defenderToken) {
+  const iceSystem = iceActor.system;
+  const iceType = iceSystem.iceType;
+  const serverIndex = iceSystem.serverIndex || 1;
+  const threshold = iceSystem.threshold || serverIndex;
+  const damageValue = iceSystem.damageValue || 0;
+  const attackingIceTypes = ["blaster", "black", "killer"];
+  if (!attackingIceTypes.includes(iceType)) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ICE.CANNOT_ATTACK"));
+    return;
+  }
+  const iceTokenUuid = iceToken?.uuid || iceToken?.document?.uuid;
+  const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid;
+  const finalIceUuid = iceToken?.actor?.uuid || iceActor.uuid;
+  const finalDefenderUuid = defenderToken?.actor?.uuid || defender.uuid;
+  const rollResult = {
+    normalDice: [],
+    riskDice: [],
+    normalSuccesses: 0,
+    riskSuccesses: 0,
+    totalSuccesses: threshold,
+    // ICE uses fixed threshold
+    criticalFailures: 0,
+    finalRR: 0,
+    remainingFailures: 0,
+    complication: "none"
+  };
+  const rollData = {
+    itemType: "ice-attack",
+    iceType,
+    serverIndex,
+    threshold,
+    damageValue: damageValue.toString(),
+    iceDamageValue: damageValue,
+    // Store separately for defense calculation
+    skillName: "Cybercombat (GLACE)",
+    itemName: iceActor.name,
+    isAttack: true,
+    isDefend: false,
+    isCounterAttack: false,
+    isSpellDirect: false
+  };
+  let defenderData = null;
+  if (defender) {
+    let tokenImg = defender.img;
+    if (defenderToken) {
+      tokenImg = defenderToken.document?.texture?.src || defenderToken.document?.img || defenderToken.data?.img || defenderToken.texture?.src || defender.img;
+    }
+    defenderData = {
+      ...defender,
+      img: tokenImg
+    };
+  }
+  const templateData = {
+    attacker: {
+      ...iceActor,
+      uuid: finalIceUuid
+    },
+    defender: defenderData,
+    rollData,
+    rollResult,
+    isAttack: true,
+    isDefend: false,
+    isCounterAttack: false,
+    skillName: "Cybercombat (GLACE)",
+    itemName: iceActor.name,
+    damageValue: damageValue.toString(),
+    attackerUuid: finalIceUuid,
+    defenderUuid: finalDefenderUuid,
+    attackerTokenUuid: iceTokenUuid,
+    defenderTokenUuid
+  };
+  const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
+  const messageData = {
+    user: game.user?.id,
+    speaker: {
+      actor: iceActor.id,
+      alias: iceActor.name
+    },
+    content: html,
+    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    flags: {
+      sra2: {
+        rollType: "ice-attack",
+        attackerId: iceActor.id,
+        attackerUuid: finalIceUuid,
+        attackerTokenUuid: iceTokenUuid,
+        defenderId: defender?.id,
+        defenderUuid: finalDefenderUuid,
+        defenderTokenUuid,
+        rollResult,
+        rollData,
+        iceType,
+        iceThreshold: threshold,
+        iceDamageValue: damageValue
+      }
+    }
+  };
+  await ChatMessage.create(messageData);
+}
 async function applyDamage(defenderUuid, damageValue, defenderName, damageType = "physical") {
   const defender = await fromUuid(defenderUuid);
   if (!defender) {
@@ -2928,8 +3128,15 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   const defenderActor = defender.actor || defender;
   const defenderSystem = defenderActor.system;
   const isVehicle = defenderActor.type === "vehicle";
+  const isIce = defenderActor.type === "ice";
   let damageThresholds;
-  if (isVehicle) {
+  if (isIce) {
+    damageThresholds = defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 2,
+      incapacitating: 3
+    };
+  } else if (isVehicle) {
     damageThresholds = defenderSystem.damageThresholds || {
       light: 1,
       severe: 4,
@@ -2957,7 +3164,59 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   };
   let woundType = "";
   let overflow = false;
-  if (isVehicle) {
+  if (isIce) {
+    if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
+      damage.incapacitating = true;
+    } else if (damageValue > damageThresholds.severe) {
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
+      let applied = false;
+      for (let i = 0; i < damage.severe.length; i++) {
+        if (!damage.severe[i]) {
+          damage.severe[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      if (!applied) {
+        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
+        damage.incapacitating = true;
+        overflow = true;
+      }
+    } else if (damageValue > damageThresholds.light) {
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
+      let applied = false;
+      for (let i = 0; i < damage.light.length; i++) {
+        if (!damage.light[i]) {
+          damage.light[i] = true;
+          applied = true;
+          break;
+        }
+      }
+      if (!applied) {
+        ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
+        let severeApplied = false;
+        for (let i = 0; i < damage.severe.length; i++) {
+          if (!damage.severe[i]) {
+            damage.severe[i] = true;
+            severeApplied = true;
+            break;
+          }
+        }
+        if (!severeApplied) {
+          ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
+          damage.incapacitating = true;
+        }
+        overflow = true;
+      }
+    } else {
+      ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
+        damage: `${damageValue} (en dessous du seuil)`,
+        target: defenderName
+      }));
+      return;
+    }
+  } else if (isVehicle) {
     if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
       damage.incapacitating = true;
@@ -6261,6 +6520,103 @@ class VehicleSheet extends ActorSheet {
     return super._onDrop(event);
   }
 }
+class IceSheet extends ActorSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "sheet", "actor", "ice"],
+      template: "systems/sra2/templates/actor-ice-sheet.hbs",
+      width: 600,
+      height: 500,
+      tabs: [],
+      dragDrop: [],
+      submitOnChange: false
+    });
+  }
+  /**
+   * Handle form submission to update actor data
+   */
+  async _updateObject(_event, formData) {
+    const expandedData = handleSheetUpdate(this.actor, formData);
+    return this.actor.update(expandedData);
+  }
+  getData() {
+    const context = super.getData();
+    context.system = this.actor.system;
+    context.iceTypes = ICE_TYPES;
+    const iceType = this.actor.system.iceType || "";
+    context.iceTypeDescription = this._getIceTypeDescription(iceType);
+    return context;
+  }
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find(".ice-type-select").on("change", this._onIceTypeChange.bind(this));
+    html.find('input[name="system.serverIndex"]').on("change", this._onServerIndexChange.bind(this));
+    html.find(".ice-attack-button").on("click", this._onIceAttack.bind(this));
+  }
+  /**
+   * Handle ICE type selection change
+   */
+  async _onIceTypeChange(event) {
+    event.preventDefault();
+    const iceType = event.currentTarget.value;
+    await this.actor.update({
+      "system.iceType": iceType || null
+    });
+    this.render(false);
+  }
+  /**
+   * Handle server index change - update actor and re-render
+   */
+  async _onServerIndexChange(event) {
+    const input = event.currentTarget;
+    const value = parseInt(input.value) || 1;
+    await this.actor.update({
+      "system.serverIndex": Math.max(1, Math.min(12, value))
+    });
+    await this.render(false);
+  }
+  /**
+   * Get description for ICE type
+   */
+  _getIceTypeDescription(iceType) {
+    const descriptions = {
+      patrol: "SRA2.ICE.DESCRIPTION.PATROL",
+      acid: "SRA2.ICE.DESCRIPTION.ACID",
+      blaster: "SRA2.ICE.DESCRIPTION.BLASTER",
+      blocker: "SRA2.ICE.DESCRIPTION.BLOCKER",
+      black: "SRA2.ICE.DESCRIPTION.BLACK",
+      glue: "SRA2.ICE.DESCRIPTION.GLUE",
+      tracker: "SRA2.ICE.DESCRIPTION.TRACKER",
+      killer: "SRA2.ICE.DESCRIPTION.KILLER"
+    };
+    return descriptions[iceType] || "";
+  }
+  /**
+   * Handle ICE attack button click
+   */
+  async _onIceAttack(event) {
+    event.preventDefault();
+    const controlledTokens = canvas?.tokens?.controlled || [];
+    if (controlledTokens.length === 0) {
+      ui.notifications?.warn(game.i18n.localize("SRA2.ICE.ATTACK.NO_TARGET"));
+      return;
+    }
+    const defenderToken = controlledTokens[0];
+    const defender = defenderToken.actor;
+    if (!defender) {
+      ui.notifications?.warn(game.i18n.localize("SRA2.ICE.ATTACK.NO_TARGET"));
+      return;
+    }
+    let iceToken = null;
+    if (this.actor.isToken) {
+      iceToken = this.actor.token;
+    } else {
+      const tokens = canvas?.tokens?.placeables || [];
+      iceToken = tokens.find((token) => token.actor?.id === this.actor.id) || null;
+    }
+    await createIceAttackMessage(this.actor, iceToken, defender, defenderToken);
+  }
+}
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
@@ -8181,6 +8537,7 @@ const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   __proto__: null,
   CharacterSheet,
   FeatSheet,
+  IceSheet,
   MetatypeSheet,
   NpcSheet,
   RollDialog,
@@ -9019,7 +9376,8 @@ class SRA2System {
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {
       character: CharacterDataModel,
-      vehicle: VehicleDataModel
+      vehicle: VehicleDataModel,
+      ice: IceDataModel
     };
     CONFIG.Item.dataModels = {
       skill: SkillDataModel,
@@ -9041,6 +9399,11 @@ class SRA2System {
       types: ["vehicle"],
       makeDefault: true,
       label: "SRA2.SHEET.VEHICLE"
+    });
+    DocumentSheetConfig.registerSheet(Actor, "sra2", IceSheet, {
+      types: ["ice"],
+      makeDefault: true,
+      label: "SRA2.SHEET.ICE"
     });
     Hooks.on("ready", () => {
       if (!game.actors) return;
@@ -9407,9 +9770,21 @@ class SRA2System {
             defenderActorForRoll = defenderToken.actor;
           }
         }
+        const isIceAttack = messageFlags.rollType === "ice-attack" || rollData.itemType === "ice-attack";
         let finalDefenseSkill = null;
         let finalDefenseSpec = null;
-        if (attackSpec) {
+        if (isIceAttack) {
+          finalDefenseSkill = "Piratage";
+          const cybercombatSpec = defenderActorForRoll.items.find((item) => {
+            if (item.type !== "specialization") return false;
+            const specSystem = item.system;
+            return item.name === "Cybercombat" && specSystem.linkedSkill === "Piratage";
+          });
+          if (cybercombatSpec) {
+            finalDefenseSpec = "Cybercombat";
+          }
+        }
+        if (!isIceAttack && attackSpec) {
           const spec = defenderActorForRoll.items.find((item) => {
             if (item.type !== "specialization") return false;
             const specSystem = item.system;

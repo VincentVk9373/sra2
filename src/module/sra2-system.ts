@@ -85,6 +85,7 @@ export class SRA2System {
     CONFIG.Actor.dataModels = {
       character: models.CharacterDataModel,
       vehicle: models.VehicleDataModel,
+      ice: models.IceDataModel,
     };
     
     // Register Item data models
@@ -114,6 +115,13 @@ export class SRA2System {
       types: ["vehicle"],
       makeDefault: true,
       label: "SRA2.SHEET.VEHICLE"
+    });
+    
+    // Register ICE sheet
+    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.IceSheet, {
+      types: ["ice"],
+      makeDefault: true,
+      label: "SRA2.SHEET.ICE"
     });
     
     // Hook to ensure all vehicle actors are available in game.actors before cost calculations
@@ -620,15 +628,32 @@ export class SRA2System {
           }
         }
 
+        // Check if this is an ICE attack
+        const isIceAttack = messageFlags.rollType === 'ice-attack' || rollData.itemType === 'ice-attack';
+        
         // Determine which skill/spec to use for defense
         // Priority: 1) attack spec from weapon (if using weapon for defense), 2) defenseSpec if found, 3) defenseSkill if found, 4) fallback based on attack type
         let finalDefenseSkill: string | null = null;
         let finalDefenseSpec: string | null = null;
         
+        // For ICE attacks, always use Piratage (cybercombat)
+        if (isIceAttack) {
+          finalDefenseSkill = 'Piratage';
+          // Try to find cybercombat specialization
+          const cybercombatSpec = defenderActorForRoll.items.find((item: any) => {
+            if (item.type !== 'specialization') return false;
+            const specSystem = item.system as any;
+            return item.name === 'Cybercombat' && specSystem.linkedSkill === 'Piratage';
+          });
+          if (cybercombatSpec) {
+            finalDefenseSpec = 'Cybercombat';
+          }
+        }
+        
         // First, try to use the attack specialization from the weapon (if defending with a weapon)
         // This allows using "Lames" specialization when defending with a short weapon
         // Priority: use attack spec over defense spec when defending with a weapon
-        if (attackSpec) {
+        if (!isIceAttack && attackSpec) {
           // Check if this attack spec exists in the defender's items and is linked to "Combat rapproché"
           const spec = defenderActorForRoll.items.find((item: any) => {
             if (item.type !== 'specialization') return false;

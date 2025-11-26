@@ -1,0 +1,113 @@
+<form class="{{cssClass}} sra2-ice-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="header-fields">
+      <div class="damage-track">
+        <div class="damage-group light">
+          <span class="track-label">{{localize "SRA2.DAMAGE.LIGHT"}}</span>
+          <div class="track-boxes">
+            {{#each system.damage.light}}
+            <label class="track-box {{#if this}}checked{{/if}}">
+              <input type="checkbox" name="system.damage.light.{{@index}}" {{#if this}}checked{{/if}} />
+              <span class="box-circle"></span>
+            </label>
+            {{/each}}
+          </div>
+        </div>
+        <div class="damage-group severe">
+          <span class="track-label">{{localize "SRA2.DAMAGE.SEVERE"}}</span>
+          <div class="track-boxes">
+            {{#each system.damage.severe}}
+            <label class="track-box {{#if this}}checked{{/if}}">
+              <input type="checkbox" name="system.damage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+              <span class="box-circle"></span>
+            </label>
+            {{/each}}
+          </div>
+        </div>
+        <div class="damage-group incapacitating">
+          <span class="track-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}</span>
+          <div class="track-boxes">
+            <label class="track-box {{#if system.damage.incapacitating}}checked{{/if}}">
+              <input type="checkbox" name="system.damage.incapacitating" {{#if system.damage.incapacitating}}checked{{/if}} />
+              <span class="box-circle"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="charname">
+        <h1 class="charname"><input name="name" type="text" value="{{actor.name}}"
+            placeholder="{{localize 'SRA2.ICE.NAME'}}" /></h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="sheet-content">
+    <section class="sheet-body">
+      <!-- ICE Type Selection -->
+      <div class="ice-type-section">
+        <h2>{{localize "SRA2.ICE.ICE_TYPE"}}</h2>
+        <select name="system.iceType" class="ice-type-select">
+          <option value="">{{localize "SRA2.ICE.SELECT_TYPE"}}</option>
+          {{#each iceTypes}}
+          <option value="{{@key}}" {{#if (eq @key ../system.iceType)}}selected{{/if}}>{{this}}</option>
+          {{/each}}
+        </select>
+      </div>
+
+      {{#if system.iceType}}
+      <!-- ICE Attributes -->
+      <div class="ice-attributes">
+        <h2>{{localize "SRA2.ICE.ATTRIBUTES.LABEL"}}</h2>
+        <div class="attribute-grid">
+          <div class="attribute">
+            <label>{{localize "SRA2.ICE.ATTRIBUTES.SERVER_INDEX"}}</label>
+            <div class="attribute-controls">
+              <input type="number" name="system.serverIndex" value="{{system.serverIndex}}" min="1" max="12" />
+            </div>
+            <span class="attribute-description">{{localize "SRA2.ICE.ATTRIBUTES.SERVER_INDEX_DESC"}}</span>
+          </div>
+          <div class="attribute">
+            <label>{{localize "SRA2.ICE.ATTRIBUTES.FIREWALL"}}</label>
+            <div class="attribute-controls">
+              <span class="attribute-value">{{system.attributes.firewall}}</span>
+            </div>
+            <span class="attribute-description">{{localize "SRA2.ICE.ATTRIBUTES.FIREWALL_DESC"}}</span>
+          </div>
+          <div class="attribute">
+            <label>{{localize "SRA2.ICE.ATTRIBUTES.THRESHOLD"}}</label>
+            <div class="attribute-controls">
+              <span class="attribute-value">{{system.threshold}}</span>
+            </div>
+            <span class="attribute-description">{{localize "SRA2.ICE.ATTRIBUTES.THRESHOLD_DESC"}}</span>
+          </div>
+          {{#if (gt system.damageValue 0)}}
+          <div class="attribute">
+            <label>{{localize "SRA2.ICE.ATTRIBUTES.DAMAGE_VALUE"}}</label>
+            <div class="attribute-controls">
+              <span class="attribute-value">{{system.damageValue}}</span>
+            </div>
+            <span class="attribute-description">{{localize "SRA2.ICE.ATTRIBUTES.DAMAGE_VALUE_DESC"}}</span>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- ICE Description -->
+      {{#if iceTypeDescription}}
+      <div class="ice-description">
+        <h2>{{localize "SRA2.ICE.DESCRIPTION.LABEL"}}</h2>
+        <div class="description-content">
+          <p>{{localize iceTypeDescription}}</p>
+        </div>
+      </div>
+      {{/if}}
+      {{else}}
+      <div class="no-ice-type">
+        <p>{{localize "SRA2.ICE.SELECT_TYPE_FIRST"}}</p>
+      </div>
+      {{/if}}
+    </section>
+  </div>
+</form>
+
