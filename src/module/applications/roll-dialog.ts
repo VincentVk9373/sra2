@@ -1,5 +1,6 @@
 import { RollRequestData } from '../helpers/dice-roller.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
+import * as ItemSearch from '../helpers/item-search.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
@@ -653,8 +654,10 @@ export class RollDialog extends Application {
       const dropdownOptions: any[] = [];
       for (const skill of skills) {
         // Add skill option
+        // Use normalized comparison for linkedAttackSkill to handle case/space differences
         const skillSelected = skill.name === this.rollData.skillName || 
-                             (this.rollData.linkedAttackSkill && skill.name === this.rollData.linkedAttackSkill);
+                             (this.rollData.linkedAttackSkill && 
+                              ItemSearch.normalizeSearchText(skill.name) === ItemSearch.normalizeSearchText(this.rollData.linkedAttackSkill));
         dropdownOptions.push({
           value: `skill:${skill.id}`,
           label: `${skill.name} (${skill.dicePool} dés)`,
@@ -669,8 +672,10 @@ export class RollDialog extends Application {
 
         // Add specializations under this skill
         for (const spec of skill.specializations) {
+          // Use normalized comparison for linkedAttackSpecialization to handle case/space differences
           const specSelected = spec.name === this.rollData.specName ||
-                              (this.rollData.linkedAttackSpecialization && spec.name === this.rollData.linkedAttackSpecialization);
+                              (this.rollData.linkedAttackSpecialization && 
+                               ItemSearch.normalizeSearchText(spec.name) === ItemSearch.normalizeSearchText(this.rollData.linkedAttackSpecialization));
           dropdownOptions.push({
             value: `spec:${spec.id}`,
             label: `  └ ${spec.name} (${spec.dicePool} dés)`,

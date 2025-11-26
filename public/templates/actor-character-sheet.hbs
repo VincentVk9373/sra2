@@ -1590,6 +1590,51 @@
                     </div>
                     {{/if}}
                   </div>
+                  {{#if this.weapons}}
+                  <!-- Vehicle Weapons (mounted weapons) -->
+                  <div class="vehicle-weapons-list">
+                    <h5>{{localize "SRA2.VEHICLE.WEAPONS"}}:</h5>
+                    <ul class="vehicle-weapons">
+                      {{#each this.weapons}}
+                      <li class="vehicle-weapon-item">
+                        <div class="weapon-header">
+                          <span class="weapon-name">{{this.name}}</span>
+                          {{#if this.system.finalDamageValue}}
+                          <span class="weapon-damage">{{this.system.finalDamageValue}}</span>
+                          {{/if}}
+                        </div>
+                        {{#if this.system.rrEntries}}
+                        <div class="weapon-rr">
+                          {{#each this.system.rrEntries}}
+                          <span class="rr-badge" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                            {{#if (eq rrType "attribute")}}
+                              RR {{rrValue}} → {{rrTargetLabel}}
+                            {{else if (eq rrType "skill")}}
+                              RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})
+                            {{else if (eq rrType "specialization")}}
+                              RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})
+                            {{/if}}
+                          </span>
+                          {{/each}}
+                        </div>
+                        {{/if}}
+                        {{#if this.system.crr}}
+                        <div class="weapon-crr">
+                          <span class="crr-badge" title="{{localize 'SRA2.FEATS.WEAPON.CRR'}}">CRR {{this.system.crr}}</span>
+                        </div>
+                        {{/if}}
+                        <a class="feat-roll vehicle-weapon-roll" 
+                           data-action="roll-vehicle-weapon" 
+                           data-vehicle-uuid="{{../uuid}}" 
+                           data-weapon-id="{{this.weaponId}}" 
+                           title="{{localize 'SRA2.VEHICLE.ROLL_WEAPON_WITH_CHARACTER_SKILLS'}}">
+                          <i class="fas fa-dice"></i> {{localize "SRA2.VEHICLE.ROLL_WEAPON"}}
+                        </a>
+                      </li>
+                      {{/each}}
+                    </ul>
+                  </div>
+                  {{/if}}
                   {{#if this.system.description}}
                   <div class="feat-description">{{{this.system.description}}}</div>
                   {{/if}}

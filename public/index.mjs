@@ -3097,6 +3097,31 @@ class CharacterSheet extends ActorSheet {
       try {
         const vehicleActor = await fromUuid(uuid);
         if (vehicleActor && vehicleActor.type === "vehicle") {
+          const vehicleWeapons = [];
+          const vehicleItems = vehicleActor.items || [];
+          for (const item of vehicleItems) {
+            const itemSystem = item.system;
+            if (item.type === "feat" && (itemSystem.featType === "weapon" || itemSystem.featType === "weapons-spells")) {
+              const enrichedWeapon = enrichFeats([item], actorStrength, calculateFinalDamageValue, this.actor)[0];
+              vehicleWeapons.push({
+                _id: item.id,
+                uuid: item.uuid,
+                name: item.name,
+                img: item.img,
+                type: "vehicle-weapon",
+                vehicleUuid: uuid,
+                vehicleName: vehicleActor.name,
+                weaponId: item.id,
+                system: {
+                  ...itemSystem,
+                  finalDamageValue: enrichedWeapon.finalDamageValue,
+                  rrEntries: enrichedWeapon.rrEntries || [],
+                  crr: itemSystem.crr || 0
+                  // Include CRR for display
+                }
+              });
+            }
+          }
           linkedVehicles.push({
             _id: vehicleActor.id,
             uuid: vehicleActor.uuid,
@@ -3113,7 +3138,9 @@ class CharacterSheet extends ActorSheet {
               weaponInfo: vehicleActor.system?.weaponInfo || "",
               calculatedCost: vehicleActor.system?.calculatedCost || 0,
               description: vehicleActor.system?.description || ""
-            }
+            },
+            weapons: vehicleWeapons
+            // Add weapons array to vehicle
           });
         }
       } catch (error) {
@@ -3222,6 +3249,7 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
+    html.find('[data-action="roll-vehicle-weapon"]').on("click", this._onRollVehicleWeaponFromSheet.bind(this));
     html.find(".rating-input").on("change", this._onRatingChange.bind(this));
     html.find(".skill-search-input").on("input", this._onSkillSearch.bind(this));
     html.find(".skill-search-input").on("focus", this._onSkillSearchFocus.bind(this));
@@ -4120,6 +4148,218 @@ class CharacterSheet extends ActorSheet {
         };
         await this._onRollWeaponSpell(fakeEvent);
       }
+    }
+  }
+  /**
+   * Handle rolling a vehicle weapon from the character sheet
+   */
+  async _onRollVehicleWeaponFromSheet(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    const weaponId = element.dataset.weaponId;
+    if (!vehicleUuid || !weaponId) {
+      console.error("SRA2 | Missing vehicle UUID or weapon ID");
+      return;
+    }
+    await this._onRollVehicleWeapon(vehicleUuid, weaponId);
+  }
+  /**
+   * Handle rolling a vehicle weapon (mounted weapon) using character stats
+   */
+  async _onRollVehicleWeapon(vehicleUuid, weaponId) {
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid);
+      if (!vehicleActor || vehicleActor.type !== "vehicle") {
+        ui.notifications?.error(game.i18n.localize("SRA2.VEHICLE.INVALID_VEHICLE"));
+        return;
+      }
+      const weapon = vehicleActor.items.get(weaponId);
+      if (!weapon || weapon.system.featType !== "weapon") {
+        ui.notifications?.error(game.i18n.localize("SRA2.VEHICLE.INVALID_WEAPON"));
+        return;
+      }
+      const itemSystem = weapon.system;
+      const weaponType = itemSystem.weaponType;
+      const crr = itemSystem.crr || 0;
+      let weaponLinkedSkill = "";
+      let weaponLinkedSpecialization = "";
+      let weaponLinkedDefenseSkill = "";
+      let weaponLinkedDefenseSpecialization = "";
+      if (weaponType && weaponType !== "custom-weapon") {
+        const weaponStats = WEAPON_TYPES[weaponType];
+        if (weaponStats) {
+          weaponLinkedSkill = weaponStats.linkedSkill || "";
+          weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+          weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
+          weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
+        }
+      }
+      const rawItemRRList = itemSystem.rrList || [];
+      const itemRRList = rawItemRRList.map((rrEntry) => ({
+        ...rrEntry,
+        featName: weapon.name
+      }));
+      const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
+      const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
+      const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
+      const finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
+      let attackSkillName = void 0;
+      let attackSkillLevel = void 0;
+      let attackSpecName = void 0;
+      let attackSpecLevel = void 0;
+      let attackLinkedAttribute = void 0;
+      if (finalAttackSpec) {
+        const foundSpec = this.actor.items.find(
+          (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
+        );
+        if (foundSpec) {
+          const specSystem = foundSpec.system;
+          attackSpecName = foundSpec.name;
+          attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = this.actor.items.find(
+              (i) => i.type === "skill" && i.name === linkedSkillName
+            );
+            if (parentSkill && attackLinkedAttribute) {
+              attackSkillName = parentSkill.name;
+              const skillLevel = (parentSkill.system.rating || 0) + (this.actor.system.attributes?.[attackLinkedAttribute] || 0);
+              attackSkillLevel = skillLevel;
+              attackSpecLevel = skillLevel + 2;
+            }
+          }
+        }
+      }
+      if (!attackSpecName && finalAttackSkill) {
+        const foundSkill = this.actor.items.find(
+          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+        );
+        if (foundSkill) {
+          attackSkillName = foundSkill.name;
+          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+          attackLinkedAttribute = foundLinkedAttribute;
+          attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+        }
+      }
+      let defenseSkillName = void 0;
+      let defenseSkillLevel = void 0;
+      let defenseSpecName = void 0;
+      let defenseSpecLevel = void 0;
+      let defenseLinkedAttribute = void 0;
+      if (finalDefenseSpec) {
+        const foundDefenseSpec = this.actor.items.find(
+          (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalDefenseSpec)
+        );
+        if (foundDefenseSpec) {
+          const specSystem = foundDefenseSpec.system;
+          defenseSpecName = foundDefenseSpec.name;
+          defenseLinkedAttribute = specSystem.linkedAttribute || "agility";
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = this.actor.items.find(
+              (i) => i.type === "skill" && i.name === linkedSkillName
+            );
+            if (parentSkill && defenseLinkedAttribute) {
+              defenseSkillName = parentSkill.name;
+              const skillLevel = (parentSkill.system.rating || 0) + (this.actor.system.attributes?.[defenseLinkedAttribute] || 0);
+              defenseSkillLevel = skillLevel;
+              defenseSpecLevel = skillLevel + 2;
+            }
+          }
+        }
+      }
+      if (!defenseSpecName && finalDefenseSkill) {
+        const foundDefenseSkill = this.actor.items.find(
+          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalDefenseSkill)
+        );
+        if (foundDefenseSkill) {
+          defenseSkillName = foundDefenseSkill.name;
+          const foundLinkedAttribute = foundDefenseSkill.system.linkedAttribute || "agility";
+          defenseLinkedAttribute = foundLinkedAttribute;
+          defenseSkillLevel = (foundDefenseSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+        }
+      }
+      const baseDamageValue = itemSystem.damageValue || "0";
+      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      let finalDamageValue = baseDamageValue;
+      if (damageValueBonus > 0 && baseDamageValue !== "0") {
+        if (baseDamageValue === "FOR") {
+          finalDamageValue = `FOR+${damageValueBonus}`;
+        } else if (baseDamageValue.startsWith("FOR+")) {
+          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+        } else if (baseDamageValue !== "toxin") {
+          const baseValue = parseInt(baseDamageValue) || 0;
+          finalDamageValue = (baseValue + damageValueBonus).toString();
+        }
+      }
+      let skillRRSources = [];
+      let specRRSources = [];
+      let attributeRRSources = [];
+      if (attackSpecName) {
+        specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
+      }
+      if (attackSkillName) {
+        skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
+      }
+      if (attackLinkedAttribute) {
+        attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
+      }
+      const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+      if (crr > 0) {
+        allRRSources.push({
+          rrType: "attribute",
+          rrValue: crr,
+          rrTarget: "CRR",
+          featName: weapon.name
+        });
+      }
+      handleRollRequest({
+        itemType: "weapon",
+        weaponType,
+        itemName: `${weapon.name} (${vehicleActor.name})`,
+        itemId: weapon.id,
+        itemRating: itemSystem.rating || 0,
+        itemActive: itemSystem.active,
+        // Merged linked skills (for fallback selection in dialog)
+        linkedAttackSkill: finalAttackSkill,
+        linkedAttackSpecialization: finalAttackSpec,
+        linkedDefenseSkill: finalDefenseSkill,
+        linkedDefenseSpecialization: finalDefenseSpec,
+        linkedAttribute: attackLinkedAttribute,
+        // Weapon properties
+        isWeaponFocus: itemSystem.isWeaponFocus || false,
+        damageValue: finalDamageValue,
+        meleeRange: itemSystem.meleeRange,
+        shortRange: itemSystem.shortRange,
+        mediumRange: itemSystem.mediumRange,
+        longRange: itemSystem.longRange,
+        // Attack skill/spec from character (based on weapon links) - these are used for selection
+        skillName: attackSkillName,
+        skillLevel: attackSkillLevel,
+        specName: attackSpecName,
+        specLevel: attackSpecLevel,
+        // Defense skill/spec from character (based on weapon links) - these are used for defense selection
+        defenseSkillName,
+        defenseSkillLevel,
+        defenseSpecName,
+        defenseSpecLevel,
+        defenseLinkedAttribute,
+        // Actor information (character, not vehicle)
+        actorId: this.actor.id,
+        actorUuid: this.actor.uuid,
+        actorName: this.actor.name || "",
+        // RR List (merged: item RR + skill/spec/attribute RR + CRR)
+        rrList: allRRSources,
+        // Mark as vehicle weapon
+        isVehicleWeapon: true,
+        vehicleUuid,
+        vehicleName: vehicleActor.name
+      });
+    } catch (error) {
+      console.error("Error rolling vehicle weapon:", error);
+      ui.notifications?.error(game.i18n.localize("SRA2.VEHICLE.ROLL_ERROR"));
     }
   }
   /**
@@ -7293,7 +7533,7 @@ class RollDialog extends Application {
       }
       const dropdownOptions = [];
       for (const skill of skills) {
-        const skillSelected = skill.name === this.rollData.skillName || this.rollData.linkedAttackSkill && skill.name === this.rollData.linkedAttackSkill;
+        const skillSelected = skill.name === this.rollData.skillName || this.rollData.linkedAttackSkill && normalizeSearchText(skill.name) === normalizeSearchText(this.rollData.linkedAttackSkill);
         dropdownOptions.push({
           value: `skill:${skill.id}`,
           label: `${skill.name} (${skill.dicePool} dés)`,
@@ -7306,7 +7546,7 @@ class RollDialog extends Application {
           isSelected: skillSelected && !this.rollData.specName
         });
         for (const spec of skill.specializations) {
-          const specSelected = spec.name === this.rollData.specName || this.rollData.linkedAttackSpecialization && spec.name === this.rollData.linkedAttackSpecialization;
+          const specSelected = spec.name === this.rollData.specName || this.rollData.linkedAttackSpecialization && normalizeSearchText(spec.name) === normalizeSearchText(this.rollData.linkedAttackSpecialization);
           dropdownOptions.push({
             value: `spec:${spec.id}`,
             label: `  └ ${spec.name} (${spec.dicePool} dés)`,

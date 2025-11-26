@@ -154,6 +154,13 @@ export interface RollRequestData {
   skillLevel?: number;
   specLevel?: number;
   
+  // Defense Skill/Spec information (for defense rolls)
+  defenseSkillName?: string;
+  defenseSpecName?: string;
+  defenseSkillLevel?: number;
+  defenseSpecLevel?: number;
+  defenseLinkedAttribute?: string;
+  
   // NPC threshold (when not rolling dice)
   threshold?: number;
   

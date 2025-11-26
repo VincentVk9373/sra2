@@ -98,6 +98,12 @@
                 "COMBAT": "Combat",
                 "FEATS": "Atouts"
             },
+            "WEAPONS": "Armes",
+            "MOUNTED_WEAPONS": "Armes montées",
+            "ROLL_WEAPON_WITH_CHARACTER_SKILLS": "Lancer l'attaque avec les compétences du personnage",
+            "INVALID_VEHICLE": "Véhicule invalide",
+            "INVALID_WEAPON": "Arme invalide",
+            "ROLL_ERROR": "Erreur lors du lancement de l'arme",
             "DAMAGE_THRESHOLDS": {
                 "LABEL": "Seuils de Dégâts",
                 "TYPE": "Type",

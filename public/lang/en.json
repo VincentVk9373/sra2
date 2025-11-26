@@ -104,6 +104,12 @@
                 "COMBAT": "Combat",
                 "FEATS": "Feats"
             },
+            "WEAPONS": "Weapons",
+            "MOUNTED_WEAPONS": "Mounted weapons",
+            "ROLL_WEAPON_WITH_CHARACTER_SKILLS": "Roll attack with character skills",
+            "INVALID_VEHICLE": "Invalid vehicle",
+            "INVALID_WEAPON": "Invalid weapon",
+            "ROLL_ERROR": "Error rolling weapon",
             "DAMAGE_THRESHOLDS": {
                 "LABEL": "Damage Thresholds",
                 "TYPE": "Type",
