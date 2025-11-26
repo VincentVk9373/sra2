@@ -1,4 +1,4 @@
-import * as ItemSearch from '../helpers/item-search.js';
+import * as ItemSearch from '../../../item-search.js';
 
 /**
  * Specialization Sheet Application

@@ -45,7 +45,7 @@
   "include": [
     "src/**/*",
     "vite.config.ts"
-  ],
+, "item-search.ts"  ],
   "exclude": [
     "node_modules",
     "dist",

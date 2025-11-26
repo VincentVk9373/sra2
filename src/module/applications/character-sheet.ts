@@ -1,5 +1,5 @@
 import * as DiceRoller from '../helpers/dice-roller.js';
-import * as ItemSearch from '../helpers/item-search.js';
+import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
@@ -143,6 +143,41 @@ export class CharacterSheet extends ActorSheet {
     
     // Group feats by type (vehicle feats + linked vehicle actors)
     const vehicleFeats = allFeats.filter((feat: any) => feat.system.featType === 'vehicle');
+    
+    // Enrich cyberdecks with damage thresholds
+    const cyberdeckFeats = allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck');
+    cyberdeckFeats.forEach((cyberdeck: any) => {
+      const firewall = cyberdeck.system.firewall || 1;
+      cyberdeck.cyberdeckDamageThresholds = {
+        light: firewall,
+        severe: firewall * 2,
+        incapacitating: firewall * 3
+      };
+      // Ensure cyberdeckDamage exists
+      if (!cyberdeck.system.cyberdeckDamage) {
+        cyberdeck.system.cyberdeckDamage = {
+          light: [false, false],
+          severe: [false],
+          incapacitating: false
+        };
+      } else {
+        // Ensure arrays exist and have correct length
+        if (!Array.isArray(cyberdeck.system.cyberdeckDamage.light)) {
+          cyberdeck.system.cyberdeckDamage.light = [false, false];
+        } else if (cyberdeck.system.cyberdeckDamage.light.length < 2) {
+          while (cyberdeck.system.cyberdeckDamage.light.length < 2) {
+            cyberdeck.system.cyberdeckDamage.light.push(false);
+          }
+        }
+        if (!Array.isArray(cyberdeck.system.cyberdeckDamage.severe)) {
+          cyberdeck.system.cyberdeckDamage.severe = [false];
+        }
+        if (typeof cyberdeck.system.cyberdeckDamage.incapacitating !== 'boolean') {
+          cyberdeck.system.cyberdeckDamage.incapacitating = false;
+        }
+      }
+    });
+    
     context.featsByType = {
       trait: allFeats.filter((feat: any) => feat.system.featType === 'trait'),
       contact: allFeats.filter((feat: any) => feat.system.featType === 'contact'),
@@ -150,7 +185,7 @@ export class CharacterSheet extends ActorSheet {
       adeptPower: allFeats.filter((feat: any) => feat.system.featType === 'adept-power'),
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
-      cyberdeck: allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck'),
+      cyberdeck: cyberdeckFeats,
       vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon'),
@@ -333,6 +368,9 @@ export class CharacterSheet extends ActorSheet {
     // Handle damage tracker checkboxes - explicit handler to ensure data is saved
     html.find('input[name^="system.damage"]').on('change', this._onDamageChange.bind(this));
     html.find('input[name^="system.anarchySpent"]').on('change', this._onAnarchyChange.bind(this));
+    
+    // Handle cyberdeck damage tracker checkboxes
+    html.find('input[name*=".cyberdeckDamage."]').on('change', this._onCyberdeckDamageChange.bind(this));
 
     // Roll weapon
     html.find('[data-action="roll-weapon"]').on('click', this._onRollWeapon.bind(this));
@@ -1403,6 +1441,67 @@ export class CharacterSheet extends ActorSheet {
     html.find(`input[name="${name}"]`).prop('checked', checked);
   }
   
+  /**
+   * Handle cyberdeck damage tracker checkbox changes
+   */
+  private async _onCyberdeckDamageChange(event: Event): Promise<void> {
+    event.stopPropagation(); // Prevent form auto-submit to avoid double update
+    
+    const input = event.currentTarget as HTMLInputElement;
+    const name = input.name;
+    const checked = input.checked;
+    
+    // Parse the name to extract item ID and damage path
+    // Expected format: items.{itemId}.system.cyberdeckDamage.light.0, items.{itemId}.system.cyberdeckDamage.severe.0, or items.{itemId}.system.cyberdeckDamage.incapacitating
+    const match = name.match(/^items\.([^.]+)\.system\.cyberdeckDamage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+    if (!match) return;
+    
+    const itemId = match[1];
+    const damageType = match[2];
+    const index = match[3] ? parseInt(match[3], 10) : null;
+    
+    // Find the item
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    
+    // Get current cyberdeckDamage from item data
+    const itemSource = (item as any)._source;
+    const currentDamage = itemSource?.system?.cyberdeckDamage || (item.system as any).cyberdeckDamage || {
+      light: [false, false],
+      severe: [false],
+      incapacitating: false
+    };
+    
+    // Create a copy of the damage object to update
+    const updatedDamage: any = {
+      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
+      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
+      incapacitating: typeof currentDamage.incapacitating === 'boolean' ? currentDamage.incapacitating : false
+    };
+    
+    // Update the appropriate field
+    if (damageType === 'incapacitating') {
+      updatedDamage.incapacitating = checked;
+    } else if (damageType === 'light' || damageType === 'severe') {
+      if (index !== null) {
+        // Ensure array is long enough
+        while (updatedDamage[damageType].length <= index) {
+          updatedDamage[damageType].push(false);
+        }
+        updatedDamage[damageType][index] = checked;
+      }
+    }
+    
+    // Update the item with the complete cyberdeckDamage object
+    await item.update({
+      'system.cyberdeckDamage': updatedDamage
+    } as any, { render: false });
+    
+    // Synchronize all checkboxes with the same name
+    const html = $(this.element);
+    html.find(`input[name="${name}"]`).prop('checked', checked);
+  }
+
   /**
    * Handle anarchy tracker checkbox changes
    */

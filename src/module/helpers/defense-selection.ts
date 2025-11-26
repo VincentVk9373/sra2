@@ -3,7 +3,7 @@
  * This module contains functions to select the appropriate defense skill or specialization
  */
 
-import * as ItemSearch from './item-search.js';
+import * as ItemSearch from '../../../item-search.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**

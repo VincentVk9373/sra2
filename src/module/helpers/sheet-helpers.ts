@@ -3,7 +3,7 @@
  * Common functions used by both CharacterSheet and NpcSheet
  */
 
-import * as ItemSearch from './item-search.js';
+import * as ItemSearch from '../../../item-search.js';
 
 /**
  * Handle form submission with proper damage checkbox handling

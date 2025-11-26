@@ -696,6 +696,62 @@
           <label>{{localize "SRA2.FEATS.CYBERDECK.ATTACK"}}</label>
           <input type="number" name="system.attack" value="{{system.attack}}" min="0" />
         </div>
+
+        <h3>{{localize "SRA2.FEATS.CYBERDECK.DAMAGE_THRESHOLDS"}}</h3>
+        <div class="form-group cyberdeck-thresholds">
+          <div class="threshold-item">
+            <span class="threshold-label">{{localize "SRA2.DAMAGE.LIGHT"}}:</span>
+            <span class="threshold-value">{{cyberdeckDamageThresholds.light}}</span>
+            <span class="threshold-formula">({{localize "SRA2.FEATS.CYBERDECK.FIREWALL_SHORT"}})</span>
+          </div>
+          <div class="threshold-item">
+            <span class="threshold-label">{{localize "SRA2.DAMAGE.SEVERE"}}:</span>
+            <span class="threshold-value">{{cyberdeckDamageThresholds.severe}}</span>
+            <span class="threshold-formula">({{localize "SRA2.FEATS.CYBERDECK.FIREWALL_SHORT"}} × 2)</span>
+          </div>
+          <div class="threshold-item">
+            <span class="threshold-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}}:</span>
+            <span class="threshold-value">{{cyberdeckDamageThresholds.incapacitating}}</span>
+            <span class="threshold-formula">({{localize "SRA2.FEATS.CYBERDECK.FIREWALL_SHORT"}} × 3)</span>
+          </div>
+        </div>
+
+        <h3>{{localize "SRA2.FEATS.CYBERDECK.DAMAGE_TRACK"}}</h3>
+        <div class="form-group cyberdeck-damage-track">
+          <div class="damage-track">
+            <div class="damage-group light">
+              <span class="track-label">{{localize "SRA2.DAMAGE.LIGHT"}} ({{cyberdeckDamageThresholds.light}})</span>
+              <div class="track-boxes">
+                {{#each system.cyberdeckDamage.light}}
+                <label class="track-box {{#if this}}checked{{/if}}">
+                  <input type="checkbox" name="system.cyberdeckDamage.light.{{@index}}" {{#if this}}checked{{/if}} />
+                  <span class="box-circle"></span>
+                </label>
+                {{/each}}
+              </div>
+            </div>
+            <div class="damage-group severe">
+              <span class="track-label">{{localize "SRA2.DAMAGE.SEVERE"}} ({{cyberdeckDamageThresholds.severe}})</span>
+              <div class="track-boxes">
+                {{#each system.cyberdeckDamage.severe}}
+                <label class="track-box {{#if this}}checked{{/if}}">
+                  <input type="checkbox" name="system.cyberdeckDamage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                  <span class="box-circle"></span>
+                </label>
+                {{/each}}
+              </div>
+            </div>
+            <div class="damage-group incapacitating">
+              <span class="track-label">{{localize "SRA2.DAMAGE.INCAPACITATING"}} ({{cyberdeckDamageThresholds.incapacitating}})</span>
+              <div class="track-boxes">
+                <label class="track-box {{#if system.cyberdeckDamage.incapacitating}}checked{{/if}}">
+                  <input type="checkbox" name="system.cyberdeckDamage.incapacitating" {{#if system.cyberdeckDamage.incapacitating}}checked{{/if}} />
+                  <span class="box-circle"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
       {{/if}}
 

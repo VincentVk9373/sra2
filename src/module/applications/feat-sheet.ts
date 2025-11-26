@@ -1,5 +1,5 @@
 import { WEAPON_TYPES, VEHICLE_TYPES } from '../models/item-feat.js';
-import * as ItemSearch from '../helpers/item-search.js';
+import * as ItemSearch from '../../../item-search.js';
 
 /**
  * Feat Sheet Application
@@ -38,6 +38,9 @@ export class FeatSheet extends ItemSheet {
     
     // Calculate final vehicle stats
     context.finalVehicleStats = this._calculateFinalVehicleStats();
+    
+    // Calculate cyberdeck damage thresholds
+    context.cyberdeckDamageThresholds = this._calculateCyberdeckDamageThresholds();
     
     // Build RR entries array from rrList
     context.rrEntries = [];
@@ -399,6 +402,19 @@ export class FeatSheet extends ItemSheet {
     } as any);
     
     this.render(false);
+  }
+
+  /**
+   * Calculate cyberdeck damage thresholds based on firewall
+   */
+  private _calculateCyberdeckDamageThresholds(): any {
+    const firewall = (this.item.system as any).firewall || 1;
+    
+    return {
+      light: firewall,
+      severe: firewall * 2,
+      incapacitating: firewall * 3
+    };
   }
 
   /**

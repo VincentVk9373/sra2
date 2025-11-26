@@ -1032,6 +1032,29 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.CYBERDECK.ATTACK"
       }),
+      cyberdeckDamage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }, {
+        required: true,
+        label: "SRA2.FEATS.CYBERDECK.DAMAGE"
+      }),
       // Contact specific fields
       contactName: new fields.StringField({
         required: true,
@@ -3436,6 +3459,36 @@ class CharacterSheet extends ActorSheet {
       }
     }
     const vehicleFeats = allFeats.filter((feat) => feat.system.featType === "vehicle");
+    const cyberdeckFeats = allFeats.filter((feat) => feat.system.featType === "cyberdeck");
+    cyberdeckFeats.forEach((cyberdeck) => {
+      const firewall = cyberdeck.system.firewall || 1;
+      cyberdeck.cyberdeckDamageThresholds = {
+        light: firewall,
+        severe: firewall * 2,
+        incapacitating: firewall * 3
+      };
+      if (!cyberdeck.system.cyberdeckDamage) {
+        cyberdeck.system.cyberdeckDamage = {
+          light: [false, false],
+          severe: [false],
+          incapacitating: false
+        };
+      } else {
+        if (!Array.isArray(cyberdeck.system.cyberdeckDamage.light)) {
+          cyberdeck.system.cyberdeckDamage.light = [false, false];
+        } else if (cyberdeck.system.cyberdeckDamage.light.length < 2) {
+          while (cyberdeck.system.cyberdeckDamage.light.length < 2) {
+            cyberdeck.system.cyberdeckDamage.light.push(false);
+          }
+        }
+        if (!Array.isArray(cyberdeck.system.cyberdeckDamage.severe)) {
+          cyberdeck.system.cyberdeckDamage.severe = [false];
+        }
+        if (typeof cyberdeck.system.cyberdeckDamage.incapacitating !== "boolean") {
+          cyberdeck.system.cyberdeckDamage.incapacitating = false;
+        }
+      }
+    });
     context.featsByType = {
       trait: allFeats.filter((feat) => feat.system.featType === "trait"),
       contact: allFeats.filter((feat) => feat.system.featType === "contact"),
@@ -3443,7 +3496,7 @@ class CharacterSheet extends ActorSheet {
       adeptPower: allFeats.filter((feat) => feat.system.featType === "adept-power"),
       equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
-      cyberdeck: allFeats.filter((feat) => feat.system.featType === "cyberdeck"),
+      cyberdeck: cyberdeckFeats,
       vehicle: [...vehicleFeats, ...linkedVehicles],
       // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
@@ -3534,6 +3587,7 @@ class CharacterSheet extends ActorSheet {
     html.find(".bookmark-item").on("click", this._onBookmarkItemClick.bind(this));
     html.find('input[name^="system.damage"]').on("change", this._onDamageChange.bind(this));
     html.find('input[name^="system.anarchySpent"]').on("change", this._onAnarchyChange.bind(this));
+    html.find('input[name*=".cyberdeckDamage."]').on("change", this._onCyberdeckDamageChange.bind(this));
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
@@ -4324,6 +4378,48 @@ class CharacterSheet extends ActorSheet {
     }
     await this.actor.update({
       "system.damage": updatedDamage
+    }, { render: false });
+    const html = $(this.element);
+    html.find(`input[name="${name}"]`).prop("checked", checked);
+  }
+  /**
+   * Handle cyberdeck damage tracker checkbox changes
+   */
+  async _onCyberdeckDamageChange(event) {
+    event.stopPropagation();
+    const input = event.currentTarget;
+    const name = input.name;
+    const checked = input.checked;
+    const match = name.match(/^items\.([^.]+)\.system\.cyberdeckDamage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+    if (!match) return;
+    const itemId = match[1];
+    const damageType = match[2];
+    const index = match[3] ? parseInt(match[3], 10) : null;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    const itemSource = item._source;
+    const currentDamage = itemSource?.system?.cyberdeckDamage || item.system.cyberdeckDamage || {
+      light: [false, false],
+      severe: [false],
+      incapacitating: false
+    };
+    const updatedDamage = {
+      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
+      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
+      incapacitating: typeof currentDamage.incapacitating === "boolean" ? currentDamage.incapacitating : false
+    };
+    if (damageType === "incapacitating") {
+      updatedDamage.incapacitating = checked;
+    } else if (damageType === "light" || damageType === "severe") {
+      if (index !== null) {
+        while (updatedDamage[damageType].length <= index) {
+          updatedDamage[damageType].push(false);
+        }
+        updatedDamage[damageType][index] = checked;
+      }
+    }
+    await item.update({
+      "system.cyberdeckDamage": updatedDamage
     }, { render: false });
     const html = $(this.element);
     html.find(`input[name="${name}"]`).prop("checked", checked);
@@ -6632,6 +6728,7 @@ class FeatSheet extends ItemSheet {
     context.activeSection = this._activeSection;
     context.finalDamageValue = this._calculateFinalDamageValue();
     context.finalVehicleStats = this._calculateFinalVehicleStats();
+    context.cyberdeckDamageThresholds = this._calculateCyberdeckDamageThresholds();
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
     for (let i = 0; i < rrList.length; i++) {
@@ -6879,6 +6976,17 @@ class FeatSheet extends ItemSheet {
       "system.weaponMount": vehicleStats.weaponMount
     });
     this.render(false);
+  }
+  /**
+   * Calculate cyberdeck damage thresholds based on firewall
+   */
+  _calculateCyberdeckDamageThresholds() {
+    const firewall = this.item.system.firewall || 1;
+    return {
+      light: firewall,
+      severe: firewall * 2,
+      incapacitating: firewall * 3
+    };
   }
   /**
    * Calculate the final vehicle stats taking into account bonuses

@@ -567,7 +567,10 @@
                 "FIREWALL": "Firewall",
                 "FIREWALL_SHORT": "Firewall",
                 "ATTACK": "Attack",
-                "ATTACK_SHORT": "Attack"
+                "ATTACK_SHORT": "Attack",
+                "DAMAGE_THRESHOLDS": "Damage Thresholds",
+                "DAMAGE_TRACK": "Damage Track",
+                "DAMAGE": "Damage"
             },
             "CONTACT": {
                 "SECTION_TITLE": "Contact Information",

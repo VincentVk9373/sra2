@@ -530,7 +530,10 @@
                 "FIREWALL": "Pare-feu",
                 "FIREWALL_SHORT": "Pare-feu",
                 "ATTACK": "Attaque",
-                "ATTACK_SHORT": "Attaque"
+                "ATTACK_SHORT": "Attaque",
+                "DAMAGE_THRESHOLDS": "Seuils de dégâts",
+                "DAMAGE_TRACK": "Piste de dégâts",
+                "DAMAGE": "Dégâts"
             },
             "CONTACT": {
                 "SECTION_TITLE": "Informations du Contact",

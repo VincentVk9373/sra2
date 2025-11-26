@@ -3,7 +3,7 @@
  * Shared functions for combat, defense, and attack calculations
  */
 
-import * as ItemSearch from './item-search.js';
+import * as ItemSearch from '../../../item-search.js';
 import { VEHICLE_TYPES } from '../models/item-feat.js';
 
 /**

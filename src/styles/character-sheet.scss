@@ -2141,6 +2141,273 @@
             line-height: 1.4;
           }
 
+          // Cyberdeck specific styles
+          .cyberdeck-stats {
+            display: flex;
+            gap: 1rem;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: rgba(15, 52, 96, 0.2);
+            border-radius: 4px;
+
+            .cyberdeck-stat {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+
+              .stat-label {
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: #00d4ff;
+              }
+
+              .stat-value {
+                font-size: 1rem;
+                font-weight: bold;
+                color: #e0e0e0;
+              }
+            }
+          }
+
+          .cyberdeck-damage-thresholds {
+            margin: 0.75rem 0;
+            padding: 0.75rem;
+            background: rgba(15, 52, 96, 0.3);
+            border-left: 3px solid #00d4ff;
+            border-radius: 4px;
+
+            h5 {
+              margin: 0 0 0.5rem 0;
+              font-size: 0.85rem;
+              font-weight: bold;
+              color: #a0c4ff;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            .thresholds-list {
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              flex-direction: row;
+              gap: 0.5rem;
+
+              .threshold-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                .threshold-label {
+                  font-size: 0.9rem;
+                  font-weight: 600;
+                  color: #e0e0e0;
+                }
+
+                .threshold-value {
+                  font-size: 1.1rem;
+                  font-weight: 700;
+                  color: #00d4ff;
+                  min-width: 30px;
+                  text-align: center;
+                }
+
+                .threshold-formula {
+                  font-size: 0.85rem;
+                  color: #aaa;
+                  font-style: italic;
+                  margin-left: auto;
+                }
+              }
+            }
+          }
+
+          .cyberdeck-damage-track {
+            margin: 0.75rem 0;
+            padding: 0.75rem;
+            background: rgba(15, 52, 96, 0.3);
+            border-left: 3px solid #00d4ff;
+            border-radius: 4px;
+
+            h5 {
+              margin: 0 0 0.75rem 0;
+              font-size: 0.85rem;
+              font-weight: bold;
+              color: #a0c4ff;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            .damage-track {
+              display: grid;
+              flex-direction: row;
+              gap: 0.75rem;
+              grid-template-columns: 1fr 1fr 1fr;
+
+              .damage-group {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                .track-label {
+                  font-size: 0.9rem;
+                  font-weight: 600;
+                  color: #00d4ff;
+                }
+
+                .track-boxes {
+                  display: flex;
+                  align-items: center;
+                  gap: 0;
+                  position: relative;
+
+                  .track-box {
+                    position: relative;
+                    width: 24px;
+                    height: 24px;
+                    margin: 0;
+                    padding: 0;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    input[type="checkbox"] {
+                      position: absolute;
+                      opacity: 0;
+                      width: 100%;
+                      height: 100%;
+                      margin: 0;
+                      cursor: pointer;
+                      z-index: 2;
+                    }
+
+                    .box-circle {
+                      width: 20px;
+                      height: 20px;
+                      border: 2px solid #0f3460;
+                      border-radius: 50%;
+                      background: rgba(255, 255, 255, 0.05);
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      transition: all 0.2s;
+                      position: relative;
+                      z-index: 1;
+                    }
+
+                    &:not(:last-child)::after {
+                      content: '';
+                      position: absolute;
+                      left: 22px;
+                      top: 50%;
+                      transform: translateY(-50%);
+                      width: 2px;
+                      height: 2px;
+                      background: #0f3460;
+                      z-index: 0;
+                    }
+
+                    input:checked+.box-circle {
+                      background: #ff4757;
+                      border-color: #ff4757;
+                      box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+
+                      &::after {
+                        content: '';
+                        width: 10px;
+                        height: 10px;
+                        background: #fff;
+                        border-radius: 50%;
+                        position: absolute;
+                      }
+                    }
+
+                    &.checked .box-circle {
+                      background: #ff4757;
+                      border-color: #ff4757;
+                      box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+
+                      &::after {
+                        content: '';
+                        width: 10px;
+                        height: 10px;
+                        background: #fff;
+                        border-radius: 50%;
+                        position: absolute;
+                      }
+                    }
+
+                    &:hover .box-circle {
+                      border-color: #00d4ff;
+                      background: rgba(0, 212, 255, 0.1);
+                      transform: scale(1.1);
+                    }
+
+                    input:checked+.box-circle:hover,
+                    &.checked .box-circle:hover {
+                      background: #ff6b7a;
+                      border-color: #ff6b7a;
+                    }
+                  }
+
+                  .track-box:last-child .box-circle::before {
+                    display: none;
+                  }
+                }
+
+                &.light {
+                  .track-label {
+                    color: #ffd700;
+                  }
+
+                  .track-box input:checked+.box-circle,
+                  .track-box.checked .box-circle {
+                    background: #ffd700;
+                    border-color: #ffd700;
+                    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+                  }
+
+                  .track-box:hover .box-circle {
+                    border-color: #ffd700;
+                  }
+                }
+
+                &.severe {
+                  .track-label {
+                    color: #ff6b35;
+                  }
+
+                  .track-box input:checked+.box-circle,
+                  .track-box.checked .box-circle {
+                    background: #ff6b35;
+                    border-color: #ff6b35;
+                    box-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+                  }
+
+                  .track-box:hover .box-circle {
+                    border-color: #ff6b35;
+                  }
+                }
+
+                &.incapacitating {
+                  .track-label {
+                    color: #c44569;
+                  }
+
+                  .track-box input:checked+.box-circle,
+                  .track-box.checked .box-circle {
+                    background: #c44569;
+                    border-color: #c44569;
+                    box-shadow: 0 0 8px rgba(196, 69, 105, 0.6);
+                  }
+
+                  .track-box:hover .box-circle {
+                    border-color: #c44569;
+                  }
+                }
+              }
+            }
+          }
+
           .narrative-effects {
             margin-top: 0.75rem;
             padding: 0.75rem;

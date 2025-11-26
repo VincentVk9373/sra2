@@ -497,6 +497,29 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.CYBERDECK.ATTACK"
       }),
+      cyberdeckDamage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }, {
+        required: true,
+        label: "SRA2.FEATS.CYBERDECK.DAMAGE"
+      }),
       // Contact specific fields
       contactName: new fields.StringField({
         required: true,
