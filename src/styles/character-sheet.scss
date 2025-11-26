@@ -552,7 +552,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0 1rem 1rem 1rem;
     background: #152342;
     border-bottom: 2px solid #0f3460;
     margin-bottom: 0;
@@ -593,6 +593,8 @@
             background: transparent;
             color: #ffd700;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            padding:0;
+            margin:0;
 
             &:focus {
               outline: 1px solid #00d4ff;
@@ -725,6 +727,12 @@
       margin: 1rem 0 0.5rem;
       padding-bottom: 0.25rem;
       border-bottom: 1px solid #0f3460;
+    }
+
+    .keywords-section-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 3fr 1fr;
+      gap: 0.5rem;
     }
 
     /* Metatype Section */
