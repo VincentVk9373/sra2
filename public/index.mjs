@@ -1921,14 +1921,6 @@ class SRA2Actor extends Actor {
   get feats() {
     return this.items.filter((item) => item.type === "feat");
   }
-  _preCreate(data, options, user) {
-    super._preCreate(data, options, user);
-    if (data.type === "ice") {
-      if (!data.img || data.img === "icons/svg/mystery-man.svg" || data.img === "") {
-        foundry.utils.mergeObject(data, { img: "systems/sra2/icons/items/powersprite.svg" });
-      }
-    }
-  }
 }
 const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
