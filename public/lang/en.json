@@ -556,7 +556,16 @@
                 "TYPE": "Spell Type",
                 "TYPE_DIRECT": "Direct Spell",
                 "TYPE_INDIRECT": "Indirect Spell",
-                "TYPE_HINT": "Direct spells affect the target directly (mana), indirect spells go through physical effects (elemental)"
+                "TYPE_HINT": "Direct spells affect the target directly (mana), indirect spells go through physical effects (elemental)",
+                "SPECIALIZATION": {
+                    "TYPE": "Specialization Type",
+                    "COMBAT": "Combat Spells",
+                    "DETECTION": "Detection Spells",
+                    "HEALTH": "Health Spells",
+                    "ILLUSION": "Illusion Spells",
+                    "MANIPULATION": "Manipulation Spells",
+                    "COUNTERSPELL": "Counterspell"
+                }
             }
         },
         "SKILLS": {

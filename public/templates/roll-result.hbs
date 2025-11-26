@@ -128,7 +128,8 @@
                     data-damage="{{defenseResult.calculatedDamage}}"
                     data-target-name="{{defenseResult.defenderName}}"
                     data-target-uuid="{{defenseResult.defenderUuid}}"
-                    data-attacker-uuid="{{defenseResult.originalAttackerUuid}}">
+                    data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
+                    data-damage-type="{{#if (and rollData.attackRollData (eq rollData.attackRollData.spellType "direct"))}}mental{{else}}physical{{/if}}">
                 <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.defenderName}}
             </button>
             {{/if}}
@@ -171,7 +172,8 @@
                     data-damage="{{defenseResult.attackerDamage}}"
                     data-target-name="{{defenseResult.damageReceiverName}}"
                     data-target-uuid="{{defenseResult.damageReceiverUuid}}"
-                    data-attacker-uuid="{{defenseResult.damageInflicterUuid}}">
+                    data-attacker-uuid="{{defenseResult.damageInflicterUuid}}"
+                    data-damage-type="{{#if (and rollData.attackRollData (eq rollData.attackRollData.spellType "direct"))}}mental{{else}}physical{{/if}}">
                 <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.damageReceiverName}}
             </button>
             {{else if (eq defenseResult.winner "defender")}}
@@ -186,7 +188,8 @@
                     data-damage="{{defenseResult.defenderDamage}}"
                     data-target-name="{{defenseResult.damageReceiverName}}"
                     data-target-uuid="{{defenseResult.damageReceiverUuid}}"
-                    data-attacker-uuid="{{defenseResult.damageInflicterUuid}}">
+                    data-attacker-uuid="{{defenseResult.damageInflicterUuid}}"
+                    data-damage-type="physical">
                 <i class="fas fa-heart-broken"></i> Appliquer les dégâts à {{defenseResult.damageReceiverName}}
             </button>
             {{/if}}
@@ -195,10 +198,41 @@
     {{/if}}
     {{/if}}
 
+    <!-- Direct Spell Damage (no defense) -->
+    {{#if (and isAttack isSpellDirect (gt rollResult.totalSuccesses 0))}}
+    {{#if defender}}
+    <div class="spell-direct-damage">
+        <div class="defender-info">
+            {{#if defender.img}}
+            <img class="defender-portrait" src="{{defender.img}}" alt="{{defender.name}}" title="{{defender.name}}" />
+            {{else}}
+            <div class="defender-portrait-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            {{/if}}
+            <span class="defender-name">{{defender.name}}</span>
+        </div>
+        <div class="calculated-damage">
+            <span class="damage-label">Dégâts (mental):</span>
+            <span class="damage-value">{{rollResult.totalSuccesses}}</span>
+        </div>
+        <button type="button" class="apply-damage-button" 
+                data-damage="{{rollResult.totalSuccesses}}"
+                data-target-name="{{defender.name}}"
+                data-target-uuid="{{defender.uuid}}"
+                data-attacker-uuid="{{attacker.uuid}}"
+                data-damage-type="mental">
+            <i class="fas fa-heart-broken"></i> Appliquer les dégâts mentaux à {{defender.name}}
+        </button>
+    </div>
+    {{/if}}
+    {{/if}}
+
     <!-- Attack Actions (for defender) -->
     {{#if isAttack}}
     {{#unless isDefend}}
     {{#unless isCounterAttack}}
+    {{#unless isSpellDirect}}
     {{#if defender}}
     <div class="attack-actions" data-attacker-id="{{attacker.id}}" data-attacker-uuid="{{attacker.uuid}}"
         data-defender-id="{{defender.id}}" data-defender-uuid="{{defender.uuid}}" data-roll-result="{{json rollResult}}"
@@ -227,6 +261,7 @@
         </div>
     </div>
     {{/if}}
+    {{/unless}}
     {{/unless}}
     {{/unless}}
     {{/if}}

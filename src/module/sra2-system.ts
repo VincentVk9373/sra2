@@ -395,6 +395,7 @@ export class SRA2System {
         const targetUuid = button.data('target-uuid') || button.data('defender-uuid');
         const damage = parseInt(button.data('damage')) || 0;
         const targetName = button.data('target-name') || button.data('defender-name');
+        const damageType = (button.data('damage-type') || 'physical') as 'physical' | 'mental';
         
         if (!targetUuid) {
           console.error('Apply damage button: No target UUID found in button data attributes');
@@ -410,10 +411,10 @@ export class SRA2System {
         // Disable button to prevent double-click
         button.prop('disabled', true);
         
-        console.log('Apply damage button clicked:', { targetUuid, targetName, damage });
+        console.log('Apply damage button clicked:', { targetUuid, targetName, damage, damageType });
         
         try {
-          await CombatHelpers.applyDamage(targetUuid, damage, targetName);
+          await CombatHelpers.applyDamage(targetUuid, damage, targetName, damageType);
         } catch (error) {
           console.error('Error applying damage:', error);
           ui.notifications?.error('Erreur lors de l\'application des dégâts');

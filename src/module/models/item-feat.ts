@@ -621,6 +621,20 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
+      // Spell specialization type (determines which specialization to use)
+      spellSpecializationType: new fields.StringField({
+        required: true,
+        initial: "combat",
+        choices: {
+          "combat": "SRA2.FEATS.SPELL.SPECIALIZATION.COMBAT",
+          "detection": "SRA2.FEATS.SPELL.SPECIALIZATION.DETECTION",
+          "health": "SRA2.FEATS.SPELL.SPECIALIZATION.HEALTH",
+          "illusion": "SRA2.FEATS.SPELL.SPECIALIZATION.ILLUSION",
+          "manipulation": "SRA2.FEATS.SPELL.SPECIALIZATION.MANIPULATION",
+          "counterspell": "SRA2.FEATS.SPELL.SPECIALIZATION.COUNTERSPELL"
+        },
+        label: "SRA2.FEATS.SPELL.SPECIALIZATION.TYPE"
+      }),
       // Linked skills and specializations for weapons (for custom weapons)
       linkedAttackSkill: new fields.StringField({
         required: true,
@@ -650,6 +664,24 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const costType = (this as any).cost || 'free-equipment';
     const featType = (this as any).featType || 'equipment';
     const rating = (this as any).rating || 0;
+    
+    // For spells, automatically set linkedAttackSkill and linkedAttackSpecialization
+    if (featType === 'spell') {
+      // Always set attack skill to Sorcellerie
+      (this as any).linkedAttackSkill = 'Sorcellerie';
+      
+      // Map spell specialization type to specialization name
+      const spellSpecType = (this as any).spellSpecializationType || 'combat';
+      const spellSpecMap: Record<string, string> = {
+        'combat': 'Spé: Sorts de combat',
+        'detection': 'Spé: Sorts de détection',
+        'health': 'Spé: Sorts de santé',
+        'illusion': 'Spé: Sorts d\'illusion',
+        'manipulation': 'Spé: Sorts de manipulation',
+        'counterspell': 'Spé: Contresort'
+      };
+      (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+    }
     
     // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;

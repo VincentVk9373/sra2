@@ -1156,6 +1156,20 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
+      // Spell specialization type (determines which specialization to use)
+      spellSpecializationType: new fields.StringField({
+        required: true,
+        initial: "combat",
+        choices: {
+          "combat": "SRA2.FEATS.SPELL.SPECIALIZATION.COMBAT",
+          "detection": "SRA2.FEATS.SPELL.SPECIALIZATION.DETECTION",
+          "health": "SRA2.FEATS.SPELL.SPECIALIZATION.HEALTH",
+          "illusion": "SRA2.FEATS.SPELL.SPECIALIZATION.ILLUSION",
+          "manipulation": "SRA2.FEATS.SPELL.SPECIALIZATION.MANIPULATION",
+          "counterspell": "SRA2.FEATS.SPELL.SPECIALIZATION.COUNTERSPELL"
+        },
+        label: "SRA2.FEATS.SPELL.SPECIALIZATION.TYPE"
+      }),
       // Linked skills and specializations for weapons (for custom weapons)
       linkedAttackSkill: new fields.StringField({
         required: true,
@@ -1183,6 +1197,19 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const costType = this.cost || "free-equipment";
     const featType = this.featType || "equipment";
     const rating = this.rating || 0;
+    if (featType === "spell") {
+      this.linkedAttackSkill = "Sorcellerie";
+      const spellSpecType = this.spellSpecializationType || "combat";
+      const spellSpecMap = {
+        "combat": "Spé: Sorts de combat",
+        "detection": "Spé: Sorts de détection",
+        "health": "Spé: Sorts de santé",
+        "illusion": "Spé: Sorts d'illusion",
+        "manipulation": "Spé: Sorts de manipulation",
+        "counterspell": "Spé: Contresort"
+      };
+      this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+    }
     let calculatedCost = 0;
     if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
       switch (costType) {
@@ -2239,7 +2266,9 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     attackerUuid: finalAttackerUuid,
     defenderUuid: finalDefenderUuid,
     attackerTokenUuid,
-    defenderTokenUuid
+    defenderTokenUuid,
+    // Spell-specific flags
+    isSpellDirect: rollData.isSpellDirect || false
   };
   const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
   const messageData = {
@@ -2890,7 +2919,7 @@ function prepareVehicleWeaponRollRequest(vehicleActor, weapon, WEAPON_TYPES2) {
     rrList: attackData.rrList
   };
 }
-async function applyDamage(defenderUuid, damageValue, defenderName) {
+async function applyDamage(defenderUuid, damageValue, defenderName, damageType = "physical") {
   const defender = await fromUuid(defenderUuid);
   if (!defender) {
     ui.notifications?.error(`Cannot find defender: ${defenderName}`);
@@ -2907,25 +2936,33 @@ async function applyDamage(defenderUuid, damageValue, defenderName) {
       incapacitating: 7
     };
   } else {
-    damageThresholds = defenderSystem.damageThresholds?.withArmor || {
-      light: 1,
-      moderate: 4,
-      severe: 7
-    };
+    if (damageType === "mental") {
+      damageThresholds = defenderSystem.damageThresholds?.mental || {
+        light: 1,
+        moderate: 4,
+        severe: 7
+      };
+    } else {
+      damageThresholds = defenderSystem.damageThresholds?.withArmor || {
+        light: 1,
+        moderate: 4,
+        severe: 7
+      };
+    }
   }
   let damage = {
     light: [...defenderSystem.damage?.light || []],
     severe: [...defenderSystem.damage?.severe || []],
     incapacitating: defenderSystem.damage?.incapacitating || false
   };
-  let damageType = "";
+  let woundType = "";
   let overflow = false;
   if (isVehicle) {
     if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
       damage.incapacitating = true;
     } else if (damageValue > damageThresholds.severe) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
       let applied = false;
       for (let i = 0; i < damage.severe.length; i++) {
         if (!damage.severe[i]) {
@@ -2940,7 +2977,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName) {
         overflow = true;
       }
     } else if (damageValue > damageThresholds.light) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
       let applied = false;
       for (let i = 0; i < damage.light.length; i++) {
         if (!damage.light[i]) {
@@ -2974,10 +3011,10 @@ async function applyDamage(defenderUuid, damageValue, defenderName) {
     }
   } else {
     if (damageValue > damageThresholds.severe) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
       damage.incapacitating = true;
     } else if (damageThresholds.moderate && damageValue > damageThresholds.moderate) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
       let applied = false;
       for (let i = 0; i < damage.severe.length; i++) {
         if (!damage.severe[i]) {
@@ -2992,7 +3029,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName) {
         overflow = true;
       }
     } else if (damageValue > damageThresholds.light) {
-      damageType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
+      woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
       let applied = false;
       for (let i = 0; i < damage.light.length; i++) {
         if (!damage.light[i]) {
@@ -3030,7 +3067,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName) {
     ui.notifications?.error(game.i18n.format("SRA2.COMBAT.NOW_INCAPACITATED", { target: defenderName }));
   } else {
     ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
-      damage: overflow ? `${damageType} (débordement)` : damageType,
+      damage: overflow ? `${woundType} (débordement)` : woundType,
       target: defenderName
     }));
   }
@@ -3512,8 +3549,8 @@ class CharacterSheet extends ActorSheet {
    * Apply damage to a defender
    * Delegates to CombatHelpers.applyDamage
    */
-  static async applyDamage(defenderUuid, damageValue, defenderName) {
-    return applyDamage(defenderUuid, damageValue, defenderName);
+  static async applyDamage(defenderUuid, damageValue, defenderName, damageType = "physical") {
+    return applyDamage(defenderUuid, damageValue, defenderName, damageType);
   }
   /**
    * Handle drag start for feat items and vehicle actors
@@ -4412,6 +4449,8 @@ class CharacterSheet extends ActorSheet {
    */
   async _rollWeaponOrSpell(item, type) {
     const itemSystem = item.system;
+    const isSpell = type === "spell";
+    const spellType = isSpell ? itemSystem.spellType || "indirect" : null;
     const weaponType = itemSystem.weaponType;
     let weaponLinkedSkill = "";
     let weaponLinkedSpecialization = "";
@@ -4432,19 +4471,45 @@ class CharacterSheet extends ActorSheet {
       featName: item.name
       // Add featName (the item name itself)
     }));
-    const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
-    const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
-    const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
-    const finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
+    let finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
+    let finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
+    let finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
+    let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
+    if (isSpell) {
+      finalAttackSkill = "Sorcellerie";
+      const spellSpecType = itemSystem.spellSpecializationType || "combat";
+      const spellSpecMap = {
+        "combat": "Spé: Sorts de combat",
+        "detection": "Spé: Sorts de détection",
+        "health": "Spé: Sorts de santé",
+        "illusion": "Spé: Sorts d'illusion",
+        "manipulation": "Spé: Sorts de manipulation",
+        "counterspell": "Spé: Contresort"
+      };
+      finalAttackSpec = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+      if (spellType === "direct") {
+        finalDefenseSkill = "";
+        finalDefenseSpec = "";
+      } else {
+        finalDefenseSkill = "Athlétisme";
+        finalDefenseSpec = "Spé : Défense à distance";
+      }
+    }
     let attackSkillName = void 0;
     let attackSkillLevel = void 0;
     let attackSpecName = void 0;
     let attackSpecLevel = void 0;
     let attackLinkedAttribute = void 0;
     if (finalAttackSpec) {
-      const foundSpec = this.actor.items.find(
-        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
-      );
+      const normalizeForComparison = (text) => {
+        return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+      };
+      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+      const foundSpec = this.actor.items.find((i) => {
+        if (i.type !== "specialization") return false;
+        const normalizedItemName = normalizeForComparison(i.name);
+        return normalizedItemName === normalizedTargetSpec;
+      });
       if (foundSpec) {
         const specSystem = foundSpec.system;
         attackSpecName = foundSpec.name;
@@ -4461,6 +4526,104 @@ class CharacterSheet extends ActorSheet {
             attackSpecLevel = skillLevel + 2;
           }
         }
+      } else {
+        if (isSpell) {
+          const spellSpecType = itemSystem.spellSpecializationType || "combat";
+          const specKeywords = {
+            "combat": ["combat"],
+            "detection": ["détection", "detection"],
+            "health": ["santé", "sante", "health"],
+            "illusion": ["illusion"],
+            "manipulation": ["manipulation"],
+            "counterspell": ["contresort", "contre-sort"]
+          };
+          const keywords = specKeywords[spellSpecType] || ["combat"];
+          const normalizedKeywords = keywords.map((kw) => normalizeSearchText(kw));
+          const foundSpecByKeyword = this.actor.items.find((i) => {
+            if (i.type !== "specialization") return false;
+            const normalizedName = normalizeSearchText(i.name);
+            const linkedSkill = i.system?.linkedSkill;
+            if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+              return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
+            }
+            return false;
+          });
+          if (foundSpecByKeyword) {
+            const specSystem = foundSpecByKeyword.system;
+            attackSpecName = foundSpecByKeyword.name;
+            attackLinkedAttribute = specSystem.linkedAttribute || "willpower";
+            const linkedSkillName = specSystem.linkedSkill;
+            if (linkedSkillName) {
+              const parentSkill = this.actor.items.find(
+                (i) => i.type === "skill" && i.name === linkedSkillName
+              );
+              if (parentSkill && attackLinkedAttribute) {
+                attackSkillName = parentSkill.name;
+                const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+                attackSkillLevel = skillLevel;
+                attackSpecLevel = skillLevel + 2;
+              }
+            }
+          } else {
+            if (isSpell && game.items) {
+              const normalizeForComparison2 = (text) => {
+                return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+              };
+              const normalizedTargetSpec2 = normalizeForComparison2(finalAttackSpec);
+              const specInGameItems = game.items.find((i) => {
+                if (i.type !== "specialization") return false;
+                const normalizedItemName = normalizeForComparison2(i.name);
+                return normalizedItemName === normalizedTargetSpec2;
+              });
+              if (!specInGameItems) {
+                const keywords2 = specKeywords[spellSpecType] || ["combat"];
+                const normalizedKeywords2 = keywords2.map((kw) => normalizeSearchText(kw));
+                const specInGameItemsByKeyword = game.items.find((i) => {
+                  if (i.type !== "specialization") return false;
+                  const normalizedName = normalizeSearchText(i.name);
+                  const linkedSkill = i.system?.linkedSkill;
+                  if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+                    return normalizedKeywords2.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
+                  }
+                  return false;
+                });
+                if (specInGameItemsByKeyword) {
+                  const specSystem = specInGameItemsByKeyword.system;
+                  const linkedSkillName = specSystem.linkedSkill;
+                  if (linkedSkillName) {
+                    const parentSkill = this.actor.items.find(
+                      (i) => i.type === "skill" && i.name === linkedSkillName
+                    );
+                    if (parentSkill) {
+                      const skillSystem = parentSkill.system;
+                      const linkedAttribute = skillSystem.linkedAttribute || "willpower";
+                      attackSkillName = parentSkill.name;
+                      attackLinkedAttribute = linkedAttribute;
+                      const skillLevel = (skillSystem.rating || 0) + (this.actor.system.attributes?.[linkedAttribute] || 0);
+                      attackSkillLevel = skillLevel;
+                    }
+                  }
+                }
+              } else if (specInGameItems) {
+                const specSystem = specInGameItems.system;
+                const linkedSkillName = specSystem.linkedSkill;
+                if (linkedSkillName) {
+                  const parentSkill = this.actor.items.find(
+                    (i) => i.type === "skill" && i.name === linkedSkillName
+                  );
+                  if (parentSkill) {
+                    const skillSystem = parentSkill.system;
+                    const linkedAttribute = skillSystem.linkedAttribute || "willpower";
+                    attackSkillName = parentSkill.name;
+                    attackLinkedAttribute = linkedAttribute;
+                    const skillLevel = (skillSystem.rating || 0) + (this.actor.system.attributes?.[linkedAttribute] || 0);
+                    attackSkillLevel = skillLevel;
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
     if (!attackSpecName && finalAttackSkill) {
@@ -4472,20 +4635,42 @@ class CharacterSheet extends ActorSheet {
         const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
         attackLinkedAttribute = foundLinkedAttribute;
         attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+      } else if (isSpell) {
+        if (game.items) {
+          const sorcerySkillInGame = game.items.find(
+            (i) => i.type === "skill" && normalizeSearchText(i.name) === "sorcellerie"
+          );
+          if (sorcerySkillInGame) {
+            attackSkillName = "Sorcellerie";
+            attackLinkedAttribute = "willpower";
+            const willpower = this.actor.system.attributes?.willpower || 1;
+            attackSkillLevel = willpower;
+          }
+        }
       }
     }
-    const baseDamageValue = itemSystem.damageValue || "0";
-    const damageValueBonus = itemSystem.damageValueBonus || 0;
-    let finalDamageValue = baseDamageValue;
-    if (damageValueBonus > 0 && baseDamageValue !== "0") {
-      if (baseDamageValue === "FOR") {
-        finalDamageValue = `FOR+${damageValueBonus}`;
-      } else if (baseDamageValue.startsWith("FOR+")) {
-        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
-      } else if (baseDamageValue !== "toxin") {
-        const baseValue = parseInt(baseDamageValue) || 0;
-        finalDamageValue = (baseValue + damageValueBonus).toString();
+    let finalDamageValue;
+    if (isSpell) {
+      if (spellType === "direct") {
+        finalDamageValue = "0";
+      } else {
+        const willpower = this.actor.system.attributes?.willpower || 1;
+        finalDamageValue = willpower.toString();
+      }
+    } else {
+      const baseDamageValue = itemSystem.damageValue || "0";
+      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      finalDamageValue = baseDamageValue;
+      if (damageValueBonus > 0 && baseDamageValue !== "0") {
+        if (baseDamageValue === "FOR") {
+          finalDamageValue = `FOR+${damageValueBonus}`;
+        } else if (baseDamageValue.startsWith("FOR+")) {
+          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+        } else if (baseDamageValue !== "toxin") {
+          const baseValue = parseInt(baseDamageValue) || 0;
+          finalDamageValue = (baseValue + damageValueBonus).toString();
+        }
       }
     }
     let skillRRSources = [];
@@ -4517,11 +4702,12 @@ class CharacterSheet extends ActorSheet {
       // Weapon properties
       isWeaponFocus: itemSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
-      // FINAL damage value (base + bonus)
-      meleeRange: itemSystem.meleeRange,
-      shortRange: itemSystem.shortRange,
-      mediumRange: itemSystem.mediumRange,
-      longRange: itemSystem.longRange,
+      // FINAL damage value (base + bonus, or VOL for indirect spells, or 0 for direct spells)
+      // For spells, all ranges are "ok"
+      meleeRange: isSpell ? "ok" : itemSystem.meleeRange || "none",
+      shortRange: isSpell ? "ok" : itemSystem.shortRange || "none",
+      mediumRange: isSpell ? "ok" : itemSystem.mediumRange || "none",
+      longRange: isSpell ? "ok" : itemSystem.longRange || "none",
       // Attack skill/spec from actor (based on weapon links)
       skillName: attackSkillName,
       skillLevel: attackSkillLevel,
@@ -4532,7 +4718,12 @@ class CharacterSheet extends ActorSheet {
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || "",
       // RR List (merged: item RR + skill/spec/attribute RR)
-      rrList: allRRSources
+      rrList: allRRSources,
+      // Spell-specific properties
+      spellType: isSpell ? spellType : void 0,
+      // 'direct' or 'indirect' for spells
+      isSpellDirect: isSpell && spellType === "direct"
+      // Flag for direct spells (no defense)
     });
   }
   /**
@@ -7569,6 +7760,18 @@ class RollDialog extends Application {
       } else if (this.rollData.skillName) {
         const selectedSkill = dropdownOptions.find((opt) => opt.type === "skill" && opt.name === this.rollData.skillName);
         context.selectedValue = selectedSkill ? selectedSkill.value : "";
+      } else if (this.rollData.linkedAttackSpecialization) {
+        const normalizedLinkedSpec = normalizeSearchText(this.rollData.linkedAttackSpecialization);
+        const selectedSpec = dropdownOptions.find(
+          (opt) => opt.type === "specialization" && normalizeSearchText(opt.name) === normalizedLinkedSpec
+        );
+        context.selectedValue = selectedSpec ? selectedSpec.value : "";
+      } else if (this.rollData.linkedAttackSkill) {
+        const normalizedLinkedSkill = normalizeSearchText(this.rollData.linkedAttackSkill);
+        const selectedSkill = dropdownOptions.find(
+          (opt) => opt.type === "skill" && normalizeSearchText(opt.name) === normalizedLinkedSkill
+        );
+        context.selectedValue = selectedSkill ? selectedSkill.value : "";
       } else {
         context.selectedValue = "";
       }
@@ -9032,6 +9235,7 @@ class SRA2System {
         const targetUuid = button.data("target-uuid") || button.data("defender-uuid");
         const damage = parseInt(button.data("damage")) || 0;
         const targetName = button.data("target-name") || button.data("defender-name");
+        const damageType = button.data("damage-type") || "physical";
         if (!targetUuid) {
           console.error("Apply damage button: No target UUID found in button data attributes");
           ui.notifications?.error("Impossible de trouver la cible pour appliquer les dégâts");
@@ -9042,9 +9246,9 @@ class SRA2System {
           return;
         }
         button.prop("disabled", true);
-        console.log("Apply damage button clicked:", { targetUuid, targetName, damage });
+        console.log("Apply damage button clicked:", { targetUuid, targetName, damage, damageType });
         try {
-          await applyDamage(targetUuid, damage, targetName);
+          await applyDamage(targetUuid, damage, targetName, damageType);
         } catch (error) {
           console.error("Error applying damage:", error);
           ui.notifications?.error("Erreur lors de l'application des dégâts");

@@ -190,6 +190,10 @@ export interface RollRequestData {
   isDefend?: boolean;
   isCounterAttack?: boolean;
   
+  // Spell-specific properties
+  spellType?: 'direct' | 'indirect';  // For spells: 'direct' or 'indirect'
+  isSpellDirect?: boolean;  // Flag for direct spells (no defense allowed)
+  
   // Attack roll data (for defense/counter-attack rolls)
   attackRollResult?: RollResult;
   attackRollData?: RollRequestData;
@@ -792,7 +796,9 @@ async function createRollChatMessage(
     attackerUuid: finalAttackerUuid,
     defenderUuid: finalDefenderUuid,
     attackerTokenUuid: attackerTokenUuid,
-    defenderTokenUuid: defenderTokenUuid
+    defenderTokenUuid: defenderTokenUuid,
+    // Spell-specific flags
+    isSpellDirect: rollData.isSpellDirect || false
   };
 
   // Render template

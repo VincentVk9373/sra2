@@ -519,7 +519,16 @@
                 "TYPE": "Type de Sort",
                 "TYPE_DIRECT": "Sort Direct",
                 "TYPE_INDIRECT": "Sort Indirect",
-                "TYPE_HINT": "Les sorts directs affectent directement la cible (mana), les sorts indirects passent par des effets physiques (élémentaux)"
+                "TYPE_HINT": "Les sorts directs affectent directement la cible (mana), les sorts indirects passent par des effets physiques (élémentaux)",
+                "SPECIALIZATION": {
+                    "TYPE": "Type de Spécialisation",
+                    "COMBAT": "Sorts de combat",
+                    "DETECTION": "Sorts de détection",
+                    "HEALTH": "Sorts de santé",
+                    "ILLUSION": "Sorts d'illusion",
+                    "MANIPULATION": "Sorts de manipulation",
+                    "COUNTERSPELL": "Contresort"
+                }
             }
         },
         "COMBAT": {

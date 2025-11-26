@@ -662,8 +662,8 @@ export class CharacterSheet extends ActorSheet {
    * Apply damage to a defender
    * Delegates to CombatHelpers.applyDamage
    */
-  static async applyDamage(defenderUuid: string, damageValue: number, defenderName: string): Promise<void> {
-    return CombatHelpers.applyDamage(defenderUuid, damageValue, defenderName);
+  static async applyDamage(defenderUuid: string, damageValue: number, defenderName: string, damageType: 'physical' | 'mental' = 'physical'): Promise<void> {
+    return CombatHelpers.applyDamage(defenderUuid, damageValue, defenderName, damageType);
   }
 
   /**
@@ -1874,6 +1874,10 @@ export class CharacterSheet extends ActorSheet {
   private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell'): Promise<void> {
     const itemSystem = item.system as any;
     
+    // Check if this is a spell and get spell type
+    const isSpell = type === 'spell';
+    const spellType = isSpell ? (itemSystem.spellType || 'indirect') : null;
+    
     // Get weapon type and linked skills
     const weaponType = itemSystem.weaponType;
     let weaponLinkedSkill = '';
@@ -1899,11 +1903,38 @@ export class CharacterSheet extends ActorSheet {
       featName: item.name  // Add featName (the item name itself)
     }));
 
-    // Merge weapon type links with custom fields (weapon type has priority)
-    const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';
-    const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || '';
-    const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || '';
-    const finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || '';
+    // For spells, force specific skills
+    let finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';
+    let finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || '';
+    let finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || '';
+    let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || '';
+    
+    if (isSpell) {
+      // Force attack skill to Sorcellerie
+      finalAttackSkill = 'Sorcellerie';
+      
+      // Get spell specialization type and map it to the specialization name
+      const spellSpecType = itemSystem.spellSpecializationType || 'combat';
+      const spellSpecMap: Record<string, string> = {
+        'combat': 'Spé: Sorts de combat',
+        'detection': 'Spé: Sorts de détection',
+        'health': 'Spé: Sorts de santé',
+        'illusion': 'Spé: Sorts d\'illusion',
+        'manipulation': 'Spé: Sorts de manipulation',
+        'counterspell': 'Spé: Contresort'
+      };
+      finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+      
+      if (spellType === 'direct') {
+        // Direct spell: no defense
+        finalDefenseSkill = '';
+        finalDefenseSpec = '';
+      } else {
+        // Indirect spell: force defense to Athlétisme / Spé : Défense à distance
+        finalDefenseSkill = 'Athlétisme';
+        finalDefenseSpec = 'Spé : Défense à distance';
+      }
+    }
 
     // Find actor's skill and specialization based on weapon links
     let attackSkillName: string | undefined = undefined;
@@ -1914,10 +1945,18 @@ export class CharacterSheet extends ActorSheet {
     
     // Try to find the linked attack specialization first
     if (finalAttackSpec) {
-      const foundSpec = this.actor.items.find((i: any) => 
-        i.type === 'specialization' && 
-        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSpec)
-      );
+      // Normalize both names for comparison (remove spaces, accents, case differences)
+      const normalizeForComparison = (text: string): string => {
+        return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
+      };
+      
+      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+      
+      const foundSpec = this.actor.items.find((i: any) => {
+        if (i.type !== 'specialization') return false;
+        const normalizedItemName = normalizeForComparison(i.name);
+        return normalizedItemName === normalizedTargetSpec;
+      });
       
       if (foundSpec) {
         const specSystem = foundSpec.system as any;
@@ -1937,6 +1976,126 @@ export class CharacterSheet extends ActorSheet {
             attackSpecLevel = skillLevel + 2; // Specialization adds +2
           }
         }
+      } else {
+        // If exact match not found, try to find by partial match for spells
+        // This handles cases where the specialization name might have slight variations
+        if (isSpell) {
+          const spellSpecType = itemSystem.spellSpecializationType || 'combat';
+          const specKeywords: Record<string, string[]> = {
+            'combat': ['combat'],
+            'detection': ['détection', 'detection'],
+            'health': ['santé', 'sante', 'health'],
+            'illusion': ['illusion'],
+            'manipulation': ['manipulation'],
+            'counterspell': ['contresort', 'contre-sort']
+          };
+          
+          const keywords = specKeywords[spellSpecType] || ['combat'];
+          // Normalize keywords for comparison (remove accents)
+          const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
+          const foundSpecByKeyword = this.actor.items.find((i: any) => {
+            if (i.type !== 'specialization') return false;
+            const normalizedName = ItemSearch.normalizeSearchText(i.name);
+            // Check if it's a Sorcellerie specialization and contains the keyword
+            const linkedSkill = (i.system as any)?.linkedSkill;
+            if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+              return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
+            }
+            return false;
+          });
+          if (foundSpecByKeyword) {
+            const specSystem = foundSpecByKeyword.system as any;
+            attackSpecName = foundSpecByKeyword.name;
+            attackLinkedAttribute = specSystem.linkedAttribute || 'willpower';
+            
+            const linkedSkillName = specSystem.linkedSkill;
+            if (linkedSkillName) {
+              const parentSkill = this.actor.items.find((i: any) => 
+                i.type === 'skill' && i.name === linkedSkillName
+              );
+              if (parentSkill && attackLinkedAttribute) {
+                attackSkillName = parentSkill.name;
+                const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
+                attackSkillLevel = skillLevel;
+                attackSpecLevel = skillLevel + 2;
+              }
+            }
+          } else {
+            // If specialization not found in actor, search in game.items to get the parent skill
+            if (isSpell && game.items) {
+              const normalizeForComparison = (text: string): string => {
+                return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
+              };
+              
+              const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+              
+              // Search in game.items for the specialization
+              const specInGameItems = (game.items as any).find((i: any) => {
+                if (i.type !== 'specialization') return false;
+                const normalizedItemName = normalizeForComparison(i.name);
+                return normalizedItemName === normalizedTargetSpec;
+              });
+              
+              // If still not found, try keyword search in game.items
+              if (!specInGameItems) {
+                const keywords = specKeywords[spellSpecType] || ['combat'];
+                const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
+                
+                const specInGameItemsByKeyword = (game.items as any).find((i: any) => {
+                  if (i.type !== 'specialization') return false;
+                  const normalizedName = ItemSearch.normalizeSearchText(i.name);
+                  const linkedSkill = (i.system as any)?.linkedSkill;
+                  if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+                    return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
+                  }
+                  return false;
+                });
+                
+                if (specInGameItemsByKeyword) {
+                  const specSystem = specInGameItemsByKeyword.system as any;
+                  const linkedSkillName = specSystem.linkedSkill;
+                  
+                  // Now find the skill in the actor
+                  if (linkedSkillName) {
+                    const parentSkill = this.actor.items.find((i: any) => 
+                      i.type === 'skill' && i.name === linkedSkillName
+                    );
+                    if (parentSkill) {
+                      const skillSystem = parentSkill.system as any;
+                      const linkedAttribute = skillSystem.linkedAttribute || 'willpower';
+                      attackSkillName = parentSkill.name;
+                      attackLinkedAttribute = linkedAttribute;
+                      const skillLevel = (skillSystem.rating || 0) + ((this.actor.system as any).attributes?.[linkedAttribute] || 0);
+                      attackSkillLevel = skillLevel;
+                      // Note: attackSpecName stays undefined since spec is not in actor
+                      // But linkedAttackSpecialization will be used by RollDialog for preselect
+                    }
+                  }
+                }
+              } else if (specInGameItems) {
+                // Found spec in game.items, get parent skill
+                const specSystem = specInGameItems.system as any;
+                const linkedSkillName = specSystem.linkedSkill;
+                
+                if (linkedSkillName) {
+                  const parentSkill = this.actor.items.find((i: any) => 
+                    i.type === 'skill' && i.name === linkedSkillName
+                  );
+                  if (parentSkill) {
+                    const skillSystem = parentSkill.system as any;
+                    const linkedAttribute = skillSystem.linkedAttribute || 'willpower';
+                    attackSkillName = parentSkill.name;
+                    attackLinkedAttribute = linkedAttribute;
+                    const skillLevel = (skillSystem.rating || 0) + ((this.actor.system as any).attributes?.[linkedAttribute] || 0);
+                    attackSkillLevel = skillLevel;
+                    // Note: attackSpecName stays undefined since spec is not in actor
+                    // But linkedAttackSpecialization will be used by RollDialog for preselect
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
     
@@ -1952,23 +2111,55 @@ export class CharacterSheet extends ActorSheet {
         const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
         attackLinkedAttribute = foundLinkedAttribute;
         attackSkillLevel = ((foundSkill.system as any).rating || 0) + ((this.actor.system as any).attributes?.[foundLinkedAttribute] || 0);
+      } else if (isSpell) {
+        // For spells, if Sorcellerie skill not found in actor, try to find it in game.items
+        // This shouldn't normally happen, but handle it gracefully
+        if (game.items) {
+          const sorcerySkillInGame = (game.items as any).find((i: any) => 
+            i.type === 'skill' && 
+            ItemSearch.normalizeSearchText(i.name) === 'sorcellerie'
+          );
+          
+          if (sorcerySkillInGame) {
+            // Use default willpower attribute for Sorcellerie if skill not in actor
+            attackSkillName = 'Sorcellerie';
+            attackLinkedAttribute = 'willpower';
+            const willpower = (this.actor.system as any).attributes?.willpower || 1;
+            attackSkillLevel = willpower; // Skill rating would be 0 if not in actor
+          }
+        }
       }
     }
 
     // Calculate final damage value (base + bonus)
-    const baseDamageValue = itemSystem.damageValue || '0';
-    const damageValueBonus = itemSystem.damageValueBonus || 0;
+    // For spells, damage value is calculated differently
+    let finalDamageValue: string;
     
-    let finalDamageValue = baseDamageValue;
-    if (damageValueBonus > 0 && baseDamageValue !== '0') {
-      if (baseDamageValue === 'FOR') {
-        finalDamageValue = `FOR+${damageValueBonus}`;
-      } else if (baseDamageValue.startsWith('FOR+')) {
-        const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-        finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
-      } else if (baseDamageValue !== 'toxin') {
-        const baseValue = parseInt(baseDamageValue) || 0;
-        finalDamageValue = (baseValue + damageValueBonus).toString();
+    if (isSpell) {
+      if (spellType === 'direct') {
+        // Direct spell: finalDamageValue is 0
+        finalDamageValue = '0';
+      } else {
+        // Indirect spell: finalDamageValue is VOL (willpower)
+        const willpower = (this.actor.system as any).attributes?.willpower || 1;
+        finalDamageValue = willpower.toString();
+      }
+    } else {
+      // Normal weapon calculation
+      const baseDamageValue = itemSystem.damageValue || '0';
+      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      
+      finalDamageValue = baseDamageValue;
+      if (damageValueBonus > 0 && baseDamageValue !== '0') {
+        if (baseDamageValue === 'FOR') {
+          finalDamageValue = `FOR+${damageValueBonus}`;
+        } else if (baseDamageValue.startsWith('FOR+')) {
+          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
+        } else if (baseDamageValue !== 'toxin') {
+          const baseValue = parseInt(baseDamageValue) || 0;
+          finalDamageValue = (baseValue + damageValueBonus).toString();
+        }
       }
     }
 
@@ -2007,11 +2198,12 @@ export class CharacterSheet extends ActorSheet {
       
       // Weapon properties
       isWeaponFocus: itemSystem.isWeaponFocus || false,
-      damageValue: finalDamageValue,  // FINAL damage value (base + bonus)
-      meleeRange: itemSystem.meleeRange,
-      shortRange: itemSystem.shortRange,
-      mediumRange: itemSystem.mediumRange,
-      longRange: itemSystem.longRange,
+      damageValue: finalDamageValue,  // FINAL damage value (base + bonus, or VOL for indirect spells, or 0 for direct spells)
+      // For spells, all ranges are "ok"
+      meleeRange: isSpell ? 'ok' : (itemSystem.meleeRange || 'none'),
+      shortRange: isSpell ? 'ok' : (itemSystem.shortRange || 'none'),
+      mediumRange: isSpell ? 'ok' : (itemSystem.mediumRange || 'none'),
+      longRange: isSpell ? 'ok' : (itemSystem.longRange || 'none'),
       
       // Attack skill/spec from actor (based on weapon links)
       skillName: attackSkillName,
@@ -2025,7 +2217,11 @@ export class CharacterSheet extends ActorSheet {
       actorName: this.actor.name || '',
       
       // RR List (merged: item RR + skill/spec/attribute RR)
-      rrList: allRRSources
+      rrList: allRRSources,
+      
+      // Spell-specific properties
+      spellType: isSpell ? spellType : undefined,  // 'direct' or 'indirect' for spells
+      isSpellDirect: isSpell && spellType === 'direct'  // Flag for direct spells (no defense)
     });
   }
 

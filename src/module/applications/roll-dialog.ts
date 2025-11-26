@@ -695,11 +695,30 @@ export class RollDialog extends Application {
       context.dropdownOptions = dropdownOptions;
       
       // Determine selected value for dropdown
+      // Priority: specName > skillName > linkedAttackSpecialization > linkedAttackSkill
+      // This ensures that if skillName is set but spec is not found, we still select the skill
       if (this.rollData.specName) {
         const selectedSpec = dropdownOptions.find((opt: any) => opt.type === 'specialization' && opt.name === this.rollData.specName);
         context.selectedValue = selectedSpec ? selectedSpec.value : '';
       } else if (this.rollData.skillName) {
+        // If skillName is set but no specName, prioritize skill selection
         const selectedSkill = dropdownOptions.find((opt: any) => opt.type === 'skill' && opt.name === this.rollData.skillName);
+        context.selectedValue = selectedSkill ? selectedSkill.value : '';
+      } else if (this.rollData.linkedAttackSpecialization) {
+        // Fallback: try to find by linkedAttackSpecialization using normalized comparison
+        const normalizedLinkedSpec = ItemSearch.normalizeSearchText(this.rollData.linkedAttackSpecialization);
+        const selectedSpec = dropdownOptions.find((opt: any) => 
+          opt.type === 'specialization' && 
+          ItemSearch.normalizeSearchText(opt.name) === normalizedLinkedSpec
+        );
+        context.selectedValue = selectedSpec ? selectedSpec.value : '';
+      } else if (this.rollData.linkedAttackSkill) {
+        // Fallback: try to find by linkedAttackSkill using normalized comparison
+        const normalizedLinkedSkill = ItemSearch.normalizeSearchText(this.rollData.linkedAttackSkill);
+        const selectedSkill = dropdownOptions.find((opt: any) => 
+          opt.type === 'skill' && 
+          ItemSearch.normalizeSearchText(opt.name) === normalizedLinkedSkill
+        );
         context.selectedValue = selectedSkill ? selectedSkill.value : '';
       } else {
         context.selectedValue = '';
