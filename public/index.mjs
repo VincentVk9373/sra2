@@ -7707,7 +7707,7 @@ class RollDialog extends Application {
   targetToken = null;
   rrEnabled = /* @__PURE__ */ new Map();
   // Track which RR sources are enabled
-  riskDiceCount = 2;
+  riskDiceCount = 1;
   // Number of risk dice selected (default: 2)
   selectedRange = null;
   // Selected range: 'melee', 'short', 'medium', 'long'

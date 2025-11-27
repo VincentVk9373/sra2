@@ -2,6 +2,7 @@
 
 .sr-checkbox-base() {
   background: none;
+  position: relative;
 
   &:focus {
     background: none;
@@ -10,9 +11,16 @@
 
 .sr-checkbox-icon() {
   &::before {
+    content: "\f0c8";
     outline: none;
     color: var(--sr-ui-color);
-    font-weight: normal
+    font-weight: normal;
+    position: absolute;
+    display: block;
+    font-family: var(--font-awesome);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -28,9 +36,16 @@
   }
 
   &:checked::after {
-    content: "\f0c8";
+    content: "\f00c";
     color: var(--sr-ui-color-active);
-    
+    position: absolute;
+    display: block;
+    font-family: var(--font-awesome);
+    font-weight: 900;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8em;
   }
 }
 

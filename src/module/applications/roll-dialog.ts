@@ -13,7 +13,7 @@ export class RollDialog extends Application {
   private attackerToken: any = null;
   private targetToken: any = null;
   private rrEnabled: Map<string, boolean> = new Map(); // Track which RR sources are enabled
-  private riskDiceCount: number = 2; // Number of risk dice selected (default: 2)
+  private riskDiceCount: number = 1; // Number of risk dice selected (default: 2)
   private selectedRange: string | null = null; // Selected range: 'melee', 'short', 'medium', 'long'
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
 
