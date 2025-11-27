@@ -16,6 +16,7 @@ export class RollDialog extends Application {
   private riskDiceCount: number = 1; // Number of risk dice selected (default: 2)
   private selectedRange: string | null = null; // Selected range: 'melee', 'short', 'medium', 'long'
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
+  private selectedAttribute: string | null = null; // Selected attribute for skill/spec rolls (can differ from linked attribute)
 
   constructor(rollData: RollRequestData) {
     super();
@@ -81,6 +82,11 @@ export class RollDialog extends Application {
     // Auto-select best weapon for counter-attack
     if (rollData.isCounterAttack && rollData.availableWeapons && rollData.availableWeapons.length > 0 && this.actor) {
       this.autoSelectWeaponForCounterAttack();
+    }
+    
+    // Initialize selected attribute with the linked attribute (default)
+    if (rollData.linkedAttribute) {
+      this.selectedAttribute = rollData.linkedAttribute;
     }
   }
 
@@ -438,11 +444,28 @@ export class RollDialog extends Application {
     }
 
     context.isWeaponRoll = isWeaponRoll;
+    // Check if this is a skill/spec/attribute roll (not a weapon roll and not a defense roll)
+    context.isSkillSpecAttributeRoll = !isWeaponRoll && !this.rollData.isDefend && 
+                                       (this.rollData.skillName || this.rollData.specName || this.rollData.linkedAttribute);
     context.calculatedRange = calculatedRange;
     context.selectedRange = this.selectedRange;
     context.selectedRangeValue = selectedRangeValue;
     context.rollMode = this.rollMode;
     context.hasSevereWound = hasSevereWound; // Pass to template to disable mode selection
+    
+    // Prepare attribute options for skill/spec rolls
+    if (context.isSkillSpecAttributeRoll && this.actor) {
+      const attributes = (this.actor.system as any)?.attributes || {};
+      const i18n = game.i18n;
+      context.attributeOptions = [
+        { value: 'strength', label: (i18n?.localize('SRA2.ATTRIBUTES.STRENGTH') as string) || 'Force', diceValue: attributes.strength || 0 },
+        { value: 'agility', label: (i18n?.localize('SRA2.ATTRIBUTES.AGILITY') as string) || 'Agilité', diceValue: attributes.agility || 0 },
+        { value: 'willpower', label: (i18n?.localize('SRA2.ATTRIBUTES.WILLPOWER') as string) || 'Volonté', diceValue: attributes.willpower || 0 },
+        { value: 'logic', label: (i18n?.localize('SRA2.ATTRIBUTES.LOGIC') as string) || 'Logique', diceValue: attributes.logic || 0 },
+        { value: 'charisma', label: (i18n?.localize('SRA2.ATTRIBUTES.CHARISMA') as string) || 'Charisme', diceValue: attributes.charisma || 0 }
+      ];
+      context.selectedAttribute = this.selectedAttribute || this.rollData.linkedAttribute || 'strength';
+    }
     context.rangeOptions = {
       melee: { label: 'Mêlée (< 3m)', value: meleeRange },
       short: { label: 'Portée courte (3-15m)', value: shortRange },
@@ -451,13 +474,31 @@ export class RollDialog extends Application {
     };
 
     // Calculate dice pool
+    // Use selectedAttribute if available (for skill/spec rolls), otherwise use linkedAttribute
+    const attributeToUse = this.selectedAttribute || this.rollData.linkedAttribute;
     let dicePool = 0;
     if (this.rollData.specLevel !== undefined) {
-      dicePool = this.rollData.specLevel;
+      // For specializations, recalculate with selected attribute if different from linked
+      if (this.selectedAttribute && this.rollData.linkedAttribute && this.selectedAttribute !== this.rollData.linkedAttribute && this.actor) {
+        const attributeValue = (this.actor.system as any)?.attributes?.[this.selectedAttribute] || 0;
+        const linkedAttributeValue = (this.actor.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
+        const skillRating = this.rollData.skillLevel ? (this.rollData.skillLevel - linkedAttributeValue) : 0;
+        dicePool = attributeValue + skillRating + 2; // +2 for specialization
+      } else {
+        dicePool = this.rollData.specLevel;
+      }
     } else if (this.rollData.skillLevel !== undefined) {
-      dicePool = this.rollData.skillLevel;
-    } else if (this.rollData.linkedAttribute) {
-      const attributeValue = (this.actor?.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
+      // For skills, recalculate with selected attribute if different from linked
+      if (this.selectedAttribute && this.rollData.linkedAttribute && this.selectedAttribute !== this.rollData.linkedAttribute && this.actor) {
+        const attributeValue = (this.actor.system as any)?.attributes?.[this.selectedAttribute] || 0;
+        const linkedAttributeValue = (this.actor.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
+        const skillRating = this.rollData.skillLevel - linkedAttributeValue;
+        dicePool = attributeValue + skillRating;
+      } else {
+        dicePool = this.rollData.skillLevel;
+      }
+    } else if (attributeToUse) {
+      const attributeValue = (this.actor?.system as any)?.attributes?.[attributeToUse] || 0;
       dicePool = attributeValue;
     }
     context.dicePool = dicePool;
@@ -898,6 +939,8 @@ export class RollDialog extends Application {
       if (type === 'skill') {
         const skillSystem = item.system as any;
         const linkedAttribute = skillSystem.linkedAttribute || 'strength';
+        // Reset selected attribute to the skill's linked attribute
+        this.selectedAttribute = linkedAttribute;
         const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
         const skillRating = skillSystem.rating || 0;
         const dicePool = attributeValue + skillRating;
@@ -917,6 +960,8 @@ export class RollDialog extends Application {
       } else if (type === 'spec') {
         const specSystem = item.system as any;
         const linkedAttribute = specSystem.linkedAttribute || 'strength';
+        // Reset selected attribute to the spec's linked attribute
+        this.selectedAttribute = linkedAttribute;
         const linkedSkillName = specSystem.linkedSkill;
         const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
         
@@ -931,7 +976,7 @@ export class RollDialog extends Application {
         // Update roll data
         this.rollData.specName = item.name;
         this.rollData.skillName = linkedSkillName;
-        this.rollData.skillLevel = skillRating;
+        this.rollData.skillLevel = attributeValue + skillRating;
         this.rollData.specLevel = dicePool;
         this.rollData.linkedAttribute = linkedAttribute;
         
@@ -1005,6 +1050,56 @@ export class RollDialog extends Application {
       }
       
       // Re-render to update UI
+      this.render();
+    });
+
+    // Attribute selection for skill/spec rolls
+    html.find('.attribute-dropdown').on('change', (event) => {
+      const select = event.currentTarget as HTMLSelectElement;
+      const selectedAttributeValue = select.value;
+      
+      if (!selectedAttributeValue || !this.actor) return;
+      
+      this.selectedAttribute = selectedAttributeValue;
+      const attributeValueNum = (this.actor.system as any)?.attributes?.[selectedAttributeValue] || 0;
+      
+      // Recalculate dice pool and RR based on selected attribute
+      if (this.rollData.specName) {
+        const specItem = this.actor.items.find((i: any) => 
+          i.type === 'specialization' && i.name === this.rollData.specName
+        );
+        if (specItem) {
+          const specSystem = specItem.system as any;
+          const linkedSkillName = specSystem.linkedSkill;
+          const parentSkill = this.actor.items.find((i: any) => 
+            i.type === 'skill' && i.name === linkedSkillName
+          );
+          const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
+          const dicePool = attributeValueNum + skillRating + 2; // +2 for specialization
+          
+          this.rollData.specLevel = dicePool;
+          this.rollData.skillLevel = attributeValueNum + skillRating;
+          // Keep original linkedAttribute for RR calculation, but use selectedAttribute for dice pool
+          
+          this.updateRRForSpec(this.rollData.specName, linkedSkillName, selectedAttributeValue, dicePool);
+        }
+      } else if (this.rollData.skillName) {
+        const skillItem = this.actor.items.find((i: any) => 
+          i.type === 'skill' && i.name === this.rollData.skillName
+        );
+        if (skillItem) {
+          const skillSystem = skillItem.system as any;
+          const skillRating = skillSystem.rating || 0;
+          const dicePool = attributeValueNum + skillRating;
+          
+          this.rollData.skillLevel = dicePool;
+          // Keep original linkedAttribute for RR calculation, but use selectedAttribute for dice pool
+          
+          this.updateRRForSkill(this.rollData.skillName, selectedAttributeValue, dicePool);
+        }
+      }
+      
+      // Re-render to update dice pool
       this.render();
     });
 

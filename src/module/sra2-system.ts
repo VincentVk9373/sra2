@@ -103,13 +103,6 @@ export class SRA2System {
       label: "SRA2.SHEET.CHARACTER"
     });
     
-    // Register NPC sheet (simplified view for same character type)
-    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.NpcSheet, {
-      types: ["character"],
-      makeDefault: false,
-      label: "SRA2.SHEET.NPC"
-    });
-    
     // Register vehicle sheet
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.VehicleSheet, {
       types: ["vehicle"],

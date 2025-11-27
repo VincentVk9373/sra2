@@ -47,6 +47,8 @@
         border-bottom: 2px solid #0f3460;
 
         .attacker-info {
+            font-family: var(--sr-font-title-alt);
+            letter-spacing: 2px;
             display: flex;
             align-items: center;
             flex-direction: column;
@@ -314,7 +316,7 @@
     .roll-mode-options {
         display: flex;
         gap: 0.5rem;
-        justify-content: space-around;
+        justify-content: start;
 
         .roll-mode-option {
             display: flex;

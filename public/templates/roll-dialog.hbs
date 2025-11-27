@@ -38,7 +38,9 @@
                 <select class="weapon-select" name="selectedWeapon">
                     <option value="">-- Choisissez une arme --</option>
                     {{#each rollData.availableWeapons}}
-                    <option value="{{this.id}}" {{#if (eq this.id ../rollData.selectedWeaponId)}}selected{{/if}} data-linked-skill="{{this.linkedAttackSkill}}" data-damage-value="{{this.damageValue}}" data-damage-bonus="{{this.damageValueBonus}}">
+                    <option value="{{this.id}}" {{#if (eq this.id ../rollData.selectedWeaponId)}}selected{{/if}}
+                        data-linked-skill="{{this.linkedAttackSkill}}" data-damage-value="{{this.damageValue}}"
+                        data-damage-bonus="{{this.damageValueBonus}}">
                         {{this.name}} ({{this.linkedAttackSkill}} - VD: {{this.damageValue}})
                     </option>
                     {{/each}}
@@ -171,34 +173,52 @@
             </div>
         </section>
         <!-- Skill Selection -->
-        <section class="roll-section skill-section">
-            <h3 class="section-title">
-                <i class="fas fa-book"></i> Compétence
-            </h3>
-            <div class="skill-display">
-                {{#if dropdownOptions}}
-                <select class="skill-dropdown" name="skill-select" {{#if hasThreshold}}disabled{{/if}}>
-                    <option value="">-- Sélectionner --</option>
-                    {{#each dropdownOptions}}
-                    <option value="{{value}}" {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
-                    {{/each}}
-                </select>
-                {{else}}
-                <div class="selected-skill">
-                    <span class="skill-name">{{skillDisplayName}}</span>
-                    {{#if rollData.specName}}
-                    <span class="skill-type">(Spécialisation)</span>
-                    {{else if rollData.skillName}}
-                    <span class="skill-type">(Compétence)</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr;">
+            <section class="roll-section skill-section">
+                <h3 class="section-title">
+                    <i class="fas fa-book"></i> Compétence
+                </h3>
+                <div class="skill-display">
+                    {{#if dropdownOptions}}
+                    <select class="skill-dropdown" name="skill-select" {{#if hasThreshold}}disabled{{/if}}>
+                        <option value="">-- Sélectionner --</option>
+                        {{#each dropdownOptions}}
+                        <option value="{{value}}" {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
+                        {{/each}}
+                    </select>
+                    {{else}}
+                    <div class="selected-skill">
+                        <span class="skill-name">{{skillDisplayName}}</span>
+                        {{#if rollData.specName}}
+                        <span class="skill-type">(Spécialisation)</span>
+                        {{else if rollData.skillName}}
+                        <span class="skill-type">(Compétence)</span>
+                        {{/if}}
+                    </div>
                     {{/if}}
                 </div>
-                {{/if}}
-            </div>
-        </section>
+            </section>
+            <!-- Attribute Selection (for skill/spec/attribute rolls) -->
+            <section class="roll-section range-section no-border-left">
+                <h3 class="section-title">
+                    <i class="fas fa-dumbbell"></i> Attribut
+                </h3>
+                <div class="range-display">
+                    <select class="attribute-dropdown" name="attribute-select">
+                        {{#each attributeOptions}}
+                        <option value="{{this.value}}" {{#if (eq this.value ../selectedAttribute)}}selected{{/if}}>
+                            {{this.label}} ({{this.diceValue}} dés)
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+            </section>
+        </div>
 
         <!-- Roll Mode Selection -->
-        {{#if (or isWeaponRoll rollData.isDefend)}}
-        <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        {{#if (or isWeaponRoll rollData.isDefend isSkillSpecAttributeRoll)}}
+        <div
+            style="display: grid; grid-template-columns: {{#if (and isWeaponRoll (not rollData.isDefend))}}1fr 1fr{{else}}1fr{{/if}};">
 
             <section class="roll-section roll-mode-section">
                 <h3 class="section-title">
@@ -230,14 +250,15 @@
                 </div>
             </section>
 
-            <!-- Range Selection (for weapons, not for defense) -->
-            {{#unless rollData.isDefend}}
+            <!-- Range Selection (for weapons only, not for defense or skill/spec/attribute rolls) -->
+            {{#if (and isWeaponRoll (not rollData.isDefend))}}
             <section class="roll-section range-section no-border-left">
                 <h3 class="section-title">
                     <i class="fas fa-crosshairs"></i> Portée
                 </h3>
                 <div class="range-display">
-                    <select class="range-dropdown {{#if (eq selectedRangeValue "none")}}invalid-range{{/if}}" name="range-select">
+                    <select class="range-dropdown {{#if (eq selectedRangeValue " none")}}invalid-range{{/if}}"
+                        name="range-select">
                         <option value="">-- Sélectionner --</option>
                         <option value="melee" {{#if (eq selectedRange "melee" )}}selected{{/if}}>
                             {{rangeOptions.melee.label}} ({{#if (eq rangeOptions.melee.value "ok")}}OK{{else if (eq
@@ -258,7 +279,7 @@
                     </select>
                 </div>
             </section>
-            {{/unless}}
+            {{/if}}
         </div>
         {{/if}}
 
