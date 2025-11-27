@@ -6655,6 +6655,10 @@ class MetatypeSheet extends ItemSheet {
     return this.item.update(expandedData);
   }
 }
+const shadowAmpProbabilities = { "conditions": [{ "id": 0, "name": "No Shadow Amp", "data": [{ "dice": 1, "allGood": 83.3, "glitch": 16.7, "criticalGlitch": 0, "disaster": 0 }, { "dice": 2, "allGood": 69.4, "glitch": 27.8, "criticalGlitch": 2.8, "disaster": 0 }, { "dice": 3, "allGood": 57.9, "glitch": 34.7, "criticalGlitch": 6.5, "disaster": 0.9 }, { "dice": 4, "allGood": 48.2, "glitch": 38.2, "criticalGlitch": 11.1, "disaster": 2.5 }, { "dice": 5, "allGood": 40.2, "glitch": 40.2, "criticalGlitch": 15.3, "disaster": 4.3 }, { "dice": 6, "allGood": 33.5, "glitch": 40.2, "criticalGlitch": 19, "disaster": 7.3 }, { "dice": 7, "allGood": 27.9, "glitch": 38.9, "criticalGlitch": 22.2, "disaster": 11 }, { "dice": 8, "allGood": 23.3, "glitch": 36.6, "criticalGlitch": 24.8, "disaster": 15.3 }, { "dice": 9, "allGood": 19.4, "glitch": 33.8, "criticalGlitch": 26.9, "disaster": 19.9 }, { "dice": 10, "allGood": 16.2, "glitch": 30.6, "criticalGlitch": 28.2, "disaster": 25 }, { "dice": 11, "allGood": 13.5, "glitch": 27.3, "criticalGlitch": 28.7, "disaster": 30.5 }, { "dice": 12, "allGood": 11.3, "glitch": 24.1, "criticalGlitch": 28.2, "disaster": 36.4 }, { "dice": 13, "allGood": 9.4, "glitch": 21.3, "criticalGlitch": 27.1, "disaster": 42.2 }, { "dice": 14, "allGood": 7.8, "glitch": 18.8, "criticalGlitch": 26, "disaster": 47.4 }, { "dice": 15, "allGood": 6.5, "glitch": 16.7, "criticalGlitch": 25.5, "disaster": 51.3 }, { "dice": 16, "allGood": 5.4, "glitch": 17.3, "criticalGlitch": 26, "disaster": 51.3 }] }, { "id": 1, "name": "Shadow Amp: Risk Reduction 1", "data": [{ "dice": 1, "allGood": 100, "glitch": 0, "criticalGlitch": 0, "disaster": 0 }, { "dice": 2, "allGood": 97.2, "glitch": 2.8, "criticalGlitch": 0, "disaster": 0 }, { "dice": 3, "allGood": 91.7, "glitch": 7.4, "criticalGlitch": 0.9, "disaster": 0 }, { "dice": 4, "allGood": 84.3, "glitch": 13, "criticalGlitch": 2.3, "disaster": 0.4 }, { "dice": 5, "allGood": 75.7, "glitch": 19, "criticalGlitch": 4.2, "disaster": 1.1 }, { "dice": 6, "allGood": 66.7, "glitch": 24.1, "criticalGlitch": 6.5, "disaster": 2.7 }, { "dice": 7, "allGood": 57.9, "glitch": 27.8, "criticalGlitch": 9.3, "disaster": 5 }, { "dice": 8, "allGood": 49.8, "glitch": 30.1, "criticalGlitch": 12, "disaster": 8.1 }, { "dice": 9, "allGood": 42.6, "glitch": 31, "criticalGlitch": 14.4, "disaster": 12 }, { "dice": 10, "allGood": 36.4, "glitch": 30.6, "criticalGlitch": 16.2, "disaster": 16.8 }, { "dice": 11, "allGood": 31, "glitch": 29.2, "criticalGlitch": 17.4, "disaster": 22.4 }, { "dice": 12, "allGood": 26.4, "glitch": 27.3, "criticalGlitch": 18.1, "disaster": 28.2 }, { "dice": 13, "allGood": 22.5, "glitch": 25, "criticalGlitch": 18.3, "disaster": 34.2 }, { "dice": 14, "allGood": 19.2, "glitch": 22.7, "criticalGlitch": 18.2, "disaster": 39.9 }, { "dice": 15, "allGood": 16.4, "glitch": 20.4, "criticalGlitch": 17.8, "disaster": 45.4 }, { "dice": 16, "allGood": 22.7, "glitch": 26, "criticalGlitch": 24.2, "disaster": 27.1 }] }, { "id": 2, "name": "Shadow Amp: Risk Reduction 2", "data": [{ "dice": 1, "allGood": 100, "glitch": 0, "criticalGlitch": 0, "disaster": 0 }, { "dice": 2, "allGood": 100, "glitch": 0, "criticalGlitch": 0, "disaster": 0 }, { "dice": 3, "allGood": 98.1, "glitch": 1.9, "criticalGlitch": 0, "disaster": 0 }, { "dice": 4, "allGood": 94.4, "glitch": 5.1, "criticalGlitch": 0.5, "disaster": 0 }, { "dice": 5, "allGood": 89.4, "glitch": 9.3, "criticalGlitch": 1.2, "disaster": 0.1 }, { "dice": 6, "allGood": 83.3, "glitch": 14.4, "criticalGlitch": 2.1, "disaster": 0.2 }, { "dice": 7, "allGood": 76.4, "glitch": 19.4, "criticalGlitch": 3.5, "disaster": 0.7 }, { "dice": 8, "allGood": 69, "glitch": 23.6, "criticalGlitch": 5.3, "disaster": 1.1 }, { "dice": 9, "allGood": 61.6, "glitch": 26.9, "criticalGlitch": 7.4, "disaster": 2.1 }, { "dice": 10, "allGood": 54.6, "glitch": 29.2, "criticalGlitch": 9.7, "disaster": 3.5 }, { "dice": 11, "allGood": 48.1, "glitch": 30.6, "criticalGlitch": 11.8, "disaster": 5.5 }, { "dice": 12, "allGood": 42.4, "glitch": 31, "criticalGlitch": 13.5, "disaster": 8.1 }, { "dice": 13, "allGood": 37.3, "glitch": 30.6, "criticalGlitch": 14.8, "disaster": 11.3 }, { "dice": 14, "allGood": 32.9, "glitch": 29.6, "criticalGlitch": 15.8, "disaster": 15.7 }, { "dice": 15, "allGood": 29, "glitch": 28.2, "criticalGlitch": 16.4, "disaster": 20.4 }, { "dice": 16, "allGood": 48.7, "glitch": 24.2, "criticalGlitch": 15.8, "disaster": 11.3 }] }, { "id": 3, "name": "Shadow Amp: Risk Reduction 3", "data": [{ "dice": 1, "allGood": 100, "glitch": 0, "criticalGlitch": 0, "disaster": 0 }, { "dice": 2, "allGood": 100, "glitch": 0, "criticalGlitch": 0, "disaster": 0 }, { "dice": 3, "allGood": 100, "glitch": 0, "criticalGlitch": 0, "disaster": 0 }, { "dice": 4, "allGood": 99.1, "glitch": 0.9, "criticalGlitch": 0, "disaster": 0 }, { "dice": 5, "allGood": 97.2, "glitch": 2.6, "criticalGlitch": 0.2, "disaster": 0 }, { "dice": 6, "allGood": 94.4, "glitch": 5.1, "criticalGlitch": 0.5, "disaster": 0 }, { "dice": 7, "allGood": 90.7, "glitch": 8.3, "criticalGlitch": 0.9, "disaster": 0.1 }, { "dice": 8, "allGood": 86.1, "glitch": 12, "criticalGlitch": 1.6, "disaster": 0.3 }, { "dice": 9, "allGood": 80.6, "glitch": 16.2, "criticalGlitch": 2.6, "disaster": 0.6 }, { "dice": 10, "allGood": 74.5, "glitch": 20.4, "criticalGlitch": 3.9, "disaster": 1.2 }, { "dice": 11, "allGood": 68.1, "glitch": 24.1, "criticalGlitch": 5.3, "disaster": 2.5 }, { "dice": 12, "allGood": 61.6, "glitch": 27.3, "criticalGlitch": 6.9, "disaster": 4.2 }, { "dice": 13, "allGood": 55.1, "glitch": 30.1, "criticalGlitch": 8.3, "disaster": 6.5 }, { "dice": 14, "allGood": 48.8, "glitch": 32.4, "criticalGlitch": 9.5, "disaster": 9.3 }, { "dice": 15, "allGood": 42.8, "glitch": 34.3, "criticalGlitch": 10.5, "disaster": 12.4 }, { "dice": 16, "allGood": 72.9, "glitch": 15.8, "criticalGlitch": 7.6, "disaster": 3.8 }] }] };
+const shadowAmpProbabilities$1 = {
+  shadowAmpProbabilities
+};
 class RollDialog extends Application {
   rollData;
   actor = null;
@@ -6668,8 +6672,6 @@ class RollDialog extends Application {
   // Selected range: 'melee', 'short', 'medium', 'long'
   rollMode = "normal";
   // Roll mode
-  selectedAttribute = null;
-  // Selected attribute for skill/spec rolls (can differ from linked attribute)
   constructor(rollData) {
     super();
     this.rollData = rollData;
@@ -6717,9 +6719,6 @@ class RollDialog extends Application {
     }
     if (rollData.isCounterAttack && rollData.availableWeapons && rollData.availableWeapons.length > 0 && this.actor) {
       this.autoSelectWeaponForCounterAttack();
-    }
-    if (rollData.linkedAttribute) {
-      this.selectedAttribute = rollData.linkedAttribute;
     }
   }
   /**
@@ -6880,7 +6879,7 @@ class RollDialog extends Application {
       classes: ["sra2", "roll-dialog"],
       template: "systems/sra2/templates/roll-dialog.hbs",
       width: 760,
-      height: 575,
+      height: 630,
       resizable: true,
       minimizable: false,
       title: "Jet de Dés"
@@ -6983,46 +6982,19 @@ class RollDialog extends Application {
     context.selectedRangeValue = selectedRangeValue;
     context.rollMode = this.rollMode;
     context.hasSevereWound = hasSevereWound;
-    if (context.isSkillSpecAttributeRoll && this.actor) {
-      const attributes = this.actor.system?.attributes || {};
-      const i18n = game.i18n;
-      context.attributeOptions = [
-        { value: "strength", label: i18n?.localize("SRA2.ATTRIBUTES.STRENGTH") || "Force", diceValue: attributes.strength || 0 },
-        { value: "agility", label: i18n?.localize("SRA2.ATTRIBUTES.AGILITY") || "Agilité", diceValue: attributes.agility || 0 },
-        { value: "willpower", label: i18n?.localize("SRA2.ATTRIBUTES.WILLPOWER") || "Volonté", diceValue: attributes.willpower || 0 },
-        { value: "logic", label: i18n?.localize("SRA2.ATTRIBUTES.LOGIC") || "Logique", diceValue: attributes.logic || 0 },
-        { value: "charisma", label: i18n?.localize("SRA2.ATTRIBUTES.CHARISMA") || "Charisme", diceValue: attributes.charisma || 0 }
-      ];
-      context.selectedAttribute = this.selectedAttribute || this.rollData.linkedAttribute || "strength";
-    }
     context.rangeOptions = {
       melee: { label: "Mêlée (< 3m)", value: meleeRange },
       short: { label: "Portée courte (3-15m)", value: shortRange },
       medium: { label: "Portée moyenne (15-60m)", value: mediumRange },
       long: { label: "Portée longue (> 60m)", value: longRange }
     };
-    const attributeToUse = this.selectedAttribute || this.rollData.linkedAttribute;
     let dicePool = 0;
     if (this.rollData.specLevel !== void 0) {
-      if (this.selectedAttribute && this.rollData.linkedAttribute && this.selectedAttribute !== this.rollData.linkedAttribute && this.actor) {
-        const attributeValue = this.actor.system?.attributes?.[this.selectedAttribute] || 0;
-        const linkedAttributeValue = this.actor.system?.attributes?.[this.rollData.linkedAttribute] || 0;
-        const skillRating = this.rollData.skillLevel ? this.rollData.skillLevel - linkedAttributeValue : 0;
-        dicePool = attributeValue + skillRating + 2;
-      } else {
-        dicePool = this.rollData.specLevel;
-      }
+      dicePool = this.rollData.specLevel;
     } else if (this.rollData.skillLevel !== void 0) {
-      if (this.selectedAttribute && this.rollData.linkedAttribute && this.selectedAttribute !== this.rollData.linkedAttribute && this.actor) {
-        const attributeValue = this.actor.system?.attributes?.[this.selectedAttribute] || 0;
-        const linkedAttributeValue = this.actor.system?.attributes?.[this.rollData.linkedAttribute] || 0;
-        const skillRating = this.rollData.skillLevel - linkedAttributeValue;
-        dicePool = attributeValue + skillRating;
-      } else {
-        dicePool = this.rollData.skillLevel;
-      }
-    } else if (attributeToUse) {
-      const attributeValue = this.actor?.system?.attributes?.[attributeToUse] || 0;
+      dicePool = this.rollData.skillLevel;
+    } else if (this.rollData.linkedAttribute) {
+      const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
       dicePool = attributeValue;
     }
     context.dicePool = dicePool;
@@ -7085,44 +7057,102 @@ class RollDialog extends Application {
     context.totalRR = Math.min(3, totalRR);
     context.rrSources = rrSources;
     context.vd = this.rollData.damageValue || 0;
-    const getDiceColor = (dicePosition, rr) => {
-      if (rr === 0) {
-        if (dicePosition === 1) return "green";
-        if (dicePosition >= 2 && dicePosition <= 3) return "yellow";
-        if (dicePosition >= 4 && dicePosition <= 5) return "orange";
-        return "red";
-      } else if (rr === 1) {
-        if (dicePosition >= 1 && dicePosition <= 4) return "green";
-        if (dicePosition >= 5 && dicePosition <= 6) return "yellow";
-        if (dicePosition >= 7 && dicePosition <= 9) return "orange";
-        return "red";
-      } else if (rr === 2) {
-        if (dicePosition >= 1 && dicePosition <= 7) return "green";
-        if (dicePosition >= 8 && dicePosition <= 9) return "yellow";
-        if (dicePosition >= 10 && dicePosition <= 12) return "orange";
-        return "red";
-      } else if (rr === 3) {
-        if (dicePosition >= 1 && dicePosition <= 10) return "green";
-        if (dicePosition >= 11 && dicePosition <= 12) return "yellow";
-        if (dicePosition >= 13 && dicePosition <= 16) return "orange";
-        return "red";
+    const getRiskProbabilities = (riskDice, rr) => {
+      if (riskDice <= 0) {
+        return {
+          allGood: 100,
+          glitch: 0,
+          criticalGlitch: 0,
+          disaster: 0
+        };
       }
-      return "green";
+      const clampedRiskDice = Math.max(1, Math.min(16, riskDice));
+      const clampedRR = Math.max(0, Math.min(3, rr));
+      const probabilitiesData = shadowAmpProbabilities$1?.shadowAmpProbabilities || shadowAmpProbabilities$1;
+      const condition = probabilitiesData?.conditions?.find(
+        (c) => c.id === clampedRR
+      );
+      if (!condition) {
+        return {
+          allGood: 0,
+          glitch: 0,
+          criticalGlitch: 0,
+          disaster: 0
+        };
+      }
+      const diceData = condition.data.find((d) => d.dice === clampedRiskDice);
+      if (!diceData) {
+        return {
+          allGood: 0,
+          glitch: 0,
+          criticalGlitch: 0,
+          disaster: 0
+        };
+      }
+      return {
+        allGood: diceData.allGood,
+        glitch: diceData.glitch,
+        criticalGlitch: diceData.criticalGlitch,
+        disaster: diceData.disaster
+      };
     };
+    const riskProbabilities = getRiskProbabilities(this.riskDiceCount, context.totalRR);
+    const criticalGlitch = riskProbabilities.criticalGlitch;
+    const disaster = riskProbabilities.disaster;
+    let riskColorClass = "probability-extreme";
+    let riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME";
+    if (criticalGlitch < 2 && disaster < 0.2) {
+      riskColorClass = "probability-low";
+      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.LOW_TO_NO";
+    } else if (criticalGlitch < 7.5 && disaster < 1) {
+      riskColorClass = "probability-normal";
+      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.NORMAL";
+    } else if (criticalGlitch < 20 && disaster < 5) {
+      riskColorClass = "probability-high";
+      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.HIGH";
+    } else {
+      riskColorClass = "probability-extreme";
+      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME";
+    }
+    const riskLevelText = game.i18n?.localize(riskLevelTextKey) || riskLevelTextKey;
+    context.riskProbabilities = {
+      allGood: riskProbabilities.allGood.toFixed(1).replace(".", ","),
+      allGoodColorClass: riskColorClass,
+      glitch: riskProbabilities.glitch.toFixed(1).replace(".", ","),
+      glitchColorClass: riskColorClass,
+      criticalGlitch: riskProbabilities.criticalGlitch.toFixed(1).replace(".", ","),
+      criticalGlitchColorClass: riskColorClass,
+      disaster: riskProbabilities.disaster.toFixed(1).replace(".", ","),
+      disasterColorClass: riskColorClass
+    };
+    const getDiceColorFromRiskClass = (riskClass) => {
+      switch (riskClass) {
+        case "probability-low":
+          return "green";
+        case "probability-normal":
+          return "blue";
+        case "probability-high":
+          return "yellow";
+        case "probability-extreme":
+          return "red";
+        default:
+          return "green";
+      }
+    };
+    const diceColor = getDiceColorFromRiskClass(riskColorClass);
     context.diceList = [];
-    const currentRR = Math.min(3, totalRR);
+    context.riskDiceCount = this.riskDiceCount;
+    context.riskLevelText = riskLevelText;
+    context.riskColorClass = riskColorClass;
     for (let i = 0; i < dicePool; i++) {
-      const dicePosition = i + 1;
-      const riskColor = getDiceColor(dicePosition, currentRR);
       context.diceList.push({
         index: i,
         isRiskDice: i < this.riskDiceCount,
         // First N dice are risk dice
-        riskColor
-        // Color based on RR and position
+        riskColor: diceColor
+        // Color based on risk level
       });
     }
-    context.riskDiceCount = this.riskDiceCount;
     if (this.actor) {
       const skills = this.actor.items.filter((item) => item.type === "skill").map((skill) => {
         const linkedAttribute = skill.system?.linkedAttribute || "strength";
@@ -7220,6 +7250,51 @@ class RollDialog extends Application {
         context.selectedValue = "";
       }
     }
+    const attributeOptions = [];
+    if (this.actor) {
+      const actorSystem = this.actor.system;
+      const attributes = actorSystem?.attributes || {};
+      const attributeNames = ["strength", "agility", "willpower", "logic", "charisma"];
+      const attributeLabels = {
+        strength: game.i18n?.localize("SRA2.ATTRIBUTES.STRENGTH") || "Force",
+        agility: game.i18n?.localize("SRA2.ATTRIBUTES.AGILITY") || "Agilité",
+        willpower: game.i18n?.localize("SRA2.ATTRIBUTES.WILLPOWER") || "Volonté",
+        logic: game.i18n?.localize("SRA2.ATTRIBUTES.LOGIC") || "Logique",
+        charisma: game.i18n?.localize("SRA2.ATTRIBUTES.CHARISMA") || "Charisme"
+      };
+      for (const attrName of attributeNames) {
+        const attrValue = attributes[attrName] || 0;
+        attributeOptions.push({
+          value: attrName,
+          label: attributeLabels[attrName] || attrName,
+          diceValue: attrValue
+        });
+      }
+    }
+    context.attributeOptions = attributeOptions;
+    let selectedAttribute = this.rollData.linkedAttribute;
+    if (!selectedAttribute && this.actor) {
+      if (this.rollData.specName) {
+        const specItem = this.actor.items.find(
+          (i) => i.type === "specialization" && i.name === this.rollData.specName
+        );
+        if (specItem) {
+          selectedAttribute = specItem.system?.linkedAttribute;
+        }
+      }
+      if (!selectedAttribute && this.rollData.skillName) {
+        const skillItem = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === this.rollData.skillName
+        );
+        if (skillItem) {
+          selectedAttribute = skillItem.system?.linkedAttribute;
+        }
+      }
+      if (!selectedAttribute && attributeOptions.length > 0) {
+        selectedAttribute = attributeOptions[0].value;
+      }
+    }
+    context.selectedAttribute = selectedAttribute || "";
     return context;
   }
   activateListeners(html) {
@@ -7332,24 +7407,22 @@ class RollDialog extends Application {
       if (!item) return;
       if (type === "skill") {
         const skillSystem = item.system;
-        const linkedAttribute = skillSystem.linkedAttribute || "strength";
-        this.selectedAttribute = linkedAttribute;
-        const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+        const selectedAttribute = this.rollData.linkedAttribute || skillSystem.linkedAttribute || "strength";
+        const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
         const skillRating = skillSystem.rating || 0;
         const dicePool = attributeValue + skillRating;
         this.rollData.skillName = item.name;
         this.rollData.specName = void 0;
         this.rollData.skillLevel = dicePool;
         this.rollData.specLevel = void 0;
-        this.rollData.linkedAttribute = linkedAttribute;
-        this.updateRRForSkill(item.name, linkedAttribute, dicePool);
+        this.rollData.linkedAttribute = selectedAttribute;
+        this.updateRRForSkill(item.name, selectedAttribute, dicePool);
         this.render();
       } else if (type === "spec") {
         const specSystem = item.system;
-        const linkedAttribute = specSystem.linkedAttribute || "strength";
-        this.selectedAttribute = linkedAttribute;
+        const selectedAttribute = this.rollData.linkedAttribute || specSystem.linkedAttribute || "strength";
         const linkedSkillName = specSystem.linkedSkill;
-        const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
+        const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
         const parentSkill = this.actor.items.find(
           (i) => i.type === "skill" && i.name === linkedSkillName
         );
@@ -7358,12 +7431,58 @@ class RollDialog extends Application {
         const dicePool = attributeValue + effectiveRating;
         this.rollData.specName = item.name;
         this.rollData.skillName = linkedSkillName;
-        this.rollData.skillLevel = attributeValue + skillRating;
+        this.rollData.skillLevel = skillRating;
         this.rollData.specLevel = dicePool;
-        this.rollData.linkedAttribute = linkedAttribute;
-        this.updateRRForSpec(item.name, linkedSkillName, linkedAttribute, dicePool);
+        this.rollData.linkedAttribute = selectedAttribute;
+        this.updateRRForSpec(item.name, linkedSkillName, selectedAttribute, dicePool);
         this.render();
       }
+    });
+    html.find(".attribute-dropdown").on("change", (event) => {
+      const select = event.currentTarget;
+      const selectedAttribute = select.value;
+      if (!selectedAttribute || !this.actor) return;
+      this.rollData.linkedAttribute = selectedAttribute;
+      if (this.rollData.specName && this.rollData.skillName) {
+        const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
+        const linkedSkillName = this.rollData.skillName;
+        const parentSkill = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === linkedSkillName
+        );
+        const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
+        const effectiveRating = skillRating + 2;
+        const dicePool = attributeValue + effectiveRating;
+        this.rollData.specLevel = dicePool;
+        this.rollData.skillLevel = skillRating;
+        this.updateRRForSpec(this.rollData.specName, linkedSkillName, selectedAttribute, dicePool);
+      } else if (this.rollData.skillName) {
+        const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
+        const skillItem = this.actor.items.find(
+          (i) => i.type === "skill" && i.name === this.rollData.skillName
+        );
+        const skillRating = skillItem ? skillItem.system.rating || 0 : 0;
+        const dicePool = attributeValue + skillRating;
+        this.rollData.skillLevel = dicePool;
+        this.rollData.specLevel = void 0;
+        this.updateRRForSkill(this.rollData.skillName, selectedAttribute, dicePool);
+      } else {
+        this.rollData.skillLevel = void 0;
+        this.rollData.specLevel = void 0;
+        const attributeRRSources = getRRSources(this.actor, "attribute", selectedAttribute);
+        this.rollData.rrList = attributeRRSources;
+        this.rrEnabled.clear();
+        for (const rrSource of this.rollData.rrList) {
+          if (rrSource && typeof rrSource === "object") {
+            const rrValue = rrSource.rrValue || 0;
+            const featName = rrSource.featName || "Inconnu";
+            if (rrValue > 0) {
+              const rrId = `${featName}-${rrValue}`;
+              this.rrEnabled.set(rrId, true);
+            }
+          }
+        }
+      }
+      this.render();
     });
     html.find(".rr-checkbox").on("change", (event) => {
       const checkbox = event.currentTarget;
@@ -7408,42 +7527,6 @@ class RollDialog extends Application {
           } else if (rangeValueForSelected === "ok") {
             this.rollMode = "normal";
           }
-        }
-      }
-      this.render();
-    });
-    html.find(".attribute-dropdown").on("change", (event) => {
-      const select = event.currentTarget;
-      const selectedAttributeValue = select.value;
-      if (!selectedAttributeValue || !this.actor) return;
-      this.selectedAttribute = selectedAttributeValue;
-      const attributeValueNum = this.actor.system?.attributes?.[selectedAttributeValue] || 0;
-      if (this.rollData.specName) {
-        const specItem = this.actor.items.find(
-          (i) => i.type === "specialization" && i.name === this.rollData.specName
-        );
-        if (specItem) {
-          const specSystem = specItem.system;
-          const linkedSkillName = specSystem.linkedSkill;
-          const parentSkill = this.actor.items.find(
-            (i) => i.type === "skill" && i.name === linkedSkillName
-          );
-          const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
-          const dicePool = attributeValueNum + skillRating + 2;
-          this.rollData.specLevel = dicePool;
-          this.rollData.skillLevel = attributeValueNum + skillRating;
-          this.updateRRForSpec(this.rollData.specName, linkedSkillName, selectedAttributeValue, dicePool);
-        }
-      } else if (this.rollData.skillName) {
-        const skillItem = this.actor.items.find(
-          (i) => i.type === "skill" && i.name === this.rollData.skillName
-        );
-        if (skillItem) {
-          const skillSystem = skillItem.system;
-          const skillRating = skillSystem.rating || 0;
-          const dicePool = attributeValueNum + skillRating;
-          this.rollData.skillLevel = dicePool;
-          this.updateRRForSkill(this.rollData.skillName, selectedAttributeValue, dicePool);
         }
       }
       this.render();

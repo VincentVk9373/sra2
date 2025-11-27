@@ -485,8 +485,10 @@
             gap: 0.3rem;
 
             .dice-list-container {
-                display: flex;
+                display: grid;
+                grid-template-columns: 2fr 1fr;
                 flex-direction: column;
+                min-height: 64px;
                 align-items: center;
                 gap: 0.4rem;
                 width: 100%;
@@ -521,6 +523,11 @@
                         &.dice-green {
                             background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
                             border: 2px solid #4caf50;
+                        }
+
+                        &.dice-blue {
+                            background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+                            border: 2px solid #2196f3;
                         }
 
                         &.dice-yellow {
@@ -595,6 +602,48 @@
                         font-size: 0.75rem;
                         color: #9c6cb1;
                         font-weight: bold;
+                    }
+                }
+
+                .risk-dice-count-text {
+                    font-size: 0.85rem;
+                    color: #9c6cb1;
+                    font-weight: bold;
+                    text-align: center;
+                    margin-top: 0.3rem;
+                    padding: 0.2rem 0.5rem;
+                }
+
+                .risk-level-text {
+                    font-size: 0.9rem;
+                    font-weight: bold;
+                    padding: 0.3rem 0.6rem;
+                    border-radius: 4px;
+                    text-align: center;
+                    margin-top: 0.3rem;
+
+                    &.risk-level-probability-low {
+                        color: #4caf50;
+                        background: rgba(76, 175, 80, 0.1);
+                        border: 1px solid rgba(76, 175, 80, 0.3);
+                    }
+
+                    &.risk-level-probability-normal {
+                        color: #2196f3;
+                        background: rgba(33, 150, 243, 0.1);
+                        border: 1px solid rgba(33, 150, 243, 0.3);
+                    }
+
+                    &.risk-level-probability-high {
+                        color: #ffc107;
+                        background: rgba(255, 193, 7, 0.1);
+                        border: 1px solid rgba(255, 193, 7, 0.3);
+                    }
+
+                    &.risk-level-probability-extreme {
+                        color: #f44336;
+                        background: rgba(244, 67, 54, 0.1);
+                        border: 1px solid rgba(244, 67, 54, 0.3);
                     }
                 }
             }
@@ -702,6 +751,115 @@
                         }
                     }
                 }
+            }
+        }
+
+        .risk-probabilities {
+            .probabilities-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.3rem;
+                padding: 0.4rem;
+                background: rgba(15, 52, 96, 0.3);
+                border: 1px solid #0f3460;
+                border-radius: 4px;
+
+                .probability-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 0.25rem 0.4rem;
+                    background: rgba(255, 255, 255, 0.03);
+                    border-radius: 3px;
+                    font-size: 0.8rem;
+
+                    .probability-label {
+                        color: #e0e0e0;
+                        flex: 1;
+                    }
+
+                    .probability-value {
+                        font-weight: bold;
+                        min-width: 50px;
+                        text-align: right;
+
+                        &.probability-low {
+                            color: #4caf50; // Green - Low to no risk
+                        }
+
+                        &.probability-normal {
+                            color: #2196f3; // Blue - Normal risk
+                        }
+
+                        &.probability-high {
+                            color: #ffc107; // Yellow - High risk
+                        }
+
+                        &.probability-extreme {
+                            color: #f44336; // Red - Extreme risk
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /* Quick Actions Section */
+    .quick-actions-section {
+        .quick-actions-display {
+            padding: 0.5rem;
+            background: rgba(15, 52, 96, 0.3);
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            min-height: 3rem;
+
+            .quick-actions-items {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+
+                .quick-action-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 0.25rem 0.5rem;
+                    background: rgba(0, 212, 255, 0.1);
+                    border: 1px solid #00d4ff;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    font-size: 0.8rem;
+
+                    i {
+                        color: #00d4ff;
+                        font-size: 0.75rem;
+                    }
+
+                    .quick-action-name {
+                        color: #e0e0e0;
+                        font-weight: 500;
+                        white-space: nowrap;
+                    }
+
+                    &:hover {
+                        background: rgba(0, 212, 255, 0.2);
+                        border-color: #00d4ff;
+                        box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
+                        transform: translateY(-1px);
+
+                        i {
+                            color: #ffd700;
+                        }
+                    }
+                }
+            }
+
+            .quick-actions-empty {
+                padding: 0.5rem;
+                text-align: center;
+                color: #999;
+                font-style: italic;
+                font-size: 0.85rem;
             }
         }
     }

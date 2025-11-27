@@ -64,11 +64,11 @@
           </div>
         </div>
       </div>
-      {{#if bookmarkedItems}}
       <div class="bookmarks-list">
         <div class="bookmarks-header">
           <i class="fas fa-star"></i> {{localize "SRA2.BOOKMARKS.TITLE"}}
         </div>
+        {{#if bookmarkedItems.length}}
         <div class="bookmarks-items">
           {{#each bookmarkedItems}}
           <div class="bookmark-item" data-item-id="{{this._id}}" data-item-type="{{this.type}}"
@@ -78,8 +78,12 @@
           </div>
           {{/each}}
         </div>
+        {{else}}
+        <div class="bookmarks-empty">
+          <i>Aucune action rapide</i>
+        </div>
+        {{/if}}
       </div>
-      {{/if}}
     </div>
   </header>
 

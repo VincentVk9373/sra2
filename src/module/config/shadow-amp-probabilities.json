@@ -1,0 +1,479 @@
+{
+  "shadowAmpProbabilities": {
+    "conditions": [
+      {
+        "id": 0,
+        "name": "No Shadow Amp",
+        "data": [
+          {
+            "dice": 1,
+            "allGood": 83.3,
+            "glitch": 16.7,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 2,
+            "allGood": 69.4,
+            "glitch": 27.8,
+            "criticalGlitch": 2.8,
+            "disaster": 0.0
+          },
+          {
+            "dice": 3,
+            "allGood": 57.9,
+            "glitch": 34.7,
+            "criticalGlitch": 6.5,
+            "disaster": 0.9
+          },
+          {
+            "dice": 4,
+            "allGood": 48.2,
+            "glitch": 38.2,
+            "criticalGlitch": 11.1,
+            "disaster": 2.5
+          },
+          {
+            "dice": 5,
+            "allGood": 40.2,
+            "glitch": 40.2,
+            "criticalGlitch": 15.3,
+            "disaster": 4.3
+          },
+          {
+            "dice": 6,
+            "allGood": 33.5,
+            "glitch": 40.2,
+            "criticalGlitch": 19.0,
+            "disaster": 7.3
+          },
+          {
+            "dice": 7,
+            "allGood": 27.9,
+            "glitch": 38.9,
+            "criticalGlitch": 22.2,
+            "disaster": 11.0
+          },
+          {
+            "dice": 8,
+            "allGood": 23.3,
+            "glitch": 36.6,
+            "criticalGlitch": 24.8,
+            "disaster": 15.3
+          },
+          {
+            "dice": 9,
+            "allGood": 19.4,
+            "glitch": 33.8,
+            "criticalGlitch": 26.9,
+            "disaster": 19.9
+          },
+          {
+            "dice": 10,
+            "allGood": 16.2,
+            "glitch": 30.6,
+            "criticalGlitch": 28.2,
+            "disaster": 25.0
+          },
+          {
+            "dice": 11,
+            "allGood": 13.5,
+            "glitch": 27.3,
+            "criticalGlitch": 28.7,
+            "disaster": 30.5
+          },
+          {
+            "dice": 12,
+            "allGood": 11.3,
+            "glitch": 24.1,
+            "criticalGlitch": 28.2,
+            "disaster": 36.4
+          },
+          {
+            "dice": 13,
+            "allGood": 9.4,
+            "glitch": 21.3,
+            "criticalGlitch": 27.1,
+            "disaster": 42.2
+          },
+          {
+            "dice": 14,
+            "allGood": 7.8,
+            "glitch": 18.8,
+            "criticalGlitch": 26.0,
+            "disaster": 47.4
+          },
+          {
+            "dice": 15,
+            "allGood": 6.5,
+            "glitch": 16.7,
+            "criticalGlitch": 25.5,
+            "disaster": 51.3
+          },
+          {
+            "dice": 16,
+            "allGood": 5.4,
+            "glitch": 17.3,
+            "criticalGlitch": 26.0,
+            "disaster": 51.3
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "name": "Shadow Amp: Risk Reduction 1",
+        "data": [
+          {
+            "dice": 1,
+            "allGood": 100.0,
+            "glitch": 0.0,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 2,
+            "allGood": 97.2,
+            "glitch": 2.8,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 3,
+            "allGood": 91.7,
+            "glitch": 7.4,
+            "criticalGlitch": 0.9,
+            "disaster": 0.0
+          },
+          {
+            "dice": 4,
+            "allGood": 84.3,
+            "glitch": 13.0,
+            "criticalGlitch": 2.3,
+            "disaster": 0.4
+          },
+          {
+            "dice": 5,
+            "allGood": 75.7,
+            "glitch": 19.0,
+            "criticalGlitch": 4.2,
+            "disaster": 1.1
+          },
+          {
+            "dice": 6,
+            "allGood": 66.7,
+            "glitch": 24.1,
+            "criticalGlitch": 6.5,
+            "disaster": 2.7
+          },
+          {
+            "dice": 7,
+            "allGood": 57.9,
+            "glitch": 27.8,
+            "criticalGlitch": 9.3,
+            "disaster": 5.0
+          },
+          {
+            "dice": 8,
+            "allGood": 49.8,
+            "glitch": 30.1,
+            "criticalGlitch": 12.0,
+            "disaster": 8.1
+          },
+          {
+            "dice": 9,
+            "allGood": 42.6,
+            "glitch": 31.0,
+            "criticalGlitch": 14.4,
+            "disaster": 12.0
+          },
+          {
+            "dice": 10,
+            "allGood": 36.4,
+            "glitch": 30.6,
+            "criticalGlitch": 16.2,
+            "disaster": 16.8
+          },
+          {
+            "dice": 11,
+            "allGood": 31.0,
+            "glitch": 29.2,
+            "criticalGlitch": 17.4,
+            "disaster": 22.4
+          },
+          {
+            "dice": 12,
+            "allGood": 26.4,
+            "glitch": 27.3,
+            "criticalGlitch": 18.1,
+            "disaster": 28.2
+          },
+          {
+            "dice": 13,
+            "allGood": 22.5,
+            "glitch": 25.0,
+            "criticalGlitch": 18.3,
+            "disaster": 34.2
+          },
+          {
+            "dice": 14,
+            "allGood": 19.2,
+            "glitch": 22.7,
+            "criticalGlitch": 18.2,
+            "disaster": 39.9
+          },
+          {
+            "dice": 15,
+            "allGood": 16.4,
+            "glitch": 20.4,
+            "criticalGlitch": 17.8,
+            "disaster": 45.4
+          },
+          {
+            "dice": 16,
+            "allGood": 22.7,
+            "glitch": 26.0,
+            "criticalGlitch": 24.2,
+            "disaster": 27.1
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Shadow Amp: Risk Reduction 2",
+        "data": [
+          {
+            "dice": 1,
+            "allGood": 100.0,
+            "glitch": 0.0,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 2,
+            "allGood": 100.0,
+            "glitch": 0.0,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 3,
+            "allGood": 98.1,
+            "glitch": 1.9,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 4,
+            "allGood": 94.4,
+            "glitch": 5.1,
+            "criticalGlitch": 0.5,
+            "disaster": 0.0
+          },
+          {
+            "dice": 5,
+            "allGood": 89.4,
+            "glitch": 9.3,
+            "criticalGlitch": 1.2,
+            "disaster": 0.1
+          },
+          {
+            "dice": 6,
+            "allGood": 83.3,
+            "glitch": 14.4,
+            "criticalGlitch": 2.1,
+            "disaster": 0.2
+          },
+          {
+            "dice": 7,
+            "allGood": 76.4,
+            "glitch": 19.4,
+            "criticalGlitch": 3.5,
+            "disaster": 0.7
+          },
+          {
+            "dice": 8,
+            "allGood": 69.0,
+            "glitch": 23.6,
+            "criticalGlitch": 5.3,
+            "disaster": 1.1
+          },
+          {
+            "dice": 9,
+            "allGood": 61.6,
+            "glitch": 26.9,
+            "criticalGlitch": 7.4,
+            "disaster": 2.1
+          },
+          {
+            "dice": 10,
+            "allGood": 54.6,
+            "glitch": 29.2,
+            "criticalGlitch": 9.7,
+            "disaster": 3.5
+          },
+          {
+            "dice": 11,
+            "allGood": 48.1,
+            "glitch": 30.6,
+            "criticalGlitch": 11.8,
+            "disaster": 5.5
+          },
+          {
+            "dice": 12,
+            "allGood": 42.4,
+            "glitch": 31.0,
+            "criticalGlitch": 13.5,
+            "disaster": 8.1
+          },
+          {
+            "dice": 13,
+            "allGood": 37.3,
+            "glitch": 30.6,
+            "criticalGlitch": 14.8,
+            "disaster": 11.3
+          },
+          {
+            "dice": 14,
+            "allGood": 32.9,
+            "glitch": 29.6,
+            "criticalGlitch": 15.8,
+            "disaster": 15.7
+          },
+          {
+            "dice": 15,
+            "allGood": 29.0,
+            "glitch": 28.2,
+            "criticalGlitch": 16.4,
+            "disaster": 20.4
+          },
+          {
+            "dice": 16,
+            "allGood": 48.7,
+            "glitch": 24.2,
+            "criticalGlitch": 15.8,
+            "disaster": 11.3
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Shadow Amp: Risk Reduction 3",
+        "data": [
+          {
+            "dice": 1,
+            "allGood": 100.0,
+            "glitch": 0.0,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 2,
+            "allGood": 100.0,
+            "glitch": 0.0,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 3,
+            "allGood": 100.0,
+            "glitch": 0.0,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 4,
+            "allGood": 99.1,
+            "glitch": 0.9,
+            "criticalGlitch": 0.0,
+            "disaster": 0.0
+          },
+          {
+            "dice": 5,
+            "allGood": 97.2,
+            "glitch": 2.6,
+            "criticalGlitch": 0.2,
+            "disaster": 0.0
+          },
+          {
+            "dice": 6,
+            "allGood": 94.4,
+            "glitch": 5.1,
+            "criticalGlitch": 0.5,
+            "disaster": 0.0
+          },
+          {
+            "dice": 7,
+            "allGood": 90.7,
+            "glitch": 8.3,
+            "criticalGlitch": 0.9,
+            "disaster": 0.1
+          },
+          {
+            "dice": 8,
+            "allGood": 86.1,
+            "glitch": 12.0,
+            "criticalGlitch": 1.6,
+            "disaster": 0.3
+          },
+          {
+            "dice": 9,
+            "allGood": 80.6,
+            "glitch": 16.2,
+            "criticalGlitch": 2.6,
+            "disaster": 0.6
+          },
+          {
+            "dice": 10,
+            "allGood": 74.5,
+            "glitch": 20.4,
+            "criticalGlitch": 3.9,
+            "disaster": 1.2
+          },
+          {
+            "dice": 11,
+            "allGood": 68.1,
+            "glitch": 24.1,
+            "criticalGlitch": 5.3,
+            "disaster": 2.5
+          },
+          {
+            "dice": 12,
+            "allGood": 61.6,
+            "glitch": 27.3,
+            "criticalGlitch": 6.9,
+            "disaster": 4.2
+          },
+          {
+            "dice": 13,
+            "allGood": 55.1,
+            "glitch": 30.1,
+            "criticalGlitch": 8.3,
+            "disaster": 6.5
+          },
+          {
+            "dice": 14,
+            "allGood": 48.8,
+            "glitch": 32.4,
+            "criticalGlitch": 9.5,
+            "disaster": 9.3
+          },
+          {
+            "dice": 15,
+            "allGood": 42.8,
+            "glitch": 34.3,
+            "criticalGlitch": 10.5,
+            "disaster": 12.4
+          },
+          {
+            "dice": 16,
+            "allGood": 72.9,
+            "glitch": 15.8,
+            "criticalGlitch": 7.6,
+            "disaster": 3.8
+          }
+        ]
+      }
+    ]
+  }
+}
+

@@ -749,6 +749,14 @@
             }
           }
         }
+
+        .bookmarks-empty {
+          padding: 0.5rem;
+          text-align: center;
+          color: #999;
+          font-style: italic;
+          font-size: 0.85rem;
+        }
       }
     }
   }

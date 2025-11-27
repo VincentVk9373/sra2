@@ -772,7 +772,19 @@
             "RISK_REDUCTION": "Risk Reduction",
             "RR": "RR",
             "SUCCESSES": "Successes",
-            "NORMAL_DICE": "Normal Dice"
+            "NORMAL_DICE": "Normal Dice",
+            "RISK_LEVEL": {
+                "LOW_TO_NO": "Low to no risk",
+                "NORMAL": "Normal risk",
+                "HIGH": "High risk",
+                "EXTREME": "Extreme risk"
+            },
+            "PROBABILITIES": {
+                "NO_COMPLICATION": "No complication",
+                "MINOR_COMPLICATION": "Minor complication",
+                "CRITICAL_COMPLICATION": "Critical complication",
+                "DISASTER": "Disaster"
+            }
         }
     }
 }

@@ -786,7 +786,19 @@
             "RISK_REDUCTION": "Réduction de risque",
             "RR": "RR",
             "SUCCESSES": "Succès",
-            "NORMAL_DICE": "Dés normaux"
+            "NORMAL_DICE": "Dés normaux",
+            "RISK_LEVEL": {
+                "LOW_TO_NO": "Risque faible à nul",
+                "NORMAL": "Risque normal",
+                "HIGH": "Risque élevé",
+                "EXTREME": "Risque extrême"
+            },
+            "PROBABILITIES": {
+                "NO_COMPLICATION": "Pas de complication",
+                "MINOR_COMPLICATION": "Complication mineure",
+                "CRITICAL_COMPLICATION": "Complication critique",
+                "DISASTER": "Désastre"
+            }
         }
     }
 }

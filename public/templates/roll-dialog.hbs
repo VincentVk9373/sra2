@@ -146,8 +146,7 @@
                 {{#if hasThreshold}}
                 <i class="fas fa-bullseye"></i> Seuil
                 {{else}}
-                <i class="fas fa-dice"></i> Pool de Dés | {{dicePool}} dés{{#if riskDiceCount}} <span
-                    class="risk-dice-count">| {{riskDiceCount}} dés de risque</span>{{/if}}
+                <i class="fas fa-dice"></i> Pool de Dés | {{dicePool}} dés
                 {{/if}}
             </h3>
             <div class="dice-pool-display">
@@ -167,6 +166,19 @@
                             <i class="fas fa-dice"></i>
                         </div>
                         {{/each}}
+                    </div>
+                    <div>
+
+                    {{#if riskDiceCount}}
+                    <div class="risk-dice-count-text">
+                        {{riskDiceCount}} dés de risque
+                    </div>
+                    {{/if}}
+                    {{#if riskLevelText}}
+                    <div class="risk-level-text risk-level-{{riskColorClass}}">
+                        {{riskLevelText}}
+                    </div>
+                    {{/if}}
                     </div>
                 </div>
                 {{/if}}
@@ -285,28 +297,57 @@
 
         <!-- VD and RR Summary -->
         <section class="roll-section summary-section">
-            <h3 class="section-title">
-                <i class="fas fa-info-circle"></i> Réduction de risque | {{totalRR}} RR
-            </h3>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <div class="summary-label">RR</div>
-                    <div class="summary-value">{{totalRR}}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle"></i> Réduction de risque | {{totalRR}} RR
+                    </h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">RR</div>
+                            <div class="summary-value">{{totalRR}}</div>
+                        </div>
+                        {{#if rrSources.length}}
+                        <div class="rr-sources">
+                            <ul class="rr-sources-list">
+                                {{#each rrSources}}
+                                <li class="rr-source-item">
+                                    <label class="rr-checkbox-label">
+                                        <input type="checkbox" class="rr-checkbox" data-rr-id="{{this.id}}" {{#if
+                                            this.enabled}}checked{{/if}} />
+                                        <span class="rr-source-name">{{this.featName}}</span>
+                                        <span class="rr-source-value">+{{this.rrValue}}</span>
+                                    </label>
+                                </li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                        {{/if}}
+                    </div>
                 </div>
-                {{#if rrSources.length}}
-                <div class="rr-sources">
-                    <ul class="rr-sources-list">
-                        {{#each rrSources}}
-                        <li class="rr-source-item">
-                            <label class="rr-checkbox-label">
-                                <input type="checkbox" class="rr-checkbox" data-rr-id="{{this.id}}" {{#if
-                                    this.enabled}}checked{{/if}} />
-                                <span class="rr-source-name">{{this.featName}}</span>
-                                <span class="rr-source-value">+{{this.rrValue}}</span>
-                            </label>
-                        </li>
-                        {{/each}}
-                    </ul>
+                {{#if riskProbabilities}}
+                <div class="risk-probabilities">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-pie"></i> Probabilités de risque
+                    </h3>
+                    <div class="probabilities-list">
+                        <div class="probability-item">
+                            <span class="probability-label">{{localize "SRA2.ROLL_DIALOG.PROBABILITIES.NO_COMPLICATION"}} :</span>
+                            <span class="probability-value {{riskProbabilities.allGoodColorClass}}">{{riskProbabilities.allGood}} %</span>
+                        </div>
+                        <div class="probability-item">
+                            <span class="probability-label">{{localize "SRA2.ROLL_DIALOG.PROBABILITIES.MINOR_COMPLICATION"}} :</span>
+                            <span class="probability-value {{riskProbabilities.glitchColorClass}}">{{riskProbabilities.glitch}} %</span>
+                        </div>
+                        <div class="probability-item">
+                            <span class="probability-label">{{localize "SRA2.ROLL_DIALOG.PROBABILITIES.CRITICAL_COMPLICATION"}} :</span>
+                            <span class="probability-value {{riskProbabilities.criticalGlitchColorClass}}">{{riskProbabilities.criticalGlitch}} %</span>
+                        </div>
+                        <div class="probability-item">
+                            <span class="probability-label">{{localize "SRA2.ROLL_DIALOG.PROBABILITIES.DISASTER"}} :</span>
+                            <span class="probability-value {{riskProbabilities.disasterColorClass}}">{{riskProbabilities.disaster}} %</span>
+                        </div>
+                    </div>
                 </div>
                 {{/if}}
             </div>
