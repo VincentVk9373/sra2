@@ -1949,6 +1949,10 @@ const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   __proto__: null,
   SRA2Actor
 }, Symbol.toStringTag, { value: "Module" }));
+const RISK_DICE_BY_RR = [2, 5, 8, 12];
+function getRiskDiceByRR(rr) {
+  return RISK_DICE_BY_RR[Math.min(3, Math.max(0, rr))] || 2;
+}
 function handleRollRequest(data) {
   console.log("=== ROLL REQUEST ===", {
     itemType: data.itemType,
@@ -2416,7 +2420,9 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
 }
 const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
+  RISK_DICE_BY_RR,
   executeRoll,
+  getRiskDiceByRR,
   handleRollRequest
 }, Symbol.toStringTag, { value: "Module" }));
 function normalizeSearchText(text) {
@@ -6666,8 +6672,12 @@ class RollDialog extends Application {
   targetToken = null;
   rrEnabled = /* @__PURE__ */ new Map();
   // Track which RR sources are enabled
-  riskDiceCount = 1;
-  // Number of risk dice selected (default: 2)
+  riskDiceCount = 0;
+  // Number of risk dice selected (will be auto-set based on RR)
+  riskDiceManuallySet = false;
+  // Track if user has manually changed risk dice selection
+  lastAutoRR = -1;
+  // Track last RR value used for auto-selection
   selectedRange = null;
   // Selected range: 'melee', 'short', 'medium', 'long'
   rollMode = "normal";
@@ -7056,6 +7066,15 @@ class RollDialog extends Application {
     }
     context.totalRR = Math.min(3, totalRR);
     context.rrSources = rrSources;
+    const autoRiskDiceCount = getRiskDiceByRR(context.totalRR);
+    const maxRiskDice = Math.min(autoRiskDiceCount, dicePool);
+    if (context.totalRR !== this.lastAutoRR) {
+      this.riskDiceManuallySet = false;
+      this.lastAutoRR = context.totalRR;
+    }
+    if (!this.riskDiceManuallySet) {
+      this.riskDiceCount = maxRiskDice;
+    }
     context.vd = this.rollData.damageValue || 0;
     const getRiskProbabilities = (riskDice, rr) => {
       if (riskDice <= 0) {
@@ -7490,6 +7509,34 @@ class RollDialog extends Application {
       const enabled = checkbox.checked;
       if (rrId) {
         this.rrEnabled.set(rrId, enabled);
+        let newTotalRR = 0;
+        if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+          for (const rrSource of this.rollData.rrList) {
+            if (rrSource && typeof rrSource === "object") {
+              const rrValue = rrSource.rrValue || 0;
+              const featName = rrSource.featName || "Inconnu";
+              const sourceId = `${featName}-${rrValue}`;
+              if (this.rrEnabled.get(sourceId)) {
+                newTotalRR += rrValue;
+              }
+            }
+          }
+        }
+        newTotalRR = Math.min(3, newTotalRR);
+        if (!this.riskDiceManuallySet) {
+          const autoRiskDiceCount = getRiskDiceByRR(newTotalRR);
+          let dicePool = 0;
+          if (this.rollData.specLevel !== void 0) {
+            dicePool = this.rollData.specLevel;
+          } else if (this.rollData.skillLevel !== void 0) {
+            dicePool = this.rollData.skillLevel;
+          } else if (this.rollData.linkedAttribute) {
+            const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
+            dicePool = attributeValue;
+          }
+          this.riskDiceCount = Math.min(autoRiskDiceCount, dicePool);
+          this.lastAutoRR = newTotalRR;
+        }
         this.render();
       }
     });
@@ -7554,6 +7601,7 @@ class RollDialog extends Application {
       const diceIcon = $(event.currentTarget);
       const diceIndex = parseInt(diceIcon.data("dice-index") || "0");
       const isCurrentlySelected = diceIcon.hasClass("risk-dice");
+      this.riskDiceManuallySet = true;
       if (isCurrentlySelected && diceIndex === this.riskDiceCount - 1) {
         this.riskDiceCount = 0;
       } else {

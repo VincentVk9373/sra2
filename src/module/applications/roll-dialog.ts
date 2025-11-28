@@ -15,7 +15,9 @@ export class RollDialog extends Application {
   private attackerToken: any = null;
   private targetToken: any = null;
   private rrEnabled: Map<string, boolean> = new Map(); // Track which RR sources are enabled
-  private riskDiceCount: number = 1; // Number of risk dice selected (default: 2)
+  private riskDiceCount: number = 0; // Number of risk dice selected (will be auto-set based on RR)
+  private riskDiceManuallySet: boolean = false; // Track if user has manually changed risk dice selection
+  private lastAutoRR: number = -1; // Track last RR value used for auto-selection
   private selectedRange: string | null = null; // Selected range: 'melee', 'short', 'medium', 'long'
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
 
@@ -549,6 +551,24 @@ export class RollDialog extends Application {
     }
     context.totalRR = Math.min(3, totalRR); // RR is capped at 3
     context.rrSources = rrSources;
+
+    // Auto-select risk dice count based on RR (mode normal: 2, 5, 8, 12 for RR 0, 1, 2, 3)
+    // Only auto-update if:
+    // 1. User hasn't manually set it, OR
+    // 2. RR has changed since last auto-selection (reset manual flag)
+    const autoRiskDiceCount = DiceRoller.getRiskDiceByRR(context.totalRR);
+    const maxRiskDice = Math.min(autoRiskDiceCount, dicePool);
+    
+    // If RR changed, reset manual flag to allow auto-update
+    if (context.totalRR !== this.lastAutoRR) {
+      this.riskDiceManuallySet = false;
+      this.lastAutoRR = context.totalRR;
+    }
+    
+    // Auto-update only if not manually set
+    if (!this.riskDiceManuallySet) {
+      this.riskDiceCount = maxRiskDice;
+    }
 
     // Get VD (Valeur de Défense) - this would be from the target or weapon
     // For now, we'll show weapon VD if available
@@ -1166,7 +1186,44 @@ export class RollDialog extends Application {
       
       if (rrId) {
         this.rrEnabled.set(rrId, enabled);
-        // Re-render to update total RR
+        
+        // Calculate new total RR
+        let newTotalRR = 0;
+        if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+          for (const rrSource of this.rollData.rrList) {
+            if (rrSource && typeof rrSource === 'object') {
+              const rrValue = rrSource.rrValue || 0;
+              const featName = rrSource.featName || 'Inconnu';
+              const sourceId = `${featName}-${rrValue}`;
+              
+              if (this.rrEnabled.get(sourceId)) {
+                newTotalRR += rrValue;
+              }
+            }
+          }
+        }
+        newTotalRR = Math.min(3, newTotalRR); // RR is capped at 3
+        
+        // Update risk dice count based on new RR (mode normal)
+        // Only auto-update if user hasn't manually changed it
+        if (!this.riskDiceManuallySet) {
+          const autoRiskDiceCount = DiceRoller.getRiskDiceByRR(newTotalRR);
+          // Calculate dice pool
+          let dicePool = 0;
+          if (this.rollData.specLevel !== undefined) {
+            dicePool = this.rollData.specLevel;
+          } else if (this.rollData.skillLevel !== undefined) {
+            dicePool = this.rollData.skillLevel;
+          } else if (this.rollData.linkedAttribute) {
+            const attributeValue = (this.actor?.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
+            dicePool = attributeValue;
+          }
+          // Don't exceed dice pool
+          this.riskDiceCount = Math.min(autoRiskDiceCount, dicePool);
+          this.lastAutoRR = newTotalRR;
+        }
+        
+        // Re-render to update total RR and risk dice selection
         this.render();
       }
     });
@@ -1256,6 +1313,9 @@ export class RollDialog extends Application {
       const diceIcon = $(event.currentTarget);
       const diceIndex = parseInt(diceIcon.data('dice-index') || '0');
       const isCurrentlySelected = diceIcon.hasClass('risk-dice');
+      
+      // Mark as manually set when user clicks
+      this.riskDiceManuallySet = true;
       
       // If clicking on the last selected dice, deselect all
       if (isCurrentlySelected && diceIndex === this.riskDiceCount - 1) {
