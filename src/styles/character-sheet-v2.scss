@@ -379,6 +379,7 @@
                 font-family: var(--sr-font-title);
                 display: grid;
                 grid-template-columns: 1fr 0fr 0fr;
+                text-transform: uppercase;
 
                 div:nth-child(2) {
                     display: flex;

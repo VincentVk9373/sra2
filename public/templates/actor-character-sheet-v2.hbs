@@ -104,6 +104,51 @@
                 </div>
             </section>
             {{/if}}
+            {{#if featsByType.spell}}
+            <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}</div>
+                    <div class="fa fa-dice-d6"></div>
+                    <div>RR</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        {{#each featsByType.spell}}
+                        <div class="row skill-item" data-item-id="{{this._id}}">
+                            <div class="name-wrapper">
+                                <div class="name" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                            </div>
+                            <div class="dice clickable" data-action="roll-spell" data-item-id="{{this._id}}"
+                                title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                {{this.totalDicePool}} <div class="fa fa-dice-d6"></div>
+                            </div>
+                            <div class="rr">
+                                {{this.rr}}
+                            </div>
+                        </div>
+                        {{#if this.specializations}}
+                        {{#each this.specializations}}
+                            <div class="row skill-item" data-item-id="{{this._id}}">
+                                <div class="name-wrapper spe" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                    <div class="arrow fa fa-turn-up"></div>
+                                    <div class="name">{{this.name}}</div>
+                                </div>
+                                <div class="dice clickable" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}"
+                                    title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                    {{this.totalDicePool}} <div class="fa fa-dice-d6"></div>
+                                </div>
+                                <div class="rr">
+                                    {{this.rr}}
+                                </div>
+                            </div>
+                        {{/each}}
+                        {{/if}}
+                        {{/each}}
+                    </section>
+
+                </div>
+            </section>
+            {{/if}}
             {{#if featsByType.awakened}}
             <section class="char-section">
                 <header>
@@ -180,6 +225,94 @@
                 <div class="char-section-row">
                     <section>
                         {{#each featsByType.trait}}
+                        <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="name-wrapper">
+                                <div class="name" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                            </div>
+                            <div class="level" style="margin-right: 8px;">
+                                {{this.system.rating}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </section>
+                </div>
+            </section>
+            {{/if}}
+            {{#if featsByType.cyberware}}
+            <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</div>
+                    <div>LVL</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        {{#each featsByType.cyberware}}
+                        <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="name-wrapper">
+                                <div class="name" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                            </div>
+                            <div class="level" style="margin-right: 8px;">
+                                {{this.system.rating}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </section>
+                </div>
+            </section>
+            {{/if}}
+            {{#if featsByType.equipment}}
+            <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</div>
+                    <div>LVL</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        {{#each featsByType.equipment}}
+                        <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="name-wrapper">
+                                <div class="name" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                            </div>
+                            <div class="level" style="margin-right: 8px;">
+                                {{this.system.rating}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </section>
+                </div>
+            </section>
+            {{/if}}
+            {{#if featsByType.contact}}
+            <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}</div>
+                    <div>LVL</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        {{#each featsByType.contact}}
+                        <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="name-wrapper">
+                                <div class="name" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                            </div>
+                            <div class="level" style="margin-right: 8px;">
+                                {{this.system.rating}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </section>
+                </div>
+            </section>
+            {{/if}}
+            {{#if featsByType.cyberdeck}}
+            <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</div>
+                    <div>LVL</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        {{#each featsByType.cyberdeck}}
                         <div class="row feat-item" data-item-id="{{this._id}}">
                             <div class="name-wrapper">
                                 <div class="name" data-action="edit-skill" data-item-id="{{this._id}}" title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>

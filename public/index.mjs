@@ -3598,6 +3598,132 @@ class CharacterSheet extends ActorSheet {
       }
       return weapon;
     });
+    context.featsByType.spell = context.featsByType.spell.map((spell) => {
+      const spellSystem = spell.system;
+      spellSystem.spellType || "indirect";
+      const finalAttackSkill = "Sorcellerie";
+      const spellSpecType = spellSystem.spellSpecializationType || "combat";
+      const spellSpecMap = {
+        "combat": "Spé: Sorts de combat",
+        "detection": "Spé: Sorts de détection",
+        "health": "Spé: Sorts de santé",
+        "illusion": "Spé: Sorts d'illusion",
+        "manipulation": "Spé: Sorts de manipulation",
+        "counterspell": "Spé: Contresort"
+      };
+      const finalAttackSpec = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+      let attackSkillName = void 0;
+      let attackSkillLevel = void 0;
+      let attackSpecName = void 0;
+      let attackSpecLevel = void 0;
+      let attackLinkedAttribute = void 0;
+      {
+        const normalizeForComparison = (text) => {
+          return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+        };
+        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+        const foundSpec = this.actor.items.find((i) => {
+          if (i.type !== "specialization") return false;
+          const normalizedItemName = normalizeForComparison(i.name);
+          return normalizedItemName === normalizedTargetSpec;
+        });
+        if (foundSpec) {
+          const specSystem = foundSpec.system;
+          attackSpecName = foundSpec.name;
+          attackLinkedAttribute = specSystem.linkedAttribute || "willpower";
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = this.actor.items.find(
+              (i) => i.type === "skill" && i.name === linkedSkillName
+            );
+            if (parentSkill && attackLinkedAttribute) {
+              attackSkillName = parentSkill.name;
+              const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+              attackSkillLevel = skillLevel;
+              attackSpecLevel = skillLevel + 2;
+            }
+          }
+        } else {
+          const specKeywords = {
+            "combat": ["combat"],
+            "detection": ["détection", "detection"],
+            "health": ["santé", "sante", "health"],
+            "illusion": ["illusion"],
+            "manipulation": ["manipulation"],
+            "counterspell": ["contresort", "contre-sort"]
+          };
+          const keywords = specKeywords[spellSpecType] || ["combat"];
+          const normalizedKeywords = keywords.map((kw) => normalizeSearchText(kw));
+          const foundSpecByKeyword = this.actor.items.find((i) => {
+            if (i.type !== "specialization") return false;
+            const normalizedName = normalizeSearchText(i.name);
+            const linkedSkill = i.system?.linkedSkill;
+            if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+              return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
+            }
+            return false;
+          });
+          if (foundSpecByKeyword) {
+            const specSystem = foundSpecByKeyword.system;
+            attackSpecName = foundSpecByKeyword.name;
+            attackLinkedAttribute = specSystem.linkedAttribute || "willpower";
+            const linkedSkillName = specSystem.linkedSkill;
+            if (linkedSkillName) {
+              const parentSkill = this.actor.items.find(
+                (i) => i.type === "skill" && i.name === linkedSkillName
+              );
+              if (parentSkill && attackLinkedAttribute) {
+                attackSkillName = parentSkill.name;
+                const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+                attackSkillLevel = skillLevel;
+                attackSpecLevel = skillLevel + 2;
+              }
+            }
+          }
+        }
+      }
+      if (!attackSpecName && finalAttackSkill) {
+        const foundSkill = this.actor.items.find(
+          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+        );
+        if (foundSkill) {
+          attackSkillName = foundSkill.name;
+          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "willpower";
+          attackLinkedAttribute = foundLinkedAttribute;
+          attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+        }
+      }
+      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
+      let skillRRSources = [];
+      let specRRSources = [];
+      let attributeRRSources = [];
+      if (attackSpecName) {
+        specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
+      }
+      if (attackSkillName) {
+        skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
+      }
+      if (attackLinkedAttribute) {
+        attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
+      }
+      const rawItemRRList = spellSystem.rrList || [];
+      const itemRRSources = rawItemRRList.map((rrEntry) => ({
+        featName: spell.name,
+        // The spell itself
+        rrValue: rrEntry.rrValue || 0
+      }));
+      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+      const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
+        return sum + (source.rrValue || 0);
+      }, 0));
+      spell.totalDicePool = totalDicePool;
+      spell.rr = totalRR;
+      if (attackSpecName) {
+        spell.attackSpecName = attackSpecName;
+        spell.attackSpecLevel = attackSpecLevel;
+      }
+      return spell;
+    });
     context.feats = allFeats;
     const bookmarkedItems = this.actor.items.filter(
       (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true
