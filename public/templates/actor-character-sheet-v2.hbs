@@ -75,16 +75,10 @@
                             </div>
                             <div class="dice clickable" data-action="roll-weapon" data-item-id="{{this._id}}"
                                 title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                {{this.system.rating}} <div class="fa fa-dice-d6"></div>
+                                {{this.totalDicePool}} <div class="fa fa-dice-d6"></div>
                             </div>
                             <div class="rr">
-                                {{#if this.rrEntries}}
-                                {{#each this.rrEntries}}
-                                    {{rrValue}}
-                                {{/each}}
-                                {{else}}
-                                0
-                                {{/if}}
+                                {{this.rr}}
                             </div>
                         </div>
                         {{#if this.specializations}}

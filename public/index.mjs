@@ -3509,6 +3509,95 @@ class CharacterSheet extends ActorSheet {
       weapon: allFeats.filter((feat) => feat.system.featType === "weapon"),
       spell: allFeats.filter((feat) => feat.system.featType === "spell")
     };
+    context.featsByType.weapon = context.featsByType.weapon.map((weapon) => {
+      const weaponSystem = weapon.system;
+      const weaponType = weaponSystem.weaponType;
+      let weaponLinkedSkill = "";
+      let weaponLinkedSpecialization = "";
+      if (weaponType && weaponType !== "custom-weapon") {
+        const weaponStats = WEAPON_TYPES[weaponType];
+        if (weaponStats) {
+          weaponLinkedSkill = weaponStats.linkedSkill || "";
+          weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
+        }
+      }
+      let finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
+      let finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
+      let attackSkillName = void 0;
+      let attackSkillLevel = void 0;
+      let attackSpecName = void 0;
+      let attackSpecLevel = void 0;
+      let attackLinkedAttribute = void 0;
+      if (finalAttackSpec) {
+        const normalizeForComparison = (text) => {
+          return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+        };
+        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+        const foundSpec = this.actor.items.find((i) => {
+          if (i.type !== "specialization") return false;
+          const normalizedItemName = normalizeForComparison(i.name);
+          return normalizedItemName === normalizedTargetSpec;
+        });
+        if (foundSpec) {
+          const specSystem = foundSpec.system;
+          attackSpecName = foundSpec.name;
+          attackLinkedAttribute = specSystem.linkedAttribute || "strength";
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = this.actor.items.find(
+              (i) => i.type === "skill" && i.name === linkedSkillName
+            );
+            if (parentSkill && attackLinkedAttribute) {
+              attackSkillName = parentSkill.name;
+              const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+              attackSkillLevel = skillLevel;
+              attackSpecLevel = skillLevel + 2;
+            }
+          }
+        }
+      }
+      if (!attackSpecName && finalAttackSkill) {
+        const foundSkill = this.actor.items.find(
+          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+        );
+        if (foundSkill) {
+          attackSkillName = foundSkill.name;
+          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+          attackLinkedAttribute = foundLinkedAttribute;
+          attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+        }
+      }
+      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
+      let skillRRSources = [];
+      let specRRSources = [];
+      let attributeRRSources = [];
+      if (attackSpecName) {
+        specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
+      }
+      if (attackSkillName) {
+        skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
+      }
+      if (attackLinkedAttribute) {
+        attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
+      }
+      const rawItemRRList = weaponSystem.rrList || [];
+      const itemRRSources = rawItemRRList.map((rrEntry) => ({
+        featName: weapon.name,
+        // The weapon itself
+        rrValue: rrEntry.rrValue || 0
+      }));
+      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+      const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
+        return sum + (source.rrValue || 0);
+      }, 0));
+      weapon.totalDicePool = totalDicePool;
+      weapon.rr = totalRR;
+      if (attackSpecName) {
+        weapon.attackSpecName = attackSpecName;
+        weapon.attackSpecLevel = attackSpecLevel;
+      }
+      return weapon;
+    });
     context.feats = allFeats;
     const bookmarkedItems = this.actor.items.filter(
       (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true

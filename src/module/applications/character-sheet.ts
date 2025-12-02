@@ -192,6 +192,132 @@ export class CharacterSheet extends ActorSheet {
       spell: allFeats.filter((feat: any) => feat.system.featType === 'spell')
     };
     
+    // Enrich weapons with dice pool and RR calculations (for V2 template)
+    context.featsByType.weapon = context.featsByType.weapon.map((weapon: any) => {
+      const weaponSystem = weapon.system as any;
+      const weaponType = weaponSystem.weaponType;
+      
+      // Get weapon type and linked skills (same logic as _rollWeaponOrSpell)
+      let weaponLinkedSkill = '';
+      let weaponLinkedSpecialization = '';
+      
+      if (weaponType && weaponType !== 'custom-weapon') {
+        const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
+        if (weaponStats) {
+          weaponLinkedSkill = weaponStats.linkedSkill || '';
+          weaponLinkedSpecialization = weaponStats.linkedSpecialization || '';
+        }
+      }
+      
+      // Get final linked skills (from weapon type or custom)
+      let finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
+      let finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || '';
+      
+      // Find actor's skill and specialization based on weapon links (same logic as _rollWeaponOrSpell)
+      let attackSkillName: string | undefined = undefined;
+      let attackSkillLevel: number | undefined = undefined;
+      let attackSpecName: string | undefined = undefined;
+      let attackSpecLevel: number | undefined = undefined;
+      let attackLinkedAttribute: string | undefined = undefined;
+      
+      // Try to find the linked attack specialization first
+      if (finalAttackSpec) {
+        const normalizeForComparison = (text: string): string => {
+          return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
+        };
+        
+        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+        
+        const foundSpec = this.actor.items.find((i: any) => {
+          if (i.type !== 'specialization') return false;
+          const normalizedItemName = normalizeForComparison(i.name);
+          return normalizedItemName === normalizedTargetSpec;
+        });
+        
+        if (foundSpec) {
+          const specSystem = foundSpec.system as any;
+          attackSpecName = foundSpec.name;
+          attackLinkedAttribute = specSystem.linkedAttribute || 'strength';
+          
+          const linkedSkillName = specSystem.linkedSkill;
+          if (linkedSkillName) {
+            const parentSkill = this.actor.items.find((i: any) => 
+              i.type === 'skill' && i.name === linkedSkillName
+            );
+            if (parentSkill && attackLinkedAttribute) {
+              attackSkillName = parentSkill.name;
+              const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
+              attackSkillLevel = skillLevel;
+              attackSpecLevel = skillLevel + 2; // Specialization adds +2
+            }
+          }
+        }
+      }
+      
+      // If no specialization found, try to find the linked attack skill
+      if (!attackSpecName && finalAttackSkill) {
+        const foundSkill = this.actor.items.find((i: any) => 
+          i.type === 'skill' && 
+          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
+        );
+        
+        if (foundSkill) {
+          attackSkillName = foundSkill.name;
+          const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
+          attackLinkedAttribute = foundLinkedAttribute;
+          attackSkillLevel = ((foundSkill.system as any).rating || 0) + ((this.actor.system as any).attributes?.[foundLinkedAttribute] || 0);
+        }
+      }
+      
+      // Calculate dice pool: use spec level if available, otherwise skill level, otherwise 0
+      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
+      
+      // Calculate total RR: same logic as _rollWeaponOrSpell
+      // Get RR sources from skill/specialization/attribute
+      let skillRRSources: Array<{featName: string, rrValue: number}> = [];
+      let specRRSources: Array<{featName: string, rrValue: number}> = [];
+      let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
+      
+      if (attackSpecName) {
+        specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
+      }
+      if (attackSkillName) {
+        skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
+      }
+      if (attackLinkedAttribute) {
+        attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
+      }
+      
+      // Get item RR (from weapon itself)
+      const rawItemRRList = weaponSystem.rrList || [];
+      
+      // Convert item RR list to same format as getRRSources (objects with rrValue)
+      const itemRRSources = rawItemRRList.map((rrEntry: any) => ({
+        featName: weapon.name, // The weapon itself
+        rrValue: rrEntry.rrValue || 0
+      }));
+      
+      // Merge all RR sources (item RR + skill/spec/attribute RR)
+      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+      
+      // Calculate total RR (sum of all RR values, max 3)
+      const totalRR = Math.min(3, allRRSources.reduce((sum: number, source: any) => {
+        return sum + (source.rrValue || 0);
+      }, 0));
+      
+      // Add dice pool and RR to weapon
+      weapon.totalDicePool = totalDicePool;
+      weapon.rr = totalRR;
+      
+      // Also store spec info for potential specialization display later
+      if (attackSpecName) {
+        weapon.attackSpecName = attackSpecName;
+        weapon.attackSpecLevel = attackSpecLevel;
+      }
+      
+      return weapon;
+    });
+    
     // Keep the feats array for backwards compatibility
     context.feats = allFeats;
     
