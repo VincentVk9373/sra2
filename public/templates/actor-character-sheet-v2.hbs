@@ -235,11 +235,92 @@
                         {{/if}}
                         {{/each}}
                     </section>
-
                 </div>
             </section>
+            <section class="char-section">
+                <header>
+                    <div>ATTRIBUTS</div>
+                    <div class="fa fa-dice-d6"></div>
+                    <div>RR</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        <div class="row feat-item">
+                            <div class="name-wrapper">
+                                <div class="name">Force</div>
+                            </div>
+                            <div class="dice clickable" data-action="roll-attribute" data-attribute="strength"
+                                title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                {{this.system.attributes.strength}} <div class="fa fa-dice-d6"></div>
+                            </div>
+                            <div class="rr">
+                                {{attributesRR.strength}}
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="row feat-item">
+                            <div class="name-wrapper">
+                                <div class="name">Agilité</div>
+                            </div>
+                            <div class="dice clickable" data-action="roll-attribute" data-attribute="agility"
+                                title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                {{this.system.attributes.agility}} <div class="fa fa-dice-d6"></div>
+                            </div>
+                            <div class="rr">
+                                {{attributesRR.agility}}
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="row feat-item">
+                            <div class="name-wrapper">
+                                <div class="name">Volonté</div>
+                            </div>
+                            <div class="dice clickable" data-action="roll-attribute" data-attribute="willpower"
+                                title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                {{this.system.attributes.willpower}} <div class="fa fa-dice-d6"></div>
+                            </div>
+                            <div class="rr">
+                                {{attributesRR.willpower}}
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="row feat-item">
+                            <div class="name-wrapper">
+                                <div class="name">Logique</div>
+                            </div>
+                            <div class="dice clickable" data-action="roll-attribute" data-attribute="logic"
+                                title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                {{this.system.attributes.logic}} <div class="fa fa-dice-d6"></div>
+                            </div>
+                            <div class="rr">
+                                {{attributesRR.logic}}
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="row feat-item">
+                            <div class="name-wrapper">
+                                <div class="name">Charisme</div>
+                            </div>
+                            <div class="dice clickable" data-action="roll-attribute" data-attribute="charisma"
+                                title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                {{this.system.attributes.charisma}} <div class="fa fa-dice-d6"></div>
+                            </div>
+                            <div class="rr">
+                                {{attributesRR.charisma}}
+                            </div>
+                        </div>
+                    </section>
+            </section>
         </div>
-        <div></div>
+        <div>
+            <section class="char-section avatar-large-section">
+                <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+            </section>
+        </div>
     </section>
     <footer class="sheet-footer">
         FOOTER

@@ -463,6 +463,28 @@
             }
         }
 
+        .avatar-large-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .profile-img-large {
+                width: 100%;
+                height: auto;
+                border-radius: 12px 0 12px 0;
+                border: 1px solid var(--blue);
+                object-fit: cover;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    border-color: var(--light-blue);
+                    box-shadow: 0 6px 16px rgba(0, 229, 255, 0.4);
+                    transform: scale(1.02);
+                }
+            }
+        }
+
     }
 
     .sheet-footer {}
