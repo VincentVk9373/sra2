@@ -453,9 +453,155 @@
             <section class="char-section avatar-large-section">
                 <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
             </section>
+            {{!-- <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.KEYWORDS.LABEL"}}</div>
+                </header> --}}
+                {{!-- <div class="char-section-row">
+                    <section>
+                        <div class="keywords-fields">
+                            <div class="keyword-field">
+                                <input type="text" name="system.keywords.keyword1" value="{{system.keywords.keyword1}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="keyword-field">
+                                <input type="text" name="system.keywords.keyword2" value="{{system.keywords.keyword2}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="keyword-field">
+                                <input type="text" name="system.keywords.keyword3" value="{{system.keywords.keyword3}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="keyword-field">
+                                <input type="text" name="system.keywords.keyword4" value="{{system.keywords.keyword4}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="keyword-field">
+                                <input type="text" name="system.keywords.keyword5" value="{{system.keywords.keyword5}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section> --}}
+            <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.CATCHPHRASES.LABEL"}}</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        <div class="catchphrases-fields">
+                            <div class="catchphrase-field">
+                                <div class="catchphrase-input-wrapper">
+                                    <input type="text" name="system.catchphrases.catchphrase1"
+                                        value="{{system.catchphrases.catchphrase1}}"
+                                        placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}" />
+                                    {{#if system.catchphrases.catchphrase1}}
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase1}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </a>
+                                    {{/if}}
+                                </div>
+                            </div>
+                            <div class="catchphrase-field">
+                                <div class="catchphrase-input-wrapper">
+                                    <input type="text" name="system.catchphrases.catchphrase2"
+                                        value="{{system.catchphrases.catchphrase2}}"
+                                        placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}" />
+                                    {{#if system.catchphrases.catchphrase2}}
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase2}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </a>
+                                    {{/if}}
+                                </div>
+                            </div>
+                            <div class="catchphrase-field">
+                                <div class="catchphrase-input-wrapper">
+                                    <input type="text" name="system.catchphrases.catchphrase3"
+                                        value="{{system.catchphrases.catchphrase3}}"
+                                        placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}" />
+                                    {{#if system.catchphrases.catchphrase3}}
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase3}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </a>
+                                    {{/if}}
+                                </div>
+                            </div>
+                            <div class="catchphrase-field">
+                                <div class="catchphrase-input-wrapper">
+                                    <input type="text" name="system.catchphrases.catchphrase4"
+                                        value="{{system.catchphrases.catchphrase4}}"
+                                        placeholder="{{localize 'SRA2.CATCHPHRASES.PLACEHOLDER'}}" />
+                                    {{#if system.catchphrases.catchphrase4}}
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase4}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </a>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+            {{!-- <section class="char-section">
+                <header>
+                    <div>{{localize "SRA2.BEHAVIORS.LABEL"}}</div>
+                </header>
+                <div class="char-section-row">
+                    <section>
+                        <div class="behaviors-fields">
+                            <div class="behavior-field">
+                                <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="behavior-field">
+                                <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="behavior-field">
+                                <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                            <div class="behavior-field">
+                                <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section> --}}
         </div>
     </section>
     <footer class="sheet-footer">
-        FOOTER
+        <div class="footer-content">
+            <div class="footer-item">
+                <span class="footer-label">{{localize "SRA2.ARMOR_THRESHOLDS.ARMOR_LEVEL"}}:</span>
+                <span class="footer-value">{{system.armorLevel}}</span>
+            </div>
+            <div class="footer-item">
+                <span class="footer-label">{{localize "SRA2.ARMOR_THRESHOLDS.WITHOUT_ARMOR"}}:</span>
+                <span class="footer-value">{{system.damageThresholds.withoutArmor.light}}/{{system.damageThresholds.withoutArmor.moderate}}/{{system.damageThresholds.withoutArmor.severe}}</span>
+            </div>
+            <div class="footer-item">
+                <span class="footer-label">{{localize "SRA2.ARMOR_THRESHOLDS.WITH_ARMOR"}}:</span>
+                <span class="footer-value">{{system.damageThresholds.withArmor.light}}/{{system.damageThresholds.withArmor.moderate}}/{{system.damageThresholds.withArmor.severe}}</span>
+            </div>
+            <div class="footer-item">
+                <span class="footer-label">{{localize "SRA2.ARMOR_THRESHOLDS.MENTAL"}}:</span>
+                <span class="footer-value">{{system.damageThresholds.mental.light}}/{{system.damageThresholds.mental.moderate}}/{{system.damageThresholds.mental.severe}}</span>
+            </div>
+            <div class="footer-item footer-cost">
+                <span class="footer-label">{{localize "SRA2.TOTAL_COST"}}:</span>
+                <span class="footer-value">{{system.totalCost}} <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span></span>
+            </div>
+        </div>
     </footer>
 </form>

@@ -461,6 +461,13 @@
                         font-size: 0.9rem;
                     }
                 }
+                    .catchphrase-input-wrapper {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 4px;
+                        flex-direction: rows;
+                    }
             }
         }
 
