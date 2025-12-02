@@ -5143,6 +5143,24 @@ class CharacterSheet extends ActorSheet {
     }
   }
 }
+class CharacterSheetV2 extends CharacterSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "sheet", "actor", "character", "character-v2"],
+      template: "systems/sra2/templates/actor-character-sheet-v2.hbs"
+      // Vous pouvez aussi changer width/height si nécessaire
+      // width: 1000,
+      // height: 800,
+    });
+  }
+  // Toute la logique TypeScript est héritée de CharacterSheet
+  // Vous pouvez surcharger des méthodes spécifiques si nécessaire, par exemple:
+  // override async getData(): Promise<any> {
+  //   const context = await super.getData();
+  //   // Ajouter des données spécifiques à la version 2 si nécessaire
+  //   return context;
+  // }
+}
 class VehicleSheet extends ActorSheet {
   _activeSection = null;
   static get defaultOptions() {
@@ -7793,6 +7811,7 @@ const rollDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
 const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   CharacterSheet,
+  CharacterSheetV2,
   FeatSheet,
   IceSheet,
   MetatypeSheet,
@@ -8645,6 +8664,11 @@ class SRA2System {
       types: ["character"],
       makeDefault: true,
       label: "SRA2.SHEET.CHARACTER"
+    });
+    DocumentSheetConfig.registerSheet(Actor, "sra2", CharacterSheetV2, {
+      types: ["character"],
+      makeDefault: false,
+      label: "SRA2.SHEET.CHARACTER_V2"
     });
     DocumentSheetConfig.registerSheet(Actor, "sra2", VehicleSheet, {
       types: ["vehicle"],

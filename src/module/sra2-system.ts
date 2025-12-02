@@ -103,6 +103,13 @@ export class SRA2System {
       label: "SRA2.SHEET.CHARACTER"
     });
     
+    // Register character sheet V2 (alternative template/style)
+    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheetV2, {
+      types: ["character"],
+      makeDefault: false,
+      label: "SRA2.SHEET.CHARACTER_V2"
+    });
+    
     // Register vehicle sheet
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.VehicleSheet, {
       types: ["vehicle"],

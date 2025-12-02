@@ -478,7 +478,7 @@ export class RollDialog extends Application {
 
     // Calculate total RR and get RR sources
     // For defense rolls, always recalculate rrList from defender's skill/spec to ensure we use the correct actor
-    // For attack rolls, use rollData.rrList as passed from character-sheet/npc-sheet (already merged: item RR + skill/spec/attribute RR)
+    // For attack rolls, use rollData.rrList as passed from character-sheet (already merged: item RR + skill/spec/attribute RR)
     // rrList already contains RRSource objects with featName and rrValue (enriched before passing to handleRollRequest)
     
     // For defense rolls, always recalculate rrList from this.actor (the defender) to ensure correctness
@@ -513,7 +513,7 @@ export class RollDialog extends Application {
       // Always update rollData with correct rrList from defender
       this.rollData.rrList = defenseRRList;
     }
-    // For attack rolls (not defense), use rollData.rrList as is (already merged in character-sheet.ts/npc-sheet.ts)
+    // For attack rolls (not defense), use rollData.rrList as is (already merged in character-sheet.ts)
     // The rrList should already contain: item RR + skill/spec/attribute RR
     // No need to recalculate here, it's already correct from the sheet
     
@@ -524,7 +524,7 @@ export class RollDialog extends Application {
         if (rrSource && typeof rrSource === 'object') {
           const rrValue = rrSource.rrValue || 0;
           if (rrValue > 0) {
-            // featName is now always present in rrList (enriched in character-sheet.ts and npc-sheet.ts)
+            // featName is now always present in rrList (enriched in character-sheet.ts)
             const featName = rrSource.featName || 'Inconnu';
             const rrId = `${featName}-${rrValue}`;
             

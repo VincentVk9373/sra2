@@ -1,6 +1,6 @@
 /**
  * Shared Sheet Helpers for SRA2
- * Common functions used by both CharacterSheet and NpcSheet
+ * Common functions used by CharacterSheet
  */
 
 import * as ItemSearch from '../../../item-search.js';

@@ -15,7 +15,7 @@
     "SRA2": {
         "SHEET": {
             "CHARACTER": "SRA2 Character Sheet",
-            "NPC": "SRA2 NPC Sheet",
+            "CHARACTER_V2": "SRA2 Character Sheet V2",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
             "ICE": "SRA2 ICE Sheet",
             "FEAT": "SRA2 Feat Sheet",
@@ -37,40 +37,6 @@
             }
         },
         "TOTAL_COST": "Total Cost",
-        "NPC": {
-            "NAME": "NPC Name",
-            "DIFFICULTY": "Difficulty Rating",
-            "DESCRIPTION": "Description",
-            "SECTION": {
-                "INFO": "Information",
-                "COMBAT": "Combat",
-                "SKILLS": "Skills",
-                "FEATS": "Feats"
-            },
-            "DICE_POOL": "Dice",
-            "RR": "RR",
-            "THRESHOLD": "Threshold",
-            "SKILLS_INFO": "NPCs don't roll dice. They have predefined result thresholds.",
-            "THRESHOLD_FORMULA": "Threshold Formula",
-            "FORMULA": "floor(Dice / 3) + RR + 1",
-            "OTHER_FEATS": "Other Feats",
-            "ATTACK_WITH_THRESHOLD": "Attack with this threshold",
-            "NO_TARGET_SELECTED": "No target selected. Please target a token before attacking.",
-            "ATTACK_AGAINST": "Attack against",
-            "ATTACK_FLAVOR": "{npcName} attacks {targetName} with {skillName}",
-            "DEFENSE_ROLL_REQUIRED": "Target must make a defense roll",
-            "ATTACK_WITH_WEAPON": "Attack with this weapon",
-            "CAST_SPELL": "Cast this spell",
-            "ATTACK": "Attack",
-            "ROLL_WITH_DICE": "Roll dice to attack",
-            "SECTION": {
-                "INFO": "Information",
-                "COMBAT": "Combat",
-                "SKILLS": "Skills",
-                "FEATS": "Feats",
-                "WEAPONS_SPELLS": "Weapons and Spells"
-            }
-        },
         "VEHICLE": {
             "NAME": "Vehicle/Drone Name",
             "COST": "Cost",

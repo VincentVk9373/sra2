@@ -87,7 +87,7 @@ export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
     // Calculate threshold if requested
     if (includeThreshold) {
       const { threshold } = calculateNPCThreshold(defenderActor, skill, totalDicePool, 'skill');
-      optionText = `${skill.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${threshold} / ${totalDicePool} dés)`;
+      optionText = `${skill.name} (Seuil: ${threshold} / ${totalDicePool} dés)`;
       dataAttrs += ` data-threshold="${threshold}"`;
     }
     
@@ -116,7 +116,7 @@ export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
       // Calculate threshold if requested
       if (includeThreshold) {
         const { threshold: specThreshold } = calculateNPCThreshold(defenderActor, spec, specTotalDicePool, 'specialization', skill);
-        specOptionText = `  → ${spec.name} (${game.i18n!.localize('SRA2.NPC.THRESHOLD')}: ${specThreshold} / ${specTotalDicePool} dés)`;
+        specOptionText = `  → ${spec.name} (Seuil: ${specThreshold} / ${specTotalDicePool} dés)`;
         specDataAttrs += ` data-threshold="${specThreshold}"`;
       }
       

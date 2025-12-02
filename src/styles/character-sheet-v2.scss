@@ -1,0 +1,469 @@
+/* Character Sheet V2 Styles */
+/* Nouvelle version de la fiche de personnage avec un style différent */
+
+.sra2-character-sheet-v2 {
+    color: #e0e0e0;
+    font-family: var(--sr-font-body);
+    display: grid;
+    grid-template-rows: 80px 1fr 60px;
+
+    background-image: url('../../public/img/interface/sra2/sra2_background_window_dark.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+
+    --dark-blue: rgb(14, 8, 40);
+    --light-blue: rgb(0, 229, 255);
+    --neutral-light: rgb(170, 249, 241);
+    --blue: rgb(57, 77, 115);
+    --yellow: rgb(242, 188, 0);
+    --bg-blue: #202A3E;
+
+    .sheet-header {
+        display: grid;
+        grid-template-columns: 76px 1fr 400px;
+        padding: 0 8px;
+
+        .avatar-section {
+            .profile-img {
+                border-radius: 8px 0 8px 0;
+            }
+        }
+
+        .charname {
+            border-bottom: 1px solid var(--blue);
+            padding-bottom: 12px;
+            font-family: var(--sr-font-title-alt);
+
+            input {
+                padding-left: 8px;
+                letter-spacing: 2px;
+                width: 100%;
+                font-size: 2.5rem;
+                font-weight: bold;
+                border: none;
+                background: transparent;
+                color: #ffd700;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                margin: 0;
+
+                &:focus {
+                    outline: 1px solid #00d4ff;
+                    background: rgba(0, 212, 255, 0.1);
+                }
+            }
+        }
+
+        .damage-anarchy-tracker {
+            font-family: var(--sr-font-title);
+            border-bottom: 1px solid var(--blue);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: end;
+            padding-bottom: 12px;
+
+            .damage-track {
+                display: flex;
+                align-items: right;
+                gap: 1rem;
+                flex-wrap: wrap;
+
+                .damage-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+
+                    .track-label {
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        color: #00d4ff;
+                        min-width: 60px;
+                        text-align: right;
+                    }
+
+                    .track-boxes {
+                        display: flex;
+                        align-items: center;
+                        gap: 0;
+                        position: relative;
+
+                        .track-box {
+                            position: relative;
+                            width: 24px;
+                            height: 24px;
+                            margin: 0;
+                            padding: 0;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+
+                            input[type="checkbox"] {
+                                position: absolute;
+                                opacity: 0;
+                                width: 100%;
+                                height: 100%;
+                                margin: 0;
+                                cursor: pointer;
+                                z-index: 2;
+                            }
+
+                            .box-circle {
+                                width: 20px;
+                                height: 20px;
+                                border: 2px solid #0f3460;
+                                border-radius: 50%;
+                                background: rgba(255, 255, 255, 0.05);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                transition: all 0.2s;
+                                position: relative;
+                                z-index: 1;
+                            }
+
+                            // Connector line between circles
+                            &:not(:last-child)::after {
+                                content: '';
+                                position: absolute;
+                                left: 22px;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                width: 2px;
+                                height: 2px;
+                                background: #0f3460;
+                                z-index: 0;
+                            }
+
+                            input:checked+.box-circle {
+                                background: #ff4757;
+                                border-color: #ff4757;
+                                box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+
+                                &::after {
+                                    content: '';
+                                    width: 10px;
+                                    height: 10px;
+                                    background: #fff;
+                                    border-radius: 50%;
+                                    position: absolute;
+                                }
+                            }
+
+                            &.checked .box-circle {
+                                background: #ff4757;
+                                border-color: #ff4757;
+                                box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+
+                                &::after {
+                                    content: '';
+                                    width: 10px;
+                                    height: 10px;
+                                    background: #fff;
+                                    border-radius: 50%;
+                                    position: absolute;
+                                }
+                            }
+
+                            &:hover .box-circle {
+                                border-color: #00d4ff;
+                                background: rgba(0, 212, 255, 0.1);
+                                transform: scale(1.1);
+                            }
+
+                            input:checked+.box-circle:hover,
+                            &.checked .box-circle:hover {
+                                background: #ff6b7a;
+                                border-color: #ff6b7a;
+                            }
+                        }
+
+                        // Remove connector line after last box
+                        .track-box:last-child .box-circle::before {
+                            display: none;
+                        }
+                    }
+
+                    &.light {
+                        .track-label {
+                            color: #ffd700;
+                        }
+
+                        .track-box input:checked+.box-circle,
+                        .track-box.checked .box-circle {
+                            background: #ffd700;
+                            border-color: #ffd700;
+                            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+                        }
+
+                        .track-box:hover .box-circle {
+                            border-color: #ffd700;
+                        }
+                    }
+
+                    &.severe {
+                        .track-label {
+                            color: #ff6b35;
+                        }
+
+                        .track-box input:checked+.box-circle,
+                        .track-box.checked .box-circle {
+                            background: #ff6b35;
+                            border-color: #ff6b35;
+                            box-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+                        }
+
+                        .track-box:hover .box-circle {
+                            border-color: #ff6b35;
+                        }
+                    }
+
+                    &.incapacitating {
+                        .track-label {
+                            color: #c44569;
+                        }
+
+                        .track-box input:checked+.box-circle,
+                        .track-box.checked .box-circle {
+                            background: #c44569;
+                            border-color: #c44569;
+                            box-shadow: 0 0 8px rgba(196, 69, 105, 0.6);
+                        }
+
+                        .track-box:hover .box-circle {
+                            border-color: #c44569;
+                        }
+                    }
+                }
+            }
+
+            .anarchy-track {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-left: auto;
+
+                .track-label {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: #9b59b6;
+                    min-width: 60px;
+                    text-align: right;
+                }
+
+                .track-boxes {
+                    display: flex;
+                    align-items: center;
+                    gap: 0;
+                    position: relative;
+
+                    .track-box {
+                        position: relative;
+                        width: 24px;
+                        height: 24px;
+                        margin: 0;
+                        padding: 0;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        input[type="checkbox"] {
+                            position: absolute;
+                            opacity: 0;
+                            width: 100%;
+                            height: 100%;
+                            margin: 0;
+                            cursor: pointer;
+                            z-index: 2;
+                        }
+
+                        .box-circle {
+                            width: 20px;
+                            height: 20px;
+                            border: 2px solid #0f3460;
+                            border-radius: 50%;
+                            background: rgba(255, 255, 255, 0.05);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: all 0.2s;
+                            position: relative;
+                            z-index: 1;
+                        }
+
+                        // Connector line between circles
+                        &:not(:last-child)::after {
+                            content: '';
+                            position: absolute;
+                            left: 22px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            width: 2px;
+                            height: 2px;
+                            background: #0f3460;
+                            z-index: 0;
+                        }
+
+                        input:checked+.box-circle {
+                            background: #9b59b6;
+                            border-color: #9b59b6;
+                            box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
+
+                            &::after {
+                                content: '';
+                                width: 10px;
+                                height: 10px;
+                                background: #fff;
+                                border-radius: 50%;
+                                position: absolute;
+                            }
+                        }
+
+                        &.checked .box-circle {
+                            background: #9b59b6;
+                            border-color: #9b59b6;
+                            box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
+
+                            &::after {
+                                content: '';
+                                width: 10px;
+                                height: 10px;
+                                background: #fff;
+                                border-radius: 50%;
+                                position: absolute;
+                            }
+                        }
+
+                        &:hover .box-circle {
+                            border-color: #9b59b6;
+                            background: rgba(155, 89, 182, 0.1);
+                            transform: scale(1.1);
+                        }
+
+                        input:checked+.box-circle:hover,
+                        &.checked .box-circle:hover {
+                            background: #a569bd;
+                            border-color: #a569bd;
+                        }
+                    }
+
+                    // Remove connector line after last box
+                    .track-box:last-child .box-circle::before {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+
+    .sheet-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        padding: 4px 8px 0px 8px;
+
+        section.char-section {
+            margin-bottom: 16px;
+            header {
+                margin-bottom: 4px;
+                border-top: 1px solid var(--neutral-light);
+                border-bottom: 1px solid var(--neutral-light);
+                background-color: var(--bg-blue);
+                padding: 2px 4px 2px 8px;
+                font-size: 1.1rem;
+                color: var(--light-blue);
+                font-weight: bold;
+                font-family: var(--sr-font-title);
+                display: grid;
+                grid-template-columns: 1fr 0fr 0fr;
+
+                div:nth-child(2) {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1rem;
+                }
+
+                div:nth-child(3) {
+                    display: flex;
+                    margin-left: 8px;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1rem;
+                }
+            }
+
+            .char-section-row {
+                .row {
+                    font-weight: bold;
+                    display: grid;
+                    grid-template-columns: 1fr 0fr 0fr;
+                    padding-right: 6px;
+
+                    .name-wrapper {
+                        cursor: pointer;
+                        display: flex;
+                        gap: 8px;
+                        transition: all 0.2s;
+                        &:hover {
+                            transform: scale(1.05);
+                        }
+                        &.spe {
+                            color: var(--neutral-light);
+                        }
+                        .arrow {
+                            font-size: 0.8rem;
+                            font-weight: bold;
+                            transform: rotate(90deg) translateX(-1px);
+                            margin-right: 4px;
+                        }
+                    }
+
+                    .dice {
+                        display: flex;
+                        gap: 4px;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1rem;
+                        color: var(--light-blue);
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        &:hover {
+                            transform: scale(1.05);
+                            color:white;
+                        }
+
+                        .fa {
+                            font-size: 0.8rem;
+                            transform: translateY(1px);
+                            opacity: 0.7;
+                        }
+                    }
+
+                    .level {
+                        display: flex;
+                        margin-right: 15px;
+                        align-items: center;
+                        justify-content: center;
+                        color: var(--yellow);
+                        font-size: 0.9rem;
+                    }
+                    .rr {
+                        display: flex;
+                        margin-left: 12px;
+                        align-items: center;
+                        justify-content: center;
+                        color: var(--yellow);
+                        font-size: 0.9rem;
+                    }
+                }
+            }
+        }
+
+    }
+
+    .sheet-footer {}
+}

@@ -24,7 +24,6 @@ declare global {
     };
     Actor: {
       character: models.CharacterDataModel;
-      npc: models.NpcDataModel;
     };
   }
 }
