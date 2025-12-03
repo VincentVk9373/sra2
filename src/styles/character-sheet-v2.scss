@@ -459,6 +459,21 @@
                     justify-content: center;
                     font-size: 1rem;
                 }
+
+                div.ap {
+                    display: flex;
+                    gap: 2px;
+                    div:nth-child(1) {
+                        color: white;
+                        font-size: 0.8rem;
+                    }
+
+                    div:nth-child(2) {
+                        opacity: 0.7;
+                        color: white;
+                        font-size: 1rem;
+                    }
+                }
             }
 
             .char-section-row {
@@ -502,6 +517,10 @@
 
                         &:hover {
                             transform: scale(1.05);
+                            color: white;
+                        }
+
+                        &.autopilot {
                             color: white;
                         }
 
@@ -565,8 +584,9 @@
 
         .thresholds-table {
             border: none;
-            margin:0;
-            .threshold-title{
+            margin: 0;
+
+            .threshold-title {
                 font-size: 1.1rem;
                 padding-left: 8px;
                 color: var(--sr-text-color-light);
@@ -589,10 +609,11 @@
                     color: var(--sr-text-color-light);
                     font-size: 1rem;
                     font-family: var(--sr-font-body);
+
                     &:focus {
                         box-shadow: none;
                         outline: none;
-                        border-top: none;  
+                        border-top: none;
                         border-left: none;
                         border-right: none;
                         border-bottom: 1px solid var(--light-blue);
@@ -605,13 +626,15 @@
             }
         }
     }
+
     .sheet-footer {
         margin-left: 8px;
         margin-right: 8px;
+
         .footer-content {
-            width:100%;
+            width: 100%;
             color: var(--sr-text-color-grey);
-            font-size:1rem;
+            font-size: 1rem;
             font-style: italic;
             border-top: 1px solid var(--blue);
             display: flex;
@@ -619,6 +642,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+
             .footer-price {
                 font-weight: bold;
                 margin-right: 12px;
@@ -653,17 +677,19 @@
         top: 104px;
         right: 7px;
         width: 360px;
+
         tr th {
             display: none;
         }
+
         thead {
-            border:0;
+            border: 0;
         }
-        
+
     }
 
     .sheet-footer {
-        display:none;
+        display: none;
     }
 
     .bookmarks-list-compact {

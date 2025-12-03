@@ -46,6 +46,8 @@
             "DICE_POOL": "Dice",
             "RR": "RR",
             "ROLL_WEAPON": "Roll dice for this weapon",
+            "ROLL_AUTOPILOT": "Roll dice using the drone's autopilot",
+            "ROLL_WEAPON_WITH_AUTOPILOT": "Roll attack using the drone's autopilot",
             "ADD_WEAPON": "Add Weapon",
             "ONLY_WEAPONS_ALLOWED": "Only weapons can be added to vehicles",
             "BONUSES_AND_OPTIONS": "Bonuses and Options",
