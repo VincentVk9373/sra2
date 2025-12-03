@@ -476,6 +476,8 @@
                 "HANDLING_BONUS_HINT": "Maniabilité +1 (max +3) : +1 niveau",
                 "ARMOR_BONUS": "Bonus Blindage",
                 "ARMOR_BONUS_HINT": "Blindage +1 (max +Structure) : +1 niveau",
+                "STRUCTURE_BONUS": "Bonus Structure",
+                "STRUCTURE_BONUS_HINT": "Structure +1 : +1 niveau",
                 "IS_FIXED": "Fixe (incapable de se déplacer)",
                 "IS_FIXED_HINT": "Le véhicule/drone est fixe et ne peut pas se déplacer : -1 niveau",
                 "IS_FLYING": "Volant",

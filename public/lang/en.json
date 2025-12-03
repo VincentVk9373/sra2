@@ -15,10 +15,7 @@
     "SRA2": {
         "SHEET": {
             "CHARACTER": "SRA2 Character Sheet",
-            "CHARACTER_V2": "SRA2 Character Sheet V2",
-            "SWITCH_TO_V1": "Switch to classic sheet",
-            "SWITCH_TO_V2": "Switch to V2 sheet",
-            "SWITCH_ERROR": "Error switching sheet",
+            "NPC": "SRA2 NPC Sheet",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
             "ICE": "SRA2 ICE Sheet",
             "FEAT": "SRA2 Feat Sheet",
@@ -37,9 +34,44 @@
                 "COMBAT": "Combat",
                 "SKILLS": "Skills",
                 "FEATS": "Feats"
-            }
+            },
+            "LINKED_VEHICLES": "Linked Vehicles"
         },
         "TOTAL_COST": "Total Cost",
+        "NPC": {
+            "NAME": "NPC Name",
+            "DIFFICULTY": "Difficulty Rating",
+            "DESCRIPTION": "Description",
+            "SECTION": {
+                "INFO": "Information",
+                "COMBAT": "Combat",
+                "SKILLS": "Skills",
+                "FEATS": "Feats"
+            },
+            "DICE_POOL": "Dice",
+            "RR": "RR",
+            "THRESHOLD": "Threshold",
+            "SKILLS_INFO": "NPCs don't roll dice. They have predefined result thresholds.",
+            "THRESHOLD_FORMULA": "Threshold Formula",
+            "FORMULA": "floor(Dice / 3) + RR + 1",
+            "OTHER_FEATS": "Other Feats",
+            "ATTACK_WITH_THRESHOLD": "Attack with this threshold",
+            "NO_TARGET_SELECTED": "No target selected. Please target a token before attacking.",
+            "ATTACK_AGAINST": "Attack against",
+            "ATTACK_FLAVOR": "{npcName} attacks {targetName} with {skillName}",
+            "DEFENSE_ROLL_REQUIRED": "Target must make a defense roll",
+            "ATTACK_WITH_WEAPON": "Attack with this weapon",
+            "CAST_SPELL": "Cast this spell",
+            "ATTACK": "Attack",
+            "ROLL_WITH_DICE": "Roll dice to attack",
+            "SECTION": {
+                "INFO": "Information",
+                "COMBAT": "Combat",
+                "SKILLS": "Skills",
+                "FEATS": "Feats",
+                "WEAPONS_SPELLS": "Weapons and Spells"
+            }
+        },
         "VEHICLE": {
             "NAME": "Vehicle/Drone Name",
             "COST": "Cost",
@@ -49,8 +81,6 @@
             "DICE_POOL": "Dice",
             "RR": "RR",
             "ROLL_WEAPON": "Roll dice for this weapon",
-            "ROLL_AUTOPILOT": "Roll dice using the drone's autopilot",
-            "ROLL_WEAPON_WITH_AUTOPILOT": "Roll attack using the drone's autopilot",
             "ADD_WEAPON": "Add Weapon",
             "ONLY_WEAPONS_ALLOWED": "Only weapons can be added to vehicles",
             "BONUSES_AND_OPTIONS": "Bonuses and Options",
@@ -232,9 +262,8 @@
             "ARMOR_LEVEL": "Armor Level",
             "TYPE": "Type",
             "LIGHT": "Light",
+            "MODERATE": "Moderate",
             "SEVERE": "Severe",
-            "INCAPACITATING": "Incapacitating",
-            "INCAPACITATING_SHORT": "Incapa.",
             "WITHOUT_ARMOR": "Without armor",
             "WITH_ARMOR": "With armor",
             "MENTAL": "Mental"
@@ -246,6 +275,7 @@
             "INCAPACITATING": "Incapacitating"
         },
         "FEATS": {
+            "BOOKMARKED": "Favorite",
             "LABEL": "Feats",
             "NAME": "Feat Name",
             "EDIT": "Edit Feat",
@@ -258,6 +288,9 @@
             "IS_FIRST_FEAT_HINT": "Check this box if this is the character's first trait (traits only: costs 0 at level 0, otherwise costs 3)",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} is already on this character",
+            "VEHICLE_ALREADY_EXISTS": "The vehicle {name} is already on this character",
+            "VEHICLE_ADDED": "The vehicle {name} has been added",
+            "VEHICLE_UNLINKED": "The vehicle has been unlinked",
             "ONLY_FEATS": "Only feat items can be dropped in the feats section",
             "SEARCH_PLACEHOLDER": "Search for a feat...",
             "SEARCH_NO_RESULTS": "No feats found",
@@ -366,6 +399,15 @@
             "NARRATION_ACTIONS_LABEL": "actions",
             "NARRATION_ACTIONS_HINT": "Number of actions this narration grants (1 or 2)",
             "NARRATION_SHORT": "Narration",
+            "SUSTAINED_SPELLS": "Additional Sustained Spells",
+            "SUSTAINED_SPELLS_HINT": "Each checked box allows maintaining one additional spell (max +2) and adds +2 to recommended level",
+            "SUSTAINED_SPELL_COUNT": "Number of additional sustained spells",
+            "SUSTAINED_SPELL_1": "+1 Sustained spell (+2 level)",
+            "SUSTAINED_SPELL_2": "+2 Sustained spells (+4 levels)",
+            "SUMMONED_SPIRIT": "Additional Summoned Spirit",
+            "SUMMONED_SPIRIT_HINT": "Allows summoning one additional spirit (max +1) and adds +3 to recommended level",
+            "SUMMONED_SPIRIT_COUNT": "Number of additional summoned spirits",
+            "SUMMONED_SPIRIT_1": "+1 Summoned spirit (+3 level)",
             "BREAKDOWN_TITLE": "Calculation Breakdown",
             "BREAKDOWN": {
                 "BASE_FEAT_COST": "Base talent cost (non-first feat)",
@@ -416,6 +458,7 @@
                 "INFO": "Weapon Information",
                 "DAMAGE_VALUE": "Damage Value (DV)",
                 "DAMAGE_VALUE_SHORT": "DV",
+                "DAMAGE": "Damage",
                 "FINAL_VALUE": "Final Value",
                 "NEEDS_ACTOR_FOR_CALCULATION": "Add this weapon to a character to calculate the final value with Strength (FOR)",
                 "RANGES": "Ranges",
@@ -437,6 +480,15 @@
                 "DAMAGE_VALUE_BONUS_HINT": "Each checked box adds +1 to DV and +1 to recommended level",
                 "BONUS_1": "+1 DV (+1 level)",
                 "BONUS_2": "+2 DV (+2 levels)",
+                "LINKED_ATTACK_SKILL": "Attack Skill",
+                "LINKED_ATTACK_SKILL_HINT": "Skill used to attack with this weapon (ex: 'Ranged Weapons', 'Close Combat')",
+                "LINKED_ATTACK_SPECIALIZATION": "Attack Specialization",
+                "LINKED_ATTACK_SPECIALIZATION_HINT": "Attack specialization (ex: 'Spec: Pistols', 'Spec: Blades'). Prefix with 'Spec: '",
+                "LINKED_DEFENSE_SKILL": "Defense Skill",
+                "LINKED_DEFENSE_SKILL_HINT": "Skill used for defense (ex: 'Athletics', 'Close Combat')",
+                "LINKED_DEFENSE_SPECIALIZATION": "Defense Specialization",
+                "LINKED_DEFENSE_SPECIALIZATION_HINT": "Defense specialization (ex: 'Spec: Ranged Defense', 'Spec: Defense'). Prefix with 'Spec: '",
+                "NO_SPECIALIZATION": "No specialization",
                 "TYPES": {
                     "CUSTOM_WEAPON": "Custom Weapon",
                     "BARE_HANDS": "Bare Hands",
@@ -519,6 +571,9 @@
                 "AUTOPILOT_UNLOCKED_HINT": "Overclocked autopilot: +3 levels",
                 "ADDITIONAL_DRONE_COUNT": "Additional identical drones",
                 "ADDITIONAL_DRONE_COUNT_HINT": "Number of additional identical drones (max 3): +2 levels per drone",
+                "ACTOR_UUID": "Vehicle actor UUID",
+                "OPEN_SHEET": "Open vehicle sheet",
+                "UNLINK": "Unlink vehicle",
                 "TYPES": {
                     "MICRODRONE": "Microdrone (Autopilot 6, Structure 0, Handling 10, Speed 0 (flying 1), Armor 0, no weapon mount)",
                     "SMALL_DRONE": "Small drone (Autopilot 6, Structure 1, Handling 9, Speed 2 (flying 4), Armor 0, SMG max)",
@@ -581,6 +636,7 @@
             }
         },
         "SKILLS": {
+            "BOOKMARKED": "Favorite",
             "LABEL": "Skills",
             "NAME": "Skill Name",
             "EDIT": "Edit Skill",
@@ -744,19 +800,7 @@
             "RISK_REDUCTION": "Risk Reduction",
             "RR": "RR",
             "SUCCESSES": "Successes",
-            "NORMAL_DICE": "Normal Dice",
-            "RISK_LEVEL": {
-                "LOW_TO_NO": "Low to no risk",
-                "NORMAL": "Normal risk",
-                "HIGH": "High risk",
-                "EXTREME": "Extreme risk"
-            },
-            "PROBABILITIES": {
-                "NO_COMPLICATION": "No complication",
-                "MINOR_COMPLICATION": "Minor complication",
-                "CRITICAL_COMPLICATION": "Critical complication",
-                "DISASTER": "Disaster"
-            }
+            "NORMAL_DICE": "Normal Dice"
         }
     }
 }
