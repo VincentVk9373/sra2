@@ -3617,60 +3617,51 @@ class CharacterSheet extends ActorSheet {
       if (vehicle.type === "vehicle-actor" && vehicle.weapons) {
         vehicle.weapons = vehicle.weapons.map((weapon) => {
           const weaponSystem = weapon.system;
-          const weaponType = weaponSystem.weaponType;
-          let weaponLinkedSkill = "";
-          let weaponLinkedSpecialization = "";
-          if (weaponType && weaponType !== "custom-weapon") {
-            const weaponStats = WEAPON_TYPES[weaponType];
-            if (weaponStats) {
-              weaponLinkedSkill = weaponStats.linkedSkill || "";
-              weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
-            }
-          }
-          let finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
-          let finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
+          const finalAttackSpec = "Spé : Armes contrôlées à distance";
           let attackSkillName = void 0;
           let attackSkillLevel = void 0;
           let attackSpecName = void 0;
           let attackSpecLevel = void 0;
           let attackLinkedAttribute = void 0;
-          if (finalAttackSpec) {
-            const normalizeForComparison = (text) => {
-              return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-            };
-            const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-            const foundSpec = this.actor.items.find((i) => {
-              if (i.type !== "specialization") return false;
-              const normalizedItemName = normalizeForComparison(i.name);
-              return normalizedItemName === normalizedTargetSpec;
-            });
-            if (foundSpec) {
-              const specSystem = foundSpec.system;
-              attackSpecName = foundSpec.name;
-              attackLinkedAttribute = specSystem.linkedAttribute || "strength";
-              const linkedSkillName = specSystem.linkedSkill;
-              if (linkedSkillName) {
-                const parentSkill = this.actor.items.find(
-                  (i) => i.type === "skill" && i.name === linkedSkillName
-                );
-                if (parentSkill && attackLinkedAttribute) {
-                  attackSkillName = parentSkill.name;
-                  const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-                  attackSkillLevel = skillLevel;
-                  attackSpecLevel = skillLevel + 2;
-                }
+          const normalizeForComparison = (text) => {
+            return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+          };
+          const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+          const foundSpec = this.actor.items.find((i) => {
+            if (i.type !== "specialization") return false;
+            const normalizedItemName = normalizeForComparison(i.name);
+            return normalizedItemName === normalizedTargetSpec;
+          });
+          if (foundSpec) {
+            const specSystem = foundSpec.system;
+            attackSpecName = foundSpec.name;
+            attackLinkedAttribute = specSystem.linkedAttribute || "logic";
+            const linkedSkillName = specSystem.linkedSkill;
+            if (linkedSkillName) {
+              const parentSkill = this.actor.items.find(
+                (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
+              );
+              if (parentSkill && attackLinkedAttribute) {
+                attackSkillName = parentSkill.name;
+                const skillRating = parentSkill.system.rating || 0;
+                const attributeValue = this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+                const skillLevel = skillRating + attributeValue;
+                attackSkillLevel = skillLevel;
+                attackSpecLevel = skillLevel + 2;
               }
             }
           }
-          if (!attackSpecName && finalAttackSkill) {
+          if (!attackSpecName) {
             const foundSkill = this.actor.items.find(
-              (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+              (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
             );
             if (foundSkill) {
               attackSkillName = foundSkill.name;
-              const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+              const foundLinkedAttribute = foundSkill.system.linkedAttribute || "logic";
               attackLinkedAttribute = foundLinkedAttribute;
-              attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+              const skillRating = foundSkill.system.rating || 0;
+              const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
+              attackSkillLevel = skillRating + attributeValue;
             }
           }
           const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
@@ -3698,6 +3689,10 @@ class CharacterSheet extends ActorSheet {
           }, 0));
           weapon.totalDicePool = totalDicePool;
           weapon.rr = totalRR;
+          weapon.linkedAttackSkill = "Ingénierie";
+          weapon.linkedAttackSpecialization = "Spé : Armes contrôlées à distance";
+          weapon.linkedDefenseSkill = "Athlétisme";
+          weapon.linkedDefenseSpecialization = "Spé : Défense à distance";
           return weapon;
         });
       }
@@ -4973,64 +4968,59 @@ class CharacterSheet extends ActorSheet {
       const itemSystem = weapon.system;
       const weaponType = itemSystem.weaponType;
       const crr = itemSystem.crr || 0;
-      let weaponLinkedSkill = "";
-      let weaponLinkedSpecialization = "";
-      let weaponLinkedDefenseSkill = "";
-      let weaponLinkedDefenseSpecialization = "";
-      if (weaponType && weaponType !== "custom-weapon") {
-        const weaponStats = WEAPON_TYPES[weaponType];
-        if (weaponStats) {
-          weaponLinkedSkill = weaponStats.linkedSkill || "";
-          weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
-          weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || "";
-          weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
-        }
-      }
       const rawItemRRList = itemSystem.rrList || [];
       const itemRRList = rawItemRRList.map((rrEntry) => ({
         ...rrEntry,
         featName: weapon.name
       }));
-      const finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || "";
-      const finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || "";
-      const finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
-      const finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
+      const finalAttackSkill = "Ingénierie";
+      const finalAttackSpec = "Spé : Armes contrôlées à distance";
+      const finalDefenseSkill = "Athlétisme";
+      const finalDefenseSpec = "Spé : Défense à distance";
       let attackSkillName = void 0;
       let attackSkillLevel = void 0;
       let attackSpecName = void 0;
       let attackSpecLevel = void 0;
       let attackLinkedAttribute = void 0;
-      if (finalAttackSpec) {
-        const foundSpec = this.actor.items.find(
-          (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSpec)
-        );
-        if (foundSpec) {
-          const specSystem = foundSpec.system;
-          attackSpecName = foundSpec.name;
-          attackLinkedAttribute = specSystem.linkedAttribute || "strength";
-          const linkedSkillName = specSystem.linkedSkill;
-          if (linkedSkillName) {
-            const parentSkill = this.actor.items.find(
-              (i) => i.type === "skill" && i.name === linkedSkillName
-            );
-            if (parentSkill && attackLinkedAttribute) {
-              attackSkillName = parentSkill.name;
-              const skillLevel = (parentSkill.system.rating || 0) + (this.actor.system.attributes?.[attackLinkedAttribute] || 0);
-              attackSkillLevel = skillLevel;
-              attackSpecLevel = skillLevel + 2;
-            }
+      const normalizeForComparison = (text) => {
+        return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+      };
+      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+      const foundSpec = this.actor.items.find((i) => {
+        if (i.type !== "specialization") return false;
+        const normalizedItemName = normalizeForComparison(i.name);
+        return normalizedItemName === normalizedTargetSpec;
+      });
+      if (foundSpec) {
+        const specSystem = foundSpec.system;
+        attackSpecName = foundSpec.name;
+        attackLinkedAttribute = specSystem.linkedAttribute || "logic";
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
+          );
+          if (parentSkill && attackLinkedAttribute) {
+            attackSkillName = parentSkill.name;
+            const skillRating = parentSkill.system.rating || 0;
+            const attributeValue = this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+            const skillLevel = skillRating + attributeValue;
+            attackSkillLevel = skillLevel;
+            attackSpecLevel = skillLevel + 2;
           }
         }
       }
-      if (!attackSpecName && finalAttackSkill) {
+      if (!attackSpecName) {
         const foundSkill = this.actor.items.find(
-          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
         );
         if (foundSkill) {
           attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
+          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "logic";
           attackLinkedAttribute = foundLinkedAttribute;
-          attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+          const skillRating = foundSkill.system.rating || 0;
+          const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
+          attackSkillLevel = skillRating + attributeValue;
         }
       }
       let defenseSkillName = void 0;
@@ -5038,37 +5028,42 @@ class CharacterSheet extends ActorSheet {
       let defenseSpecName = void 0;
       let defenseSpecLevel = void 0;
       let defenseLinkedAttribute = void 0;
-      if (finalDefenseSpec) {
-        const foundDefenseSpec = this.actor.items.find(
-          (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(finalDefenseSpec)
-        );
-        if (foundDefenseSpec) {
-          const specSystem = foundDefenseSpec.system;
-          defenseSpecName = foundDefenseSpec.name;
-          defenseLinkedAttribute = specSystem.linkedAttribute || "agility";
-          const linkedSkillName = specSystem.linkedSkill;
-          if (linkedSkillName) {
-            const parentSkill = this.actor.items.find(
-              (i) => i.type === "skill" && i.name === linkedSkillName
-            );
-            if (parentSkill && defenseLinkedAttribute) {
-              defenseSkillName = parentSkill.name;
-              const skillLevel = (parentSkill.system.rating || 0) + (this.actor.system.attributes?.[defenseLinkedAttribute] || 0);
-              defenseSkillLevel = skillLevel;
-              defenseSpecLevel = skillLevel + 2;
-            }
+      const normalizedDefenseSpec = normalizeForComparison(finalDefenseSpec);
+      const foundDefenseSpec = this.actor.items.find((i) => {
+        if (i.type !== "specialization") return false;
+        const normalizedItemName = normalizeForComparison(i.name);
+        return normalizedItemName === normalizedDefenseSpec;
+      });
+      if (foundDefenseSpec) {
+        const specSystem = foundDefenseSpec.system;
+        defenseSpecName = foundDefenseSpec.name;
+        defenseLinkedAttribute = specSystem.linkedAttribute || "agility";
+        const linkedSkillName = specSystem.linkedSkill;
+        if (linkedSkillName) {
+          const parentSkill = this.actor.items.find(
+            (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Athlétisme")
+          );
+          if (parentSkill && defenseLinkedAttribute) {
+            defenseSkillName = parentSkill.name;
+            const skillRating = parentSkill.system.rating || 0;
+            const attributeValue = this.actor.system.attributes?.[defenseLinkedAttribute] || 0;
+            const skillLevel = skillRating + attributeValue;
+            defenseSkillLevel = skillLevel;
+            defenseSpecLevel = skillLevel + 2;
           }
         }
       }
-      if (!defenseSpecName && finalDefenseSkill) {
+      if (!defenseSpecName) {
         const foundDefenseSkill = this.actor.items.find(
-          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalDefenseSkill)
+          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Athlétisme")
         );
         if (foundDefenseSkill) {
           defenseSkillName = foundDefenseSkill.name;
           const foundLinkedAttribute = foundDefenseSkill.system.linkedAttribute || "agility";
           defenseLinkedAttribute = foundLinkedAttribute;
-          defenseSkillLevel = (foundDefenseSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+          const skillRating = foundDefenseSkill.system.rating || 0;
+          const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
+          defenseSkillLevel = skillRating + attributeValue;
         }
       }
       const baseDamageValue = itemSystem.damageValue || "0";
@@ -5115,9 +5110,13 @@ class CharacterSheet extends ActorSheet {
         itemActive: itemSystem.active,
         // Merged linked skills (for fallback selection in dialog)
         linkedAttackSkill: finalAttackSkill,
+        // 'Ingénierie'
         linkedAttackSpecialization: finalAttackSpec,
+        // 'Spé : Armes contrôlées à distance'
         linkedDefenseSkill: finalDefenseSkill,
+        // 'Athlétisme'
         linkedDefenseSpecialization: finalDefenseSpec,
+        // 'Spé : Défense à distance'
         linkedAttribute: attackLinkedAttribute,
         // Weapon properties
         isWeaponFocus: itemSystem.isWeaponFocus || false,
