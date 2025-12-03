@@ -325,18 +325,18 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
-        moderate: strength + bonusPhysicalThreshold + 3,
-        severe: strength + bonusPhysicalThreshold + 6
+        severe: strength + bonusPhysicalThreshold + 3,
+        incapacitating: strength + bonusPhysicalThreshold + 6
       },
       withArmor: {
         light: strength + armorLevel + bonusPhysicalThreshold,
-        moderate: strength + armorLevel + bonusPhysicalThreshold + 3,
-        severe: strength + armorLevel + bonusPhysicalThreshold + 6
+        severe: strength + armorLevel + bonusPhysicalThreshold + 3,
+        incapacitating: strength + armorLevel + bonusPhysicalThreshold + 6
       },
       mental: {
         light: willpower + bonusMentalThreshold,
-        moderate: willpower + bonusMentalThreshold + 3,
-        severe: willpower + bonusMentalThreshold + 6
+        severe: willpower + bonusMentalThreshold + 3,
+        incapacitating: willpower + bonusMentalThreshold + 6
       }
     };
     

@@ -178,17 +178,18 @@
             "ARMOR_LEVEL": "Niveau d'Armure",
             "TYPE": "Type",
             "LIGHT": "Léger",
-            "MODERATE": "Modéré",
-            "SEVERE": "Sévère",
+            "SEVERE": "Grave",
+            "INCAPACITATING": "Incapacitant",
+            "INCAPACITATING_SHORT": "Incapa.",
             "WITHOUT_ARMOR": "Sans armure",
             "WITH_ARMOR": "Avec armure",
             "MENTAL": "Mental"
         },
         "DAMAGE": {
             "LABEL": "Dégâts",
-            "LIGHT": "Légers",
+            "LIGHT": "Légeres",
             "SEVERE": "Grave",
-            "INCAPACITATING": "Incapacitant"
+            "INCAPACITATING": "Incapacitante"
         },
         "FEATS": {
             "BOOKMARKED": "Favori",

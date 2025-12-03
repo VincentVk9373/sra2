@@ -336,18 +336,18 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
-        moderate: strength + bonusPhysicalThreshold + 3,
-        severe: strength + bonusPhysicalThreshold + 6
+        severe: strength + bonusPhysicalThreshold + 3,
+        incapacitating: strength + bonusPhysicalThreshold + 6
       },
       withArmor: {
         light: strength + armorLevel + bonusPhysicalThreshold,
-        moderate: strength + armorLevel + bonusPhysicalThreshold + 3,
-        severe: strength + armorLevel + bonusPhysicalThreshold + 6
+        severe: strength + armorLevel + bonusPhysicalThreshold + 3,
+        incapacitating: strength + armorLevel + bonusPhysicalThreshold + 6
       },
       mental: {
         light: willpower + bonusMentalThreshold,
-        moderate: willpower + bonusMentalThreshold + 3,
-        severe: willpower + bonusMentalThreshold + 6
+        severe: willpower + bonusMentalThreshold + 3,
+        incapacitating: willpower + bonusMentalThreshold + 6
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -3167,14 +3167,14 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
     if (damageType === "mental") {
       damageThresholds = defenderSystem.damageThresholds?.mental || {
         light: 1,
-        moderate: 4,
-        severe: 7
+        severe: 4,
+        incapacitating: 7
       };
     } else {
       damageThresholds = defenderSystem.damageThresholds?.withArmor || {
         light: 1,
-        moderate: 4,
-        severe: 7
+        severe: 4,
+        incapacitating: 7
       };
     }
   }
@@ -3189,7 +3189,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
     if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
       damage.incapacitating = true;
-    } else if (damageValue > damageThresholds.severe) {
+    } else if (damageValue > (damageThresholds?.severe || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
       let applied = false;
       for (let i = 0; i < damage.severe.length; i++) {
@@ -3241,7 +3241,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
     if (damageThresholds.incapacitating && damageValue > damageThresholds.incapacitating) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
       damage.incapacitating = true;
-    } else if (damageValue > damageThresholds.severe) {
+    } else if (damageValue > (damageThresholds.severe || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
       let applied = false;
       for (let i = 0; i < damage.severe.length; i++) {
@@ -3290,10 +3290,10 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
       return;
     }
   } else {
-    if (damageValue > damageThresholds.severe) {
+    if (damageValue > (damageThresholds?.incapacitating || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
       damage.incapacitating = true;
-    } else if (damageThresholds.moderate && damageValue > damageThresholds.moderate) {
+    } else if (damageThresholds.severe && damageValue > (damageThresholds.severe || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
       let applied = false;
       for (let i = 0; i < damage.severe.length; i++) {

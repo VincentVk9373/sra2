@@ -551,7 +551,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   const isIce = defenderActor.type === 'ice';
   
   // Get damage thresholds based on actor type and damage type
-  let damageThresholds: { light: number; moderate?: number; severe: number; incapacitating?: number };
+  let damageThresholds: { light: number; severe?: number; incapacitating: number };
   if (isIce) {
     // For ICE, thresholds are based on FW = 1: light = 1, severe = 2, incapacitating = 3
     damageThresholds = defenderSystem.damageThresholds || {
@@ -572,15 +572,15 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     if (damageType === 'mental') {
       damageThresholds = defenderSystem.damageThresholds?.mental || {
         light: 1,
-        moderate: 4,
-        severe: 7
+        severe: 4,
+        incapacitating: 7
       };
     } else {
       // Physical damage: use withArmor thresholds
       damageThresholds = defenderSystem.damageThresholds?.withArmor || {
         light: 1,
-        moderate: 4,
-        severe: 7
+        severe: 4,
+        incapacitating: 7
       };
     }
   }
@@ -597,7 +597,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   // Determine damage type based on thresholds
   // For ICE: light = 1, severe = 2, incapacitating = 3 (based on FW = 1)
   // For vehicles: light = Structure + Armor, severe = (2 × Structure) + Armor, incapacitating = (3 × Structure) + Armor
-  // For characters: light, moderate, severe from withArmor thresholds
+  // For characters: light, severe, incapacitating from withArmor thresholds
   
   if (isIce) {
     // ICE damage thresholds
@@ -605,7 +605,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
       // Incapacitating wound: VD > 3
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
       damage.incapacitating = true;
-    } else if (damageValue > damageThresholds.severe) {
+    } else if (damageValue > (damageThresholds?.severe || 0)) {
       // Severe wound: VD > 2
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
       
@@ -674,7 +674,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
       // Incapacitating wound: VD > (3 × Structure) + Blindage
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
       damage.incapacitating = true;
-    } else if (damageValue > damageThresholds.severe) {
+    } else if (damageValue > (damageThresholds.severe || 0)) {
       // Severe wound: VD > (2 × Structure) + Blindage
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
       
@@ -739,11 +739,11 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     }
   } else {
     // Character damage thresholds
-    if (damageValue > damageThresholds.severe) {
+    if (damageValue > (damageThresholds?.incapacitating || 0)) {
       // Incapacitating wound
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
       damage.incapacitating = true;
-    } else if (damageThresholds.moderate && damageValue > damageThresholds.moderate) {
+    } else if (damageThresholds.severe && damageValue > (damageThresholds.severe || 0)) {
       // Severe wound
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
       

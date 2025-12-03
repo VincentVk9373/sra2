@@ -227,8 +227,9 @@
             "ARMOR_LEVEL": "Armor Level",
             "TYPE": "Type",
             "LIGHT": "Light",
-            "MODERATE": "Moderate",
             "SEVERE": "Severe",
+            "INCAPACITATING": "Incapacitating",
+            "INCAPACITATING_SHORT": "Incapa.",
             "WITHOUT_ARMOR": "Without armor",
             "WITH_ARMOR": "With armor",
             "MENTAL": "Mental"
