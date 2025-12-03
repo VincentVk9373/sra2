@@ -7161,22 +7161,40 @@ class RollDialog extends Application {
     if (targets.length > 0) {
       this.targetToken = targets[0] || null;
     }
-    if (rollData.defenderTokenUuid) {
+    const isVehicleWeapon = rollData.isVehicleWeapon;
+    if (!this.targetToken && rollData.defenderTokenUuid) {
       try {
         const defenderTokenFromUuid = foundry.utils?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
         if (defenderTokenFromUuid) {
-          this.targetToken = defenderTokenFromUuid;
-          console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
-          console.log("RollDialog: Defender token name:", defenderTokenFromUuid?.name || defenderTokenFromUuid?.document?.name || defenderTokenFromUuid?.actor?.name);
+          if (isVehicleWeapon && rollData.vehicleUuid) {
+            const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || defenderTokenFromUuid?.document?.actorLink ? defenderTokenFromUuid?.actor?.uuid : void 0;
+            if (tokenActorUuid === rollData.vehicleUuid) {
+              console.log("RollDialog: Skipping vehicle token as defender for vehicle weapon - need target instead");
+            } else {
+              this.targetToken = defenderTokenFromUuid;
+              console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
+            }
+          } else {
+            this.targetToken = defenderTokenFromUuid;
+            console.log("RollDialog: Defender token loaded from UUID:", rollData.defenderTokenUuid);
+          }
         }
       } catch (e) {
         console.warn("RollDialog: Failed to load defender token from UUID:", e);
       }
     }
     if (!this.targetToken && rollData.defenderTokenUuid) {
-      this.targetToken = canvas?.tokens?.placeables?.find((token) => {
+      const foundToken = canvas?.tokens?.placeables?.find((token) => {
         return token.uuid === rollData.defenderTokenUuid || token.document?.uuid === rollData.defenderTokenUuid;
       }) || null;
+      if (foundToken && isVehicleWeapon && rollData.vehicleUuid) {
+        const tokenActorUuid = foundToken?.actor?.uuid || void 0;
+        if (tokenActorUuid !== rollData.vehicleUuid) {
+          this.targetToken = foundToken;
+        }
+      } else if (foundToken) {
+        this.targetToken = foundToken;
+      }
     }
     if (rollData.isCounterAttack && rollData.availableWeapons && rollData.availableWeapons.length > 0 && this.actor) {
       this.autoSelectWeaponForCounterAttack();
@@ -9393,22 +9411,53 @@ class SRA2System {
             }) || null;
           }
         }
-        if (messageFlags.defenderUuid) {
+        const isVehicleWeapon = rollData.isVehicleWeapon;
+        const vehicleUuid = rollData.vehicleUuid;
+        const selectedTargets = Array.from(game.user?.targets || []);
+        if (isVehicleWeapon && selectedTargets.length > 0) {
+          defenderToken = selectedTargets[0];
+          if (defenderToken?.actor) {
+            defender = defenderToken.actor;
+            console.log("Defense button: For vehicle weapon, using selected target as defender:", defender?.name);
+          }
+        }
+        if (!defender && messageFlags.defenderUuid) {
           try {
-            defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-            if (defender) {
-              console.log("Defense button: Defender loaded directly from defenderUuid flag");
+            const defenderFromUuid = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+            if (defenderFromUuid) {
+              if (isVehicleWeapon && vehicleUuid && defenderFromUuid.uuid === vehicleUuid) {
+                console.log("Defense button: Skipping vehicle as defender for vehicle weapon - need target instead");
+              } else {
+                defender = defenderFromUuid;
+                console.log("Defense button: Defender loaded directly from defenderUuid flag");
+              }
             }
           } catch (e) {
             console.warn("Defense button: Failed to load defender from defenderUuid flag:", e);
           }
         }
-        if (messageFlags.defenderTokenUuid) {
+        if (!defenderToken && messageFlags.defenderTokenUuid) {
           try {
-            defenderToken = foundry.utils?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
-            if (defenderToken?.actor && !defender) {
-              defender = defenderToken.actor;
-              console.log("Defense button: Defender loaded from defenderTokenUuid flag, using token actor");
+            const defenderTokenFromUuid = foundry.utils?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
+            if (defenderTokenFromUuid) {
+              if (isVehicleWeapon && vehicleUuid) {
+                const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || void 0;
+                if (tokenActorUuid === vehicleUuid) {
+                  console.log("Defense button: Skipping vehicle token as defender for vehicle weapon - need target instead");
+                } else {
+                  defenderToken = defenderTokenFromUuid;
+                  if (defenderToken?.actor && !defender) {
+                    defender = defenderToken.actor;
+                    console.log("Defense button: Defender loaded from defenderTokenUuid flag, using token actor");
+                  }
+                }
+              } else {
+                defenderToken = defenderTokenFromUuid;
+                if (defenderToken?.actor && !defender) {
+                  defender = defenderToken.actor;
+                  console.log("Defense button: Defender loaded from defenderTokenUuid flag, using token actor");
+                }
+              }
             }
           } catch (e) {
             console.warn("Defense button: Failed to load defender token from defenderTokenUuid flag:", e);
@@ -9416,7 +9465,14 @@ class SRA2System {
         }
         if (!defender) {
           if (messageFlags.defenderId) {
-            defender = game.actors?.get(messageFlags.defenderId) || null;
+            const defenderFromId = game.actors?.get(messageFlags.defenderId) || null;
+            if (defenderFromId) {
+              if (isVehicleWeapon && vehicleUuid && defenderFromId.uuid === vehicleUuid) {
+                console.log("Defense button: Skipping vehicle as defender for vehicle weapon - need target instead");
+              } else {
+                defender = defenderFromId;
+              }
+            }
           }
           if (defender && !defenderToken) {
             defenderToken = canvas?.tokens?.placeables?.find((token) => {
@@ -9431,7 +9487,10 @@ class SRA2System {
         const attackerUuid = messageFlags.attackerUuid || attacker?.uuid || "Unknown";
         const defenderName = defender?.name || "Unknown";
         const defenderId = defender?.id || messageFlags.defenderId || "Unknown";
-        const defenderUuid = messageFlags.defenderUuid || defender?.uuid || "Unknown";
+        let defenderUuid = defender?.uuid || "Unknown";
+        if (!defender || isVehicleWeapon && vehicleUuid && defender.uuid === vehicleUuid) {
+          defenderUuid = messageFlags.defenderUuid || defender?.uuid || "Unknown";
+        }
         console.log("--- UUIDs being used from flags ---");
         console.log("attackerUuid (from flag):", messageFlags.attackerUuid || "Not in flag, using:", attacker?.uuid || "Unknown");
         console.log("defenderUuid (from flag):", messageFlags.defenderUuid || "Not in flag, using:", defender?.uuid || "Unknown");
@@ -9468,23 +9527,49 @@ class SRA2System {
         }
         let defenderTokenForRoll = null;
         let defenderActorForRoll = defender;
-        const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
-        if (defenderTokenUuidFromFlags) {
-          try {
-            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
-            if (defenderTokenForRoll?.actor) {
-              defenderActorForRoll = defenderTokenForRoll.actor;
+        if (isVehicleWeapon && defenderToken) {
+          defenderTokenForRoll = defenderToken;
+          if (defenderToken?.actor) {
+            defenderActorForRoll = defenderToken.actor;
+          }
+        } else {
+          const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
+          if (defenderTokenUuidFromFlags) {
+            try {
+              const defenderTokenFromUuid = foundry.utils?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
+              if (defenderTokenFromUuid) {
+                if (isVehicleWeapon && vehicleUuid) {
+                  const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || void 0;
+                  if (tokenActorUuid === vehicleUuid) {
+                    console.log("Defense: Skipping vehicle token as defender for vehicle weapon - using target instead");
+                    defenderTokenForRoll = defenderToken;
+                    if (defenderToken?.actor) {
+                      defenderActorForRoll = defenderToken.actor;
+                    }
+                  } else {
+                    defenderTokenForRoll = defenderTokenFromUuid;
+                    if (defenderTokenForRoll?.actor) {
+                      defenderActorForRoll = defenderTokenForRoll.actor;
+                    }
+                  }
+                } else {
+                  defenderTokenForRoll = defenderTokenFromUuid;
+                  if (defenderTokenForRoll?.actor) {
+                    defenderActorForRoll = defenderTokenForRoll.actor;
+                  }
+                }
+              }
+            } catch (e) {
+              defenderTokenForRoll = defenderToken;
+              if (defenderToken?.actor) {
+                defenderActorForRoll = defenderToken.actor;
+              }
             }
-          } catch (e) {
+          } else {
             defenderTokenForRoll = defenderToken;
             if (defenderToken?.actor) {
               defenderActorForRoll = defenderToken.actor;
             }
-          }
-        } else {
-          defenderTokenForRoll = defenderToken;
-          if (defenderToken?.actor) {
-            defenderActorForRoll = defenderToken.actor;
           }
         }
         const isIceAttack = messageFlags.rollType === "ice-attack" || rollData.itemType === "ice-attack";
@@ -9611,10 +9696,10 @@ class SRA2System {
           linkedAttribute: defenseLinkedAttribute,
           skillLevel: defenseSkillLevel,
           specLevel: defenseSpecLevel,
-          // Actor is the defender - use UUID directly from flags (already correctly calculated)
+          // Actor is the defender - for vehicle weapons, use the actual defender (target) UUID, not the vehicle
           actorId: defenderActorForRoll.id,
-          actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid,
-          // Use flag UUID first
+          actorUuid: defenderActorForRoll.uuid,
+          // Use the actual defender actor UUID (target, not drone)
           // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
           attackerTokenUuid: defenderTokenUuid,
           // Defender's token (one defending) - this is what will be attacker in RollDialog
@@ -9633,6 +9718,17 @@ class SRA2System {
         const dialog = new RollDialog2(defenseRollData);
         if (attackerToken) {
           dialog.targetToken = attackerToken;
+        }
+        if (isVehicleWeapon && vehicleUuid) {
+          if (dialog.targetToken?.actor?.uuid === vehicleUuid) {
+            console.log("Defense: Target token is the vehicle, should be the character instead");
+            const characterToken = canvas?.tokens?.placeables?.find((token) => {
+              return token.actor?.id === attacker?.id || token.actor?.uuid === attacker?.uuid;
+            }) || null;
+            if (characterToken) {
+              dialog.targetToken = characterToken;
+            }
+          }
         }
         dialog.render(true);
       });

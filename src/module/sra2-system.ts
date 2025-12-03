@@ -509,13 +509,36 @@ export class SRA2System {
           }
         }
         
+        // Check if this is a vehicle weapon attack
+        const isVehicleWeapon = rollData.isVehicleWeapon;
+        const vehicleUuid = rollData.vehicleUuid;
+        
+        // For vehicle weapons, prioritize selected targets over flags to avoid using the drone as defender
+        // The defender should be the target, not the vehicle/drone itself
+        const selectedTargets = Array.from(game.user?.targets || []);
+        if (isVehicleWeapon && selectedTargets.length > 0) {
+          // Use the first selected target as defender (not the drone)
+          defenderToken = selectedTargets[0];
+          if (defenderToken?.actor) {
+            defender = defenderToken.actor;
+            console.log('Defense button: For vehicle weapon, using selected target as defender:', defender?.name);
+          }
+        }
+        
         // Use defender UUID directly from flags (already correctly calculated)
         // Priority: 1) defenderUuid from flags (already calculated correctly), 2) defenderTokenUuid from flags
-        if (messageFlags.defenderUuid) {
+        // Skip if we already have a defender from selected targets for vehicle weapons
+        if (!defender && messageFlags.defenderUuid) {
           try {
-            defender = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-            if (defender) {
-              console.log('Defense button: Defender loaded directly from defenderUuid flag');
+            const defenderFromUuid = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderUuid) || null;
+            // For vehicle weapons, skip if this is the vehicle itself
+            if (defenderFromUuid) {
+              if (isVehicleWeapon && vehicleUuid && defenderFromUuid.uuid === vehicleUuid) {
+                console.log('Defense button: Skipping vehicle as defender for vehicle weapon - need target instead');
+              } else {
+                defender = defenderFromUuid;
+                console.log('Defense button: Defender loaded directly from defenderUuid flag');
+              }
             }
           } catch (e) {
             console.warn('Defense button: Failed to load defender from defenderUuid flag:', e);
@@ -523,13 +546,30 @@ export class SRA2System {
         }
         
         // Get defender token from UUID if available (priority: flag > canvas search)
-        if (messageFlags.defenderTokenUuid) {
+        // Skip if we already have a defender from selected targets for vehicle weapons
+        if (!defenderToken && messageFlags.defenderTokenUuid) {
           try {
-            defenderToken = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
-            if (defenderToken?.actor && !defender) {
-              // Use token's actor if defender not loaded yet
-              defender = defenderToken.actor;
-              console.log('Defense button: Defender loaded from defenderTokenUuid flag, using token actor');
+            const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
+            // For vehicle weapons, skip if this is the vehicle itself
+            if (defenderTokenFromUuid) {
+              if (isVehicleWeapon && vehicleUuid) {
+                const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || undefined;
+                if (tokenActorUuid === vehicleUuid) {
+                  console.log('Defense button: Skipping vehicle token as defender for vehicle weapon - need target instead');
+                } else {
+                  defenderToken = defenderTokenFromUuid;
+                  if (defenderToken?.actor && !defender) {
+                    defender = defenderToken.actor;
+                    console.log('Defense button: Defender loaded from defenderTokenUuid flag, using token actor');
+                  }
+                }
+              } else {
+                defenderToken = defenderTokenFromUuid;
+                if (defenderToken?.actor && !defender) {
+                  defender = defenderToken.actor;
+                  console.log('Defense button: Defender loaded from defenderTokenUuid flag, using token actor');
+                }
+              }
             }
           } catch (e) {
             console.warn('Defense button: Failed to load defender token from defenderTokenUuid flag:', e);
@@ -539,7 +579,15 @@ export class SRA2System {
         // Fallback: try to get actor and find token on canvas (only if flags didn't work)
         if (!defender) {
           if (messageFlags.defenderId) {
-            defender = game.actors?.get(messageFlags.defenderId) || null;
+            const defenderFromId = game.actors?.get(messageFlags.defenderId) || null;
+            // For vehicle weapons, skip if this is the vehicle itself
+            if (defenderFromId) {
+              if (isVehicleWeapon && vehicleUuid && defenderFromId.uuid === vehicleUuid) {
+                console.log('Defense button: Skipping vehicle as defender for vehicle weapon - need target instead');
+              } else {
+                defender = defenderFromId;
+              }
+            }
           }
           
           if (defender && !defenderToken) {
@@ -557,7 +605,13 @@ export class SRA2System {
         const attackerUuid = messageFlags.attackerUuid || attacker?.uuid || 'Unknown'; // Use flag UUID first (already calculated correctly)
         const defenderName = defender?.name || 'Unknown';
         const defenderId = defender?.id || messageFlags.defenderId || 'Unknown';
-        const defenderUuid = messageFlags.defenderUuid || defender?.uuid || 'Unknown'; // Use flag UUID first (already calculated correctly)
+        // For vehicle weapons, use the actual defender (target), not the vehicle/drone
+        // If we have a defender from selected targets, use it; otherwise use flag UUID
+        let defenderUuid = defender?.uuid || 'Unknown';
+        if (!defender || (isVehicleWeapon && vehicleUuid && defender.uuid === vehicleUuid)) {
+          // Fallback to flag UUID only if we don't have a valid defender
+          defenderUuid = messageFlags.defenderUuid || defender?.uuid || 'Unknown';
+        }
         
         // Log the UUIDs that will be used
         console.log('--- UUIDs being used from flags ---');
@@ -606,25 +660,52 @@ export class SRA2System {
         let defenderTokenForRoll: any = null;
         let defenderActorForRoll: any = defender; // Default to defender actor
         
-        const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
-        if (defenderTokenUuidFromFlags) {
-          try {
-            defenderTokenForRoll = (foundry.utils as any)?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
-            // For NPCs, use the token's actor (which may be different from the base actor)
-            if (defenderTokenForRoll?.actor) {
-              defenderActorForRoll = defenderTokenForRoll.actor;
+        // For vehicle weapons, use the defender we already found (which should be the target, not the drone)
+        if (isVehicleWeapon && defenderToken) {
+          defenderTokenForRoll = defenderToken;
+          if (defenderToken?.actor) {
+            defenderActorForRoll = defenderToken.actor;
+          }
+        } else {
+          const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
+          if (defenderTokenUuidFromFlags) {
+            try {
+              const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
+              // For vehicle weapons, skip if this is the vehicle itself
+              if (defenderTokenFromUuid) {
+                if (isVehicleWeapon && vehicleUuid) {
+                  const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || undefined;
+                  if (tokenActorUuid === vehicleUuid) {
+                    console.log('Defense: Skipping vehicle token as defender for vehicle weapon - using target instead');
+                    defenderTokenForRoll = defenderToken;
+                    if (defenderToken?.actor) {
+                      defenderActorForRoll = defenderToken.actor;
+                    }
+                  } else {
+                    defenderTokenForRoll = defenderTokenFromUuid;
+                    if (defenderTokenForRoll?.actor) {
+                      defenderActorForRoll = defenderTokenForRoll.actor;
+                    }
+                  }
+                } else {
+                  defenderTokenForRoll = defenderTokenFromUuid;
+                  if (defenderTokenForRoll?.actor) {
+                    defenderActorForRoll = defenderTokenForRoll.actor;
+                  }
+                }
+              }
+            } catch (e) {
+              // Fallback to finding token on canvas
+              defenderTokenForRoll = defenderToken;
+              if (defenderToken?.actor) {
+                defenderActorForRoll = defenderToken.actor;
+              }
             }
-          } catch (e) {
-            // Fallback to finding token on canvas
+          } else {
             defenderTokenForRoll = defenderToken;
             if (defenderToken?.actor) {
               defenderActorForRoll = defenderToken.actor;
             }
-          }
-        } else {
-          defenderTokenForRoll = defenderToken;
-          if (defenderToken?.actor) {
-            defenderActorForRoll = defenderToken.actor;
           }
         }
 
@@ -794,9 +875,9 @@ export class SRA2System {
           skillLevel: defenseSkillLevel,
           specLevel: defenseSpecLevel,
           
-          // Actor is the defender - use UUID directly from flags (already correctly calculated)
+          // Actor is the defender - for vehicle weapons, use the actual defender (target) UUID, not the vehicle
           actorId: defenderActorForRoll.id,
-          actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid, // Use flag UUID first
+          actorUuid: defenderActorForRoll.uuid, // Use the actual defender actor UUID (target, not drone)
           
           // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
           attackerTokenUuid: defenderTokenUuid, // Defender's token (one defending) - this is what will be attacker in RollDialog
@@ -819,8 +900,25 @@ export class SRA2System {
         const dialog = new RollDialog(defenseRollData);
         
         // Set target token to original attacker's token (in defense context, target = original attacker)
+        // For vehicle weapons, this should be the character's token (the one who attacked), not the drone
         if (attackerToken) {
           (dialog as any).targetToken = attackerToken;
+        }
+        
+        // For vehicle weapons, make sure we don't use the vehicle as target
+        // The target should be the character who attacked with the drone weapon
+        if (isVehicleWeapon && vehicleUuid) {
+          // Ensure targetToken is not the vehicle
+          if ((dialog as any).targetToken?.actor?.uuid === vehicleUuid) {
+            console.log('Defense: Target token is the vehicle, should be the character instead');
+            // Find the character's token (the original attacker)
+            const characterToken = canvas?.tokens?.placeables?.find((token: any) => {
+              return token.actor?.id === attacker?.id || token.actor?.uuid === attacker?.uuid;
+            }) || null;
+            if (characterToken) {
+              (dialog as any).targetToken = characterToken;
+            }
+          }
         }
         
         dialog.render(true);

@@ -58,15 +58,30 @@ export class RollDialog extends Application {
       this.targetToken = targets[0] || null;
     }
     
+    // For vehicle weapons, we should prioritize selected targets over vehicle UUID
+    // The defender should be the target, not the vehicle/drone itself
+    const isVehicleWeapon = rollData.isVehicleWeapon;
+    
     // Also try to get defender token from rollData.defenderTokenUuid if available
-    // Priority: rollData.defenderTokenUuid > selected targets
-    if (rollData.defenderTokenUuid) {
+    // Priority: selected targets > rollData.defenderTokenUuid (unless no targets selected)
+    // For vehicle weapons, always prioritize selected targets to avoid using the drone as defender
+    if (!this.targetToken && rollData.defenderTokenUuid) {
       try {
         const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(rollData.defenderTokenUuid) || null;
         if (defenderTokenFromUuid) {
-          this.targetToken = defenderTokenFromUuid;
-          console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
-          console.log('RollDialog: Defender token name:', (defenderTokenFromUuid as any)?.name || (defenderTokenFromUuid as any)?.document?.name || (defenderTokenFromUuid as any)?.actor?.name);
+          // For vehicle weapons, skip if this is the vehicle itself (we want the target, not the drone)
+          if (isVehicleWeapon && rollData.vehicleUuid) {
+            const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || defenderTokenFromUuid?.document?.actorLink ? defenderTokenFromUuid?.actor?.uuid : undefined;
+            if (tokenActorUuid === rollData.vehicleUuid) {
+              console.log('RollDialog: Skipping vehicle token as defender for vehicle weapon - need target instead');
+            } else {
+              this.targetToken = defenderTokenFromUuid;
+              console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
+            }
+          } else {
+            this.targetToken = defenderTokenFromUuid;
+            console.log('RollDialog: Defender token loaded from UUID:', rollData.defenderTokenUuid);
+          }
         }
       } catch (e) {
         console.warn('RollDialog: Failed to load defender token from UUID:', e);
@@ -76,10 +91,20 @@ export class RollDialog extends Application {
     // If still no target token, try to find it on canvas based on defender info
     if (!this.targetToken && rollData.defenderTokenUuid) {
       // Try to find on canvas as fallback
-      this.targetToken = canvas?.tokens?.placeables?.find((token: any) => {
+      const foundToken = canvas?.tokens?.placeables?.find((token: any) => {
         return token.uuid === rollData.defenderTokenUuid || 
                token.document?.uuid === rollData.defenderTokenUuid;
       }) || null;
+      
+      // For vehicle weapons, skip if this is the vehicle itself
+      if (foundToken && isVehicleWeapon && rollData.vehicleUuid) {
+        const tokenActorUuid = foundToken?.actor?.uuid || undefined;
+        if (tokenActorUuid !== rollData.vehicleUuid) {
+          this.targetToken = foundToken;
+        }
+      } else if (foundToken) {
+        this.targetToken = foundToken;
+      }
     }
     
     // Auto-select best weapon for counter-attack
