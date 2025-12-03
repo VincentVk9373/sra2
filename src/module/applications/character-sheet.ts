@@ -1728,9 +1728,8 @@ export class CharacterSheet extends ActorSheet {
       'system.damage': updatedDamage
     } as any, { render: false });
     
-    // Synchronize all checkboxes with the same name
-    const html = $(this.element);
-    html.find(`input[name="${name}"]`).prop('checked', checked);
+    // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
+    this.render(false);
   }
   
   /**
@@ -1789,9 +1788,8 @@ export class CharacterSheet extends ActorSheet {
       'system.cyberdeckDamage': updatedDamage
     } as any, { render: false });
     
-    // Synchronize all checkboxes with the same name
-    const html = $(this.element);
-    html.find(`input[name="${name}"]`).prop('checked', checked);
+    // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
+    this.render(false);
   }
 
   /**
@@ -1825,7 +1823,10 @@ export class CharacterSheet extends ActorSheet {
       anarchySpent[index] = checked;
       
       // Update the actor
-      await (this.actor as any).update({ 'system.anarchySpent': anarchySpent });
+      await (this.actor as any).update({ 'system.anarchySpent': anarchySpent }, { render: false });
+      
+      // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
+      this.render(false);
     }
   }
   

@@ -4600,8 +4600,7 @@ class CharacterSheet extends ActorSheet {
     await this.actor.update({
       "system.damage": updatedDamage
     }, { render: false });
-    const html = $(this.element);
-    html.find(`input[name="${name}"]`).prop("checked", checked);
+    this.render(false);
   }
   /**
    * Handle cyberdeck damage tracker checkbox changes
@@ -4642,8 +4641,7 @@ class CharacterSheet extends ActorSheet {
     await item.update({
       "system.cyberdeckDamage": updatedDamage
     }, { render: false });
-    const html = $(this.element);
-    html.find(`input[name="${name}"]`).prop("checked", checked);
+    this.render(false);
   }
   /**
    * Handle anarchy tracker checkbox changes
@@ -4663,7 +4661,8 @@ class CharacterSheet extends ActorSheet {
     }
     if (index >= 0 && index < anarchySpent.length) {
       anarchySpent[index] = checked;
-      await this.actor.update({ "system.anarchySpent": anarchySpent });
+      await this.actor.update({ "system.anarchySpent": anarchySpent }, { render: false });
+      this.render(false);
     }
   }
   /**

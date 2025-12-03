@@ -177,6 +177,29 @@
                     </div>
                 </section>
                 {{/if}}
+                {{#if featsByType.adeptPower}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</div>
+                        <div>LVL</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            {{#each featsByType.adeptPower}}
+                            <div class="row feat-item" data-item-id="{{this._id}}">
+                                <div class="name-wrapper">
+                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                </div>
+                                <div class="level" style="margin-right: 8px;">
+                                    {{this.system.rating}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
                 {{#if featsByType.awakened}}
                 <section class="char-section">
                     <header>
