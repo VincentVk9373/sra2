@@ -4,6 +4,9 @@
     <header class="sheet-header">
         <div class="avatar-section">
             <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+            <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V1'}}">
+                <i class="fas fa-gear"></i>
+            </button>
         </div>
         <div class="name">
             <h1 class="charname"><input name="name" type="text" value="{{actor.name}}"
@@ -181,7 +184,6 @@
                 <section class="char-section">
                     <header>
                         <div>EVEIL</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -191,9 +193,6 @@
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
-                                </div>
                             </div>
                             {{#if this.system.astralPerception}}
                             <div class="row feat-item" data-item-id="{{this._id}}">
@@ -201,7 +200,6 @@
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name">{{localize 'SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION'}}</div>
                                 </div>
-                                <div class="level" style="margin-right: 8px;color: var(--blue);">1</div>
                             </div>
                             {{/if}}
                             {{#if this.system.astralProjection}}
@@ -210,7 +208,6 @@
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name">{{localize 'SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION'}}</div>
                                 </div>
-                                <div class="level" style="margin-right: 8px;color: var(--blue);">1</div>
                             </div>
                             {{/if}}
                             {{#if this.system.sorcery}}
@@ -219,7 +216,6 @@
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name">{{localize 'SRA2.FEATS.AWAKENED.SORCERY'}}</div>
                                 </div>
-                                <div class="level" style="margin-right: 8px;color: var(--blue);">1</div>
                             </div>
                             {{/if}}
                             {{#if this.system.conjuration}}
@@ -228,7 +224,6 @@
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name">{{localize 'SRA2.FEATS.AWAKENED.CONJURATION'}}</div>
                                 </div>
-                                <div class="level" style="margin-right: 8px;color: var(--blue);">2</div>
                             </div>
                             {{/if}}
                             {{#if this.system.adept}}
@@ -237,7 +232,6 @@
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name">{{localize 'SRA2.FEATS.AWAKENED.ADEPT'}}</div>
                                 </div>
-                                <div class="level" style="margin-right: 8px;color: var(--blue);">1</div>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -249,7 +243,6 @@
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -258,9 +251,6 @@
                                 <div class="name-wrapper">
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
                                 </div>
                             </div>
                             {{/each}}
@@ -285,7 +275,7 @@
                             <div class="row feat-item" data-vehicle-uuid="{{this.uuid}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="open-vehicle" data-vehicle-uuid="{{this.uuid}}"
-                                        title="{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}"><span class="name">{{this.name}}</span></div>
                                 </div>
                                 <div class="dice clickable autopilot" data-action="roll-vehicle-autopilot" data-vehicle-uuid="{{this.uuid}}"
                                     title="{{localize 'SRA2.VEHICLE.ROLL_AUTOPILOT'}}">
@@ -332,7 +322,6 @@
                 <section class="char-section">
                     <header>
                         <div>TRAITS</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -341,9 +330,6 @@
                                 <div class="name-wrapper">
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
                                 </div>
                             </div>
                             {{/each}}
@@ -355,7 +341,6 @@
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -364,9 +349,6 @@
                                 <div class="name-wrapper">
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
                                 </div>
                             </div>
                             {{/each}}
@@ -378,7 +360,6 @@
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -387,9 +368,6 @@
                                 <div class="name-wrapper">
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
                                 </div>
                             </div>
                             {{/each}}
@@ -401,7 +379,6 @@
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.FEATS.FEAT_TYPE.CONTACT"}}</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -410,9 +387,6 @@
                                 <div class="name-wrapper">
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
                                 </div>
                             </div>
                             {{/each}}
@@ -424,7 +398,6 @@
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</div>
-                        <div>LVL</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -433,9 +406,6 @@
                                 <div class="name-wrapper">
                                     <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
                                 </div>
                             </div>
                             {{/each}}

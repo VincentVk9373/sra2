@@ -467,6 +467,18 @@ export class RollDialog extends Application {
       const attributeValue = (this.actor?.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
       dicePool = attributeValue;
     }
+    
+    // Debug: Log dice pool calculation
+    console.log('SRA2 | RollDialog - Dice pool calculation:', {
+      specLevel: this.rollData.specLevel,
+      skillLevel: this.rollData.skillLevel,
+      linkedAttribute: this.rollData.linkedAttribute,
+      itemRating: this.rollData.itemRating,
+      calculatedDicePool: dicePool,
+      skillName: this.rollData.skillName,
+      specName: this.rollData.specName
+    });
+    
     context.dicePool = dicePool;
 
     let threshold = this.rollData.threshold;

@@ -16,6 +16,9 @@
         "SHEET": {
             "CHARACTER": "Feuille de Personnage SRA2",
             "CHARACTER_V2": "Feuille de Personnage SRA2 V2",
+            "SWITCH_TO_V1": "Basculer vers la feuille classique",
+            "SWITCH_TO_V2": "Basculer vers la feuille V2",
+            "SWITCH_ERROR": "Erreur lors du changement de feuille",
             "VEHICLE": "Feuille de Véhicule/Drone SRA2",
             "ICE": "Feuille de GLACE SRA2",
             "FEAT": "Feuille d'Atout SRA2",

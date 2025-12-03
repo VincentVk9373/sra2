@@ -3439,6 +3439,20 @@ class CharacterSheet extends ActorSheet {
               });
             }
           }
+          const vehicleSystem = vehicleActor.system;
+          let vehicleLevel = 1;
+          vehicleLevel += vehicleSystem.autopilotBonus || 0;
+          vehicleLevel += vehicleSystem.speedBonus || 0;
+          vehicleLevel += vehicleSystem.handlingBonus || 0;
+          vehicleLevel += vehicleSystem.armorBonus || 0;
+          if (vehicleSystem.isFlying) vehicleLevel += 1;
+          if (vehicleSystem.weaponMountImprovement) vehicleLevel += 1;
+          if (vehicleSystem.autopilotUnlocked) vehicleLevel += 3;
+          if (vehicleSystem.additionalDroneCount) vehicleLevel += vehicleSystem.additionalDroneCount * 2;
+          if (vehicleSystem.isFixed) vehicleLevel -= 1;
+          const narrativeEffects = vehicleSystem.narrativeEffects || [];
+          const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
+          vehicleLevel += narrativeEffectsCount;
           linkedVehicles.push({
             _id: vehicleActor.id,
             uuid: vehicleActor.uuid,
@@ -3454,7 +3468,8 @@ class CharacterSheet extends ActorSheet {
               armor: vehicleActor.system?.attributes?.armor || 0,
               weaponInfo: vehicleActor.system?.weaponInfo || "",
               calculatedCost: vehicleActor.system?.calculatedCost || 0,
-              description: vehicleActor.system?.description || ""
+              description: vehicleActor.system?.description || "",
+              level: vehicleLevel
             },
             weapons: vehicleWeapons
             // Add weapons array to vehicle
@@ -3876,6 +3891,7 @@ class CharacterSheet extends ActorSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
+    html.find('[data-action="switch-sheet"]').on("click", this._onSwitchSheet.bind(this));
     html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
     html.find('[data-action="edit-metatype"]').on("click", this._onEditMetatype.bind(this));
     html.find('[data-action="delete-metatype"]').on("click", this._onDeleteMetatype.bind(this));
@@ -5259,7 +5275,9 @@ class CharacterSheet extends ActorSheet {
           );
           if (parentSkill && attackLinkedAttribute) {
             attackSkillName = parentSkill.name;
-            const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+            const skillRating = parentSkill.system.rating || 0;
+            const attributeValue = this.actor.system.attributes?.[attackLinkedAttribute] || 0;
+            const skillLevel = skillRating + attributeValue;
             attackSkillLevel = skillLevel;
             attackSpecLevel = skillLevel + 2;
           }
@@ -5364,15 +5382,17 @@ class CharacterSheet extends ActorSheet {
         }
       }
     }
-    if (!attackSpecName && finalAttackSkill) {
+    if (!attackSpecName && !attackSkillLevel && finalAttackSkill) {
       const foundSkill = this.actor.items.find(
         (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
       );
       if (foundSkill) {
         attackSkillName = foundSkill.name;
         const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
-        attackLinkedAttribute = foundLinkedAttribute;
-        attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
+        attackLinkedAttribute = attackLinkedAttribute || foundLinkedAttribute;
+        const skillRating = foundSkill.system.rating || 0;
+        const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
+        attackSkillLevel = skillRating + attributeValue;
       } else if (isSpell) {
         if (game.items) {
           const sorcerySkillInGame = game.items.find(
@@ -5424,6 +5444,16 @@ class CharacterSheet extends ActorSheet {
       attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
     }
     const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+    console.log("SRA2 | _rollWeaponOrSpell - Values passed to roll dialog:", {
+      itemName: item.name,
+      itemRating: itemSystem.rating || 0,
+      skillName: attackSkillName,
+      skillLevel: attackSkillLevel,
+      specName: attackSpecName,
+      specLevel: attackSpecLevel,
+      linkedAttackSkill: finalAttackSkill,
+      linkedAttackSpecialization: finalAttackSpec
+    });
     handleRollRequest({
       itemType: type,
       weaponType,
@@ -5527,6 +5557,21 @@ class CharacterSheet extends ActorSheet {
       ui.notifications?.info(game.i18n.format("SRA2.FEATS.FEAT_CREATED", { name: formattedName }));
     }
   }
+  /**
+   * Handle switching between sheet types (V1 <-> V2)
+   */
+  async _onSwitchSheet(event) {
+    event.preventDefault();
+    const { CharacterSheetV2: CharacterSheetV22 } = await Promise.resolve().then(() => characterSheetV2);
+    const isV2 = this instanceof CharacterSheetV22;
+    const actor = this.actor;
+    await this.close();
+    const targetSheetClass = isV2 ? CharacterSheet : CharacterSheetV22;
+    const newSheet = new targetSheetClass(actor);
+    setTimeout(() => {
+      newSheet.render(true);
+    }, 100);
+  }
 }
 class CharacterSheetV2 extends CharacterSheet {
   static get defaultOptions() {
@@ -5546,6 +5591,10 @@ class CharacterSheetV2 extends CharacterSheet {
   //   return context;
   // }
 }
+const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  CharacterSheetV2
+}, Symbol.toStringTag, { value: "Module" }));
 class VehicleSheet extends ActorSheet {
   _activeSection = null;
   static get defaultOptions() {
@@ -7410,6 +7459,15 @@ class RollDialog extends Application {
       const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
       dicePool = attributeValue;
     }
+    console.log("SRA2 | RollDialog - Dice pool calculation:", {
+      specLevel: this.rollData.specLevel,
+      skillLevel: this.rollData.skillLevel,
+      linkedAttribute: this.rollData.linkedAttribute,
+      itemRating: this.rollData.itemRating,
+      calculatedDicePool: dicePool,
+      skillName: this.rollData.skillName,
+      specName: this.rollData.specName
+    });
     context.dicePool = dicePool;
     let threshold = this.rollData.threshold;
     context.threshold = threshold;

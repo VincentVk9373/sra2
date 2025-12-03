@@ -2,6 +2,9 @@
   <header class="sheet-header">
     <div class="avatar-section">
       <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+      <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V2'}}">
+        <i class="fas fa-exchange-alt"></i>
+      </button>
       <div class="yens-field">
         <input type="number" name="system.resources.yens" value="{{system.resources.yens}}" min="0" />
         <label>{{localize "SRA2.RESOURCES.YENS"}}</label>

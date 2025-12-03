@@ -16,6 +16,9 @@
         "SHEET": {
             "CHARACTER": "SRA2 Character Sheet",
             "CHARACTER_V2": "SRA2 Character Sheet V2",
+            "SWITCH_TO_V1": "Switch to classic sheet",
+            "SWITCH_TO_V2": "Switch to V2 sheet",
+            "SWITCH_ERROR": "Error switching sheet",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
             "ICE": "SRA2 ICE Sheet",
             "FEAT": "SRA2 Feat Sheet",
