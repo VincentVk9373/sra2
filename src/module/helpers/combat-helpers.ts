@@ -3,7 +3,7 @@
  * Shared functions for combat, defense, and attack calculations
  */
 
-import * as ItemSearch from '../../../item-search.js';
+import * as SheetHelpers from './sheet-helpers.js';
 import { VEHICLE_TYPES } from '../models/item-feat.js';
 
 /**
@@ -67,7 +67,7 @@ export interface BuildSkillOptionsParams {
 }
 
 export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
-  const { defenderActor, skills, allSpecializations, defaultSelection, includeThreshold = false } = params;
+  const { defenderActor, skills, allSpecializations: _allSpecializations, defaultSelection, includeThreshold = false } = params;
   
   let html = '<option value="">-- ' + game.i18n!.localize('SRA2.COMBAT.SELECT_DEFENSE_SKILL') + ' --</option>';
   
@@ -96,19 +96,12 @@ export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
     
     html += `<option value="skill-${skill.id}" ${dataAttrs}${selected}>${optionText}</option>`;
     
-    // Add specializations for this skill
-    const specs = allSpecializations.filter((spec: any) => {
-      const linkedSkillName = spec.system.linkedSkill;
-      return ItemSearch.normalizeSearchText(linkedSkillName) === ItemSearch.normalizeSearchText(skill.name);
-    });
+    // Add specializations for this skill using helper
+    const specs = SheetHelpers.getSpecializationsForSkill(defenderActor, skill.name);
     
     specs.forEach((spec: any) => {
-      const specSystem = spec.system as any;
-      const specLinkedAttribute = specSystem.linkedAttribute || 'strength';
-      const specAttributeValue = (defenderActor.system as any).attributes?.[specLinkedAttribute] || 0;
-      const parentRating = skillRating;
-      const effectiveRating = parentRating + 2;
-      const specTotalDicePool = specAttributeValue + effectiveRating;
+      const specTotalDicePool = SheetHelpers.calculateSpecDicePool(defenderActor, spec, skill);
+      const effectiveRating = skillRating + 2;
       
       let specOptionText = `  → ${spec.name} (${specTotalDicePool} dés)`;
       let specDataAttrs = `data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"`;
@@ -141,47 +134,21 @@ export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
 /**
  * Parse weapon damage value and calculate base VD
  * Includes damageValueBonus from weapon feat
+ * 
+ * @deprecated Use SheetHelpers.parseDamageValue() for more complete information
  */
 export function parseWeaponDamageValue(
   weaponDamageValue: string | number,
   actorStrength: number,
   damageValueBonus: number = 0
 ): { baseVD: number; vdDisplay: string } {
-  // Ensure weaponDamageValue is a string
-  const vdString = String(weaponDamageValue);
+  // Delegate to the shared helper
+  const result = SheetHelpers.parseDamageValue(String(weaponDamageValue), actorStrength, damageValueBonus);
   
-  let baseVD = 0;
-  let vdDisplay = vdString;
-  
-  if (vdString === 'FOR') {
-    baseVD = actorStrength + damageValueBonus;
-    if (damageValueBonus > 0) {
-      vdDisplay = `FOR+${damageValueBonus} (${baseVD})`;
-    } else {
-      vdDisplay = `FOR (${actorStrength})`;
-    }
-  } else if (vdString.startsWith('FOR+')) {
-    const modifier = parseInt(vdString.substring(4)) || 0;
-    baseVD = actorStrength + modifier + damageValueBonus;
-    if (damageValueBonus > 0) {
-      vdDisplay = `FOR+${modifier}+${damageValueBonus} (${baseVD})`;
-    } else {
-      vdDisplay = `FOR+${modifier} (${baseVD})`;
-    }
-  } else if (vdString === 'toxin') {
-    vdDisplay = 'selon toxine';
-    baseVD = -1; // Special case
-  } else {
-    const base = parseInt(vdString) || 0;
-    baseVD = base + damageValueBonus;
-    if (damageValueBonus > 0) {
-      vdDisplay = `${baseVD} (${base}+${damageValueBonus})`;
-    } else {
-      vdDisplay = `${baseVD}`;
-    }
-  }
-  
-  return { baseVD, vdDisplay };
+  return {
+    baseVD: result.isToxin ? -1 : result.numericValue,
+    vdDisplay: result.displayValue
+  };
 }
 
 /**
@@ -199,7 +166,7 @@ export function parseWeaponDamageValue(
 export function buildAttackSkillOptionsHtml(
   actor: any,
   skills: any[],
-  allSpecializations: any[],
+  _allSpecializations: any[],
   defaultSelection: string
 ): string {
   let html = '<option value="">-- ' + game.i18n!.localize('SRA2.FEATS.WEAPON.SELECT_SKILL') + ' --</option>';
@@ -217,19 +184,12 @@ export function buildAttackSkillOptionsHtml(
     const selected = defaultSelection === `skill-${skill.id}` ? ' selected' : '';
     html += `<option value="skill-${skill.id}" data-dice-pool="${totalDicePool}"${selected}>${skill.name} (${totalDicePool} dés)</option>`;
     
-    // Add specializations for this skill
-    const specs = allSpecializations.filter((spec: any) => {
-      const linkedSkillName = spec.system.linkedSkill;
-      return ItemSearch.normalizeSearchText(linkedSkillName) === ItemSearch.normalizeSearchText(skill.name);
-    });
+    // Add specializations for this skill using helper
+    const specs = SheetHelpers.getSpecializationsForSkill(actor, skill.name);
     
     specs.forEach((spec: any) => {
-      const specSystem = spec.system as any;
-      const specLinkedAttribute = specSystem.linkedAttribute || 'strength';
-      const specAttributeValue = (actor.system as any).attributes?.[specLinkedAttribute] || 0;
-      const parentRating = skillRating;
-      const effectiveRating = parentRating + 2;
-      const specTotalDicePool = specAttributeValue + effectiveRating;
+      const specTotalDicePool = SheetHelpers.calculateSpecDicePool(actor, spec, skill);
+      const effectiveRating = skillRating + 2;
       
       const specSelected = defaultSelection === `spec-${spec.id}` ? ' selected' : '';
       html += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${specTotalDicePool} dés)</option>`;

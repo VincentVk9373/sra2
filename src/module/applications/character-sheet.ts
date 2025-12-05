@@ -214,7 +214,7 @@ export class CharacterSheet extends ActorSheet {
       const weaponSystem = weapon.system as any;
       const weaponType = weaponSystem.weaponType;
       
-      // Get weapon type and linked skills (same logic as _rollWeaponOrSpell)
+      // Get weapon type and linked skills
       let weaponLinkedSkill = '';
       let weaponLinkedSpecialization = '';
       
@@ -227,109 +227,33 @@ export class CharacterSheet extends ActorSheet {
       }
       
       // Get final linked skills (from weapon type or custom)
-      let finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
-      let finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || '';
+      const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
+      const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || '';
       
-      // Find actor's skill and specialization based on weapon links (same logic as _rollWeaponOrSpell)
-      let attackSkillName: string | undefined = undefined;
-      let attackSkillLevel: number | undefined = undefined;
-      let attackSpecName: string | undefined = undefined;
-      let attackSpecLevel: number | undefined = undefined;
-      let attackLinkedAttribute: string | undefined = undefined;
+      // Find skill/spec using unified helper
+      const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        finalAttackSkill,
+        { defaultAttribute: 'strength' }
+      );
       
-      // Try to find the linked attack specialization first
-      if (finalAttackSpec) {
-        const normalizeForComparison = (text: string): string => {
-          return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
-        };
-        
-        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-        
-        const foundSpec = this.actor.items.find((i: any) => {
-          if (i.type !== 'specialization') return false;
-          const normalizedItemName = normalizeForComparison(i.name);
-          return normalizedItemName === normalizedTargetSpec;
-        });
-        
-        if (foundSpec) {
-          const specSystem = foundSpec.system as any;
-          attackSpecName = foundSpec.name;
-          attackLinkedAttribute = specSystem.linkedAttribute || 'strength';
-          
-          const linkedSkillName = specSystem.linkedSkill;
-          if (linkedSkillName) {
-            const parentSkill = this.actor.items.find((i: any) => 
-              i.type === 'skill' && i.name === linkedSkillName
-            );
-            if (parentSkill && attackLinkedAttribute) {
-              attackSkillName = parentSkill.name;
-              const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
-              attackSkillLevel = skillLevel;
-              attackSpecLevel = skillLevel + 2; // Specialization adds +2
-            }
-          }
-        }
-      }
-      
-      // If no specialization found, try to find the linked attack skill
-      if (!attackSpecName && finalAttackSkill) {
-        const foundSkill = this.actor.items.find((i: any) => 
-          i.type === 'skill' && 
-          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
-        );
-        
-        if (foundSkill) {
-          attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
-          attackLinkedAttribute = foundLinkedAttribute;
-          attackSkillLevel = ((foundSkill.system as any).rating || 0) + ((this.actor.system as any).attributes?.[foundLinkedAttribute] || 0);
-        }
-      }
-      
-      // Calculate dice pool: use spec level if available, otherwise skill level, otherwise 0
-      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
-      
-      // Calculate total RR: same logic as _rollWeaponOrSpell
-      // Get RR sources from skill/specialization/attribute
-      let skillRRSources: Array<{featName: string, rrValue: number}> = [];
-      let specRRSources: Array<{featName: string, rrValue: number}> = [];
-      let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
-      
-      if (attackSpecName) {
-        specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
-      }
-      if (attackSkillName) {
-        skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
-      }
-      if (attackLinkedAttribute) {
-        attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
-      }
-      
-      // Get item RR (from weapon itself)
-      const rawItemRRList = weaponSystem.rrList || [];
-      
-      // Convert item RR list to same format as getRRSources (objects with rrValue)
-      const itemRRSources = rawItemRRList.map((rrEntry: any) => ({
-        featName: weapon.name, // The weapon itself
-        rrValue: rrEntry.rrValue || 0
-      }));
-      
-      // Merge all RR sources (item RR + skill/spec/attribute RR)
-      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-      
-      // Calculate total RR (sum of all RR values, max 3)
-      const totalRR = Math.min(3, allRRSources.reduce((sum: number, source: any) => {
-        return sum + (source.rrValue || 0);
-      }, 0));
+      // Calculate dice pool and RR using unified helper
+      const poolResult = SheetHelpers.calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        weaponSystem.rrList || [],
+        weapon.name
+      );
       
       // Add dice pool and RR to weapon
-      weapon.totalDicePool = totalDicePool;
-      weapon.rr = totalRR;
+      weapon.totalDicePool = poolResult.totalDicePool;
+      weapon.rr = poolResult.totalRR;
       
       // Also store spec info for potential specialization display later
-      if (attackSpecName) {
-        weapon.attackSpecName = attackSpecName;
-        weapon.attackSpecLevel = attackSpecLevel;
+      if (skillSpecResult.specName) {
+        weapon.attackSpecName = skillSpecResult.specName;
+        weapon.attackSpecLevel = skillSpecResult.specLevel;
       }
       
       return weapon;
@@ -342,105 +266,24 @@ export class CharacterSheet extends ActorSheet {
           const weaponSystem = weapon.system as any;
           
           // For vehicle/drone weapons controlled by owner, use Ingénierie (Spé : Armes contrôlées à distance)
-          const finalAttackSpec = 'Spé : Armes contrôlées à distance';
+          const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+            this.actor,
+            'Spé : Armes contrôlées à distance',
+            'Ingénierie',
+            { defaultAttribute: 'logic' }
+          );
           
-          // Find actor's skill and specialization for drone weapon control
-          let attackSkillName: string | undefined = undefined;
-          let attackSkillLevel: number | undefined = undefined;
-          let attackSpecName: string | undefined = undefined;
-          let attackSpecLevel: number | undefined = undefined;
-          let attackLinkedAttribute: string | undefined = undefined;
-          
-          // Try to find the specialization "Spé : Armes contrôlées à distance"
-          const normalizeForComparison = (text: string): string => {
-            return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
-          };
-          
-          const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-          
-          const foundSpec = this.actor.items.find((i: any) => {
-            if (i.type !== 'specialization') return false;
-            const normalizedItemName = normalizeForComparison(i.name);
-            return normalizedItemName === normalizedTargetSpec;
-          });
-          
-          if (foundSpec) {
-            const specSystem = foundSpec.system as any;
-            attackSpecName = foundSpec.name;
-            attackLinkedAttribute = specSystem.linkedAttribute || 'logic';
-            
-            const linkedSkillName = specSystem.linkedSkill;
-            if (linkedSkillName) {
-              const parentSkill = this.actor.items.find((i: any) => 
-                i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText('Ingénierie')
-              );
-              if (parentSkill && attackLinkedAttribute) {
-                attackSkillName = parentSkill.name;
-                const skillRating = (parentSkill.system as any).rating || 0;
-                const attributeValue = (this.actor.system as any).attributes?.[attackLinkedAttribute] || 0;
-                const skillLevel = skillRating + attributeValue;
-                attackSkillLevel = skillLevel;
-                attackSpecLevel = skillLevel + 2; // Specialization adds +2
-              }
-            }
-          }
-          
-          // If no specialization found, try to find just the Ingénierie skill
-          if (!attackSpecName) {
-            const foundSkill = this.actor.items.find((i: any) => 
-              i.type === 'skill' && 
-              ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText('Ingénierie')
-            );
-            
-            if (foundSkill) {
-              attackSkillName = foundSkill.name;
-              const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'logic';
-              attackLinkedAttribute = foundLinkedAttribute;
-              const skillRating = (foundSkill.system as any).rating || 0;
-              const attributeValue = (this.actor.system as any).attributes?.[foundLinkedAttribute] || 0;
-              attackSkillLevel = skillRating + attributeValue;
-            }
-          }
-          
-          // Calculate dice pool: use spec level if available, otherwise skill level, otherwise 0
-          const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
-          
-          // Calculate total RR: same logic as _rollWeaponOrSpell
-          // Get RR sources from skill/specialization/attribute
-          let skillRRSources: Array<{featName: string, rrValue: number}> = [];
-          let specRRSources: Array<{featName: string, rrValue: number}> = [];
-          let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
-          
-          if (attackSpecName) {
-            specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
-          }
-          if (attackSkillName) {
-            skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
-          }
-          if (attackLinkedAttribute) {
-            attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
-          }
-          
-          // Get item RR (from weapon itself)
-          const rawItemRRList = weaponSystem.rrList || [];
-          
-          // Convert item RR list to same format as getRRSources (objects with rrValue)
-          const itemRRSources = rawItemRRList.map((rrEntry: any) => ({
-            featName: weapon.name, // The weapon itself
-            rrValue: rrEntry.rrValue || 0
-          }));
-          
-          // Merge all RR sources (item RR + skill/spec/attribute RR)
-          const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-          
-          // Calculate total RR (sum of all RR values, max 3)
-          const totalRR = Math.min(3, allRRSources.reduce((sum: number, source: any) => {
-            return sum + (source.rrValue || 0);
-          }, 0));
+          // Calculate dice pool and RR using unified helper
+          const poolResult = SheetHelpers.calculateAttackPool(
+            this.actor,
+            skillSpecResult,
+            weaponSystem.rrList || [],
+            weapon.name
+          );
           
           // Add dice pool and RR to weapon
-          weapon.totalDicePool = totalDicePool;
-          weapon.rr = totalRR;
+          weapon.totalDicePool = poolResult.totalDicePool;
+          weapon.rr = poolResult.totalRR;
           
           // Store skill/spec info for roll dialog preselect
           weapon.linkedAttackSkill = 'Ingénierie';
@@ -456,10 +299,6 @@ export class CharacterSheet extends ActorSheet {
     // Enrich spells with dice pool and RR calculations (for V2 template)
     context.featsByType.spell = context.featsByType.spell.map((spell: any) => {
       const spellSystem = spell.system as any;
-      const spellType = spellSystem.spellType || 'indirect';
-      
-      // For spells, always use Sorcellerie as the attack skill
-      const finalAttackSkill = 'Sorcellerie';
       
       // Get spell specialization type and map it to the specialization name
       const spellSpecType = spellSystem.spellSpecializationType || 'combat';
@@ -473,147 +312,30 @@ export class CharacterSheet extends ActorSheet {
       };
       const finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
       
-      // Find actor's skill and specialization based on spell links
-      let attackSkillName: string | undefined = undefined;
-      let attackSkillLevel: number | undefined = undefined;
-      let attackSpecName: string | undefined = undefined;
-      let attackSpecLevel: number | undefined = undefined;
-      let attackLinkedAttribute: string | undefined = undefined;
+      // Find skill/spec using unified helper
+      const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        'Sorcellerie',
+        { isSpell: true, spellSpecType, defaultAttribute: 'willpower' }
+      );
       
-      // Try to find the linked attack specialization first
-      if (finalAttackSpec) {
-        const normalizeForComparison = (text: string): string => {
-          return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
-        };
-        
-        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-        
-        const foundSpec = this.actor.items.find((i: any) => {
-          if (i.type !== 'specialization') return false;
-          const normalizedItemName = normalizeForComparison(i.name);
-          return normalizedItemName === normalizedTargetSpec;
-        });
-        
-        if (foundSpec) {
-          const specSystem = foundSpec.system as any;
-          attackSpecName = foundSpec.name;
-          attackLinkedAttribute = specSystem.linkedAttribute || 'willpower';
-          
-          const linkedSkillName = specSystem.linkedSkill;
-          if (linkedSkillName) {
-            const parentSkill = this.actor.items.find((i: any) => 
-              i.type === 'skill' && i.name === linkedSkillName
-            );
-            if (parentSkill && attackLinkedAttribute) {
-              attackSkillName = parentSkill.name;
-              const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
-              attackSkillLevel = skillLevel;
-              attackSpecLevel = skillLevel + 2; // Specialization adds +2
-            }
-          }
-        } else {
-          // If exact match not found, try to find by partial match for spells
-          const specKeywords: Record<string, string[]> = {
-            'combat': ['combat'],
-            'detection': ['détection', 'detection'],
-            'health': ['santé', 'sante', 'health'],
-            'illusion': ['illusion'],
-            'manipulation': ['manipulation'],
-            'counterspell': ['contresort', 'contre-sort']
-          };
-          
-          const keywords = specKeywords[spellSpecType] || ['combat'];
-          const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
-          const foundSpecByKeyword = this.actor.items.find((i: any) => {
-            if (i.type !== 'specialization') return false;
-            const normalizedName = ItemSearch.normalizeSearchText(i.name);
-            const linkedSkill = (i.system as any)?.linkedSkill;
-            if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
-              return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
-            }
-            return false;
-          });
-          
-          if (foundSpecByKeyword) {
-            const specSystem = foundSpecByKeyword.system as any;
-            attackSpecName = foundSpecByKeyword.name;
-            attackLinkedAttribute = specSystem.linkedAttribute || 'willpower';
-            
-            const linkedSkillName = specSystem.linkedSkill;
-            if (linkedSkillName) {
-              const parentSkill = this.actor.items.find((i: any) => 
-                i.type === 'skill' && i.name === linkedSkillName
-              );
-              if (parentSkill && attackLinkedAttribute) {
-                attackSkillName = parentSkill.name;
-                const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
-                attackSkillLevel = skillLevel;
-                attackSpecLevel = skillLevel + 2;
-              }
-            }
-          }
-        }
-      }
-      
-      // If no specialization found, try to find the linked attack skill
-      if (!attackSpecName && finalAttackSkill) {
-        const foundSkill = this.actor.items.find((i: any) => 
-          i.type === 'skill' && 
-          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
-        );
-        
-        if (foundSkill) {
-          attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'willpower';
-          attackLinkedAttribute = foundLinkedAttribute;
-          attackSkillLevel = ((foundSkill.system as any).rating || 0) + ((this.actor.system as any).attributes?.[foundLinkedAttribute] || 0);
-        }
-      }
-      
-      // Calculate dice pool: use spec level if available, otherwise skill level, otherwise 0
-      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
-      
-      // Calculate total RR: same logic as weapons
-      // Get RR sources from skill/specialization/attribute
-      let skillRRSources: Array<{featName: string, rrValue: number}> = [];
-      let specRRSources: Array<{featName: string, rrValue: number}> = [];
-      let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
-      
-      if (attackSpecName) {
-        specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
-      }
-      if (attackSkillName) {
-        skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
-      }
-      if (attackLinkedAttribute) {
-        attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
-      }
-      
-      // Get item RR (from spell itself)
-      const rawItemRRList = spellSystem.rrList || [];
-      
-      // Convert item RR list to same format as getRRSources (objects with rrValue)
-      const itemRRSources = rawItemRRList.map((rrEntry: any) => ({
-        featName: spell.name, // The spell itself
-        rrValue: rrEntry.rrValue || 0
-      }));
-      
-      // Merge all RR sources (item RR + skill/spec/attribute RR)
-      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-      
-      // Calculate total RR (sum of all RR values, max 3)
-      const totalRR = Math.min(3, allRRSources.reduce((sum: number, source: any) => {
-        return sum + (source.rrValue || 0);
-      }, 0));
+      // Calculate dice pool and RR using unified helper
+      const poolResult = SheetHelpers.calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        spellSystem.rrList || [],
+        spell.name
+      );
       
       // Add dice pool and RR to spell
-      spell.totalDicePool = totalDicePool;
-      spell.rr = totalRR;
+      spell.totalDicePool = poolResult.totalDicePool;
+      spell.rr = poolResult.totalRR;
       
       // Also store spec info for potential specialization display later
-      if (attackSpecName) {
-        spell.attackSpecName = attackSpecName;
-        spell.attackSpecLevel = attackSpecLevel;
+      if (skillSpecResult.specName) {
+        spell.attackSpecName = skillSpecResult.specName;
+        spell.attackSpecLevel = skillSpecResult.specLevel;
       }
       
       return spell;
@@ -894,22 +616,10 @@ export class CharacterSheet extends ActorSheet {
    * Handle section navigation
    */
   private _onSectionNavigation(event: Event): void {
-    event.preventDefault();
-    const button = event.currentTarget as HTMLElement;
-    const section = button.dataset.section;
-    
-    if (!section) return;
-    
-    // Update active section
-    this._activeSection = section;
-    
-    // Update UI
-    const form = $(this.form);
-    form.find('.section-nav .nav-item').removeClass('active');
-    button.classList.add('active');
-    
-    form.find('.content-section').removeClass('active');
-    form.find(`[data-section-content="${section}"]`).addClass('active');
+    const section = SheetHelpers.handleSectionNavigation(event, this.form as HTMLElement);
+    if (section) {
+      this._activeSection = section;
+    }
   }
 
   // Generic item handlers using SheetHelpers
@@ -1816,16 +1526,7 @@ export class CharacterSheet extends ActorSheet {
     const name = input.name;
     const checked = input.checked;
     
-    // Parse the name to extract the path
-    // Expected format: system.damage.light.0, system.damage.severe.0, or system.damage.incapacitating
-    const match = name.match(/^system\.damage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
-    if (!match) return;
-    
-    const damageType = match[1];
-    const index = match[2] ? parseInt(match[2], 10) : null;
-    
-    // Get current damage from actor data
-    // Read from _source to get persisted values, fallback to system if not available
+    // Get current damage from actor data (read from _source for persisted values)
     const actorSource = (this.actor as any)._source;
     const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
       light: [false, false],
@@ -1833,33 +1534,16 @@ export class CharacterSheet extends ActorSheet {
       incapacitating: false
     };
     
-    // Create a copy of the damage object to update
-    const updatedDamage: any = {
-      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
-      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
-      incapacitating: typeof currentDamage.incapacitating === 'boolean' ? currentDamage.incapacitating : false
-    };
-    
-    // Update the appropriate field
-    if (damageType === 'incapacitating') {
-      updatedDamage.incapacitating = checked;
-    } else if (damageType === 'light' || damageType === 'severe') {
-      if (index !== null) {
-        // Ensure array is long enough
-        while (updatedDamage[damageType].length <= index) {
-          updatedDamage[damageType].push(false);
-        }
-        updatedDamage[damageType][index] = checked;
-      }
-    }
+    // Use helper to parse and update damage
+    const updatedDamage = SheetHelpers.parseDamageCheckboxChange(name, checked, currentDamage);
+    if (!updatedDamage) return;
     
     // Update the actor with the complete damage object
-    // This ensures the data is persisted correctly
     await this.actor.update({
       'system.damage': updatedDamage
     } as any, { render: false });
     
-    // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
+    // Force re-render to update CSS classes in template
     this.render(false);
   }
   
@@ -1873,20 +1557,15 @@ export class CharacterSheet extends ActorSheet {
     const name = input.name;
     const checked = input.checked;
     
-    // Parse the name to extract item ID and damage path
-    // Expected format: items.{itemId}.system.cyberdeckDamage.light.0, items.{itemId}.system.cyberdeckDamage.severe.0, or items.{itemId}.system.cyberdeckDamage.incapacitating
-    const match = name.match(/^items\.([^.]+)\.system\.cyberdeckDamage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
-    if (!match) return;
+    // Extract item ID from name (format: items.{itemId}.system.cyberdeckDamage.xxx)
+    const itemIdMatch = name.match(/^items\.([^.]+)\./);
+    if (!itemIdMatch || !itemIdMatch[1]) return;
     
-    const itemId = match[1];
-    const damageType = match[2];
-    const index = match[3] ? parseInt(match[3], 10) : null;
-    
-    // Find the item
+    const itemId = itemIdMatch[1];
     const item = this.actor.items.get(itemId);
     if (!item) return;
     
-    // Get current cyberdeckDamage from item data
+    // Get current cyberdeckDamage from item data (read from _source for persisted values)
     const itemSource = (item as any)._source;
     const currentDamage = itemSource?.system?.cyberdeckDamage || (item.system as any).cyberdeckDamage || {
       light: [false, false],
@@ -1894,32 +1573,16 @@ export class CharacterSheet extends ActorSheet {
       incapacitating: false
     };
     
-    // Create a copy of the damage object to update
-    const updatedDamage: any = {
-      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
-      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
-      incapacitating: typeof currentDamage.incapacitating === 'boolean' ? currentDamage.incapacitating : false
-    };
-    
-    // Update the appropriate field
-    if (damageType === 'incapacitating') {
-      updatedDamage.incapacitating = checked;
-    } else if (damageType === 'light' || damageType === 'severe') {
-      if (index !== null) {
-        // Ensure array is long enough
-        while (updatedDamage[damageType].length <= index) {
-          updatedDamage[damageType].push(false);
-        }
-        updatedDamage[damageType][index] = checked;
-      }
-    }
+    // Use helper to parse and update damage
+    const updatedDamage = SheetHelpers.parseDamageCheckboxChange(name, checked, currentDamage);
+    if (!updatedDamage) return;
     
     // Update the item with the complete cyberdeckDamage object
     await item.update({
       'system.cyberdeckDamage': updatedDamage
     } as any, { render: false });
     
-    // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
+    // Force re-render to update CSS classes in template
     this.render(false);
   }
 
@@ -2222,152 +1885,47 @@ export class CharacterSheet extends ActorSheet {
       const finalDefenseSkill = 'Athlétisme';
       const finalDefenseSpec = 'Spé : Défense à distance';
       
-      // Find character's attack skill and specialization for drone weapon control
-      let attackSkillName: string | undefined = undefined;
-      let attackSkillLevel: number | undefined = undefined;
-      let attackSpecName: string | undefined = undefined;
-      let attackSpecLevel: number | undefined = undefined;
-      let attackLinkedAttribute: string | undefined = undefined;
+      // Find character's attack skill and specialization using unified helper
+      const attackSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        finalAttackSkill,
+        { defaultAttribute: 'logic' }
+      );
       
-      // Try to find the specialization "Spé : Armes contrôlées à distance"
-      const normalizeForComparison = (text: string): string => {
-        return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
-      };
+      const attackSkillName = attackSkillSpecResult.skillName;
+      const attackSkillLevel = attackSkillSpecResult.skillLevel;
+      const attackSpecName = attackSkillSpecResult.specName;
+      const attackSpecLevel = attackSkillSpecResult.specLevel;
+      const attackLinkedAttribute = attackSkillSpecResult.linkedAttribute;
       
-      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
+      // Find character's defense skill and specialization using unified helper
+      const defenseSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        finalDefenseSpec,
+        finalDefenseSkill,
+        { defaultAttribute: 'agility' }
+      );
       
-      const foundSpec = this.actor.items.find((i: any) => {
-        if (i.type !== 'specialization') return false;
-        const normalizedItemName = normalizeForComparison(i.name);
-        return normalizedItemName === normalizedTargetSpec;
-      });
+      const defenseSkillName = defenseSkillSpecResult.skillName;
+      const defenseSkillLevel = defenseSkillSpecResult.skillLevel;
+      const defenseSpecName = defenseSkillSpecResult.specName;
+      const defenseSpecLevel = defenseSkillSpecResult.specLevel;
+      const defenseLinkedAttribute = defenseSkillSpecResult.linkedAttribute;
       
-      if (foundSpec) {
-        const specSystem = foundSpec.system as any;
-        attackSpecName = foundSpec.name;
-        attackLinkedAttribute = specSystem.linkedAttribute || 'logic';
-        
-        const linkedSkillName = specSystem.linkedSkill;
-        if (linkedSkillName) {
-          const parentSkill = this.actor.items.find((i: any) => 
-            i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText('Ingénierie')
-          );
-          if (parentSkill && attackLinkedAttribute) {
-            attackSkillName = parentSkill.name;
-            const skillRating = (parentSkill.system as any).rating || 0;
-            const attributeValue = (this.actor.system as any).attributes?.[attackLinkedAttribute] || 0;
-            const skillLevel = skillRating + attributeValue;
-            attackSkillLevel = skillLevel;
-            attackSpecLevel = skillLevel + 2; // Specialization adds +2
-          }
-        }
-      }
-      
-      // If no specialization found, try to find just the Ingénierie skill
-      if (!attackSpecName) {
-        const foundSkill = this.actor.items.find((i: any) => 
-          i.type === 'skill' && 
-          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText('Ingénierie')
-        );
-        
-        if (foundSkill) {
-          attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'logic';
-          attackLinkedAttribute = foundLinkedAttribute;
-          const skillRating = (foundSkill.system as any).rating || 0;
-          const attributeValue = (this.actor.system as any).attributes?.[foundLinkedAttribute] || 0;
-          attackSkillLevel = skillRating + attributeValue;
-        }
-      }
-      
-      // Find character's defense skill and specialization (always Athlétisme / Spé : Défense à distance)
-      let defenseSkillName: string | undefined = undefined;
-      let defenseSkillLevel: number | undefined = undefined;
-      let defenseSpecName: string | undefined = undefined;
-      let defenseSpecLevel: number | undefined = undefined;
-      let defenseLinkedAttribute: string | undefined = undefined;
-      
-      // Try to find the defense specialization "Spé : Défense à distance"
-      const normalizedDefenseSpec = normalizeForComparison(finalDefenseSpec);
-      
-      const foundDefenseSpec = this.actor.items.find((i: any) => {
-        if (i.type !== 'specialization') return false;
-        const normalizedItemName = normalizeForComparison(i.name);
-        return normalizedItemName === normalizedDefenseSpec;
-      });
-      
-      if (foundDefenseSpec) {
-        const specSystem = foundDefenseSpec.system as any;
-        defenseSpecName = foundDefenseSpec.name;
-        defenseLinkedAttribute = specSystem.linkedAttribute || 'agility';
-        
-        const linkedSkillName = specSystem.linkedSkill;
-        if (linkedSkillName) {
-          const parentSkill = this.actor.items.find((i: any) => 
-            i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText('Athlétisme')
-          );
-          if (parentSkill && defenseLinkedAttribute) {
-            defenseSkillName = parentSkill.name;
-            const skillRating = (parentSkill.system as any).rating || 0;
-            const attributeValue = (this.actor.system as any).attributes?.[defenseLinkedAttribute] || 0;
-            const skillLevel = skillRating + attributeValue;
-            defenseSkillLevel = skillLevel;
-            defenseSpecLevel = skillLevel + 2; // Specialization adds +2
-          }
-        }
-      }
-      
-      // If no defense specialization found, try to find just the Athlétisme skill
-      if (!defenseSpecName) {
-        const foundDefenseSkill = this.actor.items.find((i: any) => 
-          i.type === 'skill' && 
-          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText('Athlétisme')
-        );
-        
-        if (foundDefenseSkill) {
-          defenseSkillName = foundDefenseSkill.name;
-          const foundLinkedAttribute = (foundDefenseSkill.system as any).linkedAttribute || 'agility';
-          defenseLinkedAttribute = foundLinkedAttribute;
-          const skillRating = (foundDefenseSkill.system as any).rating || 0;
-          const attributeValue = (this.actor.system as any).attributes?.[foundLinkedAttribute] || 0;
-          defenseSkillLevel = skillRating + attributeValue;
-        }
-      }
-      
-      // Calculate final damage value
+      // Calculate final damage value using helper
       const baseDamageValue = itemSystem.damageValue || '0';
       const damageValueBonus = itemSystem.damageValueBonus || 0;
+      const finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
       
-      let finalDamageValue = baseDamageValue;
-      if (damageValueBonus > 0 && baseDamageValue !== '0') {
-        if (baseDamageValue === 'FOR') {
-          finalDamageValue = `FOR+${damageValueBonus}`;
-        } else if (baseDamageValue.startsWith('FOR+')) {
-          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
-        } else if (baseDamageValue !== 'toxin') {
-          const baseValue = parseInt(baseDamageValue) || 0;
-          finalDamageValue = (baseValue + damageValueBonus).toString();
-        }
-      }
-      
-      // Get RR sources from character's skills/specializations/attributes
-      let skillRRSources: Array<{featName: string, rrValue: number}> = [];
-      let specRRSources: Array<{featName: string, rrValue: number}> = [];
-      let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
-      
-      if (attackSpecName) {
-        specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
-      }
-      if (attackSkillName) {
-        skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
-      }
-      if (attackLinkedAttribute) {
-        attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
-      }
-      
-      // Merge all RR sources (item RR + skill/spec/attribute RR + CRR)
-      const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+      // Calculate attack pool with all RR sources using unified helper
+      const poolResult = SheetHelpers.calculateAttackPool(
+        this.actor,
+        attackSkillSpecResult,
+        itemRRList,
+        weapon.name
+      );
+      const allRRSources = poolResult.allRRSources;
       
       // Add CRR as a special RR entry if > 0
       if (crr > 0) {
@@ -2560,204 +2118,24 @@ export class CharacterSheet extends ActorSheet {
       }
     }
 
-    // Find actor's skill and specialization based on weapon links
-    let attackSkillName: string | undefined = undefined;
-    let attackSkillLevel: number | undefined = undefined;
-    let attackSpecName: string | undefined = undefined;
-    let attackSpecLevel: number | undefined = undefined;
-    let attackLinkedAttribute: string | undefined = undefined;
-    
-    // Try to find the linked attack specialization first
-    if (finalAttackSpec) {
-      // Normalize both names for comparison (remove spaces, accents, case differences)
-      const normalizeForComparison = (text: string): string => {
-        return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
-      };
-      
-      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-      
-      const foundSpec = this.actor.items.find((i: any) => {
-        if (i.type !== 'specialization') return false;
-        const normalizedItemName = normalizeForComparison(i.name);
-        return normalizedItemName === normalizedTargetSpec;
-      });
-      
-      if (foundSpec) {
-        const specSystem = foundSpec.system as any;
-        attackSpecName = foundSpec.name;
-        attackLinkedAttribute = specSystem.linkedAttribute || 'strength';
-        
-        // Get parent skill for specialization
-        const linkedSkillName = specSystem.linkedSkill;
-        if (linkedSkillName) {
-          const parentSkill = this.actor.items.find((i: any) => 
-            i.type === 'skill' && i.name === linkedSkillName
-          );
-          if (parentSkill && attackLinkedAttribute) {
-            attackSkillName = parentSkill.name;
-            const skillRating = (parentSkill.system as any).rating || 0;
-            const attributeValue = (this.actor.system as any).attributes?.[attackLinkedAttribute] || 0;
-            const skillLevel = skillRating + attributeValue;
-            attackSkillLevel = skillLevel;
-            attackSpecLevel = skillLevel + 2; // Specialization adds +2
-          }
-        }
-      } else {
-        // If exact match not found, try to find by partial match for spells
-        // This handles cases where the specialization name might have slight variations
-        if (isSpell) {
-          const spellSpecType = itemSystem.spellSpecializationType || 'combat';
-          const specKeywords: Record<string, string[]> = {
-            'combat': ['combat'],
-            'detection': ['détection', 'detection'],
-            'health': ['santé', 'sante', 'health'],
-            'illusion': ['illusion'],
-            'manipulation': ['manipulation'],
-            'counterspell': ['contresort', 'contre-sort']
-          };
-          
-          const keywords = specKeywords[spellSpecType] || ['combat'];
-          // Normalize keywords for comparison (remove accents)
-          const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
-          const foundSpecByKeyword = this.actor.items.find((i: any) => {
-            if (i.type !== 'specialization') return false;
-            const normalizedName = ItemSearch.normalizeSearchText(i.name);
-            // Check if it's a Sorcellerie specialization and contains the keyword
-            const linkedSkill = (i.system as any)?.linkedSkill;
-            if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
-              return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
-            }
-            return false;
-          });
-          if (foundSpecByKeyword) {
-            const specSystem = foundSpecByKeyword.system as any;
-            attackSpecName = foundSpecByKeyword.name;
-            attackLinkedAttribute = specSystem.linkedAttribute || 'willpower';
-            
-            const linkedSkillName = specSystem.linkedSkill;
-            if (linkedSkillName) {
-              const parentSkill = this.actor.items.find((i: any) => 
-                i.type === 'skill' && i.name === linkedSkillName
-              );
-              if (parentSkill && attackLinkedAttribute) {
-                attackSkillName = parentSkill.name;
-                const skillLevel = ((parentSkill.system as any).rating + (this.actor.system as any).attributes?.[attackLinkedAttribute]) || 0;
-                attackSkillLevel = skillLevel;
-                attackSpecLevel = skillLevel + 2;
-              }
-            }
-          } else {
-            // If specialization not found in actor, search in game.items to get the parent skill
-            if (isSpell && game.items) {
-              const normalizeForComparison = (text: string): string => {
-                return ItemSearch.normalizeSearchText(text).replace(/\s+/g, '').replace(/:/g, '').replace(/'/g, '');
-              };
-              
-              const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-              
-              // Search in game.items for the specialization
-              const specInGameItems = (game.items as any).find((i: any) => {
-                if (i.type !== 'specialization') return false;
-                const normalizedItemName = normalizeForComparison(i.name);
-                return normalizedItemName === normalizedTargetSpec;
-              });
-              
-              // If still not found, try keyword search in game.items
-              if (!specInGameItems) {
-                const keywords = specKeywords[spellSpecType] || ['combat'];
-                const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
-                
-                const specInGameItemsByKeyword = (game.items as any).find((i: any) => {
-                  if (i.type !== 'specialization') return false;
-                  const normalizedName = ItemSearch.normalizeSearchText(i.name);
-                  const linkedSkill = (i.system as any)?.linkedSkill;
-                  if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
-                    return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
-                  }
-                  return false;
-                });
-                
-                if (specInGameItemsByKeyword) {
-                  const specSystem = specInGameItemsByKeyword.system as any;
-                  const linkedSkillName = specSystem.linkedSkill;
-                  
-                  // Now find the skill in the actor
-                  if (linkedSkillName) {
-                    const parentSkill = this.actor.items.find((i: any) => 
-                      i.type === 'skill' && i.name === linkedSkillName
-                    );
-                    if (parentSkill) {
-                      const skillSystem = parentSkill.system as any;
-                      const linkedAttribute = skillSystem.linkedAttribute || 'willpower';
-                      attackSkillName = parentSkill.name;
-                      attackLinkedAttribute = linkedAttribute;
-                      const skillLevel = (skillSystem.rating || 0) + ((this.actor.system as any).attributes?.[linkedAttribute] || 0);
-                      attackSkillLevel = skillLevel;
-                      // Note: attackSpecName stays undefined since spec is not in actor
-                      // But linkedAttackSpecialization will be used by RollDialog for preselect
-                    }
-                  }
-                }
-              } else if (specInGameItems) {
-                // Found spec in game.items, get parent skill
-                const specSystem = specInGameItems.system as any;
-                const linkedSkillName = specSystem.linkedSkill;
-                
-                if (linkedSkillName) {
-                  const parentSkill = this.actor.items.find((i: any) => 
-                    i.type === 'skill' && i.name === linkedSkillName
-                  );
-                  if (parentSkill) {
-                    const skillSystem = parentSkill.system as any;
-                    const linkedAttribute = skillSystem.linkedAttribute || 'willpower';
-                    attackSkillName = parentSkill.name;
-                    attackLinkedAttribute = linkedAttribute;
-                    const skillLevel = (skillSystem.rating || 0) + ((this.actor.system as any).attributes?.[linkedAttribute] || 0);
-                    attackSkillLevel = skillLevel;
-                    // Note: attackSpecName stays undefined since spec is not in actor
-                    // But linkedAttackSpecialization will be used by RollDialog for preselect
-                  }
-                }
-              }
-            }
-          }
-        }
+    // Find actor's skill and specialization using unified helper
+    const spellSpecType = isSpell ? (itemSystem.spellSpecializationType || 'combat') : undefined;
+    const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+      this.actor,
+      finalAttackSpec,
+      finalAttackSkill,
+      { 
+        isSpell, 
+        spellSpecType,
+        defaultAttribute: isSpell ? 'willpower' : 'strength' 
       }
-    }
+    );
     
-    // If no specialization found, try to find the linked attack skill
-    if (!attackSpecName && !attackSkillLevel && finalAttackSkill) {
-      const foundSkill = this.actor.items.find((i: any) => 
-        i.type === 'skill' && 
-        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
-      );
-      
-      if (foundSkill) {
-        attackSkillName = foundSkill.name;
-        const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
-        attackLinkedAttribute = attackLinkedAttribute || foundLinkedAttribute;
-        const skillRating = (foundSkill.system as any).rating || 0;
-        const attributeValue = (this.actor.system as any).attributes?.[foundLinkedAttribute] || 0;
-        attackSkillLevel = skillRating + attributeValue;
-      } else if (isSpell) {
-        // For spells, if Sorcellerie skill not found in actor, try to find it in game.items
-        // This shouldn't normally happen, but handle it gracefully
-        if (game.items) {
-          const sorcerySkillInGame = (game.items as any).find((i: any) => 
-            i.type === 'skill' && 
-            ItemSearch.normalizeSearchText(i.name) === 'sorcellerie'
-          );
-          
-          if (sorcerySkillInGame) {
-            // Use default willpower attribute for Sorcellerie if skill not in actor
-            attackSkillName = 'Sorcellerie';
-            attackLinkedAttribute = 'willpower';
-            const willpower = (this.actor.system as any).attributes?.willpower || 1;
-            attackSkillLevel = willpower; // Skill rating would be 0 if not in actor
-          }
-        }
-      }
-    }
+    const attackSkillName = skillSpecResult.skillName;
+    const attackSkillLevel = skillSpecResult.skillLevel;
+    const attackSpecName = skillSpecResult.specName;
+    const attackSpecLevel = skillSpecResult.specLevel;
+    const attackLinkedAttribute = skillSpecResult.linkedAttribute;
 
     // Calculate final damage value (base + bonus)
     // For spells, damage value is calculated differently
@@ -2765,49 +2143,25 @@ export class CharacterSheet extends ActorSheet {
     
     if (isSpell) {
       if (spellType === 'direct') {
-        // Direct spell: finalDamageValue is 0
         finalDamageValue = '0';
       } else {
-        // Indirect spell: finalDamageValue is VOL (willpower)
         const willpower = (this.actor.system as any).attributes?.willpower || 1;
         finalDamageValue = willpower.toString();
       }
     } else {
-      // Normal weapon calculation
       const baseDamageValue = itemSystem.damageValue || '0';
       const damageValueBonus = itemSystem.damageValueBonus || 0;
-      
-      finalDamageValue = baseDamageValue;
-      if (damageValueBonus > 0 && baseDamageValue !== '0') {
-        if (baseDamageValue === 'FOR') {
-          finalDamageValue = `FOR+${damageValueBonus}`;
-        } else if (baseDamageValue.startsWith('FOR+')) {
-          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
-        } else if (baseDamageValue !== 'toxin') {
-          const baseValue = parseInt(baseDamageValue) || 0;
-          finalDamageValue = (baseValue + damageValueBonus).toString();
-        }
-      }
+      finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
     }
 
-    // Get RR sources from skill/specialization/attribute (same as NPCs)
-    let skillRRSources: Array<{featName: string, rrValue: number}> = [];
-    let specRRSources: Array<{featName: string, rrValue: number}> = [];
-    let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
-    
-    if (attackSpecName) {
-      specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', attackSpecName);
-    }
-    if (attackSkillName) {
-      skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', attackSkillName);
-    }
-    if (attackLinkedAttribute) {
-      attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', attackLinkedAttribute);
-    }
-    
-    // Merge all RR sources (item RR + skill/spec/attribute RR)
-    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+    // Calculate attack pool with all RR sources using unified helper
+    const poolResult = SheetHelpers.calculateAttackPool(
+      this.actor,
+      skillSpecResult,
+      itemRRList,
+      item.name
+    );
+    const allRRSources = poolResult.allRRSources;
 
     // Debug: Log the values being passed to roll dialog
     console.log('SRA2 | _rollWeaponOrSpell - Values passed to roll dialog:', {

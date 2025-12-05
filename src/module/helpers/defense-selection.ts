@@ -3,7 +3,7 @@
  * This module contains functions to select the appropriate defense skill or specialization
  */
 
-import * as ItemSearch from '../../../item-search.js';
+import * as SheetHelpers from './sheet-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 
 /**
@@ -30,78 +30,19 @@ export function findDefaultDefenseSelection(
   linkedDefenseSpecName: string,
   linkedDefenseSkillName?: string
 ): DefenseSelection {
-  const skills = defenderActor.items.filter((i: any) => i.type === 'skill');
-  const allSpecializations = defenderActor.items.filter((i: any) => i.type === 'specialization');
+  // Use unified helper from SheetHelpers
+  const result = SheetHelpers.findDefenseSelection(
+    defenderActor,
+    linkedDefenseSpecName,
+    linkedDefenseSkillName
+  );
   
-  let defaultSelection = '';
-  let linkedSpec: any = null;
-  let linkedSkill: any = null;
-  
-  // 1. Try to find the linked defense specialization by NAME
-  if (linkedDefenseSpecName) {
-    const normalizedDefenseSpecName = ItemSearch.normalizeSearchText(linkedDefenseSpecName);
-    
-    linkedSpec = allSpecializations.find((s: any) => 
-      ItemSearch.normalizeSearchText(s.name) === normalizedDefenseSpecName
-    );
-    
-    if (linkedSpec) {
-      defaultSelection = `spec-${linkedSpec.id}`;
-      // Find the parent skill for this specialization
-      const linkedSkillName = linkedSpec.system.linkedSkill;
-      linkedSkill = skills.find((s: any) => 
-        ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSkillName)
-      );
-      
-      return { defaultSelection, linkedSpec, linkedSkill };
-    }
-  }
-  
-  // 2. If specialization not found, try to find the defense skill by NAME
-  if (!defaultSelection && linkedDefenseSkillName) {
-    const normalizedDefenseSkillName = ItemSearch.normalizeSearchText(linkedDefenseSkillName);
-    
-    linkedSkill = skills.find((s: any) => 
-      ItemSearch.normalizeSearchText(s.name) === normalizedDefenseSkillName
-    );
-    
-    if (linkedSkill) {
-      defaultSelection = `skill-${linkedSkill.id}`;
-      return { defaultSelection, linkedSpec: null, linkedSkill };
-    }
-  }
-  
-  // 3. Fallback: Search for the specialization template in game.items to find its linked skill
-  if (!defaultSelection && linkedDefenseSpecName && game.items) {
-    const normalizedDefenseSpecName = ItemSearch.normalizeSearchText(linkedDefenseSpecName);
-    const specTemplate = (game.items as any).find((item: any) => 
-      item.type === 'specialization' && 
-      ItemSearch.normalizeSearchText(item.name) === normalizedDefenseSpecName
-    );
-    
-    if (specTemplate) {
-      const linkedSkillName = specTemplate.system.linkedSkill;
-      if (linkedSkillName) {
-        // Check if defender has this skill
-        linkedSkill = skills.find((s: any) => 
-          ItemSearch.normalizeSearchText(s.name) === ItemSearch.normalizeSearchText(linkedSkillName)
-        );
-        
-        if (linkedSkill) {
-          defaultSelection = `skill-${linkedSkill.id}`;
-          return { defaultSelection, linkedSpec: null, linkedSkill };
-        }
-      }
-    }
-  }
-  
-  // 4. If no match found, use the first skill as default
-  if (!defaultSelection && skills.length > 0) {
-    linkedSkill = skills[0]; // Default to first skill
-    defaultSelection = `skill-${linkedSkill.id}`;
-  }
-  
-  return { defaultSelection, linkedSpec, linkedSkill };
+  // Convert to expected format (null instead of undefined for backwards compatibility)
+  return {
+    defaultSelection: result.defaultSelection,
+    linkedSpec: result.linkedSpec || null,
+    linkedSkill: result.linkedSkill || null
+  };
 }
 
 /**

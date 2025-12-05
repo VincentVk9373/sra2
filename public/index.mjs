@@ -2875,6 +2875,142 @@ async function handleDeleteItem(event, actor, sheetRender) {
     }
   }
 }
+function parseDamageValue(damageValueStr, actorStrength, damageValueBonus = 0) {
+  const result = {
+    numericValue: 0,
+    displayValue: damageValueStr,
+    rawDamageString: damageValueStr,
+    isStrengthBased: false,
+    isToxin: false
+  };
+  if (damageValueStr === "toxin") {
+    result.isToxin = true;
+    result.displayValue = "selon toxine";
+    return result;
+  }
+  if (damageValueStr === "FOR") {
+    result.isStrengthBased = true;
+    result.numericValue = actorStrength + damageValueBonus;
+    if (damageValueBonus > 0) {
+      result.displayValue = `${result.numericValue} (FOR+${damageValueBonus})`;
+      result.rawDamageString = `FOR+${damageValueBonus}`;
+    } else {
+      result.displayValue = `${result.numericValue} (FOR)`;
+      result.rawDamageString = "FOR";
+    }
+    return result;
+  }
+  if (damageValueStr.startsWith("FOR+")) {
+    result.isStrengthBased = true;
+    const modifier = parseInt(damageValueStr.substring(4)) || 0;
+    result.numericValue = actorStrength + modifier + damageValueBonus;
+    const totalModifier = modifier + damageValueBonus;
+    if (damageValueBonus > 0) {
+      result.displayValue = `${result.numericValue} (FOR+${modifier}+${damageValueBonus})`;
+      result.rawDamageString = `FOR+${totalModifier}`;
+    } else {
+      result.displayValue = `${result.numericValue} (FOR+${modifier})`;
+      result.rawDamageString = damageValueStr;
+    }
+    return result;
+  }
+  const base = parseInt(damageValueStr) || 0;
+  result.numericValue = base + damageValueBonus;
+  if (damageValueBonus > 0) {
+    result.displayValue = `${result.numericValue} (${base}+${damageValueBonus})`;
+    result.rawDamageString = result.numericValue.toString();
+  } else {
+    result.displayValue = result.numericValue.toString();
+    result.rawDamageString = damageValueStr;
+  }
+  return result;
+}
+function calculateRawDamageString(baseDamageValue, damageValueBonus) {
+  if (damageValueBonus <= 0 || baseDamageValue === "0" || baseDamageValue === "toxin") {
+    return baseDamageValue;
+  }
+  if (baseDamageValue === "FOR") {
+    return `FOR+${damageValueBonus}`;
+  }
+  if (baseDamageValue.startsWith("FOR+")) {
+    const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
+    return `FOR+${baseModifier + damageValueBonus}`;
+  }
+  const baseValue = parseInt(baseDamageValue) || 0;
+  return (baseValue + damageValueBonus).toString();
+}
+function parseDamageCheckboxChange(inputName, checked, currentDamage) {
+  const match = inputName.match(/(?:damage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+  if (!match) return null;
+  const damageType = match[1];
+  const index = match[2] ? parseInt(match[2], 10) : null;
+  const updatedDamage = {
+    light: Array.isArray(currentDamage?.light) ? [...currentDamage.light] : [false, false],
+    severe: Array.isArray(currentDamage?.severe) ? [...currentDamage.severe] : [false],
+    incapacitating: typeof currentDamage?.incapacitating === "boolean" ? currentDamage.incapacitating : false
+  };
+  if (damageType === "incapacitating") {
+    updatedDamage.incapacitating = checked;
+  } else if (damageType === "light" || damageType === "severe") {
+    if (index !== null) {
+      while (updatedDamage[damageType].length <= index) {
+        updatedDamage[damageType].push(false);
+      }
+      updatedDamage[damageType][index] = checked;
+    }
+  }
+  return updatedDamage;
+}
+function getDamagePathFromInputName(inputName) {
+  if (inputName.includes("cyberdeckDamage")) {
+    const match = inputName.match(/(items\.[^.]+\.system\.cyberdeckDamage)/);
+    return match && match[1] ? match[1] : "system.cyberdeckDamage";
+  }
+  return "system.damage";
+}
+function handleSectionNavigation(event, formElement) {
+  event.preventDefault();
+  const button = event.currentTarget;
+  const section = button.dataset.section;
+  if (!section) return null;
+  const form = formElement instanceof HTMLElement ? formElement : formElement.get(0);
+  if (!form) return null;
+  form.querySelectorAll(".section-nav .nav-item").forEach((item) => {
+    item.classList.remove("active");
+  });
+  button.classList.add("active");
+  form.querySelectorAll(".content-section").forEach((contentSection) => {
+    contentSection.classList.remove("active");
+  });
+  const targetSection = form.querySelector(`[data-section-content="${section}"]`);
+  if (targetSection) {
+    targetSection.classList.add("active");
+  }
+  return section;
+}
+function restoreActiveSection(formElement, activeSection, delay = 10) {
+  if (!activeSection) return;
+  setTimeout(() => {
+    const navButton = formElement.querySelector(`[data-section="${activeSection}"]`);
+    if (navButton) {
+      formElement.querySelectorAll(".section-nav .nav-item").forEach((item) => {
+        item.classList.remove("active");
+      });
+      navButton.classList.add("active");
+      formElement.querySelectorAll(".content-section").forEach((section) => {
+        section.classList.remove("active");
+      });
+      const targetSection = formElement.querySelector(`[data-section-content="${activeSection}"]`);
+      if (targetSection) {
+        targetSection.classList.add("active");
+      }
+    }
+  }, delay);
+}
+function getCurrentActiveSection(html) {
+  const activeNavItem = html.find(".section-nav .nav-item.active");
+  return activeNavItem.length > 0 ? activeNavItem.data("section") : null;
+}
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat) => {
     feat.rrEntries = [];
@@ -2961,18 +3097,314 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
     return feat;
   });
 }
+function normalizeForComparison(text) {
+  return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
+}
+function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
+  const result = {
+    skillName: void 0,
+    skillLevel: void 0,
+    specName: void 0,
+    specLevel: void 0,
+    linkedAttribute: void 0
+  };
+  const { isSpell = false, spellSpecType = "combat", defaultAttribute = "strength" } = options;
+  if (targetSpec) {
+    const normalizedTargetSpec = normalizeForComparison(targetSpec);
+    const foundSpec = actor.items.find((i) => {
+      if (i.type !== "specialization") return false;
+      const normalizedItemName = normalizeForComparison(i.name);
+      return normalizedItemName === normalizedTargetSpec;
+    });
+    if (foundSpec) {
+      _extractSpecAndSkillInfo(actor, foundSpec, result, defaultAttribute);
+    } else if (isSpell) {
+      _trySpellSpecKeywordSearch(actor, spellSpecType, result);
+      if (!result.specName && !result.skillLevel && game.items) {
+        _searchGameItemsForSpellSpec(actor, targetSpec, spellSpecType, result);
+      }
+    }
+  }
+  if (!result.specName && !result.skillLevel && targetSkill) {
+    const foundSkill = actor.items.find(
+      (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(targetSkill)
+    );
+    if (foundSkill) {
+      const foundLinkedAttribute = foundSkill.system.linkedAttribute || defaultAttribute;
+      result.skillName = foundSkill.name;
+      result.linkedAttribute = result.linkedAttribute || foundLinkedAttribute;
+      const skillRating = foundSkill.system.rating || 0;
+      const attributeValue = actor.system.attributes?.[foundLinkedAttribute] || 0;
+      result.skillLevel = skillRating + attributeValue;
+    } else if (isSpell && game.items) {
+      _searchGameItemsForSorcellerie(actor, result);
+    }
+  }
+  return result;
+}
+function _extractSpecAndSkillInfo(actor, foundSpec, result, defaultAttribute) {
+  const specSystem = foundSpec.system;
+  result.specName = foundSpec.name;
+  result.linkedAttribute = specSystem.linkedAttribute || defaultAttribute;
+  const linkedSkillName = specSystem.linkedSkill;
+  if (linkedSkillName) {
+    const parentSkill = actor.items.find(
+      (i) => i.type === "skill" && i.name === linkedSkillName
+    );
+    if (parentSkill && result.linkedAttribute) {
+      result.skillName = parentSkill.name;
+      const skillRating = parentSkill.system.rating || 0;
+      const attributeValue = actor.system.attributes?.[result.linkedAttribute] || 0;
+      const skillLevel = skillRating + attributeValue;
+      result.skillLevel = skillLevel;
+      result.specLevel = skillLevel + 2;
+    }
+  }
+}
+function _trySpellSpecKeywordSearch(actor, spellSpecType, result) {
+  const specKeywords = {
+    "combat": ["combat"],
+    "detection": ["détection", "detection"],
+    "health": ["santé", "sante", "health"],
+    "illusion": ["illusion"],
+    "manipulation": ["manipulation"],
+    "counterspell": ["contresort", "contre-sort"]
+  };
+  const keywords = specKeywords[spellSpecType] || ["combat"];
+  const normalizedKeywords = keywords.map((kw) => normalizeSearchText(kw));
+  const foundSpecByKeyword = actor.items.find((i) => {
+    if (i.type !== "specialization") return false;
+    const normalizedName = normalizeSearchText(i.name);
+    const linkedSkill = i.system?.linkedSkill;
+    if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+      return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
+    }
+    return false;
+  });
+  if (foundSpecByKeyword) {
+    _extractSpecAndSkillInfo(actor, foundSpecByKeyword, result, "willpower");
+  }
+}
+function _searchGameItemsForSpellSpec(actor, targetSpec, spellSpecType, result) {
+  const normalizedTargetSpec = normalizeForComparison(targetSpec);
+  const specInGameItems = game.items.find((i) => {
+    if (i.type !== "specialization") return false;
+    const normalizedItemName = normalizeForComparison(i.name);
+    return normalizedItemName === normalizedTargetSpec;
+  });
+  const specKeywords = {
+    "combat": ["combat"],
+    "detection": ["détection", "detection"],
+    "health": ["santé", "sante", "health"],
+    "illusion": ["illusion"],
+    "manipulation": ["manipulation"],
+    "counterspell": ["contresort", "contre-sort"]
+  };
+  let specToUse = specInGameItems;
+  if (!specToUse) {
+    const keywords = specKeywords[spellSpecType] || ["combat"];
+    const normalizedKeywords = keywords.map((kw) => normalizeSearchText(kw));
+    specToUse = game.items.find((i) => {
+      if (i.type !== "specialization") return false;
+      const normalizedName = normalizeSearchText(i.name);
+      const linkedSkill = i.system?.linkedSkill;
+      if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+        return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
+      }
+      return false;
+    });
+  }
+  if (specToUse) {
+    const specSystem = specToUse.system;
+    const linkedSkillName = specSystem.linkedSkill;
+    if (linkedSkillName) {
+      const parentSkill = actor.items.find(
+        (i) => i.type === "skill" && i.name === linkedSkillName
+      );
+      if (parentSkill) {
+        const skillSystem = parentSkill.system;
+        const linkedAttribute = skillSystem.linkedAttribute || "willpower";
+        result.skillName = parentSkill.name;
+        result.linkedAttribute = linkedAttribute;
+        const skillLevel = (skillSystem.rating || 0) + (actor.system.attributes?.[linkedAttribute] || 0);
+        result.skillLevel = skillLevel;
+      }
+    }
+  }
+}
+function _searchGameItemsForSorcellerie(actor, result) {
+  const sorcerySkillInGame = game.items.find(
+    (i) => i.type === "skill" && normalizeSearchText(i.name) === "sorcellerie"
+  );
+  if (sorcerySkillInGame) {
+    result.skillName = "Sorcellerie";
+    result.linkedAttribute = "willpower";
+    const willpower = actor.system.attributes?.willpower || 1;
+    result.skillLevel = willpower;
+  }
+}
+function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName = "") {
+  const totalDicePool = skillSpecResult.specLevel || skillSpecResult.skillLevel || 0;
+  let skillRRSources = [];
+  let specRRSources = [];
+  let attributeRRSources = [];
+  if (skillSpecResult.specName) {
+    specRRSources = getRRSources(actor, "specialization", skillSpecResult.specName);
+  }
+  if (skillSpecResult.skillName) {
+    skillRRSources = getRRSources(actor, "skill", skillSpecResult.skillName);
+  }
+  if (skillSpecResult.linkedAttribute) {
+    attributeRRSources = getRRSources(actor, "attribute", skillSpecResult.linkedAttribute);
+  }
+  const itemRRSources = itemRRList.map((rrEntry) => ({
+    featName: itemName,
+    rrValue: rrEntry.rrValue || 0
+  }));
+  const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+  const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
+    return sum + (source.rrValue || 0);
+  }, 0));
+  return {
+    totalDicePool,
+    totalRR,
+    allRRSources
+  };
+}
+function findSkillByName(actor, skillName) {
+  if (!actor || !skillName) return void 0;
+  const normalizedName = normalizeSearchText(skillName);
+  return actor.items.find(
+    (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizedName
+  );
+}
+function findSpecByName(actor, specName) {
+  if (!actor || !specName) return void 0;
+  const normalizedName = normalizeForComparison(specName);
+  return actor.items.find(
+    (i) => i.type === "specialization" && normalizeForComparison(i.name) === normalizedName
+  );
+}
+function findItemInGame(itemType, itemName) {
+  if (!game.items || !itemName) return void 0;
+  const normalizedName = normalizeForComparison(itemName);
+  return game.items.find(
+    (i) => i.type === itemType && normalizeForComparison(i.name) === normalizedName
+  );
+}
+function calculateSkillDicePool(actor, skill) {
+  if (!actor || !skill) return 0;
+  const skillSystem = skill.system;
+  const linkedAttribute = skillSystem.linkedAttribute || "strength";
+  const attributeValue = actor.system.attributes?.[linkedAttribute] || 0;
+  const skillRating = skillSystem.rating || 0;
+  return attributeValue + skillRating;
+}
+function calculateSpecDicePool(actor, spec, parentSkill) {
+  if (!actor || !spec) return 0;
+  const specSystem = spec.system;
+  const linkedSkillName = specSystem.linkedSkill;
+  const skill = parentSkill || findSkillByName(actor, linkedSkillName);
+  if (!skill) return 0;
+  const skillDicePool = calculateSkillDicePool(actor, skill);
+  return skillDicePool + 2;
+}
+function getLinkedAttribute(item, actor) {
+  if (!item) return "strength";
+  const itemSystem = item.system;
+  if (item.type === "skill") {
+    return itemSystem.linkedAttribute || "strength";
+  }
+  if (item.type === "specialization" && actor) {
+    const linkedSkillName = itemSystem.linkedSkill;
+    const parentSkill = findSkillByName(actor, linkedSkillName);
+    if (parentSkill) {
+      return parentSkill.system.linkedAttribute || "strength";
+    }
+  }
+  return itemSystem.linkedAttribute || "strength";
+}
+function findDefenseSelection(actor, linkedDefenseSpec, linkedDefenseSkill) {
+  const result = {
+    defaultSelection: "",
+    linkedSpec: void 0,
+    linkedSkill: void 0
+  };
+  const skills = actor.items.filter((i) => i.type === "skill");
+  if (linkedDefenseSpec) {
+    result.linkedSpec = findSpecByName(actor, linkedDefenseSpec);
+    if (result.linkedSpec) {
+      result.defaultSelection = `spec-${result.linkedSpec.id}`;
+      const linkedSkillName = result.linkedSpec.system.linkedSkill;
+      result.linkedSkill = findSkillByName(actor, linkedSkillName);
+      return result;
+    }
+  }
+  if (linkedDefenseSkill) {
+    result.linkedSkill = findSkillByName(actor, linkedDefenseSkill);
+    if (result.linkedSkill) {
+      result.defaultSelection = `skill-${result.linkedSkill.id}`;
+      return result;
+    }
+  }
+  if (linkedDefenseSpec && game.items) {
+    const specTemplate = findItemInGame("specialization", linkedDefenseSpec);
+    if (specTemplate) {
+      const linkedSkillName = specTemplate.system.linkedSkill;
+      if (linkedSkillName) {
+        result.linkedSkill = findSkillByName(actor, linkedSkillName);
+        if (result.linkedSkill) {
+          result.defaultSelection = `skill-${result.linkedSkill.id}`;
+          return result;
+        }
+      }
+    }
+  }
+  if (skills.length > 0) {
+    result.linkedSkill = skills[0];
+    result.defaultSelection = `skill-${result.linkedSkill.id}`;
+  }
+  return result;
+}
+function getSpecializationsForSkill(actor, skillName) {
+  if (!actor || !skillName) return [];
+  const normalizedSkillName = normalizeSearchText(skillName);
+  return actor.items.filter((i) => {
+    if (i.type !== "specialization") return false;
+    const linkedSkill = i.system?.linkedSkill;
+    return linkedSkill && normalizeSearchText(linkedSkill) === normalizedSkillName;
+  });
+}
 const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
+  calculateAttackPool,
   calculateFinalDamageValue,
   calculateRR,
+  calculateRawDamageString,
+  calculateSkillDicePool,
+  calculateSpecDicePool,
   enrichFeats,
+  findAttackSkillAndSpec,
+  findDefenseSelection,
+  findItemInGame,
+  findSkillByName,
+  findSpecByName,
+  getCurrentActiveSection,
+  getDamagePathFromInputName,
+  getLinkedAttribute,
   getRRSources,
+  getSpecializationsForSkill,
   handleDeleteItem,
   handleEditItem,
   handleItemDrop,
+  handleSectionNavigation,
   handleSheetUpdate,
   handleVehicleActorDrop,
-  organizeSpecializationsBySkill
+  normalizeForComparison,
+  organizeSpecializationsBySkill,
+  parseDamageCheckboxChange,
+  parseDamageValue,
+  restoreActiveSection
 }, Symbol.toStringTag, { value: "Module" }));
 function prepareVehicleWeaponAttack(vehicleActor, weapon) {
   const vehicleSystem = vehicleActor.system;
@@ -3565,80 +3997,25 @@ class CharacterSheet extends ActorSheet {
           weaponLinkedSpecialization = weaponStats.linkedSpecialization || "";
         }
       }
-      let finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
-      let finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
-      let attackSkillName = void 0;
-      let attackSkillLevel = void 0;
-      let attackSpecName = void 0;
-      let attackSpecLevel = void 0;
-      let attackLinkedAttribute = void 0;
-      if (finalAttackSpec) {
-        const normalizeForComparison = (text) => {
-          return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-        };
-        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-        const foundSpec = this.actor.items.find((i) => {
-          if (i.type !== "specialization") return false;
-          const normalizedItemName = normalizeForComparison(i.name);
-          return normalizedItemName === normalizedTargetSpec;
-        });
-        if (foundSpec) {
-          const specSystem = foundSpec.system;
-          attackSpecName = foundSpec.name;
-          attackLinkedAttribute = specSystem.linkedAttribute || "strength";
-          const linkedSkillName = specSystem.linkedSkill;
-          if (linkedSkillName) {
-            const parentSkill = this.actor.items.find(
-              (i) => i.type === "skill" && i.name === linkedSkillName
-            );
-            if (parentSkill && attackLinkedAttribute) {
-              attackSkillName = parentSkill.name;
-              const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-              attackSkillLevel = skillLevel;
-              attackSpecLevel = skillLevel + 2;
-            }
-          }
-        }
-      }
-      if (!attackSpecName && finalAttackSkill) {
-        const foundSkill = this.actor.items.find(
-          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
-        );
-        if (foundSkill) {
-          attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
-          attackLinkedAttribute = foundLinkedAttribute;
-          attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
-        }
-      }
-      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
-      let skillRRSources = [];
-      let specRRSources = [];
-      let attributeRRSources = [];
-      if (attackSpecName) {
-        specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
-      }
-      if (attackSkillName) {
-        skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
-      }
-      if (attackLinkedAttribute) {
-        attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
-      }
-      const rawItemRRList = weaponSystem.rrList || [];
-      const itemRRSources = rawItemRRList.map((rrEntry) => ({
-        featName: weapon.name,
-        // The weapon itself
-        rrValue: rrEntry.rrValue || 0
-      }));
-      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-      const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
-        return sum + (source.rrValue || 0);
-      }, 0));
-      weapon.totalDicePool = totalDicePool;
-      weapon.rr = totalRR;
-      if (attackSpecName) {
-        weapon.attackSpecName = attackSpecName;
-        weapon.attackSpecLevel = attackSpecLevel;
+      const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
+      const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
+      const skillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        finalAttackSkill,
+        { defaultAttribute: "strength" }
+      );
+      const poolResult = calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        weaponSystem.rrList || [],
+        weapon.name
+      );
+      weapon.totalDicePool = poolResult.totalDicePool;
+      weapon.rr = poolResult.totalRR;
+      if (skillSpecResult.specName) {
+        weapon.attackSpecName = skillSpecResult.specName;
+        weapon.attackSpecLevel = skillSpecResult.specLevel;
       }
       return weapon;
     });
@@ -3646,78 +4023,20 @@ class CharacterSheet extends ActorSheet {
       if (vehicle.type === "vehicle-actor" && vehicle.weapons) {
         vehicle.weapons = vehicle.weapons.map((weapon) => {
           const weaponSystem = weapon.system;
-          const finalAttackSpec = "Spé : Armes contrôlées à distance";
-          let attackSkillName = void 0;
-          let attackSkillLevel = void 0;
-          let attackSpecName = void 0;
-          let attackSpecLevel = void 0;
-          let attackLinkedAttribute = void 0;
-          const normalizeForComparison = (text) => {
-            return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-          };
-          const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-          const foundSpec = this.actor.items.find((i) => {
-            if (i.type !== "specialization") return false;
-            const normalizedItemName = normalizeForComparison(i.name);
-            return normalizedItemName === normalizedTargetSpec;
-          });
-          if (foundSpec) {
-            const specSystem = foundSpec.system;
-            attackSpecName = foundSpec.name;
-            attackLinkedAttribute = specSystem.linkedAttribute || "logic";
-            const linkedSkillName = specSystem.linkedSkill;
-            if (linkedSkillName) {
-              const parentSkill = this.actor.items.find(
-                (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
-              );
-              if (parentSkill && attackLinkedAttribute) {
-                attackSkillName = parentSkill.name;
-                const skillRating = parentSkill.system.rating || 0;
-                const attributeValue = this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-                const skillLevel = skillRating + attributeValue;
-                attackSkillLevel = skillLevel;
-                attackSpecLevel = skillLevel + 2;
-              }
-            }
-          }
-          if (!attackSpecName) {
-            const foundSkill = this.actor.items.find(
-              (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
-            );
-            if (foundSkill) {
-              attackSkillName = foundSkill.name;
-              const foundLinkedAttribute = foundSkill.system.linkedAttribute || "logic";
-              attackLinkedAttribute = foundLinkedAttribute;
-              const skillRating = foundSkill.system.rating || 0;
-              const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
-              attackSkillLevel = skillRating + attributeValue;
-            }
-          }
-          const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
-          let skillRRSources = [];
-          let specRRSources = [];
-          let attributeRRSources = [];
-          if (attackSpecName) {
-            specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
-          }
-          if (attackSkillName) {
-            skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
-          }
-          if (attackLinkedAttribute) {
-            attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
-          }
-          const rawItemRRList = weaponSystem.rrList || [];
-          const itemRRSources = rawItemRRList.map((rrEntry) => ({
-            featName: weapon.name,
-            // The weapon itself
-            rrValue: rrEntry.rrValue || 0
-          }));
-          const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-          const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
-            return sum + (source.rrValue || 0);
-          }, 0));
-          weapon.totalDicePool = totalDicePool;
-          weapon.rr = totalRR;
+          const skillSpecResult = findAttackSkillAndSpec(
+            this.actor,
+            "Spé : Armes contrôlées à distance",
+            "Ingénierie",
+            { defaultAttribute: "logic" }
+          );
+          const poolResult = calculateAttackPool(
+            this.actor,
+            skillSpecResult,
+            weaponSystem.rrList || [],
+            weapon.name
+          );
+          weapon.totalDicePool = poolResult.totalDicePool;
+          weapon.rr = poolResult.totalRR;
           weapon.linkedAttackSkill = "Ingénierie";
           weapon.linkedAttackSpecialization = "Spé : Armes contrôlées à distance";
           weapon.linkedDefenseSkill = "Athlétisme";
@@ -3728,8 +4047,6 @@ class CharacterSheet extends ActorSheet {
     }
     context.featsByType.spell = context.featsByType.spell.map((spell) => {
       const spellSystem = spell.system;
-      spellSystem.spellType || "indirect";
-      const finalAttackSkill = "Sorcellerie";
       const spellSpecType = spellSystem.spellSpecializationType || "combat";
       const spellSpecMap = {
         "combat": "Spé: Sorts de combat",
@@ -3740,115 +4057,23 @@ class CharacterSheet extends ActorSheet {
         "counterspell": "Spé: Contresort"
       };
       const finalAttackSpec = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
-      let attackSkillName = void 0;
-      let attackSkillLevel = void 0;
-      let attackSpecName = void 0;
-      let attackSpecLevel = void 0;
-      let attackLinkedAttribute = void 0;
-      {
-        const normalizeForComparison = (text) => {
-          return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-        };
-        const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-        const foundSpec = this.actor.items.find((i) => {
-          if (i.type !== "specialization") return false;
-          const normalizedItemName = normalizeForComparison(i.name);
-          return normalizedItemName === normalizedTargetSpec;
-        });
-        if (foundSpec) {
-          const specSystem = foundSpec.system;
-          attackSpecName = foundSpec.name;
-          attackLinkedAttribute = specSystem.linkedAttribute || "willpower";
-          const linkedSkillName = specSystem.linkedSkill;
-          if (linkedSkillName) {
-            const parentSkill = this.actor.items.find(
-              (i) => i.type === "skill" && i.name === linkedSkillName
-            );
-            if (parentSkill && attackLinkedAttribute) {
-              attackSkillName = parentSkill.name;
-              const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-              attackSkillLevel = skillLevel;
-              attackSpecLevel = skillLevel + 2;
-            }
-          }
-        } else {
-          const specKeywords = {
-            "combat": ["combat"],
-            "detection": ["détection", "detection"],
-            "health": ["santé", "sante", "health"],
-            "illusion": ["illusion"],
-            "manipulation": ["manipulation"],
-            "counterspell": ["contresort", "contre-sort"]
-          };
-          const keywords = specKeywords[spellSpecType] || ["combat"];
-          const normalizedKeywords = keywords.map((kw) => normalizeSearchText(kw));
-          const foundSpecByKeyword = this.actor.items.find((i) => {
-            if (i.type !== "specialization") return false;
-            const normalizedName = normalizeSearchText(i.name);
-            const linkedSkill = i.system?.linkedSkill;
-            if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
-              return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
-            }
-            return false;
-          });
-          if (foundSpecByKeyword) {
-            const specSystem = foundSpecByKeyword.system;
-            attackSpecName = foundSpecByKeyword.name;
-            attackLinkedAttribute = specSystem.linkedAttribute || "willpower";
-            const linkedSkillName = specSystem.linkedSkill;
-            if (linkedSkillName) {
-              const parentSkill = this.actor.items.find(
-                (i) => i.type === "skill" && i.name === linkedSkillName
-              );
-              if (parentSkill && attackLinkedAttribute) {
-                attackSkillName = parentSkill.name;
-                const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-                attackSkillLevel = skillLevel;
-                attackSpecLevel = skillLevel + 2;
-              }
-            }
-          }
-        }
-      }
-      if (!attackSpecName && finalAttackSkill) {
-        const foundSkill = this.actor.items.find(
-          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
-        );
-        if (foundSkill) {
-          attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "willpower";
-          attackLinkedAttribute = foundLinkedAttribute;
-          attackSkillLevel = (foundSkill.system.rating || 0) + (this.actor.system.attributes?.[foundLinkedAttribute] || 0);
-        }
-      }
-      const totalDicePool = attackSpecLevel || attackSkillLevel || 0;
-      let skillRRSources = [];
-      let specRRSources = [];
-      let attributeRRSources = [];
-      if (attackSpecName) {
-        specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
-      }
-      if (attackSkillName) {
-        skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
-      }
-      if (attackLinkedAttribute) {
-        attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
-      }
-      const rawItemRRList = spellSystem.rrList || [];
-      const itemRRSources = rawItemRRList.map((rrEntry) => ({
-        featName: spell.name,
-        // The spell itself
-        rrValue: rrEntry.rrValue || 0
-      }));
-      const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-      const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
-        return sum + (source.rrValue || 0);
-      }, 0));
-      spell.totalDicePool = totalDicePool;
-      spell.rr = totalRR;
-      if (attackSpecName) {
-        spell.attackSpecName = attackSpecName;
-        spell.attackSpecLevel = attackSpecLevel;
+      const skillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        "Sorcellerie",
+        { isSpell: true, spellSpecType, defaultAttribute: "willpower" }
+      );
+      const poolResult = calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        spellSystem.rrList || [],
+        spell.name
+      );
+      spell.totalDicePool = poolResult.totalDicePool;
+      spell.rr = poolResult.totalRR;
+      if (skillSpecResult.specName) {
+        spell.attackSpecName = skillSpecResult.specName;
+        spell.attackSpecLevel = skillSpecResult.specLevel;
       }
       return spell;
     });
@@ -3996,16 +4221,10 @@ class CharacterSheet extends ActorSheet {
    * Handle section navigation
    */
   _onSectionNavigation(event) {
-    event.preventDefault();
-    const button = event.currentTarget;
-    const section = button.dataset.section;
-    if (!section) return;
-    this._activeSection = section;
-    const form = $(this.form);
-    form.find(".section-nav .nav-item").removeClass("active");
-    button.classList.add("active");
-    form.find(".content-section").removeClass("active");
-    form.find(`[data-section-content="${section}"]`).addClass("active");
+    const section = handleSectionNavigation(event, this.form);
+    if (section) {
+      this._activeSection = section;
+    }
   }
   // Generic item handlers using SheetHelpers
   async _onEditMetatype(event) {
@@ -4697,31 +4916,14 @@ class CharacterSheet extends ActorSheet {
     const input = event.currentTarget;
     const name = input.name;
     const checked = input.checked;
-    const match = name.match(/^system\.damage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
-    if (!match) return;
-    const damageType = match[1];
-    const index = match[2] ? parseInt(match[2], 10) : null;
     const actorSource = this.actor._source;
     const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
       light: [false, false],
       severe: [false],
       incapacitating: false
     };
-    const updatedDamage = {
-      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
-      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
-      incapacitating: typeof currentDamage.incapacitating === "boolean" ? currentDamage.incapacitating : false
-    };
-    if (damageType === "incapacitating") {
-      updatedDamage.incapacitating = checked;
-    } else if (damageType === "light" || damageType === "severe") {
-      if (index !== null) {
-        while (updatedDamage[damageType].length <= index) {
-          updatedDamage[damageType].push(false);
-        }
-        updatedDamage[damageType][index] = checked;
-      }
-    }
+    const updatedDamage = parseDamageCheckboxChange(name, checked, currentDamage);
+    if (!updatedDamage) return;
     await this.actor.update({
       "system.damage": updatedDamage
     }, { render: false });
@@ -4735,11 +4937,9 @@ class CharacterSheet extends ActorSheet {
     const input = event.currentTarget;
     const name = input.name;
     const checked = input.checked;
-    const match = name.match(/^items\.([^.]+)\.system\.cyberdeckDamage\.(light|severe|incapacitating)(?:\.(\d+))?$/);
-    if (!match) return;
-    const itemId = match[1];
-    const damageType = match[2];
-    const index = match[3] ? parseInt(match[3], 10) : null;
+    const itemIdMatch = name.match(/^items\.([^.]+)\./);
+    if (!itemIdMatch || !itemIdMatch[1]) return;
+    const itemId = itemIdMatch[1];
     const item = this.actor.items.get(itemId);
     if (!item) return;
     const itemSource = item._source;
@@ -4748,21 +4948,8 @@ class CharacterSheet extends ActorSheet {
       severe: [false],
       incapacitating: false
     };
-    const updatedDamage = {
-      light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
-      severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
-      incapacitating: typeof currentDamage.incapacitating === "boolean" ? currentDamage.incapacitating : false
-    };
-    if (damageType === "incapacitating") {
-      updatedDamage.incapacitating = checked;
-    } else if (damageType === "light" || damageType === "severe") {
-      if (index !== null) {
-        while (updatedDamage[damageType].length <= index) {
-          updatedDamage[damageType].push(false);
-        }
-        updatedDamage[damageType][index] = checked;
-      }
-    }
+    const updatedDamage = parseDamageCheckboxChange(name, checked, currentDamage);
+    if (!updatedDamage) return;
     await item.update({
       "system.cyberdeckDamage": updatedDamage
     }, { render: false });
@@ -5000,122 +5187,38 @@ class CharacterSheet extends ActorSheet {
       const finalAttackSpec = "Spé : Armes contrôlées à distance";
       const finalDefenseSkill = "Athlétisme";
       const finalDefenseSpec = "Spé : Défense à distance";
-      let attackSkillName = void 0;
-      let attackSkillLevel = void 0;
-      let attackSpecName = void 0;
-      let attackSpecLevel = void 0;
-      let attackLinkedAttribute = void 0;
-      const normalizeForComparison = (text) => {
-        return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-      };
-      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-      const foundSpec = this.actor.items.find((i) => {
-        if (i.type !== "specialization") return false;
-        const normalizedItemName = normalizeForComparison(i.name);
-        return normalizedItemName === normalizedTargetSpec;
-      });
-      if (foundSpec) {
-        const specSystem = foundSpec.system;
-        attackSpecName = foundSpec.name;
-        attackLinkedAttribute = specSystem.linkedAttribute || "logic";
-        const linkedSkillName = specSystem.linkedSkill;
-        if (linkedSkillName) {
-          const parentSkill = this.actor.items.find(
-            (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
-          );
-          if (parentSkill && attackLinkedAttribute) {
-            attackSkillName = parentSkill.name;
-            const skillRating = parentSkill.system.rating || 0;
-            const attributeValue = this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-            const skillLevel = skillRating + attributeValue;
-            attackSkillLevel = skillLevel;
-            attackSpecLevel = skillLevel + 2;
-          }
-        }
-      }
-      if (!attackSpecName) {
-        const foundSkill = this.actor.items.find(
-          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Ingénierie")
-        );
-        if (foundSkill) {
-          attackSkillName = foundSkill.name;
-          const foundLinkedAttribute = foundSkill.system.linkedAttribute || "logic";
-          attackLinkedAttribute = foundLinkedAttribute;
-          const skillRating = foundSkill.system.rating || 0;
-          const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
-          attackSkillLevel = skillRating + attributeValue;
-        }
-      }
-      let defenseSkillName = void 0;
-      let defenseSkillLevel = void 0;
-      let defenseSpecName = void 0;
-      let defenseSpecLevel = void 0;
-      let defenseLinkedAttribute = void 0;
-      const normalizedDefenseSpec = normalizeForComparison(finalDefenseSpec);
-      const foundDefenseSpec = this.actor.items.find((i) => {
-        if (i.type !== "specialization") return false;
-        const normalizedItemName = normalizeForComparison(i.name);
-        return normalizedItemName === normalizedDefenseSpec;
-      });
-      if (foundDefenseSpec) {
-        const specSystem = foundDefenseSpec.system;
-        defenseSpecName = foundDefenseSpec.name;
-        defenseLinkedAttribute = specSystem.linkedAttribute || "agility";
-        const linkedSkillName = specSystem.linkedSkill;
-        if (linkedSkillName) {
-          const parentSkill = this.actor.items.find(
-            (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Athlétisme")
-          );
-          if (parentSkill && defenseLinkedAttribute) {
-            defenseSkillName = parentSkill.name;
-            const skillRating = parentSkill.system.rating || 0;
-            const attributeValue = this.actor.system.attributes?.[defenseLinkedAttribute] || 0;
-            const skillLevel = skillRating + attributeValue;
-            defenseSkillLevel = skillLevel;
-            defenseSpecLevel = skillLevel + 2;
-          }
-        }
-      }
-      if (!defenseSpecName) {
-        const foundDefenseSkill = this.actor.items.find(
-          (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText("Athlétisme")
-        );
-        if (foundDefenseSkill) {
-          defenseSkillName = foundDefenseSkill.name;
-          const foundLinkedAttribute = foundDefenseSkill.system.linkedAttribute || "agility";
-          defenseLinkedAttribute = foundLinkedAttribute;
-          const skillRating = foundDefenseSkill.system.rating || 0;
-          const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
-          defenseSkillLevel = skillRating + attributeValue;
-        }
-      }
+      const attackSkillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        finalAttackSkill,
+        { defaultAttribute: "logic" }
+      );
+      const attackSkillName = attackSkillSpecResult.skillName;
+      const attackSkillLevel = attackSkillSpecResult.skillLevel;
+      const attackSpecName = attackSkillSpecResult.specName;
+      const attackSpecLevel = attackSkillSpecResult.specLevel;
+      const attackLinkedAttribute = attackSkillSpecResult.linkedAttribute;
+      const defenseSkillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        finalDefenseSpec,
+        finalDefenseSkill,
+        { defaultAttribute: "agility" }
+      );
+      const defenseSkillName = defenseSkillSpecResult.skillName;
+      const defenseSkillLevel = defenseSkillSpecResult.skillLevel;
+      const defenseSpecName = defenseSkillSpecResult.specName;
+      const defenseSpecLevel = defenseSkillSpecResult.specLevel;
+      const defenseLinkedAttribute = defenseSkillSpecResult.linkedAttribute;
       const baseDamageValue = itemSystem.damageValue || "0";
       const damageValueBonus = itemSystem.damageValueBonus || 0;
-      let finalDamageValue = baseDamageValue;
-      if (damageValueBonus > 0 && baseDamageValue !== "0") {
-        if (baseDamageValue === "FOR") {
-          finalDamageValue = `FOR+${damageValueBonus}`;
-        } else if (baseDamageValue.startsWith("FOR+")) {
-          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
-        } else if (baseDamageValue !== "toxin") {
-          const baseValue = parseInt(baseDamageValue) || 0;
-          finalDamageValue = (baseValue + damageValueBonus).toString();
-        }
-      }
-      let skillRRSources = [];
-      let specRRSources = [];
-      let attributeRRSources = [];
-      if (attackSpecName) {
-        specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
-      }
-      if (attackSkillName) {
-        skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
-      }
-      if (attackLinkedAttribute) {
-        attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
-      }
-      const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+      const finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+      const poolResult = calculateAttackPool(
+        this.actor,
+        attackSkillSpecResult,
+        itemRRList,
+        weapon.name
+      );
+      const allRRSources = poolResult.allRRSources;
       if (crr > 0) {
         allRRSources.push({
           rrType: "attribute",
@@ -5253,7 +5356,7 @@ class CharacterSheet extends ActorSheet {
     let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
     if (isSpell) {
       finalAttackSkill = "Sorcellerie";
-      const spellSpecType = itemSystem.spellSpecializationType || "combat";
+      const spellSpecType2 = itemSystem.spellSpecializationType || "combat";
       const spellSpecMap = {
         "combat": "Spé: Sorts de combat",
         "detection": "Spé: Sorts de détection",
@@ -5262,7 +5365,7 @@ class CharacterSheet extends ActorSheet {
         "manipulation": "Spé: Sorts de manipulation",
         "counterspell": "Spé: Contresort"
       };
-      finalAttackSpec = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+      finalAttackSpec = spellSpecMap[spellSpecType2] || "Spé: Sorts de combat";
       if (spellType === "direct") {
         finalDefenseSkill = "";
         finalDefenseSpec = "";
@@ -5271,164 +5374,22 @@ class CharacterSheet extends ActorSheet {
         finalDefenseSpec = "Spé : Défense à distance";
       }
     }
-    let attackSkillName = void 0;
-    let attackSkillLevel = void 0;
-    let attackSpecName = void 0;
-    let attackSpecLevel = void 0;
-    let attackLinkedAttribute = void 0;
-    if (finalAttackSpec) {
-      const normalizeForComparison = (text) => {
-        return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-      };
-      const normalizedTargetSpec = normalizeForComparison(finalAttackSpec);
-      const foundSpec = this.actor.items.find((i) => {
-        if (i.type !== "specialization") return false;
-        const normalizedItemName = normalizeForComparison(i.name);
-        return normalizedItemName === normalizedTargetSpec;
-      });
-      if (foundSpec) {
-        const specSystem = foundSpec.system;
-        attackSpecName = foundSpec.name;
-        attackLinkedAttribute = specSystem.linkedAttribute || "strength";
-        const linkedSkillName = specSystem.linkedSkill;
-        if (linkedSkillName) {
-          const parentSkill = this.actor.items.find(
-            (i) => i.type === "skill" && i.name === linkedSkillName
-          );
-          if (parentSkill && attackLinkedAttribute) {
-            attackSkillName = parentSkill.name;
-            const skillRating = parentSkill.system.rating || 0;
-            const attributeValue = this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-            const skillLevel = skillRating + attributeValue;
-            attackSkillLevel = skillLevel;
-            attackSpecLevel = skillLevel + 2;
-          }
-        }
-      } else {
-        if (isSpell) {
-          const spellSpecType = itemSystem.spellSpecializationType || "combat";
-          const specKeywords = {
-            "combat": ["combat"],
-            "detection": ["détection", "detection"],
-            "health": ["santé", "sante", "health"],
-            "illusion": ["illusion"],
-            "manipulation": ["manipulation"],
-            "counterspell": ["contresort", "contre-sort"]
-          };
-          const keywords = specKeywords[spellSpecType] || ["combat"];
-          const normalizedKeywords = keywords.map((kw) => normalizeSearchText(kw));
-          const foundSpecByKeyword = this.actor.items.find((i) => {
-            if (i.type !== "specialization") return false;
-            const normalizedName = normalizeSearchText(i.name);
-            const linkedSkill = i.system?.linkedSkill;
-            if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
-              return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
-            }
-            return false;
-          });
-          if (foundSpecByKeyword) {
-            const specSystem = foundSpecByKeyword.system;
-            attackSpecName = foundSpecByKeyword.name;
-            attackLinkedAttribute = specSystem.linkedAttribute || "willpower";
-            const linkedSkillName = specSystem.linkedSkill;
-            if (linkedSkillName) {
-              const parentSkill = this.actor.items.find(
-                (i) => i.type === "skill" && i.name === linkedSkillName
-              );
-              if (parentSkill && attackLinkedAttribute) {
-                attackSkillName = parentSkill.name;
-                const skillLevel = parentSkill.system.rating + this.actor.system.attributes?.[attackLinkedAttribute] || 0;
-                attackSkillLevel = skillLevel;
-                attackSpecLevel = skillLevel + 2;
-              }
-            }
-          } else {
-            if (isSpell && game.items) {
-              const normalizeForComparison2 = (text) => {
-                return normalizeSearchText(text).replace(/\s+/g, "").replace(/:/g, "").replace(/'/g, "");
-              };
-              const normalizedTargetSpec2 = normalizeForComparison2(finalAttackSpec);
-              const specInGameItems = game.items.find((i) => {
-                if (i.type !== "specialization") return false;
-                const normalizedItemName = normalizeForComparison2(i.name);
-                return normalizedItemName === normalizedTargetSpec2;
-              });
-              if (!specInGameItems) {
-                const keywords2 = specKeywords[spellSpecType] || ["combat"];
-                const normalizedKeywords2 = keywords2.map((kw) => normalizeSearchText(kw));
-                const specInGameItemsByKeyword = game.items.find((i) => {
-                  if (i.type !== "specialization") return false;
-                  const normalizedName = normalizeSearchText(i.name);
-                  const linkedSkill = i.system?.linkedSkill;
-                  if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
-                    return normalizedKeywords2.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
-                  }
-                  return false;
-                });
-                if (specInGameItemsByKeyword) {
-                  const specSystem = specInGameItemsByKeyword.system;
-                  const linkedSkillName = specSystem.linkedSkill;
-                  if (linkedSkillName) {
-                    const parentSkill = this.actor.items.find(
-                      (i) => i.type === "skill" && i.name === linkedSkillName
-                    );
-                    if (parentSkill) {
-                      const skillSystem = parentSkill.system;
-                      const linkedAttribute = skillSystem.linkedAttribute || "willpower";
-                      attackSkillName = parentSkill.name;
-                      attackLinkedAttribute = linkedAttribute;
-                      const skillLevel = (skillSystem.rating || 0) + (this.actor.system.attributes?.[linkedAttribute] || 0);
-                      attackSkillLevel = skillLevel;
-                    }
-                  }
-                }
-              } else if (specInGameItems) {
-                const specSystem = specInGameItems.system;
-                const linkedSkillName = specSystem.linkedSkill;
-                if (linkedSkillName) {
-                  const parentSkill = this.actor.items.find(
-                    (i) => i.type === "skill" && i.name === linkedSkillName
-                  );
-                  if (parentSkill) {
-                    const skillSystem = parentSkill.system;
-                    const linkedAttribute = skillSystem.linkedAttribute || "willpower";
-                    attackSkillName = parentSkill.name;
-                    attackLinkedAttribute = linkedAttribute;
-                    const skillLevel = (skillSystem.rating || 0) + (this.actor.system.attributes?.[linkedAttribute] || 0);
-                    attackSkillLevel = skillLevel;
-                  }
-                }
-              }
-            }
-          }
-        }
+    const spellSpecType = isSpell ? itemSystem.spellSpecializationType || "combat" : void 0;
+    const skillSpecResult = findAttackSkillAndSpec(
+      this.actor,
+      finalAttackSpec,
+      finalAttackSkill,
+      {
+        isSpell,
+        spellSpecType,
+        defaultAttribute: isSpell ? "willpower" : "strength"
       }
-    }
-    if (!attackSpecName && !attackSkillLevel && finalAttackSkill) {
-      const foundSkill = this.actor.items.find(
-        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
-      );
-      if (foundSkill) {
-        attackSkillName = foundSkill.name;
-        const foundLinkedAttribute = foundSkill.system.linkedAttribute || "strength";
-        attackLinkedAttribute = attackLinkedAttribute || foundLinkedAttribute;
-        const skillRating = foundSkill.system.rating || 0;
-        const attributeValue = this.actor.system.attributes?.[foundLinkedAttribute] || 0;
-        attackSkillLevel = skillRating + attributeValue;
-      } else if (isSpell) {
-        if (game.items) {
-          const sorcerySkillInGame = game.items.find(
-            (i) => i.type === "skill" && normalizeSearchText(i.name) === "sorcellerie"
-          );
-          if (sorcerySkillInGame) {
-            attackSkillName = "Sorcellerie";
-            attackLinkedAttribute = "willpower";
-            const willpower = this.actor.system.attributes?.willpower || 1;
-            attackSkillLevel = willpower;
-          }
-        }
-      }
-    }
+    );
+    const attackSkillName = skillSpecResult.skillName;
+    const attackSkillLevel = skillSpecResult.skillLevel;
+    const attackSpecName = skillSpecResult.specName;
+    const attackSpecLevel = skillSpecResult.specLevel;
+    const attackLinkedAttribute = skillSpecResult.linkedAttribute;
     let finalDamageValue;
     if (isSpell) {
       if (spellType === "direct") {
@@ -5440,32 +5401,15 @@ class CharacterSheet extends ActorSheet {
     } else {
       const baseDamageValue = itemSystem.damageValue || "0";
       const damageValueBonus = itemSystem.damageValueBonus || 0;
-      finalDamageValue = baseDamageValue;
-      if (damageValueBonus > 0 && baseDamageValue !== "0") {
-        if (baseDamageValue === "FOR") {
-          finalDamageValue = `FOR+${damageValueBonus}`;
-        } else if (baseDamageValue.startsWith("FOR+")) {
-          const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-          finalDamageValue = `FOR+${baseModifier + damageValueBonus}`;
-        } else if (baseDamageValue !== "toxin") {
-          const baseValue = parseInt(baseDamageValue) || 0;
-          finalDamageValue = (baseValue + damageValueBonus).toString();
-        }
-      }
+      finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
     }
-    let skillRRSources = [];
-    let specRRSources = [];
-    let attributeRRSources = [];
-    if (attackSpecName) {
-      specRRSources = getRRSources(this.actor, "specialization", attackSpecName);
-    }
-    if (attackSkillName) {
-      skillRRSources = getRRSources(this.actor, "skill", attackSkillName);
-    }
-    if (attackLinkedAttribute) {
-      attributeRRSources = getRRSources(this.actor, "attribute", attackLinkedAttribute);
-    }
-    const allRRSources = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
+    const poolResult = calculateAttackPool(
+      this.actor,
+      skillSpecResult,
+      itemRRList,
+      item.name
+    );
+    const allRRSources = poolResult.allRRSources;
     console.log("SRA2 | _rollWeaponOrSpell - Values passed to roll dialog:", {
       itemName: item.name,
       itemRating: itemSystem.rating || 0,
@@ -5801,65 +5745,26 @@ class VehicleSheet extends ActorSheet {
       const input = event.currentTarget;
       const name = input.name;
       const checked = input.checked;
-      const activeNavItem = html.find(".section-nav .nav-item.active");
-      const activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : null;
-      const pathParts = name.split(".").slice(1);
-      if (pathParts.length >= 2 && pathParts[0] === "damage") {
-        const damageType = pathParts[1];
-        const actorSource = this.actor._source;
-        const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
-          light: [false, false],
-          severe: [false],
-          incapacitating: false
-        };
-        const updatedDamage = {
-          light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
-          severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
-          incapacitating: typeof currentDamage.incapacitating === "boolean" ? currentDamage.incapacitating : false
-        };
-        if (damageType === "incapacitating") {
-          updatedDamage.incapacitating = checked;
-        } else if (damageType === "light" || damageType === "severe") {
-          if (pathParts.length >= 3 && pathParts[2]) {
-            const index = parseInt(pathParts[2]);
-            while (updatedDamage[damageType].length <= index) {
-              updatedDamage[damageType].push(false);
-            }
-            updatedDamage[damageType][index] = checked;
-          }
-        }
-        await this.actor.update({
-          "system.damage": updatedDamage
-        }, { render: false });
-        html.find(`input[name="${name}"]`).prop("checked", checked);
-        if (damageType === "incapacitating") {
-          html.find(`label.track-box input[name="system.damage.incapacitating"]`).prop("checked", checked);
-          html.find(`label.track-box input[name="system.damage.incapacitating"]`).closest("label.track-box").toggleClass("checked", checked);
-        } else {
-          html.find(`input[name="${name}"]`).each((_, checkbox) => {
-            const $checkbox = $(checkbox);
-            $checkbox.prop("checked", checked);
-            $checkbox.closest("label.track-box").toggleClass("checked", checked);
-          });
-        }
-        if (activeSection) {
-          setTimeout(() => {
-            const currentHtml = $(this.element);
-            const form = currentHtml.closest("form")[0];
-            if (form) {
-              const navButton = form.querySelector(`[data-section="${activeSection}"]`);
-              if (navButton) {
-                form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
-                navButton.classList.add("active");
-                form.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"));
-                const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
-                if (targetSection) {
-                  targetSection.classList.add("active");
-                }
-              }
-            }
-          }, 10);
-        }
+      const activeSection = getCurrentActiveSection(html);
+      const actorSource = this.actor._source;
+      const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
+        light: [false, false],
+        severe: [false],
+        incapacitating: false
+      };
+      const updatedDamage = parseDamageCheckboxChange(name, checked, currentDamage);
+      if (!updatedDamage) return;
+      await this.actor.update({
+        "system.damage": updatedDamage
+      }, { render: false });
+      html.find(`input[name="${name}"]`).each((_, checkbox) => {
+        const $checkbox = $(checkbox);
+        $checkbox.prop("checked", checked);
+        $checkbox.closest("label.track-box").toggleClass("checked", checked);
+      });
+      const form = $(this.element).closest("form")[0];
+      if (form && activeSection) {
+        restoreActiveSection(form, activeSection);
       }
     });
   }
@@ -5867,19 +5772,12 @@ class VehicleSheet extends ActorSheet {
    * Handle section navigation
    */
   _onSectionNavigation(event) {
-    event.preventDefault();
     const button = event.currentTarget;
-    const section = button.dataset.section;
-    if (!section) return;
-    this._activeSection = section;
     const form = button.closest("form");
     if (!form) return;
-    form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
-    button.classList.add("active");
-    form.querySelectorAll(".content-section").forEach((section2) => section2.classList.remove("active"));
-    const targetSection = form.querySelector(`[data-section-content="${section}"]`);
-    if (targetSection) {
-      targetSection.classList.add("active");
+    const section = handleSectionNavigation(event, form);
+    if (section) {
+      this._activeSection = section;
     }
   }
   /**
@@ -5903,29 +5801,14 @@ class VehicleSheet extends ActorSheet {
     const input = event.currentTarget;
     const name = input.name;
     const value = parseInt(input.value) || 0;
-    const activeNavItem = $(this.element).find(".section-nav .nav-item.active");
-    const activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : "attributes";
+    const activeSection = getCurrentActiveSection($(this.element)) || "attributes";
     await this.actor.update({
       [name]: value
     });
     await this.render(false);
-    if (activeSection) {
-      setTimeout(() => {
-        const currentHtml = $(this.element);
-        const form = currentHtml.closest("form")[0];
-        if (form) {
-          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
-          if (navButton) {
-            form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
-            navButton.classList.add("active");
-            form.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"));
-            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
-            if (targetSection) {
-              targetSection.classList.add("active");
-            }
-          }
-        }
-      }, 10);
+    const form = $(this.element).closest("form")[0];
+    if (form) {
+      restoreActiveSection(form, activeSection);
     }
   }
   /**
@@ -5934,8 +5817,7 @@ class VehicleSheet extends ActorSheet {
   async _onOptionChange(event) {
     const input = event.currentTarget;
     const name = input.name;
-    const activeNavItem = $(this.element).find(".section-nav .nav-item.active");
-    const activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : "attributes";
+    const activeSection = getCurrentActiveSection($(this.element)) || "attributes";
     let value;
     if (input.type === "checkbox") {
       value = input.checked;
@@ -5948,23 +5830,9 @@ class VehicleSheet extends ActorSheet {
       [name]: value
     });
     await this.render(false);
-    if (activeSection) {
-      setTimeout(() => {
-        const currentHtml = $(this.element);
-        const form = currentHtml.closest("form")[0];
-        if (form) {
-          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
-          if (navButton) {
-            form.querySelectorAll(".section-nav .nav-item").forEach((item) => item.classList.remove("active"));
-            navButton.classList.add("active");
-            form.querySelectorAll(".content-section").forEach((section) => section.classList.remove("active"));
-            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
-            if (targetSection) {
-              targetSection.classList.add("active");
-            }
-          }
-        }
-      }, 10);
+    const form = $(this.element).closest("form")[0];
+    if (form) {
+      restoreActiveSection(form, activeSection);
     }
   }
   /**

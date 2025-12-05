@@ -260,88 +260,36 @@ export class VehicleSheet extends ActorSheet {
       const checked = input.checked;
       
       // Save current active section before update
-      const activeNavItem = html.find('.section-nav .nav-item.active');
-      const activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : null;
+      const activeSection = SheetHelpers.getCurrentActiveSection(html);
       
-      // Parse the name to get the path (e.g., "system.damage.light.0" -> ["damage", "light", "0"])
-      const pathParts = name.split('.').slice(1); // Remove "system"
+      // Get current damage from actor data (read from _source for persisted values)
+      const actorSource = (this.actor as any)._source;
+      const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
+        light: [false, false],
+        severe: [false],
+        incapacitating: false
+      };
       
-      if (pathParts.length >= 2 && pathParts[0] === 'damage') {
-        const damageType = pathParts[1]; // "light", "severe", or "incapacitating"
-        
-        // Get current damage from actor data
-        // Read from _source to get persisted values, fallback to system if not available
-        const actorSource = (this.actor as any)._source;
-        const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
-          light: [false, false],
-          severe: [false],
-          incapacitating: false
-        };
-        
-        // Create a copy of the damage object to update
-        const updatedDamage: any = {
-          light: Array.isArray(currentDamage.light) ? [...currentDamage.light] : [false, false],
-          severe: Array.isArray(currentDamage.severe) ? [...currentDamage.severe] : [false],
-          incapacitating: typeof currentDamage.incapacitating === 'boolean' ? currentDamage.incapacitating : false
-        };
-        
-        // Update the appropriate field
-        if (damageType === 'incapacitating') {
-          updatedDamage.incapacitating = checked;
-        } else if (damageType === 'light' || damageType === 'severe') {
-          if (pathParts.length >= 3 && pathParts[2]) {
-            const index = parseInt(pathParts[2]);
-            // Ensure array is long enough
-            while (updatedDamage[damageType].length <= index) {
-              updatedDamage[damageType].push(false);
-            }
-            updatedDamage[damageType][index] = checked;
-          }
-        }
-        
-        // Update the actor with the complete damage object
-        // This ensures the data is persisted correctly
-        await this.actor.update({
-          'system.damage': updatedDamage
-        } as any, { render: false });
-        
-        // Synchronize all checkboxes with the same name
-        html.find(`input[name="${name}"]`).prop('checked', checked);
-        
-        // Update visual state for track-boxes in header
-        if (damageType === 'incapacitating') {
-          html.find(`label.track-box input[name="system.damage.incapacitating"]`).prop('checked', checked);
-          html.find(`label.track-box input[name="system.damage.incapacitating"]`).closest('label.track-box')
-            .toggleClass('checked', checked);
-        } else {
-          html.find(`input[name="${name}"]`).each((_, checkbox) => {
-            const $checkbox = $(checkbox);
-            $checkbox.prop('checked', checked);
-            $checkbox.closest('label.track-box').toggleClass('checked', checked);
-          });
-        }
-        
-        // Restore active section after update
-        if (activeSection) {
-          setTimeout(() => {
-            const currentHtml = $(this.element);
-            const form = currentHtml.closest('form')[0];
-            if (form) {
-              const navButton = form.querySelector(`[data-section="${activeSection}"]`);
-              if (navButton) {
-                // Manually set active section without triggering navigation
-                form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
-                navButton.classList.add('active');
-                
-                form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
-                const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
-                if (targetSection) {
-                  targetSection.classList.add('active');
-                }
-              }
-            }
-          }, 10);
-        }
+      // Use helper to parse and update damage
+      const updatedDamage = SheetHelpers.parseDamageCheckboxChange(name, checked, currentDamage);
+      if (!updatedDamage) return;
+      
+      // Update the actor with the complete damage object
+      await this.actor.update({
+        'system.damage': updatedDamage
+      } as any, { render: false });
+      
+      // Synchronize all checkboxes with the same name and update visual state
+      html.find(`input[name="${name}"]`).each((_, checkbox) => {
+        const $checkbox = $(checkbox);
+        $checkbox.prop('checked', checked);
+        $checkbox.closest('label.track-box').toggleClass('checked', checked);
+      });
+      
+      // Restore active section after update
+      const form = $(this.element).closest('form')[0] as HTMLElement;
+      if (form && activeSection) {
+        SheetHelpers.restoreActiveSection(form, activeSection);
       }
     });
   }
@@ -350,24 +298,13 @@ export class VehicleSheet extends ActorSheet {
    * Handle section navigation
    */
   private _onSectionNavigation(event: Event): void {
-    event.preventDefault();
     const button = event.currentTarget as HTMLElement;
-    const section = button.dataset.section;
-    if (!section) return;
-
-    // Save the active section
-    this._activeSection = section;
-
-    const form = button.closest('form');
+    const form = button.closest('form') as HTMLElement;
     if (!form) return;
-
-    form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
-    button.classList.add('active');
-
-    form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
-    const targetSection = form.querySelector(`[data-section-content="${section}"]`);
-    if (targetSection) {
-      targetSection.classList.add('active');
+    
+    const section = SheetHelpers.handleSectionNavigation(event, form);
+    if (section) {
+      this._activeSection = section;
     }
   }
 
@@ -400,8 +337,7 @@ export class VehicleSheet extends ActorSheet {
     const value = parseInt(input.value) || 0;
     
     // Save current active section before update
-    const activeNavItem = $(this.element).find('.section-nav .nav-item.active');
-    const activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : 'attributes';
+    const activeSection = SheetHelpers.getCurrentActiveSection($(this.element)) || 'attributes';
     
     // Update the actor - prepareDerivedData will recalculate attributes
     await this.actor.update({
@@ -412,24 +348,9 @@ export class VehicleSheet extends ActorSheet {
     await this.render(false);
     
     // Restore active section after render
-    if (activeSection) {
-      setTimeout(() => {
-        const currentHtml = $(this.element);
-        const form = currentHtml.closest('form')[0];
-        if (form) {
-          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
-          if (navButton) {
-            form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
-            navButton.classList.add('active');
-            
-            form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
-            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
-            if (targetSection) {
-              targetSection.classList.add('active');
-            }
-          }
-        }
-      }, 10);
+    const form = $(this.element).closest('form')[0] as HTMLElement;
+    if (form) {
+      SheetHelpers.restoreActiveSection(form, activeSection);
     }
   }
 
@@ -441,8 +362,7 @@ export class VehicleSheet extends ActorSheet {
     const name = input.name;
     
     // Save current active section before update
-    const activeNavItem = $(this.element).find('.section-nav .nav-item.active');
-    const activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : 'attributes';
+    const activeSection = SheetHelpers.getCurrentActiveSection($(this.element)) || 'attributes';
     
     // Determine value based on input type
     let value: any;
@@ -463,24 +383,9 @@ export class VehicleSheet extends ActorSheet {
     await this.render(false);
     
     // Restore active section after render
-    if (activeSection) {
-      setTimeout(() => {
-        const currentHtml = $(this.element);
-        const form = currentHtml.closest('form')[0];
-        if (form) {
-          const navButton = form.querySelector(`[data-section="${activeSection}"]`);
-          if (navButton) {
-            form.querySelectorAll('.section-nav .nav-item').forEach((item) => item.classList.remove('active'));
-            navButton.classList.add('active');
-            
-            form.querySelectorAll('.content-section').forEach((section) => section.classList.remove('active'));
-            const targetSection = form.querySelector(`[data-section-content="${activeSection}"]`);
-            if (targetSection) {
-              targetSection.classList.add('active');
-            }
-          }
-        }
-      }, 10);
+    const form = $(this.element).closest('form')[0] as HTMLElement;
+    if (form) {
+      SheetHelpers.restoreActiveSection(form, activeSection);
     }
   }
 
