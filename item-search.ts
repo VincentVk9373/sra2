@@ -7,10 +7,58 @@
  * Normalize text for search: lowercase and remove accents/special characters
  */
 export function normalizeSearchText(text: string): string {
+  if (!text) return '';
   return text
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+}
+
+/**
+ * Check if an item matches the search term by searching in multiple fields
+ */
+function itemMatchesSearch(item: any, itemType: string, searchTerm: string, includePackName: boolean = false, packTitle?: string): boolean {
+  // First check if item type matches
+  if (item.type !== itemType) return false;
+  
+  const normalizedSearch = normalizeSearchText(searchTerm);
+  
+  // Search in name
+  if (normalizeSearchText(item.name).includes(normalizedSearch)) {
+    return true;
+  }
+  
+  // Search in weapon type (for weapons)
+  console.log(item.system?.weaponType);
+  const weaponType = item.system?.weaponType || item.system?.featType === 'weapon' ? item.system?.weaponType : null;
+  if (weaponType && normalizeSearchText(weaponType).includes(normalizedSearch)) {
+    return true;
+  }
+  
+  // Search in description
+  const description = item.system?.description || '';
+  if (description && normalizeSearchText(description).includes(normalizedSearch)) {
+    return true;
+  }
+  
+  // Search in linked attack skill
+  const linkedAttackSkill = item.system?.linkedAttackSkill || '';
+  if (linkedAttackSkill && normalizeSearchText(linkedAttackSkill).includes(normalizedSearch)) {
+    return true;
+  }
+  
+  // Search in linked attack specialization
+  const linkedAttackSpecialization = item.system?.linkedAttackSpecialization || '';
+  if (linkedAttackSpecialization && normalizeSearchText(linkedAttackSpecialization).includes(normalizedSearch)) {
+    return true;
+  }
+  
+  // Search in pack/repertoire name (only if requested)
+  if (includePackName && packTitle && normalizeSearchText(packTitle).includes(normalizedSearch)) {
+    return true;
+  }
+  
+  return false;
 }
 
 /**
@@ -38,7 +86,7 @@ export function searchItemsInWorld(
   if (!game.items) return results;
   
   for (const item of game.items as any) {
-    if (item.type === itemType && normalizeSearchText(item.name).includes(searchTerm)) {
+    if (itemMatchesSearch(item, itemType, searchTerm)) {
       const alreadyExists = existingItemsCheck ? existingItemsCheck(item.name) : false;
       
       results.push({
@@ -68,7 +116,7 @@ export function searchItemsOnActor(
   if (!actor) return results;
   
   for (const item of actor.items as any) {
-    if (item.type === itemType && normalizeSearchText(item.name).includes(searchTerm)) {
+    if (itemMatchesSearch(item, itemType, searchTerm)) {
       results.push({
         name: item.name,
         uuid: item.uuid,
@@ -103,7 +151,7 @@ export async function searchItemsInCompendiums(
     
     // Filter for items that match the search term and type
     for (const doc of documents) {
-      if (doc.type === itemType && normalizeSearchText(doc.name).includes(searchTerm)) {
+      if (itemMatchesSearch(doc, itemType, searchTerm, true, pack.title)) {
         // Check if not already in results (by name)
         if (seenNames.has(doc.name)) continue;
         seenNames.add(doc.name);

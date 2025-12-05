@@ -1838,7 +1838,7 @@
           left: 0;
           right: 0;
           margin-top: 0.25rem;
-          background: rgba(255, 255, 255, 0.95);
+          background: var(--sr-ui-bg-color-dark);
           border: 1px solid #ffd700;
           border-radius: 4px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -2828,7 +2828,7 @@
           left: 0;
           right: 0;
           margin-top: 0.25rem;
-          background: rgba(255, 255, 255, 0.95);
+          background: var(--sr-ui-bg-color-dark);
           border: 1px solid #00d4ff;
           border-radius: 4px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);

@@ -1530,56 +1530,43 @@ export class CharacterSheet extends ActorSheet {
    * Perform the actual feat search in compendiums and world items
    */
   private async _performFeatSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
-    const results: any[] = [];
-    
     // Store search term for potential creation
     this.lastFeatSearchTerm = searchTerm;
     
-    // Search in world items first
-    if (game.items) {
-      for (const item of game.items as any) {
-        if (item.type === 'feat' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
-          // Check if feat already exists on actor
-          const existingFeat = this.actor.items.find((i: any) => 
-            i.type === 'feat' && i.name === item.name
-          );
-          
-          results.push({
-            name: item.name,
-            uuid: item.uuid,
-            pack: game.i18n!.localize('SRA2.FEATS.WORLD_ITEMS'),
-            featType: item.system.featType,
-            exists: !!existingFeat
-          });
-        }
+    // Use searchItemsEverywhere to search across actor, world, and compendiums
+    const searchResults = await ItemSearch.searchItemsEverywhere(
+      'feat',
+      searchTerm,
+      this.actor,
+      (itemName: string) => {
+        // Check if feat already exists on actor
+        return this.actor.items.some((i: any) => 
+          i.type === 'feat' && i.name === itemName
+        );
       }
-    }
+    );
     
-    // Search in all compendiums
-    for (const pack of game.packs as any) {
-      // Only search in Item compendiums
-      if (pack.documentName !== 'Item') continue;
-      
-      // Get all documents from the pack
-      const documents = await pack.getDocuments();
-      
-      // Filter for feats that match the search term
-      for (const doc of documents) {
-        if (doc.type === 'feat' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
-          // Check if feat already exists on actor
-          const existingFeat = this.actor.items.find((i: any) => 
-            i.type === 'feat' && i.name === doc.name
-          );
-          
-          results.push({
-            name: doc.name,
-            uuid: doc.uuid,
-            pack: pack.title,
-            featType: doc.system.featType,
-            exists: !!existingFeat
-          });
+    // Convert SearchResult[] to the format expected by _displayFeatSearchResults
+    const results: any[] = [];
+    for (const result of searchResults) {
+      // Get the item to access featType
+      let featType = '';
+      try {
+        const item = await fromUuid(result.uuid as any);
+        if (item && (item as any).system) {
+          featType = (item as any).system.featType || '';
         }
+      } catch (error) {
+        console.warn('Could not load item for featType:', error);
       }
+      
+      results.push({
+        name: result.name,
+        uuid: result.uuid,
+        pack: result.source,
+        featType: featType,
+        exists: result.alreadyExists || false
+      });
     }
     
     // Display results

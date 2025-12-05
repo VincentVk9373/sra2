@@ -2426,13 +2426,42 @@ const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   handleRollRequest
 }, Symbol.toStringTag, { value: "Module" }));
 function normalizeSearchText(text) {
+  if (!text) return "";
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+function itemMatchesSearch(item, itemType, searchTerm, includePackName = false, packTitle) {
+  if (item.type !== itemType) return false;
+  const normalizedSearch = normalizeSearchText(searchTerm);
+  if (normalizeSearchText(item.name).includes(normalizedSearch)) {
+    return true;
+  }
+  console.log(item.system?.weaponType);
+  const weaponType = item.system?.weaponType || item.system?.featType === "weapon" ? item.system?.weaponType : null;
+  if (weaponType && normalizeSearchText(weaponType).includes(normalizedSearch)) {
+    return true;
+  }
+  const description = item.system?.description || "";
+  if (description && normalizeSearchText(description).includes(normalizedSearch)) {
+    return true;
+  }
+  const linkedAttackSkill = item.system?.linkedAttackSkill || "";
+  if (linkedAttackSkill && normalizeSearchText(linkedAttackSkill).includes(normalizedSearch)) {
+    return true;
+  }
+  const linkedAttackSpecialization = item.system?.linkedAttackSpecialization || "";
+  if (linkedAttackSpecialization && normalizeSearchText(linkedAttackSpecialization).includes(normalizedSearch)) {
+    return true;
+  }
+  if (includePackName && packTitle && normalizeSearchText(packTitle).includes(normalizedSearch)) {
+    return true;
+  }
+  return false;
 }
 function searchItemsInWorld(itemType, searchTerm, existingItemsCheck) {
   const results = [];
   if (!game.items) return results;
   for (const item of game.items) {
-    if (item.type === itemType && normalizeSearchText(item.name).includes(searchTerm)) {
+    if (itemMatchesSearch(item, itemType, searchTerm)) {
       const alreadyExists = existingItemsCheck ? existingItemsCheck(item.name) : false;
       results.push({
         name: item.name,
@@ -2450,7 +2479,7 @@ function searchItemsOnActor(actor, itemType, searchTerm) {
   const results = [];
   if (!actor) return results;
   for (const item of actor.items) {
-    if (item.type === itemType && normalizeSearchText(item.name).includes(searchTerm)) {
+    if (itemMatchesSearch(item, itemType, searchTerm)) {
       results.push({
         name: item.name,
         uuid: item.uuid,
@@ -2469,7 +2498,7 @@ async function searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck
     if (pack.documentName !== "Item") continue;
     const documents2 = await pack.getDocuments();
     for (const doc of documents2) {
-      if (doc.type === itemType && normalizeSearchText(doc.name).includes(searchTerm)) {
+      if (itemMatchesSearch(doc, itemType, searchTerm, true, pack.title)) {
         if (seenNames.has(doc.name)) continue;
         seenNames.add(doc.name);
         const alreadyExists = existingItemsCheck ? existingItemsCheck(doc.name) : false;
@@ -4455,41 +4484,35 @@ class CharacterSheet extends ActorSheet {
    * Perform the actual feat search in compendiums and world items
    */
   async _performFeatSearch(searchTerm, resultsDiv) {
-    const results = [];
     this.lastFeatSearchTerm = searchTerm;
-    if (game.items) {
-      for (const item of game.items) {
-        if (item.type === "feat" && normalizeSearchText(item.name).includes(searchTerm)) {
-          const existingFeat = this.actor.items.find(
-            (i) => i.type === "feat" && i.name === item.name
-          );
-          results.push({
-            name: item.name,
-            uuid: item.uuid,
-            pack: game.i18n.localize("SRA2.FEATS.WORLD_ITEMS"),
-            featType: item.system.featType,
-            exists: !!existingFeat
-          });
-        }
+    const searchResults = await searchItemsEverywhere(
+      "feat",
+      searchTerm,
+      this.actor,
+      (itemName) => {
+        return this.actor.items.some(
+          (i) => i.type === "feat" && i.name === itemName
+        );
       }
-    }
-    for (const pack of game.packs) {
-      if (pack.documentName !== "Item") continue;
-      const documents2 = await pack.getDocuments();
-      for (const doc of documents2) {
-        if (doc.type === "feat" && normalizeSearchText(doc.name).includes(searchTerm)) {
-          const existingFeat = this.actor.items.find(
-            (i) => i.type === "feat" && i.name === doc.name
-          );
-          results.push({
-            name: doc.name,
-            uuid: doc.uuid,
-            pack: pack.title,
-            featType: doc.system.featType,
-            exists: !!existingFeat
-          });
+    );
+    const results = [];
+    for (const result of searchResults) {
+      let featType = "";
+      try {
+        const item = await fromUuid(result.uuid);
+        if (item && item.system) {
+          featType = item.system.featType || "";
         }
+      } catch (error) {
+        console.warn("Could not load item for featType:", error);
       }
+      results.push({
+        name: result.name,
+        uuid: result.uuid,
+        pack: result.source,
+        featType,
+        exists: result.alreadyExists || false
+      });
     }
     this._displayFeatSearchResults(results, resultsDiv);
   }
