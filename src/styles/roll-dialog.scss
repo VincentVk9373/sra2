@@ -277,7 +277,7 @@
         width: 100%;
         padding: 0.4rem;
         background: rgba(255, 255, 255, 0.1);
-        border: 1px solid var(--sr-ui-color-active);
+        border: 1px solid var(--sr-text-color-light);
         border-radius: var(--sr-border-radius-xs);
         color: var(--sr-text-color-light);
         font-size: 0.8rem;
@@ -324,7 +324,7 @@
             gap: 0.3rem;
             padding: 0.3rem 0.5rem;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--sr-ui-color-active);
+            border: 1px solid var(--sr-text-color-light);
             border-radius: var(--sr-border-radius-xs);
             cursor: pointer;
             transition: all 0.2s;
@@ -367,7 +367,7 @@
             }
 
             input[type="radio"]:checked+span {
-                color: var(--sr-ui-color-active);
+                color: var(--sr-text-color-light);
                 font-weight: bold;
             }
 
@@ -384,7 +384,7 @@
         border: 1px solid #333;
         border-radius: var(--sr-border-radius-sm);
         padding: 0.5rem;
-        border-left: 3px solid var(--sr-ui-color-active);
+        border-left: 3px solid var(--sr-text-color-light);
 
         &.no-border-left {
             border-left: none;
@@ -394,8 +394,8 @@
             font-size: 0.85rem;
             margin: 0 0 0.4rem 0;
             padding-bottom: 0.3rem;
-            border-bottom: 1px solid var(--sr-ui-color-active);
-            color: var(--sr-ui-color-active);
+            border-bottom: 1px solid var(--sr-text-color-light);
+            color: var(--sr-text-color-light);
             display: flex;
             align-items: center;
             gap: 0.4rem;
@@ -442,7 +442,7 @@
                 width: 100%;
                 padding: 0.4rem 0.5rem;
                 background: rgba(0, 0, 0, 0.3);
-                border: 1px solid var(--sr-ui-color-active);
+                border: 1px solid var(--sr-text-color-light);
                 border-radius: var(--sr-border-radius-sm);
                 color: var(--sr-text-color-light);
                 font-size: 0.85rem;
