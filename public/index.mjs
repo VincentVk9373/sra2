@@ -1105,6 +1105,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: false,
         label: "SRA2.FEATS.IS_WEAPON_FOCUS"
       }),
+      isAdeptPowerWeapon: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_ADEPT_POWER_WEAPON"
+      }),
       // Narrative effects
       narrativeEffects: new fields.ArrayField(new fields.SchemaField({
         text: new fields.StringField({
@@ -1269,6 +1274,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const riggerConsoleCount = this.riggerConsoleCount || 0;
     const hasVehicleControlWiring = this.hasVehicleControlWiring || false;
     const isWeaponFocus = this.isWeaponFocus || false;
+    const isAdeptPowerWeapon = this.isAdeptPowerWeapon || false;
     const bonusAnarchy = this.bonusAnarchy || 0;
     const grantsNarration = this.grantsNarration || false;
     const narrativeEffects = this.narrativeEffects || [];
@@ -1333,6 +1339,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (isWeaponFocus) {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS", value: 1 });
+    }
+    if (isAdeptPowerWeapon) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT_POWER_WEAPON", value: 1 });
     }
     const damageValueBonus = this.damageValueBonus || 0;
     if (damageValueBonus > 0) {
