@@ -3986,7 +3986,9 @@ class CharacterSheet extends ActorSheet {
       trait: allFeats.filter((feat) => feat.system.featType === "trait"),
       contact: allFeats.filter((feat) => feat.system.featType === "contact"),
       awakened: allFeats.filter((feat) => feat.system.featType === "awakened"),
-      adeptPower: allFeats.filter((feat) => feat.system.featType === "adept-power"),
+      adeptPower: allFeats.filter(
+        (feat) => feat.system.featType === "adept-power" || (feat.system.featType === "weapon" || feat.system.featType === "weapons-spells") && feat.system.isAdeptPowerWeapon === true
+      ),
       equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
       cyberdeck: cyberdeckFeats,
