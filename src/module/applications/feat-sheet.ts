@@ -101,6 +101,9 @@ export class FeatSheet extends ItemSheet {
     // Remove narrative effect button
     html.find('[data-action="remove-narrative-effect"]').on('click', this._onRemoveNarrativeEffect.bind(this));
     
+    // Narrative effect negative checkbox change
+    html.find('input[name^="system.narrativeEffects"][name$=".isNegative"]').on('change', this._onNarrativeEffectNegativeChange.bind(this));
+    
     // Weapon type selection
     html.find('[data-action="select-weapon-type"]').on('change', this._onWeaponTypeChange.bind(this));
     
@@ -278,7 +281,8 @@ export class FeatSheet extends ItemSheet {
     
     narrativeEffects.push({
       text: "",
-      isNegative: false
+      isNegative: false,
+      value: 1
     });
     
     await this.item.update({
@@ -299,6 +303,39 @@ export class FeatSheet extends ItemSheet {
     const narrativeEffects = [...((this.item.system as any).narrativeEffects || [])];
     
     narrativeEffects.splice(index, 1);
+    
+    await this.item.update({
+      'system.narrativeEffects': narrativeEffects
+    } as any);
+    
+    this.render(false);
+  }
+
+  /**
+   * Handle narrative effect negative checkbox change
+   * Reset value to appropriate default when switching between positive and negative
+   */
+  private async _onNarrativeEffectNegativeChange(event: Event): Promise<void> {
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const name = checkbox.name;
+    
+    // Extract index from name like "system.narrativeEffects.0.isNegative"
+    const match = name.match(/system\.narrativeEffects\.(\d+)\.isNegative/);
+    if (!match) return;
+    
+    const index = parseInt(match[1]);
+    const isNegative = checkbox.checked;
+    
+    const narrativeEffects = [...((this.item.system as any).narrativeEffects || [])];
+    
+    if (narrativeEffects[index]) {
+      // Reset value to appropriate default: 1 for positive, -1 for negative
+      narrativeEffects[index] = {
+        ...narrativeEffects[index],
+        isNegative: isNegative,
+        value: isNegative ? -1 : 1
+      };
+    }
     
     await this.item.update({
       'system.narrativeEffects': narrativeEffects

@@ -1117,9 +1117,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         }),
         value: new fields.NumberField({
           required: true,
-          initial: -1,
+          initial: 1,
           min: -5,
-          max: -1,
+          max: 5,
           integer: true
         })
       }), {
@@ -1378,11 +1378,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevel += 3;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
     }
-    const positiveEffectsCount = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && !effect.isNegative).length;
+    const positiveEffects = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && !effect.isNegative);
     const negativeEffects = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && effect.isNegative);
-    if (positiveEffectsCount > 0) {
-      recommendedLevel += positiveEffectsCount;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE", labelParams: `(${positiveEffectsCount})`, value: positiveEffectsCount });
+    if (positiveEffects.length > 0) {
+      const positiveEffectValue = positiveEffects.reduce((sum, effect) => sum + (effect.value || 1), 0);
+      recommendedLevel += positiveEffectValue;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE", labelParams: `(${positiveEffects.length})`, value: positiveEffectValue });
     }
     if (negativeEffects.length > 0) {
       const negativeEffectValue = negativeEffects.reduce((sum, effect) => sum + (effect.value || -1), 0);
@@ -6068,6 +6069,7 @@ class FeatSheet extends ItemSheet {
     html.find('[data-action="clear-rr-target"]').on("click", this._onClearRRTarget.bind(this));
     html.find('[data-action="add-narrative-effect"]').on("click", this._onAddNarrativeEffect.bind(this));
     html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
+    html.find('input[name^="system.narrativeEffects"][name$=".isNegative"]').on("change", this._onNarrativeEffectNegativeChange.bind(this));
     html.find('[data-action="select-weapon-type"]').on("change", this._onWeaponTypeChange.bind(this));
     html.find('[data-action="select-vehicle-type"]').on("change", this._onVehicleTypeChange.bind(this));
     html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
@@ -6186,7 +6188,8 @@ class FeatSheet extends ItemSheet {
     const narrativeEffects = [...this.item.system.narrativeEffects || []];
     narrativeEffects.push({
       text: "",
-      isNegative: false
+      isNegative: false,
+      value: 1
     });
     await this.item.update({
       "system.narrativeEffects": narrativeEffects
@@ -6201,6 +6204,30 @@ class FeatSheet extends ItemSheet {
     const index = parseInt(event.currentTarget.dataset.index || "0");
     const narrativeEffects = [...this.item.system.narrativeEffects || []];
     narrativeEffects.splice(index, 1);
+    await this.item.update({
+      "system.narrativeEffects": narrativeEffects
+    });
+    this.render(false);
+  }
+  /**
+   * Handle narrative effect negative checkbox change
+   * Reset value to appropriate default when switching between positive and negative
+   */
+  async _onNarrativeEffectNegativeChange(event) {
+    const checkbox = event.currentTarget;
+    const name = checkbox.name;
+    const match = name.match(/system\.narrativeEffects\.(\d+)\.isNegative/);
+    if (!match) return;
+    const index = parseInt(match[1]);
+    const isNegative = checkbox.checked;
+    const narrativeEffects = [...this.item.system.narrativeEffects || []];
+    if (narrativeEffects[index]) {
+      narrativeEffects[index] = {
+        ...narrativeEffects[index],
+        isNegative,
+        value: isNegative ? -1 : 1
+      };
+    }
     await this.item.update({
       "system.narrativeEffects": narrativeEffects
     });

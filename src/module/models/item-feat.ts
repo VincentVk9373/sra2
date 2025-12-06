@@ -582,9 +582,9 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         }),
         value: new fields.NumberField({
           required: true,
-          initial: -1,
+          initial: 1,
           min: -5,
-          max: -1,
+          max: 5,
           integer: true
         })
       }), {
@@ -902,13 +902,14 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
     }
     
-    // Narrative effects: +1 level per positive effect, value per negative effect (count non-empty strings)
-    const positiveEffectsCount = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && !effect.isNegative).length;
+    // Narrative effects: value per positive effect, value per negative effect (count non-empty strings)
+    const positiveEffects = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && !effect.isNegative);
     const negativeEffects = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && effect.isNegative);
     
-    if (positiveEffectsCount > 0) {
-      recommendedLevel += positiveEffectsCount;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE', labelParams: `(${positiveEffectsCount})`, value: positiveEffectsCount });
+    if (positiveEffects.length > 0) {
+      const positiveEffectValue = positiveEffects.reduce((sum: number, effect: any) => sum + (effect.value || 1), 0);
+      recommendedLevel += positiveEffectValue;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE', labelParams: `(${positiveEffects.length})`, value: positiveEffectValue });
     }
     
     if (negativeEffects.length > 0) {
