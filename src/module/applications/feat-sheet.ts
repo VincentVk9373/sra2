@@ -401,14 +401,33 @@ export class FeatSheet extends ItemSheet {
     // Convert damage value to string
     const damageValue = typeof weaponStats.vd === 'number' ? weaponStats.vd.toString() : weaponStats.vd;
     
-    await this.item.update({
+    const updateData: any = {
       'system.weaponType': weaponType,
       'system.damageValue': damageValue,
       'system.meleeRange': weaponStats.melee,
       'system.shortRange': weaponStats.short,
       'system.mediumRange': weaponStats.medium,
       'system.longRange': weaponStats.long
-    } as any);
+    };
+    
+    // For custom weapons, initialize linked skills/specializations with default values if not already set
+    if (weaponType === 'custom-weapon') {
+      const currentSystem = (this.item.system as any);
+      if (!currentSystem.linkedAttackSkill) {
+        updateData['system.linkedAttackSkill'] = weaponStats.linkedSkill;
+      }
+      if (!currentSystem.linkedAttackSpecialization) {
+        updateData['system.linkedAttackSpecialization'] = weaponStats.linkedSpecialization;
+      }
+      if (!currentSystem.linkedDefenseSkill) {
+        updateData['system.linkedDefenseSkill'] = weaponStats.linkedDefenseSkill;
+      }
+      if (!currentSystem.linkedDefenseSpecialization) {
+        updateData['system.linkedDefenseSpecialization'] = weaponStats.linkedDefenseSpecialization;
+      }
+    }
+    
+    await this.item.update(updateData);
     
     this.render(false);
   }

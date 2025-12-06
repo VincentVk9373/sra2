@@ -372,29 +372,25 @@
           <!-- Champs de liaison pour armes custom -->
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"}}</label>
-            <input type="text" name="system.linkedAttackSkill" value="{{system.linkedAttackSkill}}"
-              placeholder="Armes à distance" />
+            <input type="text" name="system.linkedAttackSkill" value="{{#if (and system.linkedAttackSkill (ne system.linkedAttackSkill ""))}}{{system.linkedAttackSkill}}{{else}}Armes à distance{{/if}}" />
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL_HINT"}}</p>
           </div>
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"}}</label>
-            <input type="text" name="system.linkedAttackSpecialization" value="{{system.linkedAttackSpecialization}}"
-              placeholder="Spé : Pistolets" />
+            <input type="text" name="system.linkedAttackSpecialization" value="{{#if (and system.linkedAttackSpecialization (ne system.linkedAttackSpecialization ""))}}{{system.linkedAttackSpecialization}}{{else}}{{/if}}" />
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION_HINT"}}</p>
           </div>
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL"}}</label>
-            <input type="text" name="system.linkedDefenseSkill" value="{{system.linkedDefenseSkill}}"
-              placeholder="Athlétisme" />
+            <input type="text" name="system.linkedDefenseSkill" value="{{#if (and system.linkedDefenseSkill (ne system.linkedDefenseSkill ""))}}{{system.linkedDefenseSkill}}{{else}}Athlétisme{{/if}}" />
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL_HINT"}}</p>
           </div>
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"}}</label>
-            <input type="text" name="system.linkedDefenseSpecialization" value="{{system.linkedDefenseSpecialization}}"
-              placeholder="Spé : Défense à distance" />
+            <input type="text" name="system.linkedDefenseSpecialization" value="{{#if (and system.linkedDefenseSpecialization (ne system.linkedDefenseSpecialization ""))}}{{system.linkedDefenseSpecialization}}{{else}}Spé : Défense à distance{{/if}}" />
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION_HINT"}}</p>
           </div>
           {{/if}}
