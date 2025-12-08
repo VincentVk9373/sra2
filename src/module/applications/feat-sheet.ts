@@ -116,6 +116,9 @@ export class FeatSheet extends ItemSheet {
     // Range improvement checkboxes
     html.find('.range-improvement-checkbox input[type="checkbox"]').on('change', this._onRangeImprovementChange.bind(this));
     
+    // Astral projection checkbox change - automatically enable astral perception
+    html.find('input[name="system.astralProjection"]').on('change', this._onAstralProjectionChange.bind(this));
+    
     // Section navigation
     html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
     
@@ -608,6 +611,31 @@ export class FeatSheet extends ItemSheet {
   }
 
   /**
+   * Handle astral projection checkbox change
+   * Automatically enable astral perception when projection is enabled
+   */
+  private async _onAstralProjectionChange(event: Event): Promise<void> {
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const isProjectionEnabled = checkbox.checked;
+    
+    if (isProjectionEnabled) {
+      // Automatically enable astral perception
+      const astralPerceptionInput = this.element.find('input[name="system.astralPerception"]')[0] as HTMLInputElement;
+      if (astralPerceptionInput) {
+        astralPerceptionInput.checked = true;
+      }
+      
+      // Update the item to set astralPerception to true
+      await this.item.update({
+        'system.astralPerception': true
+      } as any);
+      
+      // Re-render to update the disabled state
+      this.render(false);
+    }
+  }
+
+  /**
    * Handle RR target search input
    */
   private rrTargetSearchTimeout: any = null;
@@ -841,6 +869,11 @@ export class FeatSheet extends ItemSheet {
 
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
     const expandedData = foundry.utils.expandObject(formData) as any;
+    
+    // If astral projection is enabled, automatically enable astral perception
+    if (expandedData.system?.astralProjection === true) {
+      expandedData.system.astralPerception = true;
+    }
     
     // Check if isFirstFeat is being set to true for a trait
     if (expandedData.system?.isFirstFeat === true && 

@@ -439,6 +439,8 @@
                 "SUSTAINED_SPELLS": "Additional sustained spells",
                 "SUMMONED_SPIRITS": "Additional summoned spirits",
                 "ASTRAL_PERCEPTION_PROJECTION": "Astral perception and projection",
+                "ASTRAL_PERCEPTION": "Astral perception",
+                "ASTRAL_PROJECTION": "Astral projection",
                 "SORCERY": "Sorcery",
                 "CONJURATION": "Conjuration",
                 "ADEPT": "Adept",
@@ -802,7 +804,9 @@
             "RISK_REDUCTION": "Risk Reduction",
             "RR": "RR",
             "SUCCESSES": "Successes",
-            "NORMAL_DICE": "Normal Dice"
+            "NORMAL_DICE": "Normal Dice",
+            "MANUAL_RR_BONUS": "Manual RR Bonus",
+            "MANUAL_RR_BONUS_TOOLTIP": "Add a manual RR bonus (0-3)"
         }
     }
 }

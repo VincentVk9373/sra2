@@ -307,7 +307,6 @@
                             <div class="summary-label">RR</div>
                             <div class="summary-value">{{totalRR}}</div>
                         </div>
-                        {{#if rrSources.length}}
                         <div class="rr-sources">
                             <ul class="rr-sources-list">
                                 {{#each rrSources}}
@@ -320,9 +319,15 @@
                                     </label>
                                 </li>
                                 {{/each}}
+                                <li class="rr-source-item">
+                                    <label class="rr-checkbox-label">
+                                        <input type="text" class="manual-rr-bonus-input" min="" max="" value="{{manualRRBonus}}" 
+                                        placeholder="0" title="{{localize "SRA2.ROLL_DIALOG.MANUAL_RR_BONUS_TOOLTIP"}}" />
+                                        <span class="rr-source-name">{{localize "SRA2.ROLL_DIALOG.MANUAL_RR_BONUS"}}</span>
+                                    </label>
+                                </li>
                             </ul>
                         </div>
-                        {{/if}}
                     </div>
                 </div>
                 {{#if riskProbabilities}}

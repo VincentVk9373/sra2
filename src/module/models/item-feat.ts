@@ -693,6 +693,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const featType = (this as any).featType || 'equipment';
     const rating = (this as any).rating || 0;
     
+    // If astral projection is enabled, automatically enable astral perception
+    if ((this as any).astralProjection) {
+      (this as any).astralPerception = true;
+    }
+    
     // For spells, automatically set linkedAttackSkill and linkedAttackSpecialization
     if (featType === 'spell') {
       // Always set attack skill to Sorcellerie
@@ -952,6 +957,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const sorcery = (this as any).sorcery || false;
     const conjuration = (this as any).conjuration || false;
     const adept = (this as any).adept || false;
+
+    // Astral perception
+    if (astralPerception && !astralProjection) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION', value: 1 });
+    }
     
     // Astral perception AND projection: +2
     if (astralPerception && astralProjection) {

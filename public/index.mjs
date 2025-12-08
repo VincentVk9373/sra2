@@ -1225,6 +1225,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const costType = this.cost || "free-equipment";
     const featType = this.featType || "equipment";
     const rating = this.rating || 0;
+    if (this.astralProjection) {
+      this.astralPerception = true;
+    }
     if (featType === "spell") {
       this.linkedAttackSkill = "Sorcellerie";
       const spellSpecType = this.spellSpecializationType || "combat";
@@ -1417,6 +1420,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const sorcery = this.sorcery || false;
     const conjuration = this.conjuration || false;
     const adept = this.adept || false;
+    if (astralPerception && !astralProjection) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION", value: 1 });
+    }
     if (astralPerception && astralProjection) {
       recommendedLevel += 2;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION", value: 2 });
@@ -6193,6 +6200,7 @@ class FeatSheet extends ItemSheet {
     html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
     html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
     html.find('.range-improvement-checkbox input[type="checkbox"]').on("change", this._onRangeImprovementChange.bind(this));
+    html.find('input[name="system.astralProjection"]').on("change", this._onAstralProjectionChange.bind(this));
     html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
     html.find(".rr-target-search-input").on("input", this._onRRTargetSearch.bind(this));
     html.find(".rr-target-search-input").on("focus", this._onRRTargetSearchFocus.bind(this));
@@ -6557,6 +6565,24 @@ class FeatSheet extends ItemSheet {
     }
   }
   /**
+   * Handle astral projection checkbox change
+   * Automatically enable astral perception when projection is enabled
+   */
+  async _onAstralProjectionChange(event) {
+    const checkbox = event.currentTarget;
+    const isProjectionEnabled = checkbox.checked;
+    if (isProjectionEnabled) {
+      const astralPerceptionInput = this.element.find('input[name="system.astralPerception"]')[0];
+      if (astralPerceptionInput) {
+        astralPerceptionInput.checked = true;
+      }
+      await this.item.update({
+        "system.astralPerception": true
+      });
+      this.render(false);
+    }
+  }
+  /**
    * Handle RR target search input
    */
   rrTargetSearchTimeout = null;
@@ -6730,6 +6756,9 @@ class FeatSheet extends ItemSheet {
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
+    if (expandedData.system?.astralProjection === true) {
+      expandedData.system.astralPerception = true;
+    }
     if (expandedData.system?.isFirstFeat === true && expandedData.system?.featType === "trait" && this.item.actor) {
       const otherFirstFeats = this.item.actor.items.filter(
         (item) => item.type === "feat" && item.id !== this.item.id && item.system?.featType === "trait" && item.system?.isFirstFeat === true
@@ -7132,6 +7161,8 @@ class RollDialog extends Application {
   // Selected range: 'melee', 'short', 'medium', 'long'
   rollMode = "normal";
   // Roll mode
+  manualRRBonus = "";
+  // Manual RR bonus entered by user
   constructor(rollData) {
     super();
     this.rollData = rollData;
@@ -7541,8 +7572,10 @@ class RollDialog extends Application {
         }
       }
     }
+    totalRR += this.manualRRBonus;
     context.totalRR = Math.min(3, totalRR);
     context.rrSources = rrSources;
+    context.manualRRBonus = this.manualRRBonus;
     const autoRiskDiceCount = getRiskDiceByRR(context.totalRR);
     const maxRiskDice = Math.min(autoRiskDiceCount, dicePool);
     if (context.totalRR !== this.lastAutoRR) {
@@ -8023,6 +8056,7 @@ class RollDialog extends Application {
             }
           }
         }
+        newTotalRR += this.manualRRBonus;
         newTotalRR = Math.min(3, newTotalRR);
         if (!this.riskDiceManuallySet) {
           const autoRiskDiceCount = getRiskDiceByRR(newTotalRR);
@@ -8098,6 +8132,47 @@ class RollDialog extends Application {
         this.rollMode = modeValue;
       }
     });
+    html.find(".manual-rr-bonus-input").on("input", (event) => {
+      const input = event.currentTarget;
+      const inputValue = input.value;
+      this.manualRRBonus = inputValue;
+      let manualRRBonus = 0;
+      if (inputValue !== "" && !isNaN(Number(inputValue))) {
+        manualRRBonus = parseInt(inputValue);
+      }
+      let newTotalRR = 0;
+      if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+        for (const rrSource of this.rollData.rrList) {
+          if (rrSource && typeof rrSource === "object") {
+            const rrValue = rrSource.rrValue || 0;
+            const featName = rrSource.featName || "Inconnu";
+            const sourceId = `${featName}-${rrValue}`;
+            if (this.rrEnabled.get(sourceId)) {
+              newTotalRR += rrValue;
+            }
+          }
+        }
+      }
+      newTotalRR += manualRRBonus;
+      newTotalRR = Math.min(3, newTotalRR);
+      if (!this.riskDiceManuallySet) {
+        const autoRiskDiceCount = getRiskDiceByRR(newTotalRR);
+        let dicePool = 0;
+        if (this.rollData.specLevel !== void 0) {
+          dicePool = this.rollData.specLevel;
+        } else if (this.rollData.skillLevel !== void 0) {
+          dicePool = this.rollData.skillLevel;
+        } else if (this.rollData.linkedAttribute) {
+          const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
+          dicePool = attributeValue;
+        }
+        this.riskDiceCount = Math.min(autoRiskDiceCount, dicePool);
+        this.lastAutoRR = newTotalRR;
+      }
+      if (manualRRBonus !== 0) {
+        this.render();
+      }
+    });
     html.find(".dice-icon").on("click", (event) => {
       const diceIcon = $(event.currentTarget);
       const diceIndex = parseInt(diceIcon.data("dice-index") || "0");
@@ -8124,6 +8199,7 @@ class RollDialog extends Application {
           }
         }
       }
+      finalRR += this.manualRRBonus;
       const finalRRList = this.rollData.rrList?.filter((rr) => {
         const rrId = `${rr.featName || "Inconnu"}-${rr.rrValue || 0}`;
         return this.rrEnabled.get(rrId);

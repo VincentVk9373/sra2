@@ -732,6 +732,11 @@
                         cursor: pointer;
                         gap: 0.5rem;
 
+                        .manual-rr-bonus-input {
+                            width: 30px;
+                            text-align: center;
+                        }
+
                         .rr-checkbox {
                             cursor: pointer;
                             margin-right: 0.3rem;
@@ -747,7 +752,6 @@
 
                         .rr-source-value {
                             color: #4caf50;
-                            font-weight: bold;
                         }
                     }
                 }

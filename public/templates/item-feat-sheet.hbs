@@ -924,7 +924,7 @@
 
           <div class="form-group checkbox-group">
             <label>
-              <input type="checkbox" name="system.astralPerception" {{checked system.astralPerception}} />
+              <input type="checkbox" name="system.astralPerception" {{checked system.astralPerception}} {{#if system.astralProjection}}disabled{{/if}} />
               {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}
             </label>
           </div>

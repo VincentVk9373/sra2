@@ -20,6 +20,7 @@ export class RollDialog extends Application {
   private lastAutoRR: number = -1; // Track last RR value used for auto-selection
   private selectedRange: string | null = null; // Selected range: 'melee', 'short', 'medium', 'long'
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
+  private manualRRBonus: string = ''; // Manual RR bonus entered by user
 
   constructor(rollData: RollRequestData) {
     super();
@@ -586,8 +587,11 @@ export class RollDialog extends Application {
         }
       }
     }
+    // Add manual RR bonus
+    totalRR += this.manualRRBonus;
     context.totalRR = Math.min(3, totalRR); // RR is capped at 3
     context.rrSources = rrSources;
+    context.manualRRBonus = this.manualRRBonus; // Pass to template
 
     // Auto-select risk dice count based on RR (mode normal: 2, 5, 8, 12 for RR 0, 1, 2, 3)
     // Only auto-update if:
@@ -1274,6 +1278,8 @@ export class RollDialog extends Application {
             }
           }
         }
+        // Add manual RR bonus
+        newTotalRR += this.manualRRBonus;
         newTotalRR = Math.min(3, newTotalRR); // RR is capped at 3
         
         // Update risk dice count based on new RR (mode normal)
@@ -1380,6 +1386,60 @@ export class RollDialog extends Application {
       }
     });
 
+    // Manual RR bonus input
+    html.find('.manual-rr-bonus-input').on('input', (event) => {
+      const input = event.currentTarget as HTMLInputElement;
+      const inputValue = input.value;
+      this.manualRRBonus = inputValue;
+      let manualRRBonus = 0;
+      if (inputValue !== '' && !isNaN(Number(inputValue))) {
+        manualRRBonus = parseInt(inputValue);
+      }
+      
+      // Calculate new total RR
+      let newTotalRR = 0;
+      if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
+        for (const rrSource of this.rollData.rrList) {
+          if (rrSource && typeof rrSource === 'object') {
+            const rrValue = rrSource.rrValue || 0;
+            const featName = rrSource.featName || 'Inconnu';
+            const sourceId = `${featName}-${rrValue}`;
+            
+            if (this.rrEnabled.get(sourceId)) {
+              newTotalRR += rrValue;
+            }
+          }
+        }
+      }
+      // Add manual RR bonus
+      newTotalRR += manualRRBonus;
+      newTotalRR = Math.min(3, newTotalRR); // RR is capped at 3
+      
+      // Update risk dice count based on new RR (mode normal)
+      // Only auto-update if user hasn't manually changed it
+      if (!this.riskDiceManuallySet) {
+        const autoRiskDiceCount = DiceRoller.getRiskDiceByRR(newTotalRR);
+        // Calculate dice pool
+        let dicePool = 0;
+        if (this.rollData.specLevel !== undefined) {
+          dicePool = this.rollData.specLevel;
+        } else if (this.rollData.skillLevel !== undefined) {
+          dicePool = this.rollData.skillLevel;
+        } else if (this.rollData.linkedAttribute) {
+          const attributeValue = (this.actor?.system as any)?.attributes?.[this.rollData.linkedAttribute] || 0;
+          dicePool = attributeValue;
+        }
+        // Don't exceed dice pool
+        this.riskDiceCount = Math.min(autoRiskDiceCount, dicePool);
+        this.lastAutoRR = newTotalRR;
+      }
+      
+      // Re-render to update total RR and risk dice selection
+      if (manualRRBonus !== 0) {
+        this.render();
+      }
+    });
+
     // Risk dice selection
     html.find('.dice-icon').on('click', (event) => {
       const diceIcon = $(event.currentTarget);
@@ -1418,6 +1478,8 @@ export class RollDialog extends Application {
           }
         }
       }
+      // Add manual RR bonus
+      finalRR += this.manualRRBonus;
       
       // Update roll data with final RR
       const finalRRList = this.rollData.rrList?.filter((rr: any) => {

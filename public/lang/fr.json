@@ -60,8 +60,6 @@
             "NARRATIVE_EFFECT_PLACEHOLDER": "Entrer un effet narratif...",
             "ADD_NARRATIVE_EFFECT": "Ajouter un effet narratif",
             "REMOVE_EFFECT": "Supprimer cet effet",
-            "RR_LIST": "Liste de Réduction de Risque",
-            "RR_LIST_HINT": "Réduction de risque appliquée à tous les jets du drone",
             "ATTRIBUTES": {
                 "LABEL": "Attributs",
                 "AUTOPILOT": "Autopilote",
@@ -365,6 +363,8 @@
                 "SUSTAINED_SPELLS": "Sorts maintenus supplémentaires",
                 "SUMMONED_SPIRITS": "Esprits invoqués supplémentaires",
                 "ASTRAL_PERCEPTION_PROJECTION": "Perception et projection astrale",
+                "ASTRAL_PROJECTION": "Projection astrale",
+                "ASTRAL_PERCEPTION": "Perception astrale",
                 "SORCERY": "Sorcellerie",
                 "CONJURATION": "Conjuration",
                 "ADEPT": "Adepte",
@@ -785,7 +785,9 @@
                 "MINOR_COMPLICATION": "Complication mineure",
                 "CRITICAL_COMPLICATION": "Complication critique",
                 "DISASTER": "Désastre"
-            }
+            },
+            "MANUAL_RR_BONUS": "Bonus RR manuel",
+            "MANUAL_RR_BONUS_TOOLTIP": "Ajouter un bonus RR manuel (0-3)"
         }
     }
 }
