@@ -2152,21 +2152,21 @@
                   display: inline-block;
                   padding: 0.15rem 0.5rem;
                   margin-left: 0.5rem;
-                  background: rgba(244, 67, 54, 0.2);
-                  color: #b71c1c;
-                  border: 1px solid #f44336;
+                  background: rgba(98, 244, 54, 0.2);
+                  color: #2afb5a;
+                  border: 1px solid #2afb5a;
                   border-radius: var(--sr-border-radius-sm);
                   font-size: 0.75rem;
                   font-weight: normal;
                   white-space: nowrap;
 
                   .anarchy-bonus-badge {
-                    color: #d32f2f;
+                    color: #2afb5a;
                     font-weight: bold;
                   }
 
                   .narration-badge {
-                    color: #d32f2f;
+                    color: #2afb5a;
                     font-weight: bold;
                   }
                 }
@@ -2539,7 +2539,7 @@
 
                   &.positive {
                     background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-                    color: #155724;
+                    color: #1d4f28;
                     box-shadow: 0 1px 3px rgba(132, 250, 176, 0.3);
                   }
 
@@ -2556,7 +2556,7 @@
                 }
 
                 &.positive .effect-text {
-                  color: #155724;
+                  color: #2afb5a;
                 }
 
                 &.negative .effect-text {

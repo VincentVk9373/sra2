@@ -60,6 +60,8 @@
             "NARRATIVE_EFFECT_PLACEHOLDER": "Entrer un effet narratif...",
             "ADD_NARRATIVE_EFFECT": "Ajouter un effet narratif",
             "REMOVE_EFFECT": "Supprimer cet effet",
+            "RR_LIST": "Liste de Réduction de Risque",
+            "RR_LIST_HINT": "Réduction de risque appliquée à tous les jets du drone",
             "ATTRIBUTES": {
                 "LABEL": "Attributs",
                 "AUTOPILOT": "Autopilote",

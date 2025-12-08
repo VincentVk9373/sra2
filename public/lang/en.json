@@ -83,6 +83,8 @@
             "NARRATIVE_EFFECT_PLACEHOLDER": "Enter a narrative effect...",
             "ADD_NARRATIVE_EFFECT": "Add Narrative Effect",
             "REMOVE_EFFECT": "Remove this effect",
+            "RR_LIST": "Risk Reduction List",
+            "RR_LIST_HINT": "Risk reduction applied to all drone rolls",
             "ATTRIBUTES": {
                 "LABEL": "Attributes",
                 "AUTOPILOT": "Autopilot",
