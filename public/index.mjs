@@ -1610,10 +1610,10 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
   prepareDerivedData() {
     const vehicleType = this.vehicleType || "";
     const vehicleStats = vehicleType && VEHICLE_TYPES[vehicleType] ? VEHICLE_TYPES[vehicleType] : null;
-    const baseAutopilot = vehicleStats?.autopilot || 6;
-    const baseStructure = vehicleStats?.structure || 2;
-    const baseHandling = vehicleStats?.handling || 5;
-    const baseSpeed = vehicleStats?.speed || 3;
+    const baseAutopilot = vehicleStats?.autopilot || 0;
+    const baseStructure = vehicleStats?.structure || 0;
+    const baseHandling = vehicleStats?.handling || 0;
+    const baseSpeed = vehicleStats?.speed || 0;
     const baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
     const baseArmor = vehicleStats?.armor || 0;
     const baseWeaponMount = vehicleStats?.weaponMount || "none";
@@ -6113,7 +6113,6 @@ class FeatSheet extends ItemSheet {
     context.system = this.item.system;
     context.activeSection = this._activeSection;
     context.finalDamageValue = this._calculateFinalDamageValue();
-    context.finalVehicleStats = this._calculateFinalVehicleStats();
     context.cyberdeckDamageThresholds = this._calculateCyberdeckDamageThresholds();
     context.rrEntries = [];
     const rrList = context.system.rrList || [];
@@ -6153,7 +6152,6 @@ class FeatSheet extends ItemSheet {
     html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
     html.find('input[name^="system.narrativeEffects"][name$=".isNegative"]').on("change", this._onNarrativeEffectNegativeChange.bind(this));
     html.find('[data-action="select-weapon-type"]').on("change", this._onWeaponTypeChange.bind(this));
-    html.find('[data-action="select-vehicle-type"]').on("change", this._onVehicleTypeChange.bind(this));
     html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
     html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
     html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
@@ -6384,28 +6382,6 @@ class FeatSheet extends ItemSheet {
     this.render(false);
   }
   /**
-   * Handle vehicle type selection change
-   */
-  async _onVehicleTypeChange(event) {
-    event.preventDefault();
-    const vehicleType = event.currentTarget.value;
-    if (!vehicleType || !VEHICLE_TYPES[vehicleType]) {
-      return;
-    }
-    const vehicleStats = VEHICLE_TYPES[vehicleType];
-    await this.item.update({
-      "system.vehicleType": vehicleType,
-      "system.autopilot": vehicleStats.autopilot,
-      "system.structure": vehicleStats.structure,
-      "system.handling": vehicleStats.handling,
-      "system.speed": vehicleStats.speed,
-      "system.flyingSpeed": vehicleStats.flyingSpeed,
-      "system.armor": vehicleStats.armor,
-      "system.weaponMount": vehicleStats.weaponMount
-    });
-    this.render(false);
-  }
-  /**
    * Calculate cyberdeck damage thresholds based on firewall
    */
   _calculateCyberdeckDamageThresholds() {
@@ -6414,36 +6390,6 @@ class FeatSheet extends ItemSheet {
       light: firewall,
       severe: firewall * 2,
       incapacitating: firewall * 3
-    };
-  }
-  /**
-   * Calculate the final vehicle stats taking into account bonuses
-   */
-  _calculateFinalVehicleStats() {
-    const baseAutopilot = this.item.system.autopilot || 6;
-    const baseStructure = this.item.system.structure || 2;
-    const baseHandling = this.item.system.handling || 5;
-    const baseSpeed = this.item.system.speed || 3;
-    const baseFlyingSpeed = this.item.system.flyingSpeed || 0;
-    const baseArmor = this.item.system.armor || 0;
-    const autopilotBonus = this.item.system.autopilotBonus || 0;
-    const speedBonus = this.item.system.speedBonus || 0;
-    const handlingBonus = this.item.system.handlingBonus || 0;
-    const armorBonus = this.item.system.armorBonus || 0;
-    const isFlying = this.item.system.isFlying || false;
-    const isFixed = this.item.system.isFixed || false;
-    const finalAutopilot = Math.min(12, baseAutopilot + autopilotBonus);
-    const finalHandling = baseHandling + handlingBonus;
-    const finalSpeed = isFixed ? 0 : baseSpeed + speedBonus;
-    const finalFlyingSpeed = isFlying ? baseFlyingSpeed > 0 ? baseFlyingSpeed : 1 : 0;
-    const finalArmor = Math.min(baseStructure, baseArmor + armorBonus);
-    return {
-      autopilot: finalAutopilot,
-      structure: baseStructure,
-      handling: finalHandling,
-      speed: finalSpeed,
-      flyingSpeed: finalFlyingSpeed,
-      armor: finalArmor
     };
   }
   /**

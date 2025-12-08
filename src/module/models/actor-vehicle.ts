@@ -127,10 +127,10 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
       : null;
     
     // Get base stats from vehicle type or defaults
-    const baseAutopilot = vehicleStats?.autopilot || 6;
-    const baseStructure = vehicleStats?.structure || 2;
-    const baseHandling = vehicleStats?.handling || 5;
-    const baseSpeed = vehicleStats?.speed || 3;
+    const baseAutopilot = vehicleStats?.autopilot || 0;
+    const baseStructure = vehicleStats?.structure || 0;
+    const baseHandling = vehicleStats?.handling || 0;
+    const baseSpeed = vehicleStats?.speed || 0;
     const baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
     const baseArmor = vehicleStats?.armor || 0;
     const baseWeaponMount = vehicleStats?.weaponMount || "none";
