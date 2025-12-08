@@ -175,6 +175,15 @@ export class SRA2System {
     
     // Hook to update character sheets when linked vehicles are updated
     Hooks.on('updateActor', (actor: any, updateData: any, options: any, userId: string) => {
+      // DEBUG: Log all actor updates
+      console.log('Hook updateActor - DEBUG:', {
+        'actor.id': actor?.id,
+        'actor.name': actor?.name,
+        'actor.type': actor?.type,
+        'updateData keys': updateData ? Object.keys(updateData) : 'no updateData',
+        'updateData.system keys': updateData?.system ? Object.keys(updateData.system) : 'no system'
+      });
+      
       // Only process vehicle actors
       if (actor.type !== 'vehicle') return;
       
@@ -186,6 +195,16 @@ export class SRA2System {
           const linkedVehicles = (char.system as any)?.linkedVehicles || [];
           return linkedVehicles.includes(vehicleUuid);
         });
+        
+        // DEBUG: Log which character sheets will be re-rendered
+        if (characterActors.length > 0) {
+          console.log('Hook updateActor - Re-rendering character sheets:', {
+            'vehicle.id': actor.id,
+            'vehicle.name': actor.name,
+            'characterCount': characterActors.length,
+            'characters': characterActors.map((c: any) => ({ id: c.id, name: c.name }))
+          });
+        }
         
         // Re-render character sheets that have this vehicle linked
         // Use a small delay to ensure derived data is recalculated

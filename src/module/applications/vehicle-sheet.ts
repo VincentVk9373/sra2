@@ -27,15 +27,68 @@ export class VehicleSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
+    // DEBUG: Log what we're about to update
+    console.log('VehicleSheet._updateObject - DEBUG:', {
+      'this.actor.id': this.actor.id,
+      'this.actor.name': this.actor.name,
+      'this.actor.type': this.actor.type,
+      'this.actor.uuid': this.actor.uuid,
+      'formData keys': Object.keys(formData),
+      'formData sample': Object.fromEntries(Object.entries(formData).slice(0, 5))
+    });
+    
     const expandedData = SheetHelpers.handleSheetUpdate(this.actor, formData);
+    
+    // CRITICAL FIX: Exclude damage from form submission (same as character sheet)
+    // Damage is handled exclusively by _onDamageChange handler to prevent form close reset
+    // Don't process damage here - _onDamageChange handles it directly
+    // Remove damage from expandedData if present to avoid conflicts and form close reset
+    if (expandedData.system?.damage !== undefined) {
+      delete expandedData.system.damage;
+    }
+    
+    // DEBUG: Log what we're sending to update
+    console.log('VehicleSheet._updateObject - About to update:', {
+      'actor.id': this.actor.id,
+      'expandedData keys': Object.keys(expandedData),
+      'expandedData.system keys': expandedData.system ? Object.keys(expandedData.system) : 'no system',
+      'damage excluded': !expandedData.system?.damage
+    });
+    
     return this.actor.update(expandedData);
   }
 
   override getData(): any {
     const context = super.getData() as any;
 
+    // DEBUG: Verify which actor we're working with
+    console.log('VehicleSheet.getData - DEBUG:', {
+      'this.actor.id': this.actor.id,
+      'this.actor.name': this.actor.name,
+      'this.actor.type': this.actor.type,
+      'context.actor.id': context.actor?.id,
+      'context.actor.name': context.actor?.name
+    });
+
     // Ensure system data is available
     context.system = this.actor.system;
+
+    // DEBUG: Log damage data at vehicle sheet opening
+    const actorSource = (this.actor as any)._source;
+    const sourceDamage = actorSource?.system?.damage;
+    const currentDamage = (this.actor.system as any).damage;
+    console.log('VehicleSheet.getData - Damage data at opening:', {
+      'actor.id': this.actor.id,
+      'actor.name': this.actor.name,
+      '_source.system.damage': sourceDamage,
+      'this.actor.system.damage': currentDamage,
+      'sourceDamage type': typeof sourceDamage,
+      'currentDamage type': typeof currentDamage,
+      'sourceDamage.light': sourceDamage?.light,
+      'currentDamage.light': currentDamage?.light,
+      'sourceDamage.light type': Array.isArray(sourceDamage?.light) ? 'array' : typeof sourceDamage?.light,
+      'currentDamage.light type': Array.isArray(currentDamage?.light) ? 'array' : typeof currentDamage?.light
+    });
 
     // Ensure damage arrays are properly initialized
     const systemData = context.system as any;
@@ -258,6 +311,15 @@ export class VehicleSheet extends ActorSheet {
       const input = event.currentTarget as HTMLInputElement;
       const name = input.name;
       const checked = input.checked;
+      
+      // DEBUG: Log which actor we're updating damage for
+      console.log('VehicleSheet damage change - DEBUG:', {
+        'this.actor.id': this.actor.id,
+        'this.actor.name': this.actor.name,
+        'this.actor.type': this.actor.type,
+        'input.name': name,
+        'checked': checked
+      });
       
       // Save current active section before update
       const activeSection = SheetHelpers.getCurrentActiveSection(html);

@@ -2663,6 +2663,12 @@ const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   toggleSearchResults
 }, Symbol.toStringTag, { value: "Module" }));
 function handleSheetUpdate(actor, formData) {
+  console.log("handleSheetUpdate - DEBUG:", {
+    "actor.id": actor?.id,
+    "actor.name": actor?.name,
+    "actor.type": actor?.type,
+    "actor.uuid": actor?.uuid
+  });
   const expandedData = foundry.utils.expandObject(formData);
   if (expandedData.system && expandedData.system.damage !== void 0) {
     const currentDamage = actor.system.damage || {};
@@ -3845,6 +3851,12 @@ class CharacterSheet extends ActorSheet {
   }
   async getData() {
     const context = super.getData();
+    console.log("CharacterSheet.getData - DEBUG:", {
+      "this.actor.id": this.actor.id,
+      "this.actor.name": this.actor.name,
+      "this.actor.type": this.actor.type,
+      "stack": new Error().stack?.split("\n").slice(1, 5).join("\n")
+    });
     context.system = this.actor.system;
     const systemData = context.system;
     if (!systemData.damage) {
@@ -5593,12 +5605,51 @@ class VehicleSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   async _updateObject(_event, formData) {
+    console.log("VehicleSheet._updateObject - DEBUG:", {
+      "this.actor.id": this.actor.id,
+      "this.actor.name": this.actor.name,
+      "this.actor.type": this.actor.type,
+      "this.actor.uuid": this.actor.uuid,
+      "formData keys": Object.keys(formData),
+      "formData sample": Object.fromEntries(Object.entries(formData).slice(0, 5))
+    });
     const expandedData = handleSheetUpdate(this.actor, formData);
+    if (expandedData.system?.damage !== void 0) {
+      delete expandedData.system.damage;
+    }
+    console.log("VehicleSheet._updateObject - About to update:", {
+      "actor.id": this.actor.id,
+      "expandedData keys": Object.keys(expandedData),
+      "expandedData.system keys": expandedData.system ? Object.keys(expandedData.system) : "no system",
+      "damage excluded": !expandedData.system?.damage
+    });
     return this.actor.update(expandedData);
   }
   getData() {
     const context = super.getData();
+    console.log("VehicleSheet.getData - DEBUG:", {
+      "this.actor.id": this.actor.id,
+      "this.actor.name": this.actor.name,
+      "this.actor.type": this.actor.type,
+      "context.actor.id": context.actor?.id,
+      "context.actor.name": context.actor?.name
+    });
     context.system = this.actor.system;
+    const actorSource = this.actor._source;
+    const sourceDamage = actorSource?.system?.damage;
+    const currentDamage = this.actor.system.damage;
+    console.log("VehicleSheet.getData - Damage data at opening:", {
+      "actor.id": this.actor.id,
+      "actor.name": this.actor.name,
+      "_source.system.damage": sourceDamage,
+      "this.actor.system.damage": currentDamage,
+      "sourceDamage type": typeof sourceDamage,
+      "currentDamage type": typeof currentDamage,
+      "sourceDamage.light": sourceDamage?.light,
+      "currentDamage.light": currentDamage?.light,
+      "sourceDamage.light type": Array.isArray(sourceDamage?.light) ? "array" : typeof sourceDamage?.light,
+      "currentDamage.light type": Array.isArray(currentDamage?.light) ? "array" : typeof currentDamage?.light
+    });
     const systemData = context.system;
     if (!systemData.damage) {
       systemData.damage = {
@@ -5758,6 +5809,13 @@ class VehicleSheet extends ActorSheet {
       const input = event.currentTarget;
       const name = input.name;
       const checked = input.checked;
+      console.log("VehicleSheet damage change - DEBUG:", {
+        "this.actor.id": this.actor.id,
+        "this.actor.name": this.actor.name,
+        "this.actor.type": this.actor.type,
+        "input.name": name,
+        "checked": checked
+      });
       const activeSection = getCurrentActiveSection(html);
       const actorSource = this.actor._source;
       const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
@@ -9120,6 +9178,13 @@ class SRA2System {
       }
     });
     Hooks.on("updateActor", (actor, updateData, options, userId) => {
+      console.log("Hook updateActor - DEBUG:", {
+        "actor.id": actor?.id,
+        "actor.name": actor?.name,
+        "actor.type": actor?.type,
+        "updateData keys": updateData ? Object.keys(updateData) : "no updateData",
+        "updateData.system keys": updateData?.system ? Object.keys(updateData.system) : "no system"
+      });
       if (actor.type !== "vehicle") return;
       if (game.actors) {
         const vehicleUuid = actor.uuid;
@@ -9128,6 +9193,14 @@ class SRA2System {
           const linkedVehicles = char.system?.linkedVehicles || [];
           return linkedVehicles.includes(vehicleUuid);
         });
+        if (characterActors.length > 0) {
+          console.log("Hook updateActor - Re-rendering character sheets:", {
+            "vehicle.id": actor.id,
+            "vehicle.name": actor.name,
+            "characterCount": characterActors.length,
+            "characters": characterActors.map((c) => ({ id: c.id, name: c.name }))
+          });
+        }
         setTimeout(() => {
           characterActors.forEach((char) => {
             if (char.sheet && char.sheet.rendered) {

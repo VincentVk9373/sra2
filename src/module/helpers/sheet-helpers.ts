@@ -9,6 +9,14 @@ import * as ItemSearch from '../../../item-search.js';
  * Handle form submission with proper damage checkbox handling
  */
 export function handleSheetUpdate(actor: any, formData: any): any {
+  // DEBUG: Log which actor is being updated
+  console.log('handleSheetUpdate - DEBUG:', {
+    'actor.id': actor?.id,
+    'actor.name': actor?.name,
+    'actor.type': actor?.type,
+    'actor.uuid': actor?.uuid
+  });
+  
   // Expand the form data first to handle nested properties properly
   const expandedData = foundry.utils.expandObject(formData) as any;
   

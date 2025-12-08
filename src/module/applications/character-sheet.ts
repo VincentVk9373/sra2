@@ -31,6 +31,14 @@ export class CharacterSheet extends ActorSheet {
   override async getData(): Promise<any> {
     const context = super.getData() as any;
 
+    // DEBUG: Log when character sheet getData is called
+    console.log('CharacterSheet.getData - DEBUG:', {
+      'this.actor.id': this.actor.id,
+      'this.actor.name': this.actor.name,
+      'this.actor.type': this.actor.type,
+      'stack': new Error().stack?.split('\n').slice(1, 5).join('\n')
+    });
+
     // Ensure system data is available
     context.system = this.actor.system;
     
