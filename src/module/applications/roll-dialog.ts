@@ -898,8 +898,10 @@ export class RollDialog extends Application {
     context.attributeOptions = attributeOptions;
     
     // Determine selected attribute: use linkedAttribute from rollData if set,
-    // otherwise try to get it from the selected skill/spec, otherwise default to first attribute
+    // otherwise try to get it from the selected skill/spec, otherwise default based on skill presence
     let selectedAttribute = this.rollData.linkedAttribute;
+    let hasSkillRating = false;
+    
     if (!selectedAttribute && this.actor) {
       // Try to get from selected spec
       if (this.rollData.specName) {
@@ -908,6 +910,17 @@ export class RollDialog extends Application {
         );
         if (specItem) {
           selectedAttribute = (specItem.system as any)?.linkedAttribute;
+          // Check if spec has a rating > 0 (parent skill rating)
+          const parentSkillName = (specItem.system as any)?.linkedSkill;
+          if (parentSkillName) {
+            const parentSkillItem = this.actor.items.find((i: any) => 
+              i.type === 'skill' && i.name === parentSkillName
+            );
+            if (parentSkillItem) {
+              const skillRating = (parentSkillItem.system as any)?.rating || 0;
+              hasSkillRating = skillRating > 0;
+            }
+          }
         }
       }
       // Try to get from selected skill
@@ -917,10 +930,32 @@ export class RollDialog extends Application {
         );
         if (skillItem) {
           selectedAttribute = (skillItem.system as any)?.linkedAttribute;
+          // Check if skill has a rating > 0
+          const skillRating = (skillItem.system as any)?.rating || 0;
+          hasSkillRating = skillRating > 0;
+        } else {
+          // Skill not found - person doesn't have the skill
+          hasSkillRating = false;
         }
+      } else if (!this.rollData.skillName && !this.rollData.specName) {
+        // No skill or spec selected - person doesn't have the skill
+        hasSkillRating = false;
       }
-      // Default to first attribute if still not set
-      if (!selectedAttribute && attributeOptions.length > 0) {
+      
+      // If still not set and person doesn't have the skill rating, use default attribute logic
+      if (!selectedAttribute && !hasSkillRating) {
+        // Person doesn't have the skill - use default attribute based on skill type
+        const linkedAttackSkill = this.rollData.linkedAttackSkill || this.rollData.skillName;
+        
+        // If skill is "Combat rapproché", default to Strength
+        // Otherwise default to Agility
+        if (linkedAttackSkill && ItemSearch.normalizeSearchText(linkedAttackSkill) === ItemSearch.normalizeSearchText('Combat rapproché')) {
+          selectedAttribute = 'strength';
+        } else {
+          selectedAttribute = 'agility';
+        }
+      } else if (!selectedAttribute && attributeOptions.length > 0) {
+        // Has skill but no linked attribute found, default to first attribute
         selectedAttribute = attributeOptions[0].value;
       }
     }

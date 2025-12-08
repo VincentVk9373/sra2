@@ -42,12 +42,6 @@
             "NAME": "NPC Name",
             "DIFFICULTY": "Difficulty Rating",
             "DESCRIPTION": "Description",
-            "SECTION": {
-                "INFO": "Information",
-                "COMBAT": "Combat",
-                "SKILLS": "Skills",
-                "FEATS": "Feats"
-            },
             "DICE_POOL": "Dice",
             "RR": "RR",
             "THRESHOLD": "Threshold",
@@ -264,6 +258,8 @@
             "LIGHT": "Light",
             "MODERATE": "Moderate",
             "SEVERE": "Severe",
+            "INCAPACITATING": "Incapacitating",
+            "INCAPACITATING_SHORT": "Incapa.",
             "WITHOUT_ARMOR": "Without armor",
             "WITH_ARMOR": "With armor",
             "MENTAL": "Mental"

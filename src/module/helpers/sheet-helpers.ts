@@ -864,6 +864,12 @@ export function findAttackSkillAndSpec(
     } else if (isSpell && game.items) {
       // For spells, try to find Sorcellerie in game.items
       _searchGameItemsForSorcellerie(actor, result);
+    } else if (!isSpell) {
+      // Skill not found: use default attribute with skill rating of 0
+      result.skillName = targetSkill;
+      result.linkedAttribute = result.linkedAttribute || defaultAttribute;
+      const attributeValue = (actor.system as any).attributes?.[defaultAttribute] || 0;
+      result.skillLevel = 0 + attributeValue; // Skill rating is 0 when skill doesn't exist
     }
   }
 

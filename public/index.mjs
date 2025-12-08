@@ -3155,6 +3155,11 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
       result.skillLevel = skillRating + attributeValue;
     } else if (isSpell && game.items) {
       _searchGameItemsForSorcellerie(actor, result);
+    } else if (!isSpell) {
+      result.skillName = targetSkill;
+      result.linkedAttribute = result.linkedAttribute || defaultAttribute;
+      const attributeValue = actor.system.attributes?.[defaultAttribute] || 0;
+      result.skillLevel = 0 + attributeValue;
     }
   }
   return result;
@@ -4024,11 +4029,25 @@ class CharacterSheet extends ActorSheet {
       }
       const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || "";
       const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
+      let defaultAttribute;
+      const skillExists = this.actor.items.some(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (!skillExists && finalAttackSkill) {
+        const normalizedSkillName = normalizeSearchText(finalAttackSkill);
+        if (normalizedSkillName === normalizeSearchText("Combat rapproché")) {
+          defaultAttribute = "strength";
+        } else {
+          defaultAttribute = "agility";
+        }
+      } else {
+        defaultAttribute = "strength";
+      }
       const skillSpecResult = findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
         finalAttackSkill,
-        { defaultAttribute: "strength" }
+        { defaultAttribute }
       );
       const poolResult = calculateAttackPool(
         this.actor,
@@ -5400,6 +5419,24 @@ class CharacterSheet extends ActorSheet {
       }
     }
     const spellSpecType = isSpell ? itemSystem.spellSpecializationType || "combat" : void 0;
+    let defaultAttribute;
+    if (isSpell) {
+      defaultAttribute = "willpower";
+    } else {
+      const skillExists = this.actor.items.some(
+        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+      );
+      if (!skillExists && finalAttackSkill) {
+        const normalizedSkillName = normalizeSearchText(finalAttackSkill);
+        if (normalizedSkillName === normalizeSearchText("Combat rapproché")) {
+          defaultAttribute = "strength";
+        } else {
+          defaultAttribute = "agility";
+        }
+      } else {
+        defaultAttribute = "strength";
+      }
+    }
     const skillSpecResult = findAttackSkillAndSpec(
       this.actor,
       finalAttackSpec,
@@ -5407,7 +5444,7 @@ class CharacterSheet extends ActorSheet {
       {
         isSpell,
         spellSpecType,
-        defaultAttribute: isSpell ? "willpower" : "strength"
+        defaultAttribute
       }
     );
     const attackSkillName = skillSpecResult.skillName;
@@ -7732,6 +7769,7 @@ class RollDialog extends Application {
     }
     context.attributeOptions = attributeOptions;
     let selectedAttribute = this.rollData.linkedAttribute;
+    let hasSkillRating = false;
     if (!selectedAttribute && this.actor) {
       if (this.rollData.specName) {
         const specItem = this.actor.items.find(
@@ -7739,6 +7777,16 @@ class RollDialog extends Application {
         );
         if (specItem) {
           selectedAttribute = specItem.system?.linkedAttribute;
+          const parentSkillName = specItem.system?.linkedSkill;
+          if (parentSkillName) {
+            const parentSkillItem = this.actor.items.find(
+              (i) => i.type === "skill" && i.name === parentSkillName
+            );
+            if (parentSkillItem) {
+              const skillRating = parentSkillItem.system?.rating || 0;
+              hasSkillRating = skillRating > 0;
+            }
+          }
         }
       }
       if (!selectedAttribute && this.rollData.skillName) {
@@ -7747,9 +7795,22 @@ class RollDialog extends Application {
         );
         if (skillItem) {
           selectedAttribute = skillItem.system?.linkedAttribute;
+          const skillRating = skillItem.system?.rating || 0;
+          hasSkillRating = skillRating > 0;
+        } else {
+          hasSkillRating = false;
         }
+      } else if (!this.rollData.skillName && !this.rollData.specName) {
+        hasSkillRating = false;
       }
-      if (!selectedAttribute && attributeOptions.length > 0) {
+      if (!selectedAttribute && !hasSkillRating) {
+        const linkedAttackSkill = this.rollData.linkedAttackSkill || this.rollData.skillName;
+        if (linkedAttackSkill && normalizeSearchText(linkedAttackSkill) === normalizeSearchText("Combat rapproché")) {
+          selectedAttribute = "strength";
+        } else {
+          selectedAttribute = "agility";
+        }
+      } else if (!selectedAttribute && attributeOptions.length > 0) {
         selectedAttribute = attributeOptions[0].value;
       }
     }

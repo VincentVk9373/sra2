@@ -241,12 +241,32 @@ export class CharacterSheet extends ActorSheet {
       const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
       const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || '';
       
+      // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
+      let defaultAttribute: string;
+      const skillExists = this.actor.items.some((i: any) => 
+        i.type === 'skill' && 
+        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
+      );
+      
+      if (!skillExists && finalAttackSkill) {
+        // Skill not found: use agility, except for "Combat rapproché" which uses strength
+        const normalizedSkillName = ItemSearch.normalizeSearchText(finalAttackSkill);
+        if (normalizedSkillName === ItemSearch.normalizeSearchText('Combat rapproché')) {
+          defaultAttribute = 'strength';
+        } else {
+          defaultAttribute = 'agility';
+        }
+      } else {
+        // Skill exists or no skill name: use strength (will be overridden by skill's linkedAttribute if skill found)
+        defaultAttribute = 'strength';
+      }
+      
       // Find skill/spec using unified helper
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
         finalAttackSkill,
-        { defaultAttribute: 'strength' }
+        { defaultAttribute }
       );
       
       // Calculate dice pool and RR using unified helper
@@ -2131,6 +2151,32 @@ export class CharacterSheet extends ActorSheet {
 
     // Find actor's skill and specialization using unified helper
     const spellSpecType = isSpell ? (itemSystem.spellSpecializationType || 'combat') : undefined;
+    
+    // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
+    let defaultAttribute: string;
+    if (isSpell) {
+      defaultAttribute = 'willpower';
+    } else {
+      // Check if the skill exists in the actor's items
+      const skillExists = this.actor.items.some((i: any) => 
+        i.type === 'skill' && 
+        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
+      );
+      
+      if (!skillExists && finalAttackSkill) {
+        // Skill not found: use agility, except for "Combat rapproché" which uses strength
+        const normalizedSkillName = ItemSearch.normalizeSearchText(finalAttackSkill);
+        if (normalizedSkillName === ItemSearch.normalizeSearchText('Combat rapproché')) {
+          defaultAttribute = 'strength';
+        } else {
+          defaultAttribute = 'agility';
+        }
+      } else {
+        // Skill exists or no skill name: use strength (will be overridden by skill's linkedAttribute if skill found)
+        defaultAttribute = 'strength';
+      }
+    }
+    
     const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
       this.actor,
       finalAttackSpec,
@@ -2138,7 +2184,7 @@ export class CharacterSheet extends ActorSheet {
       { 
         isSpell, 
         spellSpecType,
-        defaultAttribute: isSpell ? 'willpower' : 'strength' 
+        defaultAttribute
       }
     );
     
