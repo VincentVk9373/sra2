@@ -9369,6 +9369,44 @@ class SRA2System {
         });
       }
     });
+    Hooks.on("createItem", async (item, options, userId) => {
+      if (item.type !== "specialization") return;
+      const actor = item.parent;
+      if (!actor || actor.type !== "character") return;
+      const linkedSkillName = item.system?.linkedSkill;
+      if (!linkedSkillName) return;
+      const existingSkill = findSkillByName(actor, linkedSkillName);
+      if (existingSkill) {
+        return;
+      }
+      const skillTemplate = findItemInGame("skill", linkedSkillName);
+      if (skillTemplate) {
+        try {
+          await actor.createEmbeddedDocuments("Item", [skillTemplate.toObject()]);
+          console.log(SYSTEM$1.LOG.HEAD + `Auto-added linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+        } catch (error) {
+          console.error(SYSTEM$1.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
+        }
+      } else {
+        const linkedAttribute = item.system?.linkedAttribute || "strength";
+        const skillData = {
+          name: linkedSkillName,
+          type: "skill",
+          system: {
+            rating: 0,
+            linkedAttribute,
+            description: "",
+            bookmarked: false
+          }
+        };
+        try {
+          await actor.createEmbeddedDocuments("Item", [skillData]);
+          console.log(SYSTEM$1.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+        } catch (error) {
+          console.error(SYSTEM$1.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
+        }
+      }
+    });
     Hooks.on("deleteActor", (actor, options, userId) => {
       if (actor.type !== "vehicle") return;
       if (game.actors) {

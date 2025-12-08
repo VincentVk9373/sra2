@@ -8,6 +8,7 @@ import * as models from "./models/_module.ts";
 import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
 import * as CombatHelpers from "./helpers/combat-helpers.ts";
+import * as SheetHelpers from "./helpers/sheet-helpers.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
 // @ts-ignore - JavaScript module without type declarations
@@ -291,6 +292,60 @@ export class SRA2System {
             }, 100);
           }
         });
+      }
+    });
+
+    // Hook to automatically add linked skill when a specialization is created
+    Hooks.on('createItem', async (item: any, options: any, userId: string) => {
+      // Only process specializations on character actors
+      if (item.type !== 'specialization') return;
+      
+      const actor = item.parent;
+      if (!actor || actor.type !== 'character') return;
+
+      // Get the linked skill name from the specialization
+      const linkedSkillName = item.system?.linkedSkill;
+      if (!linkedSkillName) return;
+
+      // Check if the skill already exists on the actor
+      const existingSkill = SheetHelpers.findSkillByName(actor, linkedSkillName);
+      if (existingSkill) {
+        // Skill already exists, nothing to do
+        return;
+      }
+
+      // Try to find the skill in game.items
+      const skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
+      
+      if (skillTemplate) {
+        // Skill found in game.items, create it on the actor
+        try {
+          await actor.createEmbeddedDocuments('Item', [skillTemplate.toObject()]);
+          console.log(SYSTEM.LOG.HEAD + `Auto-added linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+        } catch (error) {
+          console.error(SYSTEM.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
+        }
+      } else {
+        // Skill not found in game.items, create a new one with default values
+        // Use the linkedAttribute from the specialization
+        const linkedAttribute = item.system?.linkedAttribute || 'strength';
+        const skillData = {
+          name: linkedSkillName,
+          type: 'skill',
+          system: {
+            rating: 0,
+            linkedAttribute: linkedAttribute,
+            description: '',
+            bookmarked: false
+          }
+        };
+        
+        try {
+          await actor.createEmbeddedDocuments('Item', [skillData]);
+          console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+        } catch (error) {
+          console.error(SYSTEM.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
+        }
       }
     });
     
