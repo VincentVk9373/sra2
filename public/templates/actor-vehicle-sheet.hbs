@@ -372,8 +372,8 @@
             <div class="narrative-effects-list">
               {{#each system.narrativeEffects}}
               <div class="narrative-effect-item">
-                <input type="text" name="system.narrativeEffects.{{@index}}" value="{{this}}"
-                  placeholder="{{localize 'SRA2.VEHICLE.NARRATIVE_EFFECT_PLACEHOLDER'}}" />
+                <textarea name="system.narrativeEffects.{{@index}}"
+                  placeholder="{{localize 'SRA2.VEHICLE.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this}}</textarea>
                 <button type="button" class="remove-narrative-effect" data-index="{{@index}}"
                   title="{{localize 'SRA2.VEHICLE.REMOVE_EFFECT'}}">
                   <i class="fas fa-times"></i>

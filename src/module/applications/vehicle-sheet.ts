@@ -288,10 +288,23 @@ export class VehicleSheet extends ActorSheet {
     // Add narrative effect
     html.find('.add-narrative-effect-button').on('click', async (event) => {
       event.preventDefault();
-      const narrativeEffects = [...((this.actor.system as any).narrativeEffects || [])];
-      narrativeEffects.push('');
+      
+      // Read current narrative effects from form inputs to preserve unsaved changes
+      const currentNarrativeEffects: string[] = [];
+      
+      // Extract all narrative effect values from form (preserve order and unsaved changes)
+      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
+      narrativeEffectInputs.each((_index, input) => {
+        const inputElement = input as HTMLInputElement;
+        const value = inputElement.value || '';
+        currentNarrativeEffects.push(value);
+      });
+      
+      // Add new empty effect
+      currentNarrativeEffects.push('');
+      
       await this.actor.update({
-        'system.narrativeEffects': narrativeEffects
+        'system.narrativeEffects': currentNarrativeEffects
       } as any);
     });
 
@@ -299,10 +312,23 @@ export class VehicleSheet extends ActorSheet {
     html.find('.remove-narrative-effect').on('click', async (event) => {
       event.preventDefault();
       const index = parseInt($(event.currentTarget).data('index') || '0');
-      const narrativeEffects = [...((this.actor.system as any).narrativeEffects || [])];
-      narrativeEffects.splice(index, 1);
+      
+      // Read current narrative effects from form inputs to preserve unsaved changes
+      const currentNarrativeEffects: string[] = [];
+      
+      // Extract all narrative effect values from form (preserve order and unsaved changes)
+      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
+      narrativeEffectInputs.each((_inputIndex, input) => {
+        const inputElement = input as HTMLInputElement;
+        const value = inputElement.value || '';
+        currentNarrativeEffects.push(value);
+      });
+      
+      // Remove the effect at the specified index
+      currentNarrativeEffects.splice(index, 1);
+      
       await this.actor.update({
-        'system.narrativeEffects': narrativeEffects
+        'system.narrativeEffects': currentNarrativeEffects
       } as any);
     });
 

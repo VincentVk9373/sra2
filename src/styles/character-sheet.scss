@@ -810,6 +810,87 @@
       grid-template-columns: 1fr 3fr 1fr;
       gap: 0.5rem;
     }
+        /* Narrative Effects Section */
+        .narrative-effects-section {
+          margin-top: 1rem;
+
+          .narrative-effects-hint {
+            font-size: 0.85rem;
+            color: var(--sr-ui-color);
+            font-style: italic;
+            margin-bottom: 1rem;
+          }
+
+          .narrative-effects-list {
+            margin-bottom: 1rem;
+
+            .narrative-effect-item {
+              display: grid;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 0.5rem;
+              grid-template-columns: 1fr 30px;
+
+              textarea {
+                padding: 0.5rem;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid var(--sr-ui-border-color);
+                border-radius: var(--sr-border-radius-md);
+                color: var(--sr-text-color-light);
+
+                &:focus {
+                  outline: none;
+                  border-color: var(--sr-ui-color-active);
+                  background: rgba(0, 212, 255, 0.1);
+                }
+              }
+
+              .remove-narrative-effect {
+                padding: 0.5rem;
+                background: rgba(220, 53, 69, 0.2);
+                border: 1px solid #dc3545;
+                border-radius: var(--sr-border-radius-md);
+                color: #dc3545;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                  background: rgba(220, 53, 69, 0.3);
+                  transform: scale(1.1);
+                }
+              }
+            }
+          }
+
+          .add-narrative-effect-button {
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, #4dd0e1 100%);
+            color: #fff;
+            border: none;
+            border-radius: var(--sr-border-radius-md);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+              font-size: 1rem;
+            }
+
+            &:hover {
+              background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+        }
 
     /* Metatype Section */
     .metatype-section {
@@ -1272,87 +1353,6 @@
           font-style: italic;
         }
 
-        /* Narrative Effects Section */
-        .narrative-effects-section {
-          margin-top: 1rem;
-
-          .narrative-effects-hint {
-            font-size: 0.85rem;
-            color: var(--sr-ui-color);
-            font-style: italic;
-            margin-bottom: 1rem;
-          }
-
-          .narrative-effects-list {
-            margin-bottom: 1rem;
-
-            .narrative-effect-item {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              margin-bottom: 0.5rem;
-
-              input[type="text"] {
-                flex: 1;
-                padding: 0.5rem;
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid var(--sr-ui-border-color);
-                border-radius: var(--sr-border-radius-md);
-                color: var(--sr-text-color-light);
-
-                &:focus {
-                  outline: none;
-                  border-color: var(--sr-ui-color-active);
-                  background: rgba(0, 212, 255, 0.1);
-                }
-              }
-
-              .remove-narrative-effect {
-                padding: 0.5rem;
-                background: rgba(220, 53, 69, 0.2);
-                border: 1px solid #dc3545;
-                border-radius: var(--sr-border-radius-md);
-                color: #dc3545;
-                cursor: pointer;
-                transition: all 0.2s;
-
-                &:hover {
-                  background: rgba(220, 53, 69, 0.3);
-                  transform: scale(1.1);
-                }
-              }
-            }
-          }
-
-          .add-narrative-effect-button {
-            padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, #4dd0e1 100%);
-            color: #fff;
-            border: none;
-            border-radius: var(--sr-border-radius-md);
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            i {
-              font-size: 1rem;
-            }
-
-            &:hover {
-              background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
-              transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
-            }
-
-            &:active {
-              transform: translateY(0);
-            }
-          }
-        }
 
         /* Weapons Controls */
         .weapons-controls {

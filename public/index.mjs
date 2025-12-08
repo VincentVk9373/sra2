@@ -5790,19 +5790,31 @@ class VehicleSheet extends ActorSheet {
     html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on("change", this._onOptionChange.bind(this));
     html.find(".add-narrative-effect-button").on("click", async (event) => {
       event.preventDefault();
-      const narrativeEffects = [...this.actor.system.narrativeEffects || []];
-      narrativeEffects.push("");
+      const currentNarrativeEffects = [];
+      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
+      narrativeEffectInputs.each((_index, input) => {
+        const inputElement = input;
+        const value = inputElement.value || "";
+        currentNarrativeEffects.push(value);
+      });
+      currentNarrativeEffects.push("");
       await this.actor.update({
-        "system.narrativeEffects": narrativeEffects
+        "system.narrativeEffects": currentNarrativeEffects
       });
     });
     html.find(".remove-narrative-effect").on("click", async (event) => {
       event.preventDefault();
       const index = parseInt($(event.currentTarget).data("index") || "0");
-      const narrativeEffects = [...this.actor.system.narrativeEffects || []];
-      narrativeEffects.splice(index, 1);
+      const currentNarrativeEffects = [];
+      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
+      narrativeEffectInputs.each((_inputIndex, input) => {
+        const inputElement = input;
+        const value = inputElement.value || "";
+        currentNarrativeEffects.push(value);
+      });
+      currentNarrativeEffects.splice(index, 1);
       await this.actor.update({
-        "system.narrativeEffects": narrativeEffects
+        "system.narrativeEffects": currentNarrativeEffects
       });
     });
     html.find('input[name^="system.damage."]').on("change", async (event) => {
