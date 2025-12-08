@@ -3959,6 +3959,10 @@ class CharacterSheet extends ActorSheet {
           const narrativeEffects = vehicleSystem.narrativeEffects || [];
           const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
           vehicleLevel += narrativeEffectsCount;
+          const vehicleDamage = vehicleActor.system?.damage || {};
+          const vehicleSevereDamage = Array.isArray(vehicleDamage.severe) ? vehicleDamage.severe : [false];
+          const hasSevereDamage = vehicleSevereDamage.some((box) => box === true);
+          const isIncapacitating = vehicleDamage.incapacitating === true;
           linkedVehicles.push({
             _id: vehicleActor.id,
             uuid: vehicleActor.uuid,
@@ -3977,8 +3981,12 @@ class CharacterSheet extends ActorSheet {
               description: vehicleActor.system?.description || "",
               level: vehicleLevel
             },
-            weapons: vehicleWeapons
+            weapons: vehicleWeapons,
             // Add weapons array to vehicle
+            hasSevereDamage,
+            // Add damage status for V2 template
+            isIncapacitating
+            // Add incapacitating status for V2 template
           });
         }
       } catch (error) {

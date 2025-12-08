@@ -272,7 +272,7 @@
                         <section>
                             {{#each featsByType.vehicle}}
                             {{#if (eq this.type "vehicle-actor")}}
-                            <div class="row feat-item" data-vehicle-uuid="{{this.uuid}}">
+                            <div class="row feat-item {{#if this.hasSevereDamage}}has-severe-damage{{/if}} {{#if this.isIncapacitating}}is-incapacitating{{/if}}" data-vehicle-uuid="{{this.uuid}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="open-vehicle" data-vehicle-uuid="{{this.uuid}}"
                                         title="{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}"><span class="name">{{this.name}}</span></div>

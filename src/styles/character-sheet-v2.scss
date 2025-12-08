@@ -528,6 +528,19 @@
                     grid-template-columns: 1fr 0fr 0fr;
                     padding-right: 6px;
 
+                    /* Vehicle/Drone with severe damage - red background */
+                    &.has-severe-damage {
+                        background-color: rgba(255, 0, 0, 0.1) !important;
+                    }
+
+                    /* Vehicle/Drone incapacitating - strikethrough */
+                    &.is-incapacitating {
+                        .name-wrapper .name {
+                            text-decoration: line-through;
+                            opacity: 0.7;
+                        }
+                    }
+
                     .name-wrapper {
                         cursor: pointer;
                         display: flex;
