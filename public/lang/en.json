@@ -376,6 +376,8 @@
             "IS_WEAPON_FOCUS_HINT": "This weapon is a focus (adds +1 to recommended level)",
             "IS_ADEPT_POWER_WEAPON": "Adept Power",
             "IS_ADEPT_POWER_WEAPON_HINT": "This weapon is an adept power (adds +1 to recommended level)",
+            "IS_BIOWARE": "Bioware",
+            "IS_BIOWARE_HINT": "If checked, the feat cost is +1 additional level",
             "ESSENCE_COST": "Essence Cost",
             "RR_ENTRIES": "Risk Reduction Entries",
             "ADD_RR_ENTRY": "Add RR Entry",
@@ -413,6 +415,7 @@
             "BREAKDOWN": {
                 "BASE_FEAT_COST": "Base talent cost (non-first feat)",
                 "CYBERWARE": "Cyberware/Bioware",
+                "BIOWARE": "Bioware",
                 "ADEPT_POWER": "Adept Power",
                 "SPELL": "Spell",
                 "VEHICLE": "Vehicle/Drone",

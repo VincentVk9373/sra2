@@ -300,6 +300,8 @@
             "IS_WEAPON_FOCUS_HINT": "Cette arme est un focus (ajoute +1 au niveau recommandé)",
             "IS_ADEPT_POWER_WEAPON": "Pouvoir d'adepte",
             "IS_ADEPT_POWER_WEAPON_HINT": "Cette arme est un pouvoir d'adepte (ajoute +1 au niveau recommandé)",
+            "IS_BIOWARE": "Bioware",
+            "IS_BIOWARE_HINT": "Si coché, le coût de l'atout est de +1 niveau supplémentaire",
             "ESSENCE_COST": "Coût en Essence",
             "RR_ENTRIES": "Entrées de Réduction de Risque",
             "ADD_RR_ENTRY": "Ajouter une entrée RR",
@@ -337,6 +339,7 @@
             "BREAKDOWN": {
                 "BASE_FEAT_COST": "Coût de base de talent (non-premier atout)",
                 "CYBERWARE": "Cyberware/Bioware",
+                "BIOWARE": "Bioware",
                 "ADEPT_POWER": "Pouvoir d'adepte",
                 "SPELL": "Sort",
                 "VEHICLE": "Véhicule/Drone",

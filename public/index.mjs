@@ -790,6 +790,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.ESSENCE_COST"
       }),
+      isBioware: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_BIOWARE"
+      }),
       featType: new fields.StringField({
         required: true,
         initial: "equipment",
@@ -1278,6 +1283,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const hasVehicleControlWiring = this.hasVehicleControlWiring || false;
     const isWeaponFocus = this.isWeaponFocus || false;
     const isAdeptPowerWeapon = this.isAdeptPowerWeapon || false;
+    const isBioware = this.isBioware || false;
     const bonusAnarchy = this.bonusAnarchy || 0;
     const grantsNarration = this.grantsNarration || false;
     const narrativeEffects = this.narrativeEffects || [];
@@ -1290,6 +1296,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "cyberware") {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
+      if (isBioware) {
+        recommendedLevel += 1;
+        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BIOWARE", value: 1 });
+      }
     }
     if (featType === "adept-power") {
       recommendedLevel += 1;

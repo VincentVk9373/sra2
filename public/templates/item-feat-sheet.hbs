@@ -168,6 +168,13 @@
             <label>{{localize "SRA2.FEATS.ESSENCE_COST"}}</label>
             <input type="number" name="system.essenceCost" value="{{system.essenceCost}}" min="0" />
           </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" name="system.isBioware" {{checked system.isBioware}} />
+              {{localize "SRA2.FEATS.IS_BIOWARE"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.IS_BIOWARE_HINT"}}</p>
+          </div>
           {{/if}}
         </section>
 
