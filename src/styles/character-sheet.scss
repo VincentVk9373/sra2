@@ -563,6 +563,20 @@
       align-items: center;
       flex-wrap: wrap;
       margin: 0;
+
+      &.feat-name-inactive {
+        text-decoration: line-through;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  /* Inactive feat styling */
+  .feat-item.feat-inactive {
+    opacity: 0.7;
+
+    .feat-name-inactive {
+      text-decoration: line-through;
     }
   }
 
@@ -2107,6 +2121,11 @@
 
               h4 {
                 margin: 0;
+
+                &.feat-name-inactive {
+                  text-decoration: line-through;
+                  opacity: 0.7;
+                }
                 font-size: 1rem;
                 font-weight: bold;
 

@@ -372,6 +372,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       if (parent && parent.items) {
         parent.items.forEach((item) => {
           if (item.system && item.system.calculatedCost !== void 0) {
+            if (item.type === "feat" && item.system.active === false) {
+              return;
+            }
             totalCost += item.system.calculatedCost;
           }
         });

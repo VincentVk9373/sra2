@@ -541,6 +541,15 @@
                         }
                     }
 
+                    /* Inactive feat styling */
+                    &.feat-inactive {
+                        opacity: 0.7;
+
+                        .name-wrapper .name.feat-name-inactive {
+                            text-decoration: line-through;
+                        }
+                    }
+
                     .name-wrapper {
                         cursor: pointer;
                         display: flex;

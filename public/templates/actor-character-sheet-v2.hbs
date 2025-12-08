@@ -188,9 +188,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.awakened}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>
@@ -247,9 +247,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.adeptPower}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>
@@ -326,9 +326,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.trait}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>
@@ -345,9 +345,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.cyberware}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>
@@ -364,9 +364,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.equipment}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>
@@ -383,9 +383,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.contact}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>
@@ -402,9 +402,9 @@
                     <div class="char-section-row">
                         <section>
                             {{#each featsByType.cyberdeck}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
                                 </div>
                             </div>

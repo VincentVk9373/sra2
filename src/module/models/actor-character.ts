@@ -370,9 +370,14 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       totalCost += (this as any).armorCost || 0;
       
       // Add items cost (skills and feats)
+      // Only count active feats in the total cost
       if (parent && parent.items) {
         parent.items.forEach((item: any) => {
           if (item.system && item.system.calculatedCost !== undefined) {
+            // Skip inactive feats when calculating total cost
+            if (item.type === 'feat' && item.system.active === false) {
+              return;
+            }
             totalCost += item.system.calculatedCost;
           }
         });
