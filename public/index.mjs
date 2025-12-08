@@ -4192,6 +4192,9 @@ class CharacterSheet extends ActorSheet {
     });
     context.attributesRR = attributesRR;
     context.activeSection = this._activeSection;
+    const damage = systemData.damage || {};
+    const severeDamage = Array.isArray(damage.severe) ? damage.severe : [false];
+    context.hasSevereDamage = severeDamage.some((box) => box === true);
     return context;
   }
   async close(options) {

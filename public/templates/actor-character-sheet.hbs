@@ -1,5 +1,5 @@
 <form class="{{cssClass}} sra2-character-sheet" autocomplete="off">
-  <header class="sheet-header">
+  <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
     <div class="avatar-section">
       <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
       <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V2'}}">
@@ -120,7 +120,7 @@
           data-section-content="identity">
           <h2><i class="fas fa-user"></i> {{localize "SRA2.CHARACTER.SECTION.IDENTITY"}}</h2>
 
-          <section class="sheet-body">
+          <section class="sheet-body {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <!-- Attributes -->
             <div class="attributes">
               <h2>{{localize "SRA2.ATTRIBUTES.LABEL"}}</h2>
@@ -411,7 +411,7 @@
         <section class="content-section {{#if (eq activeSection 'combat')}}active{{/if}}" data-section-content="combat">
           <h2><i class="fas fa-shield-alt"></i> {{localize "SRA2.CHARACTER.SECTION.COMBAT"}}</h2>
 
-          <section class="sheet-body">
+          <section class="sheet-body {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <!-- Armor & Damage Thresholds -->
             <div class="armor-thresholds-section">
               <h2>{{localize "SRA2.ARMOR_THRESHOLDS.LABEL"}}</h2>
@@ -485,7 +485,7 @@
         <section class="content-section {{#if (eq activeSection 'skills')}}active{{/if}}" data-section-content="skills">
           <h2><i class="fas fa-book"></i> {{localize "SRA2.CHARACTER.SECTION.SKILLS"}}</h2>
 
-          <section class="sheet-body">
+          <section class="sheet-body {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <!-- Skills Section -->
             <div class="skills-section">
 
@@ -639,7 +639,7 @@
         <section class="content-section {{#if (eq activeSection 'feats')}}active{{/if}}" data-section-content="feats">
           <h2><i class="fas fa-star"></i> {{localize "SRA2.CHARACTER.SECTION.FEATS"}}</h2>
 
-          <section class="sheet-body">
+          <section class="sheet-body {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <!-- Feats Search Section -->
             <div class="feats-search-section">
               <!-- Feat Search -->

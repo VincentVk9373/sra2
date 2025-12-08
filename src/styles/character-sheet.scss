@@ -37,6 +37,12 @@
     accent-color: var(--sr-ui-color-active);
   }
 
+  /* Severe damage indicator - red background */
+  .sheet-header.has-severe-damage,
+  .sheet-body.has-severe-damage {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+  }
+
   /* Header Damage and Anarchy Tracker */
   .sheet-header {
     .header-fields {

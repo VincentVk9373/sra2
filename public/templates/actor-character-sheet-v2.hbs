@@ -1,7 +1,7 @@
 {{!-- Nouvelle fiche de personnage V2 - Template de base --}}
 {{!-- Vous pouvez copier le contenu de actor-character-sheet.hbs et le modifier selon vos besoins --}}
 <form class="{{cssClass}} sra2-character-sheet-v2" autocomplete="off">
-    <header class="sheet-header">
+    <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
         <div class="avatar-section">
             <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
             <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V1'}}">
@@ -82,7 +82,7 @@
             </div>
             {{/if}}
         </div>
-        <section class="sheet-body">
+        <section class="sheet-body {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <div>
                 {{#if featsByType.weapon}}
                 <section class="char-section">
@@ -649,7 +649,7 @@
                 </section>
             </div>
         </section>
-        <footer class="sheet-footer">
+        <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <div class="footer-content">
                 <div class="footer-keywords">
                     <div class="keywords-list">

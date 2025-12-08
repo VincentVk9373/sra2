@@ -475,6 +475,11 @@ export class CharacterSheet extends ActorSheet {
     // Add active section for navigation
     context.activeSection = this._activeSection;
 
+    // Check if actor has severe damage (at least one severe damage box checked)
+    const damage = systemData.damage || {};
+    const severeDamage = Array.isArray(damage.severe) ? damage.severe : [false];
+    context.hasSevereDamage = severeDamage.some((box: boolean) => box === true);
+
     return context;
   }
 
