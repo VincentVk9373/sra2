@@ -274,7 +274,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
           "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
-          "spell": "SRA2.FEATS.FEAT_TYPE.SPELL"
+          "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
+          "connaissance": "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"
       }),
@@ -728,6 +729,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     
     // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;
+    
+    // Connaissance: base cost of 2500
+    if (featType === 'connaissance') {
+      calculatedCost = 2500;
+    }
     
     // Apply cost calculations for equipment, weapon, and weapons-spells types
     if (featType === 'equipment' || featType === 'weapon' || featType === 'weapons-spells') {

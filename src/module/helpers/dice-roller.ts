@@ -8,6 +8,9 @@ declare const Roll: any;
 declare const renderTemplate: any;
 declare const ChatMessage: any;
 
+// Import ItemSearch for text normalization
+import * as ItemSearch from '../../../item-search.js';
+
 /**
  * RR source information
  */
@@ -852,5 +855,185 @@ async function createRollChatMessage(
   };
 
   await ChatMessage.create(messageData);
+  
+  // Handle drain for Sorcery and Conjuration tests
+  await handleDrain(attacker, rollData, rollResult);
+}
+
+/**
+ * Handle drain effects for Sorcery and Conjuration tests
+ * Applies drain effects based on complications
+ */
+async function handleDrain(
+  actor: any,
+  rollData: RollRequestData,
+  rollResult: RollResult
+): Promise<void> {
+  if (!actor || !rollData || !rollResult) {
+    return;
+  }
+
+  // Check if this is a spell (spells always use Sorcery, even with specializations like "Spé: Sorts de combat")
+  const isSpell = rollData.itemType === 'spell' || rollData.itemType === 'weapon-spell';
+  
+  // Check if this is a Sorcery or Conjuration test
+  // Priority: linkedAttackSkill (for spells/weapons) > skillName (for specializations) > specName (fallback)
+  let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || '';
+  let normalizedSkillName = ItemSearch.normalizeSearchText(skillName);
+  
+  // If it's a spell, it's always Sorcery (regardless of specialization like "Spé: Sorts de combat")
+  // Also check linkedAttackSkill in case it's explicitly set to Sorcery
+  if (isSpell || ItemSearch.normalizeSearchText(rollData.linkedAttackSkill || '') === 'sorcellerie') {
+    normalizedSkillName = 'sorcellerie';
+  } else if (rollData.itemType === 'specialization') {
+    // For specialization rolls, check skillName first (should be set from linkedSkill)
+    // If not found, try to find the linked skill from the specialization item
+    if (!normalizedSkillName || (normalizedSkillName !== 'sorcellerie' && normalizedSkillName !== 'conjuration')) {
+      if (rollData.itemId && actor) {
+        const specItem = actor.items.find((item: any) => item.id === rollData.itemId);
+        if (specItem && specItem.type === 'specialization') {
+          const specSystem = specItem.system as any;
+          const linkedSkill = specSystem.linkedSkill || '';
+          if (linkedSkill) {
+            skillName = linkedSkill;
+            normalizedSkillName = ItemSearch.normalizeSearchText(linkedSkill);
+          }
+        }
+      }
+    }
+  }
+  
+  const isSorcery = normalizedSkillName === 'sorcellerie';
+  const isConjuration = normalizedSkillName === 'conjuration';
+  
+  if (!isSorcery && !isConjuration) {
+    return; // Not a magic test, no drain
+  }
+
+  // Only apply drain if there's a complication
+  if (rollResult.complication === 'none') {
+    return;
+  }
+
+  const actorSystem = actor.system as any;
+  if (!actorSystem || actor.type !== 'character') {
+    return; // Only apply to character actors
+  }
+
+  // Handle different complication levels
+  if (rollResult.complication === 'minor') {
+    // Minor complication: display message in chat about disadvantage until next narration
+    const message = game.i18n.localize('SRA2.SKILLS.DRAIN_MINOR_COMPLICATION');
+    await ChatMessage.create({
+      user: game.user?.id,
+      speaker: {
+        actor: actor.id,
+        alias: actor.name
+      },
+      content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
+        <strong style="color: #ffc107;">Drain - ${game.i18n.localize('SRA2.SKILLS.MINOR_COMPLICATION')}</strong>
+        <br/>
+        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+      </div>`,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  } else if (rollResult.complication === 'critical') {
+    // Critical complication: apply light wound
+    const damage = actorSystem.damage || {};
+    const lightWounds = Array.isArray(damage.light) ? damage.light : [false, false];
+    
+    // Find first available light wound slot
+    let woundApplied = false;
+    for (let i = 0; i < lightWounds.length; i++) {
+      if (!lightWounds[i]) {
+        lightWounds[i] = true;
+        woundApplied = true;
+        break;
+      }
+    }
+    
+    if (woundApplied) {
+      await actor.update({
+        'system.damage.light': lightWounds
+      });
+      
+      const message = game.i18n.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
+      await ChatMessage.create({
+        user: game.user?.id,
+        speaker: {
+          actor: actor.id,
+          alias: actor.name
+        },
+        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+          <strong style="color: #dc3545;">Drain - ${game.i18n.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
+          <br/>
+          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+        </div>`,
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER
+      });
+    } else {
+      // All light wound slots are full, upgrade to severe or incapacitating
+      const severeWounds = Array.isArray(damage.severe) ? damage.severe : [false];
+      let severeApplied = false;
+      
+      for (let i = 0; i < severeWounds.length; i++) {
+        if (!severeWounds[i]) {
+          severeWounds[i] = true;
+          severeApplied = true;
+          break;
+        }
+      }
+      
+      if (severeApplied) {
+        await actor.update({
+          'system.damage.severe': severeWounds
+        });
+      } else {
+        // All severe slots full, apply incapacitating
+        await actor.update({
+          'system.damage.incapacitating': true
+        });
+      }
+      
+      const message = game.i18n.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
+      await ChatMessage.create({
+        user: game.user?.id,
+        speaker: {
+          actor: actor.id,
+          alias: actor.name
+        },
+        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+          <strong style="color: #dc3545;">Drain - ${game.i18n.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
+          <br/>
+          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+        </div>`,
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER
+      });
+    }
+  } else if (rollResult.complication === 'disaster') {
+    // Disaster: apply incapacitating wound
+    await actor.update({
+      'system.damage.incapacitating': true
+    });
+    
+    const message = game.i18n.localize('SRA2.SKILLS.DRAIN_DISASTER');
+    await ChatMessage.create({
+      user: game.user?.id,
+      speaker: {
+        actor: actor.id,
+        alias: actor.name
+      },
+      content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+        <i class="fas fa-skull" style="color: #dc3545;"></i> 
+        <strong style="color: #dc3545;">Drain - ${game.i18n.localize('SRA2.SKILLS.DISASTER')}</strong>
+        <br/>
+        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+      </div>`,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  }
 }
 

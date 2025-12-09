@@ -17,6 +17,7 @@
           {{else if (eq system.featType "weapons-spells")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}
           {{else if (eq system.featType "weapon")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}
           {{else if (eq system.featType "spell")}}{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}
+          {{else if (eq system.featType "connaissance")}}{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}
           {{/if}}
         </div>
         <div class="recommended-level-badge" title="{{localize 'SRA2.FEATS.RECOMMENDED_LEVEL'}}">
@@ -121,6 +122,8 @@
                 "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</option>
               <option value="spell" {{#if (eq system.featType "spell" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.SPELL"}}</option>
+              <option value="connaissance" {{#if (eq system.featType "connaissance" )}}selected{{/if}}>{{localize
+                "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</option>
             </select>
           </div>
 

@@ -1005,6 +1005,38 @@
             </div>
             {{/if}}
 
+            <!-- Connaissance Section -->
+            {{#if featsByType.connaissance}}
+            <div class="feats-section connaissance-section">
+              <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</h2>
+              <div class="feats-list" data-drop-zone="feat">
+                {{#each featsByType.connaissance}}
+                <div class="feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4 class="{{#unless this.system.active}}feat-name-inactive{{/unless}}">{{this.name}}</h4>
+                      <span class="feat-cost">{{this.system.calculatedCost}} {{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <div class="feat-controls">
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}"
+                        title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}"
+                        title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">{{{this.system.description}}}</div>
+                  {{/if}}
+                </div>
+                {{/each}}
+              </div>
+            </div>
+            {{/if}}
+
             <!-- Weapons & Spells Section (old type) -->
             {{#if featsByType.weaponsSpells}}
             <div class="feats-section weapons-spells-section">

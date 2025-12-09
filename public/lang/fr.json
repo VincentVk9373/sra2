@@ -249,7 +249,8 @@
                 "VEHICLE": "Véhicule / Drone",
                 "WEAPONS_SPELLS": "Armes et Sorts",
                 "WEAPON": "Arme",
-                "SPELL": "Sort"
+                "SPELL": "Sort",
+                "CONNAISSANCE": "Connaissance"
             },
             "SECTION": {
                 "GENERAL": "Général",
@@ -653,6 +654,9 @@
             "CRITICAL_COMPLICATION": "Complication critique",
             "DISASTER": "Désastre",
             "NO_COMPLICATION": "Aucune complication",
+            "DRAIN_MINOR_COMPLICATION": "Le personnage subit un désavantage à toutes ses activités magiques jusqu'à la fin de sa prochaine narration.",
+            "DRAIN_CRITICAL_COMPLICATION": "Le personnage subit une blessure légère à cause du drain.",
+            "DRAIN_DISASTER": "Le personnage subit une blessure incapacitante à cause du drain.",
             "SEARCH_PLACEHOLDER": "Rechercher une compétence...",
             "SEARCH_NO_RESULTS": "Aucune compétence trouvée",
             "ADD_SKILL": "Ajouter",

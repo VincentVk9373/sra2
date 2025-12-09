@@ -225,7 +225,8 @@ export class CharacterSheet extends ActorSheet {
       vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon'),
-      spell: allFeats.filter((feat: any) => feat.system.featType === 'spell')
+      spell: allFeats.filter((feat: any) => feat.system.featType === 'spell'),
+      connaissance: allFeats.filter((feat: any) => feat.system.featType === 'connaissance')
     };
     
     // Enrich weapons with dice pool and RR calculations (for V2 template)
@@ -1362,6 +1363,7 @@ export class CharacterSheet extends ActorSheet {
             <option value="weapons-spells">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS')}</option>
             <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
             <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
+            <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONNAISSANCE')}</option>
           </select>
           <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
             <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.FEATS.CREATE')}

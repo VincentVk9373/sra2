@@ -413,6 +413,25 @@
                     </div>
                 </section>
                 {{/if}}
+                {{#if featsByType.connaissance}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            {{#each featsByType.connaissance}}
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
+                                <div class="name-wrapper">
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                </div>
+                            </div>
+                            {{/each}}
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
             </div>
             <div>
                 <section class="char-section">

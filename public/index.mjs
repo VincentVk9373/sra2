@@ -817,7 +817,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
           "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
-          "spell": "SRA2.FEATS.FEAT_TYPE.SPELL"
+          "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
+          "connaissance": "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"
       }),
@@ -1260,6 +1261,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
     }
     let calculatedCost = 0;
+    if (featType === "connaissance") {
+      calculatedCost = 2500;
+    }
     if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
       switch (costType) {
         case "free-equipment":
@@ -2015,6 +2019,232 @@ const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   __proto__: null,
   SRA2Actor
 }, Symbol.toStringTag, { value: "Module" }));
+function normalizeSearchText(text) {
+  if (!text) return "";
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+function itemMatchesSearch(item, itemType, searchTerm, includePackName = false, packTitle) {
+  if (item.type !== itemType) return false;
+  const normalizedSearch = normalizeSearchText(searchTerm);
+  if (normalizeSearchText(item.name).includes(normalizedSearch)) {
+    return true;
+  }
+  console.log(item.system?.weaponType);
+  const weaponType = item.system?.weaponType || item.system?.featType === "weapon" ? item.system?.weaponType : null;
+  if (weaponType && normalizeSearchText(weaponType).includes(normalizedSearch)) {
+    return true;
+  }
+  const description = item.system?.description || "";
+  if (description && normalizeSearchText(description).includes(normalizedSearch)) {
+    return true;
+  }
+  const linkedAttackSkill = item.system?.linkedAttackSkill || "";
+  if (linkedAttackSkill && normalizeSearchText(linkedAttackSkill).includes(normalizedSearch)) {
+    return true;
+  }
+  const linkedAttackSpecialization = item.system?.linkedAttackSpecialization || "";
+  if (linkedAttackSpecialization && normalizeSearchText(linkedAttackSpecialization).includes(normalizedSearch)) {
+    return true;
+  }
+  if (includePackName && packTitle && normalizeSearchText(packTitle).includes(normalizedSearch)) {
+    return true;
+  }
+  return false;
+}
+function searchItemsInWorld(itemType, searchTerm, existingItemsCheck) {
+  const results = [];
+  if (!game.items) return results;
+  for (const item of game.items) {
+    if (itemMatchesSearch(item, itemType, searchTerm)) {
+      const alreadyExists = existingItemsCheck ? existingItemsCheck(item.name) : false;
+      results.push({
+        name: item.name,
+        uuid: item.uuid,
+        id: item.id,
+        source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
+        type: itemType,
+        alreadyExists
+      });
+    }
+  }
+  return results;
+}
+function searchItemsOnActor(actor, itemType, searchTerm) {
+  const results = [];
+  if (!actor) return results;
+  for (const item of actor.items) {
+    if (itemMatchesSearch(item, itemType, searchTerm)) {
+      results.push({
+        name: item.name,
+        uuid: item.uuid,
+        id: item.id,
+        source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
+        type: itemType
+      });
+    }
+  }
+  return results;
+}
+async function searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck) {
+  const results = [];
+  const seenNames = /* @__PURE__ */ new Set();
+  for (const pack of game.packs) {
+    if (pack.documentName !== "Item") continue;
+    const documents2 = await pack.getDocuments();
+    for (const doc of documents2) {
+      if (itemMatchesSearch(doc, itemType, searchTerm, true, pack.title)) {
+        if (seenNames.has(doc.name)) continue;
+        seenNames.add(doc.name);
+        const alreadyExists = existingItemsCheck ? existingItemsCheck(doc.name) : false;
+        results.push({
+          name: doc.name,
+          uuid: doc.uuid,
+          source: pack.title,
+          type: itemType,
+          alreadyExists
+        });
+      }
+    }
+  }
+  return results;
+}
+async function searchItemsEverywhere(itemType, searchTerm, actor, existingItemsCheck) {
+  const results = [];
+  const seenNames = /* @__PURE__ */ new Set();
+  if (actor) {
+    const actorResults = searchItemsOnActor(actor, itemType, searchTerm);
+    actorResults.forEach((result) => {
+      results.push(result);
+      seenNames.add(result.name);
+    });
+  }
+  const worldResults = searchItemsInWorld(itemType, searchTerm, existingItemsCheck);
+  worldResults.forEach((result) => {
+    if (!seenNames.has(result.name)) {
+      results.push(result);
+      seenNames.add(result.name);
+    }
+  });
+  const compendiumResults = await searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck);
+  compendiumResults.forEach((result) => {
+    if (!seenNames.has(result.name)) {
+      results.push(result);
+      seenNames.add(result.name);
+    }
+  });
+  return results;
+}
+function buildSearchResultsHtml(options) {
+  const { results, lastSearchTerm, noResultsMessage, typeLabel } = options;
+  const normalizedLastSearch = normalizeSearchText(lastSearchTerm);
+  const exactMatch = results.find((r) => normalizeSearchText(r.name) === normalizedLastSearch);
+  let html = "";
+  if (results.length === 0) {
+    html = `
+      <div class="search-result-item no-results">
+        <div class="no-results-text">
+          ${noResultsMessage}
+        </div>
+      </div>
+    `;
+  } else {
+    if (exactMatch) {
+      html += buildSingleResultHtml(exactMatch, typeLabel, true);
+    }
+    const otherResults = exactMatch ? results.filter((r) => r.name !== exactMatch.name) : results;
+    for (const result of otherResults) {
+      html += buildSingleResultHtml(result, typeLabel, false);
+    }
+  }
+  return html;
+}
+function buildSingleResultHtml(result, typeLabel, isExactMatch) {
+  const alreadyExistsClass = result.alreadyExists ? "already-exists" : "";
+  const exactMatchClass = isExactMatch ? "exact-match" : "";
+  let html = `
+    <div class="search-result-item ${alreadyExistsClass} ${exactMatchClass}" 
+         data-result-name="${result.name}" 
+         data-result-uuid="${result.uuid}">
+      <div class="result-info">
+        <span class="result-name">${result.name}</span>
+        <span class="result-pack">${result.source} - ${typeLabel}</span>
+      </div>
+  `;
+  if (result.alreadyExists) {
+    html += `
+      <span class="already-exists-label">
+        ${game.i18n.localize("SRA2.SKILLS.ALREADY_EXISTS")}
+      </span>
+    `;
+  } else {
+    html += `
+      <button class="add-item-btn" 
+              data-item-name="${result.name}" 
+              data-item-uuid="${result.uuid}">
+        ${game.i18n.localize("SRA2.SKILLS.ADD")}
+      </button>
+    `;
+  }
+  html += `</div>`;
+  return html;
+}
+function createDebouncedSearch(searchFunction, delay = 300) {
+  let timeoutId = null;
+  return (searchTerm) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(async () => {
+      await searchFunction(searchTerm);
+    }, delay);
+  };
+}
+function toggleSearchResults(resultsDiv, show) {
+  if (show) {
+    resultsDiv.style.display = "block";
+  } else {
+    resultsDiv.style.display = "none";
+  }
+}
+function itemExistsOnActor(actor, itemType, itemName) {
+  if (!actor) return false;
+  return actor.items.some(
+    (item) => item.type === itemType && item.name === itemName
+  );
+}
+async function addItemToActorFromUuid(actor, itemUuid) {
+  try {
+    const item = await fromUuid(itemUuid);
+    if (!item) {
+      ui.notifications?.error(game.i18n.localize("SRA2.SKILLS.ITEM_NOT_FOUND"));
+      return false;
+    }
+    if (itemExistsOnActor(actor, item.type, item.name)) {
+      ui.notifications?.warn(game.i18n.format("SRA2.ALREADY_EXISTS", { name: item.name }));
+      return false;
+    }
+    await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+    ui.notifications?.info(game.i18n.format("SRA2.SKILLS.ADDED", { name: item.name }));
+    return true;
+  } catch (error) {
+    console.error("SRA2 | Error adding item to actor:", error);
+    ui.notifications?.error(game.i18n.localize("SRA2.SKILLS.ERROR_ADDING"));
+    return false;
+  }
+}
+const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  addItemToActorFromUuid,
+  buildSearchResultsHtml,
+  createDebouncedSearch,
+  itemExistsOnActor,
+  normalizeSearchText,
+  searchItemsEverywhere,
+  searchItemsInCompendiums,
+  searchItemsInWorld,
+  searchItemsOnActor,
+  toggleSearchResults
+}, Symbol.toStringTag, { value: "Module" }));
 const RISK_DICE_BY_RR = [2, 5, 8, 12];
 function getRiskDiceByRR(rr) {
   return RISK_DICE_BY_RR[Math.min(3, Math.max(0, rr))] || 2;
@@ -2483,6 +2713,145 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     }
   };
   await ChatMessage.create(messageData);
+  await handleDrain(attacker, rollData, rollResult);
+}
+async function handleDrain(actor, rollData, rollResult) {
+  if (!actor || !rollData || !rollResult) {
+    return;
+  }
+  const isSpell = rollData.itemType === "spell" || rollData.itemType === "weapon-spell";
+  let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || "";
+  let normalizedSkillName = normalizeSearchText(skillName);
+  if (isSpell || normalizeSearchText(rollData.linkedAttackSkill || "") === "sorcellerie") {
+    normalizedSkillName = "sorcellerie";
+  } else if (rollData.itemType === "specialization") {
+    if (!normalizedSkillName || normalizedSkillName !== "sorcellerie" && normalizedSkillName !== "conjuration") {
+      if (rollData.itemId && actor) {
+        const specItem = actor.items.find((item) => item.id === rollData.itemId);
+        if (specItem && specItem.type === "specialization") {
+          const specSystem = specItem.system;
+          const linkedSkill = specSystem.linkedSkill || "";
+          if (linkedSkill) {
+            skillName = linkedSkill;
+            normalizedSkillName = normalizeSearchText(linkedSkill);
+          }
+        }
+      }
+    }
+  }
+  const isSorcery = normalizedSkillName === "sorcellerie";
+  const isConjuration = normalizedSkillName === "conjuration";
+  if (!isSorcery && !isConjuration) {
+    return;
+  }
+  if (rollResult.complication === "none") {
+    return;
+  }
+  const actorSystem = actor.system;
+  if (!actorSystem || actor.type !== "character") {
+    return;
+  }
+  if (rollResult.complication === "minor") {
+    const message = game.i18n.localize("SRA2.SKILLS.DRAIN_MINOR_COMPLICATION");
+    await ChatMessage.create({
+      user: game.user?.id,
+      speaker: {
+        actor: actor.id,
+        alias: actor.name
+      },
+      content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
+        <strong style="color: #ffc107;">Drain - ${game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION")}</strong>
+        <br/>
+        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+      </div>`,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  } else if (rollResult.complication === "critical") {
+    const damage = actorSystem.damage || {};
+    const lightWounds = Array.isArray(damage.light) ? damage.light : [false, false];
+    let woundApplied = false;
+    for (let i = 0; i < lightWounds.length; i++) {
+      if (!lightWounds[i]) {
+        lightWounds[i] = true;
+        woundApplied = true;
+        break;
+      }
+    }
+    if (woundApplied) {
+      await actor.update({
+        "system.damage.light": lightWounds
+      });
+      const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
+      await ChatMessage.create({
+        user: game.user?.id,
+        speaker: {
+          actor: actor.id,
+          alias: actor.name
+        },
+        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
+          <br/>
+          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+        </div>`,
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER
+      });
+    } else {
+      const severeWounds = Array.isArray(damage.severe) ? damage.severe : [false];
+      let severeApplied = false;
+      for (let i = 0; i < severeWounds.length; i++) {
+        if (!severeWounds[i]) {
+          severeWounds[i] = true;
+          severeApplied = true;
+          break;
+        }
+      }
+      if (severeApplied) {
+        await actor.update({
+          "system.damage.severe": severeWounds
+        });
+      } else {
+        await actor.update({
+          "system.damage.incapacitating": true
+        });
+      }
+      const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
+      await ChatMessage.create({
+        user: game.user?.id,
+        speaker: {
+          actor: actor.id,
+          alias: actor.name
+        },
+        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
+          <br/>
+          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+        </div>`,
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER
+      });
+    }
+  } else if (rollResult.complication === "disaster") {
+    await actor.update({
+      "system.damage.incapacitating": true
+    });
+    const message = game.i18n.localize("SRA2.SKILLS.DRAIN_DISASTER");
+    await ChatMessage.create({
+      user: game.user?.id,
+      speaker: {
+        actor: actor.id,
+        alias: actor.name
+      },
+      content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+        <i class="fas fa-skull" style="color: #dc3545;"></i> 
+        <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.DISASTER")}</strong>
+        <br/>
+        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+      </div>`,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  }
 }
 const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
@@ -2490,232 +2859,6 @@ const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   executeRoll,
   getRiskDiceByRR,
   handleRollRequest
-}, Symbol.toStringTag, { value: "Module" }));
-function normalizeSearchText(text) {
-  if (!text) return "";
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-function itemMatchesSearch(item, itemType, searchTerm, includePackName = false, packTitle) {
-  if (item.type !== itemType) return false;
-  const normalizedSearch = normalizeSearchText(searchTerm);
-  if (normalizeSearchText(item.name).includes(normalizedSearch)) {
-    return true;
-  }
-  console.log(item.system?.weaponType);
-  const weaponType = item.system?.weaponType || item.system?.featType === "weapon" ? item.system?.weaponType : null;
-  if (weaponType && normalizeSearchText(weaponType).includes(normalizedSearch)) {
-    return true;
-  }
-  const description = item.system?.description || "";
-  if (description && normalizeSearchText(description).includes(normalizedSearch)) {
-    return true;
-  }
-  const linkedAttackSkill = item.system?.linkedAttackSkill || "";
-  if (linkedAttackSkill && normalizeSearchText(linkedAttackSkill).includes(normalizedSearch)) {
-    return true;
-  }
-  const linkedAttackSpecialization = item.system?.linkedAttackSpecialization || "";
-  if (linkedAttackSpecialization && normalizeSearchText(linkedAttackSpecialization).includes(normalizedSearch)) {
-    return true;
-  }
-  if (includePackName && packTitle && normalizeSearchText(packTitle).includes(normalizedSearch)) {
-    return true;
-  }
-  return false;
-}
-function searchItemsInWorld(itemType, searchTerm, existingItemsCheck) {
-  const results = [];
-  if (!game.items) return results;
-  for (const item of game.items) {
-    if (itemMatchesSearch(item, itemType, searchTerm)) {
-      const alreadyExists = existingItemsCheck ? existingItemsCheck(item.name) : false;
-      results.push({
-        name: item.name,
-        uuid: item.uuid,
-        id: item.id,
-        source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
-        type: itemType,
-        alreadyExists
-      });
-    }
-  }
-  return results;
-}
-function searchItemsOnActor(actor, itemType, searchTerm) {
-  const results = [];
-  if (!actor) return results;
-  for (const item of actor.items) {
-    if (itemMatchesSearch(item, itemType, searchTerm)) {
-      results.push({
-        name: item.name,
-        uuid: item.uuid,
-        id: item.id,
-        source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
-        type: itemType
-      });
-    }
-  }
-  return results;
-}
-async function searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck) {
-  const results = [];
-  const seenNames = /* @__PURE__ */ new Set();
-  for (const pack of game.packs) {
-    if (pack.documentName !== "Item") continue;
-    const documents2 = await pack.getDocuments();
-    for (const doc of documents2) {
-      if (itemMatchesSearch(doc, itemType, searchTerm, true, pack.title)) {
-        if (seenNames.has(doc.name)) continue;
-        seenNames.add(doc.name);
-        const alreadyExists = existingItemsCheck ? existingItemsCheck(doc.name) : false;
-        results.push({
-          name: doc.name,
-          uuid: doc.uuid,
-          source: pack.title,
-          type: itemType,
-          alreadyExists
-        });
-      }
-    }
-  }
-  return results;
-}
-async function searchItemsEverywhere(itemType, searchTerm, actor, existingItemsCheck) {
-  const results = [];
-  const seenNames = /* @__PURE__ */ new Set();
-  if (actor) {
-    const actorResults = searchItemsOnActor(actor, itemType, searchTerm);
-    actorResults.forEach((result) => {
-      results.push(result);
-      seenNames.add(result.name);
-    });
-  }
-  const worldResults = searchItemsInWorld(itemType, searchTerm, existingItemsCheck);
-  worldResults.forEach((result) => {
-    if (!seenNames.has(result.name)) {
-      results.push(result);
-      seenNames.add(result.name);
-    }
-  });
-  const compendiumResults = await searchItemsInCompendiums(itemType, searchTerm, existingItemsCheck);
-  compendiumResults.forEach((result) => {
-    if (!seenNames.has(result.name)) {
-      results.push(result);
-      seenNames.add(result.name);
-    }
-  });
-  return results;
-}
-function buildSearchResultsHtml(options) {
-  const { results, lastSearchTerm, noResultsMessage, typeLabel } = options;
-  const normalizedLastSearch = normalizeSearchText(lastSearchTerm);
-  const exactMatch = results.find((r) => normalizeSearchText(r.name) === normalizedLastSearch);
-  let html = "";
-  if (results.length === 0) {
-    html = `
-      <div class="search-result-item no-results">
-        <div class="no-results-text">
-          ${noResultsMessage}
-        </div>
-      </div>
-    `;
-  } else {
-    if (exactMatch) {
-      html += buildSingleResultHtml(exactMatch, typeLabel, true);
-    }
-    const otherResults = exactMatch ? results.filter((r) => r.name !== exactMatch.name) : results;
-    for (const result of otherResults) {
-      html += buildSingleResultHtml(result, typeLabel, false);
-    }
-  }
-  return html;
-}
-function buildSingleResultHtml(result, typeLabel, isExactMatch) {
-  const alreadyExistsClass = result.alreadyExists ? "already-exists" : "";
-  const exactMatchClass = isExactMatch ? "exact-match" : "";
-  let html = `
-    <div class="search-result-item ${alreadyExistsClass} ${exactMatchClass}" 
-         data-result-name="${result.name}" 
-         data-result-uuid="${result.uuid}">
-      <div class="result-info">
-        <span class="result-name">${result.name}</span>
-        <span class="result-pack">${result.source} - ${typeLabel}</span>
-      </div>
-  `;
-  if (result.alreadyExists) {
-    html += `
-      <span class="already-exists-label">
-        ${game.i18n.localize("SRA2.SKILLS.ALREADY_EXISTS")}
-      </span>
-    `;
-  } else {
-    html += `
-      <button class="add-item-btn" 
-              data-item-name="${result.name}" 
-              data-item-uuid="${result.uuid}">
-        ${game.i18n.localize("SRA2.SKILLS.ADD")}
-      </button>
-    `;
-  }
-  html += `</div>`;
-  return html;
-}
-function createDebouncedSearch(searchFunction, delay = 300) {
-  let timeoutId = null;
-  return (searchTerm) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(async () => {
-      await searchFunction(searchTerm);
-    }, delay);
-  };
-}
-function toggleSearchResults(resultsDiv, show) {
-  if (show) {
-    resultsDiv.style.display = "block";
-  } else {
-    resultsDiv.style.display = "none";
-  }
-}
-function itemExistsOnActor(actor, itemType, itemName) {
-  if (!actor) return false;
-  return actor.items.some(
-    (item) => item.type === itemType && item.name === itemName
-  );
-}
-async function addItemToActorFromUuid(actor, itemUuid) {
-  try {
-    const item = await fromUuid(itemUuid);
-    if (!item) {
-      ui.notifications?.error(game.i18n.localize("SRA2.SKILLS.ITEM_NOT_FOUND"));
-      return false;
-    }
-    if (itemExistsOnActor(actor, item.type, item.name)) {
-      ui.notifications?.warn(game.i18n.format("SRA2.ALREADY_EXISTS", { name: item.name }));
-      return false;
-    }
-    await actor.createEmbeddedDocuments("Item", [item.toObject()]);
-    ui.notifications?.info(game.i18n.format("SRA2.SKILLS.ADDED", { name: item.name }));
-    return true;
-  } catch (error) {
-    console.error("SRA2 | Error adding item to actor:", error);
-    ui.notifications?.error(game.i18n.localize("SRA2.SKILLS.ERROR_ADDING"));
-    return false;
-  }
-}
-const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  addItemToActorFromUuid,
-  buildSearchResultsHtml,
-  createDebouncedSearch,
-  itemExistsOnActor,
-  normalizeSearchText,
-  searchItemsEverywhere,
-  searchItemsInCompendiums,
-  searchItemsInWorld,
-  searchItemsOnActor,
-  toggleSearchResults
 }, Symbol.toStringTag, { value: "Module" }));
 function handleSheetUpdate(actor, formData) {
   console.log("handleSheetUpdate - DEBUG:", {
@@ -4076,7 +4219,8 @@ class CharacterSheet extends ActorSheet {
       // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
       weapon: allFeats.filter((feat) => feat.system.featType === "weapon"),
-      spell: allFeats.filter((feat) => feat.system.featType === "spell")
+      spell: allFeats.filter((feat) => feat.system.featType === "spell"),
+      connaissance: allFeats.filter((feat) => feat.system.featType === "connaissance")
     };
     context.featsByType.weapon = context.featsByType.weapon.map((weapon) => {
       const weaponSystem = weapon.system;
@@ -4872,6 +5016,7 @@ class CharacterSheet extends ActorSheet {
             <option value="weapons-spells">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS")}</option>
             <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
             <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
+            <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONNAISSANCE")}</option>
           </select>
           <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
             <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.FEATS.CREATE")}

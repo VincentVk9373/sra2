@@ -325,7 +325,8 @@
                 "VEHICLE": "Vehicle / Drone",
                 "WEAPONS_SPELLS": "Weapons & Spells",
                 "WEAPON": "Weapon",
-                "SPELL": "Spell"
+                "SPELL": "Spell",
+                "CONNAISSANCE": "Knowledge"
             },
             "SECTION": {
                 "GENERAL": "General",
@@ -684,6 +685,9 @@
             "CRITICAL_COMPLICATION": "Critical Complication",
             "DISASTER": "Disaster",
             "NO_COMPLICATION": "No Complication",
+            "DRAIN_MINOR_COMPLICATION": "The character suffers a disadvantage to all their magical activities until the end of their next narration.",
+            "DRAIN_CRITICAL_COMPLICATION": "The character suffers a light wound due to drain.",
+            "DRAIN_DISASTER": "The character suffers an incapacitating wound due to drain.",
             "SEARCH_PLACEHOLDER": "Search for a skill...",
             "SEARCH_NO_RESULTS": "No skills found",
             "ADD_SKILL": "Add",
