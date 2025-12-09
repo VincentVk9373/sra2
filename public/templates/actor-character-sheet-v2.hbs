@@ -50,14 +50,27 @@
             <div class="anarchy-track">
                 <span class="track-label">{{localize "SRA2.RESOURCES.ANARCHY"}}</span>
                 <div class="track-boxes">
-                    {{#each system.anarchySpent}}
-                    <label class="track-box {{#if this}}checked{{/if}}">
-                        <input type="checkbox" name="system.anarchySpent.{{@index}}" {{#if this}}checked{{/if}} />
+                    {{#each baseAnarchySpent}}
+                    <label class="track-box {{#if this.value}}checked{{/if}}">
+                        <input type="checkbox" name="system.anarchySpent.{{this.index}}" {{#if this.value}}checked{{/if}} />
                         <span class="box-circle"></span>
                     </label>
                     {{/each}}
                 </div>
             </div>
+            {{#if (gt bonusAnarchy 0)}}
+            <div class="anarchy-track">
+                <span class="track-label">{{localize "SRA2.RESOURCES.ANARCHY_BONUS_COMBAT"}}</span>
+                <div class="track-boxes">
+                    {{#each bonusAnarchySpent}}
+                    <label class="track-box {{#if this.value}}checked{{/if}}">
+                        <input type="checkbox" name="system.anarchySpent.{{this.index}}" {{#if this.value}}checked{{/if}} />
+                        <span class="box-circle"></span>
+                    </label>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
         </div>
     </header>
     <div>

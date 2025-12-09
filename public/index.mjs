@@ -4092,6 +4092,25 @@ class CharacterSheet extends ActorSheet {
     }
     const metatypes = this.actor.items.filter((item) => item.type === "metatype");
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
+    const metatypeAnarchyBonus = context.metatype ? context.metatype.system.anarchyBonus || 0 : 0;
+    context.baseAnarchy = 3 + metatypeAnarchyBonus;
+    const activeFeats = this.actor.items.filter(
+      (item) => item.type === "feat" && item.system.active === true
+    );
+    let bonusAnarchy = 0;
+    activeFeats.forEach((feat) => {
+      bonusAnarchy += feat.system.bonusAnarchy || 0;
+    });
+    context.bonusAnarchy = bonusAnarchy;
+    const anarchySpent = systemData.anarchySpent || [];
+    context.baseAnarchySpent = anarchySpent.slice(0, context.baseAnarchy).map((value, index) => ({
+      value,
+      index
+    }));
+    context.bonusAnarchySpent = anarchySpent.slice(context.baseAnarchy).map((value, index) => ({
+      value,
+      index: context.baseAnarchy + index
+    }));
     const actorStrength = this.actor.system.attributes?.strength || 0;
     const rawFeats = this.actor.items.filter((item) => item.type === "feat");
     const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue, this.actor);

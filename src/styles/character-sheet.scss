@@ -340,6 +340,39 @@
                 background: #a569bd;
                 border-color: #a569bd;
               }
+
+              // Red circles for feat bonus anarchy points
+              &.feat-anarchy .box-circle {
+                border-color: #dc3545;
+                background: rgba(220, 53, 69, 0.1);
+              }
+
+              &.feat-anarchy input:checked+.box-circle,
+              &.feat-anarchy.checked .box-circle {
+                background: #dc3545;
+                border-color: #dc3545;
+                box-shadow: 0 0 8px rgba(220, 53, 69, 0.6);
+
+                &::after {
+                  content: '';
+                  width: 10px;
+                  height: 10px;
+                  background: #fff;
+                  border-radius: 50%;
+                  position: absolute;
+                }
+              }
+
+              &.feat-anarchy:hover .box-circle {
+                border-color: #dc3545;
+                background: rgba(220, 53, 69, 0.2);
+              }
+
+              &.feat-anarchy input:checked+.box-circle:hover,
+              &.feat-anarchy.checked .box-circle:hover {
+                background: #e74c3c;
+                border-color: #e74c3c;
+              }
             }
 
             // Remove connector line after last box

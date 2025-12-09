@@ -81,6 +81,31 @@ export class CharacterSheet extends ActorSheet {
     // Get metatype (there should be only one)
     const metatypes = this.actor.items.filter((item: any) => item.type === 'metatype');
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
+    
+    // Calculate base anarchy (3 + metatype bonus) and bonus anarchy (from feats) for display purposes
+    const metatypeAnarchyBonus = context.metatype ? (context.metatype.system as any).anarchyBonus || 0 : 0;
+    context.baseAnarchy = 3 + metatypeAnarchyBonus;
+    
+    // Calculate bonus anarchy from active feats
+    const activeFeats = this.actor.items.filter((item: any) => 
+      item.type === 'feat' && item.system.active === true
+    );
+    let bonusAnarchy = 0;
+    activeFeats.forEach((feat: any) => {
+      bonusAnarchy += feat.system.bonusAnarchy || 0;
+    });
+    context.bonusAnarchy = bonusAnarchy;
+    
+    // Create separate arrays for base and bonus anarchy trackers with correct indices
+    const anarchySpent = systemData.anarchySpent || [];
+    context.baseAnarchySpent = anarchySpent.slice(0, context.baseAnarchy).map((value: boolean, index: number) => ({
+      value: value,
+      index: index
+    }));
+    context.bonusAnarchySpent = anarchySpent.slice(context.baseAnarchy).map((value: boolean, index: number) => ({
+      value: value,
+      index: context.baseAnarchy + index
+    }));
 
     // Get actor's strength for damage value calculations
     const actorStrength = (this.actor.system as any).attributes?.strength || 0;
