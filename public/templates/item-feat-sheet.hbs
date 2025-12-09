@@ -236,6 +236,26 @@
             <p class="notes">{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_HINT"}}</p>
           </div>
 
+          {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment"))}}
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON_DAMAGE_BONUS"}}</label>
+            <input type="number" name="system.weaponDamageBonus" value="{{system.weaponDamageBonus}}" min="0" />
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON_DAMAGE_BONUS_HINT"}}</p>
+          </div>
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON_SKILL_TYPE.LABEL"}}</label>
+            <select name="system.weaponSkillType">
+              <option value="Combat rapproché" {{#if (eq system.weaponSkillType "Combat rapproché")}}selected{{/if}}>
+                {{localize "SRA2.FEATS.WEAPON_SKILL_TYPE.CLOSE_COMBAT"}}
+              </option>
+              <option value="Armes à distance" {{#if (eq system.weaponSkillType "Armes à distance")}}selected{{/if}}>
+                {{localize "SRA2.FEATS.WEAPON_SKILL_TYPE.RANGED_WEAPONS"}}
+              </option>
+            </select>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON_SKILL_TYPE_HINT"}}</p>
+          </div>
+          {{/if}}
+
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.BONUS_ANARCHY"}}</label>
             <input type="number" name="system.bonusAnarchy" value="{{system.bonusAnarchy}}" min="0" />

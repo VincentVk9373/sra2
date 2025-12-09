@@ -375,6 +375,7 @@
                 "NARRATIVE_EFFECTS_POSITIVE": "Effets narratifs positifs",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Effets narratifs négatifs",
                 "DAMAGE_VALUE_BONUS": "Bonus VD",
+                "WEAPON_DAMAGE_BONUS": "Bonus VD aux armes (par type de skill)",
                 "RANGE_IMPROVEMENTS": "Améliorations de portée",
                 "SUSTAINED_SPELLS": "Sorts maintenus supplémentaires",
                 "SUMMONED_SPIRITS": "Esprits invoqués supplémentaires",
@@ -393,8 +394,17 @@
                 "WEAPON_MOUNT_IMPROVEMENT": "Amélioration de monture d'arme",
                 "AUTOPILOT_UNLOCKED": "Débridage de l'Autopilote",
                 "ADDITIONAL_DRONES": "Drones supplémentaires",
-                "SHAMANIC_MASK": "Masque chamanique"
+                "SHAMANIC_MASK": "Masque chamanique",
+                "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes"
             },
+            "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes",
+            "WEAPON_DAMAGE_BONUS_HINT": "Bonus de Valeur de Dégâts appliqué aux armes utilisant le type de skill sélectionné",
+            "WEAPON_SKILL_TYPE": {
+                "LABEL": "Type de skill",
+                "CLOSE_COMBAT": "Combat rapproché",
+                "RANGED_WEAPONS": "Armes à distance"
+            },
+            "WEAPON_SKILL_TYPE_HINT": "Type de skill d'attaque requis pour que le bonus s'applique",
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",
                 "WEAPON_TYPE": "Type d'Arme",

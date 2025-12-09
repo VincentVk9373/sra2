@@ -1195,6 +1195,23 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
+      // Weapon damage bonus by skill type
+      weaponDamageBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON_DAMAGE_BONUS"
+      }),
+      weaponSkillType: new fields.StringField({
+        required: true,
+        initial: "Combat rapproché",
+        choices: {
+          "Combat rapproché": "SRA2.FEATS.WEAPON_SKILL_TYPE.CLOSE_COMBAT",
+          "Armes à distance": "SRA2.FEATS.WEAPON_SKILL_TYPE.RANGED_WEAPONS"
+        },
+        label: "SRA2.FEATS.WEAPON_SKILL_TYPE"
+      }),
       // Spell specialization type (determines which specialization to use)
       spellSpecializationType: new fields.StringField({
         required: true,
@@ -1375,6 +1392,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (damageValueBonus > 0) {
       recommendedLevel += damageValueBonus;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS", labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+    }
+    const weaponDamageBonus = this.weaponDamageBonus || 0;
+    if (weaponDamageBonus > 0) {
+      recommendedLevel += weaponDamageBonus;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_DAMAGE_BONUS", labelParams: `(+${weaponDamageBonus})`, value: weaponDamageBonus });
     }
     const rangeImprovements = this.rangeImprovements || {};
     let rangeImprovementCount = 0;
@@ -3337,7 +3359,16 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
     }
     if (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells") {
       const damageValue = feat.system.damageValue || "0";
-      const damageValueBonus = feat.system.damageValueBonus || 0;
+      let damageValueBonus = feat.system.damageValueBonus || 0;
+      if (actor) {
+        const linkedAttackSkill = feat.system.linkedAttackSkill || "";
+        const activeFeats = actor.items.filter(
+          (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponSkillType === linkedAttackSkill
+        );
+        activeFeats.forEach((activeFeat) => {
+          damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+        });
+      }
       feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
     }
     return feat;
@@ -3693,7 +3724,13 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
     }
   });
   const baseDamageValue = parseInt(weaponSystem.damageValue || "0") || 0;
-  const damageValueBonus = parseInt(weaponSystem.damageValueBonus || "0") || 0;
+  let damageValueBonus = parseInt(weaponSystem.damageValueBonus || "0") || 0;
+  const linkedAttackSkill = weaponSystem.linkedAttackSkill || "";
+  activeFeats.forEach((activeFeat) => {
+    if (activeFeat.system.weaponDamageBonus > 0 && activeFeat.system.weaponSkillType === linkedAttackSkill) {
+      damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+    }
+  });
   let finalDamageValue = baseDamageValue + damageValueBonus;
   return {
     dicePool,
@@ -4188,7 +4225,16 @@ class CharacterSheet extends ActorSheet {
           if (vehicleSystem.additionalDroneCount) vehicleLevel += vehicleSystem.additionalDroneCount * 2;
           if (vehicleSystem.isFixed) vehicleLevel -= 1;
           const narrativeEffects = vehicleSystem.narrativeEffects || [];
-          const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
+          const narrativeEffectsCount = narrativeEffects.filter((effect) => {
+            if (typeof effect === "string") {
+              return effect && effect.trim() !== "";
+            } else if (effect && typeof effect === "object") {
+              const hasText = effect.text && effect.text.trim() !== "";
+              const hasValue = effect.value !== void 0 && effect.value !== null && effect.value !== 0;
+              return hasText && hasValue;
+            }
+            return false;
+          }).length;
           vehicleLevel += narrativeEffectsCount;
           const vehicleDamage = vehicleActor.system?.damage || {};
           const vehicleSevereDamage = Array.isArray(vehicleDamage.severe) ? vehicleDamage.severe : [false];
@@ -5515,7 +5561,14 @@ class CharacterSheet extends ActorSheet {
       const defenseSpecLevel = defenseSkillSpecResult.specLevel;
       const defenseLinkedAttribute = defenseSkillSpecResult.linkedAttribute;
       const baseDamageValue = itemSystem.damageValue || "0";
-      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      let damageValueBonus = itemSystem.damageValueBonus || 0;
+      const linkedAttackSkill = finalAttackSkill || "";
+      const activeFeats = this.actor.items.filter(
+        (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponSkillType === linkedAttackSkill
+      );
+      activeFeats.forEach((activeFeat) => {
+        damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+      });
       const finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
       const poolResult = calculateAttackPool(
         this.actor,
@@ -5723,7 +5776,14 @@ class CharacterSheet extends ActorSheet {
       }
     } else {
       const baseDamageValue = itemSystem.damageValue || "0";
-      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      let damageValueBonus = itemSystem.damageValueBonus || 0;
+      const linkedAttackSkill = finalAttackSkill || "";
+      const activeFeats = this.actor.items.filter(
+        (item2) => item2.type === "feat" && item2.system.active === true && item2.system.weaponDamageBonus > 0 && item2.system.weaponSkillType === linkedAttackSkill
+      );
+      activeFeats.forEach((activeFeat) => {
+        damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+      });
       finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
     }
     const poolResult = calculateAttackPool(

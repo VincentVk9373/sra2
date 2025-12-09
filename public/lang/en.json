@@ -451,6 +451,7 @@
                 "NARRATIVE_EFFECTS_POSITIVE": "Positive narrative effects",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Negative narrative effects",
                 "DAMAGE_VALUE_BONUS": "DV Bonus",
+                "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus (by skill type)",
                 "RANGE_IMPROVEMENTS": "Range improvements",
                 "SUSTAINED_SPELLS": "Additional sustained spells",
                 "SUMMONED_SPIRITS": "Additional summoned spirits",
@@ -469,8 +470,17 @@
                 "WEAPON_MOUNT_IMPROVEMENT": "Weapon mount improvement",
                 "AUTOPILOT_UNLOCKED": "Autopilot Overclocking",
                 "ADDITIONAL_DRONES": "Additional drones",
-                "SHAMANIC_MASK": "Shamanic Mask"
+                "SHAMANIC_MASK": "Shamanic Mask",
+                "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus"
             },
+            "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus",
+            "WEAPON_DAMAGE_BONUS_HINT": "Damage Value bonus applied to weapons using the selected skill type",
+            "WEAPON_SKILL_TYPE": {
+                "LABEL": "Skill Type",
+                "CLOSE_COMBAT": "Close Combat",
+                "RANGED_WEAPONS": "Ranged Weapons"
+            },
+            "WEAPON_SKILL_TYPE_HINT": "Attack skill type required for the bonus to apply",
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",
                 "WEAPON_TYPE": "Weapon Type",

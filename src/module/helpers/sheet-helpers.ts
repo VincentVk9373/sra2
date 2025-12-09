@@ -762,7 +762,22 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
     // Calculate final damage value for weapons and spells
     if (feat.system.featType === 'weapon' || feat.system.featType === 'spell' || feat.system.featType === 'weapons-spells') {
       const damageValue = feat.system.damageValue || '0';
-      const damageValueBonus = feat.system.damageValueBonus || 0;
+      let damageValueBonus = feat.system.damageValueBonus || 0;
+      
+      // Add bonus from active feats that match the weapon's skill type
+      if (actor) {
+        const linkedAttackSkill = feat.system.linkedAttackSkill || '';
+        const activeFeats = actor.items.filter((item: any) => 
+          item.type === 'feat' && 
+          item.system.active === true &&
+          item.system.weaponDamageBonus > 0 &&
+          item.system.weaponSkillType === linkedAttackSkill
+        );
+        
+        activeFeats.forEach((activeFeat: any) => {
+          damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+        });
+      }
       
       feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
     }

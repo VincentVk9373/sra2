@@ -272,7 +272,16 @@ export function prepareVehicleWeaponAttack(
   
   // Calculate final damage value (base + bonus) - same logic as character-sheet.ts
   const baseDamageValue = parseInt(weaponSystem.damageValue || '0') || 0;
-  const damageValueBonus = parseInt(weaponSystem.damageValueBonus || '0') || 0;
+  let damageValueBonus = parseInt(weaponSystem.damageValueBonus || '0') || 0;
+  
+  // Add bonus from active feats that match the weapon's skill type
+  const linkedAttackSkill = weaponSystem.linkedAttackSkill || '';
+  activeFeats.forEach((activeFeat: any) => {
+    if (activeFeat.system.weaponDamageBonus > 0 &&
+        activeFeat.system.weaponSkillType === linkedAttackSkill) {
+      damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+    }
+  });
   
   let finalDamageValue = baseDamageValue + damageValueBonus;
   

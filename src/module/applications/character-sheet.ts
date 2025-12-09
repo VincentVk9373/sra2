@@ -161,7 +161,17 @@ export class CharacterSheet extends ActorSheet {
           if (vehicleSystem.additionalDroneCount) vehicleLevel += vehicleSystem.additionalDroneCount * 2;
           if (vehicleSystem.isFixed) vehicleLevel -= 1;
           const narrativeEffects = vehicleSystem.narrativeEffects || [];
-          const narrativeEffectsCount = narrativeEffects.filter((effect: string) => effect && effect.trim() !== '').length;
+          // Handle both old format (strings) and new format (objects with text, isNegative, value)
+          const narrativeEffectsCount = narrativeEffects.filter((effect: any) => {
+            if (typeof effect === 'string') {
+              return effect && effect.trim() !== '';
+            } else if (effect && typeof effect === 'object') {
+              const hasText = effect.text && effect.text.trim() !== '';
+              const hasValue = effect.value !== undefined && effect.value !== null && effect.value !== 0;
+              return hasText && hasValue;
+            }
+            return false;
+          }).length;
           vehicleLevel += narrativeEffectsCount;
           
           // Check vehicle damage status
@@ -1986,7 +1996,21 @@ export class CharacterSheet extends ActorSheet {
       
       // Calculate final damage value using helper
       const baseDamageValue = itemSystem.damageValue || '0';
-      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      let damageValueBonus = itemSystem.damageValueBonus || 0;
+      
+      // Add bonus from active feats that match the weapon's skill type
+      const linkedAttackSkill = finalAttackSkill || '';
+      const activeFeats = this.actor.items.filter((item: any) => 
+        item.type === 'feat' && 
+        item.system.active === true &&
+        item.system.weaponDamageBonus > 0 &&
+        item.system.weaponSkillType === linkedAttackSkill
+      );
+      
+      activeFeats.forEach((activeFeat: any) => {
+        damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+      });
+      
       const finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
       
       // Calculate attack pool with all RR sources using unified helper
@@ -2247,7 +2271,21 @@ export class CharacterSheet extends ActorSheet {
       }
     } else {
       const baseDamageValue = itemSystem.damageValue || '0';
-      const damageValueBonus = itemSystem.damageValueBonus || 0;
+      let damageValueBonus = itemSystem.damageValueBonus || 0;
+      
+      // Add bonus from active feats that match the weapon's skill type
+      const linkedAttackSkill = finalAttackSkill || '';
+      const activeFeats = this.actor.items.filter((item: any) => 
+        item.type === 'feat' && 
+        item.system.active === true &&
+        item.system.weaponDamageBonus > 0 &&
+        item.system.weaponSkillType === linkedAttackSkill
+      );
+      
+      activeFeats.forEach((activeFeat: any) => {
+        damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+      });
+      
       finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
     }
 
