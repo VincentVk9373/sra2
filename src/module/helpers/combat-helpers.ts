@@ -283,6 +283,9 @@ export function prepareVehicleWeaponAttack(
     }
   });
   
+  // Limit total bonus to 2 maximum
+  damageValueBonus = Math.min(damageValueBonus, 2);
+  
   let finalDamageValue = baseDamageValue + damageValueBonus;
   
   return {

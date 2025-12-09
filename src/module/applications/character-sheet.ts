@@ -2010,6 +2010,9 @@ export class CharacterSheet extends ActorSheet {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
       
+      // Limit total bonus to 2 maximum
+      damageValueBonus = Math.min(damageValueBonus, 2);
+      
       const finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
       
       // Calculate attack pool with all RR sources using unified helper
@@ -2284,6 +2287,9 @@ export class CharacterSheet extends ActorSheet {
       activeFeats.forEach((activeFeat: any) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
+      
+      // Limit total bonus to 2 maximum
+      damageValueBonus = Math.min(damageValueBonus, 2);
       
       finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
     }

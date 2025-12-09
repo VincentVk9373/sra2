@@ -3372,6 +3372,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
           damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
         });
       }
+      damageValueBonus = Math.min(damageValueBonus, 2);
       feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
     }
     return feat;
@@ -3734,6 +3735,7 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
       damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
     }
   });
+  damageValueBonus = Math.min(damageValueBonus, 2);
   let finalDamageValue = baseDamageValue + damageValueBonus;
   return {
     dicePool,
@@ -5571,6 +5573,7 @@ class CharacterSheet extends ActorSheet {
       activeFeats.forEach((activeFeat) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
+      damageValueBonus = Math.min(damageValueBonus, 2);
       const finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
       const poolResult = calculateAttackPool(
         this.actor,
@@ -5786,6 +5789,7 @@ class CharacterSheet extends ActorSheet {
       activeFeats.forEach((activeFeat) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
+      damageValueBonus = Math.min(damageValueBonus, 2);
       finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
     }
     const poolResult = calculateAttackPool(

@@ -779,6 +779,9 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
         });
       }
       
+      // Limit total bonus to 2 maximum
+      damageValueBonus = Math.min(damageValueBonus, 2);
+      
       feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
     }
     
