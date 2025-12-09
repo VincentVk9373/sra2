@@ -252,7 +252,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: 0,
         min: 0,
-        integer: true,
         label: "SRA2.FEATS.ESSENCE_COST"
       }),
       isBioware: new fields.BooleanField({

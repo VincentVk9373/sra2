@@ -106,8 +106,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       maxEssence: new fields.NumberField({
         required: true,
         initial: 6,
-        min: 0,
-        integer: true
+        min: 0
       }),
       armorLevel: new fields.NumberField({
         required: true,
@@ -795,7 +794,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: 0,
         min: 0,
-        integer: true,
         label: "SRA2.FEATS.ESSENCE_COST"
       }),
       isBioware: new fields.BooleanField({

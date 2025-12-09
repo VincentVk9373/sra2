@@ -55,8 +55,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       maxEssence: new fields.NumberField({
         required: true,
         initial: 6,
-        min: 0,
-        integer: true
+        min: 0
       }),
       armorLevel: new fields.NumberField({
         required: true,
