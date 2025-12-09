@@ -4,6 +4,11 @@ import { setSidebarIcons, setControlIcons, setCompendiumBanners } from "./config
 // Expose the SYSTEM object to the global scope
 globalThis.SYSTEM = SYSTEM;
 
+// Declare global Foundry objects
+declare const Roll: any;
+declare const renderTemplate: any;
+declare const ChatMessage: any;
+
 import * as models from "./models/_module.ts";
 import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
@@ -1379,6 +1384,278 @@ export class SRA2System {
             // Show bookmarks dialog
             this.showBookmarksDialog(actor);
           }
+        });
+      }
+    });
+    
+    // Function to add roll dice button to chat
+    const addRollDiceButton = () => {
+      // Find the chat message input form in the DOM
+      const chatForm = $('.chat-form');
+      if (chatForm.length === 0) {
+        return false;
+      }
+      
+      // Check if button already exists to avoid duplicates
+      if (chatForm.find('.sra2-roll-dice-container').length > 0) {
+        return true;
+      }
+      
+      // Create the roll dice container with inputs and radio
+      const rollDiceContainer = $(`
+        <div class="sra2-roll-dice-container">
+          <div class="sra2-roll-dice-inputs">
+            <input type="text" value="3" class="sra2-dice-count-input" placeholder="${game.i18n!.localize('SRA2.CHAT.DICE_COUNT')}" title="${game.i18n!.localize('SRA2.CHAT.DICE_COUNT')}">
+            <input type="text" value="0" class="sra2-risk-dice-input" placeholder="${game.i18n!.localize('SRA2.CHAT.RISK_DICE')}" title="${game.i18n!.localize('SRA2.CHAT.RISK_DICE')}">
+            <input type="text" value="" class="sra2-rr-input" placeholder="${game.i18n!.localize('SRA2.CHAT.RR')} 0" title="${game.i18n!.localize('SRA2.CHAT.RR')}">
+            <div class="sra2-roll-mode-radio">
+              <label class="sra2-radio-advantage" title="${game.i18n!.localize('SRA2.CHAT.ADVANTAGE')}">
+                <input type="radio" name="sra2-roll-mode" value="advantage">
+                <span>A</span>
+              </label>
+              <label class="sra2-radio-normal" title="${game.i18n!.localize('SRA2.CHAT.NORMAL')}">
+                <input type="radio" name="sra2-roll-mode" value="normal" checked>
+                <span>N</span>
+              </label>
+              <label class="sra2-radio-disadvantage" title="${game.i18n!.localize('SRA2.CHAT.DISADVANTAGE')}">
+                <input type="radio" name="sra2-roll-mode" value="disadvantage">
+                <span>D</span>
+              </label>
+            </div>
+          </div>
+          <button type="button" class="sra2-roll-dice-button" title="${game.i18n!.localize('SRA2.CHAT.ROLL_DICE')}">
+            <i class="fas fa-dice-d6"></i> ${game.i18n!.localize('SRA2.CHAT.ROLL_DICE')}
+          </button>
+        </div>
+      `);
+      
+      // Insert container as first element in .chat-form
+      chatForm.prepend(rollDiceContainer);
+      
+      // Add click handler to button
+      const rollDiceButton = rollDiceContainer.find('.sra2-roll-dice-button');
+      rollDiceButton.on('click', async (event: any) => {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Get controlled actor (first controlled token's actor, or first owned actor)
+        let actor: any = null;
+        const controlledTokens = canvas?.tokens?.controlled || [];
+        
+        if (controlledTokens.length > 0) {
+          actor = controlledTokens[0].actor;
+        } else {
+          // Fallback: get first owned actor
+          const ownedActors = (game.actors as any).filter((a: any) => a.isOwner);
+          if (ownedActors.length > 0) {
+            actor = ownedActors[0];
+          }
+        }
+        
+        if (!actor) {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.NO_ACTOR') || 'Aucun personnage contrôlé');
+          return;
+        }
+        
+        // Get values from inputs and radio
+        const diceCount = parseInt(rollDiceContainer.find('.sra2-dice-count-input').val() as string) || 0;
+        const riskDiceCount = parseInt(rollDiceContainer.find('.sra2-risk-dice-input').val() as string) || 0;
+        const rr = parseInt(rollDiceContainer.find('.sra2-rr-input').val() as string) || 0;
+        const rollMode = rollDiceContainer.find('input[name="sra2-roll-mode"]:checked').val() as string || 'normal';
+        
+        if (diceCount <= 0) {
+          ui.notifications?.warn('Veuillez entrer un nombre de dés valide');
+          return;
+        }
+        
+        // Import dice roller functions
+        const DiceRoller = await import('./helpers/dice-roller.js');
+        const { getSuccessThreshold } = DiceRoller;
+        
+        // Use manual risk dice count, ensure it doesn't exceed total dice count
+        const finalRiskDiceCount = Math.min(riskDiceCount, diceCount);
+        const normalDiceCount = Math.max(0, diceCount - finalRiskDiceCount);
+        const finalRR = Math.min(3, Math.max(0, rr));
+        
+        // Roll dice
+        let normalRoll: any = null;
+        let riskRoll: any = null;
+        
+        if (normalDiceCount > 0) {
+          normalRoll = new Roll(`${normalDiceCount}d6`);
+          await normalRoll.evaluate();
+          
+          if ((game as any).dice3d && normalRoll) {
+            (game as any).dice3d.showForRoll(normalRoll, game.user, true, null, false);
+          }
+        }
+        
+        if (finalRiskDiceCount > 0) {
+          riskRoll = new Roll(`${finalRiskDiceCount}d6`);
+          await riskRoll.evaluate();
+          
+          if ((game as any).dice3d && riskRoll) {
+            const dice3dConfig = {
+              colorset: 'purple',
+              theme: 'default'
+            };
+            (game as any).dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+          }
+        }
+        
+        // Calculate results
+        const normalResults: number[] = normalRoll ? (normalRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
+        const riskResults: number[] = riskRoll ? (riskRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
+        
+        const successThreshold = getSuccessThreshold(rollMode);
+        
+        // Calculate successes for normal dice
+        let normalSuccesses = 0;
+        for (const result of normalResults) {
+          if (result >= successThreshold) {
+            normalSuccesses++;
+          }
+        }
+        
+        // Calculate successes and critical failures for risk dice
+        let riskSuccesses = 0;
+        let criticalFailures = 0;
+        for (const result of riskResults) {
+          if (result === 1) {
+            criticalFailures++;
+          } else if (result >= successThreshold) {
+            riskSuccesses++;
+          }
+        }
+        
+        // Risk dice successes count double
+        const totalRiskSuccesses = riskSuccesses * 2;
+        const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+        
+        // Calculate complications
+        const remainingFailures = Math.max(0, criticalFailures - finalRR);
+        
+        let complication: 'none' | 'minor' | 'critical' | 'disaster' = 'none';
+        if (remainingFailures === 1) {
+          complication = 'minor';
+        } else if (remainingFailures === 2) {
+          complication = 'critical';
+        } else if (remainingFailures >= 3) {
+          complication = 'disaster';
+        }
+        
+        const rollResult = {
+          normalDice: normalResults,
+          riskDice: riskResults,
+          normalSuccesses: normalSuccesses,
+          riskSuccesses: riskSuccesses,
+          totalSuccesses: totalSuccesses,
+          criticalFailures: criticalFailures,
+          finalRR: finalRR,
+          remainingFailures: remainingFailures,
+          complication: complication
+        };
+        
+        // Get actor token if available
+        const actorTokens = canvas?.tokens?.controlled || [];
+        const actorToken = actorTokens.length > 0 ? actorTokens[0] : null;
+        
+        // Create roll data for template
+        const rollData: any = {
+          dicePool: diceCount,
+          riskDiceCount: finalRiskDiceCount,
+          rollMode: rollMode,
+          finalRR: finalRR,
+          actorId: actor.id,
+          actorUuid: actor.uuid,
+          actorName: actor.name
+        };
+        
+        // Prepare template data
+        const templateData: any = {
+          attacker: actor,
+          defender: null,
+          rollData: rollData,
+          rollResult: rollResult,
+          isAttack: false,
+          isDefend: false,
+          isCounterAttack: false,
+          skillName: 'Jet de dés',
+          itemName: null,
+          damageValue: null,
+          defenseResult: null,
+          attackerUuid: actor.uuid,
+          defenderUuid: null,
+          attackerTokenUuid: (actorToken as any)?.uuid || (actorToken as any)?.document?.uuid,
+          defenderTokenUuid: null
+        };
+        
+        // Render template
+        const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);
+        
+        // Create chat message
+        const messageData: any = {
+          user: game.user?.id,
+          speaker: {
+            actor: actor.id,
+            alias: actor.name
+          },
+          content: html,
+          type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+          flags: {
+            sra2: {
+              rollType: 'skill',
+              attackerId: actor.id,
+              attackerUuid: actor.uuid,
+              attackerTokenUuid: (actorToken as any)?.uuid || (actorToken as any)?.document?.uuid,
+              rollResult: rollResult,
+              rollData: rollData
+            }
+          }
+        };
+        
+        await ChatMessage.create(messageData);
+      });
+      
+      return true;
+    };
+    
+    // Register chat log hook to add roll dice button
+    // Using a more generic approach that works with Foundry's hook system
+    Hooks.on('renderChatLog' as any, (app: any, html: any, data: any) => {
+      // Use setTimeout to ensure the chat form is fully rendered
+      setTimeout(() => {
+        if (!addRollDiceButton()) {
+          // If button wasn't added, try again after a longer delay
+          setTimeout(addRollDiceButton, 500);
+        }
+      }, 100);
+    });
+    
+    // Also register for chat popout
+    Hooks.on('renderChatPopout' as any, (app: any, html: any, data: any) => {
+      setTimeout(() => {
+        if (!addRollDiceButton()) {
+          setTimeout(addRollDiceButton, 500);
+        }
+      }, 100);
+    });
+    
+    // Use MutationObserver to watch for chat form appearance (more robust)
+    Hooks.once('ready', () => {
+      // Try immediately
+      addRollDiceButton();
+      
+      // Also set up a MutationObserver to watch for chat form
+      const observer = new MutationObserver(() => {
+        addRollDiceButton();
+      });
+      
+      // Observe the document body for changes
+      if (document.body) {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
         });
       }
     });

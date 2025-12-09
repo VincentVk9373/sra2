@@ -2249,6 +2249,18 @@ const RISK_DICE_BY_RR = [2, 5, 8, 12];
 function getRiskDiceByRR(rr) {
   return RISK_DICE_BY_RR[Math.min(3, Math.max(0, rr))] || 2;
 }
+function getSuccessThreshold(mode) {
+  switch (mode) {
+    case "advantage":
+      return 4;
+    // 4, 5, 6 = success
+    case "disadvantage":
+      return 6;
+    // only 6 = success
+    default:
+      return 5;
+  }
+}
 function handleRollRequest(data) {
   console.log("=== ROLL REQUEST ===", {
     itemType: data.itemType,
@@ -2858,6 +2870,7 @@ const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   RISK_DICE_BY_RR,
   executeRoll,
   getRiskDiceByRR,
+  getSuccessThreshold,
   handleRollRequest
 }, Symbol.toStringTag, { value: "Module" }));
 function handleSheetUpdate(actor, formData) {
@@ -10382,6 +10395,210 @@ class SRA2System {
           onclick: () => {
             this.showBookmarksDialog(actor);
           }
+        });
+      }
+    });
+    const addRollDiceButton = () => {
+      const chatForm = $(".chat-form");
+      if (chatForm.length === 0) {
+        return false;
+      }
+      if (chatForm.find(".sra2-roll-dice-container").length > 0) {
+        return true;
+      }
+      const rollDiceContainer = $(`
+        <div class="sra2-roll-dice-container">
+          <div class="sra2-roll-dice-inputs">
+            <input type="text" value="3" class="sra2-dice-count-input" placeholder="${game.i18n.localize("SRA2.CHAT.DICE_COUNT")}" title="${game.i18n.localize("SRA2.CHAT.DICE_COUNT")}">
+            <input type="text" value="0" class="sra2-risk-dice-input" placeholder="${game.i18n.localize("SRA2.CHAT.RISK_DICE")}" title="${game.i18n.localize("SRA2.CHAT.RISK_DICE")}">
+            <input type="text" value="" class="sra2-rr-input" placeholder="${game.i18n.localize("SRA2.CHAT.RR")} 0" title="${game.i18n.localize("SRA2.CHAT.RR")}">
+            <div class="sra2-roll-mode-radio">
+              <label class="sra2-radio-advantage" title="${game.i18n.localize("SRA2.CHAT.ADVANTAGE")}">
+                <input type="radio" name="sra2-roll-mode" value="advantage">
+                <span>A</span>
+              </label>
+              <label class="sra2-radio-normal" title="${game.i18n.localize("SRA2.CHAT.NORMAL")}">
+                <input type="radio" name="sra2-roll-mode" value="normal" checked>
+                <span>N</span>
+              </label>
+              <label class="sra2-radio-disadvantage" title="${game.i18n.localize("SRA2.CHAT.DISADVANTAGE")}">
+                <input type="radio" name="sra2-roll-mode" value="disadvantage">
+                <span>D</span>
+              </label>
+            </div>
+          </div>
+          <button type="button" class="sra2-roll-dice-button" title="${game.i18n.localize("SRA2.CHAT.ROLL_DICE")}">
+            <i class="fas fa-dice-d6"></i> ${game.i18n.localize("SRA2.CHAT.ROLL_DICE")}
+          </button>
+        </div>
+      `);
+      chatForm.prepend(rollDiceContainer);
+      const rollDiceButton = rollDiceContainer.find(".sra2-roll-dice-button");
+      rollDiceButton.on("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        let actor = null;
+        const controlledTokens = canvas?.tokens?.controlled || [];
+        if (controlledTokens.length > 0) {
+          actor = controlledTokens[0].actor;
+        } else {
+          const ownedActors = game.actors.filter((a) => a.isOwner);
+          if (ownedActors.length > 0) {
+            actor = ownedActors[0];
+          }
+        }
+        if (!actor) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.NO_ACTOR") || "Aucun personnage contrôlé");
+          return;
+        }
+        const diceCount = parseInt(rollDiceContainer.find(".sra2-dice-count-input").val()) || 0;
+        const riskDiceCount = parseInt(rollDiceContainer.find(".sra2-risk-dice-input").val()) || 0;
+        const rr = parseInt(rollDiceContainer.find(".sra2-rr-input").val()) || 0;
+        const rollMode = rollDiceContainer.find('input[name="sra2-roll-mode"]:checked').val() || "normal";
+        if (diceCount <= 0) {
+          ui.notifications?.warn("Veuillez entrer un nombre de dés valide");
+          return;
+        }
+        const DiceRoller = await Promise.resolve().then(() => diceRoller);
+        const { getSuccessThreshold: getSuccessThreshold2 } = DiceRoller;
+        const finalRiskDiceCount = Math.min(riskDiceCount, diceCount);
+        const normalDiceCount = Math.max(0, diceCount - finalRiskDiceCount);
+        const finalRR = Math.min(3, Math.max(0, rr));
+        let normalRoll = null;
+        let riskRoll = null;
+        if (normalDiceCount > 0) {
+          normalRoll = new Roll(`${normalDiceCount}d6`);
+          await normalRoll.evaluate();
+          if (game.dice3d && normalRoll) {
+            game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+          }
+        }
+        if (finalRiskDiceCount > 0) {
+          riskRoll = new Roll(`${finalRiskDiceCount}d6`);
+          await riskRoll.evaluate();
+          if (game.dice3d && riskRoll) {
+            const dice3dConfig = {
+              colorset: "purple",
+              theme: "default"
+            };
+            game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+          }
+        }
+        const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+        const riskResults = riskRoll ? riskRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+        const successThreshold = getSuccessThreshold2(rollMode);
+        let normalSuccesses = 0;
+        for (const result of normalResults) {
+          if (result >= successThreshold) {
+            normalSuccesses++;
+          }
+        }
+        let riskSuccesses = 0;
+        let criticalFailures = 0;
+        for (const result of riskResults) {
+          if (result === 1) {
+            criticalFailures++;
+          } else if (result >= successThreshold) {
+            riskSuccesses++;
+          }
+        }
+        const totalRiskSuccesses = riskSuccesses * 2;
+        const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+        const remainingFailures = Math.max(0, criticalFailures - finalRR);
+        let complication = "none";
+        if (remainingFailures === 1) {
+          complication = "minor";
+        } else if (remainingFailures === 2) {
+          complication = "critical";
+        } else if (remainingFailures >= 3) {
+          complication = "disaster";
+        }
+        const rollResult = {
+          normalDice: normalResults,
+          riskDice: riskResults,
+          normalSuccesses,
+          riskSuccesses,
+          totalSuccesses,
+          criticalFailures,
+          finalRR,
+          remainingFailures,
+          complication
+        };
+        const actorTokens = canvas?.tokens?.controlled || [];
+        const actorToken = actorTokens.length > 0 ? actorTokens[0] : null;
+        const rollData = {
+          dicePool: diceCount,
+          riskDiceCount: finalRiskDiceCount,
+          rollMode,
+          finalRR,
+          actorId: actor.id,
+          actorUuid: actor.uuid,
+          actorName: actor.name
+        };
+        const templateData = {
+          attacker: actor,
+          defender: null,
+          rollData,
+          rollResult,
+          isAttack: false,
+          isDefend: false,
+          isCounterAttack: false,
+          skillName: "Jet de dés",
+          itemName: null,
+          damageValue: null,
+          defenseResult: null,
+          attackerUuid: actor.uuid,
+          defenderUuid: null,
+          attackerTokenUuid: actorToken?.uuid || actorToken?.document?.uuid,
+          defenderTokenUuid: null
+        };
+        const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
+        const messageData = {
+          user: game.user?.id,
+          speaker: {
+            actor: actor.id,
+            alias: actor.name
+          },
+          content: html,
+          type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+          flags: {
+            sra2: {
+              rollType: "skill",
+              attackerId: actor.id,
+              attackerUuid: actor.uuid,
+              attackerTokenUuid: actorToken?.uuid || actorToken?.document?.uuid,
+              rollResult,
+              rollData
+            }
+          }
+        };
+        await ChatMessage.create(messageData);
+      });
+      return true;
+    };
+    Hooks.on("renderChatLog", (app, html, data) => {
+      setTimeout(() => {
+        if (!addRollDiceButton()) {
+          setTimeout(addRollDiceButton, 500);
+        }
+      }, 100);
+    });
+    Hooks.on("renderChatPopout", (app, html, data) => {
+      setTimeout(() => {
+        if (!addRollDiceButton()) {
+          setTimeout(addRollDiceButton, 500);
+        }
+      }, 100);
+    });
+    Hooks.once("ready", () => {
+      addRollDiceButton();
+      const observer = new MutationObserver(() => {
+        addRollDiceButton();
+      });
+      if (document.body) {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
         });
       }
     });

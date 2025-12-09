@@ -179,6 +179,16 @@
             "PLACEHOLDER": "Entrer une réplique...",
             "SEND_TO_CHAT": "Envoyer dans le chat"
         },
+        "CHAT": {
+            "ROLL_DICE": "Lancer des dès",
+            "NO_ACTOR": "Aucun personnage contrôlé",
+            "DICE_COUNT": "Nombre de dés",
+            "RISK_DICE": "Dés de risque",
+            "RR": "RR",
+            "ADVANTAGE": "Avantage",
+            "NORMAL": "Normal",
+            "DISADVANTAGE": "Désavantage"
+        },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armure et Seuils de Dégâts",
             "ARMOR_LEVEL": "Niveau d'Armure",

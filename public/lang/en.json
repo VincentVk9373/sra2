@@ -254,6 +254,16 @@
             "PLACEHOLDER": "Enter a catchphrase...",
             "SEND_TO_CHAT": "Send to chat"
         },
+        "CHAT": {
+            "ROLL_DICE": "Roll Dice",
+            "NO_ACTOR": "No controlled character",
+            "DICE_COUNT": "Dice Count",
+            "RISK_DICE": "Risk Dice",
+            "RR": "RR",
+            "ADVANTAGE": "Advantage",
+            "NORMAL": "Normal",
+            "DISADVANTAGE": "Disadvantage"
+        },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armor & Damage Thresholds",
             "ARMOR_LEVEL": "Armor Level",
