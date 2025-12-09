@@ -58,6 +58,11 @@ export class MetatypeDataModel extends foundry.abstract.TypeDataModel<any, Item>
         max: 10,
         integer: true,
         label: "SRA2.METATYPES.ANARCHY_BONUS"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }

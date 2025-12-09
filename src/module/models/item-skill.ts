@@ -34,6 +34,11 @@ export class SkillDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.SKILLS.BOOKMARKED"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }

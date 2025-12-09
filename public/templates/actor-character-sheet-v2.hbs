@@ -651,6 +651,11 @@
         </section>
         <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <div class="footer-content">
+                        {{#if system.reference}}
+                        <div class="footer-reference">
+                            <span class="reference-value">{{system.reference}}</span>
+                        </div>
+                        {{/if}}
                 <div class="footer-keywords">
                     <div class="keywords-list">
                         {{#if system.keywords.keyword1}}

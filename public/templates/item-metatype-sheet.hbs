@@ -56,6 +56,12 @@
       <label>{{localize "SRA2.METATYPES.DESCRIPTION"}}</label>
       <div class="editor-content">{{editor system.description target="system.description" button=true engine="prosemirror" collaborate=false}}</div>
     </div>
+
+    <!-- Reference -->
+    <div class="form-group">
+      <label>{{localize "SRA2.REFERENCE"}}</label>
+      <input type="text" name="system.reference" value="{{system.reference}}" placeholder="{{localize 'SRA2.REFERENCE'}}" />
+    </div>
   </section>
 </form>
 

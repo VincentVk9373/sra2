@@ -153,6 +153,11 @@
             </label>
           </div>
 
+          <div class="form-group">
+            <label>{{localize "SRA2.REFERENCE"}}</label>
+            <input type="text" name="system.reference" value="{{system.reference}}" placeholder="{{localize 'SRA2.REFERENCE'}}" />
+          </div>
+
           {{#if (eq system.featType "trait")}}
           <div class="form-group">
             <label>

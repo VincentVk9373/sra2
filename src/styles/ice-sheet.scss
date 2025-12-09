@@ -222,6 +222,11 @@
       }
 
       .charname {
+        display:grid;
+        grid-template-columns: 3fr 1fr;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
         h1 {
           margin: 0;
           font-size: 1.5rem;

@@ -219,6 +219,11 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: [],
         label: "SRA2.CHARACTER.LINKED_VEHICLES"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }
@@ -1226,6 +1231,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: "",
         label: "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }
@@ -1605,6 +1615,11 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
         initial: [],
         label: "SRA2.VEHICLE.NARRATIVE_EFFECTS"
       }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -1774,6 +1789,11 @@ class IceDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.ICE.SERVER_INDEX"
       }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -1850,6 +1870,11 @@ class SkillDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.SKILLS.BOOKMARKED"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }
@@ -1893,6 +1918,11 @@ class SpecializationDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.BOOKMARKS.TOGGLE"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }
@@ -1955,6 +1985,11 @@ class MetatypeDataModel extends foundry.abstract.TypeDataModel {
         max: 10,
         integer: true,
         label: "SRA2.METATYPES.ANARCHY_BONUS"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }

@@ -688,6 +688,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: "",
         label: "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }

@@ -32,6 +32,11 @@ export class SpecializationDataModel extends foundry.abstract.TypeDataModel<any,
         required: true,
         initial: false,
         label: "SRA2.BOOKMARKS.TOGGLE"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }

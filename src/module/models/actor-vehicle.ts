@@ -97,6 +97,11 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
         initial: [],
         label: "SRA2.VEHICLE.NARRATIVE_EFFECTS"
       }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,

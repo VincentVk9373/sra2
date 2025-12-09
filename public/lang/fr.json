@@ -791,6 +791,7 @@
             },
             "MANUAL_RR_BONUS": "Bonus RR manuel",
             "MANUAL_RR_BONUS_TOOLTIP": "Ajouter un bonus RR manuel (0-3)"
-        }
+        },
+        "REFERENCE": "Référence"
     }
 }

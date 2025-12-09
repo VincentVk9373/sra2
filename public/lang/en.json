@@ -810,6 +810,7 @@
             "NORMAL_DICE": "Normal Dice",
             "MANUAL_RR_BONUS": "Manual RR Bonus",
             "MANUAL_RR_BONUS_TOOLTIP": "Add a manual RR bonus (0-3)"
-        }
+        },
+        "REFERENCE": "Reference"
     }
 }

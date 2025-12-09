@@ -39,6 +39,11 @@ export class IceDataModel extends foundry.abstract.TypeDataModel<any, Actor> {
         integer: true,
         label: "SRA2.ICE.SERVER_INDEX"
       }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,

@@ -168,6 +168,11 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         required: true,
         initial: [],
         label: "SRA2.CHARACTER.LINKED_VEHICLES"
+      }),
+      reference: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.REFERENCE"
       })
     };
   }
