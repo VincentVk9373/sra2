@@ -398,13 +398,9 @@
                 "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes"
             },
             "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes",
-            "WEAPON_DAMAGE_BONUS_HINT": "Bonus de Valeur de Dégâts appliqué aux armes utilisant le type de skill sélectionné",
-            "WEAPON_SKILL_TYPE": {
-                "LABEL": "Type de skill",
-                "CLOSE_COMBAT": "Combat rapproché",
-                "RANGED_WEAPONS": "Armes à distance"
-            },
-            "WEAPON_SKILL_TYPE_HINT": "Type de skill d'attaque requis pour que le bonus s'applique",
+            "WEAPON_DAMAGE_BONUS_HINT": "Bonus de Valeur de Dégâts appliqué aux armes du type sélectionné",
+            "WEAPON_TYPE_BONUS": "Type d'arme",
+            "WEAPON_TYPE_BONUS_HINT": "Type d'arme requis pour que le bonus s'applique",
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",
                 "WEAPON_TYPE": "Type d'Arme",

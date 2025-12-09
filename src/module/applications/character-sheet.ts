@@ -1998,13 +1998,12 @@ export class CharacterSheet extends ActorSheet {
       const baseDamageValue = itemSystem.damageValue || '0';
       let damageValueBonus = itemSystem.damageValueBonus || 0;
       
-      // Add bonus from active feats that match the weapon's skill type
-      const linkedAttackSkill = finalAttackSkill || '';
+      // Add bonus from active feats that match the weapon's type
       const activeFeats = this.actor.items.filter((item: any) => 
         item.type === 'feat' && 
         item.system.active === true &&
         item.system.weaponDamageBonus > 0 &&
-        item.system.weaponSkillType === linkedAttackSkill
+        item.system.weaponTypeBonus === weaponType
       );
       
       activeFeats.forEach((activeFeat: any) => {
@@ -2273,13 +2272,13 @@ export class CharacterSheet extends ActorSheet {
       const baseDamageValue = itemSystem.damageValue || '0';
       let damageValueBonus = itemSystem.damageValueBonus || 0;
       
-      // Add bonus from active feats that match the weapon's skill type
-      const linkedAttackSkill = finalAttackSkill || '';
+      // Add bonus from active feats that match the weapon's type
+      const weaponType = itemSystem.weaponType || '';
       const activeFeats = this.actor.items.filter((item: any) => 
         item.type === 'feat' && 
         item.system.active === true &&
         item.system.weaponDamageBonus > 0 &&
-        item.system.weaponSkillType === linkedAttackSkill
+        item.system.weaponTypeBonus === weaponType
       );
       
       activeFeats.forEach((activeFeat: any) => {

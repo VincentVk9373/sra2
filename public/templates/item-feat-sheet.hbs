@@ -243,16 +243,32 @@
             <p class="notes">{{localize "SRA2.FEATS.WEAPON_DAMAGE_BONUS_HINT"}}</p>
           </div>
           <div class="form-group">
-            <label>{{localize "SRA2.FEATS.WEAPON_SKILL_TYPE.LABEL"}}</label>
-            <select name="system.weaponSkillType">
-              <option value="Combat rapproché" {{#if (eq system.weaponSkillType "Combat rapproché")}}selected{{/if}}>
-                {{localize "SRA2.FEATS.WEAPON_SKILL_TYPE.CLOSE_COMBAT"}}
-              </option>
-              <option value="Armes à distance" {{#if (eq system.weaponSkillType "Armes à distance")}}selected{{/if}}>
-                {{localize "SRA2.FEATS.WEAPON_SKILL_TYPE.RANGED_WEAPONS"}}
-              </option>
+            <label>{{localize "SRA2.FEATS.WEAPON_TYPE_BONUS"}}</label>
+            <select name="system.weaponTypeBonus">
+              <option value="custom-weapon" {{#if (eq system.weaponTypeBonus "custom-weapon")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.CUSTOM_WEAPON"}}</option>
+              <option value="bare-hands" {{#if (eq system.weaponTypeBonus "bare-hands")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.BARE_HANDS"}}</option>
+              <option value="short-weapons" {{#if (eq system.weaponTypeBonus "short-weapons")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SHORT_WEAPONS"}}</option>
+              <option value="long-weapons" {{#if (eq system.weaponTypeBonus "long-weapons")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.LONG_WEAPONS"}}</option>
+              <option value="advanced-melee" {{#if (eq system.weaponTypeBonus "advanced-melee")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.ADVANCED_MELEE"}}</option>
+              <option value="throwing" {{#if (eq system.weaponTypeBonus "throwing")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.THROWING"}}</option>
+              <option value="bows" {{#if (eq system.weaponTypeBonus "bows")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.BOWS"}}</option>
+              <option value="crossbows" {{#if (eq system.weaponTypeBonus "crossbows")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.CROSSBOWS"}}</option>
+              <option value="tasers" {{#if (eq system.weaponTypeBonus "tasers")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.TASERS"}}</option>
+              <option value="pocket-pistols" {{#if (eq system.weaponTypeBonus "pocket-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.POCKET_PISTOLS"}}</option>
+              <option value="light-pistols" {{#if (eq system.weaponTypeBonus "light-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.LIGHT_PISTOLS"}}</option>
+              <option value="automatic-pistols" {{#if (eq system.weaponTypeBonus "automatic-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.AUTOMATIC_PISTOLS"}}</option>
+              <option value="heavy-pistols" {{#if (eq system.weaponTypeBonus "heavy-pistols")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.HEAVY_PISTOLS"}}</option>
+              <option value="smgs" {{#if (eq system.weaponTypeBonus "smgs")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SMGS"}}</option>
+              <option value="assault-rifles" {{#if (eq system.weaponTypeBonus "assault-rifles")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.ASSAULT_RIFLES"}}</option>
+              <option value="shotguns" {{#if (eq system.weaponTypeBonus "shotguns")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SHOTGUNS"}}</option>
+              <option value="sniper-rifles" {{#if (eq system.weaponTypeBonus "sniper-rifles")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.SNIPER_RIFLES"}}</option>
+              <option value="machine-guns" {{#if (eq system.weaponTypeBonus "machine-guns")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.MACHINE_GUNS"}}</option>
+              <option value="grenades" {{#if (eq system.weaponTypeBonus "grenades")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.GRENADES"}}</option>
+              <option value="gas-grenades" {{#if (eq system.weaponTypeBonus "gas-grenades")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.GAS_GRENADES"}}</option>
+              <option value="grenade-launchers" {{#if (eq system.weaponTypeBonus "grenade-launchers")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.GRENADE_LAUNCHERS"}}</option>
+              <option value="rocket-launchers" {{#if (eq system.weaponTypeBonus "rocket-launchers")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.TYPES.ROCKET_LAUNCHERS"}}</option>
             </select>
-            <p class="notes">{{localize "SRA2.FEATS.WEAPON_SKILL_TYPE_HINT"}}</p>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON_TYPE_BONUS_HINT"}}</p>
           </div>
           {{/if}}
 

@@ -764,14 +764,14 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       const damageValue = feat.system.damageValue || '0';
       let damageValueBonus = feat.system.damageValueBonus || 0;
       
-      // Add bonus from active feats that match the weapon's skill type
+      // Add bonus from active feats that match the weapon's type
       if (actor) {
-        const linkedAttackSkill = feat.system.linkedAttackSkill || '';
+        const weaponType = feat.system.weaponType || '';
         const activeFeats = actor.items.filter((item: any) => 
           item.type === 'feat' && 
           item.system.active === true &&
           item.system.weaponDamageBonus > 0 &&
-          item.system.weaponSkillType === linkedAttackSkill
+          item.system.weaponTypeBonus === weaponType
         );
         
         activeFeats.forEach((activeFeat: any) => {

@@ -474,13 +474,9 @@
                 "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus"
             },
             "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus",
-            "WEAPON_DAMAGE_BONUS_HINT": "Damage Value bonus applied to weapons using the selected skill type",
-            "WEAPON_SKILL_TYPE": {
-                "LABEL": "Skill Type",
-                "CLOSE_COMBAT": "Close Combat",
-                "RANGED_WEAPONS": "Ranged Weapons"
-            },
-            "WEAPON_SKILL_TYPE_HINT": "Attack skill type required for the bonus to apply",
+            "WEAPON_DAMAGE_BONUS_HINT": "Damage Value bonus applied to weapons of the selected type",
+            "WEAPON_TYPE_BONUS": "Weapon Type",
+            "WEAPON_TYPE_BONUS_HINT": "Weapon type required for the bonus to apply",
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",
                 "WEAPON_TYPE": "Weapon Type",

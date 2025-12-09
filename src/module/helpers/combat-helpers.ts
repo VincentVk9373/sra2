@@ -274,11 +274,11 @@ export function prepareVehicleWeaponAttack(
   const baseDamageValue = parseInt(weaponSystem.damageValue || '0') || 0;
   let damageValueBonus = parseInt(weaponSystem.damageValueBonus || '0') || 0;
   
-  // Add bonus from active feats that match the weapon's skill type
-  const linkedAttackSkill = weaponSystem.linkedAttackSkill || '';
+  // Add bonus from active feats that match the weapon's type
+  const weaponType = weaponSystem.weaponType || '';
   activeFeats.forEach((activeFeat: any) => {
     if (activeFeat.system.weaponDamageBonus > 0 &&
-        activeFeat.system.weaponSkillType === linkedAttackSkill) {
+        activeFeat.system.weaponTypeBonus === weaponType) {
       damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
     }
   });

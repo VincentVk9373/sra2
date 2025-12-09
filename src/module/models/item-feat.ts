@@ -653,7 +653,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
-      // Weapon damage bonus by skill type
+      // Weapon damage bonus by weapon type
       weaponDamageBonus: new fields.NumberField({
         required: true,
         initial: 0,
@@ -661,14 +661,17 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.WEAPON_DAMAGE_BONUS"
       }),
-      weaponSkillType: new fields.StringField({
+      weaponTypeBonus: new fields.StringField({
         required: true,
-        initial: "Combat rapproché",
-        choices: {
-          "Combat rapproché": "SRA2.FEATS.WEAPON_SKILL_TYPE.CLOSE_COMBAT",
-          "Armes à distance": "SRA2.FEATS.WEAPON_SKILL_TYPE.RANGED_WEAPONS"
-        },
-        label: "SRA2.FEATS.WEAPON_SKILL_TYPE"
+        initial: "custom-weapon",
+        choices: (() => {
+          const choices: Record<string, string> = {};
+          Object.keys(WEAPON_TYPES).forEach((key) => {
+            choices[key] = key;
+          });
+          return choices;
+        })(),
+        label: "SRA2.FEATS.WEAPON_TYPE_BONUS"
       }),
       // Spell specialization type (determines which specialization to use)
       spellSpecializationType: new fields.StringField({
@@ -906,7 +909,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS', labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
     }
     
-    // Weapon damage bonus by skill type: +1 per bonus
+    // Weapon damage bonus by weapon type: +1 per bonus
     const weaponDamageBonus = (this as any).weaponDamageBonus || 0;
     if (weaponDamageBonus > 0) {
       recommendedLevel += weaponDamageBonus;

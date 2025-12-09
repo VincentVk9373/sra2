@@ -1195,7 +1195,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         },
         label: "SRA2.FEATS.SPELL.TYPE"
       }),
-      // Weapon damage bonus by skill type
+      // Weapon damage bonus by weapon type
       weaponDamageBonus: new fields.NumberField({
         required: true,
         initial: 0,
@@ -1203,14 +1203,17 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.WEAPON_DAMAGE_BONUS"
       }),
-      weaponSkillType: new fields.StringField({
+      weaponTypeBonus: new fields.StringField({
         required: true,
-        initial: "Combat rapproché",
-        choices: {
-          "Combat rapproché": "SRA2.FEATS.WEAPON_SKILL_TYPE.CLOSE_COMBAT",
-          "Armes à distance": "SRA2.FEATS.WEAPON_SKILL_TYPE.RANGED_WEAPONS"
-        },
-        label: "SRA2.FEATS.WEAPON_SKILL_TYPE"
+        initial: "custom-weapon",
+        choices: (() => {
+          const choices = {};
+          Object.keys(WEAPON_TYPES).forEach((key) => {
+            choices[key] = key;
+          });
+          return choices;
+        })(),
+        label: "SRA2.FEATS.WEAPON_TYPE_BONUS"
       }),
       // Spell specialization type (determines which specialization to use)
       spellSpecializationType: new fields.StringField({
@@ -3361,9 +3364,9 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
       const damageValue = feat.system.damageValue || "0";
       let damageValueBonus = feat.system.damageValueBonus || 0;
       if (actor) {
-        const linkedAttackSkill = feat.system.linkedAttackSkill || "";
+        const weaponType = feat.system.weaponType || "";
         const activeFeats = actor.items.filter(
-          (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponSkillType === linkedAttackSkill
+          (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
         );
         activeFeats.forEach((activeFeat) => {
           damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
@@ -3725,9 +3728,9 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
   });
   const baseDamageValue = parseInt(weaponSystem.damageValue || "0") || 0;
   let damageValueBonus = parseInt(weaponSystem.damageValueBonus || "0") || 0;
-  const linkedAttackSkill = weaponSystem.linkedAttackSkill || "";
+  const weaponType = weaponSystem.weaponType || "";
   activeFeats.forEach((activeFeat) => {
-    if (activeFeat.system.weaponDamageBonus > 0 && activeFeat.system.weaponSkillType === linkedAttackSkill) {
+    if (activeFeat.system.weaponDamageBonus > 0 && activeFeat.system.weaponTypeBonus === weaponType) {
       damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
     }
   });
@@ -5562,9 +5565,8 @@ class CharacterSheet extends ActorSheet {
       const defenseLinkedAttribute = defenseSkillSpecResult.linkedAttribute;
       const baseDamageValue = itemSystem.damageValue || "0";
       let damageValueBonus = itemSystem.damageValueBonus || 0;
-      const linkedAttackSkill = finalAttackSkill || "";
       const activeFeats = this.actor.items.filter(
-        (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponSkillType === linkedAttackSkill
+        (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
       );
       activeFeats.forEach((activeFeat) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
@@ -5777,9 +5779,9 @@ class CharacterSheet extends ActorSheet {
     } else {
       const baseDamageValue = itemSystem.damageValue || "0";
       let damageValueBonus = itemSystem.damageValueBonus || 0;
-      const linkedAttackSkill = finalAttackSkill || "";
+      const weaponType2 = itemSystem.weaponType || "";
       const activeFeats = this.actor.items.filter(
-        (item2) => item2.type === "feat" && item2.system.active === true && item2.system.weaponDamageBonus > 0 && item2.system.weaponSkillType === linkedAttackSkill
+        (item2) => item2.type === "feat" && item2.system.active === true && item2.system.weaponDamageBonus > 0 && item2.system.weaponTypeBonus === weaponType2
       );
       activeFeats.forEach((activeFeat) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
