@@ -286,22 +286,41 @@ export class VehicleSheet extends ActorSheet {
     html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on('change', this._onOptionChange.bind(this));
 
     // Add narrative effect
-    html.find('.add-narrative-effect-button').on('click', async (event) => {
+    html.find('[data-action="add-narrative-effect"]').on('click', async (event) => {
       event.preventDefault();
       
       // Read current narrative effects from form inputs to preserve unsaved changes
-      const currentNarrativeEffects: string[] = [];
+      const currentNarrativeEffects: any[] = [];
       
       // Extract all narrative effect values from form (preserve order and unsaved changes)
-      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
-      narrativeEffectInputs.each((_index, input) => {
-        const inputElement = input as HTMLInputElement;
-        const value = inputElement.value || '';
-        currentNarrativeEffects.push(value);
+      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.each((_index, textarea) => {
+        const textareaElement = textarea as HTMLTextAreaElement;
+        const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
+        if (nameMatch) {
+          const index = parseInt(nameMatch[1]);
+          const text = textareaElement.value || '';
+          const isNegative = html.find(`input[name="system.narrativeEffects.${index}.isNegative"]`).is(':checked');
+          const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
+          const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          
+          currentNarrativeEffects[index] = {
+            text: text,
+            isNegative: isNegative,
+            value: value
+          };
+        }
       });
       
+      // Fill gaps in array
+      for (let i = 0; i < currentNarrativeEffects.length; i++) {
+        if (!currentNarrativeEffects[i]) {
+          currentNarrativeEffects[i] = { text: '', isNegative: false, value: 0 };
+        }
+      }
+      
       // Add new empty effect
-      currentNarrativeEffects.push('');
+      currentNarrativeEffects.push({ text: '', isNegative: false, value: 0 });
       
       await this.actor.update({
         'system.narrativeEffects': currentNarrativeEffects
@@ -309,20 +328,39 @@ export class VehicleSheet extends ActorSheet {
     });
 
     // Remove narrative effect
-    html.find('.remove-narrative-effect').on('click', async (event) => {
+    html.find('[data-action="remove-narrative-effect"]').on('click', async (event) => {
       event.preventDefault();
       const index = parseInt($(event.currentTarget).data('index') || '0');
       
       // Read current narrative effects from form inputs to preserve unsaved changes
-      const currentNarrativeEffects: string[] = [];
+      const currentNarrativeEffects: any[] = [];
       
       // Extract all narrative effect values from form (preserve order and unsaved changes)
-      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
-      narrativeEffectInputs.each((_inputIndex, input) => {
-        const inputElement = input as HTMLInputElement;
-        const value = inputElement.value || '';
-        currentNarrativeEffects.push(value);
+      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.each((_inputIndex, textarea) => {
+        const textareaElement = textarea as HTMLTextAreaElement;
+        const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
+        if (nameMatch) {
+          const effectIndex = parseInt(nameMatch[1]);
+          const text = textareaElement.value || '';
+          const isNegative = html.find(`input[name="system.narrativeEffects.${effectIndex}.isNegative"]`).is(':checked');
+          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          
+          currentNarrativeEffects[effectIndex] = {
+            text: text,
+            isNegative: isNegative,
+            value: value
+          };
+        }
       });
+      
+      // Fill gaps in array
+      for (let i = 0; i < currentNarrativeEffects.length; i++) {
+        if (!currentNarrativeEffects[i]) {
+          currentNarrativeEffects[i] = { text: '', isNegative: false, value: 0 };
+        }
+      }
       
       // Remove the effect at the specified index
       currentNarrativeEffects.splice(index, 1);

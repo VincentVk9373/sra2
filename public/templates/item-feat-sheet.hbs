@@ -1113,15 +1113,17 @@
                 <label>{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE"}}</label>
                 {{#if this.isNegative}}
                 <select name="system.narrativeEffects.{{@index}}.value">
-                  <option value="-1" {{#if (eq this.value -1)}}selected{{/if}}>-1</option>
-                  <option value="-2" {{#if (eq this.value -2)}}selected{{/if}}>-2</option>
-                  <option value="-3" {{#if (eq this.value -3)}}selected{{/if}}>-3</option>
-                  <option value="-4" {{#if (eq this.value -4)}}selected{{/if}}>-4</option>
                   <option value="-5" {{#if (eq this.value -5)}}selected{{/if}}>-5</option>
+                  <option value="-4" {{#if (eq this.value -4)}}selected{{/if}}>-4</option>
+                  <option value="-3" {{#if (eq this.value -3)}}selected{{/if}}>-3</option>
+                  <option value="-2" {{#if (eq this.value -2)}}selected{{/if}}>-2</option>
+                  <option value="-1" {{#if (eq this.value -1)}}selected{{/if}}>-1</option>
+                  <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0</option>
                 </select>
                 <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE_HINT"}}</p>
                 {{else}}
                 <select name="system.narrativeEffects.{{@index}}.value">
+                  <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0</option>
                   <option value="1" {{#if (eq this.value 1)}}selected{{/if}}>+1</option>
                   <option value="2" {{#if (eq this.value 2)}}selected{{/if}}>+2</option>
                   <option value="3" {{#if (eq this.value 3)}}selected{{/if}}>+3</option>

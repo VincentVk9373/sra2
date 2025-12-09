@@ -79,10 +79,11 @@
             "ONLY_WEAPONS_ALLOWED": "Only weapons can be added to vehicles",
             "BONUSES_AND_OPTIONS": "Bonuses and Options",
             "NARRATIVE_EFFECTS": "Narrative Effects",
-            "NARRATIVE_EFFECTS_HINT": "Each narrative effect costs 5000¥",
+            "NARRATIVE_EFFECTS_HINT": "Each narrative effect costs 5000¥ (except if value is 0)",
             "NARRATIVE_EFFECT_PLACEHOLDER": "Enter a narrative effect...",
             "ADD_NARRATIVE_EFFECT": "Add Narrative Effect",
             "REMOVE_EFFECT": "Remove this effect",
+            "NO_NARRATIVE_EFFECTS": "No narrative effects. Click the button above to add one.",
             "RR_LIST": "Risk Reduction List",
             "RR_LIST_HINT": "Risk reduction applied to all drone rolls",
             "ATTRIBUTES": {

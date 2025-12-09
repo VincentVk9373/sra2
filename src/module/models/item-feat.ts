@@ -592,10 +592,9 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         }),
         value: new fields.NumberField({
           required: true,
-          initial: 1,
+          initial: 0,
           min: -5,
-          max: 5,
-          integer: true
+          max: 5
         })
       }), {
         initial: [],
@@ -941,9 +940,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
     }
     
-    // Narrative effects: value per positive effect, value per negative effect (count non-empty strings)
-    const positiveEffects = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && !effect.isNegative);
-    const negativeEffects = narrativeEffects.filter((effect: any) => effect?.text && effect.text.trim() !== '' && effect.isNegative);
+    // Narrative effects: value per positive effect, value per negative effect (exclude effects with value 0)
+    const positiveEffects = narrativeEffects.filter((effect: any) => {
+      return effect?.text && effect.text.trim() !== '' && !effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== undefined;
+    });
+    const negativeEffects = narrativeEffects.filter((effect: any) => {
+      return effect?.text && effect.text.trim() !== '' && effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== undefined;
+    });
     
     if (positiveEffects.length > 0) {
       const positiveEffectValue = positiveEffects.reduce((sum: number, effect: any) => sum + (effect.value || 1), 0);

@@ -90,9 +90,21 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
         initial: "",
         label: "SRA2.FEATS.VEHICLE.WEAPON_INFO"
       }),
-      narrativeEffects: new fields.ArrayField(new fields.StringField({
-        required: false,
-        initial: ""
+      narrativeEffects: new fields.ArrayField(new fields.SchemaField({
+        text: new fields.StringField({
+          required: false,
+          initial: ""
+        }),
+        isNegative: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        value: new fields.NumberField({
+          required: true,
+          initial: 0,
+          min: -5,
+          max: 5
+        })
       }), {
         initial: [],
         label: "SRA2.VEHICLE.NARRATIVE_EFFECTS"
@@ -271,9 +283,14 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
       calculatedCost -= 5000; // -1 level = -5000
     }
     
-    // Add cost for narrative effects (5000 per effect)
+    // Add cost for narrative effects (5000 per effect, but only if value is not 0)
     const narrativeEffects = (this as any).narrativeEffects || [];
-    const narrativeEffectsCount = narrativeEffects.filter((effect: string) => effect && effect.trim() !== '').length;
+    const narrativeEffectsCount = narrativeEffects.filter((effect: any) => {
+      if (!effect || typeof effect !== 'object') return false;
+      const hasText = effect.text && effect.text.trim() !== '';
+      const hasValue = effect.value !== undefined && effect.value !== null && effect.value !== 0;
+      return hasText && hasValue;
+    }).length;
     calculatedCost += narrativeEffectsCount * 5000;
     
     // Add cost for weapons (get from actor items)

@@ -1134,10 +1134,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         }),
         value: new fields.NumberField({
           required: true,
-          initial: 1,
+          initial: 0,
           min: -5,
-          max: 5,
-          integer: true
+          max: 5
         })
       }), {
         initial: [],
@@ -1416,8 +1415,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevel += 3;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
     }
-    const positiveEffects = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && !effect.isNegative);
-    const negativeEffects = narrativeEffects.filter((effect) => effect?.text && effect.text.trim() !== "" && effect.isNegative);
+    const positiveEffects = narrativeEffects.filter((effect) => {
+      return effect?.text && effect.text.trim() !== "" && !effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== void 0;
+    });
+    const negativeEffects = narrativeEffects.filter((effect) => {
+      return effect?.text && effect.text.trim() !== "" && effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== void 0;
+    });
     if (positiveEffects.length > 0) {
       const positiveEffectValue = positiveEffects.reduce((sum, effect) => sum + (effect.value || 1), 0);
       recommendedLevel += positiveEffectValue;
@@ -1610,9 +1613,21 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
         initial: "",
         label: "SRA2.FEATS.VEHICLE.WEAPON_INFO"
       }),
-      narrativeEffects: new fields.ArrayField(new fields.StringField({
-        required: false,
-        initial: ""
+      narrativeEffects: new fields.ArrayField(new fields.SchemaField({
+        text: new fields.StringField({
+          required: false,
+          initial: ""
+        }),
+        isNegative: new fields.BooleanField({
+          required: true,
+          initial: false
+        }),
+        value: new fields.NumberField({
+          required: true,
+          initial: 0,
+          min: -5,
+          max: 5
+        })
       }), {
         initial: [],
         label: "SRA2.VEHICLE.NARRATIVE_EFFECTS"
@@ -1743,7 +1758,12 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
       calculatedCost -= 5e3;
     }
     const narrativeEffects = this.narrativeEffects || [];
-    const narrativeEffectsCount = narrativeEffects.filter((effect) => effect && effect.trim() !== "").length;
+    const narrativeEffectsCount = narrativeEffects.filter((effect) => {
+      if (!effect || typeof effect !== "object") return false;
+      const hasText = effect.text && effect.text.trim() !== "";
+      const hasValue = effect.value !== void 0 && effect.value !== null && effect.value !== 0;
+      return hasText && hasValue;
+    }).length;
     calculatedCost += narrativeEffectsCount * 5e3;
     const actor = this.parent;
     if (actor && actor.items) {
@@ -6066,30 +6086,62 @@ class VehicleSheet extends ActorSheet {
     html.find(".vehicle-type-select").on("change", this._onVehicleTypeChange.bind(this));
     html.find('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').on("change", this._onBonusChange.bind(this));
     html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on("change", this._onOptionChange.bind(this));
-    html.find(".add-narrative-effect-button").on("click", async (event) => {
+    html.find('[data-action="add-narrative-effect"]').on("click", async (event) => {
       event.preventDefault();
       const currentNarrativeEffects = [];
-      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
-      narrativeEffectInputs.each((_index, input) => {
-        const inputElement = input;
-        const value = inputElement.value || "";
-        currentNarrativeEffects.push(value);
+      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.each((_index, textarea) => {
+        const textareaElement = textarea;
+        const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
+        if (nameMatch) {
+          const index = parseInt(nameMatch[1]);
+          const text = textareaElement.value || "";
+          const isNegative = html.find(`input[name="system.narrativeEffects.${index}.isNegative"]`).is(":checked");
+          const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
+          const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          currentNarrativeEffects[index] = {
+            text,
+            isNegative,
+            value
+          };
+        }
       });
-      currentNarrativeEffects.push("");
+      for (let i = 0; i < currentNarrativeEffects.length; i++) {
+        if (!currentNarrativeEffects[i]) {
+          currentNarrativeEffects[i] = { text: "", isNegative: false, value: 0 };
+        }
+      }
+      currentNarrativeEffects.push({ text: "", isNegative: false, value: 0 });
       await this.actor.update({
         "system.narrativeEffects": currentNarrativeEffects
       });
     });
-    html.find(".remove-narrative-effect").on("click", async (event) => {
+    html.find('[data-action="remove-narrative-effect"]').on("click", async (event) => {
       event.preventDefault();
       const index = parseInt($(event.currentTarget).data("index") || "0");
       const currentNarrativeEffects = [];
-      const narrativeEffectInputs = html.find('input[name^="system.narrativeEffects."]');
-      narrativeEffectInputs.each((_inputIndex, input) => {
-        const inputElement = input;
-        const value = inputElement.value || "";
-        currentNarrativeEffects.push(value);
+      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.each((_inputIndex, textarea) => {
+        const textareaElement = textarea;
+        const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
+        if (nameMatch) {
+          const effectIndex = parseInt(nameMatch[1]);
+          const text = textareaElement.value || "";
+          const isNegative = html.find(`input[name="system.narrativeEffects.${effectIndex}.isNegative"]`).is(":checked");
+          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          currentNarrativeEffects[effectIndex] = {
+            text,
+            isNegative,
+            value
+          };
+        }
       });
+      for (let i = 0; i < currentNarrativeEffects.length; i++) {
+        if (!currentNarrativeEffects[i]) {
+          currentNarrativeEffects[i] = { text: "", isNegative: false, value: 0 };
+        }
+      }
       currentNarrativeEffects.splice(index, 1);
       await this.actor.update({
         "system.narrativeEffects": currentNarrativeEffects

@@ -366,30 +366,68 @@
 
       <!-- Narrative Effects Section -->
       <section class="content-section" data-section-content="feats">
-        <h2><i class="fas fa-star"></i> {{localize "SRA2.VEHICLE.NARRATIVE_EFFECTS"}}</h2>
+        <h2><i class="fas fa-magic"></i> {{localize "SRA2.VEHICLE.NARRATIVE_EFFECTS"}}</h2>
+        <button type="button" data-action="add-narrative-effect"
+          title="{{localize 'SRA2.VEHICLE.ADD_NARRATIVE_EFFECT'}}" class="add-entry-button">
+          <i class="fas fa-plus"></i> {{localize "SRA2.VEHICLE.ADD_NARRATIVE_EFFECT"}}
+        </button>
 
-        <section class="sheet-body">
-          <div class="narrative-effects-section">
-            <p class="narrative-effects-hint">{{localize "SRA2.VEHICLE.NARRATIVE_EFFECTS_HINT"}}</p>
-
-            <div class="narrative-effects-list">
-              {{#each system.narrativeEffects}}
-              <div class="narrative-effect-item">
-                <textarea name="system.narrativeEffects.{{@index}}"
-                  placeholder="{{localize 'SRA2.VEHICLE.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this}}</textarea>
-                <button type="button" class="remove-narrative-effect" data-index="{{@index}}"
-                  title="{{localize 'SRA2.VEHICLE.REMOVE_EFFECT'}}">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-              {{/each}}
+        <div class="narrative-effects-container">
+          {{#if system.narrativeEffects}}
+          {{#each system.narrativeEffects}}
+          <div class="narrative-effect-entry">
+            <div class="narrative-effect-header">
+              <span class="entry-number">{{localize "SRA2.FEATS.EFFECT_NUMBER"}} {{add @index 1}}</span>
+              <button type="button" data-action="remove-narrative-effect" data-index="{{@index}}"
+                title="{{localize 'SRA2.VEHICLE.REMOVE_EFFECT'}}">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
 
-            <button type="button" class="add-narrative-effect-button" data-action="add-narrative-effect">
-              <i class="fas fa-plus"></i> {{localize "SRA2.VEHICLE.ADD_NARRATIVE_EFFECT"}}
-            </button>
+            <div class="form-group">
+              <textarea name="system.narrativeEffects.{{@index}}.text"
+                placeholder="{{localize 'SRA2.VEHICLE.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this.text}}</textarea>
+            </div>
+
+            <div class="form-group narrative-effect-negative">
+              <label>
+                <input type="checkbox" name="system.narrativeEffects.{{@index}}.isNegative" {{checked
+                  this.isNegative}} />
+                {{localize "SRA2.FEATS.NARRATIVE_EFFECT_NEGATIVE"}}
+              </label>
+              <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_NEGATIVE_HINT"}}</p>
+            </div>
+
+            <div class="form-group narrative-effect-value">
+              <label>{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE"}}</label>
+              {{#if this.isNegative}}
+              <select name="system.narrativeEffects.{{@index}}.value">
+                <option value="-5" {{#if (eq this.value -5)}}selected{{/if}}>-5</option>
+                <option value="-4" {{#if (eq this.value -4)}}selected{{/if}}>-4</option>
+                <option value="-3" {{#if (eq this.value -3)}}selected{{/if}}>-3</option>
+                <option value="-2" {{#if (eq this.value -2)}}selected{{/if}}>-2</option>
+                <option value="-1" {{#if (eq this.value -1)}}selected{{/if}}>-1</option>
+                <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0</option>
+              </select>
+              <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE_HINT"}}</p>
+              {{else}}
+              <select name="system.narrativeEffects.{{@index}}.value">
+                <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0</option>
+                <option value="1" {{#if (eq this.value 1)}}selected{{/if}}>+1</option>
+                <option value="2" {{#if (eq this.value 2)}}selected{{/if}}>+2</option>
+                <option value="3" {{#if (eq this.value 3)}}selected{{/if}}>+3</option>
+                <option value="4" {{#if (eq this.value 4)}}selected{{/if}}>+4</option>
+                <option value="5" {{#if (eq this.value 5)}}selected{{/if}}>+5</option>
+              </select>
+              <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE_POSITIVE_HINT"}}</p>
+              {{/if}}
+            </div>
           </div>
-        </section>
+          {{/each}}
+          {{else}}
+          <p class="no-entries">{{localize "SRA2.VEHICLE.NO_NARRATIVE_EFFECTS"}}</p>
+          {{/if}}
+        </div>
       </section>
     </div>
   </div>

@@ -958,6 +958,156 @@
           }
         }
 
+        /* Narrative Effects Container (from item-sheet style) */
+        .narrative-effects-container {
+          .narrative-effect-entry {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--sr-ui-border-color);
+            border-radius: var(--sr-border-radius-md);
+            overflow: visible;
+
+            .narrative-effect-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.75rem;
+
+              .entry-number {
+                font-weight: bold;
+                color: var(--sr-text-color-grey);
+              }
+
+              button {
+                background: #ff6b6b;
+                color: #fff;
+                border: none;
+                padding: 0.25rem 0.5rem;
+                border-radius: var(--sr-border-radius-md);
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                  background: #ff5252;
+                  transform: scale(1.05);
+                }
+              }
+            }
+
+            .form-group {
+              margin-bottom: 1rem;
+
+              textarea {
+                width: 100%;
+                padding: 0.5rem;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid var(--sr-ui-border-color);
+                border-radius: var(--sr-border-radius-md);
+                color: var(--sr-text-color-light);
+                min-height: 60px;
+                resize: vertical;
+
+                &:focus {
+                  outline: none;
+                  border-color: var(--sr-ui-color-active);
+                  background: rgba(0, 212, 255, 0.1);
+                }
+              }
+
+              &.narrative-effect-negative {
+                label {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  cursor: pointer;
+
+                  input[type="checkbox"] {
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                  }
+                }
+
+                .notes {
+                  margin: 0.25rem 0 0;
+                  font-size: 0.8rem;
+                  color: var(--sr-ui-color);
+                  font-style: italic;
+                }
+              }
+
+              &.narrative-effect-value {
+                label {
+                  display: block;
+                  font-size: 0.9rem;
+                  margin-bottom: 0.25rem;
+                  color: var(--sr-ui-color);
+                  font-weight: bold;
+                }
+
+                select {
+                  width: 100%;
+                  padding: 0.5rem;
+                  border: 1px solid var(--sr-ui-border-color);
+                  background: rgba(15, 52, 96, 0.3);
+                  color: var(--sr-text-color-light);
+                  border-radius: var(--sr-border-radius-md);
+                  cursor: pointer;
+
+                  &:focus {
+                    outline: none;
+                    border-color: var(--sr-ui-color);
+                  }
+
+                  option {
+                    background: #1a1a1a;
+                    color: #fff;
+                  }
+                }
+
+                .notes {
+                  margin: 0.25rem 0 0;
+                  font-size: 0.8rem;
+                  color: var(--sr-ui-color);
+                  font-style: italic;
+                }
+              }
+            }
+          }
+
+          .no-entries {
+            text-align: center;
+            padding: 2rem;
+            color: var(--sr-ui-color);
+            font-style: italic;
+            font-size: 0.95rem;
+          }
+        }
+
+        /* Add Entry Button (from item-sheet style) */
+        .add-entry-button {
+          margin-bottom: 1rem;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, #4dd0e1 100%);
+          color: #fff;
+          border: none;
+          border-radius: var(--sr-border-radius-md);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s;
+
+          &:hover {
+            background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+          }
+
+          i {
+            margin-right: 0.5rem;
+          }
+        }
+
     /* Metatype Section */
     .metatype-section {
       margin-top: 1rem;

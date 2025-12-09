@@ -1,4 +1,156 @@
 /* Item Sheet Styles - Matching Roll Dialog Theme */
+      .section-content {
+        flex: 1;
+        padding: 1rem;
+
+        .content-section {
+          display: none;
+
+          &.active {
+            display: block;
+          }
+
+          h2 {
+            font-size: 1.3rem;
+            margin: 0 0 1.5rem 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--sr-ui-color-active);
+            color: var(--sr-ui-color-active);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+              font-size: 1.1rem;
+            }
+          }
+
+          h4 {
+            font-size: 1rem;
+            margin: 1.5rem 0 1rem 0;
+            color: var(--sr-ui-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+        }
+
+        .add-entry-button {
+          margin-bottom: 1rem;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, #4dd0e1 100%);
+          color: #fff;
+          border: none;
+          border-radius: var(--sr-border-radius-md);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s;
+
+          &:hover {
+            background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+          }
+
+          i {
+            margin-right: 0.5rem;
+          }
+        }
+
+        .rr-entries-container,
+        .narrative-effects-container {
+
+          .rr-entry,
+          .narrative-effect-entry {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--sr-ui-border-color);
+            border-radius: var(--sr-border-radius-md);
+            overflow: visible;
+
+            .rr-entry-header,
+            .narrative-effect-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.75rem;
+
+              .entry-number {
+                font-weight: bold;
+                color: var(--sr-text-color-grey);
+              }
+
+              button {
+                background: #ff6b6b;
+                color: #fff;
+                border: none;
+                padding: 0.25rem 0.5rem;
+                border-radius: var(--sr-border-radius-md);
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                  background: #ff5252;
+                  transform: scale(1.05);
+                }
+              }
+            }
+          }
+
+          .no-entries {
+            text-align: center;
+            padding: 2rem;
+            color: var(--sr-ui-color);
+            font-style: italic;
+            font-size: 0.95rem;
+          }
+        }
+
+        .weapon-info-display,
+        .vehicle-info-display {
+          padding: 1rem;
+          background: rgba(74, 158, 255, 0.1);
+          border: 1px solid var(--sr-ui-color-active);
+          border-radius: var(--sr-border-radius-md);
+          margin-bottom: 1rem;
+
+          label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--sr-ui-color-active);
+            margin-bottom: 0.5rem;
+          }
+
+          .weapon-stats,
+          .vehicle-stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+
+            .stat-label {
+              font-weight: bold;
+              color: var(--sr-text-color-light)
+            }
+
+            .stat-value {
+              color: #fff;
+              font-weight: 600;
+              background: rgba(15, 52, 96, 0.4);
+              padding: 0.15rem 0.4rem;
+              border-radius: var(--sr-border-radius-sm);
+            }
+
+            .stat-separator {
+              color: var(--sr-text-color-light);
+              font-weight: bold;
+            }
+          }
+        }
+      }
 .sra2-item-sheet {
   background: linear-gradient(135deg, var(--sr-ui-bg-color-dark) 0%, var(--sr-ui-bg-color) 100%);
   color: var(--sr-text-color-light);
@@ -158,159 +310,6 @@
 
           i {
             margin: 0;
-          }
-        }
-      }
-
-      .section-content {
-        flex: 1;
-        padding: 1rem;
-
-        .content-section {
-          display: none;
-
-          &.active {
-            display: block;
-          }
-
-          h2 {
-            font-size: 1.3rem;
-            margin: 0 0 1.5rem 0;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--sr-ui-color-active);
-            color: var(--sr-ui-color-active);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            i {
-              font-size: 1.1rem;
-            }
-          }
-
-          h4 {
-            font-size: 1rem;
-            margin: 1.5rem 0 1rem 0;
-            color: var(--sr-ui-color);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
-        }
-
-        .add-entry-button {
-          margin-bottom: 1rem;
-          padding: 0.5rem 1rem;
-          background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, #4dd0e1 100%);
-          color: #fff;
-          border: none;
-          border-radius: var(--sr-border-radius-md);
-          cursor: pointer;
-          font-weight: 600;
-          transition: all 0.2s;
-
-          &:hover {
-            background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
-          }
-
-          i {
-            margin-right: 0.5rem;
-          }
-        }
-
-        .rr-entries-container,
-        .narrative-effects-container {
-
-          .rr-entry,
-          .narrative-effect-entry {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--sr-ui-border-color);
-            border-radius: var(--sr-border-radius-md);
-            overflow: visible;
-
-            .rr-entry-header,
-            .narrative-effect-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 0.75rem;
-
-              .entry-number {
-                font-weight: bold;
-                color: var(--sr-text-color-grey);
-              }
-
-              button {
-                background: #ff6b6b;
-                color: #fff;
-                border: none;
-                padding: 0.25rem 0.5rem;
-                border-radius: var(--sr-border-radius-md);
-                cursor: pointer;
-                transition: all 0.2s;
-
-                &:hover {
-                  background: #ff5252;
-                  transform: scale(1.05);
-                }
-              }
-            }
-          }
-
-          .no-entries {
-            text-align: center;
-            padding: 2rem;
-            color: var(--sr-ui-color);
-            font-style: italic;
-            font-size: 0.95rem;
-          }
-        }
-
-        .weapon-info-display,
-        .vehicle-info-display {
-          padding: 1rem;
-          background: rgba(74, 158, 255, 0.1);
-          border: 1px solid var(--sr-ui-color-active);
-          border-radius: var(--sr-border-radius-md);
-          margin-bottom: 1rem;
-
-          label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: var(--sr-ui-color-active);
-            margin-bottom: 0.5rem;
-          }
-
-          .weapon-stats,
-          .vehicle-stats {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-
-            .stat-label {
-              font-weight: bold;
-              color: var(--sr-text-color-light)
-            }
-
-            .stat-value {
-              color: #fff;
-              font-weight: 600;
-              background: rgba(15, 52, 96, 0.4);
-              padding: 0.15rem 0.4rem;
-              border-radius: var(--sr-border-radius-sm);
-            }
-
-            .stat-separator {
-              color: var(--sr-text-color-light);
-              font-weight: bold;
-            }
           }
         }
       }

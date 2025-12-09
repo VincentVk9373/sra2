@@ -56,10 +56,11 @@
             "ONLY_WEAPONS_ALLOWED": "Seules les armes peuvent être ajoutées aux véhicules",
             "BONUSES_AND_OPTIONS": "Bonus et Options",
             "NARRATIVE_EFFECTS": "Effets Narratifs",
-            "NARRATIVE_EFFECTS_HINT": "Chaque effet narratif coûte 5000¥",
+            "NARRATIVE_EFFECTS_HINT": "Chaque effet narratif coûte 5000¥ (sauf si la valeur est 0)",
             "NARRATIVE_EFFECT_PLACEHOLDER": "Entrer un effet narratif...",
             "ADD_NARRATIVE_EFFECT": "Ajouter un effet narratif",
             "REMOVE_EFFECT": "Supprimer cet effet",
+            "NO_NARRATIVE_EFFECTS": "Aucun effet narratif. Cliquez sur le bouton ci-dessus pour en ajouter un.",
             "ATTRIBUTES": {
                 "LABEL": "Attributs",
                 "AUTOPILOT": "Autopilote",
