@@ -236,7 +236,7 @@
             <p class="notes">{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_HINT"}}</p>
           </div>
 
-          {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment"))}}
+          {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment") (eq system.featType "cyberware"))}}
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON_DAMAGE_BONUS"}}</label>
             <input type="number" name="system.weaponDamageBonus" value="{{system.weaponDamageBonus}}" min="0" />

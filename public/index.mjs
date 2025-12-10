@@ -1783,13 +1783,21 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
       calculatedCost -= 5e3;
     }
     const narrativeEffects = this.narrativeEffects || [];
-    const narrativeEffectsCount = narrativeEffects.filter((effect) => {
-      if (!effect || typeof effect !== "object") return false;
-      const hasText = effect.text && effect.text.trim() !== "";
-      const hasValue = effect.value !== void 0 && effect.value !== null && effect.value !== 0;
-      return hasText && hasValue;
-    }).length;
-    calculatedCost += narrativeEffectsCount * 5e3;
+    let narrativeEffectsCost = 0;
+    narrativeEffects.forEach((effect) => {
+      if (typeof effect === "string") {
+        if (effect && effect.trim() !== "") {
+          narrativeEffectsCost += 5e3;
+        }
+      } else if (effect && typeof effect === "object") {
+        const hasText = effect.text && effect.text.trim() !== "";
+        const value = effect.value !== void 0 && effect.value !== null ? effect.value : 0;
+        if (hasText && value !== 0) {
+          narrativeEffectsCost += value * 5e3;
+        }
+      }
+    });
+    calculatedCost += narrativeEffectsCost;
     const actor = this.parent;
     if (actor && actor.items) {
       const weapons = actor.items.filter((item) => {

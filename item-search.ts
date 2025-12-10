@@ -11,6 +11,8 @@ export function normalizeSearchText(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
+    // remove (.*) in normalization
+    .replace(/ ?\(.*\)/g, '')
     .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
 }
 

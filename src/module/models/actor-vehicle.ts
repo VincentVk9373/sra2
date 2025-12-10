@@ -283,15 +283,31 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
       calculatedCost -= 5000; // -1 level = -5000
     }
     
-    // Add cost for narrative effects (5000 per effect, but only if value is not 0)
+    // Add cost for narrative effects based on their values (5000 per point of value)
+    // Positive values add to cost, negative values reduce cost
     const narrativeEffects = (this as any).narrativeEffects || [];
-    const narrativeEffectsCount = narrativeEffects.filter((effect: any) => {
-      if (!effect || typeof effect !== 'object') return false;
-      const hasText = effect.text && effect.text.trim() !== '';
-      const hasValue = effect.value !== undefined && effect.value !== null && effect.value !== 0;
-      return hasText && hasValue;
-    }).length;
-    calculatedCost += narrativeEffectsCount * 5000;
+    let narrativeEffectsCost = 0;
+    
+    narrativeEffects.forEach((effect: any) => {
+      // Handle both old format (strings) and new format (objects)
+      if (typeof effect === 'string') {
+        // Old format: each string effect counts as +1 (5000 yens)
+        if (effect && effect.trim() !== '') {
+          narrativeEffectsCost += 5000;
+        }
+      } else if (effect && typeof effect === 'object') {
+        // New format: use the value of the effect
+        const hasText = effect.text && effect.text.trim() !== '';
+        const value = effect.value !== undefined && effect.value !== null ? effect.value : 0;
+        
+        if (hasText && value !== 0) {
+          // Each point of value = 5000 yens (positive adds, negative subtracts)
+          narrativeEffectsCost += value * 5000;
+        }
+      }
+    });
+    
+    calculatedCost += narrativeEffectsCost;
     
     // Add cost for weapons (get from actor items)
     const actor = (this as any).parent;
