@@ -525,6 +525,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         label: "SRA2.FEATS.CYBERDECK.DAMAGE"
       }),
+      // Cyberdeck bonus light damage (+1 light damage box for cyberdeck, +1 to recommended level)
+      cyberdeckBonusLightDamage: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.BONUS_LIGHT_DAMAGE"
+      }),
       // Contact specific fields
       contactName: new fields.StringField({
         required: true,
@@ -870,6 +876,13 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (featType === 'cyberdeck' && firewall > 0) {
       recommendedLevel += firewall;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.FIREWALL', labelParams: `(${firewall})`, value: firewall });
+    }
+    
+    // Cyberdeck bonus light damage: +3 to recommended level
+    const cyberdeckBonusLightDamage = (this as any).cyberdeckBonusLightDamage || false;
+    if (featType === 'cyberdeck' && cyberdeckBonusLightDamage) {
+      recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE', value: 3 });
     }
     
     // Attack: starts at 0, each level is +1

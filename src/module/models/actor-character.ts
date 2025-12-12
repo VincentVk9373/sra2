@@ -326,6 +326,19 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     const strength = (this as any).attributes?.strength || 1;
     const willpower = (this as any).attributes?.willpower || 1;
     
+    // Find active cyberdeck to get firewall for matrix thresholds
+    let firewall = 0;
+    if (parent && parent.items) {
+      const activeCyberdeck = parent.items.find((item: any) => 
+        item.type === 'feat' && 
+        item.system.featType === 'cyberdeck' && 
+        item.system.active === true
+      );
+      if (activeCyberdeck && activeCyberdeck.system) {
+        firewall = activeCyberdeck.system.firewall || 1;
+      }
+    }
+    
     (this as any).damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -341,6 +354,11 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         light: willpower + bonusMentalThreshold,
         severe: willpower + bonusMentalThreshold + 3,
         incapacitating: willpower + bonusMentalThreshold + 6
+      },
+      matrix: {
+        light: firewall,
+        severe: firewall * 2,
+        incapacitating: firewall * 3
       }
     };
     

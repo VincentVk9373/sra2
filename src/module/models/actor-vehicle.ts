@@ -92,8 +92,8 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
       }),
       narrativeEffects: new fields.ArrayField(new fields.SchemaField({
         text: new fields.StringField({
-          required: false,
-          initial: ""
+        required: false,
+        initial: ""
         }),
         isNegative: new fields.BooleanField({
           required: true,

@@ -200,7 +200,8 @@
             "INCAPACITATING_SHORT": "Incapa.",
             "WITHOUT_ARMOR": "Sans armure",
             "WITH_ARMOR": "Avec armure",
-            "MENTAL": "Mental"
+            "MENTAL": "Mental",
+            "MATRIX": "Matriciel"
         },
         "DAMAGE": {
             "LABEL": "Dégâts",
@@ -362,6 +363,7 @@
                 "MENTAL_THRESHOLD": "Seuil mental",
                 "FIREWALL": "Pare-feu cyberdeck",
                 "ATTACK": "Attaque",
+                "CYBERDECK_BONUS_LIGHT_DAMAGE": "+1 blessure légère (cyberdeck)",
                 "RIGGER_CONSOLE": "Console de rigger",
                 "VEHICLE_WIRING": "Câblage de contrôle véhicule",
                 "WEAPON_FOCUS": "Focus d'arme",
@@ -542,7 +544,9 @@
                 "ATTACK_SHORT": "Attaque",
                 "DAMAGE_THRESHOLDS": "Seuils de dégâts",
                 "DAMAGE_TRACK": "Piste de dégâts",
-                "DAMAGE": "Dégâts"
+                "DAMAGE": "Dégâts",
+                "BONUS_LIGHT_DAMAGE": "+1 blessure légère",
+                "BONUS_LIGHT_DAMAGE_HINT": "Ajoute +1 au nombre de blessures légères du cyberdeck (passe de 2 à 3) et augmente le coût recommandé de l'atout de +3"
             },
             "CONTACT": {
                 "SECTION_TITLE": "Informations du Contact",

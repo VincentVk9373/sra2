@@ -337,6 +337,15 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.armorCost = armorLevel * 2500;
     const strength = this.attributes?.strength || 1;
     const willpower = this.attributes?.willpower || 1;
+    let firewall = 0;
+    if (parent && parent.items) {
+      const activeCyberdeck = parent.items.find(
+        (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
+      );
+      if (activeCyberdeck && activeCyberdeck.system) {
+        firewall = activeCyberdeck.system.firewall || 1;
+      }
+    }
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -352,6 +361,11 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         light: willpower + bonusMentalThreshold,
         severe: willpower + bonusMentalThreshold + 3,
         incapacitating: willpower + bonusMentalThreshold + 6
+      },
+      matrix: {
+        light: firewall,
+        severe: firewall * 2,
+        incapacitating: firewall * 3
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -1067,6 +1081,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         label: "SRA2.FEATS.CYBERDECK.DAMAGE"
       }),
+      // Cyberdeck bonus light damage (+1 light damage box for cyberdeck, +1 to recommended level)
+      cyberdeckBonusLightDamage: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.BONUS_LIGHT_DAMAGE"
+      }),
       // Contact specific fields
       contactName: new fields.StringField({
         required: true,
@@ -1370,6 +1390,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "cyberdeck" && firewall > 0) {
       recommendedLevel += firewall;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.FIREWALL", labelParams: `(${firewall})`, value: firewall });
+    }
+    const cyberdeckBonusLightDamage = this.cyberdeckBonusLightDamage || false;
+    if (featType === "cyberdeck" && cyberdeckBonusLightDamage) {
+      recommendedLevel += 3;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE", value: 3 });
     }
     if (attack > 0) {
       recommendedLevel += attack;
@@ -2072,7 +2097,7 @@ const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
 }, Symbol.toStringTag, { value: "Module" }));
 function normalizeSearchText(text) {
   if (!text) return "";
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return text.toLowerCase().normalize("NFD").replace(/ ?\(.*\)/g, "").replace(/[\u0300-\u036f]/g, "");
 }
 function itemMatchesSearch(item, itemType, searchTerm, includePackName = false, packTitle) {
   if (item.type !== itemType) return false;
@@ -4292,18 +4317,26 @@ class CharacterSheet extends ActorSheet {
         severe: firewall * 2,
         incapacitating: firewall * 3
       };
+      const baseLightBoxes = cyberdeck.system.cyberdeckBonusLightDamage === true ? 3 : 2;
       if (!cyberdeck.system.cyberdeckDamage) {
         cyberdeck.system.cyberdeckDamage = {
-          light: [false, false],
+          light: Array(baseLightBoxes).fill(false),
           severe: [false],
           incapacitating: false
         };
       } else {
         if (!Array.isArray(cyberdeck.system.cyberdeckDamage.light)) {
-          cyberdeck.system.cyberdeckDamage.light = [false, false];
-        } else if (cyberdeck.system.cyberdeckDamage.light.length < 2) {
-          while (cyberdeck.system.cyberdeckDamage.light.length < 2) {
-            cyberdeck.system.cyberdeckDamage.light.push(false);
+          cyberdeck.system.cyberdeckDamage.light = Array(baseLightBoxes).fill(false);
+        } else {
+          const currentLength = cyberdeck.system.cyberdeckDamage.light.length;
+          if (currentLength < baseLightBoxes) {
+            while (cyberdeck.system.cyberdeckDamage.light.length < baseLightBoxes) {
+              cyberdeck.system.cyberdeckDamage.light.push(false);
+            }
+          } else if (currentLength > baseLightBoxes) {
+            while (cyberdeck.system.cyberdeckDamage.light.length > baseLightBoxes) {
+              cyberdeck.system.cyberdeckDamage.light.pop();
+            }
           }
         }
         if (!Array.isArray(cyberdeck.system.cyberdeckDamage.severe)) {

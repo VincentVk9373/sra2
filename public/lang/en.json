@@ -276,7 +276,8 @@
             "INCAPACITATING_SHORT": "Incapa.",
             "WITHOUT_ARMOR": "Without armor",
             "WITH_ARMOR": "With armor",
-            "MENTAL": "Mental"
+            "MENTAL": "Mental",
+            "MATRIX": "Matrix"
         },
         "DAMAGE": {
             "LABEL": "Damage",
@@ -438,6 +439,7 @@
                 "MENTAL_THRESHOLD": "Mental threshold",
                 "FIREWALL": "Cyberdeck firewall",
                 "ATTACK": "Attack",
+                "CYBERDECK_BONUS_LIGHT_DAMAGE": "+1 light damage (cyberdeck)",
                 "RIGGER_CONSOLE": "Rigger console",
                 "VEHICLE_WIRING": "Vehicle control wiring",
                 "WEAPON_FOCUS": "Weapon focus",
@@ -623,7 +625,9 @@
                 "ATTACK_SHORT": "Attack",
                 "DAMAGE_THRESHOLDS": "Damage Thresholds",
                 "DAMAGE_TRACK": "Damage Track",
-                "DAMAGE": "Damage"
+                "DAMAGE": "Damage",
+                "BONUS_LIGHT_DAMAGE": "+1 light damage",
+                "BONUS_LIGHT_DAMAGE_HINT": "Adds +1 to the cyberdeck's number of light damage boxes (from 2 to 3) and increases the feat's recommended cost by +3"
             },
             "CONTACT": {
                 "SECTION_TITLE": "Contact Information",

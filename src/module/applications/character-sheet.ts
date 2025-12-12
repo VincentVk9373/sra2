@@ -221,20 +221,33 @@ export class CharacterSheet extends ActorSheet {
         severe: firewall * 2,
         incapacitating: firewall * 3
       };
+      // Calculate base light damage boxes (2, or 3 if cyberdeckBonusLightDamage is checked)
+      const baseLightBoxes = (cyberdeck.system.cyberdeckBonusLightDamage === true) ? 3 : 2;
+      
       // Ensure cyberdeckDamage exists
       if (!cyberdeck.system.cyberdeckDamage) {
         cyberdeck.system.cyberdeckDamage = {
-          light: [false, false],
+          light: Array(baseLightBoxes).fill(false),
           severe: [false],
           incapacitating: false
         };
       } else {
         // Ensure arrays exist and have correct length
         if (!Array.isArray(cyberdeck.system.cyberdeckDamage.light)) {
-          cyberdeck.system.cyberdeckDamage.light = [false, false];
-        } else if (cyberdeck.system.cyberdeckDamage.light.length < 2) {
-          while (cyberdeck.system.cyberdeckDamage.light.length < 2) {
-            cyberdeck.system.cyberdeckDamage.light.push(false);
+          cyberdeck.system.cyberdeckDamage.light = Array(baseLightBoxes).fill(false);
+        } else {
+          // Adjust array size based on bonus
+          const currentLength = cyberdeck.system.cyberdeckDamage.light.length;
+          if (currentLength < baseLightBoxes) {
+            // Add missing boxes (preserve existing values)
+            while (cyberdeck.system.cyberdeckDamage.light.length < baseLightBoxes) {
+              cyberdeck.system.cyberdeckDamage.light.push(false);
+            }
+          } else if (currentLength > baseLightBoxes) {
+            // Remove excess boxes (from the end, preserve existing values)
+            while (cyberdeck.system.cyberdeckDamage.light.length > baseLightBoxes) {
+              cyberdeck.system.cyberdeckDamage.light.pop();
+            }
           }
         }
         if (!Array.isArray(cyberdeck.system.cyberdeckDamage.severe)) {

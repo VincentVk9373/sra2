@@ -374,15 +374,15 @@
 
         <div class="narrative-effects-container">
           {{#if system.narrativeEffects}}
-          {{#each system.narrativeEffects}}
+              {{#each system.narrativeEffects}}
           <div class="narrative-effect-entry">
             <div class="narrative-effect-header">
               <span class="entry-number">{{localize "SRA2.FEATS.EFFECT_NUMBER"}} {{add @index 1}}</span>
               <button type="button" data-action="remove-narrative-effect" data-index="{{@index}}"
-                title="{{localize 'SRA2.VEHICLE.REMOVE_EFFECT'}}">
+                  title="{{localize 'SRA2.VEHICLE.REMOVE_EFFECT'}}">
                 <i class="fas fa-trash"></i>
-              </button>
-            </div>
+                </button>
+              </div>
 
             <div class="form-group">
               <textarea name="system.narrativeEffects.{{@index}}.text"
