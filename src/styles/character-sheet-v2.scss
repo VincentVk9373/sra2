@@ -547,8 +547,6 @@
 
                     /* Inactive feat styling */
                     &.feat-inactive {
-                        opacity: 0.7;
-
                         .name-wrapper .name.feat-name-inactive {
                             text-decoration: line-through;
                             font-style: italic;
@@ -628,15 +626,15 @@
                         position: absolute;
                         top: 100%;
                         left: 0;
-                        z-index: 1000;
-                        background: rgba(57, 77, 115, .9);
-                        ;
+                        z-index: 10000;
+                        background: rgba(57, 77, 115, .95);
                         border: 0;
                         // border-radius: 4px;
                         // padding: 4px 0;
                         width: calc(100%);
                         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
                         margin-top: 4px;
+                        opacity: 1 !important; // Always fully visible
 
                         &.active {
                             display: block;
