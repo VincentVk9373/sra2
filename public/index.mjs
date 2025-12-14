@@ -3393,7 +3393,10 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
         feat.rrEntries.push(entry);
       }
     }
-    if (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells") {
+    const isWeapon = feat.system.featType === "weapon";
+    const isSpell = feat.system.featType === "spell";
+    const isAdeptPowerWeapon = feat.system.isAdeptPowerWeapon || false;
+    if (isWeapon || isSpell || isAdeptPowerWeapon) {
       const damageValue = feat.system.damageValue || "0";
       let damageValueBonus = feat.system.damageValueBonus || 0;
       if (actor) {
@@ -7667,8 +7670,19 @@ class RollDialog extends Application {
     const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName] : void 0;
     let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
     const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
-    const damageValue = selectedWeapon.damageValue;
-    const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+    const baseDamageValue = selectedWeapon.damageValue || weaponSystem?.damageValue || "0";
+    let damageValueBonus = selectedWeapon.damageValueBonus || weaponSystem?.damageValueBonus || 0;
+    const weaponType = wepTypeName || "";
+    if (weaponType && this.actor) {
+      const activeFeats = this.actor.items.filter(
+        (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
+      );
+      activeFeats.forEach((activeFeat) => {
+        damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+      });
+    }
+    damageValueBonus = Math.min(damageValueBonus, 2);
+    const damageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
     if (!baseSkillName) {
       baseSkillName = "Combat rapproché";
     }
@@ -8260,8 +8274,19 @@ class RollDialog extends Application {
       const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName] : void 0;
       let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
       const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
-      const damageValue = selectedWeapon.damageValue;
-      const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+      const baseDamageValue = selectedWeapon.damageValue || weaponSystem?.damageValue || "0";
+      let damageValueBonus = selectedWeapon.damageValueBonus || weaponSystem?.damageValueBonus || 0;
+      const weaponType = wepTypeName || "";
+      if (weaponType && this.actor) {
+        const activeFeats = this.actor.items.filter(
+          (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
+        );
+        activeFeats.forEach((activeFeat) => {
+          damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+        });
+      }
+      damageValueBonus = Math.min(damageValueBonus, 2);
+      const damageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
       if (!baseSkillName) {
         baseSkillName = "Combat rapproché";
       }

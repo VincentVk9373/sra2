@@ -2289,6 +2289,7 @@ export class CharacterSheet extends ActorSheet {
       let damageValueBonus = itemSystem.damageValueBonus || 0;
       
       // Add bonus from active feats that match the weapon's type
+      // This applies to all weapons, including adept power weapons
       const weaponType = itemSystem.weaponType || '';
       const activeFeats = this.actor.items.filter((item: any) => 
         item.type === 'feat' && 
