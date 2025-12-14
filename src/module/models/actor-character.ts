@@ -318,9 +318,31 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       (this as any).anarchySpent.pop();
     }
     
+    // Calculate armor level from active armor feats
+    // Armor feats stack (addition)
+    let totalArmorLevel = 0;
+    if (parent && parent.items) {
+      const activeArmorFeats = parent.items.filter((item: any) => 
+        item.type === 'feat' && 
+        item.system.featType === 'armor' && 
+        item.system.active === true &&
+        (item.system.armorValue || 0) > 0
+      );
+      
+      // Sum all active armor values
+      totalArmorLevel = activeArmorFeats.reduce((sum: number, item: any) => {
+        return sum + (item.system.armorValue || 0);
+      }, 0);
+      
+      // Cap at maximum of 5
+      totalArmorLevel = Math.min(totalArmorLevel, 5);
+    }
+    
+    // Store calculated armor level (read-only, calculated from feats)
+    (this as any).armorLevel = totalArmorLevel;
+    
     // Calculate armor cost (2500 per level)
-    const armorLevel = (this as any).armorLevel || 0;
-    (this as any).armorCost = armorLevel * 2500;
+    (this as any).armorCost = totalArmorLevel * 2500;
     
     // Calculate damage thresholds (with bonuses from feats)
     const strength = (this as any).attributes?.strength || 1;
@@ -346,9 +368,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         incapacitating: strength + bonusPhysicalThreshold + 6
       },
       withArmor: {
-        light: strength + armorLevel + bonusPhysicalThreshold,
-        severe: strength + armorLevel + bonusPhysicalThreshold + 3,
-        incapacitating: strength + armorLevel + bonusPhysicalThreshold + 6
+        light: strength + totalArmorLevel + bonusPhysicalThreshold,
+        severe: strength + totalArmorLevel + bonusPhysicalThreshold + 3,
+        incapacitating: strength + totalArmorLevel + bonusPhysicalThreshold + 6
       },
       mental: {
         light: willpower + bonusMentalThreshold,

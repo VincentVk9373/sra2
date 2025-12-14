@@ -5,7 +5,7 @@
         <div class="avatar-section">
             <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
             <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V1'}}">
-                <i class="fas fa-gear"></i>
+                <i class="fas fa-exchange-alt"></i>
             </button>
         </div>
         <div class="name">
@@ -381,6 +381,32 @@
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                </div>
+                            </div>
+                            {{/each}}
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
+                {{#if featsByType.armor}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.ARMOR"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            {{#each featsByType.armor}}
+                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
+                                <div class="name-wrapper">
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{this.name}}
+                                        {{#if (gt this.system.armorValue 0)}}
+                                        <span class="armor-value-info" title="{{localize 'SRA2.FEATS.ARMOR_VALUE'}}">
+                                            [{{localize "SRA2.FEATS.ARMOR_VALUE"}}: +{{this.system.armorValue}}]
+                                        </span>
+                                        {{/if}}
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}

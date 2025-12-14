@@ -333,8 +333,18 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     while (this.anarchySpent.length > totalAnarchy) {
       this.anarchySpent.pop();
     }
-    const armorLevel = this.armorLevel || 0;
-    this.armorCost = armorLevel * 2500;
+    let totalArmorLevel = 0;
+    if (parent && parent.items) {
+      const activeArmorFeats = parent.items.filter(
+        (item) => item.type === "feat" && item.system.featType === "armor" && item.system.active === true && (item.system.armorValue || 0) > 0
+      );
+      totalArmorLevel = activeArmorFeats.reduce((sum, item) => {
+        return sum + (item.system.armorValue || 0);
+      }, 0);
+      totalArmorLevel = Math.min(totalArmorLevel, 5);
+    }
+    this.armorLevel = totalArmorLevel;
+    this.armorCost = totalArmorLevel * 2500;
     const strength = this.attributes?.strength || 1;
     const willpower = this.attributes?.willpower || 1;
     let firewall = 0;
@@ -353,9 +363,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         incapacitating: strength + bonusPhysicalThreshold + 6
       },
       withArmor: {
-        light: strength + armorLevel + bonusPhysicalThreshold,
-        severe: strength + armorLevel + bonusPhysicalThreshold + 3,
-        incapacitating: strength + armorLevel + bonusPhysicalThreshold + 6
+        light: strength + totalArmorLevel + bonusPhysicalThreshold,
+        severe: strength + totalArmorLevel + bonusPhysicalThreshold + 3,
+        incapacitating: strength + totalArmorLevel + bonusPhysicalThreshold + 6
       },
       mental: {
         light: willpower + bonusMentalThreshold,
@@ -797,6 +807,22 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
       }),
+      characterArmorLevel: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 5,
+        integer: true,
+        label: "SRA2.FEATS.CHARACTER_ARMOR_LEVEL"
+      }),
+      armorValue: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 5,
+        integer: true,
+        label: "SRA2.FEATS.ARMOR_VALUE"
+      }),
       bonusAnarchy: new fields.NumberField({
         required: true,
         initial: 0,
@@ -824,6 +850,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "awakened": "SRA2.FEATS.FEAT_TYPE.AWAKENED",
           "adept-power": "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER",
           "equipment": "SRA2.FEATS.FEAT_TYPE.EQUIPMENT",
+          "armor": "SRA2.FEATS.FEAT_TYPE.ARMOR",
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
@@ -3728,6 +3755,44 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   parseDamageValue,
   restoreActiveSection
 }, Symbol.toStringTag, { value: "Module" }));
+function getDamageThresholds(defenderActor, damageType = "physical") {
+  const defenderSystem = defenderActor.system;
+  const isVehicle = defenderActor.type === "vehicle";
+  const isIce = defenderActor.type === "ice";
+  if (isIce) {
+    return defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 2,
+      incapacitating: 3
+    };
+  }
+  if (isVehicle) {
+    return defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 4,
+      incapacitating: 7
+    };
+  }
+  if (damageType === "mental") {
+    return defenderSystem.damageThresholds?.mental || {
+      light: 1,
+      severe: 4,
+      incapacitating: 7
+    };
+  }
+  if (damageType === "matrix") {
+    return defenderSystem.damageThresholds?.matrix || {
+      light: 0,
+      severe: 0,
+      incapacitating: 0
+    };
+  }
+  return defenderSystem.damageThresholds?.withArmor || {
+    light: 1,
+    severe: 4,
+    incapacitating: 7
+  };
+}
 function prepareVehicleWeaponAttack(vehicleActor, weapon) {
   const vehicleSystem = vehicleActor.system;
   const weaponSystem = weapon.system;
@@ -3940,34 +4005,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   const defenderSystem = defenderActor.system;
   const isVehicle = defenderActor.type === "vehicle";
   const isIce = defenderActor.type === "ice";
-  let damageThresholds;
-  if (isIce) {
-    damageThresholds = defenderSystem.damageThresholds || {
-      light: 1,
-      severe: 2,
-      incapacitating: 3
-    };
-  } else if (isVehicle) {
-    damageThresholds = defenderSystem.damageThresholds || {
-      light: 1,
-      severe: 4,
-      incapacitating: 7
-    };
-  } else {
-    if (damageType === "mental") {
-      damageThresholds = defenderSystem.damageThresholds?.mental || {
-        light: 1,
-        severe: 4,
-        incapacitating: 7
-      };
-    } else {
-      damageThresholds = defenderSystem.damageThresholds?.withArmor || {
-        light: 1,
-        severe: 4,
-        incapacitating: 7
-      };
-    }
-  }
+  const damageThresholds = getDamageThresholds(defenderActor, damageType);
   let damage = {
     light: [...defenderSystem.damage?.light || []],
     severe: [...defenderSystem.damage?.severe || []],
@@ -4358,6 +4396,7 @@ class CharacterSheet extends ActorSheet {
         (feat) => feat.system.featType === "adept-power" || (feat.system.featType === "weapon" || feat.system.featType === "weapons-spells") && feat.system.isAdeptPowerWeapon === true
       ),
       equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
+      armor: allFeats.filter((feat) => feat.system.featType === "armor"),
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
       cyberdeck: cyberdeckFeats,
       vehicle: [...vehicleFeats, ...linkedVehicles],

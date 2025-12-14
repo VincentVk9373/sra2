@@ -11,6 +11,7 @@
           {{else if (eq system.featType "awakened")}}{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}
           {{else if (eq system.featType "adept-power")}}{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}
           {{else if (eq system.featType "equipment")}}{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}
+          {{else if (eq system.featType "armor")}}{{localize "SRA2.FEATS.FEAT_TYPE.ARMOR"}}
           {{else if (eq system.featType "cyberware")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}
           {{else if (eq system.featType "cyberdeck")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}
           {{else if (eq system.featType "vehicle")}}{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}
@@ -110,6 +111,8 @@
                 "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</option>
               <option value="equipment" {{#if (eq system.featType "equipment" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</option>
+              <option value="armor" {{#if (eq system.featType "armor" )}}selected{{/if}}>{{localize
+                "SRA2.FEATS.FEAT_TYPE.ARMOR"}}</option>
               <option value="cyberware" {{#if (eq system.featType "cyberware" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</option>
               <option value="cyberdeck" {{#if (eq system.featType "cyberdeck" )}}selected{{/if}}>{{localize
@@ -235,6 +238,22 @@
             <input type="number" name="system.bonusMentalThreshold" value="{{system.bonusMentalThreshold}}" />
             <p class="notes">{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_HINT"}}</p>
           </div>
+
+          {{#if (eq system.featType "equipment")}}
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.CHARACTER_ARMOR_LEVEL"}}</label>
+            <input type="number" name="system.characterArmorLevel" value="{{system.characterArmorLevel}}" min="0" max="5" />
+            <p class="notes">{{localize "SRA2.FEATS.CHARACTER_ARMOR_LEVEL_HINT"}}</p>
+          </div>
+          {{/if}}
+
+          {{#if (eq system.featType "armor")}}
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.ARMOR_VALUE"}}</label>
+            <input type="number" name="system.armorValue" value="{{system.armorValue}}" min="0" max="5" />
+            <p class="notes">{{localize "SRA2.FEATS.ARMOR_VALUE_HINT"}}</p>
+          </div>
+          {{/if}}
 
           {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment") (eq system.featType "cyberware") (eq system.featType "adept-power"))}}
           <div class="form-group">

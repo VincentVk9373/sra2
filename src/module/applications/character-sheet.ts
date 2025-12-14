@@ -268,6 +268,7 @@ export class CharacterSheet extends ActorSheet {
         ((feat.system.featType === 'weapon' || feat.system.featType === 'weapons-spells') && feat.system.isAdeptPowerWeapon === true)
       ),
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
+      armor: allFeats.filter((feat: any) => feat.system.featType === 'armor'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: cyberdeckFeats,
       vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors

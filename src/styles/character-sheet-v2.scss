@@ -43,21 +43,21 @@
 
             .sheet-switch-btn {
                 position: absolute;
-                top: -12px;
-                left: -12px;
+                top: -8px;
+                right: -8px;
                 width: 28px;
                 height: 28px;
-                border: 0;
-                background: transparent;
-                color: var(--light-blue);
+                border-radius: var(--sr-border-radius-round);
+                background: var(--sr-ui-scrollbar-thumb);
+                border: 2px solid var(--sr-ui-color-active);
+                color: var(--sr-ui-color-active);
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 12px;
-                transition: all 0.2s ease;
+                transition: all .2s ease;
                 z-index: 10;
-                opacity: 0.7;
 
                 i {
                     margin-right: 0;

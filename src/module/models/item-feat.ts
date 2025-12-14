@@ -241,6 +241,22 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
       }),
+      characterArmorLevel: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 5,
+        integer: true,
+        label: "SRA2.FEATS.CHARACTER_ARMOR_LEVEL"
+      }),
+      armorValue: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 5,
+        integer: true,
+        label: "SRA2.FEATS.ARMOR_VALUE"
+      }),
       bonusAnarchy: new fields.NumberField({
         required: true,
         initial: 0,
@@ -268,6 +284,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           "awakened": "SRA2.FEATS.FEAT_TYPE.AWAKENED",
           "adept-power": "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER",
           "equipment": "SRA2.FEATS.FEAT_TYPE.EQUIPMENT",
+          "armor": "SRA2.FEATS.FEAT_TYPE.ARMOR",
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
