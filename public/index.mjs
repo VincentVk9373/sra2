@@ -6021,13 +6021,38 @@ class CharacterSheetV2 extends CharacterSheet {
       // height: 800,
     });
   }
-  // Toute la logique TypeScript est héritée de CharacterSheet
-  // Vous pouvez surcharger des méthodes spécifiques si nécessaire, par exemple:
-  // override async getData(): Promise<any> {
-  //   const context = await super.getData();
-  //   // Ajouter des données spécifiques à la version 2 si nécessaire
-  //   return context;
-  // }
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find('[data-action="show-context-menu"]').on("click", this._onShowContextMenu.bind(this));
+    const namespace = `context-menu-v2-${this.id}`;
+    $(document).on(`click.${namespace}`, (event) => {
+      const target = event.target;
+      if (!$(target).closest('.context-menu, [data-action="show-context-menu"]').length) {
+        this.element.find(".context-menu.active").removeClass("active");
+      }
+    });
+    html.find(".context-menu-item").on("click", (event) => {
+      event.stopPropagation();
+      const menu = $(event.currentTarget).closest(".context-menu");
+      menu.removeClass("active");
+    });
+  }
+  close(options) {
+    $(document).off(`click.context-menu-v2-${this.id}`);
+    return super.close(options);
+  }
+  _onShowContextMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    this.element.find(".context-menu.active").removeClass("active");
+    const menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`);
+    if (menu.length) {
+      menu.addClass("active");
+    }
+  }
 }
 const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,

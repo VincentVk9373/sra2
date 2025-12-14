@@ -529,6 +529,7 @@
                     display: grid;
                     grid-template-columns: 1fr 0fr 0fr;
                     padding-right: 6px;
+                    position: relative;
 
                     /* Vehicle/Drone with severe damage - red background */
                     &.has-severe-damage {
@@ -559,10 +560,10 @@
                         cursor: pointer;
                         display: flex;
                         gap: 8px;
-                        transition: all 0.2s;
+                        transition: all 0.5s;
 
                         &:hover {
-                            transform: scale(1.05);
+                            color:gold !important;
                         }
 
                         &.spe {
@@ -575,6 +576,7 @@
                             transform: rotate(90deg) translateX(-1px);
                             margin-right: 4px;
                         }
+
                     }
 
                     .dice {
@@ -610,6 +612,56 @@
                         justify-content: center;
                         color: var(--yellow);
                         font-size: 0.9rem;
+                    }
+
+                    .context-menu {
+                        display: none;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        z-index: 1000;
+                        background: rgba(57, 77, 115, .9);
+                        ;
+                        border: 0;
+                        // border-radius: 4px;
+                        // padding: 4px 0;
+                        width: calc(100%);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                        margin-top: 4px;
+
+                        &.active {
+                            display: block;
+                        }
+
+                        .context-menu-item {
+                            padding: 2px 4px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            color: var(--sr-text-color-light);
+                            font-size: 0.8rem;
+                            transition: all 0.2s;
+
+                            i {
+                                width: 16px;
+                                text-align: center;
+                            }
+
+                            &:hover {
+                                background: rgba(0, 212, 255, 0.2);
+                                color: var(--light-blue);
+                            }
+
+                            &.delete {
+                                color: #ff6b7a;
+
+                                &:hover {
+                                    background: rgba(255, 107, 122, 0.2);
+                                    color: #ff4757;
+                                }
+                            }
+                        }
                     }
                 }
 

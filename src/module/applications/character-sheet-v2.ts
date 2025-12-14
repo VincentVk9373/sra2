@@ -16,14 +16,52 @@ export class CharacterSheetV2 extends CharacterSheet {
     });
   }
 
-  // Toute la logique TypeScript est héritée de CharacterSheet
-  // Vous pouvez surcharger des méthodes spécifiques si nécessaire, par exemple:
-  
-  // override async getData(): Promise<any> {
-  //   const context = await super.getData();
-  //   // Ajouter des données spécifiques à la version 2 si nécessaire
-  //   return context;
-  // }
+  override activateListeners(html: JQuery): void {
+    super.activateListeners(html);
+
+    // Context menu handler
+    html.find('[data-action="show-context-menu"]').on('click', this._onShowContextMenu.bind(this));
+
+    // Close context menu when clicking outside
+    const namespace = `context-menu-v2-${this.id}`;
+    $(document).on(`click.${namespace}`, (event: JQuery.ClickEvent) => {
+      const target = event.target as HTMLElement;
+      if (!$(target).closest('.context-menu, [data-action="show-context-menu"]').length) {
+        this.element.find('.context-menu.active').removeClass('active');
+      }
+    });
+
+    // Handle context menu item clicks - close menu after action
+    html.find('.context-menu-item').on('click', (event: JQuery.ClickEvent) => {
+      event.stopPropagation();
+      const menu = $(event.currentTarget).closest('.context-menu');
+      menu.removeClass('active');
+    });
+  }
+
+  override close(options?: Application.CloseOptions): Promise<void> {
+    // Clean up document event listener
+    $(document).off(`click.context-menu-v2-${this.id}`);
+    return super.close(options);
+  }
+
+  private _onShowContextMenu(event: JQuery.ClickEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+
+    // Close all other context menus
+    this.element.find('.context-menu.active').removeClass('active');
+
+    // Find and show the context menu for this item
+    const menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`);
+    if (menu.length) {
+      menu.addClass('active');
+    }
+  }
 }
 
 

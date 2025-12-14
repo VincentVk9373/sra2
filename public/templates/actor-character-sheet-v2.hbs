@@ -109,8 +109,19 @@
                             {{#each featsByType.weapon}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="weapon"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="weapon">
+                                        <div class="context-menu-item" data-action="roll-weapon" data-item-id="{{this._id}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-weapon" data-item-id="{{this._id}}"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -123,10 +134,21 @@
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
-                                <div class="name-wrapper spe" data-action="edit-skill" data-item-id="{{this._id}}"
-                                    title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
-                                    <div class="name">{{this.name}}</div>
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
+                                        <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="dice clickable" data-action="quick-roll-specialization"
                                     data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}"
@@ -157,8 +179,19 @@
                             {{#each featsByType.spell}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="spell"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="spell">
+                                        <div class="context-menu-item" data-action="roll-spell" data-item-id="{{this._id}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-spell" data-item-id="{{this._id}}"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -171,10 +204,21 @@
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
-                                <div class="name-wrapper spe" data-action="edit-skill" data-item-id="{{this._id}}"
-                                    title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
-                                    <div class="name">{{this.name}}</div>
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
+                                        <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="dice clickable" data-action="quick-roll-specialization"
                                     data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}"
@@ -203,8 +247,16 @@
                             {{#each featsByType.awakened}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{#if this.system.astralPerception}}
@@ -262,8 +314,16 @@
                             {{#each featsByType.adeptPower}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -318,8 +378,16 @@
                             {{else}}
                             <div class="row feat-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="level" style="margin-right: 8px;">
                                     {{this.system.rating}}
@@ -341,8 +409,16 @@
                             {{#each featsByType.trait}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -360,8 +436,16 @@
                             {{#each featsByType.cyberware}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -379,8 +463,16 @@
                             {{#each featsByType.equipment}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -398,13 +490,21 @@
                             {{#each featsByType.armor}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">
                                         {{this.name}}
                                         {{#if (gt this.system.armorValue 0)}}
                                         <span class="armor-value-info" title="{{localize 'SRA2.FEATS.ARMOR_VALUE'}}">
                                         </span>
                                         {{/if}}
+                                    </div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -423,8 +523,16 @@
                             {{#each featsByType.contact}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -442,8 +550,16 @@
                             {{#each featsByType.cyberdeck}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -461,8 +577,16 @@
                             {{#each featsByType.connaissance}}
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {{/each}}
@@ -483,8 +607,19 @@
                             {{#each skills}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
-                                    <div class="name" data-action="edit-skill" data-item-id="{{this._id}}"
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="skill"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="skill">
+                                        <div class="context-menu-item" data-action="quick-roll-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="dice clickable" data-action="quick-roll-skill" data-item-id="{{this._id}}"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -497,10 +632,21 @@
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
-                                <div class="name-wrapper spe" data-action="edit-skill" data-item-id="{{this._id}}"
-                                    title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
-                                    <div class="name">{{this.name}}</div>
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
+                                        <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="dice clickable" data-action="quick-roll-specialization"
                                     data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}"
