@@ -6035,6 +6035,7 @@ class CharacterSheetV2 extends CharacterSheet {
       const menu = $(event.currentTarget).closest(".context-menu");
       menu.removeClass("active");
     });
+    html.find('[data-action="toggle-active"]').on("click", this._onToggleActive.bind(this));
   }
   close(options) {
     $(document).off(`click.context-menu-v2-${this.id}`);
@@ -6045,12 +6046,44 @@ class CharacterSheetV2 extends CharacterSheet {
     event.stopPropagation();
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
-    if (!itemId) return;
+    const vehicleUuid = element.dataset.vehicleUuid;
     this.element.find(".context-menu.active").removeClass("active");
-    const menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`);
+    let menu;
+    if (itemId) {
+      const $clickedElement = $(element);
+      const $row = $clickedElement.closest(".row");
+      menu = $row.find(`.context-menu[data-item-id="${itemId}"]`);
+      if (menu.length === 0) {
+        menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`).first();
+      }
+    } else if (vehicleUuid) {
+      const $clickedElement = $(element);
+      const $row = $clickedElement.closest(".row");
+      menu = $row.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
+      if (menu.length === 0) {
+        menu = this.element.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`).first();
+      }
+    } else {
+      return;
+    }
     if (menu.length) {
       menu.addClass("active");
     }
+  }
+  /**
+   * Toggle active state of a feat
+   */
+  async _onToggleActive(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item || item.type !== "feat") return;
+    const currentActive = item.system.active ?? true;
+    await item.update({ "system.active": !currentActive });
+    this.render(false);
   }
 }
 const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({

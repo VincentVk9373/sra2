@@ -37,6 +37,9 @@ export class CharacterSheetV2 extends CharacterSheet {
       const menu = $(event.currentTarget).closest('.context-menu');
       menu.removeClass('active');
     });
+
+    // Handle toggle active for feats
+    html.find('[data-action="toggle-active"]').on('click', this._onToggleActive.bind(this));
   }
 
   override close(options?: Application.CloseOptions): Promise<void> {
@@ -51,16 +54,63 @@ export class CharacterSheetV2 extends CharacterSheet {
 
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    if (!itemId) return;
+    const vehicleUuid = element.dataset.vehicleUuid;
 
     // Close all other context menus
     this.element.find('.context-menu.active').removeClass('active');
 
-    // Find and show the context menu for this item
-    const menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`);
+    // Find and show the context menu closest to the clicked element
+    // This prevents opening multiple menus when the same item appears in multiple sections
+    let menu: JQuery;
+    if (itemId) {
+      // Find the menu closest to the clicked element (in the same row)
+      const $clickedElement = $(element);
+      const $row = $clickedElement.closest('.row');
+      menu = $row.find(`.context-menu[data-item-id="${itemId}"]`);
+      
+      // Fallback: if not found in the same row, find the first one
+      if (menu.length === 0) {
+        menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`).first();
+      }
+    } else if (vehicleUuid) {
+      // For vehicles, find the menu closest to the clicked element
+      const $clickedElement = $(element);
+      const $row = $clickedElement.closest('.row');
+      menu = $row.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
+      
+      // Fallback: if not found in the same row, find the first one
+      if (menu.length === 0) {
+        menu = this.element.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`).first();
+      }
+    } else {
+      return;
+    }
+
     if (menu.length) {
       menu.addClass('active');
     }
+  }
+
+  /**
+   * Toggle active state of a feat
+   */
+  private async _onToggleActive(event: JQuery.ClickEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+
+    if (!itemId) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!item || item.type !== 'feat') return;
+
+    const currentActive = (item.system as any).active ?? true;
+    await item.update({ 'system.active': !currentActive } as any);
+    
+    // Re-render the sheet to update the visual state
+    this.render(false);
   }
 }
 
