@@ -1671,8 +1671,14 @@
                     <div class="feat-controls">
                       <input type="checkbox" name="items.{{this._id}}.system.active" {{#if this.system.active}}checked{{/if}} 
                         title="{{localize 'SRA2.FEATS.ACTIVE'}}" />
-                      <a class="item-edit" title="{{localize 'SRA2.FEATS.EDIT'}}"><i class="fas fa-edit"></i></a>
-                      <a class="item-delete" title="{{localize 'SRA2.FEATS.DELETE'}}"><i class="fas fa-trash"></i></a>
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}"
+                        title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}"
+                        title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
                     </div>
                   </div>
                   {{#if this.system.description}}
