@@ -389,38 +389,22 @@
                 placeholder="{{localize 'SRA2.VEHICLE.NARRATIVE_EFFECT_PLACEHOLDER'}}">{{this.text}}</textarea>
             </div>
 
-            <div class="form-group narrative-effect-negative">
-              <label>
-                <input type="checkbox" name="system.narrativeEffects.{{@index}}.isNegative" {{checked
-                  this.isNegative}} />
-                {{localize "SRA2.FEATS.NARRATIVE_EFFECT_NEGATIVE"}}
-              </label>
-              <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_NEGATIVE_HINT"}}</p>
-            </div>
-
             <div class="form-group narrative-effect-value">
-              <label>{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE"}}</label>
-              {{#if this.isNegative}}
+              <label>{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE"}} (5000 {{localize "SRA2.RESOURCES.YENS"}} par palier)</label>
               <select name="system.narrativeEffects.{{@index}}.value">
-                <option value="-5" {{#if (eq this.value -5)}}selected{{/if}}>-5</option>
-                <option value="-4" {{#if (eq this.value -4)}}selected{{/if}}>-4</option>
-                <option value="-3" {{#if (eq this.value -3)}}selected{{/if}}>-3</option>
-                <option value="-2" {{#if (eq this.value -2)}}selected{{/if}}>-2</option>
-                <option value="-1" {{#if (eq this.value -1)}}selected{{/if}}>-1</option>
-                <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0</option>
+                <option value="-5" {{#if (eq this.value -5)}}selected{{/if}}>-5 (-25000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="-4" {{#if (eq this.value -4)}}selected{{/if}}>-4 (-20000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="-3" {{#if (eq this.value -3)}}selected{{/if}}>-3 (-15000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="-2" {{#if (eq this.value -2)}}selected{{/if}}>-2 (-10000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="-1" {{#if (eq this.value -1)}}selected{{/if}}>-1 (-5000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0 (0 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="1" {{#if (eq this.value 1)}}selected{{/if}}>+1 (+5000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="2" {{#if (eq this.value 2)}}selected{{/if}}>+2 (+10000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="3" {{#if (eq this.value 3)}}selected{{/if}}>+3 (+15000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="4" {{#if (eq this.value 4)}}selected{{/if}}>+4 (+20000 {{localize "SRA2.RESOURCES.YENS"}})</option>
+                <option value="5" {{#if (eq this.value 5)}}selected{{/if}}>+5 (+25000 {{localize "SRA2.RESOURCES.YENS"}})</option>
               </select>
               <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE_HINT"}}</p>
-              {{else}}
-              <select name="system.narrativeEffects.{{@index}}.value">
-                <option value="0" {{#if (eq this.value 0)}}selected{{/if}}>0</option>
-                <option value="1" {{#if (eq this.value 1)}}selected{{/if}}>+1</option>
-                <option value="2" {{#if (eq this.value 2)}}selected{{/if}}>+2</option>
-                <option value="3" {{#if (eq this.value 3)}}selected{{/if}}>+3</option>
-                <option value="4" {{#if (eq this.value 4)}}selected{{/if}}>+4</option>
-                <option value="5" {{#if (eq this.value 5)}}selected{{/if}}>+5</option>
-              </select>
-              <p class="notes">{{localize "SRA2.FEATS.NARRATIVE_EFFECT_VALUE_POSITIVE_HINT"}}</p>
-              {{/if}}
             </div>
           </div>
           {{/each}}

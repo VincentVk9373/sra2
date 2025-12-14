@@ -102,17 +102,17 @@ export class SRA2System {
       metatype: models.MetatypeDataModel,
     };
     
-    // Register character sheet (PC view - default)
+    // Register character sheet (detailed view)
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
       types: ["character"],
-      makeDefault: true,
+      makeDefault: false,
       label: "SRA2.SHEET.CHARACTER"
     });
     
-    // Register character sheet V2 (alternative template/style)
+    // Register character sheet V2 (in-run view - default)
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheetV2, {
       types: ["character"],
-      makeDefault: false,
+      makeDefault: true,
       label: "SRA2.SHEET.CHARACTER_V2"
     });
     

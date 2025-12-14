@@ -1842,9 +1842,8 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
           narrativeEffectsCost += 5e3;
         }
       } else if (effect && typeof effect === "object") {
-        const hasText = effect.text && effect.text.trim() !== "";
         const value = effect.value !== void 0 && effect.value !== null ? effect.value : 0;
-        if (hasText && value !== 0) {
+        if (value !== 0) {
           narrativeEffectsCost += value * 5e3;
         }
       }
@@ -6270,9 +6269,9 @@ class VehicleSheet extends ActorSheet {
         if (nameMatch) {
           const index = parseInt(nameMatch[1]);
           const text = textareaElement.value || "";
-          const isNegative = html.find(`input[name="system.narrativeEffects.${index}.isNegative"]`).is(":checked");
           const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          const isNegative = value < 0;
           currentNarrativeEffects[index] = {
             text,
             isNegative,
@@ -6301,9 +6300,9 @@ class VehicleSheet extends ActorSheet {
         if (nameMatch) {
           const effectIndex = parseInt(nameMatch[1]);
           const text = textareaElement.value || "";
-          const isNegative = html.find(`input[name="system.narrativeEffects.${effectIndex}.isNegative"]`).is(":checked");
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          const isNegative = value < 0;
           currentNarrativeEffects[effectIndex] = {
             text,
             isNegative,
@@ -6320,6 +6319,59 @@ class VehicleSheet extends ActorSheet {
       await this.actor.update({
         "system.narrativeEffects": currentNarrativeEffects
       });
+    });
+    let narrativeEffectSaveTimeout = null;
+    const saveNarrativeEffects = async () => {
+      const currentNarrativeEffects = [];
+      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.each((_inputIndex, textarea) => {
+        const textareaElement = textarea;
+        const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
+        if (nameMatch) {
+          const effectIndex = parseInt(nameMatch[1]);
+          const text = textareaElement.value || "";
+          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          const isNegative = value < 0;
+          currentNarrativeEffects[effectIndex] = {
+            text,
+            isNegative,
+            value
+          };
+        }
+      });
+      for (let i = 0; i < currentNarrativeEffects.length; i++) {
+        if (!currentNarrativeEffects[i]) {
+          currentNarrativeEffects[i] = { text: "", isNegative: false, value: 0 };
+        }
+      }
+      await this.actor.update({
+        "system.narrativeEffects": currentNarrativeEffects
+      });
+    };
+    html.find('select[name^="system.narrativeEffects."]').on("change", async (event) => {
+      event.preventDefault();
+      if (narrativeEffectSaveTimeout) {
+        clearTimeout(narrativeEffectSaveTimeout);
+        narrativeEffectSaveTimeout = null;
+      }
+      await saveNarrativeEffects();
+    });
+    html.find('textarea[name^="system.narrativeEffects."]').on("input", (event) => {
+      if (narrativeEffectSaveTimeout) {
+        clearTimeout(narrativeEffectSaveTimeout);
+      }
+      narrativeEffectSaveTimeout = setTimeout(async () => {
+        await saveNarrativeEffects();
+        narrativeEffectSaveTimeout = null;
+      }, 500);
+    });
+    html.find('textarea[name^="system.narrativeEffects."]').on("change blur", async (event) => {
+      if (narrativeEffectSaveTimeout) {
+        clearTimeout(narrativeEffectSaveTimeout);
+        narrativeEffectSaveTimeout = null;
+      }
+      await saveNarrativeEffects();
     });
     html.find('input[name^="system.damage."]').on("change", async (event) => {
       const input = event.currentTarget;
@@ -9703,12 +9755,12 @@ class SRA2System {
     };
     DocumentSheetConfig.registerSheet(Actor, "sra2", CharacterSheet, {
       types: ["character"],
-      makeDefault: true,
+      makeDefault: false,
       label: "SRA2.SHEET.CHARACTER"
     });
     DocumentSheetConfig.registerSheet(Actor, "sra2", CharacterSheetV2, {
       types: ["character"],
-      makeDefault: false,
+      makeDefault: true,
       label: "SRA2.SHEET.CHARACTER_V2"
     });
     DocumentSheetConfig.registerSheet(Actor, "sra2", VehicleSheet, {

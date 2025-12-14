@@ -14,7 +14,8 @@
     },
     "SRA2": {
         "SHEET": {
-            "CHARACTER": "SRA2 Character Sheet",
+            "CHARACTER": "Detailed",
+            "CHARACTER_V2": "In Run",
             "NPC": "SRA2 NPC Sheet",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
             "ICE": "SRA2 ICE Sheet",

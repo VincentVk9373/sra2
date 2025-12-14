@@ -297,11 +297,11 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
         }
       } else if (effect && typeof effect === 'object') {
         // New format: use the value of the effect
-        const hasText = effect.text && effect.text.trim() !== '';
+        // Each point of absolute value = 5000 yens (positive adds, negative subtracts)
         const value = effect.value !== undefined && effect.value !== null ? effect.value : 0;
         
-        if (hasText && value !== 0) {
-          // Each point of value = 5000 yens (positive adds, negative subtracts)
+        if (value !== 0) {
+          // Each point of value = 5000 yens per palier (positive adds, negative subtracts)
           narrativeEffectsCost += value * 5000;
         }
       }
