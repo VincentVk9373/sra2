@@ -577,6 +577,15 @@
                             margin-right: 4px;
                         }
 
+                        .name.clickable {
+                            cursor: pointer;
+                            transition: all 0.2s;
+
+                            &:hover {
+                                color: var(--light-blue);
+                                transform: scale(1.05);
+                            }
+                        }
                     }
 
                     .dice {
