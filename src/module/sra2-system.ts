@@ -193,6 +193,11 @@ export class SRA2System {
       // Only process vehicle actors
       if (actor.type !== 'vehicle') return;
       
+      // Force vehicle to recalculate its cost first
+      if (actor.system) {
+        (actor.system as any).prepareDerivedData();
+      }
+      
       // Find all character actors that have this vehicle linked
       if (game.actors) {
         const vehicleUuid = actor.uuid;
@@ -216,6 +221,10 @@ export class SRA2System {
         // Use a small delay to ensure derived data is recalculated
         setTimeout(() => {
           characterActors.forEach((char: any) => {
+            // Force recalculation of derived data (including cost) before re-rendering
+            if (char.system) {
+              (char.system as any).prepareDerivedData();
+            }
             if (char.sheet && char.sheet.rendered) {
               char.sheet.render(false);
             }
@@ -312,6 +321,15 @@ export class SRA2System {
       const linkedSkillName = item.system?.linkedSkill;
       if (!linkedSkillName) return;
 
+      // Create a unique key for this actor + skill combination
+      const skillKey = `${actor.id}:${linkedSkillName}`;
+
+      // Check if this skill is already being created for this actor
+      if (SRA2System.skillsBeingCreated.has(skillKey)) {
+        // Skill creation already in progress, skip
+        return;
+      }
+
       // Check if the skill already exists on the actor
       const existingSkill = SheetHelpers.findSkillByName(actor, linkedSkillName);
       if (existingSkill) {
@@ -319,38 +337,46 @@ export class SRA2System {
         return;
       }
 
-      // Try to find the skill in game.items
-      const skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
-      
-      if (skillTemplate) {
-        // Skill found in game.items, create it on the actor
-        try {
-          await actor.createEmbeddedDocuments('Item', [skillTemplate.toObject()]);
-          console.log(SYSTEM.LOG.HEAD + `Auto-added linked skill "${linkedSkillName}" for specialization "${item.name}"`);
-        } catch (error) {
-          console.error(SYSTEM.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
-        }
-      } else {
-        // Skill not found in game.items, create a new one with default values
-        // Use the linkedAttribute from the specialization
-        const linkedAttribute = item.system?.linkedAttribute || 'strength';
-        const skillData = {
-          name: linkedSkillName,
-          type: 'skill',
-          system: {
-            rating: 0,
-            linkedAttribute: linkedAttribute,
-            description: '',
-            bookmarked: false
-          }
-        };
+      // Mark this skill as being created
+      SRA2System.skillsBeingCreated.add(skillKey);
+
+      try {
+        // Try to find the skill in game.items
+        const skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
         
-        try {
-          await actor.createEmbeddedDocuments('Item', [skillData]);
-          console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
-        } catch (error) {
-          console.error(SYSTEM.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
+        if (skillTemplate) {
+          // Skill found in game.items, create it on the actor
+          try {
+            await actor.createEmbeddedDocuments('Item', [skillTemplate.toObject()]);
+            console.log(SYSTEM.LOG.HEAD + `Auto-added linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+          } catch (error) {
+            console.error(SYSTEM.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
+          }
+        } else {
+          // Skill not found in game.items, create a new one with default values
+          // Use the linkedAttribute from the specialization
+          const linkedAttribute = item.system?.linkedAttribute || 'strength';
+          const skillData = {
+            name: linkedSkillName,
+            type: 'skill',
+            system: {
+              rating: 0,
+              linkedAttribute: linkedAttribute,
+              description: '',
+              bookmarked: false
+            }
+          };
+          
+          try {
+            await actor.createEmbeddedDocuments('Item', [skillData]);
+            console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+          } catch (error) {
+            console.error(SYSTEM.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
+          }
         }
+      } finally {
+        // Remove from the set after creation (or error)
+        SRA2System.skillsBeingCreated.delete(skillKey);
       }
     });
     
