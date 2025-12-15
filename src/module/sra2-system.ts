@@ -44,10 +44,26 @@ export class SRA2System {
     new SRA2System();
   }
 
+  static setup() {
+    // Enable embed Babele compendiums only if custom compendium is not found or disabled
+    if (game.babele) {
+      game.babele.setSystemTranslationsDir("lang");
+    }
+  }
+
+  // Track skills being created to prevent duplicates
+  private static skillsBeingCreated = new Set<string>();
+
   constructor() {
     if (game.system) {
       game.system.sra2 = this;
     }
+    
+    // Setup Babele translations
+    Hooks.once('babele.init', () => {
+      SRA2System.setup();
+    });
+    
     Hooks.once('init', () => this.onInit());
   }
   

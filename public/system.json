@@ -35,23 +35,65 @@
   "flags": {
     "allowBugReporter": true,
     "hotReload": {
-      "extensions": ["css", "hbs", "html", "mjs", "js"],
-      "paths": ["index.mjs", "style/", "templates/"]
+      "extensions": [
+        "css",
+        "hbs",
+        "html",
+        "mjs",
+        "js"
+      ],
+      "paths": [
+        "index.mjs",
+        "style/",
+        "templates/"
+      ]
     }
   },
   "license": "LICENSE.md",
   "scripts": [],
-  "esmodules": ["index.mjs"],
-  "styles": ["style/sra2.css"],
+  "esmodules": [
+    "index.mjs"
+  ],
+  "styles": [
+    "style/sra2.css"
+  ],
   "languages": [
-    { "lang": "en", "name": "English", "path": "lang/en.json" },
-    { "lang": "fr", "name": "Français", "path": "lang/fr.json" }
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    }
   ],
   "packs": [
     {
       "name": "manual-fr",
       "label": "Manuel SRA 2 (FR)",
       "type": "JournalEntry",
+      "system": "sra2",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "sra2-skills",
+      "label": "Skills",
+      "type": "Item",
+      "system": "sra2",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "sra2-spec",
+      "label": "Specialisations",
+      "type": "Item",
       "system": "sra2",
       "ownership": {
         "PLAYER": "OBSERVER",

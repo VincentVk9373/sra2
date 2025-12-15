@@ -10520,10 +10520,20 @@ class SRA2System {
   static start() {
     new SRA2System();
   }
+  static setup() {
+    if (game.babele) {
+      game.babele.setSystemTranslationsDir("lang");
+    }
+  }
+  // Track skills being created to prevent duplicates
+  static skillsBeingCreated = /* @__PURE__ */ new Set();
   constructor() {
     if (game.system) {
       game.system.sra2 = this;
     }
+    Hooks.once("babele.init", () => {
+      SRA2System.setup();
+    });
     Hooks.once("init", () => this.onInit());
   }
   onInit() {

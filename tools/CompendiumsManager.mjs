@@ -6,6 +6,44 @@ const MODULE_ID = process.cwd();
 
 export class CompendiumsManager {
 
+  static async listCompendiums(packsDir = 'public/packs') {
+    try {
+      const packs = await fs.readdir("./" + packsDir);
+      const validPacks = packs.filter(pack => pack !== ".gitattributes");
+      
+      console.log(`\n📚 Compendiums trouvés dans ${packsDir}:`);
+      console.log("=" .repeat(50));
+      
+      if (validPacks.length === 0) {
+        console.log("Aucun compendium trouvé.");
+        return [];
+      }
+      
+      for (const pack of validPacks) {
+        const packPath = path.join(packsDir, pack);
+        const stats = await fs.stat(packPath);
+        if (stats.isDirectory()) {
+          console.log(`  📦 ${pack}`);
+        } else {
+          console.log(`  📄 ${pack}`);
+        }
+      }
+      
+      console.log("=" .repeat(50));
+      console.log(`Total: ${validPacks.length} compendium(s)\n`);
+      
+      return validPacks;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        console.log(`❌ Le répertoire ${packsDir} n'existe pas.`);
+        return [];
+      } else {
+        console.error("❌ Erreur lors de la lecture des compendiums:", error);
+        throw error;
+      }
+    }
+  }
+
   static async packToDistDir(srcDir = 'src/packs', distDir = 'dist/packs', mode = 'yaml') {
     const yaml = mode === 'yaml'
     const packs = await fs.readdir('./' + srcDir);
@@ -40,7 +78,7 @@ export class CompendiumsManager {
         `${MODULE_ID}/${srcDir}/${pack}`,
         {
           yaml,
-          transformName: doc => CompendiumsManager.transformName(doc),
+          transformName: doc => CompendiumsManager.transformName(doc, yaml),
         }
       );
     }
@@ -49,8 +87,9 @@ export class CompendiumsManager {
   /**
    * Prefaces the document with its type
    * @param {object} doc - The document data
+   * @param {boolean} yaml - Whether to use YAML format
    */
-  static transformName(doc) {
+  static transformName(doc, yaml = true) {
     const safeFileName = doc.name.replace(/[^a-zA-Z0-9А-я]/g, "_");
     const type = doc._key.split("!")[1];
     const prefix = ["actors", "items"].includes(type) ? doc.type : type;
