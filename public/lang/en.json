@@ -604,6 +604,7 @@
                 "UNLINK": "Unlink vehicle",
                 "TYPES": {
                     "MICRODRONE": "Microdrone (Autopilot 6, Structure 0, Handling 10, Speed 0 (flying 1), Armor 0, no weapon mount)",
+                    "MINIDRONE": "Minidrone (Autopilot 6, Structure 1, Handling 10, Speed 0 (flying 1), Armor 0, no weapon mount)",
                     "SMALL_DRONE": "Small drone (Autopilot 6, Structure 1, Handling 9, Speed 2 (flying 4), Armor 0, SMG max)",
                     "MEDIUM_DRONE": "Medium drone (Autopilot 6, Structure 2, Handling 7, Speed 3 (flying 6), Armor 0, rifle max)",
                     "LARGE_DRONE": "Large drone (Autopilot 6, Structure 4, Handling 4, Speed 4 (flying 8), Armor 0)",
@@ -614,7 +615,8 @@
                     "SEDAN": "Sedan (Autopilot 6, Structure 6, Handling 2, Speed 4, Armor 0)",
                     "SUV_PICKUP": "SUV / Pickup (Autopilot 6, Structure 7, Handling 1, Speed 4, Armor 0)",
                     "VAN": "Van (Autopilot 6, Structure 8, Handling 1, Speed 3, Armor 0)",
-                    "BUS_TRUCK": "Bus / Semi-trailer (Autopilot 6, Structure 10, Handling 0, Speed 2, Armor 0)"
+                    "BUS_TRUCK": "Bus / Semi-trailer (Autopilot 6, Structure 10, Handling 0, Speed 2, Armor 0)",
+                    "RIGID_INFLATABLE_BOAT": "Rigid inflatable boat (Autopilot 6, Structure 5, Handling 4, Speed 3, Armor 0)"
                 }
             },
             "CYBERDECK": {

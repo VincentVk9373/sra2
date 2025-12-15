@@ -8,6 +8,15 @@
     "armor": 0,
     "weaponMount": "none"
   },
+  "minidrone": {
+    "autopilot": 6,
+    "structure": 1,
+    "handling": 10,
+    "speed": 0,
+    "flyingSpeed": 1,
+    "armor": 0,
+    "weaponMount": "none"
+  },
   "small-drone": {
     "autopilot": 6,
     "structure": 1,
@@ -103,6 +112,15 @@
     "structure": 10,
     "handling": 0,
     "speed": 2,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
+  },
+  "rigid-inflatable-boat": {
+    "autopilot": 6,
+    "structure": 5,
+    "handling": 4,
+    "speed": 3,
     "flyingSpeed": 0,
     "armor": 0,
     "weaponMount": "none"

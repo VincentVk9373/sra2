@@ -523,6 +523,7 @@
                 "UNLINK": "Délier le véhicule",
                 "TYPES": {
                     "MICRODRONE": "Microdrone (Autopilote 6, Structure 0, Maniabilité 10, Vitesse 0 (vol 1), Blindage 0, aucune monture d'arme)",
+                    "MINIDRONE": "Minidrone (Autopilote 6, Structure 1, Maniabilité 10, Vitesse 0 (vol 1), Blindage 0, aucune monture d'arme)",
                     "SMALL_DRONE": "Petit drone (Autopilote 6, Structure 1, Maniabilité 9, Vitesse 2 (vol 4), Blindage 0, mitraillette au maximum)",
                     "MEDIUM_DRONE": "Drone moyen (Autopilote 6, Structure 2, Maniabilité 7, Vitesse 3 (vol 6), Blindage 0, fusil au maximum)",
                     "LARGE_DRONE": "Grand drone (Autopilote 6, Structure 4, Maniabilité 4, Vitesse 4 (vol 8), Blindage 0)",
@@ -533,7 +534,8 @@
                     "SEDAN": "Berline (Autopilote 6, Structure 6, Maniabilité 2, Vitesse 4, Blindage 0)",
                     "SUV_PICKUP": "SUV / Pick-up (Autopilote 6, Structure 7, Maniabilité 1, Vitesse 4, Blindage 0)",
                     "VAN": "Van (Autopilote 6, Structure 8, Maniabilité 1, Vitesse 3, Blindage 0)",
-                    "BUS_TRUCK": "Bus / Semi-remorque (Autopilote 6, Structure 10, Maniabilité 0, Vitesse 2, Blindage 0)"
+                    "BUS_TRUCK": "Bus / Semi-remorque (Autopilote 6, Structure 10, Maniabilité 0, Vitesse 2, Blindage 0)",
+                    "RIGID_INFLATABLE_BOAT": "Bâteau pneumatique semi-rigide (Autopilote 6, Structure 5, Maniabilité 4, Vitesse 3, Blindage 0)"
                 }
             },
             "CYBERDECK": {
