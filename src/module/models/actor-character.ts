@@ -91,6 +91,19 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         required: true,
         initial: [false, false, false]
       }),
+      tempAnarchy: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true
+      }),
+      tempAnarchySpent: new fields.ArrayField(new fields.BooleanField({
+        required: true,
+        initial: false
+      }), {
+        required: true,
+        initial: []
+      }),
       bio: new fields.SchemaField({
         background: new fields.HTMLField({
           required: true,

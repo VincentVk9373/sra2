@@ -79,6 +79,19 @@
             {{/each}}
           </div>
         {{/if}}
+          <div class="temp-anarchy-section">
+            <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
+            {{#if (gt tempAnarchy 0)}}
+            <div class="track-boxes temp-anarchy-boxes">
+              {{#each tempAnarchySpent}}
+                <label class="track-box temp-anarchy {{#if this.value}}checked{{/if}}">
+                  <input type="checkbox" name="system.tempAnarchySpent.{{this.index}}" {{#if this.value}}checked{{/if}} />
+                  <span class="box-circle"></span>
+                </label>
+              {{/each}}
+            </div>
+            {{/if}}
+          </div>
         </div>
       </div>
       <div class="bookmarks-list">

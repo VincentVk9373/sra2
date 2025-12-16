@@ -107,6 +107,15 @@ export class CharacterSheet extends ActorSheet {
       index: context.baseAnarchy + index
     }));
 
+    // Prepare temp anarchy (bonus temporaire)
+    const tempAnarchy = systemData.tempAnarchy || 0;
+    context.tempAnarchy = tempAnarchy;
+    const tempAnarchySpent = systemData.tempAnarchySpent || [];
+    context.tempAnarchySpent = Array.from({ length: tempAnarchy }, (_, index) => ({
+      value: tempAnarchySpent[index] || false,
+      index: index
+    }));
+
     // Get actor's strength for damage value calculations
     const actorStrength = (this.actor.system as any).attributes?.strength || 0;
     
@@ -658,6 +667,8 @@ export class CharacterSheet extends ActorSheet {
     // Handle damage tracker checkboxes - explicit handler to ensure data is saved
     html.find('input[name^="system.damage"]').on('change', this._onDamageChange.bind(this));
     html.find('input[name^="system.anarchySpent"]').on('change', this._onAnarchyChange.bind(this));
+    html.find('input[name^="system.tempAnarchySpent"]').on('change', this._onTempAnarchyChange.bind(this));
+    html.find('[data-action="add-temp-anarchy"]').on('click', this._onAddTempAnarchy.bind(this));
     
     // Handle cyberdeck damage tracker checkboxes
     html.find('input[name*=".cyberdeckDamage."]').on('change', this._onCyberdeckDamageChange.bind(this));
@@ -1764,6 +1775,61 @@ export class CharacterSheet extends ActorSheet {
       // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
       this.render(false);
     }
+  }
+
+  /**
+   * Handle temp anarchy tracker checkbox changes - decrements temp anarchy on click
+   */
+  private async _onTempAnarchyChange(event: Event): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const tempAnarchy = (this.actor.system as any).tempAnarchy || 0;
+    
+    // Decrement temp anarchy (minimum 0)
+    const newTempAnarchy = Math.max(0, tempAnarchy - 1);
+    
+    // Adjust tempAnarchySpent array to match new value
+    const currentTempAnarchySpent = (this.actor.system as any).tempAnarchySpent || [];
+    const tempAnarchySpent = [...currentTempAnarchySpent];
+    
+    // Remove the last element
+    if (tempAnarchySpent.length > newTempAnarchy) {
+      tempAnarchySpent.pop();
+    }
+    
+    // Update the actor
+    await (this.actor as any).update({ 
+      'system.tempAnarchy': newTempAnarchy,
+      'system.tempAnarchySpent': tempAnarchySpent 
+    }, { render: false });
+    
+    // Force re-render
+    this.render(false);
+  }
+
+  /**
+   * Handle click on + to add temp anarchy
+   */
+  private async _onAddTempAnarchy(event: Event): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const tempAnarchy = (this.actor.system as any).tempAnarchy || 0;
+    const newTempAnarchy = tempAnarchy + 1;
+    
+    // Extend tempAnarchySpent array
+    const currentTempAnarchySpent = (this.actor.system as any).tempAnarchySpent || [];
+    const tempAnarchySpent = [...currentTempAnarchySpent, false];
+    
+    // Update the actor
+    await (this.actor as any).update({ 
+      'system.tempAnarchy': newTempAnarchy,
+      'system.tempAnarchySpent': tempAnarchySpent 
+    }, { render: false });
+    
+    // Force re-render
+    this.render(false);
   }
   
   /**

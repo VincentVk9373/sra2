@@ -56,8 +56,20 @@
                         <span class="box-circle"></span>
                     </label>
                     {{/each}}
+                    {{#if (gt tempAnarchy 0)}}
+                        {{#each tempAnarchySpent}}
+                        <label class="track-box {{#if this.value}}checked{{/if}}">
+                            <input type="checkbox" name="system.tempAnarchySpent.{{this.index}}" {{#if this.value}}checked{{/if}} />
+                            <span class="box-circle temp-anarchy"></span>
+                        </label>
+                        {{/each}}
+                    {{/if}}
                 </div>
             </div>
+            <div class="temp-anarchy-section">
+                <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
+            </div>
+
             {{#if (gt bonusAnarchy 0)}}
             <div class="anarchy-track">
                 <span class="track-label">{{localize "SRA2.RESOURCES.ANARCHY_BONUS_COMBAT"}}</span>
@@ -1153,6 +1165,25 @@
                         </section>
                     </div>
                 </section>
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.BEHAVIORS.LABEL"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            <div class="behaviors-fields-compact">
+                                <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                        </section>
+                    </div>
+                </section>
                 {{#if advancedMode}}
                 <section class="char-section">
                     <header>
@@ -1171,25 +1202,6 @@
                                     placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
                                 <input type="text" name="system.keywords.keyword5" value="{{system.keywords.keyword5}}"
                                     placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
-                            </div>
-                        </section>
-                    </div>
-                </section>
-                <section class="char-section">
-                    <header>
-                        <div>{{localize "SRA2.BEHAVIORS.LABEL"}}</div>
-                    </header>
-                    <div class="char-section-row">
-                        <section>
-                            <div class="behaviors-fields-compact">
-                                <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}"
-                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
-                                <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}"
-                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
-                                <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}"
-                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
-                                <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}"
-                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
                             </div>
                         </section>
                     </div>
@@ -1230,4 +1242,5 @@
             </div>
         </footer>
     </div>
+</form>
 </form>

@@ -142,6 +142,19 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: [false, false, false]
       }),
+      tempAnarchy: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true
+      }),
+      tempAnarchySpent: new fields.ArrayField(new fields.BooleanField({
+        required: true,
+        initial: false
+      }), {
+        required: true,
+        initial: []
+      }),
       bio: new fields.SchemaField({
         background: new fields.HTMLField({
           required: true,
@@ -4416,6 +4429,13 @@ class CharacterSheet extends ActorSheet {
       value,
       index: context.baseAnarchy + index
     }));
+    const tempAnarchy = systemData.tempAnarchy || 0;
+    context.tempAnarchy = tempAnarchy;
+    const tempAnarchySpent = systemData.tempAnarchySpent || [];
+    context.tempAnarchySpent = Array.from({ length: tempAnarchy }, (_, index) => ({
+      value: tempAnarchySpent[index] || false,
+      index
+    }));
     const actorStrength = this.actor.system.attributes?.strength || 0;
     const rawFeats = this.actor.items.filter((item) => item.type === "feat");
     const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue, this.actor);
@@ -4789,6 +4809,8 @@ class CharacterSheet extends ActorSheet {
     html.find(".bookmark-item").on("click", this._onBookmarkItemClick.bind(this));
     html.find('input[name^="system.damage"]').on("change", this._onDamageChange.bind(this));
     html.find('input[name^="system.anarchySpent"]').on("change", this._onAnarchyChange.bind(this));
+    html.find('input[name^="system.tempAnarchySpent"]').on("change", this._onTempAnarchyChange.bind(this));
+    html.find('[data-action="add-temp-anarchy"]').on("click", this._onAddTempAnarchy.bind(this));
     html.find('input[name*=".cyberdeckDamage."]').on("change", this._onCyberdeckDamageChange.bind(this));
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
@@ -5605,6 +5627,41 @@ class CharacterSheet extends ActorSheet {
       await this.actor.update({ "system.anarchySpent": anarchySpent }, { render: false });
       this.render(false);
     }
+  }
+  /**
+   * Handle temp anarchy tracker checkbox changes - decrements temp anarchy on click
+   */
+  async _onTempAnarchyChange(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const tempAnarchy = this.actor.system.tempAnarchy || 0;
+    const newTempAnarchy = Math.max(0, tempAnarchy - 1);
+    const currentTempAnarchySpent = this.actor.system.tempAnarchySpent || [];
+    const tempAnarchySpent = [...currentTempAnarchySpent];
+    if (tempAnarchySpent.length > newTempAnarchy) {
+      tempAnarchySpent.pop();
+    }
+    await this.actor.update({
+      "system.tempAnarchy": newTempAnarchy,
+      "system.tempAnarchySpent": tempAnarchySpent
+    }, { render: false });
+    this.render(false);
+  }
+  /**
+   * Handle click on + to add temp anarchy
+   */
+  async _onAddTempAnarchy(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const tempAnarchy = this.actor.system.tempAnarchy || 0;
+    const newTempAnarchy = tempAnarchy + 1;
+    const currentTempAnarchySpent = this.actor.system.tempAnarchySpent || [];
+    const tempAnarchySpent = [...currentTempAnarchySpent, false];
+    await this.actor.update({
+      "system.tempAnarchy": newTempAnarchy,
+      "system.tempAnarchySpent": tempAnarchySpent
+    }, { render: false });
+    this.render(false);
   }
   /**
    * Handle toggling bookmark on an item
