@@ -93,7 +93,7 @@ export function calculateFinalDamageValue(damageValue: string, damageValueBonus:
     const total = strength + modifier + damageValueBonus;
     return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
   } else if (damageValue === "toxin") {
-    return "selon toxine";
+    return game.i18n?.localize('SRA2.FEATS.WEAPON.TOXIN_DAMAGE') || 'according to toxin';
   } else {
     const base = parseInt(damageValue) || 0;
     const total = base + damageValueBonus;
@@ -455,7 +455,7 @@ export function parseDamageValue(
   // Handle toxin damage
   if (damageValueStr === 'toxin') {
     result.isToxin = true;
-    result.displayValue = 'selon toxine';
+    result.displayValue = game.i18n?.localize('SRA2.FEATS.WEAPON.TOXIN_DAMAGE') || 'according to toxin';
     return result;
   }
   
@@ -837,6 +837,14 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       
       feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
     }
+    
+    // Add narrative effects tooltip
+    feat.narrativeEffectsTooltip = formatNarrativeEffectsTooltip(
+      feat.system.narrativeEffects || [], 
+      feat.system.description,
+      feat.rrEntries || [],
+      feat.system
+    );
     
     return feat;
   });
@@ -1426,5 +1434,134 @@ export async function toggleItemBookmark(actor: any, itemId: string, sheet?: any
     ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Erreur lors de la mise à jour du bookmark');
     return false;
   }
+}
+
+/**
+ * Remove HTML tags from a string
+ */
+function stripHtmlTags(html: string): string {
+  if (!html) return '';
+  // Remove HTML tags
+  const stripped = html.replace(/<[^>]*>/g, '');
+  // Decode HTML entities
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = stripped;
+  return textarea.value.trim();
+}
+
+/**
+ * Format narrative effects into a tooltip string
+ */
+export function formatNarrativeEffectsTooltip(narrativeEffects: any[], description?: string, rrEntries?: any[], featSystem?: any): string {
+  const sections: string[] = [];
+  
+  // Add RR section if there are any RR entries
+  if (rrEntries && rrEntries.length > 0) {
+    const rrText: string[] = [];
+    rrEntries.forEach((rr: any) => {
+      if (rr.rrValue > 0) {
+        const rrLabel = rr.rrTargetLabel || rr.rrTarget || '';
+        rrText.push(`RR ${rr.rrValue} (${rrLabel})`);
+      }
+    });
+    if (rrText.length > 0) {
+      sections.push(game.i18n?.localize("SRA2.TOOLTIP.RR") + '\n' + rrText.join('\n'));
+    }
+  }
+  
+  // Add bonus section if feat system data is provided
+  if (featSystem) {
+    const bonusText: string[] = [];
+    
+    // Damage thresholds
+    if (featSystem.bonusPhysicalThreshold && featSystem.bonusPhysicalThreshold !== 0) {
+      const sign = featSystem.bonusPhysicalThreshold > 0 ? '+' : '';
+      bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.PHYSICAL_THRESHOLD") + ` ${sign}${featSystem.bonusPhysicalThreshold}`);
+    }
+    if (featSystem.bonusMentalThreshold && featSystem.bonusMentalThreshold !== 0) {
+      const sign = featSystem.bonusMentalThreshold > 0 ? '+' : '';
+      bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.MENTAL_THRESHOLD") + ` ${sign}${featSystem.bonusMentalThreshold}`);
+    }
+    
+    // Damage boxes
+    if (featSystem.bonusLightDamage && featSystem.bonusLightDamage > 0) {
+      bonusText.push(`+${featSystem.bonusLightDamage} ` + game.i18n?.localize("SRA2.TOOLTIP.LIGHT_WOUNDS"));
+    }
+    if (featSystem.bonusSevereDamage && featSystem.bonusSevereDamage > 0) {
+      bonusText.push(`+${featSystem.bonusSevereDamage} ` + game.i18n?.localize("SRA2.TOOLTIP.SEVERE_WOUNDS"));
+    }
+    
+    // Weapon damage bonus
+    if (featSystem.weaponDamageBonus && featSystem.weaponDamageBonus > 0 && featSystem.weaponTypeBonus) {
+      bonusText.push(`+${featSystem.weaponDamageBonus} VD ` + game.i18n?.localize("SRA2.TOOLTIP.WEAPON_DAMAGE") + ` ${featSystem.weaponTypeBonus}`);
+    }
+    
+    // Ranges for weapons
+    if (featSystem.featType === 'weapon' && featSystem.ranges) {
+      const rangeLabels: string[] = [];
+      if (featSystem.ranges.melee && featSystem.ranges.melee !== 'none') rangeLabels.push(game.i18n?.localize("SRA2.TOOLTIP.RANGE_MELEE") || 'Melee');
+      if (featSystem.ranges.short && featSystem.ranges.short !== 'none') rangeLabels.push(game.i18n?.localize("SRA2.TOOLTIP.RANGE_SHORT") || 'Short');
+      if (featSystem.ranges.medium && featSystem.ranges.medium !== 'none') rangeLabels.push(game.i18n?.localize("SRA2.TOOLTIP.RANGE_MEDIUM") || 'Medium');
+      if (featSystem.ranges.long && featSystem.ranges.long !== 'none') rangeLabels.push(game.i18n?.localize("SRA2.TOOLTIP.RANGE_LONG") || 'Long');
+      if (rangeLabels.length > 0) {
+        bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.RANGES") + ' ' + rangeLabels.join(', '));
+      }
+    }
+    
+    // Narration
+    if (featSystem.grantsNarration) {
+      const actions = featSystem.narrationActions || 1;
+      const actionLabel = actions > 1 ? game.i18n?.localize("SRA2.TOOLTIP.ACTIONS") : game.i18n?.localize("SRA2.TOOLTIP.ACTION");
+      bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.GRANTS_NARRATION") + ` (${actions} ${actionLabel})`);
+    }
+    
+    // Anarchy bonus
+    if (featSystem.bonusAnarchy && featSystem.bonusAnarchy > 0) {
+      bonusText.push(`+${featSystem.bonusAnarchy} ` + game.i18n?.localize("SRA2.TOOLTIP.ANARCHY_POINTS"));
+    }
+    
+    // Sustained spells
+    if (featSystem.sustainedSpellCount && featSystem.sustainedSpellCount > 0) {
+      bonusText.push(`+${featSystem.sustainedSpellCount} ` + game.i18n?.localize("SRA2.TOOLTIP.SUSTAINED_SPELLS"));
+    }
+    
+    // Summoned spirits
+    if (featSystem.summonedSpiritCount && featSystem.summonedSpiritCount > 0) {
+      bonusText.push(`+${featSystem.summonedSpiritCount} ` + game.i18n?.localize("SRA2.TOOLTIP.SUMMONED_SPIRITS"));
+    }
+    
+    if (bonusText.length > 0) {
+      sections.push(game.i18n?.localize("SRA2.TOOLTIP.BONUS") + '\n' + bonusText.join('\n'));
+    }
+  }
+  
+  // Add narrative effects section
+  if (narrativeEffects && narrativeEffects.length > 0) {
+    const effectsText: string[] = [];
+    narrativeEffects.forEach((effect: any) => {
+      if (effect && effect.text && effect.text.trim() !== '') {
+        const value = effect.value || 1;
+        effectsText.push(`${value}: ${effect.text}`);
+      }
+    });
+    if (effectsText.length > 0) {
+      sections.push(game.i18n?.localize("SRA2.TOOLTIP.NARRATIVE_EFFECTS") + '\n' + effectsText.join('\n'));
+    }
+  }
+  
+  // Add description section
+  if (description) {
+    const cleanDescription = stripHtmlTags(description);
+    if (cleanDescription) {
+      sections.push(game.i18n?.localize("SRA2.TOOLTIP.DESCRIPTION") + '\n' + cleanDescription);
+    }
+  }
+  
+  // Return combined sections or default message
+  if (sections.length > 0) {
+    return sections.join('\n\n');
+  }
+  
+  return game.i18n?.localize("SRA2.SKILLS.NO_NARRATIVE_EFFECTS") || '';
 }
 

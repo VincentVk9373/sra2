@@ -109,10 +109,10 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="weapon"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
-                                    <div class="context-menu" data-ietem-id="{{this._id}}" data-item-type="weapon">
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="weapon">
                                         <div class="context-menu-item" data-action="roll-weapon" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
                                         </div>
@@ -152,7 +152,7 @@
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
@@ -200,7 +200,7 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="spell"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="spell">
@@ -243,7 +243,7 @@
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
@@ -291,7 +291,7 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="power"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="power">
@@ -344,7 +344,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -422,7 +422,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{localize 'SRA2.SKILLS.EDIT'}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -466,7 +466,7 @@
                             <div class="row feat-item {{#if this.hasSevereDamage}}has-severe-damage{{/if}} {{#if this.isIncapacitating}}is-incapacitating{{/if}}" data-vehicle-uuid="{{this.uuid}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-vehicle-uuid="{{this.uuid}}"
-                                        title="{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}"><span class="name">{{this.name}}</span></div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}{{/if}}"><span class="name">{{this.name}}</span></div>
                                     <div class="context-menu" data-vehicle-uuid="{{this.uuid}}">
                                         <div class="context-menu-item" data-action="open-vehicle" data-vehicle-uuid="{{this.uuid}}">
                                             <i class="fas fa-folder-open"></i> Ouvrir la fiche
@@ -529,7 +529,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                            title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -567,7 +567,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -605,7 +605,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -643,7 +643,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{this.name}} | {{localize "SRA2.FEATS.ARMOR_VALUE"}}: {{this.system.armorValue}}
                                         {{#if (gt this.system.armorValue 0)}}
                                         <span class="armor-value-info" title="{{localize 'SRA2.FEATS.ARMOR_VALUE'}}">
@@ -687,7 +687,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                                title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -725,7 +725,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -763,7 +763,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -798,7 +798,7 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="skill"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="skill">
@@ -838,7 +838,7 @@
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">

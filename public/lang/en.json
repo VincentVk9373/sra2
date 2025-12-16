@@ -201,7 +201,11 @@
             "COMPLICATION": "Minor complication",
             "DEFENSE_SUCCESS": "DEFENSE SUCCESS",
             "COMBAT_RESULT": "Combat result: {attacker} vs {defender}",
-            "NO_DEFENSE_ROLLED": "No defense"
+            "NO_DEFENSE_ROLLED": "No defense",
+            "CANNOT_FIND_TARGET": "Cannot find target to apply damage",
+            "NO_DAMAGE_TO_APPLY": "No damage to apply",
+            "DAMAGE_APPLY_ERROR": "Error applying damage",
+            "CANNOT_FIND_DEFENDER": "Cannot find defender: {name}"
         },
         "BOOKMARKS": {
             "TITLE": "Quick Actions",
@@ -212,7 +216,6 @@
             "NO_BOOKMARKS": "No favorites configured",
             "TOGGLE": "Favorite",
             "CLICK_TO_ROLL": "Click to roll",
-            "ERROR": "Error updating bookmark",
             "ERROR": "Error updating bookmark"
         },
         "CONFIRM_DELETE": "Are you sure you want to delete {name}?",
@@ -273,7 +276,8 @@
             "RR": "RR",
             "ADVANTAGE": "Advantage",
             "NORMAL": "Normal",
-            "DISADVANTAGE": "Disadvantage"
+            "DISADVANTAGE": "Disadvantage",
+            "INVALID_DICE_COUNT": "Please enter a valid dice count"
         },
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armor & Damage Thresholds",
@@ -303,6 +307,7 @@
             "EDIT": "Edit Feat",
             "DELETE": "Delete Feat",
             "DRAG_DROP": "Drag and drop feats here",
+            "NOT_FOUND": "Feat not found",
             "RATING": "Rating",
             "RATING_AUTO_CALCULATED": "Automatically calculated from recommended level",
             "ACTIVE": "Active",
@@ -391,8 +396,6 @@
             "BONUS_MENTAL_THRESHOLD": "Mental Threshold Bonus",
             "BONUS_MENTAL_THRESHOLD_SHORT": "Ment. Threshold",
             "BONUS_MENTAL_THRESHOLD_HINT": "Bonus to mental damage thresholds (positive or negative)",
-            "CHARACTER_ARMOR_LEVEL": "Armor Level",
-            "CHARACTER_ARMOR_LEVEL_HINT": "Armor level granted by this equipment (0-5). The highest armor among active equipment is used.",
             "ARMOR_VALUE": "Armor Value",
             "ARMOR_VALUE_HINT": "Armor value granted by this armor (0-5). Armor values stack together (maximum 5).",
             "BONUS_ANARCHY": "Anarchy Bonus",
@@ -509,6 +512,7 @@
                 "INFO": "Weapon Information",
                 "DAMAGE_VALUE": "Damage Value (DV)",
                 "DAMAGE_VALUE_SHORT": "DV",
+                "TOXIN_DAMAGE": "according to toxin",
                 "DAMAGE": "Damage",
                 "FINAL_VALUE": "Final Value",
                 "NEEDS_ACTOR_FOR_CALCULATION": "Add this weapon to a character to calculate the final value with Strength (FOR)",
@@ -640,6 +644,7 @@
                 "ACTOR_UUID": "Vehicle actor UUID",
                 "OPEN_SHEET": "Open vehicle sheet",
                 "UNLINK": "Unlink vehicle",
+                "OPEN_SHEET_ERROR": "Error opening vehicle sheet",
                 "TYPES": {
                     "MICRODRONE": "Microdrone (Autopilot 6, Structure 0, Handling 10, Speed 0 (flying 1), Armor 0, no weapon mount)",
                     "MINIDRONE": "Minidrone (Autopilot 6, Structure 1, Handling 10, Speed 0 (flying 1), Armor 0, no weapon mount)",
@@ -689,9 +694,11 @@
             "BOOKMARKED": "Favorite",
             "LABEL": "Skills",
             "NAME": "Skill Name",
+            "NO_NARRATIVE_EFFECTS": "No narrative effects.",
             "EDIT": "Edit Skill",
             "DELETE": "Delete Skill",
             "DRAG_DROP": "Drag and drop skills here",
+            "NOT_FOUND": "Skill not found",
             "RATING": "Rating",
             "LINKED_ATTRIBUTE": "Linked Attribute",
             "SPECIALIZATION": "Specialization",
@@ -873,6 +880,34 @@
                 "DISASTER": "Disaster"
             }
         },
-        "REFERENCE": "Reference"
+        "REFERENCE": "Reference",
+        "TOOLTIP": {
+            "RR": "RR:",
+            "BONUS": "Bonuses:",
+            "NARRATIVE_EFFECTS": "Narrative effects:",
+            "DESCRIPTION": "Description:",
+            "PHYSICAL_THRESHOLD": "Physical threshold:",
+            "MENTAL_THRESHOLD": "Mental threshold:",
+            "LIGHT_WOUNDS": "light wound(s)",
+            "SEVERE_WOUNDS": "severe wound(s)",
+            "WEAPON_DAMAGE": "to",
+            "RANGES": "Ranges:",
+            "RANGE_MELEE": "Melee",
+            "RANGE_SHORT": "Short",
+            "RANGE_MEDIUM": "Medium",
+            "RANGE_LONG": "Long",
+            "GRANTS_NARRATION": "Grants a narration",
+            "ACTION": "action",
+            "ACTIONS": "actions",
+            "ANARCHY_POINTS": "anarchy point(s)",
+            "SUSTAINED_SPELLS": "sustained spell(s)",
+            "SUMMONED_SPIRITS": "summoned spirit(s)",
+            "ASTRAL_PERCEPTION": "Astral perception",
+            "ASTRAL_PROJECTION": "Astral projection",
+            "SORCERY": "Sorcery",
+            "CONJURATION": "Conjuration",
+            "ADEPT": "Adept",
+            "SHAMANIC_MASK": "Shamanic mask"
+        }
     }
 }

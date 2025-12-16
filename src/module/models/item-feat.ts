@@ -241,14 +241,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
       }),
-      characterArmorLevel: new fields.NumberField({
-        required: true,
-        initial: 0,
-        min: 0,
-        max: 5,
-        integer: true,
-        label: "SRA2.FEATS.CHARACTER_ARMOR_LEVEL"
-      }),
       armorValue: new fields.NumberField({
         required: true,
         initial: 0,
@@ -804,12 +796,9 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     // Armor: 2500 per armor value (not rating)
     if (featType === 'armor') {
       const armorValue = (this as any).armorValue || 0;
-      console.log(`[ARMOR DEBUG] featType: ${featType}, armorValue: ${armorValue}, calculatedCost before: ${calculatedCost}`);
       calculatedCost += armorValue * 2500;
-      console.log(`[ARMOR DEBUG] calculatedCost after: ${calculatedCost}`);
-    } else {
-      calculatedCost += rating * 5000;
     }
+    calculatedCost += rating * 5000;
 
     (this as any).calculatedCost = calculatedCost;
 

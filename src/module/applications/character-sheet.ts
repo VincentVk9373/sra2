@@ -201,7 +201,8 @@ export class CharacterSheet extends ActorSheet {
             },
             weapons: vehicleWeapons, // Add weapons array to vehicle
             hasSevereDamage: hasSevereDamage, // Add damage status for V2 template
-            isIncapacitating: isIncapacitating // Add incapacitating status for V2 template
+            isIncapacitating: isIncapacitating, // Add incapacitating status for V2 template
+            narrativeEffectsTooltip: SheetHelpers.formatNarrativeEffectsTooltip(narrativeEffects, vehicleActor.system?.description, [], vehicleActor.system) // Add narrative effects tooltip
           });
         }
       } catch (error) {
@@ -789,7 +790,7 @@ export class CharacterSheet extends ActorSheet {
       }
     } catch (error) {
       console.error('Error opening vehicle sheet:', error);
-      ui.notifications?.error('Erreur lors de l\'ouverture de la fiche du véhicule');
+      ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.VEHICLE.OPEN_SHEET_ERROR'));
     }
   }
 
@@ -1213,7 +1214,7 @@ export class CharacterSheet extends ActorSheet {
     const skill = await fromUuid(uuid as any) as any;
     
     if (!skill) {
-      ui.notifications?.error('Skill not found');
+      ui.notifications?.error(game.i18n!.localize('SRA2.SKILLS.NOT_FOUND'));
       return;
     }
     
@@ -1564,7 +1565,7 @@ export class CharacterSheet extends ActorSheet {
     const feat = await fromUuid(uuid as any) as any;
     
     if (!feat) {
-      ui.notifications?.error('Feat not found');
+      ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.NOT_FOUND'));
       return;
     }
     

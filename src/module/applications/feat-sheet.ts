@@ -402,7 +402,7 @@ export class FeatSheet extends ItemSheet {
       return `${total} (FOR+${modifier}${damageValueBonus > 0 ? `+${damageValueBonus}` : ''})`;
     } else if (damageValue === "toxin") {
       // Special case for gas grenades
-      return "selon toxine";
+      return game.i18n?.localize('SRA2.FEATS.WEAPON.TOXIN_DAMAGE') || 'according to toxin';
     } else {
       // Numeric value
       const base = parseInt(damageValue) || 0;

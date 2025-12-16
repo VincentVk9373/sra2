@@ -615,7 +615,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   const defender = await fromUuid(defenderUuid as any) as any;
   
   if (!defender) {
-    ui.notifications?.error(`Cannot find defender: ${defenderName}`);
+    ui.notifications?.error(game.i18n!.format('SRA2.COMBAT.CANNOT_FIND_DEFENDER', { name: defenderName }));
     return;
   }
   

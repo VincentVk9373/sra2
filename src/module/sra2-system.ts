@@ -512,12 +512,12 @@ export class SRA2System {
         
         if (!targetUuid) {
           console.error('Apply damage button: No target UUID found in button data attributes');
-          ui.notifications?.error('Impossible de trouver la cible pour appliquer les dégâts');
+          ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET'));
           return;
         }
         
         if (damage <= 0) {
-          ui.notifications?.info('Aucun dégât à appliquer');
+          ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.NO_DAMAGE_TO_APPLY'));
           return;
         }
         
@@ -530,7 +530,7 @@ export class SRA2System {
           await CombatHelpers.applyDamage(targetUuid, damage, targetName, damageType);
         } catch (error) {
           console.error('Error applying damage:', error);
-          ui.notifications?.error('Erreur lors de l\'application des dégâts');
+          ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.DAMAGE_APPLY_ERROR'));
         } finally {
           // Re-enable button after a short delay
           setTimeout(() => button.prop('disabled', false), 1000);
@@ -1490,7 +1490,7 @@ export class SRA2System {
         const rollMode = rollDiceContainer.find('input[name="sra2-roll-mode"]:checked').val() as string || 'normal';
         
         if (diceCount <= 0) {
-          ui.notifications?.warn('Veuillez entrer un nombre de dés valide');
+          ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.INVALID_DICE_COUNT'));
           return;
         }
         
