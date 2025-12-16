@@ -778,6 +778,7 @@
             "WORLD_ITEMS": "World Items"
         },
         "METATYPES": {
+            "TITLE": "Metatype",
             "LABEL": "Metatype",
             "NAME": "Metatype Name",
             "DESCRIPTION": "Description",
@@ -792,6 +793,7 @@
             "DELETE": "Delete Metatype",
             "EDIT": "Edit Metatype",
             "DRAG_DROP": "Drag and drop a metatype here",
+            "DROP_HERE": "Drop a metatype here",
             "ALREADY_EXISTS": "{name} is already on this character",
             "ONLY_METATYPES": "Only metatype items can be dropped in the metatypes section",
             "ONLY_ONE_METATYPE": "A character can have only one metatype"

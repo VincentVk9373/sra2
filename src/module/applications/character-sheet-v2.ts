@@ -1,4 +1,5 @@
 import { CharacterSheet } from './character-sheet.js';
+import * as SheetHelpers from '../helpers/sheet-helpers.js';
 
 /**
  * Character Sheet Application V2
@@ -81,6 +82,37 @@ export class CharacterSheetV2 extends CharacterSheet {
     html.find('.attribute-input').on('click', (event: JQuery.ClickEvent) => {
       event.stopPropagation();
     });
+    
+    // Handle metatype actions in advanced mode
+    const editMetatypeElements = html.find('[data-action="edit-metatype"]');
+    const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
+    
+    console.log('[CharacterSheetV2] Edit metatype elements found:', editMetatypeElements.length);
+    console.log('[CharacterSheetV2] Delete metatype elements found:', deleteMetatypeElements.length);
+    
+    // Use mousedown instead of click to avoid conflicts
+    editMetatypeElements.on('mousedown', this._onEditMetatype.bind(this));
+    deleteMetatypeElements.on('mousedown', this._onDeleteMetatype.bind(this));
+  }
+
+  /**
+   * Edit metatype
+   */
+  override async _onEditMetatype(event: Event): Promise<void> {
+    console.log('[CharacterSheetV2] Edit metatype clicked');
+    event.preventDefault();
+    event.stopPropagation();
+    return SheetHelpers.handleEditItem(event, this.actor);
+  }
+
+  /**
+   * Delete metatype
+   */
+  override async _onDeleteMetatype(event: Event): Promise<void> {
+    console.log('[CharacterSheetV2] Delete metatype clicked');
+    event.preventDefault();
+    event.stopPropagation();
+    return SheetHelpers.handleDeleteItem(event, this.actor, this.render.bind(this));
   }
 
   /**

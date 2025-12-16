@@ -777,6 +777,7 @@
             "WORLD_ITEMS": "Items du monde"
         },
         "METATYPES": {
+            "TITLE": "Métatype",
             "LABEL": "Métatype",
             "NAME": "Nom du Métatype",
             "DESCRIPTION": "Description",
@@ -791,6 +792,7 @@
             "DELETE": "Supprimer le Métatype",
             "EDIT": "Modifier le Métatype",
             "DRAG_DROP": "Glissez et déposez un métatype ici",
+            "DROP_HERE": "Glisser un métatype ici",
             "ALREADY_EXISTS": "{name} est déjà sur ce personnage",
             "ONLY_METATYPES": "Seuls les métatypes peuvent être déposés dans la section des métatypes",
             "ONLY_ONE_METATYPE": "Un personnage ne peut avoir qu'un seul métatype"

@@ -354,15 +354,27 @@ export function calculateRR(actor: any, itemType: 'skill' | 'specialization' | '
  * Generic handler to edit an item from an actor
  */
 export async function handleEditItem(event: Event, actor: any): Promise<void> {
+  console.log('[SheetHelpers.handleEditItem] Called', { event, actor });
   event.preventDefault();
   const element = event.currentTarget as HTMLElement;
-  const itemId = element.dataset.itemId || (element.closest('.metatype-item') as HTMLElement)?.getAttribute('data-item-id');
+  console.log('[SheetHelpers.handleEditItem] Element:', element);
+  console.log('[SheetHelpers.handleEditItem] Element dataset:', element.dataset);
   
-  if (!itemId) return;
+  const itemId = element.dataset.itemId || (element.closest('.metatype-item') as HTMLElement)?.getAttribute('data-item-id');
+  console.log('[SheetHelpers.handleEditItem] ItemId:', itemId);
+  
+  if (!itemId) {
+    console.warn('[SheetHelpers.handleEditItem] No itemId found!');
+    return;
+  }
 
   const item = actor.items.get(itemId);
+  console.log('[SheetHelpers.handleEditItem] Item:', item);
   if (item) {
+    console.log('[SheetHelpers.handleEditItem] Opening item sheet...');
     item.sheet?.render(true);
+  } else {
+    console.warn('[SheetHelpers.handleEditItem] Item not found in actor!');
   }
 }
 
@@ -370,18 +382,31 @@ export async function handleEditItem(event: Event, actor: any): Promise<void> {
  * Generic handler to delete an item from an actor
  */
 export async function handleDeleteItem(event: Event, actor: any, sheetRender?: (refresh: boolean) => void): Promise<void> {
+  console.log('[SheetHelpers.handleDeleteItem] Called', { event, actor });
   event.preventDefault();
   const element = event.currentTarget as HTMLElement;
-  const itemId = element.dataset.itemId || (element.closest('.metatype-item') as HTMLElement)?.getAttribute('data-item-id');
+  console.log('[SheetHelpers.handleDeleteItem] Element:', element);
+  console.log('[SheetHelpers.handleDeleteItem] Element dataset:', element.dataset);
   
-  if (!itemId) return;
+  const itemId = element.dataset.itemId || (element.closest('.metatype-item') as HTMLElement)?.getAttribute('data-item-id');
+  console.log('[SheetHelpers.handleDeleteItem] ItemId:', itemId);
+  
+  if (!itemId) {
+    console.warn('[SheetHelpers.handleDeleteItem] No itemId found!');
+    return;
+  }
 
   const item = actor.items.get(itemId);
+  console.log('[SheetHelpers.handleDeleteItem] Item:', item);
   if (item) {
+    console.log('[SheetHelpers.handleDeleteItem] Deleting item...');
     await item.delete();
     if (sheetRender) {
+      console.log('[SheetHelpers.handleDeleteItem] Re-rendering sheet...');
       sheetRender(false);
     }
+  } else {
+    console.warn('[SheetHelpers.handleDeleteItem] Item not found in actor!');
   }
 }
 

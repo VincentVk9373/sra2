@@ -703,6 +703,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -1009,6 +1015,34 @@
                 <section class="char-section avatar-large-section">
                     <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
                 </section>
+                {{#if advancedMode}}
+                <section class="char-section metatype-advanced-section">
+                    <header>
+                        <div>{{localize "SRA2.METATYPES.TITLE"}}</div>
+                    </header>
+                    <div class="metatype-drop-zone-advanced" data-drop-zone="metatype">
+                        {{#if metatype}}
+                        <div class="metatype-item-advanced" data-item-id="{{metatype._id}}">
+                            <img class="metatype-img-small" src="{{metatype.img}}" alt="{{metatype.name}}" />
+                            <span class="metatype-name-advanced">{{metatype.name}}</span>
+                            <div class="metatype-controls-advanced">
+                                <a class="metatype-edit-btn" data-action="edit-metatype" data-item-id="{{metatype._id}}" title="{{localize 'SRA2.METATYPES.EDIT'}}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a class="metatype-delete-btn" data-action="delete-metatype" data-item-id="{{metatype._id}}" title="{{localize 'SRA2.METATYPES.DELETE'}}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {{else}}
+                        <div class="empty-metatype-advanced">
+                            <i class="fas fa-user-plus"></i>
+                            <span>{{localize "SRA2.METATYPES.DROP_HERE"}}</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                </section>
+                {{/if}}
                 <section class="char-section thresholds-section">
                     <div class="char-section-row">
                         <section>

@@ -396,7 +396,6 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       };
       const attributeCosts = this.attributeCosts;
       let totalCost = Object.values(attributeCosts).reduce((sum, cost) => sum + cost, 0);
-      totalCost += this.armorCost || 0;
       if (parent && parent.items) {
         parent.items.forEach((item) => {
           if (item.system && item.system.calculatedCost !== void 0) {
@@ -3209,26 +3208,49 @@ function calculateRR(actor, itemType, itemName) {
   return sources.reduce((total, source) => total + source.rrValue, 0);
 }
 async function handleEditItem(event, actor) {
+  console.log("[SheetHelpers.handleEditItem] Called", { event, actor });
   event.preventDefault();
   const element = event.currentTarget;
+  console.log("[SheetHelpers.handleEditItem] Element:", element);
+  console.log("[SheetHelpers.handleEditItem] Element dataset:", element.dataset);
   const itemId = element.dataset.itemId || element.closest(".metatype-item")?.getAttribute("data-item-id");
-  if (!itemId) return;
+  console.log("[SheetHelpers.handleEditItem] ItemId:", itemId);
+  if (!itemId) {
+    console.warn("[SheetHelpers.handleEditItem] No itemId found!");
+    return;
+  }
   const item = actor.items.get(itemId);
+  console.log("[SheetHelpers.handleEditItem] Item:", item);
   if (item) {
+    console.log("[SheetHelpers.handleEditItem] Opening item sheet...");
     item.sheet?.render(true);
+  } else {
+    console.warn("[SheetHelpers.handleEditItem] Item not found in actor!");
   }
 }
 async function handleDeleteItem(event, actor, sheetRender) {
+  console.log("[SheetHelpers.handleDeleteItem] Called", { event, actor });
   event.preventDefault();
   const element = event.currentTarget;
+  console.log("[SheetHelpers.handleDeleteItem] Element:", element);
+  console.log("[SheetHelpers.handleDeleteItem] Element dataset:", element.dataset);
   const itemId = element.dataset.itemId || element.closest(".metatype-item")?.getAttribute("data-item-id");
-  if (!itemId) return;
+  console.log("[SheetHelpers.handleDeleteItem] ItemId:", itemId);
+  if (!itemId) {
+    console.warn("[SheetHelpers.handleDeleteItem] No itemId found!");
+    return;
+  }
   const item = actor.items.get(itemId);
+  console.log("[SheetHelpers.handleDeleteItem] Item:", item);
   if (item) {
+    console.log("[SheetHelpers.handleDeleteItem] Deleting item...");
     await item.delete();
     if (sheetRender) {
+      console.log("[SheetHelpers.handleDeleteItem] Re-rendering sheet...");
       sheetRender(false);
     }
+  } else {
+    console.warn("[SheetHelpers.handleDeleteItem] Item not found in actor!");
   }
 }
 function parseDamageValue(damageValueStr, actorStrength, damageValueBonus = 0) {
@@ -6210,6 +6232,30 @@ class CharacterSheetV2 extends CharacterSheet {
     html.find(".attribute-input").on("click", (event) => {
       event.stopPropagation();
     });
+    const editMetatypeElements = html.find('[data-action="edit-metatype"]');
+    const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
+    console.log("[CharacterSheetV2] Edit metatype elements found:", editMetatypeElements.length);
+    console.log("[CharacterSheetV2] Delete metatype elements found:", deleteMetatypeElements.length);
+    editMetatypeElements.on("mousedown", this._onEditMetatype.bind(this));
+    deleteMetatypeElements.on("mousedown", this._onDeleteMetatype.bind(this));
+  }
+  /**
+   * Edit metatype
+   */
+  async _onEditMetatype(event) {
+    console.log("[CharacterSheetV2] Edit metatype clicked");
+    event.preventDefault();
+    event.stopPropagation();
+    return handleEditItem(event, this.actor);
+  }
+  /**
+   * Delete metatype
+   */
+  async _onDeleteMetatype(event) {
+    console.log("[CharacterSheetV2] Delete metatype clicked");
+    event.preventDefault();
+    event.stopPropagation();
+    return handleDeleteItem(event, this.actor, this.render.bind(this));
   }
   /**
    * Toggle advanced mode
