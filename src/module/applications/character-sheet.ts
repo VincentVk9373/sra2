@@ -1790,19 +1790,8 @@ export class CharacterSheet extends ActorSheet {
     const itemId = element.dataset.itemId;
     if (!itemId) return;
     
-    const item = this.actor.items.get(itemId);
-    if (!item) return;
-    
-    const currentBookmarkState = (item.system as any).bookmarked || false;
-    
-    try {
-      await (item as any).update({ 'system.bookmarked': !currentBookmarkState });
-      // Re-render to update UI
-      this.render(false);
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-      ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Erreur lors de la mise à jour du bookmark');
-    }
+    // Use the shared helper
+    await SheetHelpers.toggleItemBookmark(this.actor, itemId, this);
   }
   
   /**

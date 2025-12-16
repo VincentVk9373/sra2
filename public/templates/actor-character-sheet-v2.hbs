@@ -74,10 +74,9 @@
         </div>
     </header>
     <div>
-
         <div class="bookmarks-list-compact">
             <div class="bookmarks-header">
-                <i class="fas fa-star"></i> {{localize "SRA2.BOOKMARKS.TITLE"}}
+                <i class="fas fa-star"></i>
             </div>
             {{#if bookmarkedItems.length}}
             <div class="bookmarks-items">
@@ -110,10 +109,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="weapon"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="weapon">
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
+                                    <div class="context-menu" data-ietem-id="{{this._id}}" data-item-type="weapon">
                                         <div class="context-menu-item" data-action="roll-weapon" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas {{#if this.system.bookmarked}}fa-star{{else}}fa-star-o{{/if}}" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -142,10 +146,15 @@
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -185,10 +194,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="spell"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="spell">
                                         <div class="context-menu-item" data-action="roll-spell" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -217,10 +231,15 @@
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -260,10 +279,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="power"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="power">
                                         <div class="context-menu-item" data-action="roll-power" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -725,10 +749,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="skill"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="skill">
                                         <div class="context-menu-item" data-action="quick-roll-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -752,10 +781,15 @@
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer

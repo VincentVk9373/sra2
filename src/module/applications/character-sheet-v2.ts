@@ -34,12 +34,27 @@ export class CharacterSheetV2 extends CharacterSheet {
     // Handle context menu item clicks - close menu after action
     html.find('.context-menu-item').on('click', (event: JQuery.ClickEvent) => {
       event.stopPropagation();
-      const menu = $(event.currentTarget).closest('.context-menu');
-      menu.removeClass('active');
+      const target = event.currentTarget as HTMLElement;
+      const menu = $(target).closest('.context-menu');
+      
+      // For bookmark actions, delay menu close to let the handler execute first
+      if (target.dataset.action === 'toggle-bookmark') {
+        setTimeout(() => {
+          menu.removeClass('active');
+        }, 100);
+      } else {
+        menu.removeClass('active');
+      }
     });
 
     // Handle toggle active for feats
     html.find('[data-action="toggle-active"]').on('click', this._onToggleActive.bind(this));
+    
+    // Handle toggle bookmark (inherited from CharacterSheet, but needs explicit binding for context menu)
+    html.find('[data-action="toggle-bookmark"]').on('click', (event: JQuery.ClickEvent) => {
+      // Call the parent method which uses the shared helper
+      (this as any)._onToggleBookmark(event);
+    });
   }
 
   override close(options?: Application.CloseOptions): Promise<void> {

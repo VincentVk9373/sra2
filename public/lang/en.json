@@ -16,6 +16,9 @@
         "SHEET": {
             "CHARACTER": "Detailed",
             "CHARACTER_V2": "In Run",
+            "SWITCH_TO_V1": "Switch to classic sheet",
+            "SWITCH_TO_V2": "Switch to V2 sheet",
+            "SWITCH_ERROR": "Error switching sheet",
             "NPC": "SRA2 NPC Sheet",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
             "ICE": "SRA2 ICE Sheet",
@@ -76,6 +79,8 @@
             "DICE_POOL": "Dice",
             "RR": "RR",
             "ROLL_WEAPON": "Roll dice for this weapon",
+            "ROLL_AUTOPILOT": "Roll dice with drone autopilot",
+            "ROLL_WEAPON_WITH_AUTOPILOT": "Roll attack with drone autopilot",
             "ADD_WEAPON": "Add Weapon",
             "ONLY_WEAPONS_ALLOWED": "Only weapons can be added to vehicles",
             "BONUSES_AND_OPTIONS": "Bonuses and Options",
@@ -202,9 +207,13 @@
             "TITLE": "Quick Actions",
             "BOOKMARK": "Add to favorites",
             "UNBOOKMARK": "Remove from favorites",
+            "ADD": "Add to favorites",
+            "REMOVE": "Remove from favorites",
             "NO_BOOKMARKS": "No favorites configured",
             "TOGGLE": "Favorite",
-            "CLICK_TO_ROLL": "Click to roll"
+            "CLICK_TO_ROLL": "Click to roll",
+            "ERROR": "Error updating bookmark",
+            "ERROR": "Error updating bookmark"
         },
         "CONFIRM_DELETE": "Are you sure you want to delete {name}?",
         "ATTRIBUTES": {
@@ -384,6 +393,8 @@
             "BONUS_MENTAL_THRESHOLD_HINT": "Bonus to mental damage thresholds (positive or negative)",
             "CHARACTER_ARMOR_LEVEL": "Armor Level",
             "CHARACTER_ARMOR_LEVEL_HINT": "Armor level granted by this equipment (0-5). The highest armor among active equipment is used.",
+            "ARMOR_VALUE": "Armor Value",
+            "ARMOR_VALUE_HINT": "Armor value granted by this armor (0-5). Armor values stack together (maximum 5).",
             "BONUS_ANARCHY": "Anarchy Bonus",
             "BONUS_ANARCHY_SHORT": "Anarchy",
             "BONUS_ANARCHY_HINT": "Additional anarchy points granted by this feat",
@@ -566,7 +577,20 @@
                 "SECTION_HINT": "Spells use the base feat properties (narrative effects, bonuses, etc.) without weapon characteristics.",
                 "ROLL": "Roll Dice",
                 "ROLL_TITLE": "Roll {name}",
-                "CLICK_TO_ROLL": "Click to cast this spell"
+                "CLICK_TO_ROLL": "Click to cast this spell",
+                "TYPE": "Spell Type",
+                "TYPE_DIRECT": "Direct Spell",
+                "TYPE_INDIRECT": "Indirect Spell",
+                "TYPE_HINT": "Direct spells affect the target directly (mana), indirect spells go through physical effects (elemental)",
+                "SPECIALIZATION": {
+                    "TYPE": "Specialization Type",
+                    "COMBAT": "Combat spells",
+                    "DETECTION": "Detection spells",
+                    "HEALTH": "Health spells",
+                    "ILLUSION": "Illusion spells",
+                    "MANIPULATION": "Manipulation spells",
+                    "COUNTERSPELL": "Counterspell"
+                }
             },
             "VEHICLE": {
                 "SECTION_TITLE": "Vehicle / Drone Information",
@@ -601,6 +625,8 @@
                 "HANDLING_BONUS_HINT": "Handling +1 (max +3): +1 level",
                 "ARMOR_BONUS": "Armor Bonus",
                 "ARMOR_BONUS_HINT": "Armor +1 (max +Structure): +1 level",
+                "STRUCTURE_BONUS": "Structure Bonus",
+                "STRUCTURE_BONUS_HINT": "Structure +1: +1 level",
                 "IS_FIXED": "Fixed (unable to move)",
                 "IS_FIXED_HINT": "The vehicle/drone is fixed and cannot move: -1 level",
                 "IS_FLYING": "Flying",
@@ -778,6 +804,8 @@
             "APPLYING_ACTOR_ITEMS": "Applying updates on actor {name} items",
             "APPLYING_ITEMS": "Applying updates on items",
             "SETTING_NAME": "Current System Version",
+            "13_0_3_INFO": "Migration 13.0.3: Initial migration.",
+            "13_0_4_INFO": "Migration 13.0.4: Data structure updates.",
             "13_0_5_INFO": "Migration 13.0.5: Weapon and Spell feat types have been separated. All feats have been converted to \"Weapon\" type. You can manually change spells to \"Spell\" type.",
             "13_0_7_INFO": "Migration 13.0.7: {count} \"Weapons & Spells\" feat(s) converted to \"Weapon\" type. All data preserved with backup.",
             "13_0_8_INFO": "Migration 13.0.8: Narrative effects on {count} feat(s) have been converted to the new format (with negative option).",
@@ -829,7 +857,19 @@
             "SUCCESSES": "Successes",
             "NORMAL_DICE": "Normal Dice",
             "MANUAL_RR_BONUS": "Manual RR Bonus",
-            "MANUAL_RR_BONUS_TOOLTIP": "Add a manual RR bonus (0-3)"
+            "MANUAL_RR_BONUS_TOOLTIP": "Add a manual RR bonus (0-3)",
+            "RISK_LEVEL": {
+                "LOW_TO_NO": "Low to no risk",
+                "NORMAL": "Normal risk",
+                "HIGH": "High risk",
+                "EXTREME": "Extreme risk"
+            },
+            "PROBABILITIES": {
+                "NO_COMPLICATION": "No complication",
+                "MINOR_COMPLICATION": "Minor complication",
+                "CRITICAL_COMPLICATION": "Critical complication",
+                "DISASTER": "Disaster"
+            }
         },
         "REFERENCE": "Reference"
     }

@@ -19,6 +19,7 @@
             "SWITCH_TO_V1": "Basculer vers la feuille classique",
             "SWITCH_TO_V2": "Basculer vers la feuille V2",
             "SWITCH_ERROR": "Erreur lors du changement de feuille",
+            "NPC": "Feuille de PNJ SRA2",
             "VEHICLE": "Feuille de Véhicule/Drone SRA2",
             "ICE": "Feuille de GLACE SRA2",
             "FEAT": "Feuille d'Atout SRA2",
@@ -41,6 +42,34 @@
             "LINKED_VEHICLES": "Véhicules liés"
         },
         "TOTAL_COST": "Coût Total",
+        "NPC": {
+            "NAME": "Nom du PNJ",
+            "DIFFICULTY": "Niveau de Difficulté",
+            "DESCRIPTION": "Description",
+            "DICE_POOL": "Dés",
+            "RR": "RR",
+            "THRESHOLD": "Seuil",
+            "SKILLS_INFO": "Les PNJ ne lancent pas de dés. Ils ont des seuils de résultat prédéfinis.",
+            "THRESHOLD_FORMULA": "Formule du Seuil",
+            "FORMULA": "plancher(Dés / 3) + RR + 1",
+            "OTHER_FEATS": "Autres Atouts",
+            "ATTACK_WITH_THRESHOLD": "Attaquer avec ce seuil",
+            "NO_TARGET_SELECTED": "Aucune cible sélectionnée. Veuillez cibler un token avant d'attaquer.",
+            "ATTACK_AGAINST": "Attaque contre",
+            "ATTACK_FLAVOR": "{npcName} attaque {targetName} avec {skillName}",
+            "DEFENSE_ROLL_REQUIRED": "La cible doit effectuer un jet de défense",
+            "ATTACK_WITH_WEAPON": "Attaquer avec cette arme",
+            "CAST_SPELL": "Lancer ce sort",
+            "ATTACK": "Attaque",
+            "ROLL_WITH_DICE": "Lancer les dés pour attaquer",
+            "SECTION": {
+                "INFO": "Informations",
+                "COMBAT": "Combat",
+                "SKILLS": "Compétences",
+                "FEATS": "Atouts",
+                "WEAPONS_SPELLS": "Armes et Sorts"
+            }
+        },
         "VEHICLE": {
             "NAME": "Nom du Véhicule/Drone",
             "COST": "Coût",
@@ -61,6 +90,8 @@
             "ADD_NARRATIVE_EFFECT": "Ajouter un effet narratif",
             "REMOVE_EFFECT": "Supprimer cet effet",
             "NO_NARRATIVE_EFFECTS": "Aucun effet narratif. Cliquez sur le bouton ci-dessus pour en ajouter un.",
+            "RR_LIST": "Liste des Réductions de Risque",
+            "RR_LIST_HINT": "Réduction de risque appliquée à tous les jets du drone",
             "ATTRIBUTES": {
                 "LABEL": "Attributs",
                 "AUTOPILOT": "Autopilote",
@@ -193,8 +224,10 @@
         "ARMOR_THRESHOLDS": {
             "LABEL": "Armure et Seuils de Dégâts",
             "ARMOR_LEVEL": "Niveau d'Armure",
+            "CALCULATED_FROM_ARMOR": "(Calculé à partir de l'armure équipée)",
             "TYPE": "Type",
             "LIGHT": "Léger",
+            "MODERATE": "Modéré",
             "SEVERE": "Grave",
             "INCAPACITATING": "Incapacitant",
             "INCAPACITATING_SHORT": "Incapa.",
@@ -644,9 +677,12 @@
             "TITLE": "Actions Rapides",
             "BOOKMARK": "Ajouter aux favoris",
             "UNBOOKMARK": "Retirer des favoris",
+            "ADD": "Ajouter aux favoris",
+            "REMOVE": "Retirer des favoris",
             "NO_BOOKMARKS": "Aucun favori configuré",
             "TOGGLE": "Favori",
-            "CLICK_TO_ROLL": "Cliquer pour lancer un jet"
+            "CLICK_TO_ROLL": "Cliquer pour lancer un jet",
+            "ERROR": "Erreur lors de la mise à jour du favori"
         },
         "SKILLS": {
             "BOOKMARKED": "Favori",
@@ -767,6 +803,8 @@
             "APPLYING_ACTOR_ITEMS": "Application des mises à jour sur les objets de l'acteur {name}",
             "APPLYING_ITEMS": "Application des mises à jour sur les objets",
             "SETTING_NAME": "Version Actuelle du Système",
+            "13_0_3_INFO": "Migration 13.0.3 : Migration initiale.",
+            "13_0_4_INFO": "Migration 13.0.4 : Mises à jour de la structure des données.",
             "13_0_5_INFO": "Migration 13.0.5 : Les types d'atouts \"Armes et Sorts\" ont été séparés. Tous les atouts ont été convertis en type \"Arme\". Vous pouvez changer manuellement les sorts en type \"Sort\".",
             "13_0_7_INFO": "Migration 13.0.7 : {count} atout(s) \"Armes et Sorts\" converti(s) en type \"Arme\". Toutes les données sont préservées avec sauvegarde.",
             "13_0_8_INFO": "Migration 13.0.8 : Les effets narratifs de {count} atout(s) ont été convertis au nouveau format (avec option négatif).",

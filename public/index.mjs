@@ -3727,6 +3727,29 @@ function getSpecializationsForSkill(actor, skillName) {
     return linkedSkill && normalizeSearchText(linkedSkill) === normalizedSkillName;
   });
 }
+async function toggleItemBookmark(actor, itemId, sheet) {
+  if (!actor || !itemId) {
+    console.error("toggleItemBookmark: missing actor or itemId");
+    return false;
+  }
+  const item = actor.items.get(itemId);
+  if (!item) {
+    console.error("toggleItemBookmark: item not found", itemId);
+    return false;
+  }
+  const currentBookmarkState = item.system.bookmarked || false;
+  try {
+    await item.update({ "system.bookmarked": !currentBookmarkState });
+    if (sheet && typeof sheet.render === "function") {
+      sheet.render(false);
+    }
+    return true;
+  } catch (error) {
+    console.error("Error toggling bookmark:", error);
+    ui.notifications?.error(game.i18n?.localize("SRA2.BOOKMARKS.ERROR") || "Erreur lors de la mise à jour du bookmark");
+    return false;
+  }
+}
 const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   calculateAttackPool,
@@ -3756,7 +3779,8 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   organizeSpecializationsBySkill,
   parseDamageCheckboxChange,
   parseDamageValue,
-  restoreActiveSection
+  restoreActiveSection,
+  toggleItemBookmark
 }, Symbol.toStringTag, { value: "Module" }));
 function getDamageThresholds(defenderActor, damageType = "physical") {
   const defenderSystem = defenderActor.system;
@@ -5467,16 +5491,7 @@ class CharacterSheet extends ActorSheet {
     if (!element) return;
     const itemId = element.dataset.itemId;
     if (!itemId) return;
-    const item = this.actor.items.get(itemId);
-    if (!item) return;
-    const currentBookmarkState = item.system.bookmarked || false;
-    try {
-      await item.update({ "system.bookmarked": !currentBookmarkState });
-      this.render(false);
-    } catch (error) {
-      console.error("Error toggling bookmark:", error);
-      ui.notifications?.error(game.i18n?.localize("SRA2.BOOKMARKS.ERROR") || "Erreur lors de la mise à jour du bookmark");
-    }
+    await toggleItemBookmark(this.actor, itemId, this);
   }
   /**
    * Handle clicking on a bookmarked item in the header
@@ -6146,10 +6161,20 @@ class CharacterSheetV2 extends CharacterSheet {
     });
     html.find(".context-menu-item").on("click", (event) => {
       event.stopPropagation();
-      const menu = $(event.currentTarget).closest(".context-menu");
-      menu.removeClass("active");
+      const target = event.currentTarget;
+      const menu = $(target).closest(".context-menu");
+      if (target.dataset.action === "toggle-bookmark") {
+        setTimeout(() => {
+          menu.removeClass("active");
+        }, 100);
+      } else {
+        menu.removeClass("active");
+      }
     });
     html.find('[data-action="toggle-active"]').on("click", this._onToggleActive.bind(this));
+    html.find('[data-action="toggle-bookmark"]').on("click", (event) => {
+      this._onToggleBookmark(event);
+    });
   }
   close(options) {
     $(document).off(`click.context-menu-v2-${this.id}`);

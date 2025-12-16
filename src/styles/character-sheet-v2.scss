@@ -411,13 +411,15 @@
         display: none;
         padding: 8px 365px 8px 8px;
         background: rgba(15, 52, 96, 0.3);
-        border-bottom: 1px solid var(--blue);
         font-size: 0.85rem;
+        gap: 8px;
+        align-items: baseline;
 
         .bookmarks-header {
             display: flex;
             align-items: center;
             gap: 8px;
+            justify-content: center;
             color: var(--yellow);
             font-weight: 600;
             margin-bottom: 8px;
@@ -815,6 +817,6 @@
     }
 
     .bookmarks-list-compact {
-        display: block !important;
+        display: flex !important;
     }
 }

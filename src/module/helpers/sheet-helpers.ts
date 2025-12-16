@@ -1342,3 +1342,41 @@ export function getSpecializationsForSkill(actor: any, skillName: string): any[]
   });
 }
 
+/**
+ * Toggle the bookmark status of an item
+ * 
+ * @param actor - The actor that owns the item
+ * @param itemId - The ID of the item to toggle
+ * @param sheet - The sheet instance to re-render (optional)
+ * @returns Promise that resolves when the toggle is complete
+ */
+export async function toggleItemBookmark(actor: any, itemId: string, sheet?: any): Promise<boolean> {
+  if (!actor || !itemId) {
+    console.error('toggleItemBookmark: missing actor or itemId');
+    return false;
+  }
+  
+  const item = actor.items.get(itemId);
+  if (!item) {
+    console.error('toggleItemBookmark: item not found', itemId);
+    return false;
+  }
+  
+  const currentBookmarkState = (item.system as any).bookmarked || false;
+  
+  try {
+    await (item as any).update({ 'system.bookmarked': !currentBookmarkState });
+    
+    // Re-render the sheet if provided
+    if (sheet && typeof sheet.render === 'function') {
+      sheet.render(false);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error toggling bookmark:', error);
+    ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Erreur lors de la mise à jour du bookmark');
+    return false;
+  }
+}
+
