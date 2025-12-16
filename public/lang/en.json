@@ -246,6 +246,8 @@
             "ANARCHY_BONUS_COMBAT": "Anarchy combat",
             "ANARCHY_TEMP": "Temp Anarchy",
             "ANARCHY_SPENT": "Anarchy spent",
+            "CASH": "Cash",
+            "COST": "Cost",
             "ESSENCE": "Essence",
             "ESSENCE_MAX": "Max Essence",
             "NARRATIONS": "Narrations",

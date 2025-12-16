@@ -64,10 +64,10 @@
                         </label>
                         {{/each}}
                     {{/if}}
+                    <label class="track-box">
+                        <span data-action="add-temp-anarchy" class="box-circle plus-button"></span>
+                    </label>
                 </div>
-            </div>
-            <div class="temp-anarchy-section">
-                <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
             </div>
 
             {{#if (gt bonusAnarchy 0)}}
@@ -1236,6 +1236,12 @@
                     </div>
                 </div>
                 <div class="footer-price">
+                    <div class="footer-cash">
+                        <span class="yen-symbol">{{localize "SRA2.RESOURCES.CASH"}} : </span>
+                        <input type="number" name="system.resources.yens" value="{{system.resources.yens}}" class="cash-input" min="0" />
+                        <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <span class="cost-label">{{localize "SRA2.RESOURCES.COST"}} : </span>
                     <span class="price-value">{{system.totalCost}} <span class="yen-symbol">{{localize
                             "SRA2.RESOURCES.YENS"}}</span></span>
                 </div>
