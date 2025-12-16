@@ -300,9 +300,11 @@ export class VehicleSheet extends ActorSheet {
         if (nameMatch) {
           const index = parseInt(nameMatch[1]);
           const text = textareaElement.value || '';
-          const isNegative = html.find(`input[name="system.narrativeEffects.${index}.isNegative"]`).is(':checked');
           const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          
+          // Determine isNegative based on value (for backward compatibility)
+          const isNegative = value < 0;
           
           currentNarrativeEffects[index] = {
             text: text,
@@ -343,9 +345,11 @@ export class VehicleSheet extends ActorSheet {
         if (nameMatch) {
           const effectIndex = parseInt(nameMatch[1]);
           const text = textareaElement.value || '';
-          const isNegative = html.find(`input[name="system.narrativeEffects.${effectIndex}.isNegative"]`).is(':checked');
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          
+          // Determine isNegative based on value (for backward compatibility)
+          const isNegative = value < 0;
           
           currentNarrativeEffects[effectIndex] = {
             text: text,
@@ -368,6 +372,79 @@ export class VehicleSheet extends ActorSheet {
       await this.actor.update({
         'system.narrativeEffects': currentNarrativeEffects
       } as any);
+    });
+
+    // Handle narrative effect changes (text or value) - auto-save to trigger character sheet re-render
+    // Use debounce for textarea input to avoid too many saves while typing
+    let narrativeEffectSaveTimeout: NodeJS.Timeout | null = null;
+    
+    const saveNarrativeEffects = async () => {
+      // Read current narrative effects from form inputs to preserve unsaved changes
+      const currentNarrativeEffects: any[] = [];
+      
+      // Extract all narrative effect values from form (preserve order and unsaved changes)
+      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.each((_inputIndex, textarea) => {
+        const textareaElement = textarea as HTMLTextAreaElement;
+        const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
+        if (nameMatch) {
+          const effectIndex = parseInt(nameMatch[1]);
+          const text = textareaElement.value || '';
+          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          
+          // Determine isNegative based on value (for backward compatibility)
+          const isNegative = value < 0;
+          
+          currentNarrativeEffects[effectIndex] = {
+            text: text,
+            isNegative: isNegative,
+            value: value
+          };
+        }
+      });
+      
+      // Fill gaps in array
+      for (let i = 0; i < currentNarrativeEffects.length; i++) {
+        if (!currentNarrativeEffects[i]) {
+          currentNarrativeEffects[i] = { text: '', isNegative: false, value: 0 };
+        }
+      }
+      
+      // Update the actor - this will trigger the updateActor hook which re-renders character sheets
+      await this.actor.update({
+        'system.narrativeEffects': currentNarrativeEffects
+      } as any);
+    };
+    
+    // Handle select changes (immediate save)
+    html.find('select[name^="system.narrativeEffects."]').on('change', async (event) => {
+      event.preventDefault();
+      if (narrativeEffectSaveTimeout) {
+        clearTimeout(narrativeEffectSaveTimeout);
+        narrativeEffectSaveTimeout = null;
+      }
+      await saveNarrativeEffects();
+    });
+    
+    // Handle textarea changes (debounced save for input, immediate for change/blur)
+    html.find('textarea[name^="system.narrativeEffects."]').on('input', (event) => {
+      if (narrativeEffectSaveTimeout) {
+        clearTimeout(narrativeEffectSaveTimeout);
+      }
+      // Debounce: save after 500ms of no typing
+      narrativeEffectSaveTimeout = setTimeout(async () => {
+        await saveNarrativeEffects();
+        narrativeEffectSaveTimeout = null;
+      }, 500);
+    });
+    
+    html.find('textarea[name^="system.narrativeEffects."]').on('change blur', async (event) => {
+      if (narrativeEffectSaveTimeout) {
+        clearTimeout(narrativeEffectSaveTimeout);
+        narrativeEffectSaveTimeout = null;
+      }
+      await saveNarrativeEffects();
     });
 
     // Handle damage checkbox changes (both in header and combat section)

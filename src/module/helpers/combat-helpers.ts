@@ -7,6 +7,110 @@ import * as SheetHelpers from './sheet-helpers.js';
 import { VEHICLE_TYPES } from '../models/item-feat.js';
 
 /**
+ * Calculate damage thresholds for a character actor
+ * @param actorSystem - The actor's system data
+ * @param includeArmor - Whether to include armor in the calculation (default: true)
+ * @returns Damage thresholds object with light, severe, and incapacitating values
+ */
+export function calculateDamageThresholds(
+  actorSystem: any,
+  includeArmor: boolean = true
+): { light: number; severe: number; incapacitating: number } {
+  const strength = actorSystem.attributes?.strength || 1;
+  const willpower = actorSystem.attributes?.willpower || 1;
+  
+  // Get armor level (calculated from feats)
+  const armorLevel = actorSystem.armorLevel || 0;
+  
+  // Get physical threshold bonuses from feats
+  let bonusPhysicalThreshold = 0;
+  let bonusMentalThreshold = 0;
+  
+  // Calculate bonuses from active feats
+  const parent = (actorSystem as any).parent;
+  if (parent && parent.items) {
+    const activeFeats = parent.items.filter((item: any) => 
+      item.type === 'feat' && item.system.active === true
+    );
+    
+    activeFeats.forEach((feat: any) => {
+      bonusPhysicalThreshold += feat.system.bonusPhysicalThreshold || 0;
+      bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
+    });
+  }
+  
+  // Calculate base thresholds
+  const basePhysical = strength + bonusPhysicalThreshold;
+  const baseMental = willpower + bonusMentalThreshold;
+  
+  // Apply armor if requested
+  const physicalArmor = includeArmor ? armorLevel : 0;
+  
+  return {
+    light: basePhysical + physicalArmor,
+    severe: basePhysical + physicalArmor + 3,
+    incapacitating: basePhysical + physicalArmor + 6
+  };
+}
+
+/**
+ * Get damage thresholds for a defender based on damage type
+ * @param defenderActor - The defender actor
+ * @param damageType - Type of damage: 'physical', 'mental', or 'matrix'
+ * @returns Damage thresholds object
+ */
+export function getDamageThresholds(
+  defenderActor: any,
+  damageType: 'physical' | 'mental' | 'matrix' = 'physical'
+): { light: number; severe?: number; incapacitating: number } {
+  const defenderSystem = defenderActor.system as any;
+  const isVehicle = defenderActor.type === 'vehicle';
+  const isIce = defenderActor.type === 'ice';
+  
+  if (isIce) {
+    // For ICE, thresholds are based on FW = 1: light = 1, severe = 2, incapacitating = 3
+    return defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 2,
+      incapacitating: 3
+    };
+  }
+  
+  if (isVehicle) {
+    // For vehicles/drones, thresholds are directly in damageThresholds
+    return defenderSystem.damageThresholds || {
+      light: 1,
+      severe: 4,
+      incapacitating: 7
+    };
+  }
+  
+  // For characters
+  if (damageType === 'mental') {
+    return defenderSystem.damageThresholds?.mental || {
+      light: 1,
+      severe: 4,
+      incapacitating: 7
+    };
+  }
+  
+  if (damageType === 'matrix') {
+    return defenderSystem.damageThresholds?.matrix || {
+      light: 0,
+      severe: 0,
+      incapacitating: 0
+    };
+  }
+  
+  // Physical damage: use withArmor thresholds (armor is always included for physical damage)
+  return defenderSystem.damageThresholds?.withArmor || {
+    light: 1,
+    severe: 4,
+    incapacitating: 7
+  };
+}
+
+/**
  * Calculate NPC threshold for a skill or specialization
  */
 export function calculateNPCThreshold(
@@ -522,40 +626,8 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   const isVehicle = defenderActor.type === 'vehicle';
   const isIce = defenderActor.type === 'ice';
   
-  // Get damage thresholds based on actor type and damage type
-  let damageThresholds: { light: number; severe?: number; incapacitating: number };
-  if (isIce) {
-    // For ICE, thresholds are based on FW = 1: light = 1, severe = 2, incapacitating = 3
-    damageThresholds = defenderSystem.damageThresholds || {
-      light: 1,
-      severe: 2,
-      incapacitating: 3
-    };
-  } else if (isVehicle) {
-    // For vehicles/drones, thresholds are directly in damageThresholds
-    // Vehicles don't have mental damage thresholds, use physical
-    damageThresholds = defenderSystem.damageThresholds || {
-      light: 1,
-      severe: 4,
-      incapacitating: 7
-    };
-  } else {
-    // For characters, use mental thresholds for mental damage, physical for physical damage
-    if (damageType === 'mental') {
-      damageThresholds = defenderSystem.damageThresholds?.mental || {
-        light: 1,
-        severe: 4,
-        incapacitating: 7
-      };
-    } else {
-      // Physical damage: use withArmor thresholds
-      damageThresholds = defenderSystem.damageThresholds?.withArmor || {
-        light: 1,
-        severe: 4,
-        incapacitating: 7
-      };
-    }
-  }
+  // Get damage thresholds using the helper function
+  const damageThresholds = getDamageThresholds(defenderActor, damageType);
   
   // Deep copy of damage object with arrays
   let damage = {

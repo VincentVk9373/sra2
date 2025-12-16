@@ -268,13 +268,15 @@ export class CharacterSheet extends ActorSheet {
         ((feat.system.featType === 'weapon' || feat.system.featType === 'weapons-spells') && feat.system.isAdeptPowerWeapon === true)
       ),
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
+      armor: allFeats.filter((feat: any) => feat.system.featType === 'armor'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: cyberdeckFeats,
       vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon'),
       spell: allFeats.filter((feat: any) => feat.system.featType === 'spell'),
-      connaissance: allFeats.filter((feat: any) => feat.system.featType === 'connaissance')
+      connaissance: allFeats.filter((feat: any) => feat.system.featType === 'connaissance'),
+      power: allFeats.filter((feat: any) => feat.system.featType === 'power')
     };
     
     // Enrich weapons with dice pool and RR calculations (for V2 template)
@@ -427,6 +429,48 @@ export class CharacterSheet extends ActorSheet {
       }
       
       return spell;
+    });
+    
+    // Enrich powers with dice pool and RR calculations (for V2 template)
+    context.featsByType.power = context.featsByType.power.map((power: any) => {
+      const powerSystem = power.system as any;
+      
+      // Get linked attack skill and specialization (used for the dice roll)
+      const linkedAttackSkill = powerSystem.linkedAttackSkill || '';
+      const linkedAttackSpec = powerSystem.linkedAttackSpecialization || '';
+      
+      // Determine default attribute: use strength as default
+      const defaultAttribute = 'strength';
+      
+      // Find skill/spec using unified helper
+      const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        linkedAttackSpec,
+        linkedAttackSkill,
+        { defaultAttribute }
+      );
+      
+      // Get all RR sources for the power
+      const rawPowerRRList = powerSystem.rrList || [];
+      const powerRRList = rawPowerRRList.map((rrEntry: any) => ({
+        ...rrEntry,
+        featName: power.name
+      }));
+      
+      // Calculate dice pool with all RR sources using unified helper
+      const poolResult = SheetHelpers.calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        powerRRList,
+        power.name
+      );
+      
+      power.totalDicePool = poolResult.totalDicePool;
+      power.rr = poolResult.totalRR;
+      power.skillName = skillSpecResult.skillName;
+      power.specName = skillSpecResult.specName;
+      
+      return power;
     });
     
     // Keep the feats array for backwards compatibility
@@ -622,6 +666,9 @@ export class CharacterSheet extends ActorSheet {
 
     // Roll spell
     html.find('[data-action="roll-spell"]').on('click', this._onRollSpell.bind(this));
+
+    // Roll power
+    html.find('[data-action="roll-power"]').on('click', this._onRollPower.bind(this));
 
     // Roll weapon/spell (old type)
     html.find('[data-action="roll-weapon-spell"]').on('click', this._onRollWeaponSpell.bind(this));
@@ -2141,6 +2188,25 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
+   * Handle rolling a power
+   */
+  private async _onRollPower(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    
+    if (!itemId) {
+      console.error("SRA2 | No power ID found");
+      return;
+    }
+
+    const power = this.actor.items.get(itemId);
+    if (!power || power.type !== 'feat') return;
+
+    await this._rollPower(power);
+  }
+
+  /**
    * Handle rolling a weapon/spell (old type)
    */
   private async _onRollWeaponSpell(event: Event): Promise<void> {
@@ -2289,6 +2355,7 @@ export class CharacterSheet extends ActorSheet {
       let damageValueBonus = itemSystem.damageValueBonus || 0;
       
       // Add bonus from active feats that match the weapon's type
+      // This applies to all weapons, including adept power weapons
       const weaponType = itemSystem.weaponType || '';
       const activeFeats = this.actor.items.filter((item: any) => 
         item.type === 'feat' && 
@@ -2369,6 +2436,94 @@ export class CharacterSheet extends ActorSheet {
       // Spell-specific properties
       spellType: isSpell ? spellType : undefined,  // 'direct' or 'indirect' for spells
       isSpellDirect: isSpell && spellType === 'direct'  // Flag for direct spells (no defense)
+    });
+  }
+
+  /**
+   * Handle rolling a power
+   */
+  private async _rollPower(power: any): Promise<void> {
+    const powerSystem = power.system as any;
+    
+    // Get linked attack and defense skills
+    const linkedAttackSkill = powerSystem.linkedAttackSkill || '';
+    const linkedAttackSpec = powerSystem.linkedAttackSpecialization || '';
+    const linkedDefenseSkill = powerSystem.linkedDefenseSkill || '';
+    const linkedDefenseSpec = powerSystem.linkedDefenseSpecialization || '';
+    
+    // Get all RR sources for the power
+    const rawPowerRRList = powerSystem.rrList || [];
+    const powerRRList = rawPowerRRList.map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: power.name
+    }));
+    
+    // Determine default attribute: use strength as default
+    const defaultAttribute = 'strength';
+    
+    // Find attack skill/spec using unified helper (used for the dice roll)
+    const attackSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+      this.actor,
+      linkedAttackSpec,
+      linkedAttackSkill,
+      { defaultAttribute }
+    );
+    
+    // Calculate dice pool with all RR sources using unified helper
+    const poolResult = SheetHelpers.calculateAttackPool(
+      this.actor,
+      attackSkillSpecResult,
+      powerRRList,
+      power.name
+    );
+    const allRRSources = poolResult.allRRSources;
+    
+    // Calculate damage value (base + bonus)
+    const baseDamageValue = powerSystem.damageValue || '0';
+    let damageValueBonus = powerSystem.damageValueBonus || 0;
+    
+    // Limit total bonus to 2 maximum
+    damageValueBonus = Math.min(damageValueBonus, 2);
+    
+    const finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
+    
+    DiceRoller.handleRollRequest({
+      itemType: 'power',
+      itemName: power.name,
+      itemId: power.id,
+      itemRating: powerSystem.rating || 0,
+      itemActive: powerSystem.active,
+      
+      // Attack skill/spec (used for the dice roll)
+      skillName: attackSkillSpecResult.skillName,
+      skillLevel: attackSkillSpecResult.skillLevel,
+      specName: attackSkillSpecResult.specName,
+      specLevel: attackSkillSpecResult.specLevel,
+      linkedAttribute: attackSkillSpecResult.linkedAttribute,
+      
+      // Merged linked skills (for attack/defense)
+      linkedAttackSkill: linkedAttackSkill,
+      linkedAttackSpecialization: linkedAttackSpec,
+      linkedDefenseSkill: linkedDefenseSkill,
+      linkedDefenseSpecialization: linkedDefenseSpec,
+      
+      // Weapon properties
+      damageValue: finalDamageValue,
+      meleeRange: powerSystem.meleeRange || 'none',
+      shortRange: powerSystem.shortRange || 'none',
+      mediumRange: powerSystem.mediumRange || 'none',
+      longRange: powerSystem.longRange || 'none',
+      
+      // Actor information
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name || '',
+      
+      // RR List
+      rrList: allRRSources,
+      
+      // Mark as power
+      isPower: true
     });
   }
 

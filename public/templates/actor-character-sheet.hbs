@@ -431,9 +431,10 @@
               <h2>{{localize "SRA2.ARMOR_THRESHOLDS.LABEL"}}</h2>
               <div class="armor-level">
                 <label>{{localize "SRA2.ARMOR_THRESHOLDS.ARMOR_LEVEL"}}</label>
-                <input type="number" name="system.armorLevel" value="{{system.armorLevel}}" min="0" max="5" />
+                <input type="number" value="{{system.armorLevel}}" min="0" max="5" readonly disabled />
                 <span class="armor-cost">{{system.armorCost}} <span class="yen-symbol">{{localize
                     "SRA2.RESOURCES.YENS"}}</span></span>
+                <span class="armor-info">{{localize "SRA2.ARMOR_THRESHOLDS.CALCULATED_FROM_ARMOR"}}</span>
               </div>
 
               <div class="damage-tracking">
@@ -1630,6 +1631,60 @@
                     </ul>
                   </div>
                   {{/if}}
+                  {{/if}}
+                </div>
+                {{/each}}
+              </div>
+            </div>
+            {{/if}}
+
+            <!-- Armor Section -->
+            {{#if featsByType.armor}}
+            <div class="feats-section armor-section">
+              <h2>{{localize "SRA2.FEATS.FEAT_TYPE.ARMOR"}}</h2>
+              <div class="feats-list" data-drop-zone="feat">
+                {{#each featsByType.armor}}
+                <div class="feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}" draggable="true">
+                  <div class="feat-header">
+                    <div class="feat-title">
+                      <h4 class="{{#unless this.system.active}}feat-name-inactive{{/unless}}">{{this.name}}
+                        {{#if (gt this.system.armorValue 0)}}
+                        <span class="armor-value-info" title="{{localize 'SRA2.FEATS.ARMOR_VALUE'}}">
+                          [{{localize "SRA2.FEATS.ARMOR_VALUE"}}: +{{this.system.armorValue}}]
+                        </span>
+                        {{/if}}
+                        {{#if this.rrEntries}}
+                        {{#each this.rrEntries}}
+                        <span class="rr-info" title="{{localize 'SRA2.FEATS.RR_EFFECT'}}">
+                          {{#if (eq rrType "attribute")}}
+                          [RR {{rrValue}} → {{rrTargetLabel}}]
+                          {{else if (eq rrType "skill")}}
+                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SKILL"}})]
+                          {{else if (eq rrType "specialization")}}
+                          [RR {{rrValue}} → {{rrTarget}} ({{localize "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}})]
+                          {{/if}}
+                        </span>
+                        {{/each}}
+                        {{/if}}
+                      </h4>
+                    </div>
+                    <div class="feat-controls">
+                      <input type="checkbox" name="items.{{this._id}}.system.active" {{#if this.system.active}}checked{{/if}} 
+                        title="{{localize 'SRA2.FEATS.ACTIVE'}}" />
+                      <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}"
+                        title="{{localize 'SRA2.FEATS.EDIT'}}">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}"
+                        title="{{localize 'SRA2.FEATS.DELETE'}}">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                  {{#if this.system.description}}
+                  <div class="feat-description">
+                    {{{this.system.description}}}
+                  </div>
                   {{/if}}
                 </div>
                 {{/each}}

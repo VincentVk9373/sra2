@@ -178,8 +178,30 @@ export class RollDialog extends Application {
     let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
     const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
     
-    const damageValue = selectedWeapon.damageValue;
-    const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+    // Calculate damage value with bonus from active feats (including adept powers)
+    const baseDamageValue = selectedWeapon.damageValue || weaponSystem?.damageValue || '0';
+    let damageValueBonus = selectedWeapon.damageValueBonus || weaponSystem?.damageValueBonus || 0;
+    
+    // Add bonus from active feats that match the weapon's type (including adept powers)
+    const weaponType = wepTypeName || '';
+    if (weaponType && this.actor) {
+      const activeFeats = this.actor.items.filter((item: any) => 
+        item.type === 'feat' && 
+        item.system.active === true &&
+        item.system.weaponDamageBonus > 0 &&
+        item.system.weaponTypeBonus === weaponType
+      );
+      
+      activeFeats.forEach((activeFeat: any) => {
+        damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+      });
+    }
+    
+    // Limit total bonus to 2 maximum
+    damageValueBonus = Math.min(damageValueBonus, 2);
+    
+    // Calculate final damage value string
+    const damageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
     
     // Default to "Combat rapproché" if no skill found
     if (!baseSkillName) {
@@ -999,8 +1021,30 @@ export class RollDialog extends Application {
       let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
       const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
       
-      const damageValue = selectedWeapon.damageValue;
-      const damageValueBonus = selectedWeapon.damageValueBonus || 0;
+      // Calculate damage value with bonus from active feats (including adept powers)
+      const baseDamageValue = selectedWeapon.damageValue || weaponSystem?.damageValue || '0';
+      let damageValueBonus = selectedWeapon.damageValueBonus || weaponSystem?.damageValueBonus || 0;
+      
+      // Add bonus from active feats that match the weapon's type (including adept powers)
+      const weaponType = wepTypeName || '';
+      if (weaponType && this.actor) {
+        const activeFeats = this.actor.items.filter((item: any) => 
+          item.type === 'feat' && 
+          item.system.active === true &&
+          item.system.weaponDamageBonus > 0 &&
+          item.system.weaponTypeBonus === weaponType
+        );
+        
+        activeFeats.forEach((activeFeat: any) => {
+          damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
+        });
+      }
+      
+      // Limit total bonus to 2 maximum
+      damageValueBonus = Math.min(damageValueBonus, 2);
+      
+      // Calculate final damage value string
+      const damageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
 
       // Default to "Combat rapproché" if no skill found
       if (!baseSkillName) {

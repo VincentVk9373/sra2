@@ -759,12 +759,17 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       }
     }
     
-    // Calculate final damage value for weapons and spells
-    if (feat.system.featType === 'weapon' || feat.system.featType === 'spell' || feat.system.featType === 'weapons-spells') {
+    // Calculate final damage value for weapons, spells, and adept power weapons
+    const isWeapon = feat.system.featType === 'weapon';
+    const isSpell = feat.system.featType === 'spell';
+    const isAdeptPowerWeapon = feat.system.isAdeptPowerWeapon || false;
+    
+    if (isWeapon || isSpell || isAdeptPowerWeapon) {
       const damageValue = feat.system.damageValue || '0';
       let damageValueBonus = feat.system.damageValueBonus || 0;
       
       // Add bonus from active feats that match the weapon's type
+      // This applies to all weapons, including adept power weapons
       if (actor) {
         const weaponType = feat.system.weaponType || '';
         const activeFeats = actor.items.filter((item: any) => 

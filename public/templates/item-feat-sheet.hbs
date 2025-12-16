@@ -11,12 +11,14 @@
           {{else if (eq system.featType "awakened")}}{{localize "SRA2.FEATS.FEAT_TYPE.AWAKENED"}}
           {{else if (eq system.featType "adept-power")}}{{localize "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}
           {{else if (eq system.featType "equipment")}}{{localize "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}
+          {{else if (eq system.featType "armor")}}{{localize "SRA2.FEATS.FEAT_TYPE.ARMOR"}}
           {{else if (eq system.featType "cyberware")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}
           {{else if (eq system.featType "cyberdeck")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}
           {{else if (eq system.featType "vehicle")}}{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}
           {{else if (eq system.featType "weapons-spells")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}
           {{else if (eq system.featType "weapon")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}
           {{else if (eq system.featType "spell")}}{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}
+          {{else if (eq system.featType "power")}}{{localize "SRA2.FEATS.FEAT_TYPE.POWER"}}
           {{else if (eq system.featType "connaissance")}}{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}
           {{/if}}
         </div>
@@ -50,6 +52,12 @@
         <button type="button" class="nav-item {{#if (eq activeSection 'spell')}}active{{/if}}" data-section="spell"
           title="{{localize 'SRA2.FEATS.SECTION.SPELL'}}">
           <i class="fas fa-hat-wizard"></i>
+        </button>
+        {{/if}}
+        {{#if (eq system.featType "power")}}
+        <button type="button" class="nav-item {{#if (eq activeSection 'power')}}active{{/if}}" data-section="power"
+          title="{{localize 'SRA2.FEATS.SECTION.POWER'}}">
+          <i class="fas fa-gears"></i>
         </button>
         {{/if}}
         {{#if (eq system.featType "vehicle")}}
@@ -110,6 +118,8 @@
                 "SRA2.FEATS.FEAT_TYPE.ADEPT_POWER"}}</option>
               <option value="equipment" {{#if (eq system.featType "equipment" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.EQUIPMENT"}}</option>
+              <option value="armor" {{#if (eq system.featType "armor" )}}selected{{/if}}>{{localize
+                "SRA2.FEATS.FEAT_TYPE.ARMOR"}}</option>
               <option value="cyberware" {{#if (eq system.featType "cyberware" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}</option>
               <option value="cyberdeck" {{#if (eq system.featType "cyberdeck" )}}selected{{/if}}>{{localize
@@ -122,6 +132,8 @@
                 "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</option>
               <option value="spell" {{#if (eq system.featType "spell" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.SPELL"}}</option>
+              <option value="power" {{#if (eq system.featType "power" )}}selected{{/if}}>{{localize
+                "SRA2.FEATS.FEAT_TYPE.POWER"}}</option>
               <option value="connaissance" {{#if (eq system.featType "connaissance" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</option>
             </select>
@@ -236,7 +248,23 @@
             <p class="notes">{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_HINT"}}</p>
           </div>
 
-          {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment") (eq system.featType "cyberware"))}}
+          {{#if (eq system.featType "equipment")}}
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.CHARACTER_ARMOR_LEVEL"}}</label>
+            <input type="number" name="system.characterArmorLevel" value="{{system.characterArmorLevel}}" min="0" max="5" />
+            <p class="notes">{{localize "SRA2.FEATS.CHARACTER_ARMOR_LEVEL_HINT"}}</p>
+          </div>
+          {{/if}}
+
+          {{#if (eq system.featType "armor")}}
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.ARMOR_VALUE"}}</label>
+            <input type="number" name="system.armorValue" value="{{system.armorValue}}" min="0" max="5" />
+            <p class="notes">{{localize "SRA2.FEATS.ARMOR_VALUE_HINT"}}</p>
+          </div>
+          {{/if}}
+
+          {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment") (eq system.featType "cyberware") (eq system.featType "adept-power"))}}
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON_DAMAGE_BONUS"}}</label>
             <input type="number" name="system.weaponDamageBonus" value="{{system.weaponDamageBonus}}" min="0" />
@@ -694,6 +722,62 @@
               <option value="counterspell" {{#if (eq system.spellSpecializationType "counterspell" )}}selected{{/if}}>
                 {{localize "SRA2.FEATS.SPELL.SPECIALIZATION.COUNTERSPELL"}}</option>
             </select>
+          </div>
+        </section>
+        {{/if}}
+
+        <!-- Power Section -->
+        {{#if (eq system.featType "power")}}
+        <section class="content-section {{#if (eq activeSection 'power')}}active{{/if}}" data-section-content="power">
+          <h2><i class="fas fa-gears"></i> {{localize "SRA2.FEATS.FEAT_TYPE.POWER"}}</h2>
+          <p class="notes">{{localize "SRA2.FEATS.POWER.SECTION_HINT"}}</p>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"}}</label>
+            <div class="power-skill-search-container" data-field="linkedAttackSkill">
+              <div class="power-skill-search-wrapper">
+                <input type="text" name="system.linkedAttackSkill" class="power-skill-search-input" value="{{system.linkedAttackSkill}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SKILL_PLACEHOLDER'}}" data-field="linkedAttackSkill" autocomplete="off" />
+                <div class="power-skill-search-results"></div>
+              </div>
+            </div>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"}}</label>
+            <div class="power-spec-search-container" data-field="linkedAttackSpecialization">
+              <div class="power-spec-search-wrapper">
+                <input type="text" name="system.linkedAttackSpecialization" class="power-spec-search-input" value="{{system.linkedAttackSpecialization}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SPEC_PLACEHOLDER'}}" data-field="linkedAttackSpecialization" autocomplete="off" />
+                <div class="power-spec-search-results"></div>
+              </div>
+            </div>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL"}}</label>
+            <div class="power-skill-search-container" data-field="linkedDefenseSkill">
+              <div class="power-skill-search-wrapper">
+                <input type="text" name="system.linkedDefenseSkill" class="power-skill-search-input" value="{{system.linkedDefenseSkill}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SKILL_PLACEHOLDER'}}" data-field="linkedDefenseSkill" autocomplete="off" />
+                <div class="power-skill-search-results"></div>
+              </div>
+            </div>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"}}</label>
+            <div class="power-spec-search-container" data-field="linkedDefenseSpecialization">
+              <div class="power-spec-search-wrapper">
+                <input type="text" name="system.linkedDefenseSpecialization" class="power-spec-search-input" value="{{system.linkedDefenseSpecialization}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SPEC_PLACEHOLDER'}}" data-field="linkedDefenseSpecialization" autocomplete="off" />
+                <div class="power-spec-search-results"></div>
+              </div>
+            </div>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION_HINT"}}</p>
           </div>
         </section>
         {{/if}}

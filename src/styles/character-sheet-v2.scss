@@ -43,21 +43,21 @@
 
             .sheet-switch-btn {
                 position: absolute;
-                top: -12px;
-                left: -12px;
+                top: -8px;
+                right: -8px;
                 width: 28px;
                 height: 28px;
-                border: 0;
-                background: transparent;
-                color: var(--light-blue);
+                border-radius: var(--sr-border-radius-round);
+                background: var(--sr-ui-scrollbar-thumb);
+                border: 2px solid var(--sr-ui-color-active);
+                color: var(--sr-ui-color-active);
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 12px;
-                transition: all 0.2s ease;
+                transition: all .2s ease;
                 z-index: 10;
-                opacity: 0.7;
 
                 i {
                     margin-right: 0;
@@ -529,6 +529,7 @@
                     display: grid;
                     grid-template-columns: 1fr 0fr 0fr;
                     padding-right: 6px;
+                    position: relative;
 
                     /* Vehicle/Drone with severe damage - red background */
                     &.has-severe-damage {
@@ -546,8 +547,6 @@
 
                     /* Inactive feat styling */
                     &.feat-inactive {
-                        opacity: 0.7;
-
                         .name-wrapper .name.feat-name-inactive {
                             text-decoration: line-through;
                             font-style: italic;
@@ -559,10 +558,10 @@
                         cursor: pointer;
                         display: flex;
                         gap: 8px;
-                        transition: all 0.2s;
+                        transition: all 0.5s;
 
                         &:hover {
-                            transform: scale(1.05);
+                            color:gold !important;
                         }
 
                         &.spe {
@@ -574,6 +573,16 @@
                             font-weight: bold;
                             transform: rotate(90deg) translateX(-1px);
                             margin-right: 4px;
+                        }
+
+                        .name.clickable {
+                            cursor: pointer;
+                            transition: all 0.2s;
+
+                            &:hover {
+                                color: var(--light-blue);
+                                transform: scale(1.05);
+                            }
                         }
                     }
 
@@ -610,6 +619,56 @@
                         justify-content: center;
                         color: var(--yellow);
                         font-size: 0.9rem;
+                    }
+
+                    .context-menu {
+                        display: none;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        z-index: 10000;
+                        background: rgba(57, 77, 115, .95);
+                        border: 0;
+                        // border-radius: 4px;
+                        // padding: 4px 0;
+                        width: calc(100%);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                        margin-top: 4px;
+                        opacity: 1 !important; // Always fully visible
+
+                        &.active {
+                            display: block;
+                        }
+
+                        .context-menu-item {
+                            padding: 2px 4px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            color: var(--sr-text-color-light);
+                            font-size: 0.8rem;
+                            transition: all 0.2s;
+
+                            i {
+                                width: 16px;
+                                text-align: center;
+                            }
+
+                            &:hover {
+                                background: rgba(0, 212, 255, 0.2);
+                                color: var(--light-blue);
+                            }
+
+                            &.delete {
+                                color: #ff6b7a;
+
+                                &:hover {
+                                    background: rgba(255, 107, 122, 0.2);
+                                    color: #ff4757;
+                                }
+                            }
+                        }
                     }
                 }
 
