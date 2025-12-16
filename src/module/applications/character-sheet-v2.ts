@@ -76,6 +76,11 @@ export class CharacterSheetV2 extends CharacterSheet {
     
     // Handle attribute value changes in advanced mode
     html.find('.attribute-input').on('change', this._onUpdateAttribute.bind(this));
+    
+    // Prevent click propagation on attribute inputs to avoid triggering roll when clicking to edit
+    html.find('.attribute-input').on('click', (event: JQuery.ClickEvent) => {
+      event.stopPropagation();
+    });
   }
 
   /**

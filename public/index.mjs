@@ -6207,6 +6207,9 @@ class CharacterSheetV2 extends CharacterSheet {
     html.find('[data-action="toggle-advanced-mode"]').on("click", this._onToggleAdvancedMode.bind(this));
     html.find(".skill-rating-input").on("change", this._onUpdateSkillRating.bind(this));
     html.find(".attribute-input").on("change", this._onUpdateAttribute.bind(this));
+    html.find(".attribute-input").on("click", (event) => {
+      event.stopPropagation();
+    });
   }
   /**
    * Toggle advanced mode
