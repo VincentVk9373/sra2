@@ -14,7 +14,6 @@
     background-position: center;
     background-size: cover;
 
-
     --dark-blue: rgb(14, 8, 40);
     --light-blue: rgb(0, 229, 255);
     --neutral-light: rgb(170, 249, 241);
@@ -33,7 +32,13 @@
         display: grid;
         grid-template-columns: 76px 1fr 500px;
         padding: 0 8px;
-
+        position: sticky;
+        top: 0;
+        background-image: url('../../public/img/interface/sra2/sra2_background_window_dark.webp');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        z-index: 1;
         .avatar-section {
             position: relative;
 

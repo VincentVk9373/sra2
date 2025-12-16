@@ -1726,6 +1726,11 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
         initial: "",
         label: "SRA2.REFERENCE"
       }),
+      description: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.VEHICLE.DESCRIPTION"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,

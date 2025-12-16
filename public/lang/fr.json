@@ -73,6 +73,8 @@
         "VEHICLE": {
             "NAME": "Nom du Véhicule/Drone",
             "COST": "Coût",
+            "DESCRIPTION": "Description",
+            "DESCRIPTION_PLACEHOLDER": "Décrivez le véhicule/drone...",
             "VEHICLE_TYPE": "Type de Véhicule",
             "SELECT_TYPE": "Sélectionner un type...",
             "SELECT_TYPE_FIRST": "Veuillez d'abord sélectionner un type de véhicule",

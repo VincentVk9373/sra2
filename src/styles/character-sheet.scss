@@ -1370,6 +1370,38 @@
           }
         }
 
+        /* Vehicle Description Section */
+        .vehicle-description-section {
+          height: calc(100% - 2rem);
+          padding: 0;
+
+          .vehicle-description {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--sr-ui-border-color);
+            border-radius: var(--sr-border-radius-md);
+            color: var(--sr-text-color-light);
+            resize: none;
+            font-family: var(--sr-font-body);
+            line-height: 1.5;
+
+            &::placeholder {
+              color: var(--sr-text-color-grey);
+              font-style: italic;
+            }
+
+            &:focus {
+              outline: none;
+              border-color: var(--sr-ui-color-active);
+              background: rgba(0, 212, 255, 0.05);
+            }
+          }
+        }
+
         /* Vehicle Bonuses Section */
         .vehicle-bonuses-section {
           margin-top: 1.5rem;
