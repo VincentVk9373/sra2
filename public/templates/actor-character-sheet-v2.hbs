@@ -644,7 +644,7 @@
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
                                         title="{{localize 'SRA2.SKILLS.EDIT'}}">
-                                        {{this.name}}
+                                        {{this.name}} | {{localize "SRA2.FEATS.ARMOR_VALUE"}}: {{this.system.armorValue}}
                                         {{#if (gt this.system.armorValue 0)}}
                                         <span class="armor-value-info" title="{{localize 'SRA2.FEATS.ARMOR_VALUE'}}">
                                         </span>
@@ -665,6 +665,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">{{localize "SRA2.FEATS.ARMOR_VALUE"}}: {{this.system.armorValue}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -814,7 +820,9 @@
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">{{this.system.rating}} + ({{this.linkedAttributeLabel}})</span>
+                                <span class="advanced-level">
+                                    <input type="number" class="skill-rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" max="12" data-item-id="{{this._id}}" /> + ({{this.linkedAttributeLabel}})
+                                </span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}

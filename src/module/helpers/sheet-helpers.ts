@@ -233,43 +233,66 @@ export async function handleVehicleActorDrop(
   // Handle Actor drops (specifically vehicle actors)
   if (data && data.type === 'Actor') {
     try {
-      const vehicleActor = await fromUuid(data.uuid) as any;
+      const sourceVehicle = await fromUuid(data.uuid) as any;
       
-      if (!vehicleActor) return false;
+      if (!sourceVehicle) return false;
       
       // Check if it's a vehicle actor
-      if (vehicleActor.type !== 'vehicle') return false;
+      if (sourceVehicle.type !== 'vehicle') return false;
+      
+      // Create a copy of the vehicle instead of linking to the original
+      const vehicleData = sourceVehicle.toObject();
+      
+      // Generate a unique name for the copy with a matricule (2 letters + 1 digit)
+      const ownerName = actor.name || 'Character';
+      const baseName = vehicleData.name;
+      
+      // Generate random matricule: 2 uppercase letters + 1 digit
+      const generateMatricule = () => {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const letter1 = letters[Math.floor(Math.random() * letters.length)];
+        const letter2 = letters[Math.floor(Math.random() * letters.length)];
+        const digit = Math.floor(Math.random() * 10);
+        return `${letter1}${letter2}${digit}`;
+      };
+      
+      let matricule = generateMatricule();
+      let newName = `${baseName} ${matricule} (${ownerName})`;
+      
+      // Check if a vehicle with this name already exists (regenerate matricule if needed)
+      while (game.actors?.getName(newName)) {
+        matricule = generateMatricule();
+        newName = `${baseName} ${matricule} (${ownerName})`;
+      }
+      
+      vehicleData.name = newName;
+      
+      // Configure the prototype token to be linked
+      if (!vehicleData.prototypeToken) {
+        vehicleData.prototypeToken = foundry.utils.mergeObject(
+          foundry.data.PrototypeToken.defaults,
+          { actorLink: true }
+        );
+      } else {
+        vehicleData.prototypeToken.actorLink = true;
+      }
+      
+      // Create the new vehicle actor
+      const newVehicle = await Actor.create(vehicleData) as any;
+      
+      if (!newVehicle) {
+        ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.VEHICLE_CREATION_ERROR'));
+        return false;
+      }
       
       // Get current linked vehicles
       const linkedVehicles = (actor.system as any).linkedVehicles || [];
       
-      // Check if this vehicle is already linked
-      if (linkedVehicles.includes(vehicleActor.uuid)) {
-        ui.notifications?.warn(game.i18n!.format('SRA2.FEATS.VEHICLE_ALREADY_EXISTS', { name: vehicleActor.name }));
-        return false;
-      }
-      
-      // Add the vehicle UUID to the linked vehicles array
-      const updatedLinkedVehicles = [...linkedVehicles, vehicleActor.uuid];
+      // Add the new vehicle's UUID to the linked vehicles array
+      const updatedLinkedVehicles = [...linkedVehicles, newVehicle.uuid];
       await actor.update({ 'system.linkedVehicles': updatedLinkedVehicles });
       
-      // Configure the vehicle's token prototype to be linked to the character actor
-      const prototypeToken = vehicleActor.prototypeToken || {};
-      const updateData: any = {
-        'prototypeToken.actorLink': true
-      };
-      
-      // If the vehicle doesn't have a prototype token yet, initialize it
-      if (!vehicleActor.prototypeToken) {
-        updateData['prototypeToken'] = foundry.utils.mergeObject(
-          foundry.data.PrototypeToken.defaults,
-          { actorLink: true }
-        );
-      }
-      
-      await vehicleActor.update(updateData);
-      
-      ui.notifications?.info(game.i18n!.format('SRA2.FEATS.VEHICLE_ADDED', { name: vehicleActor.name }));
+      ui.notifications?.info(game.i18n!.format('SRA2.FEATS.VEHICLE_ADDED', { name: newVehicle.name }));
       return true;
     } catch (error) {
       console.error('Error handling vehicle actor drop:', error);

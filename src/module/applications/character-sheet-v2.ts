@@ -70,6 +70,12 @@ export class CharacterSheetV2 extends CharacterSheet {
 
     // Handle toggle advanced mode
     html.find('[data-action="toggle-advanced-mode"]').on('click', this._onToggleAdvancedMode.bind(this));
+    
+    // Handle skill rating changes in advanced mode
+    html.find('.skill-rating-input').on('change', this._onUpdateSkillRating.bind(this));
+    
+    // Handle attribute value changes in advanced mode
+    html.find('.attribute-input').on('change', this._onUpdateAttribute.bind(this));
   }
 
   /**
@@ -79,6 +85,39 @@ export class CharacterSheetV2 extends CharacterSheet {
     event.preventDefault();
     this._advancedMode = !this._advancedMode;
     this.render(false);
+  }
+
+  /**
+   * Update skill rating in advanced mode
+   */
+  private async _onUpdateSkillRating(event: JQuery.ChangeEvent): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const itemId = input.dataset.itemId;
+    const value = parseInt(input.value);
+
+    if (itemId && !isNaN(value)) {
+      const item = this.actor.items.get(itemId);
+      if (item && item.type === 'skill') {
+        await item.update({ 'system.rating': value });
+        // Re-render to update calculated values (dice pool, cost, etc.)
+        this.render(false);
+      }
+    }
+  }
+
+  /**
+   * Update attribute value in advanced mode
+   */
+  private async _onUpdateAttribute(event: JQuery.ChangeEvent): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const attribute = input.name.split('.').pop(); // Extract attribute name from "system.attributes.strength"
+    const value = parseInt(input.value);
+
+    if (attribute && !isNaN(value)) {
+      await this.actor.update({ [`system.attributes.${attribute}`]: value });
+      // Re-render to update calculated values (dice pools, etc.)
+      this.render(false);
+    }
   }
 
   override close(options?: Application.CloseOptions): Promise<void> {

@@ -1329,9 +1329,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
     }
     let calculatedCost = 0;
-    if (featType === "connaissance") {
-      calculatedCost = 2500;
-    }
     if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
       switch (costType) {
         case "free-equipment":
@@ -1354,7 +1351,17 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           calculatedCost = 0;
       }
     }
-    calculatedCost += rating * 5e3;
+    if (featType === "connaissance") {
+      calculatedCost = 2500;
+    }
+    if (featType === "armor") {
+      const armorValue = this.armorValue || 0;
+      console.log(`[ARMOR DEBUG] featType: ${featType}, armorValue: ${armorValue}, calculatedCost before: ${calculatedCost}`);
+      calculatedCost += armorValue * 2500;
+      console.log(`[ARMOR DEBUG] calculatedCost after: ${calculatedCost}`);
+    } else {
+      calculatedCost += rating * 5e3;
+    }
     this.calculatedCost = calculatedCost;
     let recommendedLevel = 0;
     const recommendedLevelBreakdown = [];
@@ -3128,28 +3135,43 @@ async function handleVehicleActorDrop(event, actor) {
   const data = TextEditor.getDragEventData(event);
   if (data && data.type === "Actor") {
     try {
-      const vehicleActor = await fromUuid(data.uuid);
-      if (!vehicleActor) return false;
-      if (vehicleActor.type !== "vehicle") return false;
-      const linkedVehicles = actor.system.linkedVehicles || [];
-      if (linkedVehicles.includes(vehicleActor.uuid)) {
-        ui.notifications?.warn(game.i18n.format("SRA2.FEATS.VEHICLE_ALREADY_EXISTS", { name: vehicleActor.name }));
-        return false;
-      }
-      const updatedLinkedVehicles = [...linkedVehicles, vehicleActor.uuid];
-      await actor.update({ "system.linkedVehicles": updatedLinkedVehicles });
-      const prototypeToken = vehicleActor.prototypeToken || {};
-      const updateData = {
-        "prototypeToken.actorLink": true
+      const sourceVehicle = await fromUuid(data.uuid);
+      if (!sourceVehicle) return false;
+      if (sourceVehicle.type !== "vehicle") return false;
+      const vehicleData = sourceVehicle.toObject();
+      const ownerName = actor.name || "Character";
+      const baseName = vehicleData.name;
+      const generateMatricule = () => {
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const letter1 = letters[Math.floor(Math.random() * letters.length)];
+        const letter2 = letters[Math.floor(Math.random() * letters.length)];
+        const digit = Math.floor(Math.random() * 10);
+        return `${letter1}${letter2}${digit}`;
       };
-      if (!vehicleActor.prototypeToken) {
-        updateData["prototypeToken"] = foundry.utils.mergeObject(
+      let matricule = generateMatricule();
+      let newName = `${baseName} ${matricule} (${ownerName})`;
+      while (game.actors?.getName(newName)) {
+        matricule = generateMatricule();
+        newName = `${baseName} ${matricule} (${ownerName})`;
+      }
+      vehicleData.name = newName;
+      if (!vehicleData.prototypeToken) {
+        vehicleData.prototypeToken = foundry.utils.mergeObject(
           foundry.data.PrototypeToken.defaults,
           { actorLink: true }
         );
+      } else {
+        vehicleData.prototypeToken.actorLink = true;
       }
-      await vehicleActor.update(updateData);
-      ui.notifications?.info(game.i18n.format("SRA2.FEATS.VEHICLE_ADDED", { name: vehicleActor.name }));
+      const newVehicle = await Actor.create(vehicleData);
+      if (!newVehicle) {
+        ui.notifications?.error(game.i18n.localize("SRA2.FEATS.VEHICLE_CREATION_ERROR"));
+        return false;
+      }
+      const linkedVehicles = actor.system.linkedVehicles || [];
+      const updatedLinkedVehicles = [...linkedVehicles, newVehicle.uuid];
+      await actor.update({ "system.linkedVehicles": updatedLinkedVehicles });
+      ui.notifications?.info(game.i18n.format("SRA2.FEATS.VEHICLE_ADDED", { name: newVehicle.name }));
       return true;
     } catch (error) {
       console.error("Error handling vehicle actor drop:", error);
@@ -6183,6 +6205,8 @@ class CharacterSheetV2 extends CharacterSheet {
       this._onToggleBookmark(event);
     });
     html.find('[data-action="toggle-advanced-mode"]').on("click", this._onToggleAdvancedMode.bind(this));
+    html.find(".skill-rating-input").on("change", this._onUpdateSkillRating.bind(this));
+    html.find(".attribute-input").on("change", this._onUpdateAttribute.bind(this));
   }
   /**
    * Toggle advanced mode
@@ -6191,6 +6215,33 @@ class CharacterSheetV2 extends CharacterSheet {
     event.preventDefault();
     this._advancedMode = !this._advancedMode;
     this.render(false);
+  }
+  /**
+   * Update skill rating in advanced mode
+   */
+  async _onUpdateSkillRating(event) {
+    const input = event.currentTarget;
+    const itemId = input.dataset.itemId;
+    const value = parseInt(input.value);
+    if (itemId && !isNaN(value)) {
+      const item = this.actor.items.get(itemId);
+      if (item && item.type === "skill") {
+        await item.update({ "system.rating": value });
+        this.render(false);
+      }
+    }
+  }
+  /**
+   * Update attribute value in advanced mode
+   */
+  async _onUpdateAttribute(event) {
+    const input = event.currentTarget;
+    const attribute = input.name.split(".").pop();
+    const value = parseInt(input.value);
+    if (attribute && !isNaN(value)) {
+      await this.actor.update({ [`system.attributes.${attribute}`]: value });
+      this.render(false);
+    }
   }
   close(options) {
     $(document).off(`click.context-menu-v2-${this.id}`);

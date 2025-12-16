@@ -597,6 +597,27 @@
                             color: var(--yellow);
                             opacity: 0.7;
                         }
+                        
+                        .skill-rating-input {
+                            width: 40px;
+                            padding: 2px 4px;
+                            background: rgba(255, 255, 255, 0.05);
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 3px;
+                            color: #888;
+                            font-size: 0.75rem;
+                            text-align: center;
+                            
+                            &:focus {
+                                outline: none;
+                                border-color: var(--light-blue);
+                                background: rgba(255, 255, 255, 0.1);
+                            }
+                            
+                            &:hover {
+                                border-color: rgba(255, 255, 255, 0.4);
+                            }
+                        }
                     }
 
                     /* Vehicle/Drone with severe damage - red background */

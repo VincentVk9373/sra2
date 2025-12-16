@@ -772,11 +772,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;
     
-    // Connaissance: base cost of 2500
-    if (featType === 'connaissance') {
-      calculatedCost = 2500;
-    }
-    
     // Apply cost calculations for equipment, weapon, and weapons-spells types
     if (featType === 'equipment' || featType === 'weapon' || featType === 'weapons-spells') {
       switch (costType) {
@@ -801,8 +796,21 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       }
     }
 
-    calculatedCost += rating * 5000;
+    // Connaissance: base cost of 2500
+    if (featType === 'connaissance') {
+      calculatedCost = 2500;
+    }
     
+    // Armor: 2500 per armor value (not rating)
+    if (featType === 'armor') {
+      const armorValue = (this as any).armorValue || 0;
+      console.log(`[ARMOR DEBUG] featType: ${featType}, armorValue: ${armorValue}, calculatedCost before: ${calculatedCost}`);
+      calculatedCost += armorValue * 2500;
+      console.log(`[ARMOR DEBUG] calculatedCost after: ${calculatedCost}`);
+    } else {
+      calculatedCost += rating * 5000;
+    }
+
     (this as any).calculatedCost = calculatedCost;
 
     // Calculate recommended attribute level
