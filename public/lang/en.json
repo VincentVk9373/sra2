@@ -112,6 +112,22 @@
                 "COMBAT": "Combat",
                 "FEATS": "Feats"
             },
+            "TYPES": {
+                "microdrone": "Microdrone",
+                "minidrone": "Minidrone",
+                "small-drone": "Small Drone",
+                "medium-drone": "Medium Drone",
+                "large-drone": "Large Drone",
+                "racing-motorcycle": "Racing Motorcycle",
+                "offroad-motorcycle": "Off-road Motorcycle",
+                "chopper": "Chopper",
+                "sports-car": "Sports Car",
+                "sedan": "Sedan",
+                "suv-pickup": "SUV / Pick-up",
+                "van": "Van",
+                "bus-truck": "Bus / Truck",
+                "rigid-inflatable-boat": "Rigid Inflatable Boat"
+            },
             "WEAPONS": "Weapons",
             "MOUNTED_WEAPONS": "Mounted weapons",
             "ROLL_WEAPON_WITH_CHARACTER_SKILLS": "Roll attack with character skills",

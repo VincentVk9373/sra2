@@ -6590,7 +6590,15 @@ class VehicleSheet extends ActorSheet {
         systemData.damage.incapacitating = false;
       }
     }
-    context.vehicleTypes = VEHICLE_TYPES;
+    context.vehicleTypes = Object.keys(VEHICLE_TYPES).reduce((acc, key) => {
+      const translationKey = `SRA2.VEHICLE.TYPES.${key}`;
+      const label = game.i18n?.localize(translationKey) || key;
+      acc[key] = {
+        data: VEHICLE_TYPES[key],
+        label
+      };
+      return acc;
+    }, {});
     const allFeats = this.actor.items.filter((item) => item.type === "feat");
     const activeFeats = allFeats.filter((feat) => feat.system.active === true);
     const vehicleStructure = this.actor.system.attributes?.structure || 0;

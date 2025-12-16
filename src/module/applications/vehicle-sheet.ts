@@ -125,8 +125,16 @@ export class VehicleSheet extends ActorSheet {
       }
     }
 
-    // Add vehicle types for selection
-    context.vehicleTypes = VEHICLE_TYPES;
+    // Add vehicle types for selection with translated labels
+    context.vehicleTypes = Object.keys(VEHICLE_TYPES).reduce((acc: Record<string, { data: any, label: string }>, key: string) => {
+      const translationKey = `SRA2.VEHICLE.TYPES.${key}`;
+      const label = game.i18n?.localize(translationKey) || key;
+      acc[key] = {
+        data: (VEHICLE_TYPES as any)[key],
+        label: label
+      };
+      return acc;
+    }, {});
 
     // Get feats (weapons only for vehicles)
     const allFeats = this.actor.items.filter((item: any) => item.type === 'feat');

@@ -88,7 +88,7 @@
             <select name="system.vehicleType" class="vehicle-type-select">
               <option value="">{{localize "SRA2.VEHICLE.SELECT_TYPE"}}</option>
               {{#each vehicleTypes}}
-              <option value="{{@key}}" {{#if (eq @key ../system.vehicleType)}}selected{{/if}}>{{@key}}</option>
+              <option value="{{@key}}" {{#if (eq @key ../system.vehicleType)}}selected{{/if}}>{{this.label}}</option>
               {{/each}}
             </select>
           </div>

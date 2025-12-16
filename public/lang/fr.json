@@ -112,6 +112,22 @@
                 "COMBAT": "Combat",
                 "FEATS": "Atouts"
             },
+            "TYPES": {
+                "microdrone": "Microdrone",
+                "minidrone": "Minidrone",
+                "small-drone": "Petit drone",
+                "medium-drone": "Drone moyen",
+                "large-drone": "Grand drone",
+                "racing-motorcycle": "Moto de course",
+                "offroad-motorcycle": "Moto tout-terrain",
+                "chopper": "Chopper",
+                "sports-car": "Voiture de sport",
+                "sedan": "Berline",
+                "suv-pickup": "SUV / Pick-up",
+                "van": "Van",
+                "bus-truck": "Bus / Camion",
+                "rigid-inflatable-boat": "Semi-rigide"
+            },
             "WEAPONS": "Armes",
             "MOUNTED_WEAPONS": "Armes montées",
             "ROLL_WEAPON_WITH_CHARACTER_SKILLS": "Lancer l'attaque avec les compétences du personnage",
