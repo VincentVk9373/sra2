@@ -4,8 +4,8 @@
     <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
         <div class="avatar-section">
             <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
-            <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V1'}}">
-                <i class="fas fa-exchange-alt"></i>
+            <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="Mode Avancé">
+                <i class="fas fa-cog"></i>
             </button>
         </div>
         <div class="name">
@@ -140,6 +140,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
@@ -225,6 +231,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
@@ -310,6 +322,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -342,6 +360,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.system.astralPerception}}
                             <div class="row feat-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper spe">
@@ -414,6 +438,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -454,6 +484,12 @@
                                     {{this.system.autopilot}} <div class="fa fa-dice-d6"></div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Autopilot: {{this.system.autopilot}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.weapons}}
                             {{#each this.weapons}}
                             <div class="row skill-item" data-vehicle-uuid="{{../uuid}}" data-weapon-id="{{this.weaponId}}">
@@ -476,29 +512,6 @@
                             </div>
                             {{/each}}
                             {{/if}}
-                            {{else}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
-                                <div class="name-wrapper">
-                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
-                                        {{#if (ne this.system.active undefined)}}
-                                        <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
-                                        </div>
-                                        {{/if}}
-                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
-                                        </div>
-                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
-                                </div>
-                            </div>
                             {{/if}}
                             {{/each}}
                         </section>
@@ -532,6 +545,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -564,6 +583,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -596,6 +621,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -698,6 +729,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -775,6 +812,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">{{this.system.rating}} + ({{this.linkedAttributeLabel}})</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
@@ -808,6 +851,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../../advancedMode}}
+                            <div class="row advanced-info spe">
+                                <span class="advanced-level">({{this.linkedAttributeLabel}})</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                             {{/if}}
                             {{/each}}
@@ -829,12 +878,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="strength"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.strength}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.strength" value="{{this.system.attributes.strength}}" min="1" max="{{system.attributeMaxes.strength}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.strength}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.strength}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.strength}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -844,12 +903,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="agility"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.agility}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.agility" value="{{this.system.attributes.agility}}" min="1" max="{{system.attributeMaxes.agility}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.agility}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.agility}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.agility}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -859,12 +928,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="willpower"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.willpower}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.willpower" value="{{this.system.attributes.willpower}}" min="1" max="{{system.attributeMaxes.willpower}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.willpower}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.willpower}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.willpower}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -874,12 +953,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="logic"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.logic}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.logic" value="{{this.system.attributes.logic}}" min="1" max="{{system.attributeMaxes.logic}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.logic}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.logic}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.logic}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -889,12 +978,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="charisma"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.charisma}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.charisma" value="{{this.system.attributes.charisma}}" min="1" max="{{system.attributeMaxes.charisma}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.charisma}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.charisma}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.charisma}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                 </section>
             </div>
@@ -1012,6 +1111,48 @@
                         </section>
                     </div>
                 </section>
+                {{#if advancedMode}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.KEYWORDS.LABEL"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            <div class="keywords-fields-compact">
+                                <input type="text" name="system.keywords.keyword1" value="{{system.keywords.keyword1}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword2" value="{{system.keywords.keyword2}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword3" value="{{system.keywords.keyword3}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword4" value="{{system.keywords.keyword4}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword5" value="{{system.keywords.keyword5}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                        </section>
+                    </div>
+                </section>
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.BEHAVIORS.LABEL"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            <div class="behaviors-fields-compact">
+                                <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
             </div>
         </section>
         <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">

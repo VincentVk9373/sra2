@@ -6,6 +6,9 @@ import { CharacterSheet } from './character-sheet.js';
  * Réutilise toute la logique TypeScript de CharacterSheet
  */
 export class CharacterSheetV2 extends CharacterSheet {
+  /** Track advanced mode state */
+  private _advancedMode: boolean = false;
+
   static override get defaultOptions(): DocumentSheet.Options<Actor> {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'sheet', 'actor', 'character', 'character-v2'],
@@ -14,6 +17,15 @@ export class CharacterSheetV2 extends CharacterSheet {
       // width: 1000,
       // height: 800,
     });
+  }
+
+  override async getData(): Promise<any> {
+    const context = await super.getData();
+    
+    // Add advanced mode flag to context
+    context.advancedMode = this._advancedMode;
+    
+    return context;
   }
 
   override activateListeners(html: JQuery): void {
@@ -55,6 +67,18 @@ export class CharacterSheetV2 extends CharacterSheet {
       // Call the parent method which uses the shared helper
       (this as any)._onToggleBookmark(event);
     });
+
+    // Handle toggle advanced mode
+    html.find('[data-action="toggle-advanced-mode"]').on('click', this._onToggleAdvancedMode.bind(this));
+  }
+
+  /**
+   * Toggle advanced mode
+   */
+  private _onToggleAdvancedMode(event: JQuery.ClickEvent): void {
+    event.preventDefault();
+    this._advancedMode = !this._advancedMode;
+    this.render(false);
   }
 
   override close(options?: Application.CloseOptions): Promise<void> {

@@ -4215,7 +4215,7 @@ class CharacterSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "character"],
       template: "systems/sra2/templates/actor-character-sheet.hbs",
       width: 900,
-      height: 700,
+      height: 750,
       tabs: [],
       dragDrop: [
         { dragSelector: ".metatype-item", dropSelector: null },
@@ -6140,6 +6140,8 @@ class CharacterSheet extends ActorSheet {
   }
 }
 class CharacterSheetV2 extends CharacterSheet {
+  /** Track advanced mode state */
+  _advancedMode = false;
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "actor", "character", "character-v2"],
@@ -6148,6 +6150,11 @@ class CharacterSheetV2 extends CharacterSheet {
       // width: 1000,
       // height: 800,
     });
+  }
+  async getData() {
+    const context = await super.getData();
+    context.advancedMode = this._advancedMode;
+    return context;
   }
   activateListeners(html) {
     super.activateListeners(html);
@@ -6175,6 +6182,15 @@ class CharacterSheetV2 extends CharacterSheet {
     html.find('[data-action="toggle-bookmark"]').on("click", (event) => {
       this._onToggleBookmark(event);
     });
+    html.find('[data-action="toggle-advanced-mode"]').on("click", this._onToggleAdvancedMode.bind(this));
+  }
+  /**
+   * Toggle advanced mode
+   */
+  _onToggleAdvancedMode(event) {
+    event.preventDefault();
+    this._advancedMode = !this._advancedMode;
+    this.render(false);
   }
   close(options) {
     $(document).off(`click.context-menu-v2-${this.id}`);
