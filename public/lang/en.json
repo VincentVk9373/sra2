@@ -342,13 +342,15 @@
                 "WEAPONS_SPELLS": "Weapons & Spells",
                 "WEAPON": "Weapon",
                 "SPELL": "Spell",
-                "CONNAISSANCE": "Knowledge"
+                "CONNAISSANCE": "Knowledge",
+                "POWER": "Power"
             },
             "SECTION": {
                 "GENERAL": "General",
                 "STATS": "Stats",
                 "WEAPON": "Weapon",
                 "SPELL": "Spell",
+                "POWER": "Power",
                 "VEHICLE": "Vehicle",
                 "CYBERDECK": "Cyberdeck",
                 "CONTACT": "Contact",
@@ -458,7 +460,6 @@
                 "NARRATIVE_EFFECTS_POSITIVE": "Positive narrative effects",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Negative narrative effects",
                 "DAMAGE_VALUE_BONUS": "DV Bonus",
-                "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus (by skill type)",
                 "RANGE_IMPROVEMENTS": "Range improvements",
                 "SUSTAINED_SPELLS": "Additional sustained spells",
                 "SUMMONED_SPIRITS": "Additional summoned spirits",
@@ -484,6 +485,12 @@
             "WEAPON_DAMAGE_BONUS_HINT": "Damage Value bonus applied to weapons of the selected type",
             "WEAPON_TYPE_BONUS": "Weapon Type",
             "WEAPON_TYPE_BONUS_HINT": "Weapon type required for the bonus to apply",
+            "POWER": {
+                "SECTION_TITLE": "Power Information",
+                "SECTION_HINT": "Configure the skills and specializations for attack and defense of the power. The attack skill is used for the dice roll.",
+                "SEARCH_SKILL_PLACEHOLDER": "Search for a skill...",
+                "SEARCH_SPEC_PLACEHOLDER": "Search for a specialization..."
+            },
             "WEAPON": {
                 "SECTION_TITLE": "Weapon Information",
                 "WEAPON_TYPE": "Weapon Type",
@@ -648,26 +655,6 @@
                 "ADEPT": "Adept",
                 "SHAMANIC_MASK": "Shamanic Mask",
                 "SHAMANIC_MASK_HINT": "Reduces the feat level by 1 when activated"
-            },
-            "SPELL": {
-                "SECTION_TITLE": "Spell Information",
-                "SECTION_HINT": "Spells use base feat properties (narrative effects, bonuses, etc.) without weapon characteristics.",
-                "ROLL": "Roll Dice",
-                "ROLL_TITLE": "Roll {name}",
-                "CLICK_TO_ROLL": "Click to cast this spell",
-                "TYPE": "Spell Type",
-                "TYPE_DIRECT": "Direct Spell",
-                "TYPE_INDIRECT": "Indirect Spell",
-                "TYPE_HINT": "Direct spells affect the target directly (mana), indirect spells go through physical effects (elemental)",
-                "SPECIALIZATION": {
-                    "TYPE": "Specialization Type",
-                    "COMBAT": "Combat Spells",
-                    "DETECTION": "Detection Spells",
-                    "HEALTH": "Health Spells",
-                    "ILLUSION": "Illusion Spells",
-                    "MANIPULATION": "Manipulation Spells",
-                    "COUNTERSPELL": "Counterspell"
-                }
             }
         },
         "SKILLS": {

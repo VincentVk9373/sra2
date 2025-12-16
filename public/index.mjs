@@ -857,7 +857,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
-          "connaissance": "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"
+          "connaissance": "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE",
+          "power": "SRA2.FEATS.FEAT_TYPE.POWER"
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"
       }),
@@ -4403,7 +4404,8 @@ class CharacterSheet extends ActorSheet {
       weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
       weapon: allFeats.filter((feat) => feat.system.featType === "weapon"),
       spell: allFeats.filter((feat) => feat.system.featType === "spell"),
-      connaissance: allFeats.filter((feat) => feat.system.featType === "connaissance")
+      connaissance: allFeats.filter((feat) => feat.system.featType === "connaissance"),
+      power: allFeats.filter((feat) => feat.system.featType === "power")
     };
     context.featsByType.weapon = context.featsByType.weapon.map((weapon) => {
       const weaponSystem = weapon.system;
@@ -4511,6 +4513,34 @@ class CharacterSheet extends ActorSheet {
       }
       return spell;
     });
+    context.featsByType.power = context.featsByType.power.map((power) => {
+      const powerSystem = power.system;
+      const linkedAttackSkill = powerSystem.linkedAttackSkill || "";
+      const linkedAttackSpec = powerSystem.linkedAttackSpecialization || "";
+      const defaultAttribute = "strength";
+      const skillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        linkedAttackSpec,
+        linkedAttackSkill,
+        { defaultAttribute }
+      );
+      const rawPowerRRList = powerSystem.rrList || [];
+      const powerRRList = rawPowerRRList.map((rrEntry) => ({
+        ...rrEntry,
+        featName: power.name
+      }));
+      const poolResult = calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        powerRRList,
+        power.name
+      );
+      power.totalDicePool = poolResult.totalDicePool;
+      power.rr = poolResult.totalRR;
+      power.skillName = skillSpecResult.skillName;
+      power.specName = skillSpecResult.specName;
+      return power;
+    });
     context.feats = allFeats;
     const bookmarkedItems = this.actor.items.filter(
       (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true
@@ -4602,6 +4632,7 @@ class CharacterSheet extends ActorSheet {
     html.find('input[name*=".cyberdeckDamage."]').on("change", this._onCyberdeckDamageChange.bind(this));
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
+    html.find('[data-action="roll-power"]').on("click", this._onRollPower.bind(this));
     html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
     html.find('[data-action="roll-vehicle-weapon"]').on("click", this._onRollVehicleWeaponFromSheet.bind(this));
     html.find('[data-action="roll-vehicle-weapon-autopilot"]').on("click", this._onRollVehicleWeaponAutopilot.bind(this));
@@ -5754,6 +5785,21 @@ class CharacterSheet extends ActorSheet {
     await this._rollWeaponOrSpell(spell, "spell");
   }
   /**
+   * Handle rolling a power
+   */
+  async _onRollPower(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) {
+      console.error("SRA2 | No power ID found");
+      return;
+    }
+    const power = this.actor.items.get(itemId);
+    if (!power || power.type !== "feat") return;
+    await this._rollPower(power);
+  }
+  /**
    * Handle rolling a weapon/spell (old type)
    */
   async _onRollWeaponSpell(event) {
@@ -5929,6 +5975,71 @@ class CharacterSheet extends ActorSheet {
       // 'direct' or 'indirect' for spells
       isSpellDirect: isSpell && spellType === "direct"
       // Flag for direct spells (no defense)
+    });
+  }
+  /**
+   * Handle rolling a power
+   */
+  async _rollPower(power) {
+    const powerSystem = power.system;
+    const linkedAttackSkill = powerSystem.linkedAttackSkill || "";
+    const linkedAttackSpec = powerSystem.linkedAttackSpecialization || "";
+    const linkedDefenseSkill = powerSystem.linkedDefenseSkill || "";
+    const linkedDefenseSpec = powerSystem.linkedDefenseSpecialization || "";
+    const rawPowerRRList = powerSystem.rrList || [];
+    const powerRRList = rawPowerRRList.map((rrEntry) => ({
+      ...rrEntry,
+      featName: power.name
+    }));
+    const defaultAttribute = "strength";
+    const attackSkillSpecResult = findAttackSkillAndSpec(
+      this.actor,
+      linkedAttackSpec,
+      linkedAttackSkill,
+      { defaultAttribute }
+    );
+    const poolResult = calculateAttackPool(
+      this.actor,
+      attackSkillSpecResult,
+      powerRRList,
+      power.name
+    );
+    const allRRSources = poolResult.allRRSources;
+    const baseDamageValue = powerSystem.damageValue || "0";
+    let damageValueBonus = powerSystem.damageValueBonus || 0;
+    damageValueBonus = Math.min(damageValueBonus, 2);
+    const finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+    handleRollRequest({
+      itemType: "power",
+      itemName: power.name,
+      itemId: power.id,
+      itemRating: powerSystem.rating || 0,
+      itemActive: powerSystem.active,
+      // Attack skill/spec (used for the dice roll)
+      skillName: attackSkillSpecResult.skillName,
+      skillLevel: attackSkillSpecResult.skillLevel,
+      specName: attackSkillSpecResult.specName,
+      specLevel: attackSkillSpecResult.specLevel,
+      linkedAttribute: attackSkillSpecResult.linkedAttribute,
+      // Merged linked skills (for attack/defense)
+      linkedAttackSkill,
+      linkedAttackSpecialization: linkedAttackSpec,
+      linkedDefenseSkill,
+      linkedDefenseSpecialization: linkedDefenseSpec,
+      // Weapon properties
+      damageValue: finalDamageValue,
+      meleeRange: powerSystem.meleeRange || "none",
+      shortRange: powerSystem.shortRange || "none",
+      mediumRange: powerSystem.mediumRange || "none",
+      longRange: powerSystem.longRange || "none",
+      // Actor information
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name || "",
+      // RR List
+      rrList: allRRSources,
+      // Mark as power
+      isPower: true
     });
   }
   /**
@@ -6683,6 +6794,8 @@ class IceSheet extends ActorSheet {
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
+  /** Timeout for power search debouncing */
+  powerSearchTimeout = null;
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "item", "feat"],
@@ -6756,6 +6869,27 @@ class FeatSheet extends ItemSheet {
       searchContainers.each((_, container) => {
         if (!container.contains(target)) {
           $(container).find(".rr-target-search-results").hide();
+        }
+      });
+    });
+    html.find(".power-skill-search-input").on("input", this._onPowerSkillSearch.bind(this));
+    html.find(".power-skill-search-input").on("focus", this._onPowerSkillSearchFocus.bind(this));
+    html.find(".power-skill-search-input").on("blur", this._onPowerSkillSearchBlur.bind(this));
+    html.find(".power-spec-search-input").on("input", this._onPowerSpecSearch.bind(this));
+    html.find(".power-spec-search-input").on("focus", this._onPowerSpecSearchFocus.bind(this));
+    html.find(".power-spec-search-input").on("blur", this._onPowerSpecSearchBlur.bind(this));
+    $(document).on("click.power-search", (event) => {
+      const target = event.target;
+      if ($(target).closest(".select-power-skill-btn, .select-power-spec-btn").length > 0) {
+        return;
+      }
+      if ($(target).closest(".search-result-item").length > 0) {
+        return;
+      }
+      const searchContainers = html.find(".power-skill-search-container, .power-spec-search-container");
+      searchContainers.each((_, container) => {
+        if (!container.contains(target)) {
+          $(container).find(".power-skill-search-results, .power-spec-search-results").hide();
         }
       });
     });
@@ -6887,7 +7021,7 @@ class FeatSheet extends ItemSheet {
     const checkbox = event.currentTarget;
     const name = checkbox.name;
     const match = name.match(/system\.narrativeEffects\.(\d+)\.isNegative/);
-    if (!match) return;
+    if (!match || !match[1]) return;
     const index = parseInt(match[1]);
     const isNegative = checkbox.checked;
     const narrativeEffects = [...this.item.system.narrativeEffects || []];
@@ -7295,8 +7429,349 @@ class FeatSheet extends ItemSheet {
       }
     }, 200);
   }
+  /**
+   * Handle power skill search input
+   */
+  async _onPowerSkillSearch(event) {
+    const input = event.currentTarget;
+    const searchTerm = normalizeSearchText(input.value.trim());
+    const fieldName = input.dataset.field || "";
+    const resultsDiv = $(input).siblings(".power-skill-search-results")[0];
+    if (this.powerSearchTimeout) {
+      clearTimeout(this.powerSearchTimeout);
+    }
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = "none";
+      return;
+    }
+    this.powerSearchTimeout = setTimeout(async () => {
+      await this._performPowerSkillSearch(searchTerm, fieldName, resultsDiv);
+    }, 300);
+  }
+  /**
+   * Perform the actual power skill search
+   */
+  async _performPowerSkillSearch(searchTerm, fieldName, resultsDiv) {
+    const results = [];
+    if (this.item.actor) {
+      for (const item of this.item.actor.items) {
+        if (item.type === "skill" && normalizeSearchText(item.name).includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
+            type: "skill"
+          });
+        }
+      }
+    }
+    if (game.items) {
+      for (const item of game.items) {
+        if (item.type === "skill" && normalizeSearchText(item.name).includes(searchTerm)) {
+          const exists = results.some((r) => r.name === item.name);
+          if (!exists) {
+            results.push({
+              name: item.name,
+              uuid: item.uuid,
+              source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
+              type: "skill"
+            });
+          }
+        }
+      }
+    }
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      const documents2 = await pack.getDocuments();
+      for (const doc of documents2) {
+        if (doc.type === "skill" && normalizeSearchText(doc.name).includes(searchTerm)) {
+          const exists = results.some((r) => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              uuid: doc.uuid,
+              source: pack.title,
+              type: "skill"
+            });
+          }
+        }
+      }
+    }
+    this._displayPowerSkillSearchResults(results, fieldName, resultsDiv);
+  }
+  /**
+   * Display power skill search results
+   */
+  _displayPowerSkillSearchResults(results, fieldName, resultsDiv) {
+    let html = "";
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n.localize("SRA2.SKILLS.SEARCH_NO_RESULTS")}
+          </div>
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-field="${fieldName}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            <button class="select-power-skill-btn" data-target-name="${result.name}" data-field="${fieldName}">
+              ${game.i18n.localize("SRA2.FEATS.SELECT")}
+            </button>
+          </div>
+        `;
+      }
+    }
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+    $(resultsDiv).off("mousedown", ".select-power-skill-btn");
+    $(resultsDiv).off("mousedown", ".search-result-item");
+    $(resultsDiv).on("mousedown", ".select-power-skill-btn", this._onSelectPowerSkill.bind(this));
+    $(resultsDiv).on("mousedown", ".search-result-item:not(.no-results)", (event) => {
+      if ($(event.target).closest(".select-power-skill-btn").length > 0) return;
+      const button = $(event.currentTarget).find(".select-power-skill-btn")[0];
+      if (button) {
+        $(button).trigger("mousedown");
+      }
+    });
+  }
+  /**
+   * Handle selecting a power skill from search results
+   */
+  async _onSelectPowerSkill(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    const button = event.currentTarget;
+    const targetName = button.dataset.targetName;
+    const fieldName = button.dataset.field;
+    if (!targetName || !fieldName) return;
+    const container = $(button).closest(".power-skill-search-container");
+    const input = container.find(`input[name="system.${fieldName}"]`)[0];
+    if (input) {
+      input.value = targetName;
+      $(input).trigger("change");
+    }
+    const resultsDiv = container.find(".power-skill-search-results")[0];
+    if (resultsDiv) {
+      resultsDiv.style.display = "none";
+    }
+  }
+  /**
+   * Handle power skill search focus
+   */
+  _onPowerSkillSearchFocus(event) {
+    const input = event.currentTarget;
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings(".power-skill-search-results")[0];
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = "block";
+      }
+    }
+  }
+  /**
+   * Handle power skill search blur
+   */
+  _onPowerSkillSearchBlur(event) {
+    const input = event.currentTarget;
+    const blurEvent = event;
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings(".power-skill-search-results")[0];
+      if (resultsDiv) {
+        const relatedTarget = blurEvent.relatedTarget;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          return;
+        }
+        const activeElement = document.activeElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          return;
+        }
+        const mouseEvent = event.originalEvent;
+        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget)) {
+          return;
+        }
+        resultsDiv.style.display = "none";
+      }
+    }, 300);
+  }
+  /**
+   * Handle power spec search input
+   */
+  async _onPowerSpecSearch(event) {
+    const input = event.currentTarget;
+    const searchTerm = normalizeSearchText(input.value.trim());
+    const fieldName = input.dataset.field || "";
+    const resultsDiv = $(input).siblings(".power-spec-search-results")[0];
+    if (this.powerSearchTimeout) {
+      clearTimeout(this.powerSearchTimeout);
+    }
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = "none";
+      return;
+    }
+    this.powerSearchTimeout = setTimeout(async () => {
+      await this._performPowerSpecSearch(searchTerm, fieldName, resultsDiv);
+    }, 300);
+  }
+  /**
+   * Perform the actual power spec search
+   */
+  async _performPowerSpecSearch(searchTerm, fieldName, resultsDiv) {
+    const results = [];
+    if (this.item.actor) {
+      for (const item of this.item.actor.items) {
+        if (item.type === "specialization" && normalizeSearchText(item.name).includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
+            type: "specialization"
+          });
+        }
+      }
+    }
+    if (game.items) {
+      for (const item of game.items) {
+        if (item.type === "specialization" && normalizeSearchText(item.name).includes(searchTerm)) {
+          const exists = results.some((r) => r.name === item.name);
+          if (!exists) {
+            results.push({
+              name: item.name,
+              uuid: item.uuid,
+              source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
+              type: "specialization"
+            });
+          }
+        }
+      }
+    }
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      const documents2 = await pack.getDocuments();
+      for (const doc of documents2) {
+        if (doc.type === "specialization" && normalizeSearchText(doc.name).includes(searchTerm)) {
+          const exists = results.some((r) => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              uuid: doc.uuid,
+              source: pack.title,
+              type: "specialization"
+            });
+          }
+        }
+      }
+    }
+    this._displayPowerSpecSearchResults(results, fieldName, resultsDiv);
+  }
+  /**
+   * Display power spec search results
+   */
+  _displayPowerSpecSearchResults(results, fieldName, resultsDiv) {
+    let html = "";
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n.localize("SRA2.SKILLS.SEARCH_NO_RESULTS")}
+          </div>
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-field="${fieldName}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            <button class="select-power-spec-btn" data-target-name="${result.name}" data-field="${fieldName}">
+              ${game.i18n.localize("SRA2.FEATS.SELECT")}
+            </button>
+          </div>
+        `;
+      }
+    }
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+    $(resultsDiv).off("mousedown", ".select-power-spec-btn");
+    $(resultsDiv).off("mousedown", ".search-result-item");
+    $(resultsDiv).on("mousedown", ".select-power-spec-btn", this._onSelectPowerSpec.bind(this));
+    $(resultsDiv).on("mousedown", ".search-result-item:not(.no-results)", (event) => {
+      if ($(event.target).closest(".select-power-spec-btn").length > 0) return;
+      const button = $(event.currentTarget).find(".select-power-spec-btn")[0];
+      if (button) {
+        $(button).trigger("mousedown");
+      }
+    });
+  }
+  /**
+   * Handle selecting a power spec from search results
+   */
+  async _onSelectPowerSpec(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    const button = event.currentTarget;
+    const targetName = button.dataset.targetName;
+    const fieldName = button.dataset.field;
+    if (!targetName || !fieldName) return;
+    const container = $(button).closest(".power-spec-search-container");
+    const input = container.find(`input[name="system.${fieldName}"]`)[0];
+    if (input) {
+      input.value = targetName;
+      $(input).trigger("change");
+    }
+    const resultsDiv = container.find(".power-spec-search-results")[0];
+    if (resultsDiv) {
+      resultsDiv.style.display = "none";
+    }
+  }
+  /**
+   * Handle power spec search focus
+   */
+  _onPowerSpecSearchFocus(event) {
+    const input = event.currentTarget;
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings(".power-spec-search-results")[0];
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = "block";
+      }
+    }
+  }
+  /**
+   * Handle power spec search blur
+   */
+  _onPowerSpecSearchBlur(event) {
+    const input = event.currentTarget;
+    const blurEvent = event;
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings(".power-spec-search-results")[0];
+      if (resultsDiv) {
+        const relatedTarget = blurEvent.relatedTarget;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          return;
+        }
+        const activeElement = document.activeElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          return;
+        }
+        const mouseEvent = event.originalEvent;
+        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget)) {
+          return;
+        }
+        resultsDiv.style.display = "none";
+      }
+    }, 300);
+  }
   async close(options) {
     $(document).off("click.rr-target-search");
+    $(document).off("click.power-search");
     return super.close(options);
   }
   async _updateObject(_event, formData) {

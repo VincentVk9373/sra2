@@ -7,6 +7,8 @@ import * as ItemSearch from '../../../item-search.js';
 export class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   private _activeSection: string = 'general';
+  /** Timeout for power search debouncing */
+  private powerSearchTimeout: any = null;
   
   static override get defaultOptions(): DocumentSheet.Options<Item> {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -134,6 +136,37 @@ export class FeatSheet extends ItemSheet {
       searchContainers.each((_, container) => {
         if (!container.contains(target)) {
           $(container).find('.rr-target-search-results').hide();
+        }
+      });
+    });
+    
+    // Power skill/spec search
+    html.find('.power-skill-search-input').on('input', this._onPowerSkillSearch.bind(this));
+    html.find('.power-skill-search-input').on('focus', this._onPowerSkillSearchFocus.bind(this));
+    html.find('.power-skill-search-input').on('blur', this._onPowerSkillSearchBlur.bind(this));
+    
+    html.find('.power-spec-search-input').on('input', this._onPowerSpecSearch.bind(this));
+    html.find('.power-spec-search-input').on('focus', this._onPowerSpecSearchFocus.bind(this));
+    html.find('.power-spec-search-input').on('blur', this._onPowerSpecSearchBlur.bind(this));
+    
+    // Close power search results when clicking outside
+    $(document).on('click.power-search', (event) => {
+      const target = event.target as unknown as HTMLElement;
+      
+      // Don't close if clicking on a button inside results
+      if ($(target).closest('.select-power-skill-btn, .select-power-spec-btn').length > 0) {
+        return;
+      }
+      
+      // Don't close if clicking on a result item
+      if ($(target).closest('.search-result-item').length > 0) {
+        return;
+      }
+      
+      const searchContainers = html.find('.power-skill-search-container, .power-spec-search-container');
+      searchContainers.each((_, container) => {
+        if (!container.contains(target)) {
+          $(container).find('.power-skill-search-results, .power-spec-search-results').hide();
         }
       });
     });
@@ -318,7 +351,7 @@ export class FeatSheet extends ItemSheet {
     
     // Extract index from name like "system.narrativeEffects.0.isNegative"
     const match = name.match(/system\.narrativeEffects\.(\d+)\.isNegative/);
-    if (!match) return;
+    if (!match || !match[1]) return;
     
     const index = parseInt(match[1]);
     const isNegative = checkbox.checked;
@@ -861,9 +894,468 @@ export class FeatSheet extends ItemSheet {
     }, 200);
   }
 
+  /**
+   * Handle power skill search input
+   */
+  private async _onPowerSkillSearch(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
+    const fieldName = input.dataset.field || '';
+    const resultsDiv = $(input).siblings('.power-skill-search-results')[0] as HTMLElement;
+    
+    // Clear previous timeout
+    if (this.powerSearchTimeout) {
+      clearTimeout(this.powerSearchTimeout);
+    }
+    
+    // If search term is empty, hide results
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Debounce search
+    this.powerSearchTimeout = setTimeout(async () => {
+      await this._performPowerSkillSearch(searchTerm, fieldName, resultsDiv);
+    }, 300);
+  }
+
+  /**
+   * Perform the actual power skill search
+   */
+  private async _performPowerSkillSearch(searchTerm: string, fieldName: string, resultsDiv: HTMLElement): Promise<void> {
+    const results: any[] = [];
+    
+    // Search in actor items if this feat is on an actor
+    if (this.item.actor) {
+      for (const item of this.item.actor.items as any) {
+        if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            source: game.i18n!.localize('SRA2.FEATS.FROM_ACTOR'),
+            type: 'skill'
+          });
+        }
+      }
+    }
+    
+    // Search in world items
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
+          // Check if not already in results
+          const exists = results.some(r => r.name === item.name);
+          if (!exists) {
+            results.push({
+              name: item.name,
+              uuid: item.uuid,
+              source: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
+              type: 'skill'
+            });
+          }
+        }
+      }
+    }
+    
+    // Search in all compendiums
+    for (const pack of game.packs as any) {
+      // Only search in Item compendiums
+      if (pack.documentName !== 'Item') continue;
+      
+      // Get all documents from the pack
+      const documents = await pack.getDocuments();
+      
+      // Filter for skills that match the search term
+      for (const doc of documents) {
+        if (doc.type === 'skill' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
+          // Check if not already in results
+          const exists = results.some(r => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              uuid: doc.uuid,
+              source: pack.title,
+              type: 'skill'
+            });
+          }
+        }
+      }
+    }
+    
+    // Display results
+    this._displayPowerSkillSearchResults(results, fieldName, resultsDiv);
+  }
+
+  /**
+   * Display power skill search results
+   */
+  private _displayPowerSkillSearchResults(results: any[], fieldName: string, resultsDiv: HTMLElement): void {
+    let html = '';
+    
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.SKILLS.SEARCH_NO_RESULTS')}
+          </div>
+        </div>
+      `;
+    } else {
+      // Display search results
+      for (const result of results) {
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-field="${fieldName}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            <button class="select-power-skill-btn" data-target-name="${result.name}" data-field="${fieldName}">
+              ${game.i18n!.localize('SRA2.FEATS.SELECT')}
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Use mousedown instead of click to capture before blur event
+    // This ensures handlers work even when results are replaced
+    $(resultsDiv).off('mousedown', '.select-power-skill-btn');
+    $(resultsDiv).off('mousedown', '.search-result-item');
+    
+    $(resultsDiv).on('mousedown', '.select-power-skill-btn', this._onSelectPowerSkill.bind(this));
+    
+    // Make entire result items clickable (except no-results)
+    $(resultsDiv).on('mousedown', '.search-result-item:not(.no-results)', (event) => {
+      // Don't trigger if clicking directly on the button
+      if ($(event.target).closest('.select-power-skill-btn').length > 0) return;
+      
+      // Find the button in this item and trigger its mousedown
+      const button = $(event.currentTarget).find('.select-power-skill-btn')[0] as HTMLButtonElement;
+      if (button) {
+        $(button).trigger('mousedown');
+      }
+    });
+  }
+
+  /**
+   * Handle selecting a power skill from search results
+   */
+  private async _onSelectPowerSkill(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation(); // Prevent document click handler from firing
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const targetName = button.dataset.targetName;
+    const fieldName = button.dataset.field;
+    
+    if (!targetName || !fieldName) return;
+    
+    // Find the container and input field
+    const container = $(button).closest('.power-skill-search-container');
+    const input = container.find(`input[name="system.${fieldName}"]`)[0] as HTMLInputElement;
+    
+    if (input) {
+      input.value = targetName;
+      // Trigger change event to save
+      $(input).trigger('change');
+    }
+    
+    // Hide results immediately
+    const resultsDiv = container.find('.power-skill-search-results')[0] as HTMLElement;
+    if (resultsDiv) {
+      resultsDiv.style.display = 'none';
+    }
+  }
+
+  /**
+   * Handle power skill search focus
+   */
+  private _onPowerSkillSearchFocus(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // If there's already content and results, show them
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings('.power-skill-search-results')[0] as HTMLElement;
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = 'block';
+      }
+    }
+  }
+
+  /**
+   * Handle power skill search blur
+   */
+  private _onPowerSkillSearchBlur(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    const blurEvent = event as FocusEvent;
+    
+    // Check if the new focus target is within the results div
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings('.power-skill-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        // Check if the related target (where focus is going) is inside the results div
+        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          // Don't hide if focus is moving to an element within the results
+          return;
+        }
+        
+        // Also check if any element in the results is focused or being clicked
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          // Don't hide if an element in results is active
+          return;
+        }
+        
+        // Check if mouse is over the results div (user might be clicking)
+        const mouseEvent = (event as any).originalEvent;
+        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget as HTMLElement)) {
+          return;
+        }
+        
+        resultsDiv.style.display = 'none';
+      }
+    }, 300); // Increased delay to allow button clicks to register
+  }
+
+  /**
+   * Handle power spec search input
+   */
+  private async _onPowerSpecSearch(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
+    const fieldName = input.dataset.field || '';
+    const resultsDiv = $(input).siblings('.power-spec-search-results')[0] as HTMLElement;
+    
+    // Clear previous timeout
+    if (this.powerSearchTimeout) {
+      clearTimeout(this.powerSearchTimeout);
+    }
+    
+    // If search term is empty, hide results
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Debounce search
+    this.powerSearchTimeout = setTimeout(async () => {
+      await this._performPowerSpecSearch(searchTerm, fieldName, resultsDiv);
+    }, 300);
+  }
+
+  /**
+   * Perform the actual power spec search
+   */
+  private async _performPowerSpecSearch(searchTerm: string, fieldName: string, resultsDiv: HTMLElement): Promise<void> {
+    const results: any[] = [];
+    
+    // Search in actor items if this feat is on an actor
+    if (this.item.actor) {
+      for (const item of this.item.actor.items as any) {
+        if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            uuid: item.uuid,
+            source: game.i18n!.localize('SRA2.FEATS.FROM_ACTOR'),
+            type: 'specialization'
+          });
+        }
+      }
+    }
+    
+    // Search in world items
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
+          // Check if not already in results
+          const exists = results.some(r => r.name === item.name);
+          if (!exists) {
+            results.push({
+              name: item.name,
+              uuid: item.uuid,
+              source: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
+              type: 'specialization'
+            });
+          }
+        }
+      }
+    }
+    
+    // Search in all compendiums
+    for (const pack of game.packs as any) {
+      // Only search in Item compendiums
+      if (pack.documentName !== 'Item') continue;
+      
+      // Get all documents from the pack
+      const documents = await pack.getDocuments();
+      
+      // Filter for specializations that match the search term
+      for (const doc of documents) {
+        if (doc.type === 'specialization' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
+          // Check if not already in results
+          const exists = results.some(r => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              uuid: doc.uuid,
+              source: pack.title,
+              type: 'specialization'
+            });
+          }
+        }
+      }
+    }
+    
+    // Display results
+    this._displayPowerSpecSearchResults(results, fieldName, resultsDiv);
+  }
+
+  /**
+   * Display power spec search results
+   */
+  private _displayPowerSpecSearchResults(results: any[], fieldName: string, resultsDiv: HTMLElement): void {
+    let html = '';
+    
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.SKILLS.SEARCH_NO_RESULTS')}
+          </div>
+        </div>
+      `;
+    } else {
+      // Display search results
+      for (const result of results) {
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-field="${fieldName}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            <button class="select-power-spec-btn" data-target-name="${result.name}" data-field="${fieldName}">
+              ${game.i18n!.localize('SRA2.FEATS.SELECT')}
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Use mousedown instead of click to capture before blur event
+    // This ensures handlers work even when results are replaced
+    $(resultsDiv).off('mousedown', '.select-power-spec-btn');
+    $(resultsDiv).off('mousedown', '.search-result-item');
+    
+    $(resultsDiv).on('mousedown', '.select-power-spec-btn', this._onSelectPowerSpec.bind(this));
+    
+    // Make entire result items clickable (except no-results)
+    $(resultsDiv).on('mousedown', '.search-result-item:not(.no-results)', (event) => {
+      // Don't trigger if clicking directly on the button
+      if ($(event.target).closest('.select-power-spec-btn').length > 0) return;
+      
+      // Find the button in this item and trigger its mousedown
+      const button = $(event.currentTarget).find('.select-power-spec-btn')[0] as HTMLButtonElement;
+      if (button) {
+        $(button).trigger('mousedown');
+      }
+    });
+  }
+
+  /**
+   * Handle selecting a power spec from search results
+   */
+  private async _onSelectPowerSpec(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation(); // Prevent document click handler from firing
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const targetName = button.dataset.targetName;
+    const fieldName = button.dataset.field;
+    
+    if (!targetName || !fieldName) return;
+    
+    // Find the container and input field
+    const container = $(button).closest('.power-spec-search-container');
+    const input = container.find(`input[name="system.${fieldName}"]`)[0] as HTMLInputElement;
+    
+    if (input) {
+      input.value = targetName;
+      // Trigger change event to save
+      $(input).trigger('change');
+    }
+    
+    // Hide results immediately
+    const resultsDiv = container.find('.power-spec-search-results')[0] as HTMLElement;
+    if (resultsDiv) {
+      resultsDiv.style.display = 'none';
+    }
+  }
+
+  /**
+   * Handle power spec search focus
+   */
+  private _onPowerSpecSearchFocus(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // If there's already content and results, show them
+    if (input.value.trim().length > 0) {
+      const resultsDiv = $(input).siblings('.power-spec-search-results')[0] as HTMLElement;
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = 'block';
+      }
+    }
+  }
+
+  /**
+   * Handle power spec search blur
+   */
+  private _onPowerSpecSearchBlur(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    const blurEvent = event as FocusEvent;
+    
+    // Check if the new focus target is within the results div
+    setTimeout(() => {
+      const resultsDiv = $(input).siblings('.power-spec-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        // Check if the related target (where focus is going) is inside the results div
+        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          // Don't hide if focus is moving to an element within the results
+          return;
+        }
+        
+        // Also check if any element in the results is focused or being clicked
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          // Don't hide if an element in results is active
+          return;
+        }
+        
+        // Check if mouse is over the results div (user might be clicking)
+        const mouseEvent = (event as any).originalEvent;
+        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget as HTMLElement)) {
+          return;
+        }
+        
+        resultsDiv.style.display = 'none';
+      }
+    }, 300); // Increased delay to allow button clicks to register
+  }
+
   override async close(options?: Application.CloseOptions): Promise<void> {
     // Clean up document-level event listeners
     $(document).off('click.rr-target-search');
+    $(document).off('click.power-search');
     return super.close(options);
   }
 

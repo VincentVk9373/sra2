@@ -247,6 +247,50 @@
                     </div>
                 </section>
                 {{/if}}
+                {{#if featsByType.power}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.POWER"}}</div>
+                        <div class="fa fa-dice-d6"></div>
+                        <div>RR</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            {{#each featsByType.power}}
+                            <div class="row skill-item" data-item-id="{{this._id}}">
+                                <div class="name-wrapper">
+                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="power"
+                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="power">
+                                        <div class="context-menu-item" data-action="roll-power" data-item-id="{{this._id}}">
+                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        {{#if (ne this.system.active undefined)}}
+                                        <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                        </div>
+                                        {{/if}}
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> Editer
+                                        </div>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="dice clickable" data-action="roll-power" data-item-id="{{this._id}}"
+                                    title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                    {{this.totalDicePool}} <div class="fa fa-dice-d6"></div>
+                                </div>
+                                <div class="rr">
+                                    {{this.rr}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
                 {{#if featsByType.awakened}}
                 <section class="char-section">
                     <header>

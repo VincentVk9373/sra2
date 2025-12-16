@@ -264,13 +264,15 @@
                 "WEAPONS_SPELLS": "Armes et Sorts",
                 "WEAPON": "Arme",
                 "SPELL": "Sort",
-                "CONNAISSANCE": "Connaissance"
+                "CONNAISSANCE": "Connaissance",
+                "POWER": "Pouvoir"
             },
             "SECTION": {
                 "GENERAL": "Général",
                 "STATS": "Statistiques",
                 "WEAPON": "Arme",
                 "SPELL": "Sort",
+                "POWER": "Pouvoir",
                 "VEHICLE": "Véhicule",
                 "CYBERDECK": "Cyberdeck",
                 "CONTACT": "Contact",
@@ -382,7 +384,6 @@
                 "NARRATIVE_EFFECTS_POSITIVE": "Effets narratifs positifs",
                 "NARRATIVE_EFFECTS_NEGATIVE": "Effets narratifs négatifs",
                 "DAMAGE_VALUE_BONUS": "Bonus VD",
-                "WEAPON_DAMAGE_BONUS": "Bonus VD aux armes (par type de skill)",
                 "RANGE_IMPROVEMENTS": "Améliorations de portée",
                 "SUSTAINED_SPELLS": "Sorts maintenus supplémentaires",
                 "SUMMONED_SPIRITS": "Esprits invoqués supplémentaires",
@@ -408,6 +409,12 @@
             "WEAPON_DAMAGE_BONUS_HINT": "Bonus de Valeur de Dégâts appliqué aux armes du type sélectionné",
             "WEAPON_TYPE_BONUS": "Type d'arme",
             "WEAPON_TYPE_BONUS_HINT": "Type d'arme requis pour que le bonus s'applique",
+                "POWER": {
+                    "SECTION_TITLE": "Informations Pouvoir",
+                    "SECTION_HINT": "Configurez les compétences et spécialisations pour l'attaque et la défense du pouvoir. La compétence d'attaque est utilisée pour le jet de dés.",
+                    "SEARCH_SKILL_PLACEHOLDER": "Rechercher une compétence...",
+                    "SEARCH_SPEC_PLACEHOLDER": "Rechercher une spécialisation..."
+                },
             "WEAPON": {
                 "SECTION_TITLE": "Informations Arme",
                 "WEAPON_TYPE": "Type d'Arme",
