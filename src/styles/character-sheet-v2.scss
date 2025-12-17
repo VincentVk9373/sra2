@@ -970,6 +970,57 @@
         }
 
     }
+
+    /* Catchphrases display (non-edit mode) */
+    .catchphrases-display {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .catchphrase-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            border-left: 3px solid var(--blue);
+
+            .catchphrase-text {
+                flex: 1;
+                font-style: italic;
+                color: var(--sr-text-color-light);
+                font-size: 0.95rem;
+            }
+
+            .catchphrase-send {
+                color: var(--light-blue);
+                cursor: pointer;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+
+    /* Behaviors display (non-edit mode) */
+    .behaviors-display {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .behavior-tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(57, 77, 115, 0.6);
+            border: 1px solid var(--blue);
+            border-radius: 12px;
+            color: var(--sr-text-color-light);
+            font-size: 0.9rem;
+        }
+    }
     }
 
     .sheet-footer {

@@ -1115,12 +1115,14 @@
                         </section>
                     </div>
                 </section>
+                {{#if (or advancedMode system.catchphrases.catchphrase1 system.catchphrases.catchphrase2 system.catchphrases.catchphrase3 system.catchphrases.catchphrase4)}}
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.CATCHPHRASES.LABEL"}}</div>
                     </header>
                     <div class="char-section-row">
                         <section>
+                            {{#if advancedMode}}
                             <div class="catchphrases-fields">
                                 <div class="catchphrase-field">
                                     <div class="catchphrase-input-wrapper">
@@ -1179,15 +1181,62 @@
                                     </div>
                                 </div>
                             </div>
+                            {{else}}
+                            <div class="catchphrases-display">
+                                {{#if system.catchphrases.catchphrase1}}
+                                <div class="catchphrase-item">
+                                    <span class="catchphrase-text">"{{system.catchphrases.catchphrase1}}"</span>
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase1}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                </div>
+                                {{/if}}
+                                {{#if system.catchphrases.catchphrase2}}
+                                <div class="catchphrase-item">
+                                    <span class="catchphrase-text">"{{system.catchphrases.catchphrase2}}"</span>
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase2}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                </div>
+                                {{/if}}
+                                {{#if system.catchphrases.catchphrase3}}
+                                <div class="catchphrase-item">
+                                    <span class="catchphrase-text">"{{system.catchphrases.catchphrase3}}"</span>
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase3}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                </div>
+                                {{/if}}
+                                {{#if system.catchphrases.catchphrase4}}
+                                <div class="catchphrase-item">
+                                    <span class="catchphrase-text">"{{system.catchphrases.catchphrase4}}"</span>
+                                    <a class="catchphrase-send" data-action="send-catchphrase"
+                                        data-catchphrase="{{system.catchphrases.catchphrase4}}"
+                                        title="{{localize 'SRA2.CATCHPHRASES.SEND_TO_CHAT'}}">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                </div>
+                                {{/if}}
+                            </div>
+                            {{/if}}
                         </section>
                     </div>
                 </section>
+                {{/if}}
+                {{#if (or advancedMode system.behaviors.behavior1 system.behaviors.behavior2 system.behaviors.behavior3 system.behaviors.behavior4)}}
                 <section class="char-section">
                     <header>
                         <div>{{localize "SRA2.BEHAVIORS.LABEL"}}</div>
                     </header>
                     <div class="char-section-row">
                         <section>
+                            {{#if advancedMode}}
                             <div class="behaviors-fields-compact">
                                 <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}"
                                     placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
@@ -1198,9 +1247,18 @@
                                 <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}"
                                     placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
                             </div>
+                            {{else}}
+                            <div class="behaviors-display">
+                                {{#if system.behaviors.behavior1}}<span class="behavior-tag">{{system.behaviors.behavior1}}</span>{{/if}}
+                                {{#if system.behaviors.behavior2}}<span class="behavior-tag">{{system.behaviors.behavior2}}</span>{{/if}}
+                                {{#if system.behaviors.behavior3}}<span class="behavior-tag">{{system.behaviors.behavior3}}</span>{{/if}}
+                                {{#if system.behaviors.behavior4}}<span class="behavior-tag">{{system.behaviors.behavior4}}</span>{{/if}}
+                            </div>
+                            {{/if}}
                         </section>
                     </div>
                 </section>
+                {{/if}}
                 {{#if advancedMode}}
                 <section class="char-section">
                     <header>

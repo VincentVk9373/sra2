@@ -410,6 +410,80 @@ export class SRA2System {
       }
     });
     
+    // Hook to duplicate linked vehicles when duplicating a character actor
+    // This ensures the duplicated character has its own copies of vehicles
+    Hooks.on('createActor', async (actor: any, options: any, userId: string) => {
+      // Only process if this is from the current user
+      if (game.user?.id !== userId) return;
+      
+      // Skip if this is a vehicle being created as part of duplication (to avoid infinite loop)
+      if (options.sra2VehicleDuplication) return;
+      
+      // Only process character actors
+      if (actor.type !== 'character') return;
+      
+      // Get linked vehicles
+      const linkedVehicles = (actor.system as any)?.linkedVehicles || [];
+      if (linkedVehicles.length === 0) return;
+      
+      // Check if any of these vehicles belong to another actor (meaning this is a duplicate)
+      // If the vehicle's UUID points to an existing vehicle that's also linked to another character,
+      // we need to duplicate the vehicles
+      const existingCharacters = (game.actors as any).filter((a: any) => 
+        a.type === 'character' && a.id !== actor.id
+      );
+      
+      let needsDuplication = false;
+      for (const vehicleUuid of linkedVehicles) {
+        for (const otherChar of existingCharacters) {
+          const otherLinkedVehicles = (otherChar.system as any)?.linkedVehicles || [];
+          if (otherLinkedVehicles.includes(vehicleUuid)) {
+            needsDuplication = true;
+            break;
+          }
+        }
+        if (needsDuplication) break;
+      }
+      
+      if (!needsDuplication) return;
+      
+      console.log(SYSTEM.LOG.HEAD + `Duplicating linked vehicles for actor ${actor.name}`);
+      
+      // Duplicate each linked vehicle and update references
+      const newVehicleUuids: string[] = [];
+      
+      for (const vehicleUuid of linkedVehicles) {
+        try {
+          // Get the original vehicle
+          const originalVehicle = await fromUuid(vehicleUuid) as any;
+          if (!originalVehicle || originalVehicle.type !== 'vehicle') {
+            console.warn(SYSTEM.LOG.HEAD + `Could not find vehicle ${vehicleUuid} for duplication`);
+            continue;
+          }
+          
+          // Create a duplicate of the vehicle
+          const vehicleData = originalVehicle.toObject();
+          delete vehicleData._id;
+          vehicleData.name = `${originalVehicle.name} (${actor.name})`;
+          
+          const [newVehicle] = await Actor.createDocuments([vehicleData], { sra2VehicleDuplication: true } as any);
+          
+          if (newVehicle) {
+            newVehicleUuids.push(newVehicle.uuid);
+            console.log(SYSTEM.LOG.HEAD + `Duplicated vehicle ${originalVehicle.name} -> ${newVehicle.name}`);
+          }
+        } catch (error) {
+          console.error(SYSTEM.LOG.HEAD + `Error duplicating vehicle ${vehicleUuid}:`, error);
+        }
+      }
+      
+      // Update the actor's linkedVehicles with the new UUIDs
+      if (newVehicleUuids.length > 0) {
+        await actor.update({ 'system.linkedVehicles': newVehicleUuids });
+        console.log(SYSTEM.LOG.HEAD + `Updated ${actor.name} with ${newVehicleUuids.length} duplicated vehicles`);
+      }
+    });
+    
     // Hook to handle feat choice configuration when dropping a token
     // This displays a dialog for optional/choice feats before creating the token
     Hooks.on('preCreateToken', (tokenDoc: any, _data: any, options: any, userId: string) => {
