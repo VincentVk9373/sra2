@@ -42,6 +42,20 @@ export class CharacterSheetV2 extends CharacterSheet {
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
+    // Keyboard shortcut: CTRL+E to toggle advanced mode
+    const keydownNamespace = `keydown-v2-${this.id}`;
+    $(document).off(`.${keydownNamespace}`);
+    $(document).on(`keydown.${keydownNamespace}`, (event: JQuery.KeyDownEvent) => {
+      // Check if CTRL+E is pressed and this sheet is active
+      if (event.ctrlKey && event.key.toLowerCase() === 'e') {
+        // Check if this sheet element is visible/focused
+        if (this.element && this.element.is(':visible')) {
+          event.preventDefault();
+          this._onToggleAdvancedMode(event as any);
+        }
+      }
+    });
+
     // Context menu handler
     html.find('[data-action="show-context-menu"]').on('click', this._onShowContextMenu.bind(this));
 
@@ -88,9 +102,18 @@ export class CharacterSheetV2 extends CharacterSheet {
     // Handle attribute value changes in advanced mode
     html.find('.attribute-input').on('change', this._onUpdateAttribute.bind(this));
     
-    // Prevent click propagation on attribute inputs to avoid triggering roll when clicking to edit
+    // Select all content on click for attribute inputs
     html.find('.attribute-input').on('click', (event: JQuery.ClickEvent) => {
       event.stopPropagation();
+      const input = event.currentTarget as HTMLInputElement;
+      input.select();
+    });
+    
+    // Select all content on click for skill rating inputs
+    html.find('.skill-rating-input').on('click', (event: JQuery.ClickEvent) => {
+      event.stopPropagation();
+      const input = event.currentTarget as HTMLInputElement;
+      input.select();
     });
     
     // Handle metatype actions in advanced mode
@@ -174,8 +197,9 @@ export class CharacterSheetV2 extends CharacterSheet {
   }
 
   override close(options?: Application.CloseOptions): Promise<void> {
-    // Clean up document event listener
+    // Clean up document event listeners
     $(document).off(`click.context-menu-v2-${this.id}`);
+    $(document).off(`keydown.keydown-v2-${this.id}`);
     return super.close(options);
   }
 

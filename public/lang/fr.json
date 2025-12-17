@@ -387,7 +387,7 @@
             "NUMBER_OF_CHOICE_HINT": "Nombre d'atouts à choisir parmi ceux marqués comme choix",
             "CHOICE_DIALOG_TITLE": "Configuration des atouts",
             "CHOICE_DIALOG_OPTIONAL": "Atouts optionnels",
-            "CHOICE_DIALOG_OPTIONAL_HINT": "Désactivez les atouts que vous ne souhaitez pas utiliser",
+            "CHOICE_DIALOG_OPTIONAL_HINT": "Activez les atouts optionnels que vous souhaitez utiliser",
             "CHOICE_DIALOG_CHOICES": "Choix requis",
             "CHOICE_DIALOG_SELECT_X": "Sélectionnez {count} atout(s)",
             "CHOICE_DIALOG_WRONG_COUNT": "Vous devez sélectionner exactement {expected} atout(s), vous en avez sélectionné {actual}",

@@ -209,7 +209,7 @@ export class FeatSheet extends ItemSheet {
     
     rrList.push({
       rrType: 'skill',
-      rrValue: 0,
+      rrValue: 1,
       rrTarget: ''
     });
     

@@ -3113,8 +3113,7 @@ async function handleItemDrop(event, actor, allowedTypes = ["feat", "skill", "sp
     if (item.type === "metatype") {
       const existingMetatype = actor.items.find((i) => i.type === "metatype");
       if (existingMetatype) {
-        ui.notifications?.warn(game.i18n.localize("SRA2.METATYPES.ONLY_ONE_METATYPE"));
-        return false;
+        await actor.deleteEmbeddedDocuments("Item", [existingMetatype.id]);
       }
       await actor.createEmbeddedDocuments("Item", [item.toObject()]);
       return true;
@@ -6377,6 +6376,16 @@ class CharacterSheetV2 extends CharacterSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
+    const keydownNamespace = `keydown-v2-${this.id}`;
+    $(document).off(`.${keydownNamespace}`);
+    $(document).on(`keydown.${keydownNamespace}`, (event) => {
+      if (event.ctrlKey && event.key.toLowerCase() === "e") {
+        if (this.element && this.element.is(":visible")) {
+          event.preventDefault();
+          this._onToggleAdvancedMode(event);
+        }
+      }
+    });
     html.find('[data-action="show-context-menu"]').on("click", this._onShowContextMenu.bind(this));
     const namespace = `context-menu-v2-${this.id}`;
     $(document).on(`click.${namespace}`, (event) => {
@@ -6406,6 +6415,13 @@ class CharacterSheetV2 extends CharacterSheet {
     html.find(".attribute-input").on("change", this._onUpdateAttribute.bind(this));
     html.find(".attribute-input").on("click", (event) => {
       event.stopPropagation();
+      const input = event.currentTarget;
+      input.select();
+    });
+    html.find(".skill-rating-input").on("click", (event) => {
+      event.stopPropagation();
+      const input = event.currentTarget;
+      input.select();
     });
     const editMetatypeElements = html.find('[data-action="edit-metatype"]');
     const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
@@ -6473,6 +6489,7 @@ class CharacterSheetV2 extends CharacterSheet {
   }
   close(options) {
     $(document).off(`click.context-menu-v2-${this.id}`);
+    $(document).off(`keydown.keydown-v2-${this.id}`);
     return super.close(options);
   }
   _onShowContextMenu(event) {
@@ -7505,7 +7522,7 @@ class FeatSheet extends ItemSheet {
     const rrList = [...this.item.system.rrList || []];
     rrList.push({
       rrType: "skill",
-      rrValue: 0,
+      rrValue: 1,
       rrTarget: ""
     });
     await this.item.update({
@@ -10024,7 +10041,7 @@ class FeatChoiceDialog extends Dialog {
       },
       default: "confirm",
       render: (html) => {
-        FeatChoiceDialog.activateListeners(html, numberOfChoice);
+        FeatChoiceDialog.activateListeners(html, numberOfChoice, choiceFeats.length);
       }
     }, {
       classes: ["sra2", "dialog", "feat-choice-dialog"],
@@ -10052,7 +10069,7 @@ class FeatChoiceDialog extends Dialog {
         html += `
           <div class="feat-choice-item" data-feat-id="${feat._id}">
             <label class="feat-toggle">
-              <input type="checkbox" name="optional-feat" value="${feat._id}" checked />
+              <input type="checkbox" name="optional-feat" value="${feat._id}" />
               <span class="feat-name">${feat.name}</span>
               <span class="feat-type">${featTypeLabel}</span>
             </label>
@@ -10098,7 +10115,19 @@ class FeatChoiceDialog extends Dialog {
   /**
    * Activate listeners for the dialog
    */
-  static activateListeners(html, numberOfChoice) {
+  static activateListeners(html, numberOfChoice, choiceFeatsCount) {
+    const confirmButton = html.closest(".dialog").find('button[data-button="confirm"]');
+    const updateConfirmButton = () => {
+      const checkedCount = html.find('input[name="choice-feat"]:checked').length;
+      if (choiceFeatsCount > 0 && checkedCount !== numberOfChoice) {
+        confirmButton.prop("disabled", true);
+      } else {
+        confirmButton.prop("disabled", false);
+      }
+    };
+    if (choiceFeatsCount > 0 && numberOfChoice > 0) {
+      confirmButton.prop("disabled", true);
+    }
     html.find('input[name="choice-feat"]').on("change", () => {
       const checkedCount = html.find('input[name="choice-feat"]:checked').length;
       html.find(".selection-counter .current-count").text(checkedCount);
@@ -10112,6 +10141,7 @@ class FeatChoiceDialog extends Dialog {
       } else {
         html.find('input[name="choice-feat"]').prop("disabled", false);
       }
+      updateConfirmButton();
     });
   }
   /**
@@ -11231,6 +11261,7 @@ class SRA2System {
     });
     Hooks.on("preCreateToken", (tokenDoc, _data, options, userId) => {
       if (game.user?.id !== userId) return true;
+      if (options.sra2SkipFeatChoice) return true;
       const actor = tokenDoc.actor;
       if (!actor) return true;
       if (actor.type !== "character") return true;
@@ -11264,12 +11295,10 @@ class SRA2System {
         const itemUpdates = [];
         for (const feat of optionalFeats) {
           const isSelected = selections.optional.includes(feat.id);
-          if (!isSelected) {
-            itemUpdates.push({
-              _id: feat.id,
-              "system.active": false
-            });
-          }
+          itemUpdates.push({
+            _id: feat.id,
+            "system.active": isSelected
+          });
         }
         for (const feat of choiceFeats) {
           const isSelected = selections.choices.includes(feat.id);
@@ -11278,12 +11307,10 @@ class SRA2System {
             "system.active": isSelected
           });
         }
-        if (itemUpdates.length > 0) {
-          options.sra2FeatUpdates = itemUpdates;
-        }
         const scene = sceneId ? game.scenes?.get(sceneId) : null;
         if (scene) {
-          const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData], options);
+          const createOptions = { ...options, sra2SkipFeatChoice: true };
+          const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData], createOptions);
           if (createdToken && itemUpdates.length > 0) {
             const syntheticActor = createdToken.actor;
             if (syntheticActor) {

@@ -166,12 +166,12 @@ export async function handleItemDrop(
       return false;
     }
     
-    // Handle metatype
+    // Handle metatype - replace existing one if present
     if (item.type === 'metatype') {
       const existingMetatype = actor.items.find((i: any) => i.type === 'metatype');
       if (existingMetatype) {
-        ui.notifications?.warn(game.i18n!.localize('SRA2.METATYPES.ONLY_ONE_METATYPE'));
-        return false;
+        // Delete the old metatype before adding the new one
+        await actor.deleteEmbeddedDocuments('Item', [existingMetatype.id]);
       }
       await actor.createEmbeddedDocuments('Item', [item.toObject()]);
       return true;

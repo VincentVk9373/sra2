@@ -463,7 +463,7 @@
             "NUMBER_OF_CHOICE_HINT": "Number of feats to choose from those marked as choices",
             "CHOICE_DIALOG_TITLE": "Feat Configuration",
             "CHOICE_DIALOG_OPTIONAL": "Optional Feats",
-            "CHOICE_DIALOG_OPTIONAL_HINT": "Deactivate feats you don't want to use",
+            "CHOICE_DIALOG_OPTIONAL_HINT": "Activate optional feats you want to use",
             "CHOICE_DIALOG_CHOICES": "Required Choices",
             "CHOICE_DIALOG_SELECT_X": "Select {count} feat(s)",
             "CHOICE_DIALOG_WRONG_COUNT": "You must select exactly {expected} feat(s), you selected {actual}",

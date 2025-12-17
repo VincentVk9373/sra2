@@ -416,6 +416,9 @@ export class SRA2System {
       // Only process if this is from the current user
       if (game.user?.id !== userId) return true;
       
+      // Skip if this is a token being created after the dialog (to avoid infinite loop)
+      if (options.sra2SkipFeatChoice) return true;
+      
       // Get the source actor
       const actor = tokenDoc.actor;
       if (!actor) return true;
@@ -470,15 +473,13 @@ export class SRA2System {
         // Prepare item updates for the synthetic actor
         const itemUpdates: any[] = [];
         
-        // Process optional feats - deactivate those not selected
+        // Process optional feats - activate selected, deactivate others
         for (const feat of optionalFeats) {
           const isSelected = selections.optional.includes(feat.id);
-          if (!isSelected) {
-            itemUpdates.push({
-              _id: feat.id,
-              'system.active': false
-            });
-          }
+          itemUpdates.push({
+            _id: feat.id,
+            'system.active': isSelected
+          });
         }
         
         // Process choice feats - activate only selected ones, deactivate others
@@ -490,15 +491,11 @@ export class SRA2System {
           });
         }
         
-        // Store updates in options for the token creation
-        if (itemUpdates.length > 0) {
-          options.sra2FeatUpdates = itemUpdates;
-        }
-        
-        // Create the token manually after dialog
+        // Create the token manually after dialog with skip flag to avoid re-triggering
         const scene = sceneId ? game.scenes?.get(sceneId) : null;
         if (scene) {
-          const [createdToken] = await (scene as any).createEmbeddedDocuments('Token', [tokenData], options);
+          const createOptions = { ...options, sra2SkipFeatChoice: true };
+          const [createdToken] = await (scene as any).createEmbeddedDocuments('Token', [tokenData], createOptions);
           
           // Apply feat updates to the synthetic actor
           if (createdToken && itemUpdates.length > 0) {
