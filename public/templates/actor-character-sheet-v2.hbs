@@ -129,7 +129,7 @@
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.bookmarked}}fa-star{{else}}fa-star-o{{/if}}" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
