@@ -40,6 +40,9 @@ import { Migration_13_0_12 } from "./migration/migration-13.0.12.mjs";
 import { HOOKS } from "./hooks.mjs";
 
 export class SRA2System {
+  // Set to track skills being created to avoid duplicate creation
+  static skillsBeingCreated: Set<string> = new Set();
+  
   static start(): void {
     new SRA2System();
   }
@@ -405,6 +408,111 @@ export class SRA2System {
           }
         });
       }
+    });
+    
+    // Hook to handle feat choice configuration when dropping a token
+    // This displays a dialog for optional/choice feats before creating the token
+    Hooks.on('preCreateToken', (tokenDoc: any, _data: any, options: any, userId: string) => {
+      // Only process if this is from the current user
+      if (game.user?.id !== userId) return true;
+      
+      // Get the source actor
+      const actor = tokenDoc.actor;
+      if (!actor) return true;
+      
+      // Only process character actors
+      if (actor.type !== 'character') return true;
+      
+      // Get feats with isOptional or isAChoice set
+      const allFeats = actor.items.filter((item: any) => item.type === 'feat');
+      const optionalFeats = allFeats.filter((feat: any) => (feat.system as any).isOptional === true);
+      const choiceFeats = allFeats.filter((feat: any) => (feat.system as any).isAChoice === true);
+      
+      // Calculate the total numberOfChoice from all feats that have it
+      // Each feat with isAChoice contributes its own numberOfChoice
+      let totalNumberOfChoice = 0;
+      for (const feat of allFeats) {
+        const featSystem = feat.system as any;
+        if (featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
+          // take the first feat with numberOfChoice
+          totalNumberOfChoice = featSystem.numberOfChoice;
+          break;
+        }
+      }
+      
+      // If no optional or choice feats, continue normally
+      if (optionalFeats.length === 0 && choiceFeats.length === 0) {
+        return true;
+      }
+      
+      // Prevent default token creation - we'll handle it after dialog
+      // Store data for later token creation
+      const tokenData = tokenDoc.toObject();
+      const sceneId = tokenDoc.parent?.id;
+      
+      // Show dialog asynchronously and handle token creation
+      (async () => {
+        // Import and show the dialog
+        const { FeatChoiceDialog } = await import('./applications/feat-choice-dialog.js');
+        
+        const selections = await FeatChoiceDialog.show(
+          actor, 
+          optionalFeats.map((f: any) => f.toObject()), 
+          choiceFeats.map((f: any) => f.toObject()), 
+          totalNumberOfChoice || choiceFeats.length
+        );
+        
+        // If dialog was cancelled, don't create the token
+        if (!selections) {
+          return;
+        }
+        
+        // Prepare item updates for the synthetic actor
+        const itemUpdates: any[] = [];
+        
+        // Process optional feats - deactivate those not selected
+        for (const feat of optionalFeats) {
+          const isSelected = selections.optional.includes(feat.id);
+          if (!isSelected) {
+            itemUpdates.push({
+              _id: feat.id,
+              'system.active': false
+            });
+          }
+        }
+        
+        // Process choice feats - activate only selected ones, deactivate others
+        for (const feat of choiceFeats) {
+          const isSelected = selections.choices.includes(feat.id);
+          itemUpdates.push({
+            _id: feat.id,
+            'system.active': isSelected
+          });
+        }
+        
+        // Store updates in options for the token creation
+        if (itemUpdates.length > 0) {
+          options.sra2FeatUpdates = itemUpdates;
+        }
+        
+        // Create the token manually after dialog
+        const scene = sceneId ? game.scenes?.get(sceneId) : null;
+        if (scene) {
+          const [createdToken] = await (scene as any).createEmbeddedDocuments('Token', [tokenData], options);
+          
+          // Apply feat updates to the synthetic actor
+          if (createdToken && itemUpdates.length > 0) {
+            const syntheticActor = createdToken.actor;
+            if (syntheticActor) {
+              await syntheticActor.updateEmbeddedDocuments('Item', itemUpdates);
+              console.log(SYSTEM.LOG.HEAD + `Applied feat configuration to token ${createdToken.name}`);
+            }
+          }
+        }
+      })();
+      
+      // Cancel the original token creation - we'll create it manually after dialog
+      return false;
     });
     
     // Register feat sheet

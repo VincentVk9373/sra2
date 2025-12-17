@@ -65,11 +65,9 @@
                         {{/each}}
                     {{/if}}
                 </div>
-            </div>
-            <div class="temp-anarchy-section">
-                <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
-            </div>
-
+                <div class="temp-anarchy-section">
+                    <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
+                </div>
             {{#if (gt bonusAnarchy 0)}}
             <div class="anarchy-track">
                 <span class="track-label">{{localize "SRA2.RESOURCES.ANARCHY_BONUS_COMBAT"}}</span>
@@ -82,6 +80,8 @@
                     {{/each}}
                 </div>
             </div>
+            </div>
+
             {{/if}}
         </div>
     </header>
@@ -1052,6 +1052,23 @@
                             <span>{{localize "SRA2.METATYPES.DROP_HERE"}}</span>
                         </div>
                         {{/if}}
+                    </div>
+                </section>
+                <section class="char-section item-search-section">
+                    <header>
+                        <div><i class="fas fa-search"></i> {{localize "SRA2.SEARCH.ADD_ITEMS"}}</div>
+                    </header>
+                    <div class="item-search-container">
+                        <div class="search-type-tabs">
+                            <button type="button" class="search-tab active" data-search-type="skill">{{localize "SRA2.SEARCH.SKILLS"}}</button>
+                            <button type="button" class="search-tab" data-search-type="specialization">{{localize "SRA2.SEARCH.SPECIALIZATIONS"}}</button>
+                            <button type="button" class="search-tab" data-search-type="feat">{{localize "SRA2.SEARCH.FEATS"}}</button>
+                        </div>
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="item-search-input" placeholder="{{localize 'SRA2.SEARCH.PLACEHOLDER'}}" data-search-type="skill" />
+                        </div>
+                        <div class="item-search-results"></div>
                     </div>
                 </section>
                 {{/if}}

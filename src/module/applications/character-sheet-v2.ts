@@ -1,5 +1,6 @@
 import { CharacterSheet } from './character-sheet.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
+import * as ItemSearch from '../../../item-search.js';
 
 /**
  * Character Sheet Application V2
@@ -9,6 +10,15 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 export class CharacterSheetV2 extends CharacterSheet {
   /** Track advanced mode state */
   private _advancedMode: boolean = false;
+  
+  /** Current search type */
+  private _currentSearchType: 'skill' | 'specialization' | 'feat' = 'skill';
+  
+  /** Search timeout for debouncing */
+  private _itemSearchTimeout: any = null;
+  
+  /** Last search term */
+  private _lastSearchTerm: string = '';
 
   static override get defaultOptions(): DocumentSheet.Options<Actor> {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -91,14 +101,20 @@ export class CharacterSheetV2 extends CharacterSheet {
     console.log('[CharacterSheetV2] Delete metatype elements found:', deleteMetatypeElements.length);
     
     // Use mousedown instead of click to avoid conflicts
-    editMetatypeElements.on('mousedown', this._onEditMetatype.bind(this));
-    deleteMetatypeElements.on('mousedown', this._onDeleteMetatype.bind(this));
+    editMetatypeElements.on('mousedown', this._onEditMetatypeV2.bind(this));
+    deleteMetatypeElements.on('mousedown', this._onDeleteMetatypeV2.bind(this));
+
+    // Item search functionality
+    html.find('.search-tab').on('click', this._onSearchTabClick.bind(this));
+    html.find('.item-search-input').on('input', this._onItemSearchInput.bind(this));
+    (html.find('.item-search-input') as any).on('focus', this._onItemSearchFocus.bind(this));
+    (html.find('.item-search-input') as any).on('blur', this._onItemSearchBlur.bind(this));
   }
 
   /**
-   * Edit metatype
+   * Edit metatype (V2 specific handler)
    */
-  override async _onEditMetatype(event: Event): Promise<void> {
+  private async _onEditMetatypeV2(event: Event): Promise<void> {
     console.log('[CharacterSheetV2] Edit metatype clicked');
     event.preventDefault();
     event.stopPropagation();
@@ -106,9 +122,9 @@ export class CharacterSheetV2 extends CharacterSheet {
   }
 
   /**
-   * Delete metatype
+   * Delete metatype (V2 specific handler)
    */
-  override async _onDeleteMetatype(event: Event): Promise<void> {
+  private async _onDeleteMetatypeV2(event: Event): Promise<void> {
     console.log('[CharacterSheetV2] Delete metatype clicked');
     event.preventDefault();
     event.stopPropagation();
@@ -135,7 +151,7 @@ export class CharacterSheetV2 extends CharacterSheet {
     if (itemId && !isNaN(value)) {
       const item = this.actor.items.get(itemId);
       if (item && item.type === 'skill') {
-        await item.update({ 'system.rating': value });
+        await item.update({ 'system.rating': value } as any);
         // Re-render to update calculated values (dice pool, cost, etc.)
         this.render(false);
       }
@@ -226,6 +242,355 @@ export class CharacterSheetV2 extends CharacterSheet {
     
     // Re-render the sheet to update the visual state
     this.render(false);
+  }
+
+  /**
+   * Handle search tab click
+   */
+  private _onSearchTabClick(event: JQuery.ClickEvent): void {
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    const searchType = target.dataset.searchType as 'skill' | 'specialization' | 'feat';
+    
+    if (!searchType) return;
+    
+    this._currentSearchType = searchType;
+    
+    // Update tab styles
+    this.element.find('.search-tab').removeClass('active');
+    $(target).addClass('active');
+    
+    // Update input placeholder and data attribute
+    const input = this.element.find('.item-search-input')[0] as HTMLInputElement;
+    if (input) {
+      input.dataset.searchType = searchType;
+      const placeholderKey = `SRA2.SEARCH.PLACEHOLDER_${searchType.toUpperCase()}`;
+      input.placeholder = game.i18n!.localize(placeholderKey) || game.i18n!.localize('SRA2.SEARCH.PLACEHOLDER');
+      input.value = '';
+    }
+    
+    // Hide results
+    const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
+    if (resultsDiv) {
+      resultsDiv.style.display = 'none';
+    }
+  }
+
+  /**
+   * Handle item search input
+   */
+  private async _onItemSearchInput(event: JQuery.TriggeredEvent): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
+    const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
+    
+    // Clear previous timeout
+    if (this._itemSearchTimeout) {
+      clearTimeout(this._itemSearchTimeout);
+    }
+    
+    // If search term is empty, hide results
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+    
+    // Debounce search
+    this._itemSearchTimeout = setTimeout(async () => {
+      await this._performItemSearch(searchTerm, resultsDiv);
+    }, 300);
+  }
+
+  /**
+   * Perform the actual item search
+   */
+  private async _performItemSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
+    this._lastSearchTerm = searchTerm;
+    const searchType = this._currentSearchType;
+    
+    // Check if item exists on actor
+    const existingItemsCheck = (itemName: string) => 
+      ItemSearch.itemExistsOnActor(this.actor, searchType, itemName);
+    
+    // Search everywhere
+    const results = await ItemSearch.searchItemsEverywhere(
+      searchType,
+      searchTerm,
+      undefined,
+      existingItemsCheck
+    );
+    
+    // Display results
+    this._displayItemSearchResults(results, resultsDiv);
+  }
+
+  /**
+   * Display item search results
+   */
+  private async _displayItemSearchResults(results: ItemSearch.SearchResult[], resultsDiv: HTMLElement): Promise<void> {
+    const searchType = this._currentSearchType;
+    const formattedSearchTerm = this._lastSearchTerm
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    // Check if exact match exists on actor
+    const exactMatchOnActor = this.actor.items.find((i: any) => 
+      i.type === searchType && 
+      ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(this._lastSearchTerm)
+    );
+    
+    let html = '';
+    
+    if (results.length === 0) {
+      // No results - show create option
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.SEARCH.NO_RESULTS')}
+          </div>
+          ${this._getCreateItemHtml(searchType, formattedSearchTerm)}
+        </div>
+      `;
+    } else {
+      // Display results
+      for (const result of results) {
+        const disabledClass = result.alreadyExists ? 'disabled' : '';
+        const buttonText = result.alreadyExists 
+          ? '<i class="fas fa-check"></i>' 
+          : game.i18n!.localize('SRA2.SEARCH.ADD');
+        
+        html += `
+          <div class="search-result-item ${disabledClass}" data-uuid="${result.uuid}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            ${result.alreadyExists 
+              ? `<span class="already-exists-label">${game.i18n!.localize('SRA2.SEARCH.ALREADY_ON_SHEET')}</span>`
+              : `<button type="button" class="add-item-btn" data-uuid="${result.uuid}">${buttonText}</button>`
+            }
+          </div>
+        `;
+      }
+      
+      // Add create option at the end if no exact match on actor
+      if (!exactMatchOnActor) {
+        html += `
+          <div class="search-result-item create-new-item">
+            <div class="result-info">
+              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
+              <span class="result-pack">${game.i18n!.localize('SRA2.SEARCH.CREATE_NEW')}</span>
+            </div>
+            ${this._getCreateItemHtml(searchType, formattedSearchTerm, true)}
+          </div>
+        `;
+      }
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Attach event handlers
+    $(resultsDiv).find('.add-item-btn').on('click', this._onAddItemFromSearch.bind(this));
+    $(resultsDiv).find('.create-item-btn').on('click', this._onCreateNewItem.bind(this));
+    
+    // Make result items clickable
+    $(resultsDiv).find('.search-result-item:not(.disabled):not(.no-results):not(.create-new-item)').on('click', (event) => {
+      if ($(event.target).closest('.add-item-btn').length > 0) return;
+      const button = $(event.currentTarget).find('.add-item-btn')[0] as HTMLButtonElement;
+      if (button && !button.disabled) {
+        $(button).trigger('click');
+      }
+    });
+  }
+
+  /**
+   * Get HTML for create item button
+   */
+  private _getCreateItemHtml(searchType: string, itemName: string, inline: boolean = false): string {
+    const buttonClass = inline ? 'create-item-btn' : 'create-item-btn';
+    
+    if (searchType === 'feat') {
+      // For feats, include type selector
+      return `
+        <select class="feat-type-selector">
+          <option value="equipment">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.EQUIPMENT')}</option>
+          <option value="trait">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.TRAIT')}</option>
+          <option value="contact">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONTACT')}</option>
+          <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
+          <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
+          <option value="cyberware">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERWARE')}</option>
+          <option value="armor">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.ARMOR')}</option>
+          <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONNAISSANCE')}</option>
+        </select>
+        <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
+          <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.SEARCH.CREATE')}
+        </button>
+      `;
+    }
+    
+    return `
+      <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
+        <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.SEARCH.CREATE')}
+      </button>
+    `;
+  }
+
+  /**
+   * Handle adding item from search results
+   */
+  private async _onAddItemFromSearch(event: JQuery.ClickEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const uuid = button.dataset.uuid;
+    
+    if (!uuid) return;
+    
+    const success = await ItemSearch.addItemToActorFromUuid(this.actor, uuid);
+    
+    if (success) {
+      // Mark as added
+      button.innerHTML = '<i class="fas fa-check"></i>';
+      button.disabled = true;
+      button.closest('.search-result-item')?.classList.add('disabled');
+      
+      // Re-render the sheet
+      this.render(false);
+    }
+  }
+
+  /**
+   * Handle creating a new item
+   */
+  private async _onCreateNewItem(event: JQuery.ClickEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const button = event.currentTarget as HTMLButtonElement;
+    const itemName = button.dataset.itemName;
+    const itemType = button.dataset.itemType as 'skill' | 'specialization' | 'feat';
+    
+    if (!itemName || !itemType) return;
+    
+    // Capitalize first letter of each word
+    const formattedName = itemName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    let itemData: any;
+    
+    if (itemType === 'skill') {
+      itemData = {
+        name: formattedName,
+        type: 'skill',
+        system: {
+          rating: 1,
+          linkedAttribute: 'strength',
+          description: ''
+        }
+      };
+    } else if (itemType === 'specialization') {
+      itemData = {
+        name: formattedName,
+        type: 'specialization',
+        system: {
+          rating: 1,
+          linkedSkill: '',
+          description: ''
+        }
+      };
+    } else if (itemType === 'feat') {
+      // Get feat type from selector
+      const selector = $(button).siblings('.feat-type-selector')[0] as HTMLSelectElement;
+      const featType = selector?.value || 'equipment';
+      
+      itemData = {
+        name: formattedName,
+        type: 'feat',
+        system: {
+          featType: featType,
+          rating: 1,
+          description: ''
+        }
+      };
+    }
+    
+    if (!itemData) return;
+    
+    // Create the item
+    const createdItems = await this.actor.createEmbeddedDocuments('Item', [itemData]) as any;
+    
+    if (createdItems && createdItems.length > 0) {
+      const newItem = createdItems[0] as any;
+      
+      // Clear search
+      const searchInput = this.element.find('.item-search-input')[0] as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = '';
+      }
+      
+      const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        resultsDiv.style.display = 'none';
+      }
+      
+      // Open the item sheet for editing
+      if (newItem && newItem.sheet) {
+        setTimeout(() => {
+          newItem.sheet.render(true);
+        }, 100);
+      }
+      
+      ui.notifications?.info(game.i18n!.format('SRA2.SEARCH.ITEM_CREATED', { name: formattedName }));
+      
+      // Re-render
+      this.render(false);
+    }
+  }
+
+  /**
+   * Handle search input focus
+   */
+  private _onItemSearchFocus(event: JQuery.FocusEvent): void {
+    const input = event.currentTarget as HTMLInputElement;
+    
+    // If there's content, show results
+    if (input.value.trim().length > 0) {
+      const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = 'block';
+      }
+    }
+  }
+
+  /**
+   * Handle search input blur
+   */
+  private _onItemSearchBlur(event: JQuery.FocusEvent): void {
+    const blurEvent = event.originalEvent as FocusEvent;
+    
+    // Delay hiding to allow clicking on results
+    setTimeout(() => {
+      const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
+      if (resultsDiv) {
+        // Check if focus moved to element in results
+        const relatedTarget = blurEvent?.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          return;
+        }
+        
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          return;
+        }
+        
+        resultsDiv.style.display = 'none';
+      }
+    }, 200);
   }
 }
 

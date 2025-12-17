@@ -848,6 +848,24 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: false,
         label: "SRA2.FEATS.IS_BIOWARE"
       }),
+      // Choice system fields for token drop configuration
+      isOptional: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_OPTIONAL"
+      }),
+      isAChoice: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_A_CHOICE"
+      }),
+      numberOfChoice: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 1,
+        integer: true,
+        label: "SRA2.FEATS.NUMBER_OF_CHOICE"
+      }),
       featType: new fields.StringField({
         required: true,
         initial: "equipment",
@@ -6337,6 +6355,12 @@ class CharacterSheet extends ActorSheet {
 class CharacterSheetV2 extends CharacterSheet {
   /** Track advanced mode state */
   _advancedMode = false;
+  /** Current search type */
+  _currentSearchType = "skill";
+  /** Search timeout for debouncing */
+  _itemSearchTimeout = null;
+  /** Last search term */
+  _lastSearchTerm = "";
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "actor", "character", "character-v2"],
@@ -6387,22 +6411,26 @@ class CharacterSheetV2 extends CharacterSheet {
     const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
     console.log("[CharacterSheetV2] Edit metatype elements found:", editMetatypeElements.length);
     console.log("[CharacterSheetV2] Delete metatype elements found:", deleteMetatypeElements.length);
-    editMetatypeElements.on("mousedown", this._onEditMetatype.bind(this));
-    deleteMetatypeElements.on("mousedown", this._onDeleteMetatype.bind(this));
+    editMetatypeElements.on("mousedown", this._onEditMetatypeV2.bind(this));
+    deleteMetatypeElements.on("mousedown", this._onDeleteMetatypeV2.bind(this));
+    html.find(".search-tab").on("click", this._onSearchTabClick.bind(this));
+    html.find(".item-search-input").on("input", this._onItemSearchInput.bind(this));
+    html.find(".item-search-input").on("focus", this._onItemSearchFocus.bind(this));
+    html.find(".item-search-input").on("blur", this._onItemSearchBlur.bind(this));
   }
   /**
-   * Edit metatype
+   * Edit metatype (V2 specific handler)
    */
-  async _onEditMetatype(event) {
+  async _onEditMetatypeV2(event) {
     console.log("[CharacterSheetV2] Edit metatype clicked");
     event.preventDefault();
     event.stopPropagation();
     return handleEditItem(event, this.actor);
   }
   /**
-   * Delete metatype
+   * Delete metatype (V2 specific handler)
    */
-  async _onDeleteMetatype(event) {
+  async _onDeleteMetatypeV2(event) {
     console.log("[CharacterSheetV2] Delete metatype clicked");
     event.preventDefault();
     event.stopPropagation();
@@ -6490,6 +6518,262 @@ class CharacterSheetV2 extends CharacterSheet {
     const currentActive = item.system.active ?? true;
     await item.update({ "system.active": !currentActive });
     this.render(false);
+  }
+  /**
+   * Handle search tab click
+   */
+  _onSearchTabClick(event) {
+    event.preventDefault();
+    const target = event.currentTarget;
+    const searchType = target.dataset.searchType;
+    if (!searchType) return;
+    this._currentSearchType = searchType;
+    this.element.find(".search-tab").removeClass("active");
+    $(target).addClass("active");
+    const input = this.element.find(".item-search-input")[0];
+    if (input) {
+      input.dataset.searchType = searchType;
+      const placeholderKey = `SRA2.SEARCH.PLACEHOLDER_${searchType.toUpperCase()}`;
+      input.placeholder = game.i18n.localize(placeholderKey) || game.i18n.localize("SRA2.SEARCH.PLACEHOLDER");
+      input.value = "";
+    }
+    const resultsDiv = this.element.find(".item-search-results")[0];
+    if (resultsDiv) {
+      resultsDiv.style.display = "none";
+    }
+  }
+  /**
+   * Handle item search input
+   */
+  async _onItemSearchInput(event) {
+    const input = event.currentTarget;
+    const searchTerm = normalizeSearchText(input.value.trim());
+    const resultsDiv = this.element.find(".item-search-results")[0];
+    if (this._itemSearchTimeout) {
+      clearTimeout(this._itemSearchTimeout);
+    }
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = "none";
+      return;
+    }
+    this._itemSearchTimeout = setTimeout(async () => {
+      await this._performItemSearch(searchTerm, resultsDiv);
+    }, 300);
+  }
+  /**
+   * Perform the actual item search
+   */
+  async _performItemSearch(searchTerm, resultsDiv) {
+    this._lastSearchTerm = searchTerm;
+    const searchType = this._currentSearchType;
+    const existingItemsCheck = (itemName) => itemExistsOnActor(this.actor, searchType, itemName);
+    const results = await searchItemsEverywhere(
+      searchType,
+      searchTerm,
+      void 0,
+      existingItemsCheck
+    );
+    this._displayItemSearchResults(results, resultsDiv);
+  }
+  /**
+   * Display item search results
+   */
+  async _displayItemSearchResults(results, resultsDiv) {
+    const searchType = this._currentSearchType;
+    const formattedSearchTerm = this._lastSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+    const exactMatchOnActor = this.actor.items.find(
+      (i) => i.type === searchType && normalizeSearchText(i.name) === normalizeSearchText(this._lastSearchTerm)
+    );
+    let html = "";
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n.localize("SRA2.SEARCH.NO_RESULTS")}
+          </div>
+          ${this._getCreateItemHtml(searchType, formattedSearchTerm)}
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        const disabledClass = result.alreadyExists ? "disabled" : "";
+        const buttonText = result.alreadyExists ? '<i class="fas fa-check"></i>' : game.i18n.localize("SRA2.SEARCH.ADD");
+        html += `
+          <div class="search-result-item ${disabledClass}" data-uuid="${result.uuid}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            ${result.alreadyExists ? `<span class="already-exists-label">${game.i18n.localize("SRA2.SEARCH.ALREADY_ON_SHEET")}</span>` : `<button type="button" class="add-item-btn" data-uuid="${result.uuid}">${buttonText}</button>`}
+          </div>
+        `;
+      }
+      if (!exactMatchOnActor) {
+        html += `
+          <div class="search-result-item create-new-item">
+            <div class="result-info">
+              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
+              <span class="result-pack">${game.i18n.localize("SRA2.SEARCH.CREATE_NEW")}</span>
+            </div>
+            ${this._getCreateItemHtml(searchType, formattedSearchTerm, true)}
+          </div>
+        `;
+      }
+    }
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+    $(resultsDiv).find(".add-item-btn").on("click", this._onAddItemFromSearch.bind(this));
+    $(resultsDiv).find(".create-item-btn").on("click", this._onCreateNewItem.bind(this));
+    $(resultsDiv).find(".search-result-item:not(.disabled):not(.no-results):not(.create-new-item)").on("click", (event) => {
+      if ($(event.target).closest(".add-item-btn").length > 0) return;
+      const button = $(event.currentTarget).find(".add-item-btn")[0];
+      if (button && !button.disabled) {
+        $(button).trigger("click");
+      }
+    });
+  }
+  /**
+   * Get HTML for create item button
+   */
+  _getCreateItemHtml(searchType, itemName, inline = false) {
+    const buttonClass = inline ? "create-item-btn" : "create-item-btn";
+    if (searchType === "feat") {
+      return `
+        <select class="feat-type-selector">
+          <option value="equipment">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.EQUIPMENT")}</option>
+          <option value="trait">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.TRAIT")}</option>
+          <option value="contact">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONTACT")}</option>
+          <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
+          <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
+          <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
+          <option value="armor">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.ARMOR")}</option>
+          <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONNAISSANCE")}</option>
+        </select>
+        <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
+          <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
+        </button>
+      `;
+    }
+    return `
+      <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
+        <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
+      </button>
+    `;
+  }
+  /**
+   * Handle adding item from search results
+   */
+  async _onAddItemFromSearch(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const uuid = button.dataset.uuid;
+    if (!uuid) return;
+    const success = await addItemToActorFromUuid(this.actor, uuid);
+    if (success) {
+      button.innerHTML = '<i class="fas fa-check"></i>';
+      button.disabled = true;
+      button.closest(".search-result-item")?.classList.add("disabled");
+      this.render(false);
+    }
+  }
+  /**
+   * Handle creating a new item
+   */
+  async _onCreateNewItem(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const itemName = button.dataset.itemName;
+    const itemType = button.dataset.itemType;
+    if (!itemName || !itemType) return;
+    const formattedName = itemName.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+    let itemData;
+    if (itemType === "skill") {
+      itemData = {
+        name: formattedName,
+        type: "skill",
+        system: {
+          rating: 1,
+          linkedAttribute: "strength",
+          description: ""
+        }
+      };
+    } else if (itemType === "specialization") {
+      itemData = {
+        name: formattedName,
+        type: "specialization",
+        system: {
+          rating: 1,
+          linkedSkill: "",
+          description: ""
+        }
+      };
+    } else if (itemType === "feat") {
+      const selector = $(button).siblings(".feat-type-selector")[0];
+      const featType = selector?.value || "equipment";
+      itemData = {
+        name: formattedName,
+        type: "feat",
+        system: {
+          featType,
+          rating: 1,
+          description: ""
+        }
+      };
+    }
+    if (!itemData) return;
+    const createdItems = await this.actor.createEmbeddedDocuments("Item", [itemData]);
+    if (createdItems && createdItems.length > 0) {
+      const newItem = createdItems[0];
+      const searchInput = this.element.find(".item-search-input")[0];
+      if (searchInput) {
+        searchInput.value = "";
+      }
+      const resultsDiv = this.element.find(".item-search-results")[0];
+      if (resultsDiv) {
+        resultsDiv.style.display = "none";
+      }
+      if (newItem && newItem.sheet) {
+        setTimeout(() => {
+          newItem.sheet.render(true);
+        }, 100);
+      }
+      ui.notifications?.info(game.i18n.format("SRA2.SEARCH.ITEM_CREATED", { name: formattedName }));
+      this.render(false);
+    }
+  }
+  /**
+   * Handle search input focus
+   */
+  _onItemSearchFocus(event) {
+    const input = event.currentTarget;
+    if (input.value.trim().length > 0) {
+      const resultsDiv = this.element.find(".item-search-results")[0];
+      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+        resultsDiv.style.display = "block";
+      }
+    }
+  }
+  /**
+   * Handle search input blur
+   */
+  _onItemSearchBlur(event) {
+    const blurEvent = event.originalEvent;
+    setTimeout(() => {
+      const resultsDiv = this.element.find(".item-search-results")[0];
+      if (resultsDiv) {
+        const relatedTarget = blurEvent?.relatedTarget;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
+          return;
+        }
+        const activeElement = document.activeElement;
+        if (activeElement && resultsDiv.contains(activeElement)) {
+          return;
+        }
+        resultsDiv.style.display = "none";
+      }
+    }, 200);
   }
 }
 const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -9712,10 +9996,177 @@ const rollDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   __proto__: null,
   RollDialog
 }, Symbol.toStringTag, { value: "Module" }));
+class FeatChoiceDialog extends Dialog {
+  actor;
+  optionalFeats;
+  choiceFeats;
+  numberOfChoice;
+  constructor(actor, optionalFeats, choiceFeats, numberOfChoice, callback) {
+    const content = FeatChoiceDialog.buildContent(optionalFeats, choiceFeats, numberOfChoice);
+    super({
+      title: game.i18n.localize("SRA2.FEATS.CHOICE_DIALOG_TITLE"),
+      content,
+      buttons: {
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n.localize("SRA2.CANCEL")
+        },
+        confirm: {
+          icon: '<i class="fas fa-check"></i>',
+          label: game.i18n.localize("SRA2.CONFIRM"),
+          callback: (html) => {
+            const selections = FeatChoiceDialog.getSelections(html, choiceFeats.length, numberOfChoice);
+            if (selections) {
+              callback(selections);
+            }
+          }
+        }
+      },
+      default: "confirm",
+      render: (html) => {
+        FeatChoiceDialog.activateListeners(html, numberOfChoice);
+      }
+    }, {
+      classes: ["sra2", "dialog", "feat-choice-dialog"],
+      width: 500
+    });
+    this.actor = actor;
+    this.optionalFeats = optionalFeats;
+    this.choiceFeats = choiceFeats;
+    this.numberOfChoice = numberOfChoice;
+  }
+  /**
+   * Build the HTML content for the dialog
+   */
+  static buildContent(optionalFeats, choiceFeats, numberOfChoice) {
+    let html = '<form class="feat-choice-form">';
+    if (optionalFeats.length > 0) {
+      html += `
+        <div class="feat-choice-section optional-section">
+          <h3><i class="fas fa-toggle-on"></i> ${game.i18n.localize("SRA2.FEATS.CHOICE_DIALOG_OPTIONAL")}</h3>
+          <p class="section-hint">${game.i18n.localize("SRA2.FEATS.CHOICE_DIALOG_OPTIONAL_HINT")}</p>
+          <div class="feat-list">
+      `;
+      for (const feat of optionalFeats) {
+        const featTypeLabel = game.i18n.localize(`SRA2.FEATS.FEAT_TYPE.${feat.system.featType.toUpperCase().replace("-", "_")}`);
+        html += `
+          <div class="feat-choice-item" data-feat-id="${feat._id}">
+            <label class="feat-toggle">
+              <input type="checkbox" name="optional-feat" value="${feat._id}" checked />
+              <span class="feat-name">${feat.name}</span>
+              <span class="feat-type">${featTypeLabel}</span>
+            </label>
+          </div>
+        `;
+      }
+      html += `
+          </div>
+        </div>
+      `;
+    }
+    if (choiceFeats.length > 0) {
+      const selectLabel = game.i18n.format("SRA2.FEATS.CHOICE_DIALOG_SELECT_X", { count: numberOfChoice });
+      html += `
+        <div class="feat-choice-section choice-section">
+          <h3><i class="fas fa-list-check"></i> ${game.i18n.localize("SRA2.FEATS.CHOICE_DIALOG_CHOICES")}</h3>
+          <p class="section-hint">${selectLabel}</p>
+          <p class="selection-counter">
+            <span class="current-count">0</span> / <span class="max-count">${numberOfChoice}</span> ${game.i18n.localize("SRA2.FEATS.SELECTED")}
+          </p>
+          <div class="feat-list">
+      `;
+      for (const feat of choiceFeats) {
+        const featTypeLabel = game.i18n.localize(`SRA2.FEATS.FEAT_TYPE.${feat.system.featType.toUpperCase().replace("-", "_")}`);
+        html += `
+          <div class="feat-choice-item" data-feat-id="${feat._id}">
+            <label class="feat-toggle">
+              <input type="checkbox" name="choice-feat" value="${feat._id}" />
+              <span class="feat-name">${feat.name}</span>
+              <span class="feat-type">${featTypeLabel}</span>
+            </label>
+          </div>
+        `;
+      }
+      html += `
+          </div>
+        </div>
+      `;
+    }
+    html += "</form>";
+    return html;
+  }
+  /**
+   * Activate listeners for the dialog
+   */
+  static activateListeners(html, numberOfChoice) {
+    html.find('input[name="choice-feat"]').on("change", () => {
+      const checkedCount = html.find('input[name="choice-feat"]:checked').length;
+      html.find(".selection-counter .current-count").text(checkedCount);
+      if (checkedCount === numberOfChoice) {
+        html.find(".selection-counter").addClass("complete");
+      } else {
+        html.find(".selection-counter").removeClass("complete");
+      }
+      if (checkedCount >= numberOfChoice) {
+        html.find('input[name="choice-feat"]:not(:checked)').prop("disabled", true);
+      } else {
+        html.find('input[name="choice-feat"]').prop("disabled", false);
+      }
+    });
+  }
+  /**
+   * Get the selections from the dialog
+   */
+  static getSelections(html, choiceFeatsCount, numberOfChoice) {
+    const optionalSelections = [];
+    const choiceSelections = [];
+    html.find('input[name="optional-feat"]:checked').each(function() {
+      optionalSelections.push($(this).val());
+    });
+    html.find('input[name="choice-feat"]:checked').each(function() {
+      choiceSelections.push($(this).val());
+    });
+    if (choiceFeatsCount > 0 && choiceSelections.length !== numberOfChoice) {
+      ui.notifications?.warn(
+        game.i18n.format("SRA2.FEATS.CHOICE_DIALOG_WRONG_COUNT", {
+          expected: numberOfChoice,
+          actual: choiceSelections.length
+        })
+      );
+      return null;
+    }
+    return { optional: optionalSelections, choices: choiceSelections };
+  }
+  /**
+   * Show the dialog and return a promise with the selections
+   */
+  static async show(actor, optionalFeats, choiceFeats, numberOfChoice) {
+    return new Promise((resolve) => {
+      const dialog = new FeatChoiceDialog(
+        actor,
+        optionalFeats,
+        choiceFeats,
+        numberOfChoice,
+        (selections) => resolve(selections)
+      );
+      const originalClose = dialog.close.bind(dialog);
+      dialog.close = async (options) => {
+        resolve(null);
+        return originalClose(options);
+      };
+      dialog.render(true);
+    });
+  }
+}
+const featChoiceDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  FeatChoiceDialog
+}, Symbol.toStringTag, { value: "Module" }));
 const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   CharacterSheet,
   CharacterSheetV2,
+  FeatChoiceDialog,
   FeatSheet,
   IceSheet,
   MetatypeSheet,
@@ -10517,6 +10968,8 @@ class Migration_13_0_12 extends Migration {
 }
 globalThis.SYSTEM = SYSTEM$1;
 class SRA2System {
+  // Set to track skills being created to avoid duplicate creation
+  static skillsBeingCreated = /* @__PURE__ */ new Set();
   static start() {
     new SRA2System();
   }
@@ -10775,6 +11228,72 @@ class SRA2System {
           }
         });
       }
+    });
+    Hooks.on("preCreateToken", (tokenDoc, _data, options, userId) => {
+      if (game.user?.id !== userId) return true;
+      const actor = tokenDoc.actor;
+      if (!actor) return true;
+      if (actor.type !== "character") return true;
+      const allFeats = actor.items.filter((item) => item.type === "feat");
+      const optionalFeats = allFeats.filter((feat) => feat.system.isOptional === true);
+      const choiceFeats = allFeats.filter((feat) => feat.system.isAChoice === true);
+      let totalNumberOfChoice = 0;
+      for (const feat of allFeats) {
+        const featSystem = feat.system;
+        if (featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
+          totalNumberOfChoice = featSystem.numberOfChoice;
+          break;
+        }
+      }
+      if (optionalFeats.length === 0 && choiceFeats.length === 0) {
+        return true;
+      }
+      const tokenData = tokenDoc.toObject();
+      const sceneId = tokenDoc.parent?.id;
+      (async () => {
+        const { FeatChoiceDialog: FeatChoiceDialog2 } = await Promise.resolve().then(() => featChoiceDialog);
+        const selections = await FeatChoiceDialog2.show(
+          actor,
+          optionalFeats.map((f) => f.toObject()),
+          choiceFeats.map((f) => f.toObject()),
+          totalNumberOfChoice || choiceFeats.length
+        );
+        if (!selections) {
+          return;
+        }
+        const itemUpdates = [];
+        for (const feat of optionalFeats) {
+          const isSelected = selections.optional.includes(feat.id);
+          if (!isSelected) {
+            itemUpdates.push({
+              _id: feat.id,
+              "system.active": false
+            });
+          }
+        }
+        for (const feat of choiceFeats) {
+          const isSelected = selections.choices.includes(feat.id);
+          itemUpdates.push({
+            _id: feat.id,
+            "system.active": isSelected
+          });
+        }
+        if (itemUpdates.length > 0) {
+          options.sra2FeatUpdates = itemUpdates;
+        }
+        const scene = sceneId ? game.scenes?.get(sceneId) : null;
+        if (scene) {
+          const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData], options);
+          if (createdToken && itemUpdates.length > 0) {
+            const syntheticActor = createdToken.actor;
+            if (syntheticActor) {
+              await syntheticActor.updateEmbeddedDocuments("Item", itemUpdates);
+              console.log(SYSTEM$1.LOG.HEAD + `Applied feat configuration to token ${createdToken.name}`);
+            }
+          }
+        }
+      })();
+      return false;
     });
     DocumentSheetConfig.registerSheet(Item, "sra2", FeatSheet, {
       types: ["feat"],

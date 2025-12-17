@@ -267,6 +267,24 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: false,
         label: "SRA2.FEATS.IS_BIOWARE"
       }),
+      // Choice system fields for token drop configuration
+      isOptional: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_OPTIONAL"
+      }),
+      isAChoice: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_A_CHOICE"
+      }),
+      numberOfChoice: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 1,
+        integer: true,
+        label: "SRA2.FEATS.NUMBER_OF_CHOICE"
+      }),
       featType: new fields.StringField({
         required: true,
         initial: "equipment",

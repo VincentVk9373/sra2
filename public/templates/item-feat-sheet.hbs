@@ -196,6 +196,33 @@
             <p class="notes">{{localize "SRA2.FEATS.IS_BIOWARE_HINT"}}</p>
           </div>
           {{/if}}
+
+          <h3>{{localize "SRA2.FEATS.CHOICE_OPTIONS"}}</h3>
+          <p class="notes">{{localize "SRA2.FEATS.CHOICE_OPTIONS_HINT"}}</p>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" name="system.isOptional" {{checked system.isOptional}} />
+              {{localize "SRA2.FEATS.IS_OPTIONAL"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.IS_OPTIONAL_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" name="system.isAChoice" {{checked system.isAChoice}} />
+              {{localize "SRA2.FEATS.IS_A_CHOICE"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.IS_A_CHOICE_HINT"}}</p>
+          </div>
+
+          {{#if system.isAChoice}}
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.NUMBER_OF_CHOICE"}}</label>
+            <input type="number" name="system.numberOfChoice" value="{{system.numberOfChoice}}" min="1" />
+            <p class="notes">{{localize "SRA2.FEATS.NUMBER_OF_CHOICE_HINT"}}</p>
+          </div>
+          {{/if}}
         </section>
 
         <!-- Stats Section -->
