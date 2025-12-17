@@ -70,6 +70,9 @@
       <button type="button" class="nav-item" data-section="feats" title="{{localize 'SRA2.VEHICLE.SECTION.FEATS'}}">
         <i class="fas fa-star"></i>
       </button>
+      <button type="button" class="nav-item" data-section="description" title="{{localize 'SRA2.VEHICLE.DESCRIPTION'}}">
+        <i class="fas fa-file-alt"></i>
+      </button>
     </nav>
 
     <!-- Main Content Area -->
@@ -85,7 +88,7 @@
             <select name="system.vehicleType" class="vehicle-type-select">
               <option value="">{{localize "SRA2.VEHICLE.SELECT_TYPE"}}</option>
               {{#each vehicleTypes}}
-              <option value="{{@key}}" {{#if (eq @key ../system.vehicleType)}}selected{{/if}}>{{@key}}</option>
+              <option value="{{@key}}" {{#if (eq @key ../system.vehicleType)}}selected{{/if}}>{{this.label}}</option>
               {{/each}}
             </select>
           </div>
@@ -411,6 +414,14 @@
           {{else}}
           <p class="no-entries">{{localize "SRA2.VEHICLE.NO_NARRATIVE_EFFECTS"}}</p>
           {{/if}}
+        </div>
+      </section>
+
+      <!-- Description Section -->
+      <section class="content-section" data-section-content="description">
+        <h2><i class="fas fa-file-alt"></i> {{localize "SRA2.VEHICLE.DESCRIPTION"}}</h2>
+        <div class="vehicle-description-section">
+          <textarea name="system.description" class="vehicle-description" placeholder="{{localize 'SRA2.VEHICLE.DESCRIPTION_PLACEHOLDER'}}">{{system.description}}</textarea>
         </div>
       </section>
     </div>

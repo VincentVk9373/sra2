@@ -91,6 +91,19 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         required: true,
         initial: [false, false, false]
       }),
+      tempAnarchy: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true
+      }),
+      tempAnarchySpent: new fields.ArrayField(new fields.BooleanField({
+        required: true,
+        initial: false
+      }), {
+        required: true,
+        initial: []
+      }),
       bio: new fields.SchemaField({
         background: new fields.HTMLField({
           required: true,
@@ -410,11 +423,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       const attributeCosts = (this as any).attributeCosts;
       let totalCost = Object.values(attributeCosts).reduce((sum: number, cost: any) => sum + cost, 0);
       
-      // Add armor cost
-      totalCost += (this as any).armorCost || 0;
-      
       // Add items cost (skills and feats)
       // Only count active feats in the total cost
+      // Note: Armor cost is included via the calculatedCost of armor feats
       if (parent && parent.items) {
         parent.items.forEach((item: any) => {
           if (item.system && item.system.calculatedCost !== undefined) {

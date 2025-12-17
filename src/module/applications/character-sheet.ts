@@ -16,7 +16,7 @@ export class CharacterSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'character'],
       template: 'systems/sra2/templates/actor-character-sheet.hbs',
       width: 900,
-      height: 700,
+      height: 750,
       tabs: [],
       dragDrop: [
         { dragSelector: '.metatype-item', dropSelector: null },
@@ -105,6 +105,15 @@ export class CharacterSheet extends ActorSheet {
     context.bonusAnarchySpent = anarchySpent.slice(context.baseAnarchy).map((value: boolean, index: number) => ({
       value: value,
       index: context.baseAnarchy + index
+    }));
+
+    // Prepare temp anarchy (bonus temporaire)
+    const tempAnarchy = systemData.tempAnarchy || 0;
+    context.tempAnarchy = tempAnarchy;
+    const tempAnarchySpent = systemData.tempAnarchySpent || [];
+    context.tempAnarchySpent = Array.from({ length: tempAnarchy }, (_, index) => ({
+      value: tempAnarchySpent[index] || false,
+      index: index
     }));
 
     // Get actor's strength for damage value calculations
@@ -201,7 +210,8 @@ export class CharacterSheet extends ActorSheet {
             },
             weapons: vehicleWeapons, // Add weapons array to vehicle
             hasSevereDamage: hasSevereDamage, // Add damage status for V2 template
-            isIncapacitating: isIncapacitating // Add incapacitating status for V2 template
+            isIncapacitating: isIncapacitating, // Add incapacitating status for V2 template
+            narrativeEffectsTooltip: SheetHelpers.formatNarrativeEffectsTooltip(narrativeEffects, vehicleActor.system?.description, [], vehicleActor.system) // Add narrative effects tooltip
           });
         }
       } catch (error) {
@@ -657,6 +667,8 @@ export class CharacterSheet extends ActorSheet {
     // Handle damage tracker checkboxes - explicit handler to ensure data is saved
     html.find('input[name^="system.damage"]').on('change', this._onDamageChange.bind(this));
     html.find('input[name^="system.anarchySpent"]').on('change', this._onAnarchyChange.bind(this));
+    html.find('input[name^="system.tempAnarchySpent"]').on('change', this._onTempAnarchyChange.bind(this));
+    html.find('[data-action="add-temp-anarchy"]').on('click', this._onAddTempAnarchy.bind(this));
     
     // Handle cyberdeck damage tracker checkboxes
     html.find('input[name*=".cyberdeckDamage."]').on('change', this._onCyberdeckDamageChange.bind(this));
@@ -789,7 +801,7 @@ export class CharacterSheet extends ActorSheet {
       }
     } catch (error) {
       console.error('Error opening vehicle sheet:', error);
-      ui.notifications?.error('Erreur lors de l\'ouverture de la fiche du véhicule');
+      ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.VEHICLE.OPEN_SHEET_ERROR'));
     }
   }
 
@@ -1213,7 +1225,7 @@ export class CharacterSheet extends ActorSheet {
     const skill = await fromUuid(uuid as any) as any;
     
     if (!skill) {
-      ui.notifications?.error('Skill not found');
+      ui.notifications?.error(game.i18n!.localize('SRA2.SKILLS.NOT_FOUND'));
       return;
     }
     
@@ -1564,7 +1576,7 @@ export class CharacterSheet extends ActorSheet {
     const feat = await fromUuid(uuid as any) as any;
     
     if (!feat) {
-      ui.notifications?.error('Feat not found');
+      ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.NOT_FOUND'));
       return;
     }
     
@@ -1764,6 +1776,61 @@ export class CharacterSheet extends ActorSheet {
       this.render(false);
     }
   }
+
+  /**
+   * Handle temp anarchy tracker checkbox changes - decrements temp anarchy on click
+   */
+  private async _onTempAnarchyChange(event: Event): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const tempAnarchy = (this.actor.system as any).tempAnarchy || 0;
+    
+    // Decrement temp anarchy (minimum 0)
+    const newTempAnarchy = Math.max(0, tempAnarchy - 1);
+    
+    // Adjust tempAnarchySpent array to match new value
+    const currentTempAnarchySpent = (this.actor.system as any).tempAnarchySpent || [];
+    const tempAnarchySpent = [...currentTempAnarchySpent];
+    
+    // Remove the last element
+    if (tempAnarchySpent.length > newTempAnarchy) {
+      tempAnarchySpent.pop();
+    }
+    
+    // Update the actor
+    await (this.actor as any).update({ 
+      'system.tempAnarchy': newTempAnarchy,
+      'system.tempAnarchySpent': tempAnarchySpent 
+    }, { render: false });
+    
+    // Force re-render
+    this.render(false);
+  }
+
+  /**
+   * Handle click on + to add temp anarchy
+   */
+  private async _onAddTempAnarchy(event: Event): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const tempAnarchy = (this.actor.system as any).tempAnarchy || 0;
+    const newTempAnarchy = tempAnarchy + 1;
+    
+    // Extend tempAnarchySpent array
+    const currentTempAnarchySpent = (this.actor.system as any).tempAnarchySpent || [];
+    const tempAnarchySpent = [...currentTempAnarchySpent, false];
+    
+    // Update the actor
+    await (this.actor as any).update({ 
+      'system.tempAnarchy': newTempAnarchy,
+      'system.tempAnarchySpent': tempAnarchySpent 
+    }, { render: false });
+    
+    // Force re-render
+    this.render(false);
+  }
   
   /**
    * Handle toggling bookmark on an item
@@ -1790,19 +1857,8 @@ export class CharacterSheet extends ActorSheet {
     const itemId = element.dataset.itemId;
     if (!itemId) return;
     
-    const item = this.actor.items.get(itemId);
-    if (!item) return;
-    
-    const currentBookmarkState = (item.system as any).bookmarked || false;
-    
-    try {
-      await (item as any).update({ 'system.bookmarked': !currentBookmarkState });
-      // Re-render to update UI
-      this.render(false);
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-      ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Erreur lors de la mise à jour du bookmark');
-    }
+    // Use the shared helper
+    await SheetHelpers.toggleItemBookmark(this.actor, itemId, this);
   }
   
   /**

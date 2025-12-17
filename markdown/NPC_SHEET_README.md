@@ -28,7 +28,7 @@ Vous pouvez basculer à tout moment entre les deux vues sans perdre aucune donn�
 
 - ✅ Identité (Métatype, Mots-clés, Comportements, Répliques)
 - ✅ Attributs détaillés avec coûts
-- ✅ Ressources (Yens, Anarchie, Essence, Narrations)
+- ✅ Ressources (Yens, Anarchy, Essence, Narrations)
 - ✅ Combat (Armure, Dégâts, Seuils)
 - ✅ Compétences avec lancers de dés
 - ✅ Atouts complets avec toutes les options
@@ -97,7 +97,7 @@ Où :
 
 Tous les champs sont conservés même en vue NPC :
 - Les mots-clés, comportements et répliques restent dans les données
-- L'anarchie et les narrations sont toujours calculées
+- L'anarchy et les narrations sont toujours calculées
 - Les ressources (yens, essence) sont préservées
 - Seul l'affichage est simplifié
 

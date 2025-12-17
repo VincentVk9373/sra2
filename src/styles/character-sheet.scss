@@ -1,6 +1,5 @@
 /* Character Sheet Styles - Matching Roll Dialog Theme */
 .sra2-character-sheet {
-  background-image: url('../../public/images/backgrounds/character-sheet-background.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -378,6 +377,74 @@
             // Remove connector line after last box
             .track-box:last-child .box-circle::before {
               display: none;
+            }
+          }
+        }
+
+        // Temp anarchy section
+        .temp-anarchy-section {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          margin-left: 0.5rem;
+          padding-left: 0.5rem;
+          border-left: 1px dashed var(--sr-ui-border-color);
+
+          .temp-anarchy-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #9b59b6;
+            min-width: auto;
+            cursor: pointer;
+            padding: 0 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+
+            &:hover {
+              background: rgba(155, 89, 182, 0.2);
+              transform: scale(1.1);
+            }
+          }
+
+          .temp-anarchy-boxes {
+            display: flex;
+            align-items: center;
+            gap: 0;
+
+            .track-box.temp-anarchy {
+              .box-circle {
+                border-style: dashed;
+                border-color: #9b59b6;
+                background: rgba(155, 89, 182, 0.05);
+              }
+
+              input:checked + .box-circle,
+              &.checked .box-circle {
+                background: #9b59b6;
+                border-color: #9b59b6;
+                border-style: dashed;
+                box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
+
+                &::after {
+                  content: '';
+                  width: 10px;
+                  height: 10px;
+                  background: #fff;
+                  border-radius: var(--sr-border-radius-round);
+                  position: absolute;
+                }
+              }
+
+              &:hover .box-circle {
+                border-color: #a569bd;
+                background: rgba(155, 89, 182, 0.1);
+              }
+
+              input:checked + .box-circle:hover,
+              &.checked .box-circle:hover {
+                background: #a569bd;
+                border-color: #a569bd;
+              }
             }
           }
         }
@@ -1298,6 +1365,38 @@
               outline: none;
               border-color: var(--sr-ui-color-active);
               background: rgba(0, 212, 255, 0.1);
+            }
+          }
+        }
+
+        /* Vehicle Description Section */
+        .vehicle-description-section {
+          height: calc(100% - 2rem);
+          padding: 0;
+
+          .vehicle-description {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--sr-ui-border-color);
+            border-radius: var(--sr-border-radius-md);
+            color: var(--sr-text-color-light);
+            resize: none;
+            font-family: var(--sr-font-body);
+            line-height: 1.5;
+
+            &::placeholder {
+              color: var(--sr-text-color-grey);
+              font-style: italic;
+            }
+
+            &:focus {
+              outline: none;
+              border-color: var(--sr-ui-color-active);
+              background: rgba(0, 212, 255, 0.05);
             }
           }
         }
@@ -4106,5 +4205,114 @@
     font-size: 0.9rem;
     line-height: 1.5;
     color: #555;
+  }
+}
+
+// Feat Choice Dialog Styles
+.feat-choice-dialog {
+  background-image: var(--sr-window-background);
+  background-origin: border-box;
+  background-size: cover;
+  .feat-choice-form {
+    display: flex;
+    flex-direction: column;
+    color: var(--sr-ui-color);
+  }
+
+  .feat-choice-section {
+    border-radius: var(--sr-border-radius-sm);
+    padding: 1rem;
+    border: 1px solid rgba(118, 75, 162, 0.2);
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      border-bottom: 1px solid var(--sr-ui-border-color);
+    }
+
+    .section-hint {
+      margin: 0 0 1rem 0;
+      font-size: 0.85rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    .selection-counter {
+      margin: 0 0 1rem 0;
+      padding: 0.5rem;
+      background: rgba(118, 75, 162, 0.1);
+      border-radius: var(--sr-border-radius-xs);
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.3s ease;
+
+      &.complete {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+      }
+    }
+  }
+
+  .feat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .feat-choice-item {
+    background: var(--sr-header-bg);
+    border: 1px solid rgba(118, 75, 162, 0.2);
+    border-radius: var(--sr-border-radius-xs);
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(57, 77, 115, .9);
+      border-color: var(--sr-color-primary);
+    }
+
+    .feat-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--sr-color-primary);
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      .feat-name {
+        flex: 1;
+        font-weight: 500;
+      }
+
+      .feat-type {
+        font-size: 0.8rem;
+        color: #666;
+        background: rgba(118, 75, 162, 0.1);
+        padding: 0.15rem 0.5rem;
+        border-radius: var(--sr-border-radius-xs);
+      }
+    }
+  }
+
+  .dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 1rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
   }
 }

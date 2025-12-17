@@ -4,8 +4,8 @@
     <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
         <div class="avatar-section">
             <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
-            <button type="button" class="sheet-switch-btn" data-action="switch-sheet" title="{{localize 'SRA2.SHEET.SWITCH_TO_V1'}}">
-                <i class="fas fa-exchange-alt"></i>
+            <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="Mode Avancé">
+                <i class="fas fa-cog"></i>
             </button>
         </div>
         <div class="name">
@@ -56,8 +56,18 @@
                         <span class="box-circle"></span>
                     </label>
                     {{/each}}
+                    {{#if (gt tempAnarchy 0)}}
+                        {{#each tempAnarchySpent}}
+                        <label class="track-box {{#if this.value}}checked{{/if}}">
+                            <input type="checkbox" name="system.tempAnarchySpent.{{this.index}}" {{#if this.value}}checked{{/if}} />
+                            <span class="box-circle temp-anarchy"></span>
+                        </label>
+                        {{/each}}
+                    {{/if}}
                 </div>
-            </div>
+                <div class="temp-anarchy-section">
+                    <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
+                </div>
             {{#if (gt bonusAnarchy 0)}}
             <div class="anarchy-track">
                 <span class="track-label">{{localize "SRA2.RESOURCES.ANARCHY_BONUS_COMBAT"}}</span>
@@ -70,14 +80,15 @@
                     {{/each}}
                 </div>
             </div>
+            </div>
+
             {{/if}}
         </div>
     </header>
     <div>
-
         <div class="bookmarks-list-compact">
             <div class="bookmarks-header">
-                <i class="fas fa-star"></i> {{localize "SRA2.BOOKMARKS.TITLE"}}
+                <i class="fas fa-star"></i>
             </div>
             {{#if bookmarkedItems.length}}
             <div class="bookmarks-items">
@@ -110,10 +121,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="weapon"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="weapon">
                                         <div class="context-menu-item" data-action="roll-weapon" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -136,16 +152,27 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -185,10 +212,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="spell"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="spell">
                                         <div class="context-menu-item" data-action="roll-spell" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -211,16 +243,27 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -260,10 +303,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="power"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="power">
                                         <div class="context-menu-item" data-action="roll-power" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -286,6 +334,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -302,7 +356,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -318,6 +372,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.system.astralPerception}}
                             <div class="row feat-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper spe">
@@ -374,7 +434,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{localize 'SRA2.SKILLS.EDIT'}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -390,6 +450,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -412,7 +478,7 @@
                             <div class="row feat-item {{#if this.hasSevereDamage}}has-severe-damage{{/if}} {{#if this.isIncapacitating}}is-incapacitating{{/if}}" data-vehicle-uuid="{{this.uuid}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-vehicle-uuid="{{this.uuid}}"
-                                        title="{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}"><span class="name">{{this.name}}</span></div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}{{/if}}"><span class="name">{{this.name}}</span></div>
                                     <div class="context-menu" data-vehicle-uuid="{{this.uuid}}">
                                         <div class="context-menu-item" data-action="open-vehicle" data-vehicle-uuid="{{this.uuid}}">
                                             <i class="fas fa-folder-open"></i> Ouvrir la fiche
@@ -430,6 +496,12 @@
                                     {{this.system.autopilot}} <div class="fa fa-dice-d6"></div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.level}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.weapons}}
                             {{#each this.weapons}}
                             <div class="row skill-item" data-vehicle-uuid="{{../uuid}}" data-weapon-id="{{this.weaponId}}">
@@ -452,29 +524,6 @@
                             </div>
                             {{/each}}
                             {{/if}}
-                            {{else}}
-                            <div class="row feat-item" data-item-id="{{this._id}}">
-                                <div class="name-wrapper">
-                                    <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
-                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
-                                        {{#if (ne this.system.active undefined)}}
-                                        <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
-                                        </div>
-                                        {{/if}}
-                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
-                                        </div>
-                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="level" style="margin-right: 8px;">
-                                    {{this.system.rating}}
-                                </div>
-                            </div>
                             {{/if}}
                             {{/each}}
                         </section>
@@ -492,7 +541,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                            title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -508,6 +557,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -524,7 +579,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -540,6 +595,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -556,7 +617,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -572,6 +633,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -588,8 +655,8 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">
-                                        {{this.name}}
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{this.name}} | {{localize "SRA2.FEATS.ARMOR_VALUE"}}: {{this.system.armorValue}}
                                         {{#if (gt this.system.armorValue 0)}}
                                         <span class="armor-value-info" title="{{localize 'SRA2.FEATS.ARMOR_VALUE'}}">
                                         </span>
@@ -610,6 +677,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">{{localize "SRA2.FEATS.ARMOR_VALUE"}}: {{this.system.armorValue}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -626,7 +699,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                                title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -642,6 +715,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -658,7 +737,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -674,6 +753,12 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                         </section>
                     </div>
@@ -690,7 +775,7 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -725,10 +810,15 @@
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="skill"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="skill">
                                         <div class="context-menu-item" data-action="quick-roll-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -746,16 +836,29 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">
+                                    <input type="number" class="skill-rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" max="12" data-item-id="{{this._id}}" /> + ({{this.linkedAttributeLabel}})
+                                </span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{#if this.specializations}}
                             {{#each this.specializations}}
                             <div class="row skill-item" data-item-id="{{this._id}}">
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="specialization"
-                                        title="{{localize 'SRA2.SKILLS.EDIT'}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
+                                        {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                    </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
                                             <i class="fas fa-dice-d6"></i> Lancer les dés
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> Editer
@@ -774,6 +877,12 @@
                                     {{this.rr}}
                                 </div>
                             </div>
+                            {{#if ../../advancedMode}}
+                            <div class="row advanced-info spe">
+                                <span class="advanced-level">({{this.linkedAttributeLabel}})</span>
+                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
                             {{/each}}
                             {{/if}}
                             {{/each}}
@@ -795,12 +904,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="strength"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.strength}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.strength" value="{{this.system.attributes.strength}}" min="1" max="{{system.attributeMaxes.strength}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.strength}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.strength}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.strength}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -810,12 +929,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="agility"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.agility}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.agility" value="{{this.system.attributes.agility}}" min="1" max="{{system.attributeMaxes.agility}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.agility}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.agility}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.agility}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -825,12 +954,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="willpower"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.willpower}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.willpower" value="{{this.system.attributes.willpower}}" min="1" max="{{system.attributeMaxes.willpower}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.willpower}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.willpower}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.willpower}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -840,12 +979,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="logic"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.logic}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.logic" value="{{this.system.attributes.logic}}" min="1" max="{{system.attributeMaxes.logic}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.logic}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.logic}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.logic}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                         <section>
                             <div class="row feat-item">
@@ -855,12 +1004,22 @@
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="charisma"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
-                                    {{this.system.attributes.charisma}} <div class="fa fa-dice-d6"></div>
+                                    {{#if advancedMode}}
+                                    <input type="number" name="system.attributes.charisma" value="{{this.system.attributes.charisma}}" min="1" max="{{system.attributeMaxes.charisma}}" class="attribute-input" />
+                                    {{else}}
+                                    {{this.system.attributes.charisma}}
+                                    {{/if}}
+                                    <div class="fa fa-dice-d6"></div>
                                 </div>
                                 <div class="rr">
                                     {{attributesRR.charisma}}
                                 </div>
                             </div>
+                            {{#if advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-cost">{{system.attributeCosts.charisma}} ¥</span>
+                            </div>
+                            {{/if}}
                         </section>
                 </section>
             </div>
@@ -868,6 +1027,51 @@
                 <section class="char-section avatar-large-section">
                     <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
                 </section>
+                {{#if advancedMode}}
+                <section class="char-section metatype-advanced-section">
+                    <header>
+                        <div>{{localize "SRA2.METATYPES.TITLE"}}</div>
+                    </header>
+                    <div class="metatype-drop-zone-advanced" data-drop-zone="metatype">
+                        {{#if metatype}}
+                        <div class="metatype-item-advanced" data-item-id="{{metatype._id}}">
+                            <img class="metatype-img-small" src="{{metatype.img}}" alt="{{metatype.name}}" />
+                            <span class="metatype-name-advanced">{{metatype.name}}</span>
+                            <div class="metatype-controls-advanced">
+                                <a class="metatype-edit-btn" data-action="edit-metatype" data-item-id="{{metatype._id}}" title="{{localize 'SRA2.METATYPES.EDIT'}}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a class="metatype-delete-btn" data-action="delete-metatype" data-item-id="{{metatype._id}}" title="{{localize 'SRA2.METATYPES.DELETE'}}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {{else}}
+                        <div class="empty-metatype-advanced">
+                            <i class="fas fa-user-plus"></i>
+                            <span>{{localize "SRA2.METATYPES.DROP_HERE"}}</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                </section>
+                <section class="char-section item-search-section">
+                    <header>
+                        <div><i class="fas fa-search"></i> {{localize "SRA2.SEARCH.ADD_ITEMS"}}</div>
+                    </header>
+                    <div class="item-search-container">
+                        <div class="search-type-tabs">
+                            <button type="button" class="search-tab active" data-search-type="skill">{{localize "SRA2.SEARCH.SKILLS"}}</button>
+                            <button type="button" class="search-tab" data-search-type="specialization">{{localize "SRA2.SEARCH.SPECIALIZATIONS"}}</button>
+                            <button type="button" class="search-tab" data-search-type="feat">{{localize "SRA2.SEARCH.FEATS"}}</button>
+                        </div>
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="item-search-input" placeholder="{{localize 'SRA2.SEARCH.PLACEHOLDER'}}" data-search-type="skill" />
+                        </div>
+                        <div class="item-search-results"></div>
+                    </div>
+                </section>
+                {{/if}}
                 <section class="char-section thresholds-section">
                     <div class="char-section-row">
                         <section>
@@ -978,6 +1182,48 @@
                         </section>
                     </div>
                 </section>
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.BEHAVIORS.LABEL"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            <div class="behaviors-fields-compact">
+                                <input type="text" name="system.behaviors.behavior1" value="{{system.behaviors.behavior1}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior2" value="{{system.behaviors.behavior2}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior3" value="{{system.behaviors.behavior3}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.behaviors.behavior4" value="{{system.behaviors.behavior4}}"
+                                    placeholder="{{localize 'SRA2.BEHAVIORS.PLACEHOLDER'}}" />
+                            </div>
+                        </section>
+                    </div>
+                </section>
+                {{#if advancedMode}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.KEYWORDS.LABEL"}}</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            <div class="keywords-fields-compact">
+                                <input type="text" name="system.keywords.keyword1" value="{{system.keywords.keyword1}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword2" value="{{system.keywords.keyword2}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword3" value="{{system.keywords.keyword3}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword4" value="{{system.keywords.keyword4}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                                <input type="text" name="system.keywords.keyword5" value="{{system.keywords.keyword5}}"
+                                    placeholder="{{localize 'SRA2.KEYWORDS.PLACEHOLDER'}}" />
+                            </div>
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
             </div>
         </section>
         <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">
@@ -1007,10 +1253,17 @@
                     </div>
                 </div>
                 <div class="footer-price">
+                    <div class="footer-cash">
+                        <span class="yen-symbol">{{localize "SRA2.RESOURCES.CASH"}} : </span>
+                        <input type="number" name="system.resources.yens" value="{{system.resources.yens}}" class="cash-input" min="0" />
+                        <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span>
+                    </div>
+                    <span class="cost-label">{{localize "SRA2.RESOURCES.COST"}} : </span>
                     <span class="price-value">{{system.totalCost}} <span class="yen-symbol">{{localize
                             "SRA2.RESOURCES.YENS"}}</span></span>
                 </div>
             </div>
         </footer>
     </div>
+</form>
 </form>

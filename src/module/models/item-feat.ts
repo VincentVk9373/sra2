@@ -241,14 +241,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
       }),
-      characterArmorLevel: new fields.NumberField({
-        required: true,
-        initial: 0,
-        min: 0,
-        max: 5,
-        integer: true,
-        label: "SRA2.FEATS.CHARACTER_ARMOR_LEVEL"
-      }),
       armorValue: new fields.NumberField({
         required: true,
         initial: 0,
@@ -274,6 +266,24 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: false,
         label: "SRA2.FEATS.IS_BIOWARE"
+      }),
+      // Choice system fields for token drop configuration
+      isOptional: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_OPTIONAL"
+      }),
+      isAChoice: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_A_CHOICE"
+      }),
+      numberOfChoice: new fields.NumberField({
+        required: true,
+        initial: 1,
+        min: 1,
+        integer: true,
+        label: "SRA2.FEATS.NUMBER_OF_CHOICE"
       }),
       featType: new fields.StringField({
         required: true,
@@ -772,11 +782,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;
     
-    // Connaissance: base cost of 2500
-    if (featType === 'connaissance') {
-      calculatedCost = 2500;
-    }
-    
     // Apply cost calculations for equipment, weapon, and weapons-spells types
     if (featType === 'equipment' || featType === 'weapon' || featType === 'weapons-spells') {
       switch (costType) {
@@ -801,8 +806,18 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       }
     }
 
-    calculatedCost += rating * 5000;
+    // Connaissance: base cost of 2500
+    if (featType === 'connaissance') {
+      calculatedCost = 2500;
+    }
     
+    // Armor: 2500 per armor value (not rating)
+    if (featType === 'armor') {
+      const armorValue = (this as any).armorValue || 0;
+      calculatedCost += armorValue * 2500;
+    }
+    calculatedCost += rating * 5000;
+
     (this as any).calculatedCost = calculatedCost;
 
     // Calculate recommended attribute level
