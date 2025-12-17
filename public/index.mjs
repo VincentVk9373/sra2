@@ -459,6 +459,8 @@ const minidrone = { "autopilot": 6, "structure": 1, "handling": 10, "speed": 0, 
 const chopper = { "autopilot": 6, "structure": 5, "handling": 2, "speed": 5, "flyingSpeed": 0, "armor": 0, "weaponMount": "rifle" };
 const sedan = { "autopilot": 6, "structure": 6, "handling": 2, "speed": 4, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const van = { "autopilot": 6, "structure": 8, "handling": 1, "speed": 3, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
+const vtol = { "autopilot": 6, "structure": 10, "handling": 3, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
+const t_bird = { "autopilot": 6, "structure": 10, "handling": 3, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const vehicleTypesData = {
   microdrone,
   minidrone,
@@ -473,7 +475,11 @@ const vehicleTypesData = {
   "suv-pickup": { "autopilot": 6, "structure": 7, "handling": 1, "speed": 4, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
   van,
   "bus-truck": { "autopilot": 6, "structure": 10, "handling": 0, "speed": 2, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
-  "rigid-inflatable-boat": { "autopilot": 6, "structure": 5, "handling": 4, "speed": 3, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" }
+  "rigid-inflatable-boat": { "autopilot": 6, "structure": 5, "handling": 4, "speed": 3, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
+  "jet-ski": { "autopilot": 6, "structure": 5, "handling": 5, "speed": 2, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
+  "civil-helicopter": { "autopilot": 6, "structure": 9, "handling": 4, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
+  vtol,
+  t_bird
 };
 const WEAPON_TYPES = {
   "custom-weapon": {
@@ -10192,8 +10198,195 @@ const featChoiceDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.de
   __proto__: null,
   FeatChoiceDialog
 }, Symbol.toStringTag, { value: "Module" }));
+class AnarchyCounter extends Application {
+  static _instance = null;
+  animationTimeout = null;
+  positionInitialized = false;
+  constructor(options = {}) {
+    super(options);
+  }
+  /**
+   * Get the singleton instance
+   */
+  static get instance() {
+    if (!AnarchyCounter._instance) {
+      AnarchyCounter._instance = new AnarchyCounter();
+    }
+    return AnarchyCounter._instance;
+  }
+  /**
+   * Default application options
+   */
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      id: "sra2-anarchy-counter",
+      template: `systems/${SYSTEM$1.id}/templates/anarchy-counter.hbs`,
+      popOut: true,
+      minimizable: false,
+      resizable: false,
+      title: "SRA2.ANARCHY_COUNTER.TITLE",
+      classes: ["sra2", "anarchy-counter"],
+      width: 180,
+      height: "auto"
+    });
+  }
+  /**
+   * Get default position (bottom-left corner)
+   */
+  static getDefaultPosition() {
+    return {
+      left: 20,
+      top: window.innerHeight - 220
+    };
+  }
+  /**
+   * Get saved position from localStorage or use default
+   */
+  static getSavedPosition() {
+    const saved = localStorage.getItem("sra2-anarchy-counter-position");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.left === "number" && typeof parsed.top === "number") {
+          return parsed;
+        }
+      } catch (e) {
+      }
+    }
+    return AnarchyCounter.getDefaultPosition();
+  }
+  /**
+   * Override render to apply saved position only on first render
+   */
+  async _render(force, options) {
+    await super._render(force, options);
+    if (!this.positionInitialized) {
+      this.positionInitialized = true;
+      const pos = AnarchyCounter.getSavedPosition();
+      super.setPosition({ left: pos.left, top: pos.top });
+    }
+  }
+  /**
+   * Save position to localStorage (only if valid numbers)
+   */
+  savePosition() {
+    if (this.position && typeof this.position.left === "number" && typeof this.position.top === "number") {
+      localStorage.setItem(
+        "sra2-anarchy-counter-position",
+        JSON.stringify({
+          left: this.position.left,
+          top: this.position.top
+        })
+      );
+    }
+  }
+  /**
+   * Get the current group anarchy value
+   */
+  static getGroupAnarchy() {
+    return game.settings?.get(SYSTEM$1.id, "groupAnarchy") || 0;
+  }
+  /**
+   * Set the group anarchy value (GM only)
+   */
+  static async setGroupAnarchy(value) {
+    if (!game.user?.isGM) {
+      ui.notifications?.warn(
+        game.i18n?.localize("SRA2.ANARCHY_COUNTER.GM_ONLY") || "Only the GM can modify the group Anarchy"
+      );
+      return;
+    }
+    const newValue = Math.max(0, value);
+    await game.settings?.set(SYSTEM$1.id, "groupAnarchy", newValue);
+  }
+  /**
+   * Prepare data for rendering
+   */
+  getData(options) {
+    return {
+      value: AnarchyCounter.getGroupAnarchy(),
+      isGM: game.user?.isGM ?? false
+    };
+  }
+  /**
+   * Set position and save to localStorage
+   */
+  setPosition(options) {
+    const result = super.setPosition(options);
+    if (this.positionInitialized) {
+      this.savePosition();
+    }
+    return result;
+  }
+  /**
+   * Activate event listeners
+   */
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find(".anarchy-add").on("click", async (event) => {
+      event.preventDefault();
+      const current = AnarchyCounter.getGroupAnarchy();
+      await AnarchyCounter.setGroupAnarchy(current + 1);
+    });
+    html.find(".anarchy-remove").on("click", async (event) => {
+      event.preventDefault();
+      const current = AnarchyCounter.getGroupAnarchy();
+      await AnarchyCounter.setGroupAnarchy(current - 1);
+    });
+    const header = html.closest(".app").find(".window-header");
+    header.on("mouseup", () => {
+      setTimeout(() => this.savePosition(), 100);
+    });
+  }
+  /**
+   * Trigger animation when value changes
+   */
+  triggerAnimation(direction) {
+    const element = this.element;
+    if (!element || !element.length) return;
+    const valueEl = element.find(".anarchy-value");
+    valueEl.removeClass("animate-increase animate-decrease");
+    if (this.animationTimeout) {
+      clearTimeout(this.animationTimeout);
+    }
+    valueEl.addClass(`animate-${direction}`);
+    this.animationTimeout = window.setTimeout(() => {
+      valueEl.removeClass("animate-increase animate-decrease");
+    }, 500);
+  }
+  /**
+   * Toggle visibility of the counter
+   */
+  static toggle() {
+    const instance = AnarchyCounter.instance;
+    if (instance.rendered) {
+      instance.close();
+    } else {
+      instance.render(true);
+    }
+  }
+  /**
+   * Refresh the counter (called when setting changes)
+   */
+  static refresh(newValue, oldValue) {
+    const instance = AnarchyCounter.instance;
+    if (instance.rendered) {
+      if (newValue !== void 0 && oldValue !== void 0 && newValue !== oldValue) {
+        instance.triggerAnimation(newValue > oldValue ? "increase" : "decrease");
+      }
+      instance.render(false);
+    }
+  }
+  /**
+   * Override close to allow re-opening
+   */
+  async close(options) {
+    return super.close(options);
+  }
+}
 const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
+  AnarchyCounter,
   CharacterSheet,
   CharacterSheetV2,
   FeatChoiceDialog,
@@ -11019,6 +11212,7 @@ class SRA2System {
       };
     }
     this.registerThemeSetting();
+    this.registerGroupAnarchySetting();
     setSidebarIcons();
     setControlIcons();
     setCompendiumBanners();
@@ -12390,6 +12584,24 @@ class SRA2System {
     });
   }
   /**
+   * Register the Group Anarchy setting
+   */
+  registerGroupAnarchySetting() {
+    game.settings.register(SYSTEM$1.id, "groupAnarchy", {
+      name: "SRA2.ANARCHY_COUNTER.SETTING_NAME",
+      hint: "SRA2.ANARCHY_COUNTER.SETTING_HINT",
+      scope: "world",
+      config: false,
+      // Hidden from settings menu, controlled via popup
+      type: Number,
+      default: 0,
+      onChange: (newValue) => {
+        const oldValue = AnarchyCounter.getGroupAnarchy();
+        AnarchyCounter.refresh(newValue, oldValue);
+      }
+    });
+  }
+  /**
    * Apply the selected theme to the body element
    */
   applyTheme(theme) {
@@ -12409,6 +12621,7 @@ class SRA2System {
   async onReady() {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onReady");
     this.applyTheme();
+    AnarchyCounter.instance.render(true);
     const migrations = new Migrations();
     migrations.migrate();
     await this.migrateFeatsToArrayFormat();

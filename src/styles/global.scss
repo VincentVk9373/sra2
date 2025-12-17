@@ -1206,3 +1206,137 @@ select {
         }
     }
 }
+
+/* ================================
+   GROUP ANARCHY COUNTER POPUP
+   ================================ */
+.anarchy-counter {
+    // Override default window styles for compact popup
+    &.app.window-app {
+        background: var(--sr-ui-bg-color-dark);
+        border: 2px solid var(--sr-ui-color);
+        border-radius: var(--sr-border-radius-xl);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.1);
+        
+        .window-header {
+            background: var(--sr-ui-bg-color);
+            border-bottom: 1px solid var(--sr-ui-border-color);
+            border-radius: var(--sr-border-radius-lg) var(--sr-border-radius-lg) 0 0;
+            padding: 4px 8px;
+            
+            .window-title {
+                color: var(--sr-text-color-light);
+                font-family: var(--sr-font-title-alt);
+                font-size: 0.9rem;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+            
+            // Hide close button - counter should always be visible
+            .close {
+                display: none;
+            }
+        }
+        
+        .window-content {
+            padding: 0;
+            background: transparent;
+        }
+    }
+    
+    .anarchy-counter-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px;
+    }
+    
+    .anarchy-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        
+        .anarchy-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--sr-text-color-flash);
+            text-shadow: 0 0 15px var(--sr-ui-color), 0 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: var(--sr-font-title-alt);
+            line-height: 1;
+            min-width: 50px;
+            text-align: center;
+            transition: all 0.3s ease;
+            
+            &.animate-increase {
+                animation: value-increase 0.5s ease-out;
+            }
+            
+            &.animate-decrease {
+                animation: value-decrease 0.5s ease-out;
+            }
+        }
+        
+        button {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--sr-border-radius-sm);
+            border: 1px solid var(--sr-ui-border-color);
+            background: var(--sr-ui-bg-color);
+            color: var(--sr-ui-color);
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            padding: 0;
+            
+            &:hover {
+                background: var(--sr-ui-bg-color-hover);
+                border-color: var(--sr-ui-border-color-active);
+                color: var(--sr-ui-color-active);
+            }
+            
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
+}
+
+@keyframes anarchy-glow {
+    0% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+        filter: brightness(1.2);
+    }
+}
+
+@keyframes value-increase {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+        filter: brightness(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes value-decrease {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.8);
+        filter: brightness(0.7);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

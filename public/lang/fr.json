@@ -126,7 +126,11 @@
                 "suv-pickup": "SUV / Pick-up",
                 "van": "Van",
                 "bus-truck": "Bus / Camion",
-                "rigid-inflatable-boat": "Semi-rigide"
+                "rigid-inflatable-boat": "Semi-rigide",
+                "jet-ski": "Jet-ski",
+                "civil-helicopter": "Hélicoptère civil",
+                "vtol": "ADAV",
+                "t_bird": "T-Bird"
             },
             "WEAPONS": "Armes",
             "MOUNTED_WEAPONS": "Armes montées",
@@ -620,7 +624,7 @@
                     "BUS_TRUCK": "Bus / Semi-remorque (Autopilote 6, Structure 10, Maniabilité 0, Vitesse 2, Blindage 0)",
                     "RIGID_INFLATABLE_BOAT": "Bâteau pneumatique semi-rigide (Autopilote 6, Structure 5, Maniabilité 4, Vitesse 3, Blindage 0)",
                     "JET_SKI": "Jet-ski (Autopilote 6, Structure 5, Maniabilité 5, Vitesse 2, Blindage 0)",
-                    "CIVIL_HELICOPTER": "Civil helicopter (Autopilote 6, Structure 9, Maniabilité 4, Vitesse 6, Blindage 0)",
+                    "CIVIL_HELICOPTER": "Hélicoptère civil (Autopilote 6, Structure 9, Maniabilité 4, Vitesse 6, Blindage 0)",
                     "VTOL": "ADAV (Autopilote 6, Structure 10, Maniabilité 3, Vitesse 8, Blindage 0)",
                     "T_BIRD": "T-Bird (Autopilote 6, Structure 10, Maniabilité 3, Vitesse 10, Blindage 0)"
                 }
@@ -890,6 +894,14 @@
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
             }
+        },
+        "ANARCHY_COUNTER": {
+            "TITLE": "Anarchy du Groupe",
+            "SETTING_NAME": "Anarchy du Groupe",
+            "SETTING_HINT": "Points d'Anarchy partagés par le groupe, contrôlés par le MJ.",
+            "ADD": "Ajouter 1 point d'Anarchy",
+            "REMOVE": "Retirer 1 point d'Anarchy",
+            "GM_ONLY": "Seul le MJ peut modifier l'Anarchy du groupe"
         },
         "ROLL_DIALOG": {
             "TITLE": "Jet de Dés",

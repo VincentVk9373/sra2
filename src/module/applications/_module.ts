@@ -9,3 +9,4 @@ export { SpecializationSheet } from './specialization-sheet.ts';
 export { MetatypeSheet } from './metatype-sheet.ts';
 export { RollDialog } from './roll-dialog.ts';
 export { FeatChoiceDialog } from './feat-choice-dialog.ts';
+export { AnarchyCounter } from './anarchy-counter.ts';

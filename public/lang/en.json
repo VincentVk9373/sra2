@@ -126,7 +126,11 @@
                 "suv-pickup": "SUV / Pick-up",
                 "van": "Van",
                 "bus-truck": "Bus / Truck",
-                "rigid-inflatable-boat": "Rigid Inflatable Boat"
+                "rigid-inflatable-boat": "Rigid Inflatable Boat",
+                "jet-ski": "Jet-ski",
+                "civil-helicopter": "Civil Helicopter",
+                "vtol": "VTOL",
+                "t_bird": "T-Bird"
             },
             "WEAPONS": "Weapons",
             "MOUNTED_WEAPONS": "Mounted weapons",
@@ -890,6 +894,14 @@
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
             }
+        },
+        "ANARCHY_COUNTER": {
+            "TITLE": "Group Anarchy",
+            "SETTING_NAME": "Group Anarchy",
+            "SETTING_HINT": "Anarchy points shared by the group, controlled by the GM.",
+            "ADD": "Add 1 Anarchy point",
+            "REMOVE": "Remove 1 Anarchy point",
+            "GM_ONLY": "Only the GM can modify Group Anarchy"
         },
         "ROLL_DIALOG": {
             "TITLE": "Dice Roll",

@@ -1,0 +1,16 @@
+<div class="anarchy-counter-content">
+    <div class="anarchy-display">
+        {{#if isGM}}
+        <button type="button" class="anarchy-remove" title="{{localize 'SRA2.ANARCHY_COUNTER.REMOVE'}}">
+            <i class="fas fa-minus"></i>
+        </button>
+        {{/if}}
+        <div class="anarchy-value">{{value}}</div>
+        {{#if isGM}}
+        <button type="button" class="anarchy-add" title="{{localize 'SRA2.ANARCHY_COUNTER.ADD'}}">
+            <i class="fas fa-plus"></i>
+        </button>
+        {{/if}}
+    </div>
+</div>
+

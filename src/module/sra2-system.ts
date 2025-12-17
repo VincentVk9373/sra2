@@ -67,6 +67,9 @@ export class SRA2System {
     // Register theme setting
     this.registerThemeSetting();
     
+    // Register group anarchy setting
+    this.registerGroupAnarchySetting();
+    
     // Configure UI elements (icons, banners)
     setSidebarIcons();
     setControlIcons();
@@ -1946,6 +1949,26 @@ export class SRA2System {
   }
 
   /**
+   * Register the Group Anarchy setting
+   */
+  registerGroupAnarchySetting(): void {
+    game.settings.register(SYSTEM.id, 'groupAnarchy', {
+      name: 'SRA2.ANARCHY_COUNTER.SETTING_NAME',
+      hint: 'SRA2.ANARCHY_COUNTER.SETTING_HINT',
+      scope: 'world',
+      config: false, // Hidden from settings menu, controlled via popup
+      type: Number,
+      default: 0,
+      onChange: (newValue: number) => {
+        // Get old value for animation direction
+        const oldValue = applications.AnarchyCounter.getGroupAnarchy();
+        // Refresh all clients' counter displays
+        applications.AnarchyCounter.refresh(newValue, oldValue);
+      }
+    });
+  }
+
+  /**
    * Apply the selected theme to the body element
    */
   applyTheme(theme?: string): void {
@@ -1977,6 +2000,9 @@ export class SRA2System {
     
     // Apply theme from setting
     this.applyTheme();
+    
+    // Initialize the Group Anarchy Counter (visible to all)
+    applications.AnarchyCounter.instance.render(true);
     
     // Run migrations
     const migrations = new Migrations();
