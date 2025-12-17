@@ -618,7 +618,11 @@
                     "SUV_PICKUP": "SUV / Pick-up (Autopilote 6, Structure 7, Maniabilité 1, Vitesse 4, Blindage 0)",
                     "VAN": "Van (Autopilote 6, Structure 8, Maniabilité 1, Vitesse 3, Blindage 0)",
                     "BUS_TRUCK": "Bus / Semi-remorque (Autopilote 6, Structure 10, Maniabilité 0, Vitesse 2, Blindage 0)",
-                    "RIGID_INFLATABLE_BOAT": "Bâteau pneumatique semi-rigide (Autopilote 6, Structure 5, Maniabilité 4, Vitesse 3, Blindage 0)"
+                    "RIGID_INFLATABLE_BOAT": "Bâteau pneumatique semi-rigide (Autopilote 6, Structure 5, Maniabilité 4, Vitesse 3, Blindage 0)",
+                    "JET_SKI": "Jet-ski (Autopilote 6, Structure 5, Maniabilité 5, Vitesse 2, Blindage 0)",
+                    "CIVIL_HELICOPTER": "Civil helicopter (Autopilote 6, Structure 9, Maniabilité 4, Vitesse 6, Blindage 0)",
+                    "VTOL": "ADAV (Autopilote 6, Structure 10, Maniabilité 3, Vitesse 8, Blindage 0)",
+                    "T_BIRD": "T-Bird (Autopilote 6, Structure 10, Maniabilité 3, Vitesse 10, Blindage 0)"
                 }
             },
             "CYBERDECK": {

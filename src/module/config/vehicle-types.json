@@ -124,6 +124,42 @@
     "flyingSpeed": 0,
     "armor": 0,
     "weaponMount": "none"
+  },
+  "jet-ski": {
+    "autopilot": 6,
+    "structure": 5, 
+    "handling": 5,
+    "speed": 2, 
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
+  },
+  "civil-helicopter": {
+    "autopilot": 6, 
+    "structure": 9, 
+    "handling": 4, 
+    "speed": 6,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
+  },
+  "vtol": {
+    "autopilot": 6,
+    "structure": 10, 
+    "handling": 3, 
+    "speed": 6,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
+  },
+  "t_bird": {
+    "autopilot": 6, 
+    "structure": 10, 
+    "handling": 3, 
+    "speed": 6,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
   }
 }
 
