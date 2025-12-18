@@ -623,7 +623,7 @@
                     "CIVIL_HELICOPTER": "Civil helicopter (Autopilote 6, Structure 9, Maniabilité 4, Vitesse 6, Blindage 0)",
                     "VTOL": "ADAV (Autopilote 6, Structure 10, Maniabilité 3, Vitesse 8, Blindage 0)",
                     "T_BIRD": "T-Bird (Autopilote 6, Structure 10, Maniabilité 3, Vitesse 10, Blindage 0)",
-                    "GLIDER_WING": "Glider wing (Autopilote 6, Structure 3, Maniabilité 7, Vitesse 4, Blindage 0)"
+                    "GLIDER_WING": "Aile volante (Autopilote 6, Structure 3, Maniabilité 7, Vitesse 4, Blindage 0)"
                 }
             },
             "CYBERDECK": {
