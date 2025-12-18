@@ -869,37 +869,6 @@ export class RollDialog extends Application {
         }
       }
       
-      // Add orphan specializations at the end (specs without linked skill on actor)
-      if (orphanSpecializations.length > 0) {
-        // Add separator
-        dropdownOptions.push({
-          value: '',
-          label: '─── Spé. sans compétence ───',
-          type: 'separator',
-          disabled: true
-        });
-        
-        for (const spec of orphanSpecializations) {
-          const linkedAttribute = spec.linkedAttribute || 'strength';
-          const attributeValue = (this.actor?.system as any)?.attributes?.[linkedAttribute] || 0;
-          // Orphan specs don't get the +2 bonus, just attribute dice
-          const specSelected = spec.name === this.rollData.specName;
-          dropdownOptions.push({
-            value: `orphan-spec:${spec.id}`,
-            label: `⚠ ${spec.name} (${attributeValue} dés - sans +2)`,
-            type: 'orphan-specialization',
-            id: spec.id,
-            name: spec.name,
-            dicePool: attributeValue, // Only attribute, no skill bonus
-            linkedAttribute: linkedAttribute,
-            linkedSkillName: spec.linkedSkillName || '',
-            rating: 0, // No effective rating without parent skill
-            isSelected: specSelected,
-            isOrphan: true
-          });
-        }
-      }
-      
       // Add phantom skills/specs (have RR but not owned by actor)
       const phantomRRs = SheetHelpers.getPhantomRRs(this.actor);
       if (phantomRRs.length > 0) {
@@ -940,11 +909,8 @@ export class RollDialog extends Application {
       // Priority: specName > skillName > linkedAttackSpecialization > linkedAttackSkill
       // This ensures that if skillName is set but spec is not found, we still select the skill
       if (this.rollData.specName) {
-        // Try to find in regular specs, orphan specs, or phantom specs
+        // Try to find in regular specs or phantom specs
         let selectedSpec = dropdownOptions.find((opt: any) => opt.type === 'specialization' && opt.name === this.rollData.specName);
-        if (!selectedSpec) {
-          selectedSpec = dropdownOptions.find((opt: any) => opt.type === 'orphan-specialization' && opt.name === this.rollData.specName);
-        }
         if (!selectedSpec) {
           selectedSpec = dropdownOptions.find((opt: any) => opt.type === 'phantom-spec' && opt.name === this.rollData.specName);
         }
@@ -960,7 +926,7 @@ export class RollDialog extends Application {
         // Fallback: try to find by linkedAttackSpecialization using normalized comparison
         const normalizedLinkedSpec = ItemSearch.normalizeSearchText(this.rollData.linkedAttackSpecialization);
         const selectedSpec = dropdownOptions.find((opt: any) => 
-          (opt.type === 'specialization' || opt.type === 'orphan-specialization' || opt.type === 'phantom-spec') && 
+          (opt.type === 'specialization' || opt.type === 'phantom-spec') && 
           ItemSearch.normalizeSearchText(opt.name) === normalizedLinkedSpec
         );
         context.selectedValue = selectedSpec ? selectedSpec.value : '';
@@ -1305,35 +1271,6 @@ export class RollDialog extends Application {
         
         // Recalculate RR and threshold (synchronously)
         this.updateRRForSpec(item.name, linkedSkillName, selectedAttribute, dicePool);
-        
-        // Re-render after RR is updated
-        this.render();
-      } else if (type === 'orphan-spec') {
-        // Orphan specialization (no linked skill on actor)
-        // Only attribute dice, no +2 bonus from skill
-        const specSystem = item.system as any;
-        const selectedAttribute = this.rollData.linkedAttribute || specSystem.linkedAttribute || 'strength';
-        const attributeValue = (this.actor.system as any).attributes?.[selectedAttribute] || 0;
-        
-        // No skill rating, no +2 bonus - just attribute
-        const dicePool = attributeValue;
-        
-        // Update roll data
-        this.rollData.specName = item.name;
-        this.rollData.skillName = specSystem.linkedSkill || undefined; // Keep the name for display
-        this.rollData.skillLevel = 0; // No skill
-        this.rollData.specLevel = dicePool; // Just attribute
-        this.rollData.linkedAttribute = selectedAttribute;
-        
-        // Get RR for this orphan spec (spec RR + attribute RR)
-        const { getRRSources } = SheetHelpers;
-        const specRRSources = getRRSources(this.actor, 'specialization', item.name);
-        const attributeRRSources = getRRSources(this.actor, 'attribute', selectedAttribute);
-        const rrList = [...specRRSources, ...attributeRRSources];
-        
-        // Calculate total RR
-        const totalRR = Math.min(3, rrList.reduce((sum, rr) => sum + rr.rrValue, 0));
-        this.rollData.rrList = rrList;
         
         // Re-render after RR is updated
         this.render();

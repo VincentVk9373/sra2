@@ -366,6 +366,8 @@ export interface PhantomRR {
   type: 'skill' | 'specialization';
   linkedAttribute: string;
   linkedAttributeLabel: string;
+  linkedSkillName?: string; // For phantom specs, the linked skill name
+  linkedSkillOnActor?: boolean; // Whether the linked skill exists on the actor
   rr: number;
   totalDicePool: number;
   sources: Array<{featName: string, rrValue: number}>;
@@ -479,11 +481,61 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     
     const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
     phantom.linkedAttribute = skillAttributeMap[normalizedName] || 'strength';
-    phantom.linkedAttributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${phantom.linkedAttribute.toUpperCase()}`) || phantom.linkedAttribute;
     
-    // Calculate dice pool (just attribute value for phantom skills/specs)
-    const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
-    phantom.totalDicePool = attributeValue;
+    // For phantom specs, try to find the linked skill from compendiums and check if actor has it
+    if (phantom.type === 'specialization') {
+      const specTemplate = findItemInGame('specialization', phantom.name);
+      if (specTemplate) {
+        const linkedSkillName = (specTemplate.system as any).linkedSkill;
+        const linkedAttribute = (specTemplate.system as any).linkedAttribute;
+        
+        if (linkedSkillName) {
+          phantom.linkedSkillName = linkedSkillName;
+          
+          // Check if actor has this skill
+          const actorSkill = actor.items.find((i: any) => 
+            i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName)
+          );
+          
+          if (actorSkill) {
+            phantom.linkedSkillOnActor = true;
+            // Use the skill's linked attribute
+            phantom.linkedAttribute = (actorSkill.system as any).linkedAttribute || linkedAttribute || phantom.linkedAttribute;
+            
+            // Calculate dice pool: attribute + skill rating (no +2 since spec is phantom)
+            const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+            const skillRating = (actorSkill.system as any).rating || 0;
+            phantom.totalDicePool = attributeValue + skillRating;
+          } else {
+            phantom.linkedSkillOnActor = false;
+            // Use spec's linked attribute from template
+            if (linkedAttribute) {
+              phantom.linkedAttribute = linkedAttribute;
+            }
+            // Just attribute dice
+            const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+            phantom.totalDicePool = attributeValue;
+          }
+        } else {
+          // No linked skill in template, just attribute
+          if ((specTemplate.system as any).linkedAttribute) {
+            phantom.linkedAttribute = (specTemplate.system as any).linkedAttribute;
+          }
+          const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+          phantom.totalDicePool = attributeValue;
+        }
+      } else {
+        // No template found, use default
+        const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+        phantom.totalDicePool = attributeValue;
+      }
+    } else {
+      // For phantom skills, just attribute value
+      const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+      phantom.totalDicePool = attributeValue;
+    }
+    
+    phantom.linkedAttributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${phantom.linkedAttribute.toUpperCase()}`) || phantom.linkedAttribute;
   }
   
   return phantomRRs.sort((a, b) => a.name.localeCompare(b.name));

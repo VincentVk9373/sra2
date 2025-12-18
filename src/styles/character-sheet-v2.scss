@@ -726,6 +726,7 @@
                         display: flex;
                         gap: 8px;
                         transition: all 0.5s;
+                        position: relative; // Required for context-menu positioning
 
                         &:hover {
                             color: gold !important;
@@ -1475,12 +1476,62 @@
     }
 }
 
+// Container query pour mode ultra compact (< 110px): cacher seuils, avatar et nom, remplacer par bookmarks dans le header
+@container character-sheet (max-height: 110px) {
+    .sheet-header {
+        .avatar-section {
+            display: none !important;
+        }
+
+        .charname {
+            display: none !important;
+        }
+    }
+
+    .thresholds-section {
+        display: none !important;
+    }
+
+    .bookmarks-header {
+        display: none !important;
+    }
+
+    .bookmarks-list-compact {
+        display: flex !important;
+        position: absolute;
+        top: 26px;
+        left: 8px;
+        right: auto;
+        padding: 8px 0 !important;
+        background: transparent !important;
+        max-width: calc(100% - 400px);
+        z-index: 2;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+
+
+        .bookmarks-header {
+            display: none;
+        }
+
+        .bookmark-item {
+            padding: 2px 6px;
+            font-size: 0.75rem;
+        }
+    }
+}
+
 // Orphan specializations (linked skill not on actor) - displayed in red/strikethrough but clickable
 .orphan-specialization {
     opacity: 0.85;
     border-left: 2px solid var(--sr-text-color-error, #e74c3c) !important;
+    position: relative; // Create stacking context for menu
     
     .name-wrapper {
+        position: relative; // Required for context-menu positioning
+        z-index: 1;
+        
         .name {
             color: var(--sr-text-color-error, #e74c3c) !important;
             text-decoration: line-through;
@@ -1504,6 +1555,15 @@
         .arrow {
             color: var(--sr-text-color-error, #e74c3c);
         }
+        
+        .context-menu {
+            z-index: 10001 !important; // Higher than other elements
+        }
+    }
+    
+    // When menu is active, elevate the entire row
+    &:has(.context-menu.active) {
+        z-index: 100;
     }
     
     .orphan-dice {
