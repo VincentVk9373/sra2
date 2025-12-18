@@ -473,28 +473,56 @@
           </div>
 
           {{#if (eq system.weaponType "custom-weapon")}}
-          <!-- Champs de liaison pour armes custom -->
+          <!-- Custom weapon skill/specialization fields with search -->
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"}}</label>
-            <input type="text" name="system.linkedAttackSkill" value="{{#if (and system.linkedAttackSkill (ne system.linkedAttackSkill ""))}}{{system.linkedAttackSkill}}{{else}}Armes à distance{{/if}}" />
+            <div class="power-skill-search-container" data-field="linkedAttackSkill">
+              <div class="power-skill-search-wrapper">
+                <input type="text" name="system.linkedAttackSkill" class="power-skill-search-input" 
+                  value="{{#if (and system.linkedAttackSkill (ne system.linkedAttackSkill ""))}}{{system.linkedAttackSkill}}{{else}}Armes à distance{{/if}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SKILL_PLACEHOLDER'}}" data-field="linkedAttackSkill" autocomplete="off" />
+                <div class="power-skill-search-results"></div>
+              </div>
+            </div>
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL_HINT"}}</p>
           </div>
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION"}}</label>
-            <input type="text" name="system.linkedAttackSpecialization" value="{{#if (and system.linkedAttackSpecialization (ne system.linkedAttackSpecialization ""))}}{{system.linkedAttackSpecialization}}{{else}}{{/if}}" />
+            <div class="power-spec-search-container" data-field="linkedAttackSpecialization">
+              <div class="power-spec-search-wrapper">
+                <input type="text" name="system.linkedAttackSpecialization" class="power-spec-search-input" 
+                  value="{{system.linkedAttackSpecialization}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SPEC_PLACEHOLDER'}}" data-field="linkedAttackSpecialization" autocomplete="off" />
+                <div class="power-spec-search-results"></div>
+              </div>
+            </div>
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SPECIALIZATION_HINT"}}</p>
           </div>
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL"}}</label>
-            <input type="text" name="system.linkedDefenseSkill" value="{{#if (and system.linkedDefenseSkill (ne system.linkedDefenseSkill ""))}}{{system.linkedDefenseSkill}}{{else}}Athlétisme{{/if}}" />
+            <div class="power-skill-search-container" data-field="linkedDefenseSkill">
+              <div class="power-skill-search-wrapper">
+                <input type="text" name="system.linkedDefenseSkill" class="power-skill-search-input" 
+                  value="{{#if (and system.linkedDefenseSkill (ne system.linkedDefenseSkill ""))}}{{system.linkedDefenseSkill}}{{else}}Athlétisme{{/if}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SKILL_PLACEHOLDER'}}" data-field="linkedDefenseSkill" autocomplete="off" />
+                <div class="power-skill-search-results"></div>
+              </div>
+            </div>
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SKILL_HINT"}}</p>
           </div>
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION"}}</label>
-            <input type="text" name="system.linkedDefenseSpecialization" value="{{#if (and system.linkedDefenseSpecialization (ne system.linkedDefenseSpecialization ""))}}{{system.linkedDefenseSpecialization}}{{else}}Spé : Défense à distance{{/if}}" />
+            <div class="power-spec-search-container" data-field="linkedDefenseSpecialization">
+              <div class="power-spec-search-wrapper">
+                <input type="text" name="system.linkedDefenseSpecialization" class="power-spec-search-input" 
+                  value="{{#if (and system.linkedDefenseSpecialization (ne system.linkedDefenseSpecialization ""))}}{{system.linkedDefenseSpecialization}}{{else}}Spé : Défense à distance{{/if}}" 
+                  placeholder="{{localize 'SRA2.FEATS.POWER.SEARCH_SPEC_PLACEHOLDER'}}" data-field="linkedDefenseSpecialization" autocomplete="off" />
+                <div class="power-spec-search-results"></div>
+              </div>
+            </div>
             <p class="notes">{{localize "SRA2.FEATS.WEAPON.LINKED_DEFENSE_SPECIALIZATION_HINT"}}</p>
           </div>
           {{/if}}

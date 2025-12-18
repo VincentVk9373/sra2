@@ -70,6 +70,26 @@
     }
   ],
   "packs": [
+    {
+      "name": "anarchy-acteurs",
+      "label": "Anarchy Acteurs",
+      "type": "Actor",
+      "system": "sra2",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "anarchy-objets",
+      "label": "Anarchy Objets",
+      "type": "Item",
+      "system": "sra2",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
   ],
   "media": [
     {
