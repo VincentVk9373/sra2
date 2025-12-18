@@ -238,6 +238,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     let bonusSevereDamage = 0;
     let bonusPhysicalThreshold = 0;
     let bonusMentalThreshold = 0;
+    let bonusMatrixThreshold = 0;
     let bonusAnarchy = 0;
     let totalEssenceCost = 0;
     let totalNarrations = 0;
@@ -253,6 +254,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         bonusSevereDamage += feat.system.bonusSevereDamage || 0;
         bonusPhysicalThreshold += feat.system.bonusPhysicalThreshold || 0;
         bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
+        bonusMatrixThreshold += feat.system.bonusMatrixThreshold || 0;
         bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
         
@@ -391,9 +393,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         incapacitating: willpower + bonusMentalThreshold + 6
       },
       matrix: {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: firewall + bonusMatrixThreshold,
+        severe: (firewall * 2) + bonusMatrixThreshold,
+        incapacitating: (firewall * 3) + bonusMatrixThreshold
       }
     };
     

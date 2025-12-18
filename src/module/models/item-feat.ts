@@ -241,6 +241,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
       }),
+      bonusMatrixThreshold: new fields.NumberField({
+        required: true,
+        initial: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_MATRIX_THRESHOLD"
+      }),
       armorValue: new fields.NumberField({
         required: true,
         initial: 0,
@@ -903,6 +909,14 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       const value = Math.abs(bonusMentalThreshold);
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD', labelParams: `(${bonusMentalThreshold > 0 ? '+' : ''}${bonusMentalThreshold})`, value });
+    }
+    
+    // Matrix threshold bonus: +1 per point (positive or negative)
+    const bonusMatrixThreshold = (this as any).bonusMatrixThreshold || 0;
+    if (bonusMatrixThreshold !== 0) {
+      const value = Math.abs(bonusMatrixThreshold);
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_THRESHOLD', labelParams: `(${bonusMatrixThreshold > 0 ? '+' : ''}${bonusMatrixThreshold})`, value });
     }
     
     // Cyberdeck firewall: starts at 1, each level is +1

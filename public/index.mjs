@@ -282,6 +282,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     let bonusSevereDamage = 0;
     let bonusPhysicalThreshold = 0;
     let bonusMentalThreshold = 0;
+    let bonusMatrixThreshold = 0;
     let bonusAnarchy = 0;
     let totalEssenceCost = 0;
     let totalNarrations = 0;
@@ -295,6 +296,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         bonusSevereDamage += feat.system.bonusSevereDamage || 0;
         bonusPhysicalThreshold += feat.system.bonusPhysicalThreshold || 0;
         bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
+        bonusMatrixThreshold += feat.system.bonusMatrixThreshold || 0;
         bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
         if (feat.system.grantsNarration) {
@@ -386,9 +388,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         incapacitating: willpower + bonusMentalThreshold + 6
       },
       matrix: {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: firewall + bonusMatrixThreshold,
+        severe: firewall * 2 + bonusMatrixThreshold,
+        incapacitating: firewall * 3 + bonusMatrixThreshold
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -827,6 +829,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: 0,
         integer: true,
         label: "SRA2.FEATS.BONUS_MENTAL_THRESHOLD"
+      }),
+      bonusMatrixThreshold: new fields.NumberField({
+        required: true,
+        initial: 0,
+        integer: true,
+        label: "SRA2.FEATS.BONUS_MATRIX_THRESHOLD"
       }),
       armorValue: new fields.NumberField({
         required: true,
@@ -1449,6 +1457,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       const value = Math.abs(bonusMentalThreshold);
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD", labelParams: `(${bonusMentalThreshold > 0 ? "+" : ""}${bonusMentalThreshold})`, value });
+    }
+    const bonusMatrixThreshold = this.bonusMatrixThreshold || 0;
+    if (bonusMatrixThreshold !== 0) {
+      const value = Math.abs(bonusMatrixThreshold);
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MATRIX_THRESHOLD", labelParams: `(${bonusMatrixThreshold > 0 ? "+" : ""}${bonusMatrixThreshold})`, value });
     }
     if (featType === "cyberdeck" && firewall > 0) {
       recommendedLevel += firewall;

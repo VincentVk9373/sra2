@@ -275,6 +275,12 @@
             <p class="notes">{{localize "SRA2.FEATS.BONUS_MENTAL_THRESHOLD_HINT"}}</p>
           </div>
 
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.BONUS_MATRIX_THRESHOLD"}}</label>
+            <input type="number" name="system.bonusMatrixThreshold" value="{{system.bonusMatrixThreshold}}" />
+            <p class="notes">{{localize "SRA2.FEATS.BONUS_MATRIX_THRESHOLD_HINT"}}</p>
+          </div>
+
           {{#if (eq system.featType "armor")}}
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.ARMOR_VALUE"}}</label>
@@ -283,7 +289,7 @@
           </div>
           {{/if}}
 
-          {{#if (or (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment") (eq system.featType "cyberware") (eq system.featType "adept-power"))}}
+          {{#if (or (eq system.featType "trait") (eq system.featType "equipment") (eq system.featType "advanced-equipment") (eq system.featType "specialized-equipment") (eq system.featType "cyberware") (eq system.featType "adept-power"))}}
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON_DAMAGE_BONUS"}}</label>
             <input type="number" name="system.weaponDamageBonus" value="{{system.weaponDamageBonus}}" min="0" />
