@@ -835,6 +835,7 @@
             "CLEAR_LINK": "Clear link",
             "LINKED_TO_SKILL": "Linked to {name}",
             "SKILL_NOT_ON_ACTOR": "This skill is not on the character",
+            "MISSING_SKILL": "Missing skill",
             "ONLY_SKILLS_CAN_BE_LINKED": "Only skills can be linked to specializations",
             "MUST_BE_ON_ACTOR": "The specialization must be on a character to link skills",
             "BONUS": "specialization bonus",
@@ -954,6 +955,9 @@
         "REFERENCE": "Reference",
         "CONFIRM": "Confirm",
         "CANCEL": "Cancel",
+        "RR": {
+            "PHANTOM_TOOLTIP": "RR available without skill - rolls on attribute"
+        },
         "TOOLTIP": {
             "RR": "RR:",
             "BONUS": "Bonuses:",

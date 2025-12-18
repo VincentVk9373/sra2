@@ -103,13 +103,18 @@ export function calculateFinalDamageValue(damageValue: string, damageValueBonus:
 
 /**
  * Organize specializations by linked skill
+ * Returns:
+ * - bySkill: Map of skill ID -> specializations array (specs with existing linked skill)
+ * - unlinked: specs with no linked skill specified
+ * - orphan: specs with linked skill specified but skill doesn't exist on actor (marked isOrphan=true, missingSkillName set)
  */
 export function organizeSpecializationsBySkill(
   allSpecializations: any[],
   actorItems: any[]
-): { bySkill: Map<string, any[]>; unlinked: any[] } {
+): { bySkill: Map<string, any[]>; unlinked: any[]; orphan: any[] } {
   const specializationsBySkill = new Map<string, any[]>();
   const unlinkedSpecializations: any[] = [];
+  const orphanSpecializations: any[] = [];
   
   allSpecializations.forEach((spec: any) => {
     const linkedSkillName = spec.system.linkedSkill;
@@ -127,8 +132,10 @@ export function organizeSpecializationsBySkill(
         }
         specializationsBySkill.get(skillId)!.push(spec);
       } else {
-        // Linked skill doesn't exist, mark as unlinked
-        unlinkedSpecializations.push(spec);
+        // Linked skill specified but doesn't exist on actor - orphan specialization
+        spec.isOrphan = true;
+        spec.missingSkillName = linkedSkillName;
+        orphanSpecializations.push(spec);
       }
     } else {
       // No linked skill specified
@@ -136,7 +143,7 @@ export function organizeSpecializationsBySkill(
     }
   });
   
-  return { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations };
+  return { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations };
 }
 
 /**
@@ -348,6 +355,138 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
 export function calculateRR(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): number {
   const sources = getRRSources(actor, itemType, itemName);
   return sources.reduce((total, source) => total + source.rrValue, 0);
+}
+
+/**
+ * Find all RR entries that target skills/specializations not owned by the actor
+ * These "phantom" RRs allow rolling at attribute level with the RR bonus
+ */
+export interface PhantomRR {
+  name: string;
+  type: 'skill' | 'specialization';
+  linkedAttribute: string;
+  linkedAttributeLabel: string;
+  rr: number;
+  totalDicePool: number;
+  sources: Array<{featName: string, rrValue: number}>;
+}
+
+export function getPhantomRRs(actor: any): PhantomRR[] {
+  const phantomRRs: PhantomRR[] = [];
+  const seenTargets = new Set<string>();
+  
+  // Get all existing skills and specializations on the actor
+  const existingSkills = new Set(
+    actor.items
+      .filter((i: any) => i.type === 'skill')
+      .map((i: any) => ItemSearch.normalizeSearchText(i.name))
+  );
+  const existingSpecs = new Set(
+    actor.items
+      .filter((i: any) => i.type === 'specialization')
+      .map((i: any) => ItemSearch.normalizeSearchText(i.name))
+  );
+  
+  // Get all active feats with RR entries
+  const feats = actor.items.filter((item: any) => 
+    item.type === 'feat' && 
+    item.system.active === true
+  );
+  
+  for (const feat of feats) {
+    const featSystem = feat.system as any;
+    const rrList = featSystem.rrList || [];
+    
+    for (const rrEntry of rrList) {
+      const rrType = rrEntry.rrType;
+      const rrValue = rrEntry.rrValue || 0;
+      const rrTarget = rrEntry.rrTarget || '';
+      
+      if (rrValue <= 0 || !rrTarget) continue;
+      
+      const normalizedTarget = ItemSearch.normalizeSearchText(rrTarget);
+      const targetKey = `${rrType}:${normalizedTarget}`;
+      
+      // Check if this is a skill/spec RR targeting something not on the actor
+      if (rrType === 'skill' && !existingSkills.has(normalizedTarget)) {
+        if (!seenTargets.has(targetKey)) {
+          seenTargets.add(targetKey);
+          phantomRRs.push({
+            name: rrTarget,
+            type: 'skill',
+            linkedAttribute: 'strength', // Default, will be updated if found
+            linkedAttributeLabel: '',
+            rr: 0,
+            totalDicePool: 0,
+            sources: []
+          });
+        }
+        // Add source to existing phantom
+        const phantom = phantomRRs.find(p => p.type === 'skill' && ItemSearch.normalizeSearchText(p.name) === normalizedTarget);
+        if (phantom) {
+          phantom.sources.push({ featName: feat.name, rrValue });
+        }
+      } else if (rrType === 'specialization' && !existingSpecs.has(normalizedTarget)) {
+        if (!seenTargets.has(targetKey)) {
+          seenTargets.add(targetKey);
+          phantomRRs.push({
+            name: rrTarget,
+            type: 'specialization',
+            linkedAttribute: 'strength', // Default, will be updated if found
+            linkedAttributeLabel: '',
+            rr: 0,
+            totalDicePool: 0,
+            sources: []
+          });
+        }
+        // Add source to existing phantom
+        const phantom = phantomRRs.find(p => p.type === 'specialization' && ItemSearch.normalizeSearchText(p.name) === normalizedTarget);
+        if (phantom) {
+          phantom.sources.push({ featName: feat.name, rrValue });
+        }
+      }
+    }
+  }
+  
+  // Calculate final RR values and try to determine linked attribute from compendiums or default
+  for (const phantom of phantomRRs) {
+    phantom.rr = Math.min(3, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
+    
+    // Default to strength for skills, or try to guess from name
+    // Common skill-attribute associations
+    const skillAttributeMap: Record<string, string> = {
+      'athlétisme': 'strength',
+      'athletisme': 'strength',
+      'combat rapproché': 'strength',
+      'combat rapproche': 'strength',
+      'armes à distance': 'agility',
+      'armes a distance': 'agility',
+      'furtivité': 'agility',
+      'furtivite': 'agility',
+      'piratage': 'logic',
+      'ingénierie': 'logic',
+      'ingenierie': 'logic',
+      'biotech': 'logic',
+      'pilotage': 'agility',
+      'perception': 'willpower',
+      'survie': 'willpower',
+      'sorcellerie': 'willpower',
+      'conjuration': 'willpower',
+      'influence': 'charisma',
+      'tromperie': 'charisma',
+      'intimidation': 'charisma',
+    };
+    
+    const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
+    phantom.linkedAttribute = skillAttributeMap[normalizedName] || 'strength';
+    phantom.linkedAttributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${phantom.linkedAttribute.toUpperCase()}`) || phantom.linkedAttribute;
+    
+    // Calculate dice pool (just attribute value for phantom skills/specs)
+    const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+    phantom.totalDicePool = attributeValue;
+  }
+  
+  return phantomRRs.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**

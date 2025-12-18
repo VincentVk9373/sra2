@@ -195,7 +195,7 @@
                     <select class="skill-dropdown" name="skill-select" {{#if hasThreshold}}disabled{{/if}}>
                         <option value="">-- Sélectionner --</option>
                         {{#each dropdownOptions}}
-                        <option value="{{value}}" {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
+                        <option value="{{value}}" {{#if disabled}}disabled{{/if}} {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
                         {{/each}}
                     </select>
                     {{else}}

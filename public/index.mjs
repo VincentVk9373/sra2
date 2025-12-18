@@ -3084,6 +3084,7 @@ function calculateFinalDamageValue(damageValue, damageValueBonus, strength) {
 function organizeSpecializationsBySkill(allSpecializations, actorItems) {
   const specializationsBySkill = /* @__PURE__ */ new Map();
   const unlinkedSpecializations = [];
+  const orphanSpecializations = [];
   allSpecializations.forEach((spec) => {
     const linkedSkillName = spec.system.linkedSkill;
     if (linkedSkillName) {
@@ -3097,13 +3098,15 @@ function organizeSpecializationsBySkill(allSpecializations, actorItems) {
         }
         specializationsBySkill.get(skillId).push(spec);
       } else {
-        unlinkedSpecializations.push(spec);
+        spec.isOrphan = true;
+        spec.missingSkillName = linkedSkillName;
+        orphanSpecializations.push(spec);
       }
     } else {
       unlinkedSpecializations.push(spec);
     }
   });
-  return { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations };
+  return { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations };
 }
 async function handleItemDrop(event, actor, allowedTypes = ["feat", "skill", "specialization", "metatype"]) {
   const data = TextEditor.getDragEventData(event);
@@ -3236,6 +3239,99 @@ function getRRSources(actor, itemType, itemName) {
 function calculateRR(actor, itemType, itemName) {
   const sources = getRRSources(actor, itemType, itemName);
   return sources.reduce((total, source) => total + source.rrValue, 0);
+}
+function getPhantomRRs(actor) {
+  const phantomRRs = [];
+  const seenTargets = /* @__PURE__ */ new Set();
+  const existingSkills = new Set(
+    actor.items.filter((i) => i.type === "skill").map((i) => normalizeSearchText(i.name))
+  );
+  const existingSpecs = new Set(
+    actor.items.filter((i) => i.type === "specialization").map((i) => normalizeSearchText(i.name))
+  );
+  const feats = actor.items.filter(
+    (item) => item.type === "feat" && item.system.active === true
+  );
+  for (const feat of feats) {
+    const featSystem = feat.system;
+    const rrList = featSystem.rrList || [];
+    for (const rrEntry of rrList) {
+      const rrType = rrEntry.rrType;
+      const rrValue = rrEntry.rrValue || 0;
+      const rrTarget = rrEntry.rrTarget || "";
+      if (rrValue <= 0 || !rrTarget) continue;
+      const normalizedTarget = normalizeSearchText(rrTarget);
+      const targetKey = `${rrType}:${normalizedTarget}`;
+      if (rrType === "skill" && !existingSkills.has(normalizedTarget)) {
+        if (!seenTargets.has(targetKey)) {
+          seenTargets.add(targetKey);
+          phantomRRs.push({
+            name: rrTarget,
+            type: "skill",
+            linkedAttribute: "strength",
+            // Default, will be updated if found
+            linkedAttributeLabel: "",
+            rr: 0,
+            totalDicePool: 0,
+            sources: []
+          });
+        }
+        const phantom = phantomRRs.find((p) => p.type === "skill" && normalizeSearchText(p.name) === normalizedTarget);
+        if (phantom) {
+          phantom.sources.push({ featName: feat.name, rrValue });
+        }
+      } else if (rrType === "specialization" && !existingSpecs.has(normalizedTarget)) {
+        if (!seenTargets.has(targetKey)) {
+          seenTargets.add(targetKey);
+          phantomRRs.push({
+            name: rrTarget,
+            type: "specialization",
+            linkedAttribute: "strength",
+            // Default, will be updated if found
+            linkedAttributeLabel: "",
+            rr: 0,
+            totalDicePool: 0,
+            sources: []
+          });
+        }
+        const phantom = phantomRRs.find((p) => p.type === "specialization" && normalizeSearchText(p.name) === normalizedTarget);
+        if (phantom) {
+          phantom.sources.push({ featName: feat.name, rrValue });
+        }
+      }
+    }
+  }
+  for (const phantom of phantomRRs) {
+    phantom.rr = Math.min(3, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
+    const skillAttributeMap = {
+      "athlétisme": "strength",
+      "athletisme": "strength",
+      "combat rapproché": "strength",
+      "combat rapproche": "strength",
+      "armes à distance": "agility",
+      "armes a distance": "agility",
+      "furtivité": "agility",
+      "furtivite": "agility",
+      "piratage": "logic",
+      "ingénierie": "logic",
+      "ingenierie": "logic",
+      "biotech": "logic",
+      "pilotage": "agility",
+      "perception": "willpower",
+      "survie": "willpower",
+      "sorcellerie": "willpower",
+      "conjuration": "willpower",
+      "influence": "charisma",
+      "tromperie": "charisma",
+      "intimidation": "charisma"
+    };
+    const normalizedName = normalizeSearchText(phantom.name);
+    phantom.linkedAttribute = skillAttributeMap[normalizedName] || "strength";
+    phantom.linkedAttributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${phantom.linkedAttribute.toUpperCase()}`) || phantom.linkedAttribute;
+    const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
+    phantom.totalDicePool = attributeValue;
+  }
+  return phantomRRs.sort((a, b) => a.name.localeCompare(b.name));
 }
 async function handleEditItem(event, actor) {
   console.log("[SheetHelpers.handleEditItem] Called", { event, actor });
@@ -3939,6 +4035,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   getCurrentActiveSection,
   getDamagePathFromInputName,
   getLinkedAttribute,
+  getPhantomRRs,
   getRRSources,
   getSpecializationsForSkill,
   handleDeleteItem,
@@ -4756,7 +4853,7 @@ class CharacterSheet extends ActorSheet {
     context.bookmarkedItems = bookmarkedItems;
     const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
     const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
-    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations } = organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
+    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations } = organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
     const attributesRR = {
       strength: Math.min(3, this.calculateRR("attribute", "strength")),
       agility: Math.min(3, this.calculateRR("attribute", "agility")),
@@ -4801,7 +4898,18 @@ class CharacterSheet extends ActorSheet {
       spec.totalDicePool = attributeValue;
       return spec;
     });
+    context.orphanSpecializations = orphanSpecializations.sort((a, b) => a.name.localeCompare(b.name)).map((spec) => {
+      const linkedAttribute = spec.system?.linkedAttribute || "strength";
+      spec.linkedAttributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+      const specRR = this.calculateRR("specialization", spec.name);
+      const attributeRR = attributesRR[linkedAttribute] || 0;
+      spec.rr = Math.min(3, specRR + attributeRR);
+      const attributeValue = this.actor.system.attributes[linkedAttribute] || 0;
+      spec.totalDicePool = attributeValue;
+      return spec;
+    });
     context.attributesRR = attributesRR;
+    context.phantomRRs = getPhantomRRs(this.actor);
     context.activeSection = this._activeSection;
     const damage = systemData.damage || {};
     const severeDamage = Array.isArray(damage.severe) ? damage.severe : [false];
@@ -4832,6 +4940,8 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="quick-roll-skill"]').on("click", this._onQuickRollSkill.bind(this));
     html.find('[data-action="roll-specialization"]').on("click", this._onRollSpecialization.bind(this));
     html.find('[data-action="quick-roll-specialization"]').on("click", this._onQuickRollSpecialization.bind(this));
+    html.find('[data-action="roll-phantom-rr"]').on("click", this._onRollPhantomRR.bind(this));
+    html.find('[data-action="roll-orphan-spec"]').on("click", this._onRollOrphanSpec.bind(this));
     html.find('[data-action="send-catchphrase"]').on("click", this._onSendCatchphrase.bind(this));
     html.on("click", '[data-action="toggle-bookmark"]', this._onToggleBookmark.bind(this));
     html.find(".bookmark-item").on("click", this._onBookmarkItemClick.bind(this));
@@ -5061,6 +5171,60 @@ class CharacterSheet extends ActorSheet {
       skillName: attributeLabel,
       skillLevel: attributeValue,
       linkedAttribute: attributeName,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: rrSources
+    });
+  }
+  /**
+   * Handle rolling a phantom RR (RR on a skill/spec not owned by the actor)
+   * Rolls at attribute level with the phantom's RR bonus
+   */
+  async _onRollPhantomRR(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const phantomName = element.dataset.phantomName;
+    const phantomType = element.dataset.phantomType;
+    const linkedAttribute = element.dataset.attribute;
+    parseInt(element.dataset.rr || "0");
+    if (!phantomName || !linkedAttribute) return;
+    this.actor.system.attributes?.[linkedAttribute] || 0;
+    const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+    const rrSources = getRRSources(this.actor, phantomType, phantomName);
+    handleRollRequest({
+      itemType: phantomType,
+      itemName: `${phantomName} (${attributeLabel})`,
+      skillName: phantomName,
+      skillLevel: 0,
+      // No skill level since we don't own the skill
+      linkedAttribute,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: rrSources
+    });
+  }
+  /**
+   * Handle rolling an orphan specialization (spec exists but linked skill doesn't)
+   * Rolls at attribute level with the spec's RR bonus
+   */
+  async _onRollOrphanSpec(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const specName = element.dataset.specName;
+    const linkedAttribute = element.dataset.attribute;
+    if (!specName || !linkedAttribute) return;
+    this.actor.system.attributes?.[linkedAttribute] || 0;
+    const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+    const rrSources = this.getRRSources("specialization", specName);
+    handleRollRequest({
+      itemType: "specialization",
+      itemName: `${specName} (${attributeLabel})`,
+      skillName: specName,
+      skillLevel: 0,
+      // No skill level since the linked skill doesn't exist
+      linkedAttribute,
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
@@ -9357,15 +9521,19 @@ class RollDialog extends Application {
           linkedSkillName
         };
       });
+      const orphanSpecializations = [];
       for (const spec of allSpecializations) {
         const parentSkill = skills.find((s) => s.name === spec.linkedSkillName);
         if (parentSkill) {
           parentSkill.specializations.push(spec);
+        } else {
+          orphanSpecializations.push(spec);
         }
       }
       for (const skill of skills) {
         skill.specializations.sort((a, b) => a.name.localeCompare(b.name));
       }
+      orphanSpecializations.sort((a, b) => a.name.localeCompare(b.name));
       const dropdownOptions = [];
       for (const skill of skills) {
         const skillSelected = skill.name === this.rollData.skillName || this.rollData.linkedAttackSkill && normalizeSearchText(skill.name) === normalizeSearchText(this.rollData.linkedAttackSkill);
@@ -9396,24 +9564,90 @@ class RollDialog extends Application {
           });
         }
       }
+      if (orphanSpecializations.length > 0) {
+        dropdownOptions.push({
+          value: "",
+          label: "─── Spé. sans compétence ───",
+          type: "separator",
+          disabled: true
+        });
+        for (const spec of orphanSpecializations) {
+          const linkedAttribute = spec.linkedAttribute || "strength";
+          const attributeValue = this.actor?.system?.attributes?.[linkedAttribute] || 0;
+          const specSelected = spec.name === this.rollData.specName;
+          dropdownOptions.push({
+            value: `orphan-spec:${spec.id}`,
+            label: `⚠ ${spec.name} (${attributeValue} dés - sans +2)`,
+            type: "orphan-specialization",
+            id: spec.id,
+            name: spec.name,
+            dicePool: attributeValue,
+            // Only attribute, no skill bonus
+            linkedAttribute,
+            linkedSkillName: spec.linkedSkillName || "",
+            rating: 0,
+            // No effective rating without parent skill
+            isSelected: specSelected,
+            isOrphan: true
+          });
+        }
+      }
+      const phantomRRs = getPhantomRRs(this.actor);
+      if (phantomRRs.length > 0) {
+        dropdownOptions.push({
+          value: "",
+          label: "─── RR sans compétence ───",
+          type: "separator",
+          disabled: true
+        });
+        for (const phantom of phantomRRs) {
+          const attributeValue = this.actor?.system?.attributes?.[phantom.linkedAttribute] || 0;
+          const phantomSelected = phantom.name === this.rollData.skillName || phantom.name === this.rollData.specName;
+          const phantomType = phantom.type === "skill" ? "phantom-skill" : "phantom-spec";
+          const typeIcon = phantom.type === "skill" ? "👻" : "👻└";
+          dropdownOptions.push({
+            value: `${phantomType}:${phantom.name}`,
+            label: `${typeIcon} ${phantom.name} (${attributeValue} dés + RR${phantom.rr})`,
+            type: phantomType,
+            id: phantom.name,
+            // Use name as ID since phantom items don't exist
+            name: phantom.name,
+            dicePool: attributeValue,
+            linkedAttribute: phantom.linkedAttribute,
+            rating: 0,
+            rr: phantom.rr,
+            isSelected: phantomSelected,
+            isPhantom: true
+          });
+        }
+      }
       context.skillsWithSpecs = skills;
       context.dropdownOptions = dropdownOptions;
       if (this.rollData.specName) {
-        const selectedSpec = dropdownOptions.find((opt) => opt.type === "specialization" && opt.name === this.rollData.specName);
+        let selectedSpec = dropdownOptions.find((opt) => opt.type === "specialization" && opt.name === this.rollData.specName);
+        if (!selectedSpec) {
+          selectedSpec = dropdownOptions.find((opt) => opt.type === "orphan-specialization" && opt.name === this.rollData.specName);
+        }
+        if (!selectedSpec) {
+          selectedSpec = dropdownOptions.find((opt) => opt.type === "phantom-spec" && opt.name === this.rollData.specName);
+        }
         context.selectedValue = selectedSpec ? selectedSpec.value : "";
       } else if (this.rollData.skillName) {
-        const selectedSkill = dropdownOptions.find((opt) => opt.type === "skill" && opt.name === this.rollData.skillName);
+        let selectedSkill = dropdownOptions.find((opt) => opt.type === "skill" && opt.name === this.rollData.skillName);
+        if (!selectedSkill) {
+          selectedSkill = dropdownOptions.find((opt) => opt.type === "phantom-skill" && opt.name === this.rollData.skillName);
+        }
         context.selectedValue = selectedSkill ? selectedSkill.value : "";
       } else if (this.rollData.linkedAttackSpecialization) {
         const normalizedLinkedSpec = normalizeSearchText(this.rollData.linkedAttackSpecialization);
         const selectedSpec = dropdownOptions.find(
-          (opt) => opt.type === "specialization" && normalizeSearchText(opt.name) === normalizedLinkedSpec
+          (opt) => (opt.type === "specialization" || opt.type === "orphan-specialization" || opt.type === "phantom-spec") && normalizeSearchText(opt.name) === normalizedLinkedSpec
         );
         context.selectedValue = selectedSpec ? selectedSpec.value : "";
       } else if (this.rollData.linkedAttackSkill) {
         const normalizedLinkedSkill = normalizeSearchText(this.rollData.linkedAttackSkill);
         const selectedSkill = dropdownOptions.find(
-          (opt) => opt.type === "skill" && normalizeSearchText(opt.name) === normalizedLinkedSkill
+          (opt) => (opt.type === "skill" || opt.type === "phantom-skill") && normalizeSearchText(opt.name) === normalizedLinkedSkill
         );
         context.selectedValue = selectedSkill ? selectedSkill.value : "";
       } else {
@@ -9640,6 +9874,42 @@ class RollDialog extends Application {
         this.rollData.specLevel = dicePool;
         this.rollData.linkedAttribute = selectedAttribute;
         this.updateRRForSpec(item.name, linkedSkillName, selectedAttribute, dicePool);
+        this.render();
+      } else if (type === "orphan-spec") {
+        const specSystem = item.system;
+        const selectedAttribute = this.rollData.linkedAttribute || specSystem.linkedAttribute || "strength";
+        const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
+        const dicePool = attributeValue;
+        this.rollData.specName = item.name;
+        this.rollData.skillName = specSystem.linkedSkill || void 0;
+        this.rollData.skillLevel = 0;
+        this.rollData.specLevel = dicePool;
+        this.rollData.linkedAttribute = selectedAttribute;
+        const { getRRSources: getRRSources2 } = SheetHelpers;
+        const specRRSources = getRRSources2(this.actor, "specialization", item.name);
+        const attributeRRSources = getRRSources2(this.actor, "attribute", selectedAttribute);
+        const rrList = [...specRRSources, ...attributeRRSources];
+        Math.min(3, rrList.reduce((sum, rr) => sum + rr.rrValue, 0));
+        this.rollData.rrList = rrList;
+        this.render();
+      } else if (type === "phantom-skill" || type === "phantom-spec") {
+        const phantomName = id;
+        const phantomRRs = getPhantomRRs(this.actor);
+        const phantom = phantomRRs.find((p) => p.name === phantomName);
+        if (!phantom) return;
+        const selectedAttribute = this.rollData.linkedAttribute || phantom.linkedAttribute || "strength";
+        const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
+        if (type === "phantom-skill") {
+          this.rollData.skillName = phantomName;
+          this.rollData.specName = void 0;
+          this.rollData.skillLevel = attributeValue;
+        } else {
+          this.rollData.specName = phantomName;
+          this.rollData.skillName = void 0;
+          this.rollData.specLevel = attributeValue;
+        }
+        this.rollData.linkedAttribute = selectedAttribute;
+        this.rollData.rrList = phantom.sources;
         this.render();
       }
     });

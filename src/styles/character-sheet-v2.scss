@@ -1474,3 +1474,92 @@
         display: flex !important;
     }
 }
+
+// Orphan specializations (linked skill not on actor) - displayed in red/strikethrough but clickable
+.orphan-specialization {
+    opacity: 0.85;
+    border-left: 2px solid var(--sr-text-color-error, #e74c3c) !important;
+    
+    .name-wrapper {
+        .name {
+            color: var(--sr-text-color-error, #e74c3c) !important;
+            text-decoration: line-through;
+            cursor: pointer;
+            
+            .missing-skill-hint {
+                font-size: 0.75rem;
+                font-style: italic;
+                opacity: 0.8;
+                margin-left: 4px;
+                text-decoration: none;
+                display: inline-block;
+            }
+            
+            &:hover {
+                text-decoration: line-through;
+                filter: brightness(1.2);
+            }
+        }
+        
+        .arrow {
+            color: var(--sr-text-color-error, #e74c3c);
+        }
+    }
+    
+    .orphan-dice {
+        color: var(--sr-text-color-error, #e74c3c) !important;
+        cursor: pointer;
+        
+        &:hover {
+            background: rgba(231, 76, 60, 0.2) !important;
+        }
+    }
+    
+    .orphan-rr-value {
+        color: var(--sr-text-color-error, #e74c3c) !important;
+        font-weight: bold;
+    }
+    
+    &:hover {
+        background: rgba(231, 76, 60, 0.1);
+    }
+}
+
+// Phantom RRs (RR on skills/specs not owned by actor) - displayed with ghost icon
+.phantom-rr {
+    opacity: 0.85;
+    background: rgba(155, 89, 182, 0.1) !important;
+    border-left: 2px solid var(--sr-accent-color, #9b59b6) !important;
+    
+    .name-wrapper {
+        .phantom-name {
+            color: var(--sr-accent-color, #9b59b6) !important;
+            font-style: italic;
+            
+            .phantom-hint {
+                font-size: 0.75rem;
+                font-style: normal;
+                opacity: 0.7;
+                margin-left: 4px;
+            }
+        }
+        
+        .arrow {
+            color: var(--sr-accent-color, #9b59b6);
+            opacity: 0.6;
+        }
+    }
+    
+    .phantom-dice {
+        color: var(--sr-accent-color, #9b59b6) !important;
+    }
+    
+    .phantom-rr-value {
+        color: var(--sr-accent-color, #9b59b6) !important;
+        font-weight: bold;
+    }
+    
+    &:hover {
+        background: rgba(155, 89, 182, 0.2) !important;
+    }
+}

@@ -504,7 +504,7 @@ export class CharacterSheet extends ActorSheet {
       .sort((a: any, b: any) => a.name.localeCompare(b.name));
     
     // Organize specializations by linked skill using helper
-    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations } = 
+    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations } = 
       SheetHelpers.organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
     
     // Calculate RR for attributes first (needed for skills and specializations)
@@ -580,8 +580,31 @@ export class CharacterSheet extends ActorSheet {
       return spec;
     });
     
+    // Add orphan specializations (skill specified but not on actor) - sorted alphabetically
+    // These are displayed in red/strikethrough to indicate they're unusable
+    context.orphanSpecializations = orphanSpecializations
+      .sort((a: any, b: any) => a.name.localeCompare(b.name))
+      .map((spec: any) => {
+        const linkedAttribute = spec.system?.linkedAttribute || 'strength';
+        spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+        
+        // Orphan specs are unusable, but we still show their theoretical values
+        const specRR = this.calculateRR('specialization', spec.name);
+        const attributeRR = (attributesRR as any)[linkedAttribute] || 0;
+        spec.rr = Math.min(3, specRR + attributeRR);
+        
+        // Calculate total dice pool (attribute only, since skill is missing)
+        const attributeValue = (this.actor.system as any).attributes[linkedAttribute] || 0;
+        spec.totalDicePool = attributeValue;
+        
+        return spec;
+      });
+    
     // Store attributesRR in context
     context.attributesRR = attributesRR;
+    
+    // Get phantom RRs (RR on skills/specs not owned by the actor)
+    context.phantomRRs = SheetHelpers.getPhantomRRs(this.actor);
 
     // Add active section for navigation
     context.activeSection = this._activeSection;
@@ -654,6 +677,12 @@ export class CharacterSheet extends ActorSheet {
 
     // Quick roll specialization (from dice badge)
     html.find('[data-action="quick-roll-specialization"]').on('click', this._onQuickRollSpecialization.bind(this));
+
+    // Roll phantom RR (RR on skill/spec not owned)
+    html.find('[data-action="roll-phantom-rr"]').on('click', this._onRollPhantomRR.bind(this));
+
+    // Roll orphan specialization (spec exists but linked skill doesn't)
+    html.find('[data-action="roll-orphan-spec"]').on('click', this._onRollOrphanSpec.bind(this));
 
     // Send catchphrase to chat
     html.find('[data-action="send-catchphrase"]').on('click', this._onSendCatchphrase.bind(this));
@@ -949,6 +978,70 @@ export class CharacterSheet extends ActorSheet {
       skillName: attributeLabel,
       skillLevel: attributeValue,
       linkedAttribute: attributeName,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: rrSources
+    });
+  }
+
+  /**
+   * Handle rolling a phantom RR (RR on a skill/spec not owned by the actor)
+   * Rolls at attribute level with the phantom's RR bonus
+   */
+  private async _onRollPhantomRR(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const phantomName = element.dataset.phantomName;
+    const phantomType = element.dataset.phantomType as 'skill' | 'specialization';
+    const linkedAttribute = element.dataset.attribute;
+    const phantomRR = parseInt(element.dataset.rr || '0');
+    
+    if (!phantomName || !linkedAttribute) return;
+
+    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+
+    // Create RR sources list for this phantom
+    const rrSources = SheetHelpers.getRRSources(this.actor, phantomType, phantomName);
+
+    DiceRoller.handleRollRequest({
+      itemType: phantomType,
+      itemName: `${phantomName} (${attributeLabel})`,
+      skillName: phantomName,
+      skillLevel: 0, // No skill level since we don't own the skill
+      linkedAttribute: linkedAttribute,
+      actorId: this.actor.id,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name,
+      rrList: rrSources
+    });
+  }
+
+  /**
+   * Handle rolling an orphan specialization (spec exists but linked skill doesn't)
+   * Rolls at attribute level with the spec's RR bonus
+   */
+  private async _onRollOrphanSpec(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const specName = element.dataset.specName;
+    const linkedAttribute = element.dataset.attribute;
+    
+    if (!specName || !linkedAttribute) return;
+
+    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+    const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+
+    // Get RR sources for this specialization
+    const rrSources = this.getRRSources('specialization', specName);
+
+    DiceRoller.handleRollRequest({
+      itemType: 'specialization',
+      itemName: `${specName} (${attributeLabel})`,
+      skillName: specName,
+      skillLevel: 0, // No skill level since the linked skill doesn't exist
+      linkedAttribute: linkedAttribute,
       actorId: this.actor.id,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,

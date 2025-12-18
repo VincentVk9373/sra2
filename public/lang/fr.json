@@ -835,6 +835,7 @@
             "CLEAR_LINK": "Effacer le lien",
             "LINKED_TO_SKILL": "Lié à {name}",
             "SKILL_NOT_ON_ACTOR": "Cette compétence n'est pas sur le personnage",
+            "MISSING_SKILL": "Compétence manquante",
             "ONLY_SKILLS_CAN_BE_LINKED": "Seules les compétences peuvent être liées aux spécialisations",
             "MUST_BE_ON_ACTOR": "La spécialisation doit être sur un personnage pour lier des compétences",
             "BONUS": "bonus de spécialisation",
@@ -954,6 +955,9 @@
         "REFERENCE": "Référence",
         "CONFIRM": "Confirmer",
         "CANCEL": "Annuler",
+        "RR": {
+            "PHANTOM_TOOLTIP": "RR disponible sans compétence - jet sur attribut"
+        },
         "TOOLTIP": {
             "RR": "RR:",
             "BONUS": "Bonus:",
