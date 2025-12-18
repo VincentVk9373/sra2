@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": "9VITAULbPB7rmtoC",
+  "name": "Tasers",
+  "color": null,
+  "sorting": "a",
+  "_id": "lLd3qJ4w1jCaVJIa",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095431138,
+    "modifiedTime": 1766095431138,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!lLd3qJ4w1jCaVJIa"
+}

@@ -1,0 +1,44 @@
+{
+  "folder": "t2evpUOUoSSbioLK",
+  "name": "Langue",
+  "type": "skill",
+  "_id": "HvXMHhbc9Co3gU2z",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "inactive": false,
+    "sourceReference": "",
+    "description": "",
+    "gmnotes": "",
+    "code": "",
+    "attribute": "knowledge",
+    "value": 0,
+    "specialization": "",
+    "hasDrain": false,
+    "hasConvergence": false,
+    "isSocial": false,
+    "listspecialization": [],
+    "rating": 0,
+    "linkedAttribute": "logic",
+    "bookmarked": false,
+    "reference": ""
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!HvXMHhbc9Co3gU2z"
+}

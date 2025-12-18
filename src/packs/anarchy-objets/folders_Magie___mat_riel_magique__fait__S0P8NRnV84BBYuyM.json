@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": null,
+  "name": "Magie - matériel magique (fait)",
+  "color": null,
+  "sorting": "a",
+  "_id": "S0P8NRnV84BBYuyM",
+  "description": "",
+  "sort": 800000,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095431138,
+    "modifiedTime": 1766095431138,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!S0P8NRnV84BBYuyM"
+}

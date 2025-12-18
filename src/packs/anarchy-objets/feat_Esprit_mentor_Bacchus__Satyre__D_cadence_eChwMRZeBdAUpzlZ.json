@@ -1,0 +1,140 @@
+{
+  "folder": "sSwAQzIPR37twB5N",
+  "name": "Esprit mentor Bacchus, Satyre, Décadence",
+  "type": "feat",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>",
+    "bookmarked": false,
+    "rating": 6,
+    "cost": "free-equipment",
+    "active": true,
+    "rrList": [
+      {
+        "rrType": "specialization",
+        "rrValue": 1,
+        "rrTarget": "Spé : Bluff"
+      },
+      {
+        "rrType": "specialization",
+        "rrValue": 1,
+        "rrTarget": "Spé : Sorts d'illusion"
+      },
+      {
+        "rrType": "specialization",
+        "rrValue": 1,
+        "rrTarget": "Spé : Esprit des aînés"
+      }
+    ],
+    "bonusLightDamage": 0,
+    "bonusSevereDamage": 0,
+    "bonusPhysicalThreshold": 0,
+    "bonusMentalThreshold": 0,
+    "bonusAnarchy": 0,
+    "essenceCost": 0,
+    "isBioware": false,
+    "featType": "trait",
+    "weaponType": "",
+    "vehicleType": "",
+    "damageValue": "0",
+    "damageValueBonus": 0,
+    "meleeRange": "none",
+    "shortRange": "none",
+    "mediumRange": "none",
+    "longRange": "none",
+    "rangeImprovements": {
+      "melee": false,
+      "short": false,
+      "medium": false,
+      "long": false
+    },
+    "autopilot": 6,
+    "structure": 2,
+    "handling": 5,
+    "speed": 3,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none",
+    "weaponInfo": "",
+    "autopilotBonus": 0,
+    "speedBonus": 0,
+    "handlingBonus": 0,
+    "armorBonus": 0,
+    "isFixed": false,
+    "isFlying": false,
+    "weaponMountImprovement": false,
+    "autopilotUnlocked": false,
+    "additionalDroneCount": 0,
+    "vehicleActorUuid": "",
+    "firewall": 1,
+    "attack": 0,
+    "cyberdeckDamage": {
+      "light": [
+        false,
+        false
+      ],
+      "severe": [
+        false
+      ],
+      "incapacitating": false
+    },
+    "contactName": "",
+    "astralPerception": false,
+    "astralProjection": false,
+    "sorcery": false,
+    "conjuration": false,
+    "adept": false,
+    "riggerConsoleCount": 0,
+    "hasVehicleControlWiring": false,
+    "isWeaponFocus": false,
+    "isAdeptPowerWeapon": false,
+    "narrativeEffects": [
+      {
+        "text": "Irresponsable (Comportement) : attiré par les festivités, il a du mal à garder une ligne de conduite si quelque chose de plus intéressant attire son attention aux alentours.",
+        "isNegative": false,
+        "value": 0
+      }
+    ],
+    "grantsNarration": false,
+    "narrationActions": 1,
+    "sustainedSpellCount": 0,
+    "summonedSpiritCount": 0,
+    "isFirstFeat": true,
+    "shamanicMask": false,
+    "spellType": "direct",
+    "weaponDamageBonus": 0,
+    "weaponTypeBonus": "custom-weapon",
+    "spellSpecializationType": "combat",
+    "linkedAttackSkill": "",
+    "linkedAttackSpecialization": "",
+    "linkedDefenseSkill": "",
+    "linkedDefenseSpecialization": "",
+    "reference": "",
+    "bonusMatrixThreshold": 0,
+    "armorValue": 0,
+    "isOptional": false,
+    "isAChoice": false,
+    "numberOfChoice": 1,
+    "cyberdeckBonusLightDamage": false
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_id": "eChwMRZeBdAUpzlZ",
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!eChwMRZeBdAUpzlZ"
+}

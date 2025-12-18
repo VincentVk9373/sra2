@@ -1,0 +1,44 @@
+{
+  "folder": "xL17mVTtofGU6Wr9",
+  "name": "Combat ASTRAL",
+  "type": "skill",
+  "img": "systems/sra2/icons/magic/Mage_Manabolt.svg",
+  "system": {
+    "inactive": false,
+    "sourceReference": "",
+    "description": "",
+    "gmnotes": "",
+    "code": "",
+    "attribute": "knowledge",
+    "value": 0,
+    "specialization": "",
+    "hasDrain": false,
+    "hasConvergence": false,
+    "isSocial": false,
+    "listspecialization": [],
+    "rating": 5,
+    "linkedAttribute": "willpower",
+    "bookmarked": false,
+    "reference": ""
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_id": "YaZjvk5L0YNVjyTD",
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!YaZjvk5L0YNVjyTD"
+}

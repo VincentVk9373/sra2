@@ -1,0 +1,140 @@
+{
+  "folder": "sSwAQzIPR37twB5N",
+  "name": "Esprit mentor Aigle, Nature sauvage, Pureté",
+  "type": "feat",
+  "_id": "pXi8ER5EDaS9qcmS",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "description": "<p><span style=\"color: rgb(170, 249, 241); font-family: sra2_foundry_text; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgba(15, 52, 96, 0.3); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none\">CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</span></p>",
+    "bookmarked": false,
+    "rating": 6,
+    "cost": "free-equipment",
+    "active": true,
+    "rrList": [
+      {
+        "rrType": "specialization",
+        "rrValue": 1,
+        "rrTarget": "Spé : Perception physique"
+      },
+      {
+        "rrType": "specialization",
+        "rrValue": 1,
+        "rrTarget": "Spé : Sorts de détection"
+      },
+      {
+        "rrType": "specialization",
+        "rrValue": 1,
+        "rrTarget": "Spé : Esprits de l'air"
+      }
+    ],
+    "bonusLightDamage": 0,
+    "bonusSevereDamage": 0,
+    "bonusPhysicalThreshold": 0,
+    "bonusMentalThreshold": 0,
+    "bonusAnarchy": 0,
+    "essenceCost": 0,
+    "isBioware": false,
+    "featType": "trait",
+    "weaponType": "",
+    "vehicleType": "",
+    "damageValue": "0",
+    "damageValueBonus": 0,
+    "meleeRange": "none",
+    "shortRange": "none",
+    "mediumRange": "none",
+    "longRange": "none",
+    "rangeImprovements": {
+      "melee": false,
+      "short": false,
+      "medium": false,
+      "long": false
+    },
+    "autopilot": 6,
+    "structure": 2,
+    "handling": 5,
+    "speed": 3,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none",
+    "weaponInfo": "",
+    "autopilotBonus": 0,
+    "speedBonus": 0,
+    "handlingBonus": 0,
+    "armorBonus": 0,
+    "isFixed": false,
+    "isFlying": false,
+    "weaponMountImprovement": false,
+    "autopilotUnlocked": false,
+    "additionalDroneCount": 0,
+    "vehicleActorUuid": "",
+    "firewall": 1,
+    "attack": 0,
+    "cyberdeckDamage": {
+      "light": [
+        false,
+        false
+      ],
+      "severe": [
+        false
+      ],
+      "incapacitating": false
+    },
+    "contactName": "",
+    "astralPerception": false,
+    "astralProjection": false,
+    "sorcery": false,
+    "conjuration": false,
+    "adept": false,
+    "riggerConsoleCount": 0,
+    "hasVehicleControlWiring": false,
+    "isWeaponFocus": false,
+    "isAdeptPowerWeapon": false,
+    "narrativeEffects": [
+      {
+        "text": "Pure (Comportement) : se méfie de la technologie et est intolérant envers ceux qui ne partagent pas ses idées.",
+        "isNegative": false,
+        "value": 0
+      }
+    ],
+    "grantsNarration": false,
+    "narrationActions": 1,
+    "sustainedSpellCount": 0,
+    "summonedSpiritCount": 0,
+    "isFirstFeat": true,
+    "shamanicMask": false,
+    "spellType": "direct",
+    "weaponDamageBonus": 0,
+    "weaponTypeBonus": "custom-weapon",
+    "spellSpecializationType": "combat",
+    "linkedAttackSkill": "",
+    "linkedAttackSpecialization": "",
+    "linkedDefenseSkill": "",
+    "linkedDefenseSpecialization": "",
+    "reference": "",
+    "bonusMatrixThreshold": 0,
+    "armorValue": 0,
+    "isOptional": false,
+    "isAChoice": false,
+    "numberOfChoice": 1,
+    "cyberdeckBonusLightDamage": false
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!pXi8ER5EDaS9qcmS"
+}

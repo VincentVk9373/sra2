@@ -1,0 +1,1308 @@
+{
+  "folder": "KpUNbkWXL49G3vit",
+  "name": "Barghest",
+  "type": "character",
+  "_id": "teO9AziqzPEDoC3B",
+  "img": "systems/sra2/icons/gameicons/all/wolf-howl.svg",
+  "system": {
+    "attributes": {
+      "agility": 3,
+      "strength": 4,
+      "willpower": 2,
+      "logic": 2,
+      "charisma": 3
+    },
+    "keywords": {
+      "keyword1": "",
+      "keyword2": "",
+      "keyword3": "",
+      "keyword4": "",
+      "keyword5": ""
+    },
+    "resources": {
+      "yens": 0,
+      "anarchy": 0
+    },
+    "maxEssence": 6,
+    "armorLevel": 0,
+    "damage": {
+      "light": [
+        false,
+        false
+      ],
+      "severe": [
+        false
+      ],
+      "incapacitating": false
+    },
+    "anarchySpent": [
+      false,
+      false,
+      false
+    ],
+    "bio": {
+      "background": "",
+      "notes": ""
+    },
+    "behaviors": {
+      "behavior1": "Combativité Forte",
+      "behavior2": "",
+      "behavior3": "",
+      "behavior4": ""
+    },
+    "catchphrases": {
+      "catchphrase1": "",
+      "catchphrase2": "",
+      "catchphrase3": "",
+      "catchphrase4": ""
+    },
+    "linkedVehicles": [],
+    "reference": "",
+    "tempAnarchy": 0,
+    "tempAnarchySpent": []
+  },
+  "prototypeToken": {
+    "name": "Barghest",
+    "displayName": 0,
+    "actorLink": false,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "systems/sra2/icons/gameicons/all/wolf-howl.svg",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "offsetX": 0,
+      "offsetY": 0,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 0,
+    "bar1": {
+      "attribute": "state.health"
+    },
+    "bar2": {
+      "attribute": null
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": [],
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false
+  },
+  "items": [
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Perception",
+      "type": "skill",
+      "_id": "lx938QFmCQNVZoli",
+      "img": "icons/svg/eye.svg",
+      "system": {
+        "rating": 6,
+        "linkedAttribute": "logic",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 350000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.lx938QFmCQNVZoli"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Survie",
+      "type": "skill",
+      "_id": "0Fpsvk1rXw36lSWa",
+      "img": "icons/svg/waterfall.svg",
+      "system": {
+        "rating": 5,
+        "linkedAttribute": "willpower",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.0Fpsvk1rXw36lSWa"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Influence",
+      "type": "skill",
+      "_id": "wzEQDKeabCfPbcPa",
+      "img": "systems/sra2/icons/magic/Adept_Controle-Corporel.svg",
+      "system": {
+        "rating": 3,
+        "linkedAttribute": "charisma",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 450000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.wzEQDKeabCfPbcPa"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Course",
+      "type": "specialization",
+      "_id": "fnlP1EgoTkifg4vj",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Athlétisme",
+        "linkedAttribute": "strength",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.fnlP1EgoTkifg4vj"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Athlétisme",
+      "type": "skill",
+      "_id": "nnHbNKn85YMCPBhY",
+      "img": "systems/sra2/icons/magic/Adept_Wall-running.svg",
+      "system": {
+        "rating": 7,
+        "description": "",
+        "linkedAttribute": "strength",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 100000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.nnHbNKn85YMCPBhY"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Défense à distance",
+      "type": "specialization",
+      "_id": "5A48sL26ewbpgWgj",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Athlétisme",
+        "linkedAttribute": "agility",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.5A48sL26ewbpgWgj"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Combat rapproché",
+      "type": "skill",
+      "_id": "f0DVmzv2wB1lYR7M",
+      "img": "systems/sra2/icons/magic/Adept_Poing-Perforant.svg",
+      "system": {
+        "rating": 6,
+        "description": "",
+        "linkedAttribute": "agility",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 200000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.f0DVmzv2wB1lYR7M"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Crocs",
+      "type": "specialization",
+      "_id": "HbqUksUy2gVNPm2b",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Combat rapproché",
+        "linkedAttribute": "agility",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.HbqUksUy2gVNPm2b"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Perception physique",
+      "type": "specialization",
+      "_id": "veQVtLuJ5kwmtcMl",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Perception",
+        "linkedAttribute": "logic",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.veQVtLuJ5kwmtcMl"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Intimidation",
+      "type": "specialization",
+      "_id": "DmIKgeRCHkAgkiUg",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Influence",
+        "linkedAttribute": "charisma",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.DmIKgeRCHkAgkiUg"
+    },
+    {
+      "folder": "9hHoq76v9ygSdrUp",
+      "name": "Hurlement Paralysant",
+      "type": "feat",
+      "_id": "XpG6xTFCACCU4DRQ",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": true,
+        "rating": 0,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "featType": "power",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [
+          {
+            "text": "Test opposé : Influence (intimidation) + Charisme  VS Survie (sang-froid) + Volonté.\n\nEn cas d'échec, les cibles ne peuvent pas agir pendant 1 tour par succès net.",
+            "isNegative": false,
+            "value": 0
+          }
+        ],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "Influence",
+        "linkedAttackSpecialization": "Spé : intimidation",
+        "linkedDefenseSkill": "Survie",
+        "linkedDefenseSpecialization": "Spé : sang-froid",
+        "reference": "",
+        "bonusMatrixThreshold": 0,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.XpG6xTFCACCU4DRQ"
+    },
+    {
+      "folder": "9hHoq76v9ygSdrUp",
+      "name": "Nature Duale",
+      "type": "feat",
+      "_id": "qowt8sWXaCZxW5Qz",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": false,
+        "rating": 4,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "featType": "trait",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [
+          {
+            "text": "Toujours présent sur les plans physiques & astraux.",
+            "isNegative": false,
+            "value": 1
+          }
+        ],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.qowt8sWXaCZxW5Qz"
+    },
+    {
+      "folder": "9hHoq76v9ygSdrUp",
+      "name": "Peur 2",
+      "type": "feat",
+      "_id": "aZvpXhOWs09QEAaT",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": false,
+        "rating": 7,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [
+          {
+            "rrType": "specialization",
+            "rrValue": 2,
+            "rrTarget": "Spé : Intimidation"
+          }
+        ],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "featType": "trait",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.aZvpXhOWs09QEAaT"
+    },
+    {
+      "folder": "9hHoq76v9ygSdrUp",
+      "name": "Sens accrus",
+      "type": "feat",
+      "_id": "Rra5ewlLMwdKc91W",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": false,
+        "rating": 7,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [
+          {
+            "rrType": "specialization",
+            "rrValue": 2,
+            "rrTarget": "Spé : Perception physique"
+          }
+        ],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "featType": "trait",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.Rra5ewlLMwdKc91W"
+    },
+    {
+      "folder": "9hHoq76v9ygSdrUp",
+      "name": "Cuir épais",
+      "type": "feat",
+      "_id": "YFLpmUCptehdFbGh",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": false,
+        "rating": 0,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 3,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "featType": "armor",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.YFLpmUCptehdFbGh"
+    },
+    {
+      "name": "Crocs",
+      "type": "feat",
+      "_id": "w3FnfSjEj8VTt1eH",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": false,
+        "rating": 0,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": null,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "featType": "equipment",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "armorValue": 0,
+        "isBioware": false,
+        "cyberdeckBonusLightDamage": false,
+        "isAdeptPowerWeapon": false,
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "reference": "",
+        "bonusMatrixThreshold": 0,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 400000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.w3FnfSjEj8VTt1eH"
+    },
+    {
+      "name": "Crocs",
+      "type": "feat",
+      "system": {
+        "featType": "weapon",
+        "rating": 0,
+        "description": "",
+        "bookmarked": false,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "weaponType": "custom-weapon",
+        "vehicleType": "",
+        "damageValue": "5",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "Armes à distance",
+        "linkedAttackSpecialization": "Spé : Crocs",
+        "linkedDefenseSkill": "Athlétisme",
+        "linkedDefenseSpecialization": "Spé : Défense à distance",
+        "reference": "",
+        "bonusMatrixThreshold": 0
+      },
+      "_id": "NLnqbVBh7mCII0iQ",
+      "img": "icons/svg/item-bag.svg",
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!teO9AziqzPEDoC3B.NLnqbVBh7mCII0iQ"
+    }
+  ],
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095044535,
+    "modifiedTime": 1766095550122,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!actors!teO9AziqzPEDoC3B"
+}

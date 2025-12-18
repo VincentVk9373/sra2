@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": "fFhi9CuJO93EVzv7",
+  "name": "Implants oculaires",
+  "color": null,
+  "sorting": "a",
+  "_id": "Zal9QrfQ6b1qSHTw",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095431138,
+    "modifiedTime": 1766095431138,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!Zal9QrfQ6b1qSHTw"
+}

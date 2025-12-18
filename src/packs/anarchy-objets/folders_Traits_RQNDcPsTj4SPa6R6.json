@@ -1,0 +1,23 @@
+{
+  "type": "Item",
+  "folder": null,
+  "name": "Traits",
+  "color": null,
+  "sorting": "a",
+  "_id": "RQNDcPsTj4SPa6R6",
+  "description": "",
+  "sort": 1100000,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095431138,
+    "modifiedTime": 1766095431138,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!RQNDcPsTj4SPa6R6"
+}

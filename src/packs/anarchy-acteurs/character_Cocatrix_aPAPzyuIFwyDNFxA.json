@@ -1,0 +1,365 @@
+{
+  "folder": "KpUNbkWXL49G3vit",
+  "name": "Cocatrix",
+  "type": "character",
+  "_id": "aPAPzyuIFwyDNFxA",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "ownerId": "",
+    "description": "",
+    "gmnotes": "",
+    "favorites": [],
+    "state": {
+      "matrix": {
+        "value": 0,
+        "max": 0
+      },
+      "physical": {
+        "value": 0,
+        "max": 0
+      }
+    },
+    "attributes": {
+      "agility": 3,
+      "strength": 2,
+      "willpower": 2,
+      "logic": 1,
+      "charisma": 1,
+      "edge": {
+        "value": 1
+      }
+    },
+    "counters": {
+      "edge": {
+        "value": 1
+      },
+      "essence": {
+        "value": 6
+      },
+      "karma": {
+        "value": 0,
+        "total": 0
+      },
+      "anarchy": {
+        "value": 3,
+        "max": 6
+      },
+      "sceneAnarchy": {
+        "value": 0,
+        "max": 3
+      },
+      "social": {
+        "celebrity": {
+          "value": 0
+        },
+        "credibility": {
+          "value": 0,
+          "max": 1
+        },
+        "rumor": {
+          "value": 0,
+          "max": 1
+        }
+      }
+    },
+    "monitors": {
+      "physical": {
+        "value": 0,
+        "max": 10,
+        "resistance": 0
+      },
+      "stun": {
+        "value": 0,
+        "max": 10,
+        "resistance": 0
+      },
+      "armor": {
+        "label": "Armor",
+        "value": 0,
+        "max": 9
+      }
+    },
+    "style": "",
+    "genre": "",
+    "capacity": "mundane",
+    "connectionMode": "disconnected",
+    "ownAnarchy": false,
+    "keywords": {
+      "keyword1": "",
+      "keyword2": "",
+      "keyword3": "",
+      "keyword4": "",
+      "keyword5": ""
+    },
+    "dispositions": [],
+    "cues": [],
+    "resources": {
+      "yens": 0,
+      "anarchy": 0
+    },
+    "maxEssence": 6,
+    "armorLevel": 0,
+    "damage": {
+      "light": [
+        false,
+        false
+      ],
+      "severe": [
+        false
+      ],
+      "incapacitating": false
+    },
+    "anarchySpent": [
+      false,
+      false,
+      false
+    ],
+    "tempAnarchy": 0,
+    "tempAnarchySpent": [],
+    "bio": {
+      "background": "",
+      "notes": ""
+    },
+    "behaviors": {
+      "behavior1": "",
+      "behavior2": "",
+      "behavior3": "",
+      "behavior4": ""
+    },
+    "catchphrases": {
+      "catchphrase1": "",
+      "catchphrase2": "",
+      "catchphrase3": "",
+      "catchphrase4": ""
+    },
+    "linkedVehicles": [],
+    "reference": ""
+  },
+  "prototypeToken": {
+    "name": "Cocatrix",
+    "displayName": 0,
+    "actorLink": false,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "icons/svg/mystery-man.svg",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "offsetX": 0,
+      "offsetY": 0,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 0,
+    "bar1": {
+      "attribute": "state.health"
+    },
+    "bar2": {
+      "attribute": null
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": [],
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false
+  },
+  "items": [
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Athlétisme",
+      "type": "skill",
+      "_id": "9gKpuKEwMFtocN1E",
+      "img": "systems/sra2/icons/magic/Adept_Wall-running.svg",
+      "system": {
+        "inactive": false,
+        "sourceReference": "",
+        "description": "",
+        "gmnotes": "",
+        "code": "",
+        "attribute": "knowledge",
+        "value": 0,
+        "specialization": "",
+        "hasDrain": false,
+        "hasConvergence": false,
+        "isSocial": false,
+        "listspecialization": [],
+        "rating": 5,
+        "linkedAttribute": "strength",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 100000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!aPAPzyuIFwyDNFxA.9gKpuKEwMFtocN1E"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Défense à distance",
+      "type": "specialization",
+      "_id": "1E5KgTv6uGfa0gaC",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Athlétisme",
+        "linkedAttribute": "agility",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 3300000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!aPAPzyuIFwyDNFxA.1E5KgTv6uGfa0gaC"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Combat rapproché",
+      "type": "skill",
+      "_id": "H45wCtLMSXiG0MTD",
+      "img": "systems/sra2/icons/magic/Adept_Poing-Perforant.svg",
+      "system": {
+        "inactive": false,
+        "sourceReference": "",
+        "description": "",
+        "gmnotes": "",
+        "code": "",
+        "attribute": "knowledge",
+        "value": 0,
+        "specialization": "",
+        "hasDrain": false,
+        "hasConvergence": false,
+        "isSocial": false,
+        "listspecialization": [],
+        "rating": 5,
+        "linkedAttribute": "agility",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 200000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!aPAPzyuIFwyDNFxA.H45wCtLMSXiG0MTD"
+    }
+  ],
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095554665,
+    "modifiedTime": 1766095554665,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!actors!aPAPzyuIFwyDNFxA"
+}

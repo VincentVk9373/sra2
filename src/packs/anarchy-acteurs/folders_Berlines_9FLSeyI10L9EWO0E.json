@@ -1,0 +1,23 @@
+{
+  "type": "Actor",
+  "folder": "9j3HmgckIaVbLUTJ",
+  "name": "Berlines",
+  "color": null,
+  "sorting": "a",
+  "_id": "9FLSeyI10L9EWO0E",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.12",
+    "createdTime": 1764968230785,
+    "modifiedTime": 1766095528924,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!9FLSeyI10L9EWO0E"
+}

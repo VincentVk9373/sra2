@@ -1,0 +1,23 @@
+{
+  "type": "Actor",
+  "folder": "9j3HmgckIaVbLUTJ",
+  "name": "Bus / Semi-remorques",
+  "color": null,
+  "sorting": "a",
+  "_id": "7dL5D9GWo1vbPiI0",
+  "description": "",
+  "sort": 0,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.12",
+    "createdTime": 1764967965266,
+    "modifiedTime": 1766095528924,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!7dL5D9GWo1vbPiI0"
+}

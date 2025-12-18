@@ -1,0 +1,23 @@
+{
+  "type": "Actor",
+  "folder": "QHJmMwp3dS1pFujj",
+  "name": "Base",
+  "color": null,
+  "sorting": "a",
+  "_id": "FGXTz6r6UmTrhuyK",
+  "description": "",
+  "sort": 100000,
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766094956076,
+    "modifiedTime": 1766095528924,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "_key": "!folders!FGXTz6r6UmTrhuyK"
+}

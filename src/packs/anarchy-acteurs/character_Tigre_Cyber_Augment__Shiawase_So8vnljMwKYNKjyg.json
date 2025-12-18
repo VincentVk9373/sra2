@@ -1,0 +1,1187 @@
+{
+  "folder": "KpUNbkWXL49G3vit",
+  "name": "Tigre Cyber-Augmenté Shiawase",
+  "type": "character",
+  "_id": "So8vnljMwKYNKjyg",
+  "img": "systems/sra2/icons/gameicons/all/wolf-howl.svg",
+  "system": {
+    "attributes": {
+      "agility": 4,
+      "strength": 5,
+      "willpower": 2,
+      "logic": 1,
+      "charisma": 2
+    },
+    "keywords": {
+      "keyword1": "",
+      "keyword2": "",
+      "keyword3": "",
+      "keyword4": "",
+      "keyword5": ""
+    },
+    "resources": {
+      "yens": 0,
+      "anarchy": 0
+    },
+    "maxEssence": 6,
+    "armorLevel": 0,
+    "damage": {
+      "light": [
+        false,
+        false
+      ],
+      "severe": [
+        false
+      ],
+      "incapacitating": false
+    },
+    "anarchySpent": [
+      false,
+      false,
+      false
+    ],
+    "bio": {
+      "background": "",
+      "notes": ""
+    },
+    "behaviors": {
+      "behavior1": "Combativité Forte",
+      "behavior2": "",
+      "behavior3": "",
+      "behavior4": ""
+    },
+    "catchphrases": {
+      "catchphrase1": "Meow !",
+      "catchphrase2": "",
+      "catchphrase3": "",
+      "catchphrase4": ""
+    },
+    "linkedVehicles": [],
+    "reference": "",
+    "tempAnarchy": 0,
+    "tempAnarchySpent": []
+  },
+  "prototypeToken": {
+    "name": "Tigre Cyber-Augmenté Shiawase",
+    "displayName": 0,
+    "actorLink": false,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "systems/sra2/icons/gameicons/all/wolf-howl.svg",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "offsetX": 0,
+      "offsetY": 0,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 0,
+    "bar1": {
+      "attribute": "state.health"
+    },
+    "bar2": {
+      "attribute": null
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": [],
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false
+  },
+  "items": [
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Athlétisme",
+      "type": "skill",
+      "_id": "qrrOMVileHqUM6p8",
+      "img": "systems/sra2/icons/magic/Adept_Wall-running.svg",
+      "system": {
+        "description": "",
+        "rating": 6,
+        "linkedAttribute": "strength",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 100000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.qrrOMVileHqUM6p8"
+    },
+    {
+      "folder": "9hHoq76v9ygSdrUp",
+      "name": "Sens accrus",
+      "type": "feat",
+      "_id": "prZfAHM3rs7VF7CE",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "description": "",
+        "bookmarked": false,
+        "rating": 5,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [
+          {
+            "rrType": "specialization",
+            "rrValue": 1,
+            "rrTarget": "Spé : Perception physique"
+          }
+        ],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "featType": "trait",
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "bonusMatrixThreshold": 0
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.prZfAHM3rs7VF7CE"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Défense à distance",
+      "type": "specialization",
+      "_id": "7gqu3dKmIHKrXz9x",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Athlétisme",
+        "linkedAttribute": "agility",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 3300000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.7gqu3dKmIHKrXz9x"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Combat rapproché",
+      "type": "skill",
+      "_id": "rMGb2snzYsAVETBz",
+      "img": "systems/sra2/icons/magic/Adept_Poing-Perforant.svg",
+      "system": {
+        "description": "",
+        "rating": 6,
+        "linkedAttribute": "agility",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 200000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.rMGb2snzYsAVETBz"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Crocs",
+      "type": "specialization",
+      "_id": "W2t9jVul178BZQXU",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Combat rapproché",
+        "linkedAttribute": "strength",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 2500000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.W2t9jVul178BZQXU"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Griffes",
+      "type": "specialization",
+      "_id": "xtRlhM1riP60oKr7",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Combat rapproché",
+        "linkedAttribute": "strength",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 2500000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.xtRlhM1riP60oKr7"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Furtivité",
+      "type": "skill",
+      "_id": "PqOYnf9HywaqJi6D",
+      "img": "icons/svg/cowled.svg",
+      "system": {
+        "description": "",
+        "rating": 5,
+        "linkedAttribute": "agility",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 500000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.PqOYnf9HywaqJi6D"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Discrétion Physique",
+      "type": "specialization",
+      "_id": "a3wcfaLtJ2nptjnu",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Furtivité",
+        "linkedAttribute": "agility",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 8600000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.a3wcfaLtJ2nptjnu"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Perception",
+      "type": "skill",
+      "_id": "iug6aMyf3K1vsvQx",
+      "img": "icons/svg/eye.svg",
+      "system": {
+        "description": "",
+        "rating": 5,
+        "linkedAttribute": "logic",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 350000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.iug6aMyf3K1vsvQx"
+    },
+    {
+      "folder": "kKwx2vcWEEbV2AEx",
+      "name": "Spé : Perception physique",
+      "type": "specialization",
+      "_id": "b5QZAb6C6TlJl6pZ",
+      "img": "icons/svg/item-bag.svg",
+      "system": {
+        "linkedSkill": "Perception",
+        "linkedAttribute": "logic",
+        "description": "",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 6700000,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.b5QZAb6C6TlJl6pZ"
+    },
+    {
+      "folder": "xL17mVTtofGU6Wr9",
+      "name": "Survie",
+      "type": "skill",
+      "_id": "ZnakOQLRgLgpQfYl",
+      "img": "icons/svg/waterfall.svg",
+      "system": {
+        "description": "",
+        "rating": 6,
+        "linkedAttribute": "willpower",
+        "bookmarked": false,
+        "reference": ""
+      },
+      "effects": [],
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.ZnakOQLRgLgpQfYl"
+    },
+    {
+      "name": "Accroissement De Reaction",
+      "type": "feat",
+      "system": {
+        "featType": "cyberware",
+        "rating": 4,
+        "description": "",
+        "bookmarked": false,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": true,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0
+      },
+      "_id": "adXzotQnSfAlSMVk",
+      "img": "icons/svg/item-bag.svg",
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.adXzotQnSfAlSMVk"
+    },
+    {
+      "name": "Orthoderme Avec Revetement Ruthenium",
+      "type": "feat",
+      "system": {
+        "featType": "cyberware",
+        "rating": 9,
+        "description": "",
+        "bookmarked": false,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [
+          {
+            "rrType": "specialization",
+            "rrValue": 2,
+            "rrTarget": "Spé : Discrétion Physique"
+          }
+        ],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 4,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0
+      },
+      "_id": "tTUx4GY4G9AGU3TR",
+      "img": "icons/svg/item-bag.svg",
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.tTUx4GY4G9AGU3TR"
+    },
+    {
+      "name": "Ossature Renforcee En Titane",
+      "type": "feat",
+      "system": {
+        "featType": "cyberware",
+        "rating": 8,
+        "description": "",
+        "bookmarked": false,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 1,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 1,
+        "weaponTypeBonus": "bare-hands",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0
+      },
+      "_id": "NrZfJlICnDYMqWLx",
+      "img": "icons/svg/item-bag.svg",
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.NrZfJlICnDYMqWLx"
+    },
+    {
+      "name": "Tonification Musculaire",
+      "type": "feat",
+      "system": {
+        "featType": "cyberware",
+        "rating": 7,
+        "description": "",
+        "bookmarked": false,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [
+          {
+            "rrType": "skill",
+            "rrValue": 1,
+            "rrTarget": "Combat rapproché"
+          }
+        ],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": true,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "weaponType": "",
+        "vehicleType": "",
+        "damageValue": "0",
+        "damageValueBonus": 0,
+        "meleeRange": "none",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0
+      },
+      "_id": "sUo66fX41sFO2ua5",
+      "img": "icons/svg/item-bag.svg",
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.sUo66fX41sFO2ua5"
+    },
+    {
+      "name": "Griffes / Crocs",
+      "type": "feat",
+      "system": {
+        "featType": "weapon",
+        "rating": 1,
+        "description": "",
+        "bookmarked": false,
+        "cost": "free-equipment",
+        "active": true,
+        "rrList": [],
+        "bonusLightDamage": 0,
+        "bonusSevereDamage": 0,
+        "bonusPhysicalThreshold": 0,
+        "bonusMentalThreshold": 0,
+        "armorValue": 0,
+        "bonusAnarchy": 0,
+        "essenceCost": 0,
+        "isBioware": false,
+        "isOptional": false,
+        "isAChoice": false,
+        "numberOfChoice": 1,
+        "weaponType": "bare-hands",
+        "vehicleType": "",
+        "damageValue": "FOR",
+        "damageValueBonus": 1,
+        "meleeRange": "ok",
+        "shortRange": "none",
+        "mediumRange": "none",
+        "longRange": "none",
+        "rangeImprovements": {
+          "melee": false,
+          "short": false,
+          "medium": false,
+          "long": false
+        },
+        "autopilot": 6,
+        "structure": 2,
+        "handling": 5,
+        "speed": 3,
+        "flyingSpeed": 0,
+        "armor": 0,
+        "weaponMount": "none",
+        "weaponInfo": "",
+        "autopilotBonus": 0,
+        "speedBonus": 0,
+        "handlingBonus": 0,
+        "armorBonus": 0,
+        "isFixed": false,
+        "isFlying": false,
+        "weaponMountImprovement": false,
+        "autopilotUnlocked": false,
+        "additionalDroneCount": 0,
+        "vehicleActorUuid": "",
+        "firewall": 1,
+        "attack": 0,
+        "cyberdeckDamage": {
+          "light": [
+            false,
+            false
+          ],
+          "severe": [
+            false
+          ],
+          "incapacitating": false
+        },
+        "cyberdeckBonusLightDamage": false,
+        "contactName": "",
+        "astralPerception": false,
+        "astralProjection": false,
+        "sorcery": false,
+        "conjuration": false,
+        "adept": false,
+        "riggerConsoleCount": 0,
+        "hasVehicleControlWiring": false,
+        "isWeaponFocus": false,
+        "isAdeptPowerWeapon": false,
+        "narrativeEffects": [],
+        "grantsNarration": false,
+        "narrationActions": 1,
+        "sustainedSpellCount": 0,
+        "summonedSpiritCount": 0,
+        "isFirstFeat": false,
+        "shamanicMask": false,
+        "spellType": "direct",
+        "weaponDamageBonus": 0,
+        "weaponTypeBonus": "custom-weapon",
+        "spellSpecializationType": "combat",
+        "linkedAttackSkill": "",
+        "linkedAttackSpecialization": "",
+        "linkedDefenseSkill": "",
+        "linkedDefenseSpecialization": "",
+        "reference": "",
+        "bonusMatrixThreshold": 0
+      },
+      "_id": "CLhbvfEQHIbt0WiN",
+      "img": "icons/svg/item-bag.svg",
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "flags": {},
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.346",
+        "systemId": "sra2",
+        "systemVersion": "13.0.14",
+        "lastModifiedBy": null
+      },
+      "ownership": {
+        "default": 0
+      },
+      "_key": "!actors.items!So8vnljMwKYNKjyg.CLhbvfEQHIbt0WiN"
+    }
+  ],
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095044535,
+    "modifiedTime": 1766095550122,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!actors!So8vnljMwKYNKjyg"
+}

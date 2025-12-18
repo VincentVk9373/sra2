@@ -1,0 +1,39 @@
+{
+  "name": "Humain",
+  "type": "metatype",
+  "_id": "UfVVN8ELHFLUK3VI",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "sourceReference": "",
+    "description": "",
+    "gmnotes": "",
+    "modifiers": [],
+    "maxStrength": 4,
+    "maxAgility": 4,
+    "maxWillpower": 4,
+    "maxLogic": 4,
+    "maxCharisma": 4,
+    "anarchyBonus": 1,
+    "reference": ""
+  },
+  "effects": [],
+  "folder": "eFTEZOOQlCFGLJgo",
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!UfVVN8ELHFLUK3VI"
+}
