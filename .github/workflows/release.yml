@@ -1,0 +1,136 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Remove 'v' prefix from tag
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
+          echo "📦 Building version: $VERSION"
+
+      - name: Update system.json with release info
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          TAG=${{ steps.version.outputs.tag }}
+          
+          # Update system.json using Node.js for proper JSON handling
+          node -e "
+            const fs = require('fs');
+            const systemPath = './public/system.json';
+            const system = JSON.parse(fs.readFileSync(systemPath, 'utf-8'));
+            
+            // Update version
+            system.version = '$VERSION';
+            
+            // Update download URL to point to the new release
+            system.download = 'https://github.com/VincentVk9373/sra2/releases/download/$TAG/foundry-sra2-$TAG.zip';
+            
+            // Add versioned download entry for history
+            system['download-$VERSION'] = system.download;
+            
+            fs.writeFileSync(systemPath, JSON.stringify(system, null, 2) + '\n');
+            console.log('✅ Updated system.json');
+            console.log('   Version:', system.version);
+            console.log('   Download:', system.download);
+          "
+
+      - name: Build project
+        run: npm run build
+
+      - name: Pack compendiums
+        run: node ./tools/compendium/packCompendiumsToPublic.mjs
+
+      - name: Copy compiled assets to dist
+        run: |
+          # Copy compiled JS and CSS from dist to public if they exist
+          if [ -f "dist/index.mjs" ]; then
+            cp dist/index.mjs public/
+            cp dist/index.mjs.map public/ 2>/dev/null || true
+          fi
+          if [ -f "dist/index.css" ]; then
+            cp dist/index.css public/
+          fi
+
+      - name: Create release archive
+        run: |
+          TAG=${{ steps.version.outputs.tag }}
+          
+          # Create a clean release directory
+          mkdir -p release/sra2
+          
+          # Copy all necessary files from public
+          cp -r public/* release/sra2/
+          
+          # Remove unnecessary files for release
+          rm -rf release/sra2/.git* 2>/dev/null || true
+          rm -f release/sra2/*.map 2>/dev/null || true
+          
+          # Create the zip archive
+          cd release
+          zip -r ../foundry-sra2-$TAG.zip sra2
+          
+          echo "✅ Created foundry-sra2-$TAG.zip"
+          ls -lh ../foundry-sra2-$TAG.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Shadowrun Anarchy 2 ${{ steps.version.outputs.tag }}"
+          body: |
+            ## Shadowrun Anarchy 2 - ${{ steps.version.outputs.tag }}
+            
+            ### Installation
+            
+            **Manifest URL** (for auto-updates):
+            ```
+            https://raw.githubusercontent.com/VincentVk9373/sra2/master/public/system.json
+            ```
+            
+            **Direct Download**:
+            Download the zip file below and extract it to your Foundry `Data/systems/` folder.
+            
+            ---
+            *Compatible with Foundry VTT v13*
+          files: foundry-sra2-${{ steps.version.outputs.tag }}.zip
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, 'beta') || contains(steps.version.outputs.tag, 'alpha') }}
+          generate_release_notes: true
+
+      - name: Update master branch with new system.json
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Commit the updated system.json
+          git add public/system.json
+          git diff --staged --quiet || git commit -m "chore: update system.json for release ${{ steps.version.outputs.tag }}"
+          
+          # Push to master
+          git push origin HEAD:master || echo "⚠️ Could not push to master (may need manual update)"
+

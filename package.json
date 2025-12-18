@@ -2,13 +2,13 @@
   "scripts": {
     "build": "npx vite build",
     "build:public": "npx vite build --outDir public --emptyOutDir false",
+    "build:release": "npm run build && npm run pack:compendiums",
     "dev": "npx vite build --outDir public --emptyOutDir false --watch",
     "dev:server": "npx vite serve",
     "typecheck": "tsc --noEmit",
     "build:check": "npm run typecheck && npm run build",
-    "packCompendiumsToDist": "node ./tools/packCompendiumsToDist.mjs",
-    "packCompendiumsToPublic": "node ./tools/packCompendiumsToPublic.mjs",
-    "unpackCompendiumsFromPublic": "node ./tools/unpackCompendiumsFromPublic.mjs"
+    "pack:compendiums": "node ./tools/compendium/packCompendiumsToPublic.mjs",
+    "unpack:compendiums": "node ./tools/compendium/extractCompendiumsFromPublic.mjs"
   },
   "devDependencies": {
     "@foundryvtt/foundryvtt-cli": "^2.0.0",
