@@ -15,21 +15,37 @@
   "authors": [
     {
       "name": "Half",
-      "discord": "half#3405",
+      "discord": "half3405",
       "email": "cyril@dbyzero.com"
-    },
-    {
-      "name": "Los Brutos",
-      "discord": "Los Brutos#1876"
-    },
-    {
-      "name": "Pretre",
-      "discord": "Pretre#9138"
     },
     {
       "name": "Vincent VK",
       "email": "vincent.vandeme@gmail.com",
-      "discord": "VincentVk#9373"
+      "discord": "vincentvk"
+    },
+    {
+      "name": "Los Brutos",
+      "discord": "losbrutos"
+    },
+    {
+      "name": "Cefyl",
+      "discord": "cefyl"
+    },
+    {
+      "name": "Dirt",
+      "discord": "dirtndust"
+    },
+    {
+      "name": "Romano",
+      "discord": "roms3559"
+    },
+    {
+      "name": "Carmody",
+      "discord": "carmody."
+    },
+    {
+      "name": "Asimov",
+      "discord": "asimov_"
     }
   ],
   "flags": {
