@@ -1661,7 +1661,7 @@ export class SRA2System {
         }
         
         if (!actor) {
-          ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.NO_ACTOR') || 'Aucun personnage contrôlé');
+          ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.NO_ACTOR') || 'No controlled character');
           return;
         }
         
@@ -1788,7 +1788,7 @@ export class SRA2System {
           isAttack: false,
           isDefend: false,
           isCounterAttack: false,
-          skillName: 'Jet de dés',
+          skillName: game.i18n!.localize('SRA2.ROLL_DIALOG.TITLE'),
           itemName: null,
           damageValue: null,
           defenseResult: null,

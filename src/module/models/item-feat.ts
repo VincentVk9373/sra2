@@ -307,7 +307,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
-          "connaissance": "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE",
+          "connaissance": "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE",
           "power": "SRA2.FEATS.FEAT_TYPE.POWER"
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"

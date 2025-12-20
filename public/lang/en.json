@@ -37,7 +37,11 @@
                 "RESOURCES": "Resources",
                 "COMBAT": "Combat",
                 "SKILLS": "Skills",
-                "FEATS": "Feats"
+                "FEATS": "Feats",
+                "WEAPONS": "Weapons",
+                "AWAKENED": "Awakened",
+                "TRAITS": "Traits",
+                "THRESHOLD": "Threshold"
             },
             "LINKED_VEHICLES": "Linked Vehicles"
         },
@@ -227,7 +231,28 @@
             "CANNOT_FIND_TARGET": "Cannot find target to apply damage",
             "NO_DAMAGE_TO_APPLY": "No damage to apply",
             "DAMAGE_APPLY_ERROR": "Error applying damage",
-            "CANNOT_FIND_DEFENDER": "Cannot find defender: {name}"
+            "CANNOT_FIND_DEFENDER": "Cannot find defender: {name}",
+            "RESULT": "Result",
+            "ATTACK_SUCCESSES_LABEL": "Attack successes:",
+            "DEFENSE_SUCCESSES_LABEL": "Defense successes:",
+            "COUNTERATTACK_SUCCESSES_LABEL": "Counter-attack successes:",
+            "DAMAGE_LABEL": "Damage:",
+            "DAMAGE_DEALT_LABEL": "Damage dealt:",
+            "DAMAGE_MENTAL_LABEL": "Damage (mental):",
+            "MATRIX_DAMAGE_LABEL": "Matrix damage:",
+            "BIOFEEDBACK_DAMAGE_LABEL": "Biofeedback damage:",
+            "APPLY_MATRIX_DAMAGE": "Apply matrix damage to {target}",
+            "APPLY_BIOFEEDBACK_DAMAGE": "Apply biofeedback damage to {target}",
+            "APPLY_DAMAGE_TO": "Apply damage to {target}",
+            "CONNECTION_LOCK": "Connection lock",
+            "CONNECTION_LOCK_DESC": "Target cannot disconnect for one turn",
+            "FIREWALL_REDUCTION": "Firewall Reduction",
+            "FIREWALL_REDUCTION_DESC": "Target's Firewall is reduced by 1 for the duration of the Scene",
+            "ATTACK_REDUCTION": "Attack Reduction",
+            "ATTACK_REDUCTION_DESC": "Target's Attack is reduced by 1 for the duration of the Scene",
+            "LOCATION_DISCOVERED": "Location discovered",
+            "LOCATION_DISCOVERED_DESC": "Target's physical location has been discovered",
+            "DEALS_DAMAGE": "{name} deals {damage} damage"
         },
         "BOOKMARKS": {
             "TITLE": "Quick Actions",
@@ -236,6 +261,7 @@
             "ADD": "Add to favorites",
             "REMOVE": "Remove from favorites",
             "NO_BOOKMARKS": "No favorites configured",
+            "EMPTY": "No quick actions",
             "TOGGLE": "Favorite",
             "CLICK_TO_ROLL": "Click to roll",
             "ERROR": "Error updating bookmark"
@@ -400,7 +426,7 @@
                 "WEAPONS_SPELLS": "Weapons & Spells",
                 "WEAPON": "Weapon",
                 "SPELL": "Spell",
-                "CONNAISSANCE": "Knowledge",
+                "KNOWLEDGE": "Knowledge",
                 "POWER": "Power"
             },
             "SECTION": {
@@ -915,7 +941,9 @@
             "TARGET": "Target",
             "NO_TARGET": "No target",
             "ROLL_DICE": "Roll Dice",
+            "APPLY_THRESHOLD": "Apply threshold",
             "THRESHOLD": "Threshold",
+            "THRESHOLD_LABEL": "threshold",
             "DICE_POOL": "Dice Pool",
             "DICE": "dice",
             "RISK_DICE": "risk dice",
@@ -924,6 +952,22 @@
             "SKILL": "Skill",
             "SELECT": "-- Select --",
             "SPECIALIZATION": "Specialization",
+            "COUNTERATTACK_SKILL": "Counter-attack skill",
+            "DEFENSE_SKILL": "Defense skill",
+            "DEFEND_TITLE": "Defend",
+            "ROLL_FOR": "Roll for",
+            "ATTACKER": "Attacker",
+            "ATTRIBUTE": "Attribute",
+            "DAMAGE_LABEL": "Damage",
+            "COUNTERATTACK": "Counter attack",
+            "SELECT_WEAPON": "Select a weapon:",
+            "CHOOSE_WEAPON": "-- Choose a weapon --",
+            "SEVERE_WOUND_WARNING": "Severe wound: forced disadvantage",
+            "FORCED_DISADVANTAGE": "Forced disadvantage (severe wound)",
+            "DISADVANTAGE_FORCED": "Disadvantage (forced)",
+            "DISADVANTAGE_LABEL": "Disadvantage",
+            "NONE_LABEL": "None",
+            "RISK_PROBABILITIES": "Risk probabilities",
             "ROLL_MODE": "Roll Mode",
             "ROLL_MODE_NORMAL": "Normal",
             "ROLL_MODE_DISADVANTAGE": "Disadvantage",
@@ -959,8 +1003,18 @@
         "REFERENCE": "Reference",
         "CONFIRM": "Confirm",
         "CANCEL": "Cancel",
+        "COMMON": {
+            "ROLL_DICE": "Roll dice",
+            "ACTIVATE": "Activate",
+            "DEACTIVATE": "Deactivate",
+            "EDIT": "Edit",
+            "DELETE": "Delete",
+            "LEVEL": "Level:",
+            "ADVANCED_MODE": "Advanced Mode"
+        },
         "RR": {
-            "PHANTOM_TOOLTIP": "RR available without skill - rolls on attribute"
+            "PHANTOM_TOOLTIP": "RR available without skill - rolls on attribute",
+            "WITHOUT_SKILL": "─── RR without skill ───"
         },
         "TOOLTIP": {
             "RR": "RR:",

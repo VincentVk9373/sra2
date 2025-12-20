@@ -4,7 +4,7 @@
     <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
         <div class="avatar-section">
             <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
-            <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="Mode Avancé">
+            <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="{{localize 'SRA2.COMMON.ADVANCED_MODE'}}">
                 <i class="fas fa-cog"></i>
             </button>
         </div>
@@ -102,7 +102,7 @@
             </div>
             {{else}}
             <div class="bookmarks-empty">
-                <i>Aucune action rapide</i>
+                <i>{{localize "SRA2.BOOKMARKS.EMPTY"}}</i>
             </div>
             {{/if}}
         </div>
@@ -111,7 +111,7 @@
                 {{#if featsByType.weapon}}
                 <section class="char-section">
                     <header>
-                        <div>ARMES</div>
+                        <div>{{localize "SRA2.CHARACTER.SECTION.WEAPONS"}}</div>
                         <div class="fa fa-dice-d6"></div>
                         <div>RR</div>
                     </header>
@@ -126,21 +126,21 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="weapon">
                                         <div class="context-menu-item" data-action="roll-weapon" data-item-id="{{this._id}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -169,16 +169,16 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -217,21 +217,21 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="spell">
                                         <div class="context-menu-item" data-action="roll-spell" data-item-id="{{this._id}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -245,7 +245,7 @@
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -260,16 +260,16 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -308,21 +308,21 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="power">
                                         <div class="context-menu-item" data-action="roll-power" data-item-id="{{this._id}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -336,7 +336,7 @@
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -348,7 +348,7 @@
                 {{#if featsByType.awakened}}
                 <section class="char-section">
                     <header>
-                        <div>EVEIL</div>
+                        <div>{{localize "SRA2.CHARACTER.SECTION.AWAKENED"}}</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -360,21 +360,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -438,21 +438,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -498,7 +498,7 @@
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.level}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.level}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -533,7 +533,7 @@
                 {{#if featsByType.trait}}
                 <section class="char-section">
                     <header>
-                        <div>TRAITS</div>
+                        <div>{{localize "SRA2.CHARACTER.SECTION.TRAITS"}}</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -545,21 +545,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -583,21 +583,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -621,21 +621,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -665,14 +665,14 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -703,21 +703,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -741,21 +741,21 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-level">Niveau: {{this.system.rating}}</span>
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
                                 <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
@@ -767,7 +767,7 @@
                 {{#if featsByType.connaissance}}
                 <section class="char-section">
                     <header>
-                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</div>
+                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE"}}</div>
                     </header>
                     <div class="char-section-row">
                         <section>
@@ -779,14 +779,14 @@
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}Désactiver{{else}}Activer{{/if}}
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
                                         </div>
                                         {{/if}}
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -800,7 +800,7 @@
             <div>
                 <section class="char-section">
                     <header>
-                        <div>COMPÉTENCES</div>
+                        <div>{{localize "SRA2.SKILLS.LABEL"}}</div>
                         <div class="fa fa-dice-d6"></div>
                         <div>RR</div>
                     </header>
@@ -815,16 +815,16 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="skill">
                                         <div class="context-menu-item" data-action="quick-roll-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -855,16 +855,16 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="quick-roll-specialization" data-item-id="{{this._id}}" data-effective-rating="{{this.effectiveRating}}">
-                                            <i class="fas fa-dice-d6"></i> Lancer les dés
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.COMMON.ROLL_DICE"}}
                                         </div>
                                         <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
                                             <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
                                         </div>
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -918,10 +918,10 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -946,10 +946,10 @@
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="specialization">
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> Editer
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> Supprimer
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>
                                     </div>
                                 </div>
@@ -988,7 +988,7 @@
                 </section>
                 <section class="char-section">
                     <header>
-                        <div>ATTRIBUTS</div>
+                        <div>{{localize "SRA2.CHARACTER.SECTION.ATTRIBUTES"}}</div>
                         <div class="fa fa-dice-d6"></div>
                         <div>RR</div>
                     </header>
@@ -997,7 +997,7 @@
                             <div class="row feat-item">
                                 <div class="name-wrapper">
                                     <div class="name clickable" data-action="roll-attribute" data-attribute="strength"
-                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">Force</div>
+                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="strength"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -1022,7 +1022,7 @@
                             <div class="row feat-item">
                                 <div class="name-wrapper">
                                     <div class="name clickable" data-action="roll-attribute" data-attribute="agility"
-                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">Agilité</div>
+                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">{{localize "SRA2.ATTRIBUTES.AGILITY"}}</div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="agility"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -1047,7 +1047,7 @@
                             <div class="row feat-item">
                                 <div class="name-wrapper">
                                     <div class="name clickable" data-action="roll-attribute" data-attribute="willpower"
-                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">Volonté</div>
+                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="willpower"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -1072,7 +1072,7 @@
                             <div class="row feat-item">
                                 <div class="name-wrapper">
                                     <div class="name clickable" data-action="roll-attribute" data-attribute="logic"
-                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">Logique</div>
+                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">{{localize "SRA2.ATTRIBUTES.LOGIC"}}</div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="logic"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -1097,7 +1097,7 @@
                             <div class="row feat-item">
                                 <div class="name-wrapper">
                                     <div class="name clickable" data-action="roll-attribute" data-attribute="charisma"
-                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">Charisme</div>
+                                        title="{{localize 'SRA2.SKILLS.ROLL'}}">{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</div>
                                 </div>
                                 <div class="dice clickable" data-action="roll-attribute" data-attribute="charisma"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
@@ -1175,7 +1175,7 @@
                             <table class="thresholds-table">
                                 <thead>
                                     <tr>
-                                        <th class="threshold-title">SEUIL</th>
+                                        <th class="threshold-title">{{localize "SRA2.CHARACTER.SECTION.THRESHOLD"}}</th>
                                         <th>{{localize "SRA2.ARMOR_THRESHOLDS.LIGHT"}}</th>
                                         <th>{{localize "SRA2.ARMOR_THRESHOLDS.SEVERE"}}</th>
                                         <th>{{localize "SRA2.ARMOR_THRESHOLDS.INCAPACITATING_SHORT"}}</th>

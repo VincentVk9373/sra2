@@ -19,7 +19,7 @@
           {{else if (eq system.featType "weapon")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}
           {{else if (eq system.featType "spell")}}{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}
           {{else if (eq system.featType "power")}}{{localize "SRA2.FEATS.FEAT_TYPE.POWER"}}
-          {{else if (eq system.featType "connaissance")}}{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}
+          {{else if (eq system.featType "connaissance")}}{{localize "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE"}}
           {{/if}}
         </div>
         <div class="recommended-level-badge" title="{{localize 'SRA2.FEATS.RECOMMENDED_LEVEL'}}">
@@ -135,7 +135,7 @@
               <option value="power" {{#if (eq system.featType "power" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.POWER"}}</option>
               <option value="connaissance" {{#if (eq system.featType "connaissance" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</option>
+                "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE"}}</option>
             </select>
           </div>
 
@@ -536,19 +536,19 @@
               <span class="stat-separator">/</span>
               <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}:</span>
               <span class="stat-value">{{#if (eq system.meleeRange "ok")}}OK{{else}}{{#if (eq system.meleeRange
-                "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
+                "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}{{/if}}</span>
               <span class="stat-separator">/</span>
               <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}:</span>
               <span class="stat-value">{{#if (eq system.shortRange "ok")}}OK{{else}}{{#if (eq system.shortRange
-                "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
+                "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}{{/if}}</span>
               <span class="stat-separator">/</span>
               <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}:</span>
               <span class="stat-value">{{#if (eq system.mediumRange "ok")}}OK{{else}}{{#if (eq system.mediumRange
-                "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
+                "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}{{/if}}</span>
               <span class="stat-separator">/</span>
               <span class="stat-label">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}:</span>
               <span class="stat-value">{{#if (eq system.longRange "ok")}}OK{{else}}{{#if (eq system.longRange
-                "disadvantage")}}Désavantage{{else}}-{{/if}}{{/if}}</span>
+                "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}{{/if}}</span>
             </div>
           </div>
           {{/if}}

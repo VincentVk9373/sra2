@@ -896,7 +896,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
-          "connaissance": "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE",
+          "connaissance": "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE",
           "power": "SRA2.FEATS.FEAT_TYPE.POWER"
         },
         label: "SRA2.FEATS.FEAT_TYPE.LABEL"
@@ -3973,7 +3973,7 @@ async function toggleItemBookmark(actor, itemId, sheet) {
     return true;
   } catch (error) {
     console.error("Error toggling bookmark:", error);
-    ui.notifications?.error(game.i18n?.localize("SRA2.BOOKMARKS.ERROR") || "Erreur lors de la mise à jour du bookmark");
+    ui.notifications?.error(game.i18n?.localize("SRA2.BOOKMARKS.ERROR") || "Error updating bookmark");
     return false;
   }
 }
@@ -5733,7 +5733,7 @@ class CharacterSheet extends ActorSheet {
             <option value="weapons-spells">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS")}</option>
             <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
             <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
-            <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONNAISSANCE")}</option>
+            <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.KNOWLEDGE")}</option>
           </select>
           <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
             <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.FEATS.CREATE")}
@@ -6139,7 +6139,7 @@ class CharacterSheet extends ActorSheet {
         ui.notifications?.warn(game.i18n.localize("SRA2.ATTRIBUTES.NO_DICE"));
         return;
       }
-      const vehicleName = vehicleActor.name || "Véhicule";
+      const vehicleName = vehicleActor.name || "Vehicle";
       const autopilotLabel = game.i18n.localize("SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT");
       const rrSources = [];
       handleRollRequest({
@@ -6963,7 +6963,7 @@ class CharacterSheetV2 extends CharacterSheet {
           <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
           <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
           <option value="armor">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.ARMOR")}</option>
-          <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONNAISSANCE")}</option>
+          <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.KNOWLEDGE")}</option>
         </select>
         <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
           <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
@@ -9325,7 +9325,7 @@ class RollDialog extends Application {
       height: 630,
       resizable: true,
       minimizable: false,
-      title: "Jet de Dés"
+      title: game.i18n.localize("SRA2.ROLL_DIALOG.TITLE")
     });
   }
   getData() {
@@ -9426,10 +9426,10 @@ class RollDialog extends Application {
     context.rollMode = this.rollMode;
     context.hasSevereWound = hasSevereWound;
     context.rangeOptions = {
-      melee: { label: "Mêlée (< 3m)", value: meleeRange },
-      short: { label: "Portée courte (3-15m)", value: shortRange },
-      medium: { label: "Portée moyenne (15-60m)", value: mediumRange },
-      long: { label: "Portée longue (> 60m)", value: longRange }
+      melee: { label: game.i18n.localize("SRA2.ROLL_DIALOG.RANGE_MELEE"), value: meleeRange },
+      short: { label: game.i18n.localize("SRA2.ROLL_DIALOG.RANGE_SHORT"), value: shortRange },
+      medium: { label: game.i18n.localize("SRA2.ROLL_DIALOG.RANGE_MEDIUM"), value: mediumRange },
+      long: { label: game.i18n.localize("SRA2.ROLL_DIALOG.RANGE_LONG"), value: longRange }
     };
     let dicePool = 0;
     if (this.rollData.specLevel !== void 0) {
@@ -9668,7 +9668,7 @@ class RollDialog extends Application {
         const skillSelected = skill.name === this.rollData.skillName || this.rollData.linkedAttackSkill && normalizeSearchText(skill.name) === normalizeSearchText(this.rollData.linkedAttackSkill);
         dropdownOptions.push({
           value: `skill:${skill.id}`,
-          label: `${skill.name} (${skill.dicePool} dés)`,
+          label: `${skill.name} (${skill.dicePool} ${game.i18n.localize("SRA2.ROLL_DIALOG.DICE")})`,
           type: "skill",
           id: skill.id,
           name: skill.name,
@@ -9681,7 +9681,7 @@ class RollDialog extends Application {
           const specSelected = spec.name === this.rollData.specName || this.rollData.linkedAttackSpecialization && normalizeSearchText(spec.name) === normalizeSearchText(this.rollData.linkedAttackSpecialization);
           dropdownOptions.push({
             value: `spec:${spec.id}`,
-            label: `  └ ${spec.name} (${spec.dicePool} dés)`,
+            label: `  └ ${spec.name} (${spec.dicePool} ${game.i18n.localize("SRA2.ROLL_DIALOG.DICE")})`,
             type: "specialization",
             id: spec.id,
             name: spec.name,
@@ -9697,7 +9697,7 @@ class RollDialog extends Application {
       if (phantomRRs.length > 0) {
         dropdownOptions.push({
           value: "",
-          label: "─── RR sans compétence ───",
+          label: game.i18n.localize("SRA2.RR.WITHOUT_SKILL"),
           type: "separator",
           disabled: true
         });
@@ -9708,7 +9708,7 @@ class RollDialog extends Application {
           const typeIcon = phantom.type === "skill" ? "👻" : "👻└";
           dropdownOptions.push({
             value: `${phantomType}:${phantom.name}`,
-            label: `${typeIcon} ${phantom.name} (${attributeValue} dés + RR${phantom.rr})`,
+            label: `${typeIcon} ${phantom.name} (${attributeValue} ${game.i18n.localize("SRA2.ROLL_DIALOG.DICE")} + RR${phantom.rr})`,
             type: phantomType,
             id: phantom.name,
             // Use name as ID since phantom items don't exist
@@ -9758,11 +9758,11 @@ class RollDialog extends Application {
       const attributes = actorSystem?.attributes || {};
       const attributeNames = ["strength", "agility", "willpower", "logic", "charisma"];
       const attributeLabels = {
-        strength: game.i18n?.localize("SRA2.ATTRIBUTES.STRENGTH") || "Force",
-        agility: game.i18n?.localize("SRA2.ATTRIBUTES.AGILITY") || "Agilité",
-        willpower: game.i18n?.localize("SRA2.ATTRIBUTES.WILLPOWER") || "Volonté",
-        logic: game.i18n?.localize("SRA2.ATTRIBUTES.LOGIC") || "Logique",
-        charisma: game.i18n?.localize("SRA2.ATTRIBUTES.CHARISMA") || "Charisme"
+        strength: game.i18n?.localize("SRA2.ATTRIBUTES.STRENGTH") || "Strength",
+        agility: game.i18n?.localize("SRA2.ATTRIBUTES.AGILITY") || "Agility",
+        willpower: game.i18n?.localize("SRA2.ATTRIBUTES.WILLPOWER") || "Willpower",
+        logic: game.i18n?.localize("SRA2.ATTRIBUTES.LOGIC") || "Logic",
+        charisma: game.i18n?.localize("SRA2.ATTRIBUTES.CHARISMA") || "Charisma"
       };
       for (const attrName of attributeNames) {
         const attrValue = attributes[attrName] || 0;
@@ -10218,17 +10218,17 @@ class RollDialog extends Application {
       }
       if (this.rollData.isDefend && !this.rollData.threshold) {
         if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.NO_SKILL_SELECTED") || "Veuillez sélectionner une compétence pour la défense");
+          ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.NO_SKILL_SELECTED") || "Please select a defense skill");
           return;
         }
       }
       if (this.rollData.isCounterAttack && !this.rollData.threshold) {
         if (!this.rollData.selectedWeaponId && !this.rollData.skillName && !this.rollData.specName) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPON_SELECTED") || "Veuillez sélectionner une arme pour la contre-attaque");
+          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPON_SELECTED") || "Please select a weapon for the counter-attack");
           return;
         }
         if (dicePool === 0) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_DICE_POOL") || "La réserve de dés pour la contre-attaque est de 0. Veuillez sélectionner une arme valide.");
+          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_DICE_POOL") || "The dice pool for the counter-attack is 0. Please select a valid weapon.");
           return;
         }
       }
@@ -10249,7 +10249,7 @@ class RollDialog extends Application {
             selectedRangeValue = longRange;
           }
           if (selectedRangeValue === "none") {
-            ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.INVALID_RANGE") || "La portée sélectionnée n'est pas disponible pour cette arme. Veuillez sélectionner une portée valide.");
+            ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.INVALID_RANGE") || "The selected range is not available for this weapon. Please select a valid range.");
             return;
           }
         }
@@ -12710,7 +12710,7 @@ class SRA2System {
           }
         }
         if (!actor) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.NO_ACTOR") || "Aucun personnage contrôlé");
+          ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.NO_ACTOR") || "No controlled character");
           return;
         }
         const diceCount = parseInt(rollDiceContainer.find(".sra2-dice-count-input").val()) || 0;
@@ -12805,7 +12805,7 @@ class SRA2System {
           isAttack: false,
           isDefend: false,
           isCounterAttack: false,
-          skillName: "Jet de dés",
+          skillName: game.i18n.localize("SRA2.ROLL_DIALOG.TITLE"),
           itemName: null,
           damageValue: null,
           defenseResult: null,

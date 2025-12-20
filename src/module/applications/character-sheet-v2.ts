@@ -446,7 +446,7 @@ export class CharacterSheetV2 extends CharacterSheet {
           <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
           <option value="cyberware">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERWARE')}</option>
           <option value="armor">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.ARMOR')}</option>
-          <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONNAISSANCE')}</option>
+          <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.KNOWLEDGE')}</option>
         </select>
         <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
           <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.SEARCH.CREATE')}

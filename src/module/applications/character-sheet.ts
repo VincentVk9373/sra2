@@ -1666,7 +1666,7 @@ export class CharacterSheet extends ActorSheet {
             <option value="weapons-spells">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS')}</option>
             <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
             <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
-            <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CONNAISSANCE')}</option>
+            <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.KNOWLEDGE')}</option>
           </select>
           <button class="create-feat-btn" data-feat-name="${this.lastFeatSearchTerm}">
             <i class="fas fa-plus"></i> ${game.i18n!.localize('SRA2.FEATS.CREATE')}
@@ -2214,7 +2214,7 @@ export class CharacterSheet extends ActorSheet {
         return;
       }
       
-      const vehicleName = vehicleActor.name || 'Véhicule';
+      const vehicleName = vehicleActor.name || 'Vehicle';
       const autopilotLabel = game.i18n!.localize('SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT');
       
       // Get RR sources for autopilot (from vehicle's RR sources if any)

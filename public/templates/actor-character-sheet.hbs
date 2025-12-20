@@ -69,7 +69,7 @@
             {{/each}}
           </div>
         {{#if (gt bonusAnarchy 0)}}
-          <span class="track-label">Combat</span>
+          <span class="track-label">{{localize "SRA2.CHARACTER.SECTION.COMBAT"}}</span>
           <div class="track-boxes">
             {{#each bonusAnarchySpent}}
               <label class="track-box {{#if this.value}}checked{{/if}}">
@@ -80,7 +80,7 @@
           </div>
         {{/if}}
           <div class="temp-anarchy-section">
-            <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="Ajouter un point d'anarchy bonus">+</span>
+            <span class="track-label temp-anarchy-label" data-action="add-temp-anarchy" title="{{localize 'SRA2.ANARCHY_COUNTER.ADD'}}">+</span>
             {{#if (gt tempAnarchy 0)}}
             <div class="track-boxes temp-anarchy-boxes">
               {{#each tempAnarchySpent}}
@@ -110,7 +110,7 @@
         </div>
         {{else}}
         <div class="bookmarks-empty">
-          <i>Aucune action rapide</i>
+          <i>{{localize "SRA2.BOOKMARKS.EMPTY"}}</i>
         </div>
         {{/if}}
       </div>
@@ -1039,7 +1039,7 @@
             <!-- Connaissance Section -->
             {{#if featsByType.connaissance}}
             <div class="feats-section connaissance-section">
-              <h2>{{localize "SRA2.FEATS.FEAT_TYPE.CONNAISSANCE"}}</h2>
+              <h2>{{localize "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE"}}</h2>
               <div class="feats-list" data-drop-zone="feat">
                 {{#each featsByType.connaissance}}
                 <div class="feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}" draggable="true">
@@ -1169,7 +1169,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
                         <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange
                           "ok")}}OK{{else if (eq this.system.meleeRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.shortRange "none")}}
@@ -1177,7 +1177,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
                         <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange
                           "ok")}}OK{{else if (eq this.system.shortRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.mediumRange "none")}}
@@ -1185,7 +1185,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
                         <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange
                           "ok")}}OK{{else if (eq this.system.mediumRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.longRange "none")}}
@@ -1193,7 +1193,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
                         <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange
                           "ok")}}OK{{else if (eq this.system.longRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                     </div>
@@ -1329,7 +1329,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
                         <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange
                           "ok")}}OK{{else if (eq this.system.meleeRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.shortRange "none")}}
@@ -1337,7 +1337,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
                         <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange
                           "ok")}}OK{{else if (eq this.system.shortRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.mediumRange "none")}}
@@ -1345,7 +1345,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
                         <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange
                           "ok")}}OK{{else if (eq this.system.mediumRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.longRange "none")}}
@@ -1353,7 +1353,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
                         <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange
                           "ok")}}OK{{else if (eq this.system.longRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                     </div>
@@ -1489,7 +1489,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MELEE_SHORT"}}</span>
                         <span class="range-value {{this.system.meleeRange}}">{{#if (eq this.system.meleeRange
                           "ok")}}OK{{else if (eq this.system.meleeRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.shortRange "none")}}
@@ -1497,7 +1497,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.SHORT_SHORT"}}</span>
                         <span class="range-value {{this.system.shortRange}}">{{#if (eq this.system.shortRange
                           "ok")}}OK{{else if (eq this.system.shortRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.mediumRange "none")}}
@@ -1505,7 +1505,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.MEDIUM_SHORT"}}</span>
                         <span class="range-value {{this.system.mediumRange}}">{{#if (eq this.system.mediumRange
                           "ok")}}OK{{else if (eq this.system.mediumRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                       {{#unless (eq this.system.longRange "none")}}
@@ -1513,7 +1513,7 @@
                         <span class="range-name">{{localize "SRA2.FEATS.WEAPON.LONG_SHORT"}}</span>
                         <span class="range-value {{this.system.longRange}}">{{#if (eq this.system.longRange
                           "ok")}}OK{{else if (eq this.system.longRange
-                          "disadvantage")}}Désavantage{{else}}-{{/if}}</span>
+                          "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_LABEL"}}{{else}}-{{/if}}</span>
                       </span>
                       {{/unless}}
                     </div>

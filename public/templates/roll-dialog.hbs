@@ -21,7 +21,7 @@
             <div class="item-display">
                 <div class="item-name">{{rollData.itemName}}</div>
                 {{#if rollData.damageValue}}
-                <div class="item-damage">Dégâts: {{rollData.damageValue}}</div>
+                <div class="item-damage">{{localize "SRA2.ROLL_DIALOG.DAMAGE_LABEL"}}: {{rollData.damageValue}}</div>
                 {{/if}}
             </div>
         </section>
@@ -30,11 +30,11 @@
         {{#if rollData.isCounterAttack}}
         <section class="roll-section counterattack-section">
             <h3 class="section-title">
-                <i class="fas fa-fist-raised"></i> Contre attaque
+                <i class="fas fa-fist-raised"></i> {{localize "SRA2.ROLL_DIALOG.COUNTERATTACK"}}
             </h3>
             {{#if rollData.availableWeapons}}
             <div class="counterattack-weapon-selection">
-                <label class="weapon-select-label">Sélectionnez une arme:</label>
+                <label class="weapon-select-label">{{localize "SRA2.ROLL_DIALOG.SELECT_WEAPON"}}</label>
                 <select class="weapon-select" name="selectedWeapon">
                     <option value="">-- Choisissez une arme --</option>
                     {{#each rollData.availableWeapons}}
@@ -50,11 +50,11 @@
             <div class="counterattack-display">
                 <div class="counterattack-skill">
                     {{#if rollData.specName}}
-                    {{rollData.specName}} (Spécialisation)
+                    {{rollData.specName}} ({{localize "SRA2.ROLL_DIALOG.SPECIALIZATION"}})
                     {{else if rollData.skillName}}
-                    {{rollData.skillName}} (Compétence)
+                    {{rollData.skillName}} ({{localize "SRA2.ROLL_DIALOG.SKILL"}})
                     {{else}}
-                    Compétence de contre-attaque
+                    {{localize "SRA2.ROLL_DIALOG.COUNTERATTACK_SKILL"}}
                     {{/if}}
                 </div>
             </div>
@@ -63,16 +63,16 @@
         {{else if rollData.isDefend}}
         <section class="roll-section defense-section">
             <h3 class="section-title">
-                <i class="fas fa-shield-alt"></i> Se défendre
+                <i class="fas fa-shield-alt"></i> {{localize "SRA2.ROLL_DIALOG.DEFEND_TITLE"}}
             </h3>
             <div class="defense-display">
                 <div class="defense-skill">
                     {{#if rollData.specName}}
-                    {{rollData.specName}} (Spécialisation)
+                    {{rollData.specName}} ({{localize "SRA2.ROLL_DIALOG.SPECIALIZATION"}})
                     {{else if rollData.skillName}}
-                    {{rollData.skillName}} (Compétence)
+                    {{rollData.skillName}} ({{localize "SRA2.ROLL_DIALOG.SKILL"}})
                     {{else}}
-                    Compétence de défense
+                    {{localize "SRA2.ROLL_DIALOG.DEFENSE_SKILL"}}
                     {{/if}}
                 </div>
             </div>
@@ -82,14 +82,14 @@
         {{#if rollData.skillName}}
         <section class="roll-section skill-roll-section">
             <h3 class="section-title">
-                <i class="fas fa-dice"></i> Faire un jet de
+                <i class="fas fa-dice"></i> {{localize "SRA2.ROLL_DIALOG.ROLL_FOR"}}
             </h3>
             <div class="skill-roll-display">
                 <div class="skill-roll-name">
                     {{#if rollData.specName}}
-                    {{rollData.specName}} (Spécialisation)
+                    {{rollData.specName}} ({{localize "SRA2.ROLL_DIALOG.SPECIALIZATION"}})
                     {{else}}
-                    {{rollData.skillName}} (Compétence)
+                    {{rollData.skillName}} ({{localize "SRA2.ROLL_DIALOG.SKILL"}})
                     {{/if}}
                 </div>
             </div>
@@ -100,7 +100,7 @@
         <!-- Target Information -->
         <section class="roll-section target-section">
             <h3 class="section-title">
-                <i class="fas fa-bullseye"></i> {{#if rollData.isDefend}}Attaquant{{else}}Cible{{/if}}
+                <i class="fas fa-bullseye"></i> {{#if rollData.isDefend}}{{localize "SRA2.ROLL_DIALOG.ATTACKER"}}{{else}}{{localize "SRA2.ROLL_DIALOG.TARGET"}}{{/if}}
                 {{#if distanceText}}
                 <div class="target-distance"> |
                     <i class="fas fa-ruler"></i> {{distanceText}}
@@ -119,7 +119,7 @@
                     <div class="target-placeholder">
                         <i class="fas fa-question-circle"></i>
                     </div>
-                    <div class="target-name">Aucune cible</div>
+                    <div class="target-name">{{localize "SRA2.ROLL_DIALOG.NO_TARGET"}}</div>
                 </div>
                 {{/if}}
             </div>
@@ -129,9 +129,9 @@
         <div class="roll-dice-section">
             <button type="button" class="roll-dice-button">
                 {{#if hasThreshold}}
-                <i class="fas fa-bullseye"></i> Appliquer le seuil
+                <i class="fas fa-bullseye"></i> {{localize "SRA2.ROLL_DIALOG.APPLY_THRESHOLD"}}
                 {{else}}
-                <i class="fas fa-dice"></i> Lancer les Dés
+                <i class="fas fa-dice"></i> {{localize "SRA2.ROLL_DIALOG.ROLL_DICE"}}
                 {{/if}}
             </button>
         </div>
@@ -144,16 +144,16 @@
         <section class="roll-section dice-section">
             <h3 class="section-title">
                 {{#if hasThreshold}}
-                <i class="fas fa-bullseye"></i> Seuil
+                <i class="fas fa-bullseye"></i> {{localize "SRA2.ROLL_DIALOG.THRESHOLD"}}
                 {{else}}
-                <i class="fas fa-dice"></i> Pool de Dés | {{dicePool}} dés
+                <i class="fas fa-dice"></i> {{localize "SRA2.ROLL_DIALOG.DICE_POOL"}} | {{dicePool}} {{localize "SRA2.ROLL_DIALOG.DICE"}}
                 {{/if}}
             </h3>
             <div class="dice-pool-display">
                 {{#if hasThreshold}}
                 <div class="threshold-count">
                     <span class="threshold-number">{{threshold}}</span>
-                    <span class="threshold-label">seuil</span>
+                    <span class="threshold-label">{{localize "SRA2.ROLL_DIALOG.THRESHOLD_LABEL"}}</span>
                 </div>
                 {{else}}
                 <div class="dice-list-container">
@@ -161,7 +161,7 @@
                         {{#each diceList}}
                         <div class="dice-icon {{#if this.isRiskDice}}risk-dice{{/if}} dice-{{this.riskColor}}"
                             data-dice-index="{{this.index}}" style="cursor: pointer;"
-                            title="{{#if this.isRiskDice}}Dé de risque{{else}}Dé normal{{/if}}"
+                            title="{{#if this.isRiskDice}}{{localize "SRA2.ROLL_DIALOG.RISK_DIE"}}{{else}}{{localize "SRA2.ROLL_DIALOG.NORMAL_DIE"}}{{/if}}"
                             data-risk-color="{{this.riskColor}}">
                             <i class="fas fa-dice"></i>
                         </div>
@@ -171,7 +171,7 @@
 
                     {{#if riskDiceCount}}
                     <div class="risk-dice-count-text">
-                        {{riskDiceCount}} dés de risque
+                        {{riskDiceCount}} {{localize "SRA2.ROLL_DIALOG.RISK_DICE"}}
                     </div>
                     {{/if}}
                     {{#if riskLevelText}}
@@ -188,12 +188,12 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr;">
             <section class="roll-section skill-section">
                 <h3 class="section-title">
-                    <i class="fas fa-book"></i> Compétence
+                    <i class="fas fa-book"></i> {{localize "SRA2.ROLL_DIALOG.SKILL"}}
                 </h3>
                 <div class="skill-display">
                     {{#if dropdownOptions}}
                     <select class="skill-dropdown" name="skill-select" {{#if hasThreshold}}disabled{{/if}}>
-                        <option value="">-- Sélectionner --</option>
+                        <option value="">{{localize "SRA2.ROLL_DIALOG.SELECT"}}</option>
                         {{#each dropdownOptions}}
                         <option value="{{value}}" {{#if disabled}}disabled{{/if}} {{#if (eq value ../selectedValue)}}selected{{/if}}>{{label}}</option>
                         {{/each}}
@@ -202,9 +202,9 @@
                     <div class="selected-skill">
                         <span class="skill-name">{{skillDisplayName}}</span>
                         {{#if rollData.specName}}
-                        <span class="skill-type">(Spécialisation)</span>
+                        <span class="skill-type">({{localize "SRA2.ROLL_DIALOG.SPECIALIZATION"}})</span>
                         {{else if rollData.skillName}}
-                        <span class="skill-type">(Compétence)</span>
+                        <span class="skill-type">({{localize "SRA2.ROLL_DIALOG.SKILL"}})</span>
                         {{/if}}
                     </div>
                     {{/if}}
@@ -213,13 +213,13 @@
             <!-- Attribute Selection (for skill/spec/attribute rolls) -->
             <section class="roll-section range-section no-border-left">
                 <h3 class="section-title">
-                    <i class="fas fa-dumbbell"></i> Attribut
+                    <i class="fas fa-dumbbell"></i> {{localize "SRA2.ROLL_DIALOG.ATTRIBUTE"}}
                 </h3>
                 <div class="range-display">
                     <select class="attribute-dropdown" name="attribute-select">
                         {{#each attributeOptions}}
                         <option value="{{this.value}}" {{#if (eq this.value ../selectedAttribute)}}selected{{/if}}>
-                            {{this.label}} ({{this.diceValue}} dés)
+                            {{this.label}} ({{this.diceValue}} {{localize "SRA2.ROLL_DIALOG.DICE"}})
                         </option>
                         {{/each}}
                     </select>
@@ -234,10 +234,10 @@
 
             <section class="roll-section roll-mode-section">
                 <h3 class="section-title">
-                    <i class="fas fa-adjust"></i> Mode de Jet
+                    <i class="fas fa-adjust"></i> {{localize "SRA2.ROLL_DIALOG.ROLL_MODE"}}
                     {{#if hasSevereWound}}
-                    <span class="severe-wound-warning" title="Blessure grave: désavantage forcé">
-                        <i class="fas fa-exclamation-triangle"></i> Désavantage forcé (blessure grave)
+                    <span class="severe-wound-warning" title="{{localize 'SRA2.ROLL_DIALOG.SEVERE_WOUND_WARNING'}}">
+                        <i class="fas fa-exclamation-triangle"></i> {{localize "SRA2.ROLL_DIALOG.FORCED_DISADVANTAGE"}}
                     </span>
                     {{/if}}
                 </h3>
@@ -246,17 +246,17 @@
                         <label class="roll-mode-option {{#if hasSevereWound}}disabled{{/if}}">
                             <input type="radio" name="roll-mode" value="normal" {{#if (eq rollMode "normal"
                                 )}}checked{{/if}} {{#if hasSevereWound}}disabled{{/if}} />
-                            <span>Normal</span>
+                            <span>{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_NORMAL"}}</span>
                         </label>
                         <label class="roll-mode-option disadvantage {{#if hasSevereWound}}forced{{/if}}">
                             <input type="radio" name="roll-mode" value="disadvantage" {{#if (eq rollMode "disadvantage"
                                 )}}checked{{/if}} {{#if hasSevereWound}}disabled{{/if}} />
-                            <span>Désavantage{{#if hasSevereWound}} (forcé){{/if}}</span>
+                            <span>{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_DISADVANTAGE"}}{{#if hasSevereWound}} ({{localize "SRA2.ROLL_DIALOG.DISADVANTAGE_FORCED"}}){{/if}}</span>
                         </label>
                         <label class="roll-mode-option advantage {{#if hasSevereWound}}disabled{{/if}}">
                             <input type="radio" name="roll-mode" value="advantage" {{#if (eq rollMode "advantage"
                                 )}}checked{{/if}} {{#if hasSevereWound}}disabled{{/if}} />
-                            <span>Avantage</span>
+                            <span>{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_ADVANTAGE"}}</span>
                         </label>
                     </div>
                 </div>
@@ -266,27 +266,27 @@
             {{#if (and isWeaponRoll (not rollData.isDefend))}}
             <section class="roll-section range-section no-border-left">
                 <h3 class="section-title">
-                    <i class="fas fa-crosshairs"></i> Portée
+                    <i class="fas fa-crosshairs"></i> {{localize "SRA2.ROLL_DIALOG.RANGE"}}
                 </h3>
                 <div class="range-display">
                     <select class="range-dropdown {{#if (eq selectedRangeValue " none")}}invalid-range{{/if}}"
                         name="range-select">
-                        <option value="">-- Sélectionner --</option>
+                        <option value="">{{localize "SRA2.ROLL_DIALOG.SELECT"}}</option>
                         <option value="melee" {{#if (eq selectedRange "melee" )}}selected{{/if}}>
-                            {{rangeOptions.melee.label}} ({{#if (eq rangeOptions.melee.value "ok")}}OK{{else if (eq
-                            rangeOptions.melee.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                            {{rangeOptions.melee.label}} ({{#if (eq rangeOptions.melee.value "ok")}}{{localize "SRA2.ROLL_DIALOG.RANGE_OK"}}{{else if (eq
+                            rangeOptions.melee.value "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_DISADVANTAGE"}}{{else}}{{localize "SRA2.ROLL_DIALOG.RANGE_NONE"}}{{/if}})
                         </option>
                         <option value="short" {{#if (eq selectedRange "short" )}}selected{{/if}}>
-                            {{rangeOptions.short.label}} ({{#if (eq rangeOptions.short.value "ok")}}OK{{else if (eq
-                            rangeOptions.short.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                            {{rangeOptions.short.label}} ({{#if (eq rangeOptions.short.value "ok")}}{{localize "SRA2.ROLL_DIALOG.RANGE_OK"}}{{else if (eq
+                            rangeOptions.short.value "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_DISADVANTAGE"}}{{else}}{{localize "SRA2.ROLL_DIALOG.RANGE_NONE"}}{{/if}})
                         </option>
                         <option value="medium" {{#if (eq selectedRange "medium" )}}selected{{/if}}>
-                            {{rangeOptions.medium.label}} ({{#if (eq rangeOptions.medium.value "ok")}}OK{{else if (eq
-                            rangeOptions.medium.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                            {{rangeOptions.medium.label}} ({{#if (eq rangeOptions.medium.value "ok")}}{{localize "SRA2.ROLL_DIALOG.RANGE_OK"}}{{else if (eq
+                            rangeOptions.medium.value "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_DISADVANTAGE"}}{{else}}{{localize "SRA2.ROLL_DIALOG.RANGE_NONE"}}{{/if}})
                         </option>
                         <option value="long" {{#if (eq selectedRange "long" )}}selected{{/if}}>
-                            {{rangeOptions.long.label}} ({{#if (eq rangeOptions.long.value "ok")}}OK{{else if (eq
-                            rangeOptions.long.value "disadvantage")}}Désavantage{{else}}Aucun{{/if}})
+                            {{rangeOptions.long.label}} ({{#if (eq rangeOptions.long.value "ok")}}{{localize "SRA2.ROLL_DIALOG.RANGE_OK"}}{{else if (eq
+                            rangeOptions.long.value "disadvantage")}}{{localize "SRA2.ROLL_DIALOG.ROLL_MODE_DISADVANTAGE"}}{{else}}{{localize "SRA2.ROLL_DIALOG.RANGE_NONE"}}{{/if}})
                         </option>
                     </select>
                 </div>
@@ -300,7 +300,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
                     <h3 class="section-title">
-                        <i class="fas fa-info-circle"></i> Réduction de risque | {{totalRR}} RR
+                        <i class="fas fa-info-circle"></i> {{localize "SRA2.ROLL_DIALOG.RISK_REDUCTION"}} | {{totalRR}} {{localize "SRA2.ROLL_DIALOG.RR"}}
                     </h3>
                     <div class="summary-grid">
                         <div class="summary-item">
@@ -333,7 +333,7 @@
                 {{#if riskProbabilities}}
                 <div class="risk-probabilities">
                     <h3 class="section-title">
-                        <i class="fas fa-chart-pie"></i> Probabilités de risque
+                        <i class="fas fa-chart-pie"></i> {{localize "SRA2.ROLL_DIALOG.RISK_PROBABILITIES"}}
                     </h3>
                     <div class="probabilities-list">
                         <div class="probability-item">

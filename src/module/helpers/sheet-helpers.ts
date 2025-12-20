@@ -1622,7 +1622,7 @@ export async function toggleItemBookmark(actor: any, itemId: string, sheet?: any
     return true;
   } catch (error) {
     console.error('Error toggling bookmark:', error);
-    ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Erreur lors de la mise à jour du bookmark');
+    ui.notifications?.error(game.i18n?.localize('SRA2.BOOKMARKS.ERROR') || 'Error updating bookmark');
     return false;
   }
 }

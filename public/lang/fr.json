@@ -37,7 +37,11 @@
                 "RESOURCES": "Ressources",
                 "COMBAT": "Combat",
                 "SKILLS": "Compétences",
-                "FEATS": "Atouts"
+                "FEATS": "Atouts",
+                "WEAPONS": "Armes",
+                "AWAKENED": "Éveil",
+                "TRAITS": "Traits",
+                "THRESHOLD": "Seuil"
             },
             "LINKED_VEHICLES": "Véhicules liés"
         },
@@ -324,7 +328,7 @@
                 "WEAPONS_SPELLS": "Armes et Sorts",
                 "WEAPON": "Arme",
                 "SPELL": "Sort",
-                "CONNAISSANCE": "Connaissance",
+                "KNOWLEDGE": "Connaissance",
                 "POWER": "Pouvoir"
             },
             "SECTION": {
@@ -725,7 +729,28 @@
             "CANNOT_FIND_TARGET": "Impossible de trouver la cible pour appliquer les dégâts",
             "NO_DAMAGE_TO_APPLY": "Aucun dégât à appliquer",
             "DAMAGE_APPLY_ERROR": "Erreur lors de l'application des dégâts",
-            "CANNOT_FIND_DEFENDER": "Impossible de trouver le défenseur: {name}"
+            "CANNOT_FIND_DEFENDER": "Impossible de trouver le défenseur: {name}",
+            "RESULT": "Résultat",
+            "ATTACK_SUCCESSES_LABEL": "Succès d'attaque :",
+            "DEFENSE_SUCCESSES_LABEL": "Succès de défense :",
+            "COUNTERATTACK_SUCCESSES_LABEL": "Succès de contre-attaque :",
+            "DAMAGE_LABEL": "Dégâts :",
+            "DAMAGE_DEALT_LABEL": "Dégâts infligés :",
+            "DAMAGE_MENTAL_LABEL": "Dégâts (mental) :",
+            "MATRIX_DAMAGE_LABEL": "Dégâts matriciels :",
+            "BIOFEEDBACK_DAMAGE_LABEL": "Dégâts de biofeedback :",
+            "APPLY_MATRIX_DAMAGE": "Appliquer les dégâts matriciels à {target}",
+            "APPLY_BIOFEEDBACK_DAMAGE": "Appliquer les dégâts de biofeedback à {target}",
+            "APPLY_DAMAGE_TO": "Appliquer les dégâts à {target}",
+            "CONNECTION_LOCK": "Verrouillage de connexion",
+            "CONNECTION_LOCK_DESC": "La cible ne peut pas se déconnecter pendant un tour",
+            "FIREWALL_REDUCTION": "Réduction de Firewall",
+            "FIREWALL_REDUCTION_DESC": "Le Firewall de la cible est réduit de 1 pour la durée de la Scène",
+            "ATTACK_REDUCTION": "Réduction d'Attaque",
+            "ATTACK_REDUCTION_DESC": "L'Attaque de la cible est réduite de 1 pour la durée de la Scène",
+            "LOCATION_DISCOVERED": "Localisation découverte",
+            "LOCATION_DISCOVERED_DESC": "La localisation physique de la cible a été découverte",
+            "DEALS_DAMAGE": "{name} inflige {damage} dégâts"
         },
         "BOOKMARKS": {
             "TITLE": "Actions Rapides",
@@ -734,6 +759,7 @@
             "ADD": "Ajouter aux favoris",
             "REMOVE": "Retirer des favoris",
             "NO_BOOKMARKS": "Aucun favori configuré",
+            "EMPTY": "Aucune action rapide",
             "TOGGLE": "Favori",
             "CLICK_TO_ROLL": "Cliquer pour lancer un jet",
             "ERROR": "Erreur lors de la mise à jour du favori"
@@ -915,7 +941,9 @@
             "TARGET": "Cible",
             "NO_TARGET": "Aucune cible",
             "ROLL_DICE": "Lancer les Dés",
+            "APPLY_THRESHOLD": "Appliquer le seuil",
             "THRESHOLD": "Seuil",
+            "THRESHOLD_LABEL": "seuil",
             "DICE_POOL": "Pool de Dés",
             "DICE": "dés",
             "RISK_DICE": "Dés de risque",
@@ -924,6 +952,22 @@
             "SKILL": "Compétence",
             "SELECT": "-- Sélectionner --",
             "SPECIALIZATION": "Spécialisation",
+            "COUNTERATTACK_SKILL": "Compétence de contre-attaque",
+            "DEFENSE_SKILL": "Compétence de défense",
+            "DEFEND_TITLE": "Se défendre",
+            "ROLL_FOR": "Faire un jet de",
+            "ATTACKER": "Attaquant",
+            "ATTRIBUTE": "Attribut",
+            "DAMAGE_LABEL": "Dégâts",
+            "COUNTERATTACK": "Contre attaque",
+            "SELECT_WEAPON": "Sélectionnez une arme:",
+            "CHOOSE_WEAPON": "-- Choisissez une arme --",
+            "SEVERE_WOUND_WARNING": "Blessure grave: désavantage forcé",
+            "FORCED_DISADVANTAGE": "Désavantage forcé (blessure grave)",
+            "DISADVANTAGE_FORCED": "Désavantage (forcé)",
+            "DISADVANTAGE_LABEL": "Désavantage",
+            "NONE_LABEL": "Aucun",
+            "RISK_PROBABILITIES": "Probabilités de risque",
             "ROLL_MODE": "Mode de Jet",
             "ROLL_MODE_NORMAL": "Normal",
             "ROLL_MODE_DISADVANTAGE": "Désavantage",
@@ -959,8 +1003,18 @@
         "REFERENCE": "Référence",
         "CONFIRM": "Confirmer",
         "CANCEL": "Annuler",
+        "COMMON": {
+            "ROLL_DICE": "Lancer les dés",
+            "ACTIVATE": "Activer",
+            "DEACTIVATE": "Désactiver",
+            "EDIT": "Éditer",
+            "DELETE": "Supprimer",
+            "LEVEL": "Niveau :",
+            "ADVANCED_MODE": "Mode Avancé"
+        },
         "RR": {
-            "PHANTOM_TOOLTIP": "RR disponible sans compétence - jet sur attribut"
+            "PHANTOM_TOOLTIP": "RR disponible sans compétence - jet sur attribut",
+            "WITHOUT_SKILL": "─── RR sans compétence ───"
         },
         "TOOLTIP": {
             "RR": "RR:",
