@@ -1383,7 +1383,12 @@
         </section>
         <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">
             <div class="footer-content">
-                        {{#if system.reference}}
+                        {{#if advancedMode}}
+                        <div class="footer-reference">
+                            <label class="reference-label">{{localize "SRA2.COMMON.REFERENCE"}}:</label>
+                            <input type="text" name="system.reference" value="{{system.reference}}" class="reference-input" placeholder="p.XX" />
+                        </div>
+                        {{else if system.reference}}
                         <div class="footer-reference">
                             <span class="reference-value">{{system.reference}}</span>
                         </div>

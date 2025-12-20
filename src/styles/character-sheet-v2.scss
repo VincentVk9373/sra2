@@ -1081,6 +1081,45 @@
                 }
             }
 
+            .footer-reference {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-style: normal;
+                color: var(--neutral-light);
+
+                .reference-label {
+                    font-size: 0.75rem;
+                    opacity: 0.8;
+                }
+
+                .reference-input {
+                    width: 80px;
+                    height: 18px;
+                    padding: 0 4px;
+                    text-align: left;
+                    background: transparent;
+                    border: none;
+                    border-bottom: 1px solid var(--neutral-light);
+                    color: var(--neutral-light);
+                    font-size: 0.8rem;
+
+                    &:focus {
+                        outline: none;
+                        border-bottom-color: var(--light-blue);
+                        background: rgba(0, 229, 255, 0.05);
+                    }
+
+                    &::placeholder {
+                        color: rgba(170, 249, 241, 0.4);
+                    }
+                }
+
+                .reference-value {
+                    font-size: 0.8rem;
+                }
+            }
+
             .footer-price {
                 font-weight: bold;
                 margin-right: 12px;
