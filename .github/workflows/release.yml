@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: '20'
 
+      - name : list dir files
+        run: |
+          ls -la ./
+
       - name: Install dependencies
         run: npm install
 
