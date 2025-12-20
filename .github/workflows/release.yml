@@ -65,17 +65,6 @@ jobs:
       - name: Pack compendiums
         run: node ./tools/compendium/packCompendiumsToPublic.mjs
 
-      - name: Copy compiled assets to dist
-        run: |
-          # Copy compiled JS and CSS from dist to public if they exist
-          if [ -f "dist/index.mjs" ]; then
-            cp dist/index.mjs public/
-            cp dist/index.mjs.map public/ 2>/dev/null || true
-          fi
-          if [ -f "dist/index.css" ]; then
-            cp dist/index.css public/
-          fi
-
       - name: Create release archive
         run: |
           TAG=${{ steps.version.outputs.tag }}
