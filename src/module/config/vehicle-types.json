@@ -152,12 +152,21 @@
     "armor": 0,
     "weaponMount": "none"
   },
-  "t_bird": {
+  "t-bird": {
     "autopilot": 6, 
     "structure": 10, 
     "handling": 3, 
     "speed": 6,
     "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
+  },
+  "glider-wing": {
+    "autopilot": 6, 
+    "structure": 3, 
+    "handling": 7, 
+    "speed": 0,
+    "flyingSpeed": 4,
     "armor": 0,
     "weaponMount": "none"
   }

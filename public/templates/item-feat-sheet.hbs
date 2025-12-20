@@ -845,34 +845,25 @@
             <label>{{localize "SRA2.FEATS.VEHICLE.VEHICLE_TYPE"}}</label>
             <select name="system.vehicleType" data-action="select-vehicle-type">
               <option value="">{{localize "SRA2.FEATS.VEHICLE.SELECT_VEHICLE"}}</option>
-              <option value="microdrone" {{#if (eq system.vehicleType "microdrone" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.MICRODRONE"}}</option>
-              <option value="minidrone" {{#if (eq system.vehicleType "minidrone" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.MINIDRONE"}}</option>
-              <option value="small-drone" {{#if (eq system.vehicleType "small-drone" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.SMALL_DRONE"}}</option>
-              <option value="medium-drone" {{#if (eq system.vehicleType "medium-drone" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.MEDIUM_DRONE"}}</option>
-              <option value="large-drone" {{#if (eq system.vehicleType "large-drone" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.LARGE_DRONE"}}</option>
-              <option value="racing-motorcycle" {{#if (eq system.vehicleType "racing-motorcycle" )}}selected{{/if}}>
-                {{localize "SRA2.FEATS.VEHICLE.TYPES.RACING_MOTORCYCLE"}}</option>
-              <option value="offroad-motorcycle" {{#if (eq system.vehicleType "offroad-motorcycle" )}}selected{{/if}}>
-                {{localize "SRA2.FEATS.VEHICLE.TYPES.OFFROAD_MOTORCYCLE"}}</option>
-              <option value="chopper" {{#if (eq system.vehicleType "chopper" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.CHOPPER"}}</option>
-              <option value="sports-car" {{#if (eq system.vehicleType "sports-car" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.SPORTS_CAR"}}</option>
-              <option value="sedan" {{#if (eq system.vehicleType "sedan" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.SEDAN"}}</option>
-              <option value="suv-pickup" {{#if (eq system.vehicleType "suv-pickup" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.SUV_PICKUP"}}</option>
-              <option value="van" {{#if (eq system.vehicleType "van" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.VAN"}}</option>
-              <option value="bus-truck" {{#if (eq system.vehicleType "bus-truck" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.BUS_TRUCK"}}</option>
-              <option value="rigid-inflatable-boat" {{#if (eq system.vehicleType "rigid-inflatable-boat" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.VEHICLE.TYPES.RIGID_INFLATABLE_BOAT"}}</option>
+              <option value="microdrone" {{#if (eq system.vehicleType "microdrone" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.MICRODRONE"}}</option>
+              <option value="minidrone" {{#if (eq system.vehicleType "minidrone" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.MINIDRONE"}}</option>
+              <option value="small-drone" {{#if (eq system.vehicleType "small-drone" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SMALL_DRONE"}}</option>
+              <option value="medium-drone" {{#if (eq system.vehicleType "medium-drone" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.MEDIUM_DRONE"}}</option>
+              <option value="large-drone" {{#if (eq system.vehicleType "large-drone" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.LARGE_DRONE"}}</option>
+              <option value="racing-motorcycle" {{#if (eq system.vehicleType "racing-motorcycle" )}}selected{{/if}}> {{localize "SRA2.FEATS.VEHICLE.TYPES.RACING_MOTORCYCLE"}}</option>
+              <option value="offroad-motorcycle" {{#if (eq system.vehicleType "offroad-motorcycle" )}}selected{{/if}}> {{localize "SRA2.FEATS.VEHICLE.TYPES.OFFROAD_MOTORCYCLE"}}</option>
+              <option value="chopper" {{#if (eq system.vehicleType "chopper" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.CHOPPER"}}</option>
+              <option value="sports-car" {{#if (eq system.vehicleType "sports-car" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SPORTS_CAR"}}</option>
+              <option value="sedan" {{#if (eq system.vehicleType "sedan" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SEDAN"}}</option>
+              <option value="suv-pickup" {{#if (eq system.vehicleType "suv-pickup" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.SUV_PICKUP"}}</option>
+              <option value="van" {{#if (eq system.vehicleType "van" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.VAN"}}</option>
+              <option value="bus-truck" {{#if (eq system.vehicleType "bus-truck" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.BUS_TRUCK"}}</option>
+              <option value="rigid-inflatable-boat" {{#if (eq system.vehicleType "rigid-inflatable-boat" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.RIGID_INFLATABLE_BOAT"}}</option>
+              <option value="jet-ski" {{#if (eq system.vehicleType "jet-ski" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.JET_SKI"}}</option>
+              <option value="civil-helicopter" {{#if (eq system.vehicleType "civil-helicopter" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.CIVIL_HELICOPTER"}}</option>
+              <option value="vtol" {{#if (eq system.vehicleType "vtol" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.VTOL"}}</option>
+              <option value="t-bird" {{#if (eq system.vehicleType "t-bird" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.T_BIRD"}}</option>
+              <option value="glider-wing" {{#if (eq system.vehicleType "glider-wing" )}}selected{{/if}}>{{localize "SRA2.FEATS.VEHICLE.TYPES.GLIDER_WING"}}</option>
             </select>
           </div>
 

@@ -752,7 +752,8 @@
                     "JET_SKI": "Jet-ski (Autopilot 6, Structure 5, Handling 5, Speed 2, Armor 0)",
                     "CIVIL_HELICOPTER": "Civil helicopter (Autopilot 6, Structure 9, Handling 4, Speed 6, Armor 0)",
                     "VTOL": "VTOL (Autopilot 6, Structure 10, Handling 3, Speed 8, Armor 0)",
-                    "T_BIRD": "T-Bird (Autopilot 6, Structure 10, Handling 3, Speed 10, Armor 0)"
+                    "T_BIRD": "T-Bird (Autopilot 6, Structure 10, Handling 3, Speed 10, Armor 0)",
+                    "GLIDER_WING": "Glider wing (Autopilot 6, Structure 3, Handling 7, Speed 4, Armor 0)"
                 }
             },
             "CYBERDECK": {
