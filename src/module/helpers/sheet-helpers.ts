@@ -1334,16 +1334,37 @@ export function calculateAttackPool(
   const totalDicePool = skillSpecResult.specLevel || skillSpecResult.skillLevel || 0;
   
   // Get RR sources from skill/specialization/attribute
+  // Only count RR if the skill/spec actually exists on the actor
   let skillRRSources: Array<{featName: string, rrValue: number}> = [];
   let specRRSources: Array<{featName: string, rrValue: number}> = [];
   let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
   
-  if (skillSpecResult.specName) {
-    specRRSources = getRRSources(actor, 'specialization', skillSpecResult.specName);
+  // Only count RR from specialization if it actually exists on the actor
+  // Check by verifying that specLevel is defined (which means the spec was found)
+  if (skillSpecResult.specName && skillSpecResult.specLevel !== undefined) {
+    // Also verify the spec actually exists on the actor
+    const specExists = actor.items.some((item: any) => 
+      item.type === 'specialization' && 
+      ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(skillSpecResult.specName!)
+    );
+    if (specExists) {
+      specRRSources = getRRSources(actor, 'specialization', skillSpecResult.specName);
+    }
   }
-  if (skillSpecResult.skillName) {
-    skillRRSources = getRRSources(actor, 'skill', skillSpecResult.skillName);
+  // Only count RR from skill if it actually exists on the actor
+  // Check by verifying that skillLevel is defined and the skill exists
+  // Note: We can count both skill RR and spec RR if both exist (they stack)
+  if (skillSpecResult.skillName && skillSpecResult.skillLevel !== undefined) {
+    // Verify the skill actually exists on the actor (not just using attribute level)
+    const skillExists = actor.items.some((item: any) => 
+      item.type === 'skill' && 
+      ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(skillSpecResult.skillName!)
+    );
+    if (skillExists) {
+      skillRRSources = getRRSources(actor, 'skill', skillSpecResult.skillName);
+    }
   }
+  // Always count attribute RR if we have a linked attribute (even if skill/spec don't exist, we can roll at attribute level)
   if (skillSpecResult.linkedAttribute) {
     attributeRRSources = getRRSources(actor, 'attribute', skillSpecResult.linkedAttribute);
   }
