@@ -341,25 +341,10 @@ export class CharacterSheet extends ActorSheet {
       );
       
       // Calculate dice pool and RR using unified helper
-      // Only pass item's own RR list (not skill/spec/attribute RR which are calculated by calculateAttackPool)
-      const itemRRList = (weaponSystem.rrList || []).filter((rr: any) => {
-        // Filter out RR entries that come from skills/specs/attributes (these have rrTarget matching skills/specs/attributes)
-        // We only want RR entries that are directly on the weapon item itself
-        // RR entries from skills/specs/attributes are identified by having rrTarget that matches actor items
-        if (!rr.rrTarget) return true; // Keep entries without target (direct weapon RR)
-        
-        // Check if this RR target matches any skill/spec/attribute - if so, it was added by enrichFeats and should be excluded
-        const rrTarget = rr.rrTarget;
-        const isSkillSpecAttributeRR = this.actor.items.some((item: any) => {
-          if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(rrTarget)) return true;
-          if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(rrTarget)) return true;
-          if (['strength', 'agility', 'willpower', 'logic', 'charisma'].includes(rrTarget.toLowerCase())) return true;
-          return false;
-        });
-        
-        // Exclude RR that comes from skills/specs/attributes (will be recalculated by calculateAttackPool)
-        return !isSkillSpecAttributeRR;
-      });
+      // Pass item's own RR list - all RR in weaponSystem.rrList come directly from the weapon itself
+      // (enrichFeats doesn't modify weaponSystem.rrList, it only creates feat.rrEntries)
+      // So we keep ALL RR entries, including those that target skills/specs/attributes
+      const itemRRList = (weaponSystem.rrList || []);
       
       const poolResult = SheetHelpers.calculateAttackPool(
         this.actor,
@@ -2290,31 +2275,13 @@ export class CharacterSheet extends ActorSheet {
       const crr = itemSystem.crr || 0;
       
       // Get item RR list
-      // Only pass item's own RR list (not skill/spec/attribute RR which are calculated by calculateAttackPool)
-      const rawItemRRList = itemSystem.rrList || [];
-      const itemRRList = rawItemRRList
-        .filter((rr: any) => {
-          // Filter out RR entries that come from skills/specs/attributes (these have rrTarget matching skills/specs/attributes)
-          // We only want RR entries that are directly on the weapon item itself
-          // RR entries from skills/specs/attributes are identified by having rrTarget that matches actor items
-          if (!rr.rrTarget) return true; // Keep entries without target (direct weapon RR)
-          
-          // Check if this RR target matches any skill/spec/attribute - if so, it was added by enrichFeats and should be excluded
-          const rrTarget = rr.rrTarget;
-          const isSkillSpecAttributeRR = this.actor.items.some((item: any) => {
-            if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(rrTarget)) return true;
-            if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(rrTarget)) return true;
-            if (['strength', 'agility', 'willpower', 'logic', 'charisma'].includes(rrTarget.toLowerCase())) return true;
-            return false;
-          });
-          
-          // Exclude RR that comes from skills/specs/attributes (will be recalculated by calculateAttackPool)
-          return !isSkillSpecAttributeRR;
-        })
-        .map((rrEntry: any) => ({
-          ...rrEntry,
-          featName: weapon.name
-        }));
+      // Pass item's own RR list - all RR in itemSystem.rrList come directly from the weapon itself
+      // (enrichFeats doesn't modify itemSystem.rrList, it only creates feat.rrEntries)
+      // So we keep ALL RR entries, including those that target skills/specs/attributes
+      const itemRRList = (itemSystem.rrList || []).map((rrEntry: any) => ({
+        ...rrEntry,
+        featName: weapon.name
+      }));
       
       // For vehicle/drone weapons controlled by owner, use Ingénierie (Spé : Armes contrôlées à distance)
       const finalAttackSkill = 'Ingénierie';
@@ -2553,31 +2520,13 @@ export class CharacterSheet extends ActorSheet {
     }
 
     // Get all RR sources for the item and enrich with featName
-    // Only pass item's own RR list (not skill/spec/attribute RR which are calculated by calculateAttackPool)
-    const rawItemRRList = itemSystem.rrList || [];
-    const itemRRList = rawItemRRList
-      .filter((rr: any) => {
-        // Filter out RR entries that come from skills/specs/attributes (these have rrTarget matching skills/specs/attributes)
-        // We only want RR entries that are directly on the weapon item itself
-        // RR entries from skills/specs/attributes are identified by having rrTarget that matches actor items
-        if (!rr.rrTarget) return true; // Keep entries without target (direct weapon RR)
-        
-        // Check if this RR target matches any skill/spec/attribute - if so, it was added by enrichFeats and should be excluded
-        const rrTarget = rr.rrTarget;
-        const isSkillSpecAttributeRR = this.actor.items.some((item: any) => {
-          if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(rrTarget)) return true;
-          if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(rrTarget)) return true;
-          if (['strength', 'agility', 'willpower', 'logic', 'charisma'].includes(rrTarget.toLowerCase())) return true;
-          return false;
-        });
-        
-        // Exclude RR that comes from skills/specs/attributes (will be recalculated by calculateAttackPool)
-        return !isSkillSpecAttributeRR;
-      })
-      .map((rrEntry: any) => ({
-        ...rrEntry,
-        featName: item.name  // Add featName (the item name itself)
-      }));
+    // Pass item's own RR list - all RR in itemSystem.rrList come directly from the weapon/spell itself
+    // (enrichFeats doesn't modify itemSystem.rrList, it only creates feat.rrEntries)
+    // So we keep ALL RR entries, including those that target skills/specs/attributes
+    const itemRRList = (itemSystem.rrList || []).map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: item.name  // Add featName (the item name itself)
+    }));
 
     // For spells, force specific skills
     let finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';

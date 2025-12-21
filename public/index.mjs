@@ -3920,12 +3920,15 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
   let skillRRSources = [];
   let specRRSources = [];
   let attributeRRSources = [];
+  const normalizedItemName = itemName ? normalizeSearchText(itemName) : "";
   if (skillSpecResult.specName && skillSpecResult.specLevel !== void 0) {
     const specExists = actor.items.some(
       (item) => item.type === "specialization" && normalizeSearchText(item.name) === normalizeSearchText(skillSpecResult.specName)
     );
     if (specExists) {
-      specRRSources = getRRSources(actor, "specialization", skillSpecResult.specName);
+      specRRSources = getRRSources(actor, "specialization", skillSpecResult.specName).filter((source) => {
+        return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
+      });
     }
   }
   if (skillSpecResult.skillName && skillSpecResult.skillLevel !== void 0) {
@@ -3933,11 +3936,15 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
       (item) => item.type === "skill" && normalizeSearchText(item.name) === normalizeSearchText(skillSpecResult.skillName)
     );
     if (skillExists) {
-      skillRRSources = getRRSources(actor, "skill", skillSpecResult.skillName);
+      skillRRSources = getRRSources(actor, "skill", skillSpecResult.skillName).filter((source) => {
+        return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
+      });
     }
   }
   if (skillSpecResult.linkedAttribute) {
-    attributeRRSources = getRRSources(actor, "attribute", skillSpecResult.linkedAttribute);
+    attributeRRSources = getRRSources(actor, "attribute", skillSpecResult.linkedAttribute).filter((source) => {
+      return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
+    });
   }
   const itemRRSources = itemRRList.map((rrEntry) => ({
     featName: itemName,
@@ -4923,17 +4930,7 @@ class CharacterSheet extends ActorSheet {
         finalAttackSkill,
         { defaultAttribute }
       );
-      const itemRRList = (weaponSystem.rrList || []).filter((rr) => {
-        if (!rr.rrTarget) return true;
-        const rrTarget = rr.rrTarget;
-        const isSkillSpecAttributeRR = this.actor.items.some((item) => {
-          if (item.type === "skill" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
-          if (item.type === "specialization" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
-          if (["strength", "agility", "willpower", "logic", "charisma"].includes(rrTarget.toLowerCase())) return true;
-          return false;
-        });
-        return !isSkillSpecAttributeRR;
-      });
+      const itemRRList = weaponSystem.rrList || [];
       const poolResult = calculateAttackPool(
         this.actor,
         skillSpecResult,
@@ -6314,18 +6311,7 @@ class CharacterSheet extends ActorSheet {
       const itemSystem = weapon.system;
       const weaponType = itemSystem.weaponType;
       const crr = itemSystem.crr || 0;
-      const rawItemRRList = itemSystem.rrList || [];
-      const itemRRList = rawItemRRList.filter((rr) => {
-        if (!rr.rrTarget) return true;
-        const rrTarget = rr.rrTarget;
-        const isSkillSpecAttributeRR = this.actor.items.some((item) => {
-          if (item.type === "skill" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
-          if (item.type === "specialization" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
-          if (["strength", "agility", "willpower", "logic", "charisma"].includes(rrTarget.toLowerCase())) return true;
-          return false;
-        });
-        return !isSkillSpecAttributeRR;
-      }).map((rrEntry) => ({
+      const itemRRList = (itemSystem.rrList || []).map((rrEntry) => ({
         ...rrEntry,
         featName: weapon.name
       }));
@@ -6512,18 +6498,7 @@ class CharacterSheet extends ActorSheet {
         weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || "";
       }
     }
-    const rawItemRRList = itemSystem.rrList || [];
-    const itemRRList = rawItemRRList.filter((rr) => {
-      if (!rr.rrTarget) return true;
-      const rrTarget = rr.rrTarget;
-      const isSkillSpecAttributeRR = this.actor.items.some((item2) => {
-        if (item2.type === "skill" && normalizeSearchText(item2.name) === normalizeSearchText(rrTarget)) return true;
-        if (item2.type === "specialization" && normalizeSearchText(item2.name) === normalizeSearchText(rrTarget)) return true;
-        if (["strength", "agility", "willpower", "logic", "charisma"].includes(rrTarget.toLowerCase())) return true;
-        return false;
-      });
-      return !isSkillSpecAttributeRR;
-    }).map((rrEntry) => ({
+    const itemRRList = (itemSystem.rrList || []).map((rrEntry) => ({
       ...rrEntry,
       featName: item.name
       // Add featName (the item name itself)
@@ -10185,6 +10160,7 @@ class RollDialog extends Application {
         this.rollData.skillLevel = void 0;
         this.rollData.specLevel = void 0;
         const attributeRRSources = getRRSources(this.actor, "attribute", selectedAttribute);
+        console.log("attributeRRSources", attributeRRSources);
         this.rollData.rrList = attributeRRSources;
         this.rrEnabled.clear();
         for (const rrSource of this.rollData.rrList) {
@@ -10458,12 +10434,12 @@ class RollDialog extends Application {
   }
   updateRRForSkill(skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
-    const skillRRSources = getRRSources(this.actor, "skill", skillName);
-    const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
     let itemRRList = [];
+    let weaponName = "";
     if (this.rollData.itemId && this.rollData.itemType === "weapon") {
       const weapon = this.actor.items.get(this.rollData.itemId);
       if (weapon) {
+        weaponName = weapon.name;
         const weaponSystem = weapon.system;
         const rawItemRRList = weaponSystem.rrList || [];
         itemRRList = rawItemRRList.map((rrEntry) => ({
@@ -10473,6 +10449,11 @@ class RollDialog extends Application {
         }));
       }
     }
+    const normalizedWeaponName = weaponName ? normalizeSearchText(weaponName) : "";
+    const allSkillRRSources = skillName ? getRRSources(this.actor, "skill", skillName) : [];
+    const allAttributeRRSources = linkedAttribute ? getRRSources(this.actor, "attribute", linkedAttribute) : [];
+    const skillRRSources = normalizedWeaponName === "" ? allSkillRRSources : allSkillRRSources.filter((source) => normalizeSearchText(source.featName) !== normalizedWeaponName);
+    const attributeRRSources = normalizedWeaponName === "" ? allAttributeRRSources : allAttributeRRSources.filter((source) => normalizeSearchText(source.featName) !== normalizedWeaponName);
     this.rollData.rrList = [...itemRRList, ...skillRRSources, ...attributeRRSources];
     this.rrEnabled.clear();
     for (const rrSource of this.rollData.rrList) {
@@ -10492,13 +10473,12 @@ class RollDialog extends Application {
   }
   updateRRForSpec(specName, skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
-    const specRRSources = getRRSources(this.actor, "specialization", specName);
-    const skillRRSources = getRRSources(this.actor, "skill", skillName);
-    const attributeRRSources = getRRSources(this.actor, "attribute", linkedAttribute);
     let itemRRList = [];
+    let weaponName = "";
     if (this.rollData.itemId && this.rollData.itemType === "weapon") {
       const weapon = this.actor.items.get(this.rollData.itemId);
       if (weapon) {
+        weaponName = weapon.name;
         const weaponSystem = weapon.system;
         const rawItemRRList = weaponSystem.rrList || [];
         itemRRList = rawItemRRList.map((rrEntry) => ({
@@ -10508,6 +10488,13 @@ class RollDialog extends Application {
         }));
       }
     }
+    const normalizedWeaponName = weaponName ? normalizeSearchText(weaponName) : "";
+    const allSpecRRSources = specName ? getRRSources(this.actor, "specialization", specName) : [];
+    const allSkillRRSources = skillName ? getRRSources(this.actor, "skill", skillName) : [];
+    const allAttributeRRSources = linkedAttribute ? getRRSources(this.actor, "attribute", linkedAttribute) : [];
+    const specRRSources = normalizedWeaponName === "" ? allSpecRRSources : allSpecRRSources.filter((source) => normalizeSearchText(source.featName) !== normalizedWeaponName);
+    const skillRRSources = normalizedWeaponName === "" ? allSkillRRSources : allSkillRRSources.filter((source) => normalizeSearchText(source.featName) !== normalizedWeaponName);
+    const attributeRRSources = normalizedWeaponName === "" ? allAttributeRRSources : allAttributeRRSources.filter((source) => normalizeSearchText(source.featName) !== normalizedWeaponName);
     this.rollData.rrList = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];
     this.rrEnabled.clear();
     for (const rrSource of this.rollData.rrList) {

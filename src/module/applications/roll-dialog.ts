@@ -1354,6 +1354,7 @@ export class RollDialog extends Application {
         
         // Recalculate RR for attribute only
         const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', selectedAttribute);
+        console.log('attributeRRSources', attributeRRSources);
         this.rollData.rrList = attributeRRSources;
         
         // Reset RR enabled state
@@ -1719,18 +1720,15 @@ export class RollDialog extends Application {
     // For other rolls, also use this.actor (the one making the roll)
     if (!this.actor) return;
     
-    // Get RR sources synchronously (already imported at top)
-    // Always use this.actor which is correctly set to the defender for defense rolls
-    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
-    const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
-    
     // For weapon rolls, preserve the weapon's rrList (from item) and merge with skill/attribute RR
     // For non-weapon rolls, use only skill/attribute RR
     let itemRRList: any[] = [];
+    let weaponName = '';
     if (this.rollData.itemId && this.rollData.itemType === 'weapon') {
       // Get the weapon item to extract its rrList
       const weapon = this.actor.items.get(this.rollData.itemId);
       if (weapon) {
+        weaponName = weapon.name;
         const weaponSystem = weapon.system as any;
         const rawItemRRList = weaponSystem.rrList || [];
         itemRRList = rawItemRRList.map((rrEntry: any) => ({
@@ -1739,6 +1737,20 @@ export class RollDialog extends Application {
         }));
       }
     }
+    
+    // Normalize weapon name for comparison (to exclude RR from the current weapon)
+    const normalizedWeaponName = weaponName ? ItemSearch.normalizeSearchText(weaponName) : '';
+    
+    // Get RR sources synchronously (already imported at top)
+    // Always use this.actor which is correctly set to the defender for defense rolls
+    // Exclude RR from the current weapon to avoid double counting
+    const allSkillRRSources = skillName ? SheetHelpers.getRRSources(this.actor, 'skill', skillName) : [];
+    const allAttributeRRSources = linkedAttribute ? SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute) : [];
+    
+    const skillRRSources = normalizedWeaponName === '' ? allSkillRRSources : 
+      allSkillRRSources.filter((source: any) => ItemSearch.normalizeSearchText(source.featName) !== normalizedWeaponName);
+    const attributeRRSources = normalizedWeaponName === '' ? allAttributeRRSources : 
+      allAttributeRRSources.filter((source: any) => ItemSearch.normalizeSearchText(source.featName) !== normalizedWeaponName);
     
     // Merge item RR (if weapon) + skill RR + attribute RR
     this.rollData.rrList = [...itemRRList, ...skillRRSources, ...attributeRRSources];
@@ -1771,17 +1783,15 @@ export class RollDialog extends Application {
     
     // Get RR sources synchronously (already imported at top)
     // Always use this.actor which is correctly set to the defender for defense rolls
-    const specRRSources = SheetHelpers.getRRSources(this.actor, 'specialization', specName);
-    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', skillName);
-    const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
-    
     // For weapon rolls, preserve the weapon's rrList (from item) and merge with spec/skill/attribute RR
     // For non-weapon rolls, use only spec/skill/attribute RR
     let itemRRList: any[] = [];
+    let weaponName = '';
     if (this.rollData.itemId && this.rollData.itemType === 'weapon') {
       // Get the weapon item to extract its rrList
       const weapon = this.actor.items.get(this.rollData.itemId);
       if (weapon) {
+        weaponName = weapon.name;
         const weaponSystem = weapon.system as any;
         const rawItemRRList = weaponSystem.rrList || [];
         itemRRList = rawItemRRList.map((rrEntry: any) => ({
@@ -1790,6 +1800,22 @@ export class RollDialog extends Application {
         }));
       }
     }
+    
+    // Normalize weapon name for comparison (to exclude RR from the current weapon)
+    const normalizedWeaponName = weaponName ? ItemSearch.normalizeSearchText(weaponName) : '';
+    
+    // Get RR sources, but exclude RR from the current weapon to avoid double counting
+    const allSpecRRSources = specName ? SheetHelpers.getRRSources(this.actor, 'specialization', specName) : [];
+    const allSkillRRSources = skillName ? SheetHelpers.getRRSources(this.actor, 'skill', skillName) : [];
+    const allAttributeRRSources = linkedAttribute ? SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute) : [];
+    
+    // Filter out RR from the current weapon (already in itemRRList)
+    const specRRSources = normalizedWeaponName === '' ? allSpecRRSources : 
+      allSpecRRSources.filter((source: any) => ItemSearch.normalizeSearchText(source.featName) !== normalizedWeaponName);
+    const skillRRSources = normalizedWeaponName === '' ? allSkillRRSources : 
+      allSkillRRSources.filter((source: any) => ItemSearch.normalizeSearchText(source.featName) !== normalizedWeaponName);
+    const attributeRRSources = normalizedWeaponName === '' ? allAttributeRRSources : 
+      allAttributeRRSources.filter((source: any) => ItemSearch.normalizeSearchText(source.featName) !== normalizedWeaponName);
     
     // Merge item RR (if weapon) + spec RR + skill RR + attribute RR
     this.rollData.rrList = [...itemRRList, ...specRRSources, ...skillRRSources, ...attributeRRSources];

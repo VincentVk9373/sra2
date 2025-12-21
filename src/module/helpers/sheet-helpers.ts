@@ -1359,6 +1359,9 @@ export function calculateAttackPool(
   let specRRSources: Array<{ featName: string, rrValue: number }> = [];
   let attributeRRSources: Array<{ featName: string, rrValue: number }> = [];
 
+  // Normalize itemName for comparison (to exclude RR from the current item)
+  const normalizedItemName = itemName ? ItemSearch.normalizeSearchText(itemName) : '';
+
   // Only count RR from specialization if it actually exists on the actor
   // Check by verifying that specLevel is defined (which means the spec was found)
   if (skillSpecResult.specName && skillSpecResult.specLevel !== undefined) {
@@ -1368,7 +1371,12 @@ export function calculateAttackPool(
       ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(skillSpecResult.specName!)
     );
     if (specExists) {
-      specRRSources = getRRSources(actor, 'specialization', skillSpecResult.specName);
+      specRRSources = getRRSources(actor, 'specialization', skillSpecResult.specName)
+        .filter((source: any) => {
+          // Exclude RR from the current item to avoid double counting
+          // (the item's RR are already in itemRRList)
+          return normalizedItemName === '' || ItemSearch.normalizeSearchText(source.featName) !== normalizedItemName;
+        });
     }
   }
   // Only count RR from skill if it actually exists on the actor
@@ -1381,12 +1389,20 @@ export function calculateAttackPool(
       ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(skillSpecResult.skillName!)
     );
     if (skillExists) {
-      skillRRSources = getRRSources(actor, 'skill', skillSpecResult.skillName);
+      skillRRSources = getRRSources(actor, 'skill', skillSpecResult.skillName)
+        .filter((source: any) => {
+          // Exclude RR from the current item to avoid double counting
+          return normalizedItemName === '' || ItemSearch.normalizeSearchText(source.featName) !== normalizedItemName;
+        });
     }
   }
   // Always count attribute RR if we have a linked attribute (even if skill/spec don't exist, we can roll at attribute level)
   if (skillSpecResult.linkedAttribute) {
-    attributeRRSources = getRRSources(actor, 'attribute', skillSpecResult.linkedAttribute);
+    attributeRRSources = getRRSources(actor, 'attribute', skillSpecResult.linkedAttribute)
+      .filter((source: any) => {
+        // Exclude RR from the current item to avoid double counting
+        return normalizedItemName === '' || ItemSearch.normalizeSearchText(source.featName) !== normalizedItemName;
+      });
   }
 
   // Convert item RR list to same format as getRRSources (objects with rrValue)
