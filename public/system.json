@@ -1,8 +1,8 @@
 {
   "id": "sra2",
-  "version": "13.0.17",
+  "version": "13.0.18",
   "manifest": "https://raw.githubusercontent.com/VincentVk9373/sra2/master/public/system.json",
-  "download": "https://github.com/VincentVk9373/sra2/releases/download/v13.0.17/foundry-sra2-v13.0.17.zip",
+  "download": "https://github.com/VincentVk9373/sra2/releases/download/v13.0.18/foundry-sra2-v13.0.18.zip",
   "download-13.0.2": "https://github.com/VincentVk9373/sra2/releases/download/v13.0.2/foundry-sra2-v13.0.2.zip",
   "url": "https://github.com/VincentVk9373/sra2",
   "bugs": "https://github.com/VincentVk9373/sra2/issues",
@@ -135,5 +135,6 @@
       "race": {}
     }
   },
-  "download-13.0.17": "https://github.com/VincentVk9373/sra2/releases/download/v13.0.17/foundry-sra2-v13.0.17.zip"
+  "download-13.0.17": "https://github.com/VincentVk9373/sra2/releases/download/v13.0.17/foundry-sra2-v13.0.17.zip",
+  "download-13.0.18": "https://github.com/VincentVk9373/sra2/releases/download/v13.0.18/foundry-sra2-v13.0.18.zip"
 }
