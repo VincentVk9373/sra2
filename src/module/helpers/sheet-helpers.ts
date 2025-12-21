@@ -16,19 +16,19 @@ export function handleSheetUpdate(actor: any, formData: any): any {
     'actor.type': actor?.type,
     'actor.uuid': actor?.uuid
   });
-  
+
   // Expand the form data first to handle nested properties properly
   const expandedData = foundry.utils.expandObject(formData) as any;
-  
+
   // Only process damage if it's present in the formData (indicates damage fields were changed)
   if (expandedData.system && expandedData.system.damage !== undefined) {
     const currentDamage = (actor.system as any).damage || {};
-    
+
     // Initialize damage object if not present
     if (!expandedData.system.damage || typeof expandedData.system.damage !== 'object') {
       expandedData.system.damage = {};
     }
-    
+
     // Helper function to convert object with numeric keys to array
     const convertToArray = (obj: any, expectedLength: number): boolean[] => {
       if (Array.isArray(obj)) {
@@ -55,29 +55,29 @@ export function handleSheetUpdate(actor: any, formData: any): any {
       // Not present or invalid, return array of false
       return Array(expectedLength).fill(false);
     };
-    
+
     // Get expected lengths from current damage or defaults
     const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
     const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
-    
+
     // Handle light damage checkboxes - process if present in formData
     if (expandedData.system.damage.light !== undefined) {
       expandedData.system.damage.light = convertToArray(expandedData.system.damage.light, currentLightLength);
     }
-    
+
     // Handle severe damage checkboxes - process if present in formData
     if (expandedData.system.damage.severe !== undefined) {
       expandedData.system.damage.severe = convertToArray(expandedData.system.damage.severe, currentSevereLength);
     }
-    
+
     // Handle incapacitating - convert to boolean if present
     if (expandedData.system.damage.incapacitating !== undefined) {
-      expandedData.system.damage.incapacitating = expandedData.system.damage.incapacitating === true || 
-                                                  expandedData.system.damage.incapacitating === 'true' || 
-                                                  expandedData.system.damage.incapacitating === 'on';
+      expandedData.system.damage.incapacitating = expandedData.system.damage.incapacitating === true ||
+        expandedData.system.damage.incapacitating === 'true' ||
+        expandedData.system.damage.incapacitating === 'on';
     }
   }
-  
+
   return expandedData;
 }
 
@@ -115,15 +115,15 @@ export function organizeSpecializationsBySkill(
   const specializationsBySkill = new Map<string, any[]>();
   const unlinkedSpecializations: any[] = [];
   const orphanSpecializations: any[] = [];
-  
+
   allSpecializations.forEach((spec: any) => {
     const linkedSkillName = spec.system.linkedSkill;
     if (linkedSkillName) {
       // linkedSkill is stored as a name, find the skill by name
-      const linkedSkill = actorItems.find((i: any) => 
+      const linkedSkill = actorItems.find((i: any) =>
         i.type === 'skill' && i.name === linkedSkillName
       );
-      
+
       if (linkedSkill && linkedSkill.id) {
         // Valid linked skill found
         const skillId = linkedSkill.id;
@@ -142,7 +142,7 @@ export function organizeSpecializationsBySkill(
       unlinkedSpecializations.push(spec);
     }
   });
-  
+
   return { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations };
 }
 
@@ -155,24 +155,24 @@ export async function handleItemDrop(
   allowedTypes: string[] = ['feat', 'skill', 'specialization', 'metatype']
 ): Promise<boolean> {
   const data = TextEditor.getDragEventData(event) as any;
-  
+
   // Handle Item drops
   if (data && data.type === 'Item') {
     const item = await Item.implementation.fromDropData(data) as any;
-    
+
     if (!item) return false;
-    
+
     // Check if the item is from a compendium or another actor (not already on this actor)
     if (item.actor && item.actor.id === actor.id) {
       // Item already belongs to this actor, ignore
       return false;
     }
-    
+
     // Check if type is allowed
     if (!allowedTypes.includes(item.type)) {
       return false;
     }
-    
+
     // Handle metatype - replace existing one if present
     if (item.type === 'metatype') {
       const existingMetatype = actor.items.find((i: any) => i.type === 'metatype');
@@ -183,10 +183,10 @@ export async function handleItemDrop(
       await actor.createEmbeddedDocuments('Item', [item.toObject()]);
       return true;
     }
-    
+
     // Handle feat
     if (item.type === 'feat') {
-      const existingFeat = actor.items.find((i: any) => 
+      const existingFeat = actor.items.find((i: any) =>
         i.type === 'feat' && i.name === item.name
       );
       if (existingFeat) {
@@ -196,10 +196,10 @@ export async function handleItemDrop(
       await actor.createEmbeddedDocuments('Item', [item.toObject()]);
       return true;
     }
-    
+
     // Handle skill
     if (item.type === 'skill') {
-      const existingSkill = actor.items.find((i: any) => 
+      const existingSkill = actor.items.find((i: any) =>
         i.type === 'skill' && i.name === item.name
       );
       if (existingSkill) {
@@ -209,10 +209,10 @@ export async function handleItemDrop(
       await actor.createEmbeddedDocuments('Item', [item.toObject()]);
       return true;
     }
-    
+
     // Handle specialization
     if (item.type === 'specialization') {
-      const existingSpec = actor.items.find((i: any) => 
+      const existingSpec = actor.items.find((i: any) =>
         i.type === 'specialization' && i.name === item.name
       );
       if (existingSpec) {
@@ -223,7 +223,7 @@ export async function handleItemDrop(
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -236,24 +236,24 @@ export async function handleVehicleActorDrop(
   actor: any
 ): Promise<boolean> {
   const data = TextEditor.getDragEventData(event) as any;
-  
+
   // Handle Actor drops (specifically vehicle actors)
   if (data && data.type === 'Actor') {
     try {
       const sourceVehicle = await fromUuid(data.uuid) as any;
-      
+
       if (!sourceVehicle) return false;
-      
+
       // Check if it's a vehicle actor
       if (sourceVehicle.type !== 'vehicle') return false;
-      
+
       // Create a copy of the vehicle instead of linking to the original
       const vehicleData = sourceVehicle.toObject();
-      
+
       // Generate a unique name for the copy with a matricule (2 letters + 1 digit)
       const ownerName = actor.name || 'Character';
       const baseName = vehicleData.name;
-      
+
       // Generate random matricule: 2 uppercase letters + 1 digit
       const generateMatricule = () => {
         const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -262,18 +262,18 @@ export async function handleVehicleActorDrop(
         const digit = Math.floor(Math.random() * 10);
         return `${letter1}${letter2}${digit}`;
       };
-      
+
       let matricule = generateMatricule();
       let newName = `${baseName} ${matricule} (${ownerName})`;
-      
+
       // Check if a vehicle with this name already exists (regenerate matricule if needed)
       while (game.actors?.getName(newName)) {
         matricule = generateMatricule();
         newName = `${baseName} ${matricule} (${ownerName})`;
       }
-      
+
       vehicleData.name = newName;
-      
+
       // Configure the prototype token to be linked
       if (!vehicleData.prototypeToken) {
         vehicleData.prototypeToken = foundry.utils.mergeObject(
@@ -283,22 +283,22 @@ export async function handleVehicleActorDrop(
       } else {
         vehicleData.prototypeToken.actorLink = true;
       }
-      
+
       // Create the new vehicle actor
       const newVehicle = await Actor.create(vehicleData) as any;
-      
+
       if (!newVehicle) {
         ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.VEHICLE_CREATION_ERROR'));
         return false;
       }
-      
+
       // Get current linked vehicles
       const linkedVehicles = (actor.system as any).linkedVehicles || [];
-      
+
       // Add the new vehicle's UUID to the linked vehicles array
       const updatedLinkedVehicles = [...linkedVehicles, newVehicle.uuid];
       await actor.update({ 'system.linkedVehicles': updatedLinkedVehicles });
-      
+
       ui.notifications?.info(game.i18n!.format('SRA2.FEATS.VEHICLE_ADDED', { name: newVehicle.name }));
       return true;
     } catch (error) {
@@ -306,36 +306,36 @@ export async function handleVehicleActorDrop(
       return false;
     }
   }
-  
+
   return false;
 }
 
 /**
  * Get RR for a specific item type and name (wrapper for DiceRoller)
  */
-export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{featName: string, rrValue: number}> {
-  const sources: Array<{featName: string, rrValue: number}> = [];
-  
-  const feats = actor.items.filter((item: any) => 
-    item.type === 'feat' && 
+export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number }> {
+  const sources: Array<{ featName: string, rrValue: number }> = [];
+
+  const feats = actor.items.filter((item: any) =>
+    item.type === 'feat' &&
     item.system.active === true
   );
-  
+
   // Normalize the search name for comparison (case-insensitive, accent-insensitive)
   const normalizedItemName = ItemSearch.normalizeSearchText(itemName);
-  
+
   for (const feat of feats) {
     const featSystem = feat.system as any;
     const rrList = featSystem.rrList || [];
-    
+
     for (const rrEntry of rrList) {
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || '';
-      
+
       // Normalize the RR target for comparison
       const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
-      
+
       // Compare normalized names for better matching (handles custom skills/specs with variations)
       if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
         sources.push({
@@ -345,7 +345,7 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
       }
     }
   }
-  
+
   return sources;
 }
 
@@ -370,13 +370,13 @@ export interface PhantomRR {
   linkedSkillOnActor?: boolean; // Whether the linked skill exists on the actor
   rr: number;
   totalDicePool: number;
-  sources: Array<{featName: string, rrValue: number}>;
+  sources: Array<{ featName: string, rrValue: number }>;
 }
 
 export function getPhantomRRs(actor: any): PhantomRR[] {
   const phantomRRs: PhantomRR[] = [];
   const seenTargets = new Set<string>();
-  
+
   // Get all existing skills and specializations on the actor
   const existingSkills = new Set(
     actor.items
@@ -388,27 +388,27 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
       .filter((i: any) => i.type === 'specialization')
       .map((i: any) => ItemSearch.normalizeSearchText(i.name))
   );
-  
+
   // Get all active feats with RR entries
-  const feats = actor.items.filter((item: any) => 
-    item.type === 'feat' && 
+  const feats = actor.items.filter((item: any) =>
+    item.type === 'feat' &&
     item.system.active === true
   );
-  
+
   for (const feat of feats) {
     const featSystem = feat.system as any;
     const rrList = featSystem.rrList || [];
-    
+
     for (const rrEntry of rrList) {
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || '';
-      
+
       if (rrValue <= 0 || !rrTarget) continue;
-      
+
       const normalizedTarget = ItemSearch.normalizeSearchText(rrTarget);
       const targetKey = `${rrType}:${normalizedTarget}`;
-      
+
       // Check if this is a skill/spec RR targeting something not on the actor
       if (rrType === 'skill' && !existingSkills.has(normalizedTarget)) {
         if (!seenTargets.has(targetKey)) {
@@ -449,11 +449,11 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
       }
     }
   }
-  
+
   // Calculate final RR values and try to determine linked attribute from compendiums or default
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(3, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
-    
+
     // Default to strength for skills, or try to guess from name
     // Common skill-attribute associations
     const skillAttributeMap: Record<string, string> = {
@@ -478,30 +478,30 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
       'tromperie': 'charisma',
       'intimidation': 'charisma',
     };
-    
+
     const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
     phantom.linkedAttribute = skillAttributeMap[normalizedName] || 'strength';
-    
+
     // For phantom specs, try to find the linked skill from compendiums and check if actor has it
     if (phantom.type === 'specialization') {
       const specTemplate = findItemInGame('specialization', phantom.name);
       if (specTemplate) {
         const linkedSkillName = (specTemplate.system as any).linkedSkill;
         const linkedAttribute = (specTemplate.system as any).linkedAttribute;
-        
+
         if (linkedSkillName) {
           phantom.linkedSkillName = linkedSkillName;
-          
+
           // Check if actor has this skill
-          const actorSkill = actor.items.find((i: any) => 
+          const actorSkill = actor.items.find((i: any) =>
             i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName)
           );
-          
+
           if (actorSkill) {
             phantom.linkedSkillOnActor = true;
             // Use the skill's linked attribute
             phantom.linkedAttribute = (actorSkill.system as any).linkedAttribute || linkedAttribute || phantom.linkedAttribute;
-            
+
             // Calculate dice pool: attribute + skill rating (no +2 since spec is phantom)
             const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
             const skillRating = (actorSkill.system as any).rating || 0;
@@ -534,10 +534,10 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
       const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
       phantom.totalDicePool = attributeValue;
     }
-    
+
     phantom.linkedAttributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${phantom.linkedAttribute.toUpperCase()}`) || phantom.linkedAttribute;
   }
-  
+
   return phantomRRs.sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -550,10 +550,10 @@ export async function handleEditItem(event: Event, actor: any): Promise<void> {
   const element = event.currentTarget as HTMLElement;
   console.log('[SheetHelpers.handleEditItem] Element:', element);
   console.log('[SheetHelpers.handleEditItem] Element dataset:', element.dataset);
-  
+
   const itemId = element.dataset.itemId || (element.closest('.metatype-item') as HTMLElement)?.getAttribute('data-item-id');
   console.log('[SheetHelpers.handleEditItem] ItemId:', itemId);
-  
+
   if (!itemId) {
     console.warn('[SheetHelpers.handleEditItem] No itemId found!');
     return;
@@ -578,10 +578,10 @@ export async function handleDeleteItem(event: Event, actor: any, sheetRender?: (
   const element = event.currentTarget as HTMLElement;
   console.log('[SheetHelpers.handleDeleteItem] Element:', element);
   console.log('[SheetHelpers.handleDeleteItem] Element dataset:', element.dataset);
-  
+
   const itemId = element.dataset.itemId || (element.closest('.metatype-item') as HTMLElement)?.getAttribute('data-item-id');
   console.log('[SheetHelpers.handleDeleteItem] ItemId:', itemId);
-  
+
   if (!itemId) {
     console.warn('[SheetHelpers.handleDeleteItem] No itemId found!');
     return;
@@ -642,14 +642,14 @@ export function parseDamageValue(
     isStrengthBased: false,
     isToxin: false
   };
-  
+
   // Handle toxin damage
   if (damageValueStr === 'toxin') {
     result.isToxin = true;
     result.displayValue = game.i18n?.localize('SRA2.FEATS.WEAPON.TOXIN_DAMAGE') || 'according to toxin';
     return result;
   }
-  
+
   // Handle FOR (strength-based)
   if (damageValueStr === 'FOR') {
     result.isStrengthBased = true;
@@ -663,7 +663,7 @@ export function parseDamageValue(
     }
     return result;
   }
-  
+
   // Handle FOR+X (strength-based with modifier)
   if (damageValueStr.startsWith('FOR+')) {
     result.isStrengthBased = true;
@@ -679,7 +679,7 @@ export function parseDamageValue(
     }
     return result;
   }
-  
+
   // Handle numeric damage
   const base = parseInt(damageValueStr) || 0;
   result.numericValue = base + damageValueBonus;
@@ -690,7 +690,7 @@ export function parseDamageValue(
     result.displayValue = result.numericValue.toString();
     result.rawDamageString = damageValueStr;
   }
-  
+
   return result;
 }
 
@@ -705,16 +705,16 @@ export function calculateRawDamageString(
   if (damageValueBonus <= 0 || baseDamageValue === '0' || baseDamageValue === 'toxin') {
     return baseDamageValue;
   }
-  
+
   if (baseDamageValue === 'FOR') {
     return `FOR+${damageValueBonus}`;
   }
-  
+
   if (baseDamageValue.startsWith('FOR+')) {
     const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
     return `FOR+${baseModifier + damageValueBonus}`;
   }
-  
+
   // Numeric value
   const baseValue = parseInt(baseDamageValue) || 0;
   return (baseValue + damageValueBonus).toString();
@@ -754,17 +754,17 @@ export function parseDamageCheckboxChange(
   // - items.{itemId}.system.cyberdeckDamage.light.0
   const match = inputName.match(/(?:damage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
   if (!match) return null;
-  
+
   const damageType = match[1] as 'light' | 'severe' | 'incapacitating';
   const index = match[2] ? parseInt(match[2], 10) : null;
-  
+
   // Create a copy of the damage object
   const updatedDamage: DamageUpdateResult = {
     light: Array.isArray(currentDamage?.light) ? [...currentDamage.light] : [false, false],
     severe: Array.isArray(currentDamage?.severe) ? [...currentDamage.severe] : [false],
     incapacitating: typeof currentDamage?.incapacitating === 'boolean' ? currentDamage.incapacitating : false
   };
-  
+
   // Update the appropriate field
   if (damageType === 'incapacitating') {
     updatedDamage.incapacitating = checked;
@@ -777,7 +777,7 @@ export function parseDamageCheckboxChange(
       updatedDamage[damageType][index] = checked;
     }
   }
-  
+
   return updatedDamage;
 }
 
@@ -813,21 +813,21 @@ export function handleSectionNavigation(
   event.preventDefault();
   const button = event.currentTarget as HTMLElement;
   const section = button.dataset.section;
-  
+
   if (!section) return null;
-  
-  const form = formElement instanceof HTMLElement 
-    ? formElement 
+
+  const form = formElement instanceof HTMLElement
+    ? formElement
     : (formElement as JQuery).get(0);
-  
+
   if (!form) return null;
-  
+
   // Update nav items
   form.querySelectorAll('.section-nav .nav-item').forEach((item) => {
     item.classList.remove('active');
   });
   button.classList.add('active');
-  
+
   // Update content sections
   form.querySelectorAll('.content-section').forEach((contentSection) => {
     contentSection.classList.remove('active');
@@ -836,7 +836,7 @@ export function handleSectionNavigation(
   if (targetSection) {
     targetSection.classList.add('active');
   }
-  
+
   return section;
 }
 
@@ -854,7 +854,7 @@ export function restoreActiveSection(
   delay: number = 10
 ): void {
   if (!activeSection) return;
-  
+
   setTimeout(() => {
     const navButton = formElement.querySelector(`[data-section="${activeSection}"]`);
     if (navButton) {
@@ -863,7 +863,7 @@ export function restoreActiveSection(
         item.classList.remove('active');
       });
       navButton.classList.add('active');
-      
+
       // Update content sections
       formElement.querySelectorAll('.content-section').forEach((section) => {
         section.classList.remove('active');
@@ -899,38 +899,38 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
   return feats.map((feat: any) => {
     // Add translated labels for attribute targets in RR entries
     feat.rrEntries = [];
-    const itemRRList = feat.system.rrList || [];
-    
+    const itemRRList: any[] = [];
+
     // For weapons and spells, also include RR from linked skills/specs/attributes
     let allRRList = [...itemRRList];
-    
+
     if (actor && (feat.system.featType === 'weapon' || feat.system.featType === 'spell' || feat.system.featType === 'weapons-spells')) {
       const { normalizeSearchText } = ItemSearch;
-      
+
       // Get linked skill and specialization from weapon
       const linkedAttackSkill = feat.system.linkedAttackSkill || '';
       const linkedAttackSpec = feat.system.linkedAttackSpecialization || '';
-      
+
       let attackSpecName: string | undefined = undefined;
       let attackSkillName: string | undefined = undefined;
       let attackLinkedAttribute: string | undefined = undefined;
-      
+
       // Try to find the linked attack specialization first
       if (linkedAttackSpec) {
-        const foundSpec = actor.items.find((i: any) => 
-          i.type === 'specialization' && 
+        const foundSpec = actor.items.find((i: any) =>
+          i.type === 'specialization' &&
           normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSpec)
         );
-        
+
         if (foundSpec) {
           const specSystem = foundSpec.system as any;
           attackSpecName = foundSpec.name;
           attackLinkedAttribute = specSystem.linkedAttribute || 'strength';
-          
+
           // Get parent skill for specialization
           const linkedSkillName = specSystem.linkedSkill;
           if (linkedSkillName) {
-            const parentSkill = actor.items.find((i: any) => 
+            const parentSkill = actor.items.find((i: any) =>
               i.type === 'skill' && i.name === linkedSkillName
             );
             if (parentSkill) {
@@ -939,20 +939,20 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
           }
         }
       }
-      
+
       // If no specialization found, try to find the linked attack skill
       if (!attackSpecName && linkedAttackSkill) {
-        const foundSkill = actor.items.find((i: any) => 
-          i.type === 'skill' && 
+        const foundSkill = actor.items.find((i: any) =>
+          i.type === 'skill' &&
           normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSkill)
         );
-        
+
         if (foundSkill) {
           attackSkillName = foundSkill.name;
           attackLinkedAttribute = (foundSkill.system as any).linkedAttribute || 'strength';
         }
       }
-      
+
       // Get RR sources from skill/specialization/attribute
       if (attackSpecName) {
         const specRRSources = getRRSources(actor, 'specialization', attackSpecName);
@@ -979,64 +979,64 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
         }))];
       }
     }
-    
+
     // Process all RR entries (item RR + skill/spec/attribute RR)
     for (let i = 0; i < allRRList.length; i++) {
       const rrEntry = allRRList[i];
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || '';
-      
+
       if (rrValue > 0) {
-      const entry: any = { rrType, rrValue, rrTarget };
-      
-      if (rrType === 'attribute' && rrTarget) {
-        entry.rrTargetLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
-      }
-      
-      feat.rrEntries.push(entry);
+        const entry: any = { rrType, rrValue, rrTarget };
+
+        if (rrType === 'attribute' && rrTarget) {
+          entry.rrTargetLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
+        }
+
+        feat.rrEntries.push(entry);
       }
     }
-    
+
     // Calculate final damage value for weapons, spells, and adept power weapons
     const isWeapon = feat.system.featType === 'weapon';
     const isSpell = feat.system.featType === 'spell';
     const isAdeptPowerWeapon = feat.system.isAdeptPowerWeapon || false;
-    
+
     if (isWeapon || isSpell || isAdeptPowerWeapon) {
       const damageValue = feat.system.damageValue || '0';
       let damageValueBonus = feat.system.damageValueBonus || 0;
-      
+
       // Add bonus from active feats that match the weapon's type
       // This applies to all weapons, including adept power weapons
       if (actor) {
         const weaponType = feat.system.weaponType || '';
-        const activeFeats = actor.items.filter((item: any) => 
-          item.type === 'feat' && 
+        const activeFeats = actor.items.filter((item: any) =>
+          item.type === 'feat' &&
           item.system.active === true &&
           item.system.weaponDamageBonus > 0 &&
           item.system.weaponTypeBonus === weaponType
         );
-        
+
         activeFeats.forEach((activeFeat: any) => {
           damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
         });
       }
-      
+
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
-      
+
       feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
     }
-    
+
     // Add narrative effects tooltip
     feat.narrativeEffectsTooltip = formatNarrativeEffectsTooltip(
-      feat.system.narrativeEffects || [], 
+      feat.system.narrativeEffects || [],
       feat.system.description,
       feat.rrEntries || [],
       feat.system
     );
-    
+
     return feat;
   });
 }
@@ -1097,33 +1097,33 @@ export function findAttackSkillAndSpec(
   // Try to find the linked attack specialization first
   if (targetSpec) {
     const normalizedTargetSpec = normalizeForComparison(targetSpec);
-    
+
     const foundSpec = actor.items.find((i: any) => {
       if (i.type !== 'specialization') return false;
       const normalizedItemName = normalizeForComparison(i.name);
       return normalizedItemName === normalizedTargetSpec;
     });
-    
+
     if (foundSpec) {
       _extractSpecAndSkillInfo(actor, foundSpec, result, defaultAttribute);
     } else if (isSpell) {
       // If exact match not found for spells, try keyword search
       _trySpellSpecKeywordSearch(actor, spellSpecType, result);
-      
+
       // If still not found, search in game.items
       if (!result.specName && !result.skillLevel && game.items) {
         _searchGameItemsForSpellSpec(actor, targetSpec, spellSpecType, result);
       }
     }
   }
-  
+
   // If no specialization found, try to find the linked attack skill
   if (!result.specName && !result.skillLevel && targetSkill) {
-    const foundSkill = actor.items.find((i: any) => 
-      i.type === 'skill' && 
+    const foundSkill = actor.items.find((i: any) =>
+      i.type === 'skill' &&
       ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill)
     );
-    
+
     if (foundSkill) {
       const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || defaultAttribute;
       result.skillName = foundSkill.name;
@@ -1158,11 +1158,11 @@ function _extractSpecAndSkillInfo(
   const specSystem = foundSpec.system as any;
   result.specName = foundSpec.name;
   result.linkedAttribute = specSystem.linkedAttribute || defaultAttribute;
-  
+
   // Get parent skill for specialization
   const linkedSkillName = specSystem.linkedSkill;
   if (linkedSkillName) {
-    const parentSkill = actor.items.find((i: any) => 
+    const parentSkill = actor.items.find((i: any) =>
       i.type === 'skill' && i.name === linkedSkillName
     );
     if (parentSkill && result.linkedAttribute) {
@@ -1192,10 +1192,10 @@ function _trySpellSpecKeywordSearch(
     'manipulation': ['manipulation'],
     'counterspell': ['contresort', 'contre-sort']
   };
-  
+
   const keywords = specKeywords[spellSpecType] || ['combat'];
   const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
-  
+
   const foundSpecByKeyword = actor.items.find((i: any) => {
     if (i.type !== 'specialization') return false;
     const normalizedName = ItemSearch.normalizeSearchText(i.name);
@@ -1205,7 +1205,7 @@ function _trySpellSpecKeywordSearch(
     }
     return false;
   });
-  
+
   if (foundSpecByKeyword) {
     _extractSpecAndSkillInfo(actor, foundSpecByKeyword, result, 'willpower');
   }
@@ -1221,14 +1221,14 @@ function _searchGameItemsForSpellSpec(
   result: AttackSkillSpecResult
 ): void {
   const normalizedTargetSpec = normalizeForComparison(targetSpec);
-  
+
   // Search in game.items for the specialization
   const specInGameItems = (game.items as any).find((i: any) => {
     if (i.type !== 'specialization') return false;
     const normalizedItemName = normalizeForComparison(i.name);
     return normalizedItemName === normalizedTargetSpec;
   });
-  
+
   const specKeywords: Record<string, string[]> = {
     'combat': ['combat'],
     'detection': ['détection', 'detection'],
@@ -1237,14 +1237,14 @@ function _searchGameItemsForSpellSpec(
     'manipulation': ['manipulation'],
     'counterspell': ['contresort', 'contre-sort']
   };
-  
+
   let specToUse = specInGameItems;
-  
+
   // If still not found by exact match, try keyword search in game.items
   if (!specToUse) {
     const keywords = specKeywords[spellSpecType] || ['combat'];
     const normalizedKeywords = keywords.map(kw => ItemSearch.normalizeSearchText(kw));
-    
+
     specToUse = (game.items as any).find((i: any) => {
       if (i.type !== 'specialization') return false;
       const normalizedName = ItemSearch.normalizeSearchText(i.name);
@@ -1255,13 +1255,13 @@ function _searchGameItemsForSpellSpec(
       return false;
     });
   }
-  
+
   if (specToUse) {
     const specSystem = specToUse.system as any;
     const linkedSkillName = specSystem.linkedSkill;
-    
+
     if (linkedSkillName) {
-      const parentSkill = actor.items.find((i: any) => 
+      const parentSkill = actor.items.find((i: any) =>
         i.type === 'skill' && i.name === linkedSkillName
       );
       if (parentSkill) {
@@ -1281,11 +1281,11 @@ function _searchGameItemsForSpellSpec(
  * Search in game.items for Sorcellerie skill
  */
 function _searchGameItemsForSorcellerie(actor: any, result: AttackSkillSpecResult): void {
-  const sorcerySkillInGame = (game.items as any).find((i: any) => 
-    i.type === 'skill' && 
+  const sorcerySkillInGame = (game.items as any).find((i: any) =>
+    i.type === 'skill' &&
     ItemSearch.normalizeSearchText(i.name) === 'sorcellerie'
   );
-  
+
   if (sorcerySkillInGame) {
     // Use default willpower attribute for Sorcellerie if skill not in actor
     result.skillName = 'Sorcellerie';
@@ -1332,19 +1332,19 @@ export function calculateAttackPool(
 ): AttackPoolResult {
   // Calculate dice pool: use spec level if available, otherwise skill level, otherwise 0
   const totalDicePool = skillSpecResult.specLevel || skillSpecResult.skillLevel || 0;
-  
+
   // Get RR sources from skill/specialization/attribute
   // Only count RR if the skill/spec actually exists on the actor
-  let skillRRSources: Array<{featName: string, rrValue: number}> = [];
-  let specRRSources: Array<{featName: string, rrValue: number}> = [];
-  let attributeRRSources: Array<{featName: string, rrValue: number}> = [];
-  
+  let skillRRSources: Array<{ featName: string, rrValue: number }> = [];
+  let specRRSources: Array<{ featName: string, rrValue: number }> = [];
+  let attributeRRSources: Array<{ featName: string, rrValue: number }> = [];
+
   // Only count RR from specialization if it actually exists on the actor
   // Check by verifying that specLevel is defined (which means the spec was found)
   if (skillSpecResult.specName && skillSpecResult.specLevel !== undefined) {
     // Also verify the spec actually exists on the actor
-    const specExists = actor.items.some((item: any) => 
-      item.type === 'specialization' && 
+    const specExists = actor.items.some((item: any) =>
+      item.type === 'specialization' &&
       ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(skillSpecResult.specName!)
     );
     if (specExists) {
@@ -1356,8 +1356,8 @@ export function calculateAttackPool(
   // Note: We can count both skill RR and spec RR if both exist (they stack)
   if (skillSpecResult.skillName && skillSpecResult.skillLevel !== undefined) {
     // Verify the skill actually exists on the actor (not just using attribute level)
-    const skillExists = actor.items.some((item: any) => 
-      item.type === 'skill' && 
+    const skillExists = actor.items.some((item: any) =>
+      item.type === 'skill' &&
       ItemSearch.normalizeSearchText(item.name) === ItemSearch.normalizeSearchText(skillSpecResult.skillName!)
     );
     if (skillExists) {
@@ -1368,21 +1368,21 @@ export function calculateAttackPool(
   if (skillSpecResult.linkedAttribute) {
     attributeRRSources = getRRSources(actor, 'attribute', skillSpecResult.linkedAttribute);
   }
-  
+
   // Convert item RR list to same format as getRRSources (objects with rrValue)
   const itemRRSources = itemRRList.map((rrEntry: any) => ({
     featName: itemName,
     rrValue: rrEntry.rrValue || 0
   }));
-  
+
   // Merge all RR sources (item RR + skill/spec/attribute RR)
   const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
-  
+
   // Calculate total RR (sum of all RR values, max 3)
   const totalRR = Math.min(3, allRRSources.reduce((sum: number, source: any) => {
     return sum + (source.rrValue || 0);
   }, 0));
-  
+
   return {
     totalDicePool,
     totalRR,
@@ -1403,10 +1403,10 @@ export function calculateAttackPool(
  */
 export function findSkillByName(actor: any, skillName: string): any | undefined {
   if (!actor || !skillName) return undefined;
-  
+
   const normalizedName = ItemSearch.normalizeSearchText(skillName);
-  return actor.items.find((i: any) => 
-    i.type === 'skill' && 
+  return actor.items.find((i: any) =>
+    i.type === 'skill' &&
     ItemSearch.normalizeSearchText(i.name) === normalizedName
   );
 }
@@ -1420,10 +1420,10 @@ export function findSkillByName(actor: any, skillName: string): any | undefined 
  */
 export function findSpecByName(actor: any, specName: string): any | undefined {
   if (!actor || !specName) return undefined;
-  
+
   const normalizedName = normalizeForComparison(specName);
-  return actor.items.find((i: any) => 
-    i.type === 'specialization' && 
+  return actor.items.find((i: any) =>
+    i.type === 'specialization' &&
     normalizeForComparison(i.name) === normalizedName
   );
 }
@@ -1437,10 +1437,10 @@ export function findSpecByName(actor: any, specName: string): any | undefined {
  */
 export function findItemInGame(itemType: string, itemName: string): any | undefined {
   if (!game.items || !itemName) return undefined;
-  
+
   const normalizedName = normalizeForComparison(itemName);
-  return (game.items as any).find((i: any) => 
-    i.type === itemType && 
+  return (game.items as any).find((i: any) =>
+    i.type === itemType &&
     normalizeForComparison(i.name) === normalizedName
   );
 }
@@ -1454,12 +1454,12 @@ export function findItemInGame(itemType: string, itemName: string): any | undefi
  */
 export function calculateSkillDicePool(actor: any, skill: any): number {
   if (!actor || !skill) return 0;
-  
+
   const skillSystem = skill.system as any;
   const linkedAttribute = skillSystem.linkedAttribute || 'strength';
   const attributeValue = (actor.system as any).attributes?.[linkedAttribute] || 0;
   const skillRating = skillSystem.rating || 0;
-  
+
   return attributeValue + skillRating;
 }
 
@@ -1473,14 +1473,14 @@ export function calculateSkillDicePool(actor: any, skill: any): number {
  */
 export function calculateSpecDicePool(actor: any, spec: any, parentSkill?: any): number {
   if (!actor || !spec) return 0;
-  
+
   const specSystem = spec.system as any;
   const linkedSkillName = specSystem.linkedSkill;
-  
+
   // Find parent skill if not provided
   const skill = parentSkill || findSkillByName(actor, linkedSkillName);
   if (!skill) return 0;
-  
+
   const skillDicePool = calculateSkillDicePool(actor, skill);
   return skillDicePool + 2; // Specialization adds +2
 }
@@ -1494,14 +1494,14 @@ export function calculateSpecDicePool(actor: any, spec: any, parentSkill?: any):
  */
 export function getLinkedAttribute(item: any, actor?: any): string {
   if (!item) return 'strength';
-  
+
   const itemSystem = item.system as any;
-  
+
   // If skill, return its linked attribute
   if (item.type === 'skill') {
     return itemSystem.linkedAttribute || 'strength';
   }
-  
+
   // If specialization, find the parent skill's linked attribute
   if (item.type === 'specialization' && actor) {
     const linkedSkillName = itemSystem.linkedSkill;
@@ -1510,7 +1510,7 @@ export function getLinkedAttribute(item: any, actor?: any): string {
       return (parentSkill.system as any).linkedAttribute || 'strength';
     }
   }
-  
+
   // Fallback
   return itemSystem.linkedAttribute || 'strength';
 }
@@ -1540,13 +1540,13 @@ export function findDefenseSelection(
     linkedSpec: undefined,
     linkedSkill: undefined
   };
-  
+
   const skills = actor.items.filter((i: any) => i.type === 'skill');
-  
+
   // 1. Try to find the linked defense specialization
   if (linkedDefenseSpec) {
     result.linkedSpec = findSpecByName(actor, linkedDefenseSpec);
-    
+
     if (result.linkedSpec) {
       result.defaultSelection = `spec-${result.linkedSpec.id}`;
       // Find the parent skill
@@ -1555,21 +1555,21 @@ export function findDefenseSelection(
       return result;
     }
   }
-  
+
   // 2. Try to find the defense skill
   if (linkedDefenseSkill) {
     result.linkedSkill = findSkillByName(actor, linkedDefenseSkill);
-    
+
     if (result.linkedSkill) {
       result.defaultSelection = `skill-${result.linkedSkill.id}`;
       return result;
     }
   }
-  
+
   // 3. Fallback: Search in game.items for the spec template
   if (linkedDefenseSpec && game.items) {
     const specTemplate = findItemInGame('specialization', linkedDefenseSpec);
-    
+
     if (specTemplate) {
       const linkedSkillName = specTemplate.system.linkedSkill;
       if (linkedSkillName) {
@@ -1581,13 +1581,13 @@ export function findDefenseSelection(
       }
     }
   }
-  
+
   // 4. Default to first skill
   if (skills.length > 0) {
     result.linkedSkill = skills[0];
     result.defaultSelection = `skill-${result.linkedSkill.id}`;
   }
-  
+
   return result;
 }
 
@@ -1600,9 +1600,9 @@ export function findDefenseSelection(
  */
 export function getSpecializationsForSkill(actor: any, skillName: string): any[] {
   if (!actor || !skillName) return [];
-  
+
   const normalizedSkillName = ItemSearch.normalizeSearchText(skillName);
-  
+
   return actor.items.filter((i: any) => {
     if (i.type !== 'specialization') return false;
     const linkedSkill = (i.system as any)?.linkedSkill;
@@ -1623,23 +1623,23 @@ export async function toggleItemBookmark(actor: any, itemId: string, sheet?: any
     console.error('toggleItemBookmark: missing actor or itemId');
     return false;
   }
-  
+
   const item = actor.items.get(itemId);
   if (!item) {
     console.error('toggleItemBookmark: item not found', itemId);
     return false;
   }
-  
+
   const currentBookmarkState = (item.system as any).bookmarked || false;
-  
+
   try {
     await (item as any).update({ 'system.bookmarked': !currentBookmarkState });
-    
+
     // Re-render the sheet if provided
     if (sheet && typeof sheet.render === 'function') {
       sheet.render(false);
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error toggling bookmark:', error);
@@ -1666,7 +1666,7 @@ function stripHtmlTags(html: string): string {
  */
 export function formatNarrativeEffectsTooltip(narrativeEffects: any[], description?: string, rrEntries?: any[], featSystem?: any): string {
   const sections: string[] = [];
-  
+
   // Add RR section if there are any RR entries
   if (rrEntries && rrEntries.length > 0) {
     const rrText: string[] = [];
@@ -1680,11 +1680,11 @@ export function formatNarrativeEffectsTooltip(narrativeEffects: any[], descripti
       sections.push(game.i18n?.localize("SRA2.TOOLTIP.RR") + '\n' + rrText.join('\n'));
     }
   }
-  
+
   // Add bonus section if feat system data is provided
   if (featSystem) {
     const bonusText: string[] = [];
-    
+
     // Damage thresholds
     if (featSystem.bonusPhysicalThreshold && featSystem.bonusPhysicalThreshold !== 0) {
       const sign = featSystem.bonusPhysicalThreshold > 0 ? '+' : '';
@@ -1694,7 +1694,7 @@ export function formatNarrativeEffectsTooltip(narrativeEffects: any[], descripti
       const sign = featSystem.bonusMentalThreshold > 0 ? '+' : '';
       bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.MENTAL_THRESHOLD") + ` ${sign}${featSystem.bonusMentalThreshold}`);
     }
-    
+
     // Damage boxes
     if (featSystem.bonusLightDamage && featSystem.bonusLightDamage > 0) {
       bonusText.push(`+${featSystem.bonusLightDamage} ` + game.i18n?.localize("SRA2.TOOLTIP.LIGHT_WOUNDS"));
@@ -1702,12 +1702,12 @@ export function formatNarrativeEffectsTooltip(narrativeEffects: any[], descripti
     if (featSystem.bonusSevereDamage && featSystem.bonusSevereDamage > 0) {
       bonusText.push(`+${featSystem.bonusSevereDamage} ` + game.i18n?.localize("SRA2.TOOLTIP.SEVERE_WOUNDS"));
     }
-    
+
     // Weapon damage bonus
     if (featSystem.weaponDamageBonus && featSystem.weaponDamageBonus > 0 && featSystem.weaponTypeBonus) {
       bonusText.push(`+${featSystem.weaponDamageBonus} VD ` + game.i18n?.localize("SRA2.TOOLTIP.WEAPON_DAMAGE") + ` ${featSystem.weaponTypeBonus}`);
     }
-    
+
     // Ranges for weapons
     if (featSystem.featType === 'weapon' && featSystem.ranges) {
       const rangeLabels: string[] = [];
@@ -1719,34 +1719,34 @@ export function formatNarrativeEffectsTooltip(narrativeEffects: any[], descripti
         bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.RANGES") + ' ' + rangeLabels.join(', '));
       }
     }
-    
+
     // Narration
     if (featSystem.grantsNarration) {
       const actions = featSystem.narrationActions || 1;
       const actionLabel = actions > 1 ? game.i18n?.localize("SRA2.TOOLTIP.ACTIONS") : game.i18n?.localize("SRA2.TOOLTIP.ACTION");
       bonusText.push(game.i18n?.localize("SRA2.TOOLTIP.GRANTS_NARRATION") + ` (${actions} ${actionLabel})`);
     }
-    
+
     // Anarchy bonus
     if (featSystem.bonusAnarchy && featSystem.bonusAnarchy > 0) {
       bonusText.push(`+${featSystem.bonusAnarchy} ` + game.i18n?.localize("SRA2.TOOLTIP.ANARCHY_POINTS"));
     }
-    
+
     // Sustained spells
     if (featSystem.sustainedSpellCount && featSystem.sustainedSpellCount > 0) {
       bonusText.push(`+${featSystem.sustainedSpellCount} ` + game.i18n?.localize("SRA2.TOOLTIP.SUSTAINED_SPELLS"));
     }
-    
+
     // Summoned spirits
     if (featSystem.summonedSpiritCount && featSystem.summonedSpiritCount > 0) {
       bonusText.push(`+${featSystem.summonedSpiritCount} ` + game.i18n?.localize("SRA2.TOOLTIP.SUMMONED_SPIRITS"));
     }
-    
+
     if (bonusText.length > 0) {
       sections.push(game.i18n?.localize("SRA2.TOOLTIP.BONUS") + '\n' + bonusText.join('\n'));
     }
   }
-  
+
   // Add narrative effects section
   if (narrativeEffects && narrativeEffects.length > 0) {
     const effectsText: string[] = [];
@@ -1760,7 +1760,7 @@ export function formatNarrativeEffectsTooltip(narrativeEffects: any[], descripti
       sections.push(game.i18n?.localize("SRA2.TOOLTIP.NARRATIVE_EFFECTS") + '\n' + effectsText.join('\n'));
     }
   }
-  
+
   // Add description section
   if (description) {
     const cleanDescription = stripHtmlTags(description);
@@ -1768,12 +1768,12 @@ export function formatNarrativeEffectsTooltip(narrativeEffects: any[], descripti
       sections.push(game.i18n?.localize("SRA2.TOOLTIP.DESCRIPTION") + '\n' + cleanDescription);
     }
   }
-  
+
   // Return combined sections or default message
   if (sections.length > 0) {
     return sections.join('\n\n');
   }
-  
+
   return game.i18n?.localize("SRA2.SKILLS.NO_NARRATIVE_EFFECTS") || '';
 }
 
