@@ -6390,7 +6390,7 @@ class CharacterSheet extends ActorSheet {
    */
   async _rollWeaponOrSpell(item, type) {
     const itemSystem = item.system;
-    const isSpell = type === "spell";
+    const isSpell = type === "spell" || itemSystem.isSpell === true;
     const spellType = isSpell ? itemSystem.spellType || "indirect" : null;
     const weaponType = itemSystem.weaponType;
     let weaponLinkedSkill = "";
