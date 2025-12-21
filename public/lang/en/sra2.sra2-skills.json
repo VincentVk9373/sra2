@@ -1,0 +1,83 @@
+{
+    "label": "Skills",
+    "mapping": {
+        "description": "system.description"
+    },
+    "entries": [
+        {
+            "id": "Armes à distance",
+            "name": "Ranged Weapons",
+            "description": ""
+        },
+        {
+            "id": "Athlétisme",
+            "name": "Athletics",
+            "description": ""
+        },
+        {
+            "id": "Combat rapproché",
+            "name": "Close Combat",
+            "description": ""
+        },
+        {
+            "id": "Conjuration",
+            "name": "Conjuration",
+            "description": ""
+        },
+        {
+            "id": "Furtivité",
+            "name": "Stealth",
+            "description": ""
+        },
+        {
+            "id": "Influence",
+            "name": "Influence",
+            "description": ""
+        },
+        {
+            "id": "Ingénierie",
+            "name": "Engineering",
+            "description": ""
+        },
+        {
+            "id": "Perception",
+            "name": "Perception",
+            "description": ""
+        },
+        {
+            "id": "Pilotage",
+            "name": "Piloting",
+            "description": ""
+        },
+        {
+            "id": "Piratage",
+            "name": "Hacking",
+            "description": ""
+        },
+        {
+            "id": "Réseau",
+            "name": "Networking",
+            "description": ""
+        },
+        {
+            "id": "Sorcellerie",
+            "name": "Sorcery",
+            "description": ""
+        },
+        {
+            "id": "Survie",
+            "name": "Survival",
+            "description": ""
+        },
+        {
+            "id": "Électronique",
+            "name": "Electronics",
+            "description": ""
+        },
+        {
+            "id": "Étiquette",
+            "name": "Etiquette",
+            "description": ""
+        }
+    ]
+}
