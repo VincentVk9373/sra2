@@ -620,6 +620,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: false,
         label: "SRA2.FEATS.IS_ADEPT_POWER_WEAPON"
       }),
+      isSpell: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_SPELL"
+      }),
       // Narrative effects
       narrativeEffects: new fields.ArrayField(new fields.SchemaField({
         text: new fields.StringField({

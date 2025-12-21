@@ -283,8 +283,10 @@ export class CharacterSheet extends ActorSheet {
       cyberdeck: cyberdeckFeats,
       vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
-      weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon'),
-      spell: allFeats.filter((feat: any) => feat.system.featType === 'spell'),
+      weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon' && !feat.system.isSpell),
+      spell: allFeats.filter((feat: any) => 
+        feat.system.featType === 'spell' || feat.system.isSpell === true
+      ),
       connaissance: allFeats.filter((feat: any) => feat.system.featType === 'connaissance'),
       power: allFeats.filter((feat: any) => feat.system.featType === 'power')
     };
@@ -421,6 +423,7 @@ export class CharacterSheet extends ActorSheet {
       const spellSystem = spell.system as any;
       
       // Get spell specialization type and map it to the specialization name
+      // If isSpell is true but spellSpecializationType is not set, default to 'combat'
       const spellSpecType = spellSystem.spellSpecializationType || 'combat';
       const spellSpecMap: Record<string, string> = {
         'combat': 'Spé: Sorts de combat',
@@ -2118,18 +2121,21 @@ export class CharacterSheet extends ActorSheet {
       await this._onRollSpecialization(fakeEvent);
     } else if (itemType === 'feat') {
       const featType = (item.system as any).featType;
-      if (featType === 'weapon') {
-        const fakeEvent = { 
-          preventDefault: () => {}, 
-          currentTarget: { dataset: { itemId: itemId } } 
-        } as any;
-        await this._onRollWeapon(fakeEvent);
-      } else if (featType === 'spell') {
+      const isSpell = (item.system as any).isSpell === true;
+      
+      // If isSpell is true, treat as spell regardless of featType
+      if (isSpell || featType === 'spell') {
         const fakeEvent = { 
           preventDefault: () => {}, 
           currentTarget: { dataset: { itemId: itemId } } 
         } as any;
         await this._onRollSpell(fakeEvent);
+      } else if (featType === 'weapon') {
+        const fakeEvent = { 
+          preventDefault: () => {}, 
+          currentTarget: { dataset: { itemId: itemId } } 
+        } as any;
+        await this._onRollWeapon(fakeEvent);
       } else if (featType === 'weapons-spells') {
         const fakeEvent = { 
           preventDefault: () => {}, 
@@ -2524,8 +2530,8 @@ export class CharacterSheet extends ActorSheet {
   private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell'): Promise<void> {
     const itemSystem = item.system as any;
     
-    // Check if this is a spell and get spell type
-    const isSpell = type === 'spell';
+    // Check if this is a spell: either type is 'spell' or isSpell flag is true
+    const isSpell = type === 'spell' || itemSystem.isSpell === true;
     const spellType = isSpell ? (itemSystem.spellType || 'indirect') : null;
     
     // Get weapon type and linked skills

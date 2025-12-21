@@ -485,6 +485,8 @@
             "IS_WEAPON_FOCUS_HINT": "This weapon is a focus (adds +1 to recommended level)",
             "IS_ADEPT_POWER_WEAPON": "Adept Power",
             "IS_ADEPT_POWER_WEAPON_HINT": "This weapon is an adept power (adds +1 to recommended level)",
+            "IS_SPELL": "Spell",
+            "IS_SPELL_HINT": "This feat will be placed in the spells category of the inventory",
             "IS_BIOWARE": "Bioware",
             "IS_BIOWARE_HINT": "If checked, the feat cost is +1 additional level",
             "CHOICE_OPTIONS": "Creation Options",

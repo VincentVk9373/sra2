@@ -422,6 +422,14 @@
           </div>
 
           <div class="form-group">
+            <label>
+              <input type="checkbox" name="system.isSpell" {{checked system.isSpell}} />
+              {{localize "SRA2.FEATS.IS_SPELL"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.IS_SPELL_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.WEAPON_TYPE"}}</label>
             <select name="system.weaponType" data-action="select-weapon-type">
               <option value="">{{localize "SRA2.FEATS.WEAPON.SELECT_WEAPON"}}</option>

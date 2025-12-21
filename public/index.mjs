@@ -1209,6 +1209,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: false,
         label: "SRA2.FEATS.IS_ADEPT_POWER_WEAPON"
       }),
+      isSpell: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_SPELL"
+      }),
       // Narrative effects
       narrativeEffects: new fields.ArrayField(new fields.SchemaField({
         text: new fields.StringField({
@@ -4771,8 +4776,10 @@ class CharacterSheet extends ActorSheet {
       vehicle: [...vehicleFeats, ...linkedVehicles],
       // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
-      weapon: allFeats.filter((feat) => feat.system.featType === "weapon"),
-      spell: allFeats.filter((feat) => feat.system.featType === "spell"),
+      weapon: allFeats.filter((feat) => feat.system.featType === "weapon" && !feat.system.isSpell),
+      spell: allFeats.filter(
+        (feat) => feat.system.featType === "spell" || feat.system.isSpell === true
+      ),
       connaissance: allFeats.filter((feat) => feat.system.featType === "connaissance"),
       power: allFeats.filter((feat) => feat.system.featType === "power")
     };
@@ -6064,20 +6071,21 @@ class CharacterSheet extends ActorSheet {
       await this._onRollSpecialization(fakeEvent);
     } else if (itemType === "feat") {
       const featType = item.system.featType;
-      if (featType === "weapon") {
-        const fakeEvent = {
-          preventDefault: () => {
-          },
-          currentTarget: { dataset: { itemId } }
-        };
-        await this._onRollWeapon(fakeEvent);
-      } else if (featType === "spell") {
+      const isSpell = item.system.isSpell === true;
+      if (isSpell || featType === "spell") {
         const fakeEvent = {
           preventDefault: () => {
           },
           currentTarget: { dataset: { itemId } }
         };
         await this._onRollSpell(fakeEvent);
+      } else if (featType === "weapon") {
+        const fakeEvent = {
+          preventDefault: () => {
+          },
+          currentTarget: { dataset: { itemId } }
+        };
+        await this._onRollWeapon(fakeEvent);
       } else if (featType === "weapons-spells") {
         const fakeEvent = {
           preventDefault: () => {
