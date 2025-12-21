@@ -142,7 +142,7 @@
                         data-target-name="{{defenseResult.defenderName}}"
                         data-target-uuid="{{defenseResult.defenderUuid}}"
                         data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
-                        data-damage-type="physical">
+                        data-damage-type="{{defenseResult.damageType}}">
                     <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.defenderName}})
                 </button>
                 {{/if}}
@@ -156,7 +156,7 @@
                         data-target-name="{{defenseResult.defenderName}}"
                         data-target-uuid="{{defenseResult.defenderUuid}}"
                         data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
-                        data-damage-type="physical">
+                        data-damage-type="{{defenseResult.damageType}}">
                     <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.defenderName}})
                 </button>
                 {{else if (eq defenseResult.iceType "killer")}}
@@ -169,7 +169,7 @@
                         data-target-name="{{defenseResult.defenderName}}"
                         data-target-uuid="{{defenseResult.defenderUuid}}"
                         data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
-                        data-damage-type="physical">
+                        data-damage-type="{{defenseResult.damageType}}">
                     <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.defenderName}})
                 </button>
                 {{else if (eq defenseResult.iceType "acid")}}
@@ -201,7 +201,7 @@
                     data-target-name="{{defenseResult.defenderName}}"
                     data-target-uuid="{{defenseResult.defenderUuid}}"
                     data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
-                    data-damage-type="{{#if (and rollData.attackRollData (eq rollData.attackRollData.spellType "direct"))}}mental{{else}}physical{{/if}}">
+                    data-damage-type="{{defenseResult.damageType}}">
                 <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.defenderName}})
             </button>
             {{/if}}
@@ -246,7 +246,7 @@
                     data-target-name="{{defenseResult.damageReceiverName}}"
                     data-target-uuid="{{defenseResult.damageReceiverUuid}}"
                     data-attacker-uuid="{{defenseResult.damageInflicterUuid}}"
-                    data-damage-type="{{#if (and rollData.attackRollData (eq rollData.attackRollData.spellType "direct"))}}mental{{else}}physical{{/if}}">
+                    data-damage-type="{{defenseResult.attackerDamageType}}">
                 <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.damageReceiverName}})
             </button>
             {{else if (eq defenseResult.winner "defender")}}
@@ -262,7 +262,7 @@
                     data-target-name="{{defenseResult.damageReceiverName}}"
                     data-target-uuid="{{defenseResult.damageReceiverUuid}}"
                     data-attacker-uuid="{{defenseResult.damageInflicterUuid}}"
-                    data-damage-type="physical">
+                    data-damage-type="{{defenseResult.defenderDamageType}}">
                 <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.damageReceiverName}})
             </button>
             {{/if}}
@@ -294,7 +294,7 @@
                 data-target-name="{{defender.name}}"
                 data-target-uuid="{{defender.uuid}}"
                 data-attacker-uuid="{{attacker.uuid}}"
-                data-damage-type="mental">
+                data-damage-type="{{rollData.damageType}}">
             <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defender.name}})
         </button>
     </div>

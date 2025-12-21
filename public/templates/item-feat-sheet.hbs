@@ -600,6 +600,16 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.WEAPON.DAMAGE_TYPE"}}</label>
+            <select name="system.damageType">
+              <option value="physical" {{#if (eq system.damageType "physical")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.DAMAGE_TYPE_PHYSICAL"}}</option>
+              <option value="mental" {{#if (eq system.damageType "mental")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.DAMAGE_TYPE_MAGIC"}}</option>
+              <option value="matrix" {{#if (eq system.damageType "matrix")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.DAMAGE_TYPE_MATRIX"}}</option>
+            </select>
+            <p class="notes">{{localize "SRA2.FEATS.WEAPON.DAMAGE_TYPE_HINT"}}</p>
+          </div>
+
           <div class="form-group ranges-group">
             <label>{{localize "SRA2.FEATS.WEAPON.RANGES"}}</label>
             {{#if (eq system.weaponType "custom-weapon")}}

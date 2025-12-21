@@ -449,6 +449,7 @@ export function prepareVehicleWeaponRollRequest(
     // Weapon properties
     isWeaponFocus: weaponSystem.isWeaponFocus || false,
     damageValue: attackData.damageValue, // Already includes bonus
+    damageType: weaponSystem.damageType || 'physical',  // Use weapon's damageType, default to physical
     meleeRange: weaponSystem.meleeRange,
     shortRange: weaponSystem.shortRange,
     mediumRange: weaponSystem.mediumRange,
@@ -522,6 +523,14 @@ export async function createIceAttackMessage(
     complication: 'none'
   };
   
+  // Determine damage type for ICE attacks
+  let iceDamageType: 'physical' | 'mental' | 'matrix' = 'matrix';
+  if (iceType === 'black') {
+    iceDamageType = 'physical';  // Black ICE deals biofeedback (physical) damage
+  } else if (iceType === 'blaster' || iceType === 'killer') {
+    iceDamageType = 'matrix';  // Blaster and Killer ICE deal matrix damage
+  }
+  
   // Prepare roll data for ICE attack
   const rollData = {
     itemType: 'ice-attack',
@@ -530,6 +539,7 @@ export async function createIceAttackMessage(
     threshold: threshold,
     damageValue: damageValue.toString(),
     iceDamageValue: damageValue, // Store separately for defense calculation
+    damageType: iceDamageType,  // Type of damage for ICE attacks
     skillName: 'Cybercombat (GLACE)',
     itemName: iceActor.name,
     isAttack: true,
@@ -610,7 +620,7 @@ export async function createIceAttackMessage(
   await ChatMessage.create(messageData);
 }
 
-export async function applyDamage(defenderUuid: string, damageValue: number, defenderName: string, damageType: 'physical' | 'mental' = 'physical'): Promise<void> {
+export async function applyDamage(defenderUuid: string, damageValue: number, defenderName: string, damageType: 'physical' | 'mental' | 'matrix' = 'physical'): Promise<void> {
   // Use fromUuid to get the token's actor if it's a token UUID, or the actor if it's an actor UUID
   const defender = await fromUuid(defenderUuid as any) as any;
   
@@ -629,11 +639,23 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   // Get damage thresholds using the helper function
   const damageThresholds = getDamageThresholds(defenderActor, damageType);
   
-  // Deep copy of damage object with arrays
+  // Map damage type to the correct damage field name
+  // For characters, use the appropriate damage gauge based on type
+  let damageFieldName = 'damage'; // default to physical
+  if (!isVehicle && !isIce) {
+    if (damageType === 'mental') {
+      damageFieldName = 'magicDamage';
+    } else if (damageType === 'matrix') {
+      damageFieldName = 'matrixDamage';
+    }
+  }
+  
+  // Deep copy of damage object with arrays from the appropriate gauge
+  const sourceDamage = defenderSystem[damageFieldName] || {};
   let damage = {
-    light: [...(defenderSystem.damage?.light || [])],
-    severe: [...(defenderSystem.damage?.severe || [])],
-    incapacitating: defenderSystem.damage?.incapacitating || false
+    light: [...(sourceDamage.light || [])],
+    severe: [...(sourceDamage.severe || [])],
+    incapacitating: sourceDamage.incapacitating || false
   };
   let woundType = '';
   let overflow = false;
@@ -852,9 +874,11 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     }
   }
   
-  // Update the actor's damage (use defenderActor to update the token's actor data)
+  // Update the actor's damage on the appropriate gauge (use defenderActor to update the token's actor data)
   // The prepareDerivedData() method now preserves existing damage values, so normal update should work
-  await defenderActor.update({ 'system.damage': damage });
+  const updateData: any = {};
+  updateData[`system.${damageFieldName}`] = damage;
+  await defenderActor.update(updateData);
   
   // Check if now incapacitated
   if (damage.incapacitating === true) {

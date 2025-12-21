@@ -84,6 +84,46 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
           initial: false
         })
       }),
+      magicDamage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }),
+      matrixDamage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }),
       anarchySpent: new fields.ArrayField(new fields.BooleanField({
         required: true,
         initial: false
@@ -185,6 +225,11 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         required: false,
         initial: "",
         label: "SRA2.REFERENCE"
+      }),
+      damageGaugeType: new fields.StringField({
+        required: false,
+        initial: "physical",
+        label: "SRA2.DAMAGE.GAUGE_TYPE"
       })
     };
   }
@@ -279,42 +324,57 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).bonusNarrations = totalNarrations;
     (this as any).narrationsDetails = narrationsDetails;
     
-    // Base: 2 light, 1 severe, 1 incapacitating
+    // Base: 2 light, 1 severe, 1 incapacitating (applies to all damage types)
     const totalLightBoxes = 2 + bonusLightDamage;
     const totalSevereBoxes = 1 + bonusSevereDamage;
     
-    // Ensure damage arrays match the required size (preserve existing values)
-    // CRITICAL: Read from source data first to preserve persisted values
-    // In Foundry v13, when prepareDerivedData() is called, (this as any).damage
-    // should already contain the persisted values from _source, but we need to
-    // ensure we're working with a copy to avoid mutating the source
-    const sourceDamage = parent?._source?.system?.damage || (this as any).damage || {};
-    
-    // Create a copy from source to preserve persisted values
-    const damage: any = {
-      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
-      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
-      incapacitating: typeof sourceDamage.incapacitating === 'boolean' ? sourceDamage.incapacitating : false
+    // Helper function to ensure damage arrays match the required size (preserve existing values)
+    const ensureDamageArraySize = (sourceDamage: any, defaultLight: boolean[], defaultSevere: boolean[]) => {
+      const damage: any = {
+        light: Array.isArray(sourceDamage?.light) ? [...sourceDamage.light] : [...defaultLight],
+        severe: Array.isArray(sourceDamage?.severe) ? [...sourceDamage.severe] : [...defaultSevere],
+        incapacitating: typeof sourceDamage?.incapacitating === 'boolean' ? sourceDamage.incapacitating : false
+      };
+      
+      // Adjust light damage array size (preserve existing values, only pad or trim from end)
+      while (damage.light.length < totalLightBoxes) {
+        damage.light.push(false);
+      }
+      while (damage.light.length > totalLightBoxes) {
+        damage.light.pop();
+      }
+      
+      // Adjust severe damage array size (preserve existing values, only pad or trim from end)
+      while (damage.severe.length < totalSevereBoxes) {
+        damage.severe.push(false);
+      }
+      while (damage.severe.length > totalSevereBoxes) {
+        damage.severe.pop();
+      }
+      
+      return damage;
     };
     
-    // Adjust light damage array size (preserve existing values, only pad or trim from end)
-    while (damage.light.length < totalLightBoxes) {
-      damage.light.push(false);
-    }
-    while (damage.light.length > totalLightBoxes) {
-      damage.light.pop();
-    }
+    // CRITICAL: Read from source data first to preserve persisted values
+    // In Foundry v13, when prepareDerivedData() is called, the damage objects
+    // should already contain the persisted values from _source, but we need to
+    // ensure we're working with a copy to avoid mutating the source
+    const sourceSystem = parent?._source?.system || {};
     
-    // Adjust severe damage array size (preserve existing values, only pad or trim from end)
-    while (damage.severe.length < totalSevereBoxes) {
-      damage.severe.push(false);
-    }
-    while (damage.severe.length > totalSevereBoxes) {
-      damage.severe.pop();
-    }
-    
-    // Assign the damage object (this updates derived data, source data remains unchanged)
+    // Ensure physical damage arrays match the required size (preserve existing values)
+    const sourceDamage = sourceSystem.damage || (this as any).damage || {};
+    const damage = ensureDamageArraySize(sourceDamage, [false, false], [false]);
     (this as any).damage = damage;
+    
+    // Ensure magic damage arrays match the required size (preserve existing values)
+    const sourceMagicDamage = sourceSystem.magicDamage || (this as any).magicDamage || {};
+    const magicDamage = ensureDamageArraySize(sourceMagicDamage, [false, false], [false]);
+    (this as any).magicDamage = magicDamage;
+    
+    // Ensure matrix damage arrays match the required size (preserve existing values)
+    const sourceMatrixDamage = sourceSystem.matrixDamage || (this as any).matrixDamage || {};
+    const matrixDamage = ensureDamageArraySize(sourceMatrixDamage, [false, false], [false]);
+    (this as any).matrixDamage = matrixDamage;
     
     (this as any).totalLightBoxes = totalLightBoxes;
     (this as any).totalSevereBoxes = totalSevereBoxes;

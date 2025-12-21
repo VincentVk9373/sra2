@@ -146,6 +146,7 @@ export interface RollRequestData {
   isWeaponFocus?: boolean;
   damageValue?: string;  // FINAL damage value (base + bonus)
   damageValueBonus?: number;  // Bonus from feat
+  damageType?: 'physical' | 'mental' | 'matrix';  // Type of damage: physical, mental (magic), or matrix
   meleeRange?: string;  // "none" | "ok" | "disadvantage"
   shortRange?: string;  // "none" | "ok" | "disadvantage"
   mediumRange?: string; // "none" | "ok" | "disadvantage"
@@ -196,6 +197,10 @@ export interface RollRequestData {
   // Spell-specific properties
   spellType?: 'direct' | 'indirect';  // For spells: 'direct' or 'indirect'
   isSpellDirect?: boolean;  // Flag for direct spells (no defense allowed)
+  
+  // ICE-specific properties
+  iceType?: string;  // Type of ICE (blaster, black, killer, etc.)
+  iceDamageValue?: number;  // ICE damage value (stored separately for defense calculation)
   
   // Attack roll data (for defense/counter-attack rolls)
   attackRollResult?: RollResult;
@@ -581,6 +586,9 @@ async function createRollChatMessage(
     console.log('  Original attacker (inflicter):', originalAttackerName, '(', originalAttackerUuid, ')');
     console.log('  Defender (receiver):', defenderName, '(', defenderUuid, ')');
     
+    // Get damage type from attack roll data (default to physical)
+    const attackDamageType = (rollData.attackRollData?.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
+    
     defenseResult = {
       attackSuccesses: attackSuccesses,
       defenseSuccesses: defenseSuccesses,
@@ -593,7 +601,9 @@ async function createRollChatMessage(
       defenderUuid: defenderUuid, // Who receives damage if attack succeeds
       // ICE-specific fields
       isIceAttack: isIceAttack,
-      iceType: iceType
+      iceType: iceType,
+      // Damage type from weapon/attack
+      damageType: attackDamageType
     };
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     // Counter-attack: compare with original attack
@@ -775,6 +785,10 @@ async function createRollChatMessage(
       console.log('  Receiver:', damageReceiverName, '(', damageReceiverUuid, ')');
     }
     
+    // Get damage types: attacker uses original attack's type, defender uses counter-attack weapon's type
+    const attackerDamageType = (rollData.attackRollData?.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
+    const defenderDamageType = (rollData.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
+    
     defenseResult = {
       attackSuccesses: attackSuccesses,
       counterAttackSuccesses: counterAttackSuccesses,
@@ -790,7 +804,10 @@ async function createRollChatMessage(
       damageInflicterUuid: damageInflicterUuid,
       damageReceiverUuid: damageReceiverUuid,
       damageInflicterName: damageInflicterName,
-      damageReceiverName: damageReceiverName
+      damageReceiverName: damageReceiverName,
+      // Damage types
+      attackerDamageType: attackerDamageType,
+      defenderDamageType: defenderDamageType
     };
   }
 

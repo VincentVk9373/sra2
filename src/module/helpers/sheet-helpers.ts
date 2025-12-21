@@ -20,63 +20,70 @@ export function handleSheetUpdate(actor: any, formData: any): any {
   // Expand the form data first to handle nested properties properly
   const expandedData = foundry.utils.expandObject(formData) as any;
 
-  // Only process damage if it's present in the formData (indicates damage fields were changed)
-  if (expandedData.system && expandedData.system.damage !== undefined) {
-    const currentDamage = (actor.system as any).damage || {};
-
-    // Initialize damage object if not present
-    if (!expandedData.system.damage || typeof expandedData.system.damage !== 'object') {
-      expandedData.system.damage = {};
-    }
-
-    // Helper function to convert object with numeric keys to array
-    const convertToArray = (obj: any, expectedLength: number): boolean[] => {
-      if (Array.isArray(obj)) {
-        // Already an array, ensure all indices are filled and convert to boolean
-        const arr: boolean[] = [];
-        for (let i = 0; i < expectedLength; i++) {
-          if (obj[i] !== undefined) {
-            arr[i] = obj[i] === true || obj[i] === 'true' || obj[i] === 'on';
-          } else {
-            arr[i] = false;
-          }
+  // Helper function to convert object with numeric keys to array
+  const convertToArray = (obj: any, expectedLength: number): boolean[] => {
+    if (Array.isArray(obj)) {
+      // Already an array, ensure all indices are filled and convert to boolean
+      const arr: boolean[] = [];
+      for (let i = 0; i < expectedLength; i++) {
+        if (obj[i] !== undefined) {
+          arr[i] = obj[i] === true || obj[i] === 'true' || obj[i] === 'on';
+        } else {
+          arr[i] = false;
         }
-        return arr;
       }
-      if (obj && typeof obj === 'object') {
-        // Object with numeric keys (e.g., {"0": true, "1": false}), convert to array
-        const arr: boolean[] = [];
-        for (let i = 0; i < expectedLength; i++) {
-          const key = i.toString();
-          arr[i] = obj[key] === true || obj[key] === 'true' || obj[key] === 'on';
-        }
-        return arr;
+      return arr;
+    }
+    if (obj && typeof obj === 'object') {
+      // Object with numeric keys (e.g., {"0": true, "1": false}), convert to array
+      const arr: boolean[] = [];
+      for (let i = 0; i < expectedLength; i++) {
+        const key = i.toString();
+        arr[i] = obj[key] === true || obj[key] === 'true' || obj[key] === 'on';
       }
-      // Not present or invalid, return array of false
-      return Array(expectedLength).fill(false);
-    };
-
-    // Get expected lengths from current damage or defaults
-    const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
-    const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
-
-    // Handle light damage checkboxes - process if present in formData
-    if (expandedData.system.damage.light !== undefined) {
-      expandedData.system.damage.light = convertToArray(expandedData.system.damage.light, currentLightLength);
+      return arr;
     }
+    // Not present or invalid, return array of false
+    return Array(expectedLength).fill(false);
+  };
 
-    // Handle severe damage checkboxes - process if present in formData
-    if (expandedData.system.damage.severe !== undefined) {
-      expandedData.system.damage.severe = convertToArray(expandedData.system.damage.severe, currentSevereLength);
-    }
+  // Helper function to process damage data for a specific damage type
+  const processDamageData = (damageType: 'damage' | 'magicDamage' | 'matrixDamage') => {
+    if (expandedData.system && expandedData.system[damageType] !== undefined) {
+      const currentDamage = (actor.system as any)[damageType] || {};
 
-    // Handle incapacitating - convert to boolean if present
-    if (expandedData.system.damage.incapacitating !== undefined) {
-      expandedData.system.damage.incapacitating = expandedData.system.damage.incapacitating === true ||
-        expandedData.system.damage.incapacitating === 'true' ||
-        expandedData.system.damage.incapacitating === 'on';
+      // Initialize damage object if not present
+      if (!expandedData.system[damageType] || typeof expandedData.system[damageType] !== 'object') {
+        expandedData.system[damageType] = {};
+      }
+
+      // Get expected lengths from current damage or defaults
+      const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
+      const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
+
+      // Handle light damage checkboxes - process if present in formData
+      if (expandedData.system[damageType].light !== undefined) {
+        expandedData.system[damageType].light = convertToArray(expandedData.system[damageType].light, currentLightLength);
+      }
+
+      // Handle severe damage checkboxes - process if present in formData
+      if (expandedData.system[damageType].severe !== undefined) {
+        expandedData.system[damageType].severe = convertToArray(expandedData.system[damageType].severe, currentSevereLength);
+      }
+
+      // Handle incapacitating - convert to boolean if present
+      if (expandedData.system[damageType].incapacitating !== undefined) {
+        expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true ||
+          expandedData.system[damageType].incapacitating === 'true' ||
+          expandedData.system[damageType].incapacitating === 'on';
+      }
     }
-  }
+  };
+
+  // Process all three damage types
+  processDamageData('damage');
+  processDamageData('magicDamage');
+  processDamageData('matrixDamage');
 
   return expandedData;
 }
@@ -753,10 +760,12 @@ export function parseDamageCheckboxChange(
 ): DamageUpdateResult | null {
   // Match patterns like:
   // - system.damage.light.0
+  // - system.magicDamage.light.0
+  // - system.matrixDamage.light.0
   // - system.damage.severe.0
   // - system.damage.incapacitating
   // - items.{itemId}.system.cyberdeckDamage.light.0
-  const match = inputName.match(/(?:damage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+  const match = inputName.match(/(?:damage|magicDamage|matrixDamage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
   if (!match) return null;
 
   const damageType = match[1] as 'light' | 'severe' | 'incapacitating';
@@ -787,13 +796,20 @@ export function parseDamageCheckboxChange(
 
 /**
  * Get the damage path prefix from an input name
- * Returns 'system.damage' for character damage, or 'system.cyberdeckDamage' for cyberdeck
+ * Returns 'system.damage', 'system.magicDamage', 'system.matrixDamage' for character damage types,
+ * or 'system.cyberdeckDamage' for cyberdeck
  */
 export function getDamagePathFromInputName(inputName: string): string {
   if (inputName.includes('cyberdeckDamage')) {
     // Extract the items.{itemId}.system.cyberdeckDamage part
     const match = inputName.match(/(items\.[^.]+\.system\.cyberdeckDamage)/);
     return match && match[1] ? match[1] : 'system.cyberdeckDamage';
+  }
+  if (inputName.includes('magicDamage')) {
+    return 'system.magicDamage';
+  }
+  if (inputName.includes('matrixDamage')) {
+    return 'system.matrixDamage';
   }
   return 'system.damage';
 }

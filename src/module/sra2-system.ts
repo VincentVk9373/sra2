@@ -690,7 +690,9 @@ export class SRA2System {
         const targetUuid = button.data('target-uuid') || button.data('defender-uuid');
         const damage = parseInt(button.data('damage')) || 0;
         const targetName = button.data('target-name') || button.data('defender-name');
-        const damageType = (button.data('damage-type') || 'physical') as 'physical' | 'mental';
+        
+        // Get damage type from button's data attribute (set from weapon's damageType in template)
+        const damageType = (button.data('damage-type') || 'physical') as 'physical' | 'mental' | 'matrix';
         
         if (!targetUuid) {
           console.error('Apply damage button: No target UUID found in button data attributes');

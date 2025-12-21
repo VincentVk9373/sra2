@@ -336,6 +336,16 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"
       }),
+      damageType: new fields.StringField({
+        required: true,
+        initial: "physical",
+        choices: {
+          "physical": "SRA2.FEATS.WEAPON.DAMAGE_TYPE_PHYSICAL",
+          "mental": "SRA2.FEATS.WEAPON.DAMAGE_TYPE_MAGIC",
+          "matrix": "SRA2.FEATS.WEAPON.DAMAGE_TYPE_MATRIX"
+        },
+        label: "SRA2.FEATS.WEAPON.DAMAGE_TYPE"
+      }),
       meleeRange: new fields.StringField({
         required: true,
         initial: "none",

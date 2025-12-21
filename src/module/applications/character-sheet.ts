@@ -2731,6 +2731,9 @@ export class CharacterSheet extends ActorSheet {
       // Weapon properties
       isWeaponFocus: itemSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus, or VOL for indirect spells, or 0 for direct spells)
+      damageType: isSpell && spellType === 'direct' 
+        ? 'mental'  // Direct spells deal mental damage
+        : (itemSystem.damageType || 'physical'),  // Use weapon's damageType, default to physical
       // For spells, all ranges are "ok"
       meleeRange: isSpell ? 'ok' : (itemSystem.meleeRange || 'none'),
       shortRange: isSpell ? 'ok' : (itemSystem.shortRange || 'none'),

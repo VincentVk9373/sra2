@@ -135,6 +135,46 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
           initial: false
         })
       }),
+      magicDamage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }),
+      matrixDamage: new fields.SchemaField({
+        light: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false, false]
+        }),
+        severe: new fields.ArrayField(new fields.BooleanField({
+          required: true,
+          initial: false
+        }), {
+          required: true,
+          initial: [false]
+        }),
+        incapacitating: new fields.BooleanField({
+          required: true,
+          initial: false
+        })
+      }),
       anarchySpent: new fields.ArrayField(new fields.BooleanField({
         required: true,
         initial: false
@@ -236,6 +276,11 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         required: false,
         initial: "",
         label: "SRA2.REFERENCE"
+      }),
+      damageGaugeType: new fields.StringField({
+        required: false,
+        initial: "physical",
+        label: "SRA2.DAMAGE.GAUGE_TYPE"
       })
     };
   }
@@ -316,25 +361,36 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.narrationsDetails = narrationsDetails;
     const totalLightBoxes = 2 + bonusLightDamage;
     const totalSevereBoxes = 1 + bonusSevereDamage;
-    const sourceDamage = parent?._source?.system?.damage || this.damage || {};
-    const damage = {
-      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
-      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
-      incapacitating: typeof sourceDamage.incapacitating === "boolean" ? sourceDamage.incapacitating : false
+    const ensureDamageArraySize = (sourceDamage2, defaultLight, defaultSevere) => {
+      const damage2 = {
+        light: Array.isArray(sourceDamage2?.light) ? [...sourceDamage2.light] : [...defaultLight],
+        severe: Array.isArray(sourceDamage2?.severe) ? [...sourceDamage2.severe] : [...defaultSevere],
+        incapacitating: typeof sourceDamage2?.incapacitating === "boolean" ? sourceDamage2.incapacitating : false
+      };
+      while (damage2.light.length < totalLightBoxes) {
+        damage2.light.push(false);
+      }
+      while (damage2.light.length > totalLightBoxes) {
+        damage2.light.pop();
+      }
+      while (damage2.severe.length < totalSevereBoxes) {
+        damage2.severe.push(false);
+      }
+      while (damage2.severe.length > totalSevereBoxes) {
+        damage2.severe.pop();
+      }
+      return damage2;
     };
-    while (damage.light.length < totalLightBoxes) {
-      damage.light.push(false);
-    }
-    while (damage.light.length > totalLightBoxes) {
-      damage.light.pop();
-    }
-    while (damage.severe.length < totalSevereBoxes) {
-      damage.severe.push(false);
-    }
-    while (damage.severe.length > totalSevereBoxes) {
-      damage.severe.pop();
-    }
+    const sourceSystem = parent?._source?.system || {};
+    const sourceDamage = sourceSystem.damage || this.damage || {};
+    const damage = ensureDamageArraySize(sourceDamage, [false, false], [false]);
     this.damage = damage;
+    const sourceMagicDamage = sourceSystem.magicDamage || this.magicDamage || {};
+    const magicDamage = ensureDamageArraySize(sourceMagicDamage, [false, false], [false]);
+    this.magicDamage = magicDamage;
+    const sourceMatrixDamage = sourceSystem.matrixDamage || this.matrixDamage || {};
+    const matrixDamage = ensureDamageArraySize(sourceMatrixDamage, [false, false], [false]);
+    this.matrixDamage = matrixDamage;
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
     const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
@@ -924,6 +980,16 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         max: 2,
         integer: true,
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"
+      }),
+      damageType: new fields.StringField({
+        required: true,
+        initial: "physical",
+        choices: {
+          "physical": "SRA2.FEATS.WEAPON.DAMAGE_TYPE_PHYSICAL",
+          "mental": "SRA2.FEATS.WEAPON.DAMAGE_TYPE_MAGIC",
+          "matrix": "SRA2.FEATS.WEAPON.DAMAGE_TYPE_MATRIX"
+        },
+        label: "SRA2.FEATS.WEAPON.DAMAGE_TYPE"
       }),
       meleeRange: new fields.StringField({
         required: true,
@@ -2666,6 +2732,7 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
     console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
     console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
+    const attackDamageType = rollData.attackRollData?.damageType || "physical";
     defenseResult = {
       attackSuccesses,
       defenseSuccesses,
@@ -2680,7 +2747,9 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       // Who receives damage if attack succeeds
       // ICE-specific fields
       isIceAttack,
-      iceType
+      iceType,
+      // Damage type from weapon/attack
+      damageType: attackDamageType
     };
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
@@ -2811,6 +2880,8 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
       console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
     }
+    const attackerDamageType = rollData.attackRollData?.damageType || "physical";
+    const defenderDamageType = rollData.damageType || "physical";
     defenseResult = {
       attackSuccesses,
       counterAttackSuccesses,
@@ -2826,7 +2897,10 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
       damageInflicterUuid,
       damageReceiverUuid,
       damageInflicterName,
-      damageReceiverName
+      damageReceiverName,
+      // Damage types
+      attackerDamageType,
+      defenderDamageType
     };
   }
   const attackerWithUuid = attacker ? {
@@ -3043,45 +3117,50 @@ function handleSheetUpdate(actor, formData) {
     "actor.uuid": actor?.uuid
   });
   const expandedData = foundry.utils.expandObject(formData);
-  if (expandedData.system && expandedData.system.damage !== void 0) {
-    const currentDamage = actor.system.damage || {};
-    if (!expandedData.system.damage || typeof expandedData.system.damage !== "object") {
-      expandedData.system.damage = {};
-    }
-    const convertToArray = (obj, expectedLength) => {
-      if (Array.isArray(obj)) {
-        const arr = [];
-        for (let i = 0; i < expectedLength; i++) {
-          if (obj[i] !== void 0) {
-            arr[i] = obj[i] === true || obj[i] === "true" || obj[i] === "on";
-          } else {
-            arr[i] = false;
-          }
+  const convertToArray = (obj, expectedLength) => {
+    if (Array.isArray(obj)) {
+      const arr = [];
+      for (let i = 0; i < expectedLength; i++) {
+        if (obj[i] !== void 0) {
+          arr[i] = obj[i] === true || obj[i] === "true" || obj[i] === "on";
+        } else {
+          arr[i] = false;
         }
-        return arr;
       }
-      if (obj && typeof obj === "object") {
-        const arr = [];
-        for (let i = 0; i < expectedLength; i++) {
-          const key = i.toString();
-          arr[i] = obj[key] === true || obj[key] === "true" || obj[key] === "on";
-        }
-        return arr;
+      return arr;
+    }
+    if (obj && typeof obj === "object") {
+      const arr = [];
+      for (let i = 0; i < expectedLength; i++) {
+        const key = i.toString();
+        arr[i] = obj[key] === true || obj[key] === "true" || obj[key] === "on";
       }
-      return Array(expectedLength).fill(false);
-    };
-    const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
-    const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
-    if (expandedData.system.damage.light !== void 0) {
-      expandedData.system.damage.light = convertToArray(expandedData.system.damage.light, currentLightLength);
+      return arr;
     }
-    if (expandedData.system.damage.severe !== void 0) {
-      expandedData.system.damage.severe = convertToArray(expandedData.system.damage.severe, currentSevereLength);
+    return Array(expectedLength).fill(false);
+  };
+  const processDamageData = (damageType) => {
+    if (expandedData.system && expandedData.system[damageType] !== void 0) {
+      const currentDamage = actor.system[damageType] || {};
+      if (!expandedData.system[damageType] || typeof expandedData.system[damageType] !== "object") {
+        expandedData.system[damageType] = {};
+      }
+      const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
+      const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
+      if (expandedData.system[damageType].light !== void 0) {
+        expandedData.system[damageType].light = convertToArray(expandedData.system[damageType].light, currentLightLength);
+      }
+      if (expandedData.system[damageType].severe !== void 0) {
+        expandedData.system[damageType].severe = convertToArray(expandedData.system[damageType].severe, currentSevereLength);
+      }
+      if (expandedData.system[damageType].incapacitating !== void 0) {
+        expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true || expandedData.system[damageType].incapacitating === "true" || expandedData.system[damageType].incapacitating === "on";
+      }
     }
-    if (expandedData.system.damage.incapacitating !== void 0) {
-      expandedData.system.damage.incapacitating = expandedData.system.damage.incapacitating === true || expandedData.system.damage.incapacitating === "true" || expandedData.system.damage.incapacitating === "on";
-    }
-  }
+  };
+  processDamageData("damage");
+  processDamageData("magicDamage");
+  processDamageData("matrixDamage");
   return expandedData;
 }
 function calculateFinalDamageValue(damageValue, damageValueBonus, strength) {
@@ -3503,7 +3582,7 @@ function calculateRawDamageString(baseDamageValue, damageValueBonus) {
   return (baseValue + damageValueBonus).toString();
 }
 function parseDamageCheckboxChange(inputName, checked, currentDamage) {
-  const match = inputName.match(/(?:damage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+  const match = inputName.match(/(?:damage|magicDamage|matrixDamage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
   if (!match) return null;
   const damageType = match[1];
   const index = match[2] ? parseInt(match[2], 10) : null;
@@ -3528,6 +3607,12 @@ function getDamagePathFromInputName(inputName) {
   if (inputName.includes("cyberdeckDamage")) {
     const match = inputName.match(/(items\.[^.]+\.system\.cyberdeckDamage)/);
     return match && match[1] ? match[1] : "system.cyberdeckDamage";
+  }
+  if (inputName.includes("magicDamage")) {
+    return "system.magicDamage";
+  }
+  if (inputName.includes("matrixDamage")) {
+    return "system.matrixDamage";
   }
   return "system.damage";
 }
@@ -4242,6 +4327,8 @@ function prepareVehicleWeaponRollRequest(vehicleActor, weapon, WEAPON_TYPES2) {
     isWeaponFocus: weaponSystem.isWeaponFocus || false,
     damageValue: attackData.damageValue,
     // Already includes bonus
+    damageType: weaponSystem.damageType || "physical",
+    // Use weapon's damageType, default to physical
     meleeRange: weaponSystem.meleeRange,
     shortRange: weaponSystem.shortRange,
     mediumRange: weaponSystem.mediumRange,
@@ -4287,6 +4374,12 @@ async function createIceAttackMessage(iceActor, iceToken, defender, defenderToke
     remainingFailures: 0,
     complication: "none"
   };
+  let iceDamageType = "matrix";
+  if (iceType === "black") {
+    iceDamageType = "physical";
+  } else if (iceType === "blaster" || iceType === "killer") {
+    iceDamageType = "matrix";
+  }
   const rollData = {
     itemType: "ice-attack",
     iceType,
@@ -4295,6 +4388,8 @@ async function createIceAttackMessage(iceActor, iceToken, defender, defenderToke
     damageValue: damageValue.toString(),
     iceDamageValue: damageValue,
     // Store separately for defense calculation
+    damageType: iceDamageType,
+    // Type of damage for ICE attacks
     skillName: "Cybercombat (GLACE)",
     itemName: iceActor.name,
     isAttack: true,
@@ -4371,10 +4466,19 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   const isVehicle = defenderActor.type === "vehicle";
   const isIce = defenderActor.type === "ice";
   const damageThresholds = getDamageThresholds(defenderActor, damageType);
+  let damageFieldName = "damage";
+  if (!isVehicle && !isIce) {
+    if (damageType === "mental") {
+      damageFieldName = "magicDamage";
+    } else if (damageType === "matrix") {
+      damageFieldName = "matrixDamage";
+    }
+  }
+  const sourceDamage = defenderSystem[damageFieldName] || {};
   let damage = {
-    light: [...defenderSystem.damage?.light || []],
-    severe: [...defenderSystem.damage?.severe || []],
-    incapacitating: defenderSystem.damage?.incapacitating || false
+    light: [...sourceDamage.light || []],
+    severe: [...sourceDamage.severe || []],
+    incapacitating: sourceDamage.incapacitating || false
   };
   let woundType = "";
   let overflow = false;
@@ -4535,7 +4639,9 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
       return;
     }
   }
-  await defenderActor.update({ "system.damage": damage });
+  const updateData = {};
+  updateData[`system.${damageFieldName}`] = damage;
+  await defenderActor.update(updateData);
   if (damage.incapacitating === true) {
     ui.notifications?.error(game.i18n.format("SRA2.COMBAT.NOW_INCAPACITATED", { target: defenderName }));
   } else {
@@ -6535,6 +6641,8 @@ class CharacterSheet extends ActorSheet {
       isWeaponFocus: itemSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,
       // FINAL damage value (base + bonus, or VOL for indirect spells, or 0 for direct spells)
+      damageType: isSpell && spellType === "direct" ? "mental" : itemSystem.damageType || "physical",
+      // Use weapon's damageType, default to physical
       // For spells, all ranges are "ok"
       meleeRange: isSpell ? "ok" : itemSystem.meleeRange || "none",
       shortRange: isSpell ? "ok" : itemSystem.shortRange || "none",
