@@ -503,7 +503,6 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       // Add linked vehicles cost
       const linkedVehicles = (this as any).linkedVehicles || [];
       if (linkedVehicles.length > 0) {
-        console.log(linkedVehicles)
         for (const vehicleUuid of linkedVehicles) {
           try {
             // Try to load vehicle actor synchronously (for actors in world) or from game.actors

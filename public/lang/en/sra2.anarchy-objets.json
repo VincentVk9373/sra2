@@ -1,0 +1,2803 @@
+{
+    "label": "anarchy-objets",
+    "mapping": {
+        "description": "system.description"
+    },
+    "entries": [
+        {
+            "id": "(pb VD)Arme élémentaire (feu, glace, acide, etc. choisi lors de l’acquisition de l’atout)",
+            "name": "(pb DV)Elemental Weapon (feu, glace, acide, etc. choisi lors de l’acquisition de l’atout)",
+            "description": ""
+        },
+        {
+            "id": "Acrobate né",
+            "name": "Natural Acrobat",
+            "description": ""
+        },
+        {
+            "id": "Adepte",
+            "name": "Adept",
+            "description": ""
+        },
+        {
+            "id": "Adepte Mystique",
+            "name": "Mystic Adept",
+            "description": ""
+        },
+        {
+            "id": "AK-97",
+            "name": "AK-97",
+            "description": "<p>Assault Rifle. Automatic Fire</p>"
+        },
+        {
+            "id": "Alcool / Synthanol",
+            "name": "Alcohol / Synthanol",
+            "description": ""
+        },
+        {
+            "id": "Alicia Francetti, journaliste",
+            "name": "Alicia Francetti, journalist",
+            "description": ""
+        },
+        {
+            "id": "Amortisseur traumatique",
+            "name": "Trauma Damper",
+            "description": ""
+        },
+        {
+            "id": "Amplificateur de réaction",
+            "name": "Reaction Enhancer",
+            "description": ""
+        },
+        {
+            "id": "Amplificateur synaptique",
+            "name": "Synaptic Booster",
+            "description": ""
+        },
+        {
+            "id": "Amplification cérébrale",
+            "name": "Cerebral Booster",
+            "description": ""
+        },
+        {
+            "id": "Analyse de véracité",
+            "name": "Truth Analysis",
+            "description": ""
+        },
+        {
+            "id": "Anti-magie",
+            "name": "Anti-Magic",
+            "description": "<p>Seulement sur les défenses contre les sortilèges.</p>"
+        },
+        {
+            "id": "Arbalète",
+            "name": "Crossbow",
+            "description": ""
+        },
+        {
+            "id": "Arbalète de poignet",
+            "name": "Wrist Crossbow",
+            "description": ""
+        },
+        {
+            "id": "Arbalète lourde",
+            "name": "Heavy Crossbow",
+            "description": ""
+        },
+        {
+            "id": "Arc ranger X",
+            "name": "Ranger X Bow",
+            "description": ""
+        },
+        {
+            "id": "Arcs",
+            "name": "Bows",
+            "description": ""
+        },
+        {
+            "id": "Ares Alpha Combatgun",
+            "name": "Ares Alpha Combatgun",
+            "description": "<p>Assault Rifle. Automatic Fire. Smartgun (bonus RR)</p>"
+        },
+        {
+            "id": "Ares Alpha Combatgun - Lance grenade",
+            "name": "Ares Alpha Combatgun - Grenade Launcher",
+            "description": "<p>Monté sous le canon du Assault Rifle.</p>"
+        },
+        {
+            "id": "Ares Alpha Mk II",
+            "name": "Ares Alpha Mk II",
+            "description": "<p>Assault Rifle. Automatic Fire. Smartgun (bonus RR)</p>"
+        },
+        {
+            "id": "Ares Alpha Mk II - Lance-Grenade",
+            "name": "Ares Alpha Mk II - Grenade Launcher",
+            "description": "<p>Lance-grenade monté sous le canon du Assault Rifle.</p>"
+        },
+        {
+            "id": "Ares Antioch II",
+            "name": "Ares Antioch II",
+            "description": "<p>Lance-grenade. Dégats de zone</p>"
+        },
+        {
+            "id": "Ares Crusader MP",
+            "name": "Ares Crusader MP",
+            "description": "<p>Automatic Pistol. Automatic Fire.</p>"
+        },
+        {
+            "id": "Ares Desert Strike",
+            "name": "Ares Desert Strike",
+            "description": "<p>Sniper Rifle</p>"
+        },
+        {
+            "id": "Ares Light Fire",
+            "name": "Ares Light Fire",
+            "description": "<p>Light Pistol</p>"
+        },
+        {
+            "id": "Ares Predator I",
+            "name": "Ares Predator I",
+            "description": "<p>Heavy Pistol</p>"
+        },
+        {
+            "id": "Ares Predator IV",
+            "name": "Ares Predator IV",
+            "description": "<p>Heavy Pistol. Smartgun.</p>"
+        },
+        {
+            "id": "Ares Predator V",
+            "name": "Ares Predator V",
+            "description": "<p>Heavy Pistol. Smartgun.</p>"
+        },
+        {
+            "id": "Ares Predator VI",
+            "name": "Ares Predator VI",
+            "description": "<p>Heavy Pistol. Smartgun (RR).</p>"
+        },
+        {
+            "id": "Ares Red Dog Series",
+            "name": "Ares Red Dog Series",
+            "description": ""
+        },
+        {
+            "id": "Ares Super Squirt",
+            "name": "Ares Super Squirt",
+            "description": "<p>Automatic Pistol. Automatic Fire.</p>"
+        },
+        {
+            "id": "Ares Viper Slivergun",
+            "name": "Ares Viper Slivergun",
+            "description": "<p>Heavy Pistol. Smartgun.</p>"
+        },
+        {
+            "id": "Arme courte spirituelle",
+            "name": "Melee Weapon (Short) spiritual",
+            "description": "<p>Cette arme est considérée comme magique et affecte les cibles immunisées aux armes normales</p>"
+        },
+        {
+            "id": "Arme courte spirituelle forte",
+            "name": "Melee Weapon (Short) spiritual forte",
+            "description": "<p>Cette arme est considérée comme magique et affecte les cibles immunisées aux armes normales</p>"
+        },
+        {
+            "id": "Arme longue spirituelle",
+            "name": "Melee Weapon (Long) spiritual",
+            "description": "<p>Cette arme est considérée comme magique et affecte les cibles immunisées aux armes normales</p>"
+        },
+        {
+            "id": "Arme longue spirituelle forte",
+            "name": "Melee Weapon (Long) spiritual forte",
+            "description": "<p>Cette arme est considérée comme magique et affecte les cibles immunisées aux armes normales</p>"
+        },
+        {
+            "id": "Arme spirituelle",
+            "name": "Arme spiritual",
+            "description": ""
+        },
+        {
+            "id": "Arme spirituelle forte",
+            "name": "Arme spiritual forte",
+            "description": ""
+        },
+        {
+            "id": "Armes à distance",
+            "name": "Ranged Weapons",
+            "description": ""
+        },
+        {
+            "id": "Armes de jet",
+            "name": "Armes de jet",
+            "description": "<p>Couteaux de lancer, shurikens, etc.</p>"
+        },
+        {
+            "id": "ArmTech MGL6 & 12",
+            "name": "ArmTech MGL6 & 12",
+            "description": "<p>Lance-grenade. Dégats de zone.</p>"
+        },
+        {
+            "id": "Armure",
+            "name": "Armor",
+            "description": ""
+        },
+        {
+            "id": "Armure",
+            "name": "Armor",
+            "description": ""
+        },
+        {
+            "id": "Armure astrale",
+            "name": "Armor astrale",
+            "description": ""
+        },
+        {
+            "id": "Armure corporelle intégrale",
+            "name": "Armor corporelle intégrale",
+            "description": ""
+        },
+        {
+            "id": "Armure dermique",
+            "name": "Armor dermique",
+            "description": ""
+        },
+        {
+            "id": "Armure militaire",
+            "name": "Armor militaire",
+            "description": ""
+        },
+        {
+            "id": "Armure mystique",
+            "name": "Armor mystique",
+            "description": ""
+        },
+        {
+            "id": "Armure mystique",
+            "name": "Armor mystique",
+            "description": ""
+        },
+        {
+            "id": "Armure SWAT",
+            "name": "Armor SWAT",
+            "description": ""
+        },
+        {
+            "id": "Assistance sorcière",
+            "name": "Witch Assistance",
+            "description": ""
+        },
+        {
+            "id": "Atelier de réparation véhicules",
+            "name": "Atelier de réparation Vehicles",
+            "description": ""
+        },
+        {
+            "id": "Athlétisme",
+            "name": "Athletics",
+            "description": ""
+        },
+        {
+            "id": "Attaque retardée",
+            "name": "Delayed Attack",
+            "description": ""
+        },
+        {
+            "id": "Augmentation d'Agilité",
+            "name": "Agility Enhancement",
+            "description": ""
+        },
+        {
+            "id": "Augmentation de Charisme",
+            "name": "Charisma Enhancement",
+            "description": ""
+        },
+        {
+            "id": "Augmentation de densité osseuse",
+            "name": "Bone Density Augmentation",
+            "description": ""
+        },
+        {
+            "id": "Augmentation de Force",
+            "name": "Strength Enhancement",
+            "description": ""
+        },
+        {
+            "id": "Augmentation de Logique",
+            "name": "Logic Enhancement",
+            "description": ""
+        },
+        {
+            "id": "Augmentation de Volonté",
+            "name": "Willpower Enhancement",
+            "description": ""
+        },
+        {
+            "id": "Auto-injecteur",
+            "name": "Auto-Injector",
+            "description": ""
+        },
+        {
+            "id": "Auto-injecteur et biomoniteur",
+            "name": "Auto-Injector and Biomonitor",
+            "description": ""
+        },
+        {
+            "id": "Aztechnology Striker Onotari interceptor",
+            "name": "Aztechnology Striker Onotari interceptor",
+            "description": "<p>Lance-roquette. VD 16 contre les Vehicles. Dégâts de zone.</p>"
+        },
+        {
+            "id": "Baïonnette détachable",
+            "name": "Detachable Bayonet",
+            "description": ""
+        },
+        {
+            "id": "Balles ardentes",
+            "name": "Flaming Rounds",
+            "description": "<p>Ammunition pour Shotgun qui explosent en gerbe d’étincelles incandescentes.</p><p>VD-2</p><p>Peu enflammer une cible contre un point d’Anarchy</p>"
+        },
+        {
+            "id": "Balles fléchettes",
+            "name": "Flechette Rounds",
+            "description": "<p>VD+2 contre les cibles ne portant pas d’Armors</p>"
+        },
+        {
+            "id": "Balles mouchard",
+            "name": "Tracer Rounds",
+            "description": "<p>Balle comportant un marqueur furtif rapportant la position de la cible touchée.</p><p>VD-2</p>"
+        },
+        {
+            "id": "Barret model 122",
+            "name": "Barret model 122",
+            "description": "<p>Sniper Rifle</p>"
+        },
+        {
+            "id": "Batte de baseball barbelée",
+            "name": "Barbed Baseball Bat",
+            "description": "<p>Melee Weapon (Long)</p>"
+        },
+        {
+            "id": "Beretta 101T",
+            "name": "Beretta 101T",
+            "description": "<p>Light Pistol</p>"
+        },
+        {
+            "id": "Berserk",
+            "name": "Berserk",
+            "description": "<p>IMPORTANT : Configurer l'arme en VD et l'arme en RR2.</p>"
+        },
+        {
+            "id": "Berserker",
+            "name": "Berserker",
+            "description": ""
+        },
+        {
+            "id": "Bliss",
+            "name": "Bliss",
+            "description": ""
+        },
+        {
+            "id": "Bouclier balistique",
+            "name": "Ballistic Shield",
+            "description": ""
+        },
+        {
+            "id": "Bras cybernétique",
+            "name": "Cyberarm",
+            "description": ""
+        },
+        {
+            "id": "Bras cybernétique synthétique avec lame cybernétique",
+            "name": "Synthetic Cyberarm with Cyberblade",
+            "description": ""
+        },
+        {
+            "id": "Bras cybernétique synthétique avec pistolet lourd",
+            "name": "Cyberarm synthétique avec Heavy Pistol",
+            "description": ""
+        },
+        {
+            "id": "Bras d’escalade",
+            "name": "Bras d’escalade",
+            "description": ""
+        },
+        {
+            "id": "Bras d’escalade avec lance-grappin",
+            "name": "Bras d’escalade avec lance-grappin",
+            "description": ""
+        },
+        {
+            "id": "Brouilleur de signal",
+            "name": "Signal Jammer",
+            "description": ""
+        },
+        {
+            "id": "Browning Ultra Power",
+            "name": "Browning Ultra Power",
+            "description": "<p>Heavy Pistol</p>"
+        },
+        {
+            "id": "Canon d'assaut Panther",
+            "name": "Panther Assault Cannon",
+            "description": "<p> Sniper Rifle. VD 14 contre les Vehicles.</p>"
+        },
+        {
+            "id": "Cartouches Big-D",
+            "name": "Big-D Shells",
+            "description": "<p>Munition pour Shotgun tirant des cartouches au phosphore, légèrement instable…</p><p>Peu enflammer une cible contre un point d’Anarchy.</p><p>Doit prendre un risque fort ou extrême</p>"
+        },
+        {
+            "id": "Casanova",
+            "name": "Casanova",
+            "description": ""
+        },
+        {
+            "id": "Casey Bernardini, inspecteur à la Lone Star",
+            "name": "Casey Bernardini, Lone Star Inspector",
+            "description": ""
+        },
+        {
+            "id": "Cavalier Arms Walker 2",
+            "name": "Cavalier Arms Walker 2",
+            "description": "<p>Discrète Cane Rifle. </p>"
+        },
+        {
+            "id": "CCV Ares FeeTheRide",
+            "name": "CCV Ares FeeTheRide",
+            "description": "<p>Permet de plonger dans les Vehicles</p>"
+        },
+        {
+            "id": "CCV Dassault MilRig+",
+            "name": "CCV Dassault MilRig+",
+            "description": "<p>Permet de plonger dans les Vehicles</p>"
+        },
+        {
+            "id": "CCV Shiawase Neo-Rigger",
+            "name": "CCV Shiawase Neo-Rigger",
+            "description": "<p>Permet de plonger dans les Vehicles</p>"
+        },
+        {
+            "id": "Célèbre",
+            "name": "Famous",
+            "description": "<p>Bravo, vous êtes célèbre et reconnu dans au moins une communauté. Vous pouvez gagner des points d’Anarchy en étant reconnu au plus mauvais moment, ou obtenir des faveurs en dépensant des points d’Anarchy lorsque vous êtes susceptible d’être reconnu.</p>"
+        },
+        {
+            "id": "Céréprax",
+            "name": "Cereprax",
+            "description": ""
+        },
+        {
+            "id": "Ceska Black Scorpion",
+            "name": "Ceska Black Scorpion",
+            "description": "<p>Automatic Pistol. Automatic Fire.</p>"
+        },
+        {
+            "id": "Chute libre 3m",
+            "name": "Free Fall 3m",
+            "description": ""
+        },
+        {
+            "id": "Chute libre 6m",
+            "name": "Free Fall 6m",
+            "description": ""
+        },
+        {
+            "id": "Chute libre 9m",
+            "name": "Free Fall 9m",
+            "description": ""
+        },
+        {
+            "id": "Cicatrices intimidantes",
+            "name": "Intimidating Scars",
+            "description": "<p>Permet d’obtenir un avantage sur les tests d’intimidation en échange d’un point d’Anarchy lorsque la ou les cicatrices sont visibles.</p><p>Permet aussi de récupérer un point d’Anarchy en échange d’un désavantage sur un test lié au charisme.</p>"
+        },
+        {
+            "id": "Clairvoyant",
+            "name": "Clairvoyant",
+            "description": ""
+        },
+        {
+            "id": "Cogneur",
+            "name": "Brawler",
+            "description": "<p>VD+1 aux attaques à mains nues. Note : attention à la compatibilité des autres atouts VD+2 max.</p>"
+        },
+        {
+            "id": "Collier focus de combat",
+            "name": "Combat Focus Necklace",
+            "description": ""
+        },
+        {
+            "id": "Colt America L36",
+            "name": "Colt America L36",
+            "description": "<p>Light Pistol</p>"
+        },
+        {
+            "id": "Colt Cobra HK 227",
+            "name": "Colt Cobra HK 227",
+            "description": "<p>SMG. Automatic Fire.</p>"
+        },
+        {
+            "id": "Colt M23",
+            "name": "Colt M23",
+            "description": "<p>Assault Rifle. Automatic Fire</p>"
+        },
+        {
+            "id": "Colt manhunter",
+            "name": "Colt manhunter",
+            "description": "<p>Heavy Pistol</p>"
+        },
+        {
+            "id": "Combat à deux armes",
+            "name": "Dual Wielding",
+            "description": ""
+        },
+        {
+            "id": "Combat ASTRAL",
+            "name": "ASTRAL Combat",
+            "description": ""
+        },
+        {
+            "id": "Combat en aveugle",
+            "name": "Blind Combat",
+            "description": ""
+        },
+        {
+            "id": "Combat rapproché",
+            "name": "Close Combat",
+            "description": ""
+        },
+        {
+            "id": "Commlink",
+            "name": "Commlink",
+            "description": ""
+        },
+        {
+            "id": "Commlink (1er gratuit)",
+            "name": "Commlink (1st free)",
+            "description": ""
+        },
+        {
+            "id": "Commlink implanté",
+            "name": "Implanted Commlink",
+            "description": ""
+        },
+        {
+            "id": "Commlink supplémentaire",
+            "name": "Additional Commlink",
+            "description": ""
+        },
+        {
+            "id": "Communion avec les cordes",
+            "name": "Communion with Strings",
+            "description": ""
+        },
+        {
+            "id": "Compétence améliorée : Armes à distance",
+            "name": "Enhanced Skill: Ranged Weapons",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Athlétisme",
+            "name": "Enhanced Skill: Athletics",
+            "description": ""
+        },
+        {
+            "id": "Compétence améliorée : Combat rapproché",
+            "name": "Enhanced Skill: Close Combat",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Conjuration",
+            "name": "Enhanced Skill: Conjuration",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Electronique",
+            "name": "Enhanced Skill: Electronique",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Furtivité",
+            "name": "Enhanced Skill: Stealth",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Influence",
+            "name": "Enhanced Skill: Influence",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Ingénierie",
+            "name": "Enhanced Skill: Engineering",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Perception",
+            "name": "Enhanced Skill: Perception",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Pilotage",
+            "name": "Enhanced Skill: Piloting",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Piratage",
+            "name": "Enhanced Skill: Hacking",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Réseau",
+            "name": "Enhanced Skill: Networking",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Sorcellerie",
+            "name": "Enhanced Skill: SOrkery",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Compétence améliorée : Survie",
+            "name": "Enhanced Skill: Survival",
+            "description": "<p>RR 1 aux tests d’une compétence (choisie lors de l’acquisition de l’atout).</p>"
+        },
+        {
+            "id": "Concentration accrue",
+            "name": "Increased Concentration",
+            "description": ""
+        },
+        {
+            "id": "Conjurateur",
+            "name": "Conjurer",
+            "description": ""
+        },
+        {
+            "id": "Conjuration",
+            "name": "Conjuration",
+            "description": ""
+        },
+        {
+            "id": "Contorsionniste",
+            "name": "Contortionist",
+            "description": "<p>Permet de se libérer de ses liens ou de passer par des passages étroits normalement inaccessibles en échange d’un point d’Anarchy.</p><p>Note : peut aussi être l’objet d’un comportement plutôt qu’être un trait.</p>"
+        },
+        {
+            "id": "Contrat CrashCart basic",
+            "name": "Contract CrashCart basic",
+            "description": "<p>Biomoniteur géolocalisé</p><p>Permet l’intervention d’une équipe CrashCart en cas de blessure grave en échange d’un point d’Anarchy</p><p>Medkit avec autopilote 6 si intervention</p><p>RR 1 Survival (Premier soins) si intervention</p>"
+        },
+        {
+            "id": "Contrat Doc Wagon Platine",
+            "name": "Contract Doc Wagon Platine",
+            "description": "<p>Biomoniteur géolocalisé</p><p>Permet l’intervention d’une équipe Doc Wagon IHR en cas de blessure grave en échange d’un point d’Anarchy</p><p>Medkit avec autopilote 9 si intervention</p><p>RR 2 Survival (Premier soins) si intervention</p>"
+        },
+        {
+            "id": "Contrôle des pensées",
+            "name": "Mind Control",
+            "description": ""
+        },
+        {
+            "id": "Contrôle vocal",
+            "name": "Voice Control",
+            "description": ""
+        },
+        {
+            "id": "Contrôle vocal et morphologique",
+            "name": "Voice and Morphological Control",
+            "description": ""
+        },
+        {
+            "id": "Coprocesseur cortical",
+            "name": "Cortical Coprocessor",
+            "description": ""
+        },
+        {
+            "id": "Corps de rêve",
+            "name": "Dream Body",
+            "description": ""
+        },
+        {
+            "id": "Costaud",
+            "name": "Tough",
+            "description": ""
+        },
+        {
+            "id": "Coup dévastateur",
+            "name": "Devastating Blow",
+            "description": ""
+        },
+        {
+            "id": "Course sur les murs",
+            "name": "Wall Running",
+            "description": ""
+        },
+        {
+            "id": "Couteau / Arme courte",
+            "name": "Couteau / Melee Weapon (Short)",
+            "description": "<p>Couteaux, poings américains etc.</p>"
+        },
+        {
+            "id": "Couteau de combat avec toxine débilitante",
+            "name": "Combat Knife with Debilitating Toxin",
+            "description": ""
+        },
+        {
+            "id": "Couteau de combat avec toxine débilitantes",
+            "name": "Combat Knife with Debilitating Toxins",
+            "description": ""
+        },
+        {
+            "id": "Couteau de combat avec toxine létale",
+            "name": "Combat Knife with Lethal Toxin",
+            "description": ""
+        },
+        {
+            "id": "Couteau de combat avec toxines létales",
+            "name": "Combat Knife with Lethal Toxins",
+            "description": ""
+        },
+        {
+            "id": "Cram",
+            "name": "Cram",
+            "description": ""
+        },
+        {
+            "id": "Crocs",
+            "name": "Fangs",
+            "description": ""
+        },
+        {
+            "id": "Cuir épais 3",
+            "name": "Thick Hide 3",
+            "description": ""
+        },
+        {
+            "id": "Cuir épais 4",
+            "name": "Thick Hide 4",
+            "description": ""
+        },
+        {
+            "id": "Cyberjack MCT Decker-Pro",
+            "name": "MCT Decker-Pro Cyberjack",
+            "description": ""
+        },
+        {
+            "id": "Datajack",
+            "name": "Datajack",
+            "description": ""
+        },
+        {
+            "id": "Datajack débridé",
+            "name": "Unbridled Datajack",
+            "description": ""
+        },
+        {
+            "id": "Deepweed",
+            "name": "Deepweed",
+            "description": ""
+        },
+        {
+            "id": "Defiance super shock (Taser)",
+            "name": "Defiance Super Shock (Taser)",
+            "description": "<p>Dommages étourdissants</p>"
+        },
+        {
+            "id": "Defiance T-250",
+            "name": "Defiance T-250",
+            "description": "<p>Shotgun</p>"
+        },
+        {
+            "id": "Defiance T-250 à canon scié",
+            "name": "Defiance T-250 Sawed-Off",
+            "description": "<p>Shotgun</p>"
+        },
+        {
+            "id": "Démarqueur",
+            "name": "Tag Eraser",
+            "description": "<p>Difficulté de détection matricielle 6</p>"
+        },
+        {
+            "id": "Démarqueur",
+            "name": "Tag Eraser",
+            "description": ""
+        },
+        {
+            "id": "Déplacement flash",
+            "name": "Flash Step",
+            "description": ""
+        },
+        {
+            "id": "Derek Prince, officier DocWagon",
+            "name": "Derek Prince, DocWagon Officer",
+            "description": ""
+        },
+        {
+            "id": "Doigts de fée",
+            "name": "Light Fingers",
+            "description": ""
+        },
+        {
+            "id": "Duke, ganger",
+            "name": "Duke, ganger",
+            "description": ""
+        },
+        {
+            "id": "Dur à cuire",
+            "name": "Hard to Kill",
+            "description": "<p>incompatible avec d’autres atouts augmentant l’Armor.</p>"
+        },
+        {
+            "id": "Easy Motors DroneMaster",
+            "name": "Easy Motors DroneMaster",
+            "description": ""
+        },
+        {
+            "id": "Éclair étourdissant",
+            "name": "Stunning Flash",
+            "description": ""
+        },
+        {
+            "id": "Élasticité",
+            "name": "Elasticity",
+            "description": ""
+        },
+        {
+            "id": "Electro-gants",
+            "name": "Electro-Gloves",
+            "description": "<p>Dommages étourdissants.  Perte d’une action en cas de dommages.</p>"
+        },
+        {
+            "id": "Electro-matraques",
+            "name": "Electro-Batons",
+            "description": "<p>Dommages étourdissants. Perte d’une action en cas de dommages.</p>"
+        },
+        {
+            "id": "Électronique",
+            "name": "Electronics",
+            "description": ""
+        },
+        {
+            "id": "Elfe",
+            "name": "Elf",
+            "description": ""
+        },
+        {
+            "id": "Elsa Cantri, chanteuse médiatique",
+            "name": "Elsa Cantri, media SINger",
+            "description": ""
+        },
+        {
+            "id": "Elton Hutchinson, avocat",
+            "name": "Elton Hutchinson, lawyer",
+            "description": ""
+        },
+        {
+            "id": "Empathie animale",
+            "name": "Animal Empathy",
+            "description": ""
+        },
+        {
+            "id": "Endurance à la douleur",
+            "name": "Pain Tolerance",
+            "description": "<p>Permet d’ignorer les modificateurs de blessures légères.</p>"
+        },
+        {
+            "id": "Erika MCD−6",
+            "name": "Erika MCD−6",
+            "description": ""
+        },
+        {
+            "id": "Esprit analytique",
+            "name": "Analytical Mind",
+            "description": "<p>Permet d’obtenir un avantage sur les tests de Logique lorsqu’il s’agit d’analyser des indices, un schéma qui se répète, ou trouver une solution à une énigme. Note : peut aussi être l’objet d’un comportement plutôt qu’être un trait.</p>"
+        },
+        {
+            "id": "Esprit d’équipe",
+            "name": "Esprit d’équipe",
+            "description": "<p>Permet de dépenser des points d’Anarchy pour un autre joueur lorsque vous l’aidez ou l’encouragez</p>"
+        },
+        {
+            "id": "Esprit mentor Aigle, Nature sauvage, Pureté",
+            "name": "Mentor Spirit Aigle, Nature sauvage, Pureté",
+            "description": "<p><span style=\"color: rgb(170, 249, 241); font-family: sra2_foundry_text; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgba(15, 52, 96, 0.3); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none\">CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</span></p>"
+        },
+        {
+            "id": "Esprit mentor Alligator, Férocité, Oisiveté",
+            "name": "Mentor Spirit Alligator, Férocité, Oisiveté",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Araignée, Tranquillité, Rêves",
+            "name": "Mentor Spirit Araignée, Tranquillité, Rêves",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Bacchus, Satyre, Décadence",
+            "name": "Mentor Spirit Bacchus, Satyre, Décadence",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Bison, Bonté",
+            "name": "Mentor Spirit Bison, Bonté",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Chat, Mystère, Secret",
+            "name": "Mentor Spirit Chat, Mystère, Secret",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Cheval sauvage, Licorne, Liberté",
+            "name": "Mentor Spirit Cheval sauvage, Licorne, Liberté",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Chien, Amitié, Loyauté",
+            "name": "Mentor Spirit Chien, Amitié, Loyauté",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Cobra, Planification",
+            "name": "Mentor Spirit Cobra, Planification",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Corbeau, Chaos, Opportunisme (Copy)",
+            "name": "Mentor Spirit Corbeau, Chaos, Opportunisme (Copy)",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Coyote, Tromperie, Espièglerie",
+            "name": "Mentor Spirit Coyote, Tromperie, Espièglerie",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Crabe, Vieillesse",
+            "name": "Mentor Spirit Crabe, Vieillesse",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Créateur, Artiste",
+            "name": "Mentor Spirit Créateur, Artiste",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Dauphin, Mer",
+            "name": "Mentor Spirit Dauphin, Mer",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit Mentor Dryade, Druide",
+            "name": "Mentor Spirit Dryade, Druide",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Fenrir, Prédateur",
+            "name": "Mentor Spirit Fenrir, Prédateur",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Gargouille, Roche",
+            "name": "Mentor Spirit Gargouille, Roche",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Gecko, Farceur",
+            "name": "Mentor Spirit Gecko, Farceur",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Guépard, Vitesse",
+            "name": "Mentor Spirit Guépard, Vitesse",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Guerrière, Sage, Athéna, Honneur, Stratégie",
+            "name": "Mentor Spirit Guerrière, Sage, Athéna, Honneur, Stratégie",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Hibou, Sagesse, Vierge lunaire",
+            "name": "Mentor Spirit Hibou, Sagesse, Vierge lunaire",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Lion, Bravoure, Noblesse",
+            "name": "Mentor Spirit Lion, Bravoure, Noblesse",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Loup, Communauté, Chasse",
+            "name": "Mentor Spirit Loup, Communauté, Chasse",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Oiseau-tonnerre, Colère, Guerre",
+            "name": "Mentor Spirit Oiseau-tonnerre, Colère, Guerre",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Ours, Force, Protection",
+            "name": "Mentor Spirit Ours, FOrke, Protection",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Paon, Amante, Orgueil",
+            "name": "Mentor Spirit Paon, Amante, Orgueil",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Perroquet, M’as-tu-vu, Cirque",
+            "name": "Mentor Spirit Perroquet, M’as-tu-vu, Cirque",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Phénix, Renaissance",
+            "name": "Mentor Spirit Phénix, Renaissance",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Porteur du feu",
+            "name": "Mentor Spirit Porteur du feu",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Quetzalcoatl",
+            "name": "Mentor Spirit Quetzalcoatl",
+            "description": ""
+        },
+        {
+            "id": "Esprit mentor Rat, Égoïsme, Couardise",
+            "name": "Mentor Spirit Rat, Égoïsme, Couardise",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Raton laveur, Monte-en-l’air",
+            "name": "Mentor Spirit Raton laveur, Monte-en-l’air",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Requin, Vengeance, Impulsivité",
+            "name": "Mentor Spirit Requin, Vengeance, Impulsivité",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Serpent à plume",
+            "name": "Mentor Spirit Serpent à plume",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Serpent, Gardien des secrets",
+            "name": "Mentor Spirit Serpent, Gardien des secrets",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Sirène Séductrice Jalousie",
+            "name": "Mentor Spirit Sirène Séductrice Jalousie",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p>"
+        },
+        {
+            "id": "Esprit mentor Tueur de dragons, Héroïsme, Aventure",
+            "name": "Mentor Spirit Tueur de dragons, Héroïsme, Aventure",
+            "description": "<p>CHOISIR 2 RR SEULEMENT, SUPPRIMER LES AUTRES</p><p></p><p>2nd RR : choisir une Specialization de Close Combat.</p>"
+        },
+        {
+            "id": "Esprits de l'eau",
+            "name": "Water Spirits",
+            "description": ""
+        },
+        {
+            "id": "Explosifs commerciaux",
+            "name": "Explosives commerciaux",
+            "description": "<p>Permet de faire sauter des trucs.</p>"
+        },
+        {
+            "id": "Faba, propriétaire du Good Vibes",
+            "name": "Faba, Good Vibes Owner",
+            "description": ""
+        },
+        {
+            "id": "Fairlight Excalibur",
+            "name": "Fairlight Excalibur",
+            "description": ""
+        },
+        {
+            "id": "Faux  SIN",
+            "name": "Fake SIN",
+            "description": ""
+        },
+        {
+            "id": "Fétiche",
+            "name": "Fetish",
+            "description": "<p>Permet d’obtenir un avantage sur un test de Magic en échange d’un point d’Anarchy.</p>"
+        },
+        {
+            "id": "Fichetti Security 500",
+            "name": "Fichetti Security 500",
+            "description": "<p>Light Pistol</p>"
+        },
+        {
+            "id": "Filtre trachéal et extracteur de toxines",
+            "name": "Tracheal Filter and Toxin Extractor",
+            "description": ""
+        },
+        {
+            "id": "Fixateurs de réflexes",
+            "name": "Reflex Recorders",
+            "description": "<p>RR 1 aux tests d’une Specialization de compétence physique (à choisir lors de l’achat de l’atout).</p>"
+        },
+        {
+            "id": "Fixateurs de réflexes Evo ReflexUltra",
+            "name": "Evo ReflexUltra Reflex Recorders",
+            "description": "<p>IMPORTANT : RR 3 aux tests d’une Specialization de compétence physique (à choisir lors de l’achat de l’atout).</p>"
+        },
+        {
+            "id": "Fixateurs de réflexes UO PrimeSkill",
+            "name": "UO PrimeSkill Reflex Recorders",
+            "description": "<p>IMPORTANT : RR 2 aux tests d’une Specialization de compétence physique (à choisir lors de l’achat de l’atout)</p>"
+        },
+        {
+            "id": "FN HAR",
+            "name": "FN HAR",
+            "description": "<p>Assault Rifle. Automatic Fire.</p>"
+        },
+        {
+            "id": "FN P93 Preator",
+            "name": "FN P93 Preator",
+            "description": "<p>SMG. Automatic Fire.</p>"
+        },
+        {
+            "id": "Focus d'arme (couteau)",
+            "name": "Weapon Focus (knife)",
+            "description": "<p>Peut être utilisées en projection astrale (VD Vol+1) et ignore l’immunité aux armes normales</p>"
+        },
+        {
+            "id": "Focus d'arme (katana)",
+            "name": "Weapon Focus (katana)",
+            "description": "<p>Peut être utilisées en projection astrale (VD Vol+2) et ignore l’immunité aux armes normales.</p>"
+        },
+        {
+            "id": "Focus de bannissement",
+            "name": "Banishing Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de combat",
+            "name": "Combat Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de combat mineur",
+            "name": "Minor Combat Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de conjuration",
+            "name": "Conjuration Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de contresort",
+            "name": "Counterspelling Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de contrôle",
+            "name": "Control Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de d'illusion majeur",
+            "name": "Major Illusion Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de détection",
+            "name": "Detection Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de détection mineur",
+            "name": "Minor Detection Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de l'air mineur",
+            "name": "Minor Air Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de maintien",
+            "name": "Sustaining Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus de manipulation",
+            "name": "Manipulation Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus des bêtes",
+            "name": "Beast Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus du feu",
+            "name": "Fire Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus du feu majeur",
+            "name": "Major Fire Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus sorcier",
+            "name": "Sorcerer Focus",
+            "description": ""
+        },
+        {
+            "id": "Focus vivant",
+            "name": "Living Focus",
+            "description": "<p>Permet de maintenir un sort supplémentaire sans désavantage ainsi qu’un sort supplémentaire avec désavantage</p>"
+        },
+        {
+            "id": "Fouet monofilament",
+            "name": "Monofilament Whip",
+            "description": ""
+        },
+        {
+            "id": "Franchi SPAS-22",
+            "name": "Franchi SPAS-22",
+            "description": "<p>Shotgun</p>"
+        },
+        {
+            "id": "Frappe à distance",
+            "name": "Ranged Strike",
+            "description": ""
+        },
+        {
+            "id": "Frappe à distance",
+            "name": "Ranged Strike",
+            "description": ""
+        },
+        {
+            "id": "Frappe élémentaire (feu, glace, acide, etc. choisi lors de l’acquisition de l’atout)",
+            "name": "Elemental Strike (feu, glace, acide, etc. choisi lors de l’acquisition de l’atout)",
+            "description": ""
+        },
+        {
+            "id": "Frappe névralgique",
+            "name": "Pressure Point Strike",
+            "description": ""
+        },
+        {
+            "id": "Furtivité",
+            "name": "Stealth",
+            "description": ""
+        },
+        {
+            "id": "Fusil Parashield DART",
+            "name": "Parashield DART Rifle",
+            "description": "<p>Assault Rifle. Automatic Fire. Utilise des toxines (déjà comptées dans la VD).</p>"
+        },
+        {
+            "id": "GE Vindicator minigun",
+            "name": "GE Vindicator Minigun",
+            "description": "<p>Machine Gun</p>"
+        },
+        {
+            "id": "Gilet pare-balles",
+            "name": "Ballistic Vest",
+            "description": ""
+        },
+        {
+            "id": "Grand saut",
+            "name": "Great Leap",
+            "description": ""
+        },
+        {
+            "id": "Gremlins",
+            "name": "Gremlins",
+            "description": "<p>Les commlink plantent, les armes s’enraillent, les systèmes électriques disjonctent… Que le personnage soit un manche pour utiliser la technologie ou qu’il n’ait jamais de chance, cela lui arrive tout le temps.</p><p>Peut récupérer un point d’Anarchy lorsque cela arrive au mauvais moment.</p><p>Peut dépenser un point d’Anarchy pour que cela se produise au bon moment.</p><p>Note : peut aussi être l’objet d’un comportement ou d’une citation plutôt qu’être un trait.</p>"
+        },
+        {
+            "id": "Grenade lacrymogène",
+            "name": "Tear Gas Grenade",
+            "description": ""
+        },
+        {
+            "id": "Grenade Neuro-Stunt VIII",
+            "name": "Neuro-Stunt VIII Grenade",
+            "description": ""
+        },
+        {
+            "id": "Grenade Neuro-Stunt X",
+            "name": "Neuro-Stunt X Grenade",
+            "description": ""
+        },
+        {
+            "id": "Grenade Seven-7",
+            "name": "Seven-7 Grenade",
+            "description": ""
+        },
+        {
+            "id": "Grenades",
+            "name": "Grenades",
+            "description": "<p>Dégâts de zone</p>"
+        },
+        {
+            "id": "Grenades au phosphore blanc",
+            "name": "White Phosphorus Grenades",
+            "description": "<p>Dégâts de zone</p>"
+        },
+        {
+            "id": "Grenades Flashbang",
+            "name": "Flashbang Grenades",
+            "description": "<p>Dégâts de zone. Dégâts étourdissants.</p>"
+        },
+        {
+            "id": "Grenades fumigènes",
+            "name": "Smoke Grenades",
+            "description": "<p>Impose un désavantage aux actions nécessitant de voir à travers (Perception, Ranged Weapons). La vision thermo permet d’annuler ce désavantage.</p>"
+        },
+        {
+            "id": "Grenades Lacrymo",
+            "name": "Tear Gas Grenades",
+            "description": "<p>Impose un désavantage à toutes les actions des cibles dans la zone.</p>"
+        },
+        {
+            "id": "Grenades Neuro-Stun VIII",
+            "name": "Neuro-Stun VIII Grenades",
+            "description": "<p>Inflige une blessure légère tous les (Force de la cible) tours. Il s’agit de dommages étourdissants.</p>"
+        },
+        {
+            "id": "Grenades Neuro-Stun X",
+            "name": "Neuro-Stun X Grenades",
+            "description": "<p>Inflige une blessure grave tous les (Force de la cible) tours. Il s’agit de dommages étourdissants</p>"
+        },
+        {
+            "id": "Grenades offensive HE",
+            "name": "Offensive HE Grenades",
+            "description": "<p>Dégâts de zone</p>"
+        },
+        {
+            "id": "Grenades planantes",
+            "name": "Gliding Grenades",
+            "description": "<p>Dégâts de zone</p>"
+        },
+        {
+            "id": "Grenades Seven-7",
+            "name": "Seven-7 Grenades",
+            "description": "<p>Inflige une blessure grave tous les (Force de la cible) tours. Il s’agit de dommages étourdissants</p>"
+        },
+        {
+            "id": "Guérison facile",
+            "name": "Easy Healing",
+            "description": ""
+        },
+        {
+            "id": "Guérison rapide",
+            "name": "Rapid Healing",
+            "description": "<p>Divise le temps de guérison naturel par 2 en échange d’un point d’Anarchy</p>"
+        },
+        {
+            "id": "Guérison rapide",
+            "name": "Rapid Healing",
+            "description": ""
+        },
+        {
+            "id": "Gun fu",
+            "name": "Gun Fu",
+            "description": ""
+        },
+        {
+            "id": "Hermick Strauber, antiquaire (contact)",
+            "name": "Hermick Strauber, antiquarian (contact)",
+            "description": ""
+        },
+        {
+            "id": "HK 227",
+            "name": "HK 227",
+            "description": "<p>SMG. Automatic Fire.</p>"
+        },
+        {
+            "id": "Horizon Overseer (drones aquatiques)",
+            "name": "Horizon Overseer (Aquatic Drones)",
+            "description": ""
+        },
+        {
+            "id": "Horizon Overseer (drones terrestres)",
+            "name": "Horizon Overseer (Ground Drones)",
+            "description": ""
+        },
+        {
+            "id": "Horizon Overseer (drones volants)",
+            "name": "Horizon Overseer (Flying Drones)",
+            "description": ""
+        },
+        {
+            "id": "Humain",
+            "name": "Human",
+            "description": ""
+        },
+        {
+            "id": "Hurlement Paralysant",
+            "name": "Paralyzing Howl",
+            "description": ""
+        },
+        {
+            "id": "Immitation",
+            "name": "Imitation",
+            "description": ""
+        },
+        {
+            "id": "Influence",
+            "name": "Influence",
+            "description": ""
+        },
+        {
+            "id": "Ingénierie",
+            "name": "Engineering",
+            "description": ""
+        },
+        {
+            "id": "Ingram Smartgun",
+            "name": "Ingram Smartgun",
+            "description": "<p>SMG. Automatic Fire. Smartgun.</p>"
+        },
+        {
+            "id": "Ingram Valiant",
+            "name": "Ingram Valiant",
+            "description": "<p>Machine Gun. Automatic Fire</p>"
+        },
+        {
+            "id": "Invisibilité",
+            "name": "Invisibility",
+            "description": ""
+        },
+        {
+            "id": "Jambes cybernétiques",
+            "name": "Cyberlegs",
+            "description": ""
+        },
+        {
+            "id": "Jambes cybernétiques digitigrades",
+            "name": "Digitigrade Cyberlegs",
+            "description": ""
+        },
+        {
+            "id": "Jazz",
+            "name": "Jazz",
+            "description": ""
+        },
+        {
+            "id": "Jumelles",
+            "name": "Binoculars",
+            "description": ""
+        },
+        {
+            "id": "Jumelles Evo Night Hawk 500",
+            "name": "Evo Night Hawk 500 Binoculars",
+            "description": ""
+        },
+        {
+            "id": "Jumelles thermiques",
+            "name": "Thermal Binoculars",
+            "description": ""
+        },
+        {
+            "id": "Kamikaze",
+            "name": "Kamikaze",
+            "description": ""
+        },
+        {
+            "id": "Katana / Arme longue",
+            "name": "Katana / Melee Weapon (Long)",
+            "description": "<p>Katanas, matraques…</p>"
+        },
+        {
+            "id": "Katana Dikote™",
+            "name": "Dikote™ Katana",
+            "description": ""
+        },
+        {
+            "id": "Kit d'effraction",
+            "name": "Burglary Kit",
+            "description": "<p>Autocrocheteur, passe maglock et copieur de cartes magnétiques</p>"
+        },
+        {
+            "id": "Lance grappin",
+            "name": "Grapple Gun",
+            "description": ""
+        },
+        {
+            "id": "Lance-missile Balista",
+            "name": "Balista Missile Launcher",
+            "description": "<p>Lance-missile. VD 16 contre les Vehicles. Dégâts de zone. Tête chercheuse.</p>"
+        },
+        {
+            "id": "Lance-missile Great Dragon",
+            "name": "Great Dragon Missile Launcher",
+            "description": "<p>Lance-missile. VD 18 contre les Vehicles. Dégâts de zone. Tête chercheuse.</p>"
+        },
+        {
+            "id": "Lancer puissant",
+            "name": "Powerful Throw",
+            "description": ""
+        },
+        {
+            "id": "Langue",
+            "name": "Language",
+            "description": ""
+        },
+        {
+            "id": "Lecture rapide",
+            "name": "Speed Reading",
+            "description": "<p>Avec cet atout, le personnage est capable de lire une page entière en une poignée de seconde</p>"
+        },
+        {
+            "id": "Linguiste",
+            "name": "Linguist",
+            "description": ""
+        },
+        {
+            "id": "Loge magique",
+            "name": "Magic Lodge",
+            "description": "<p>Permet d’obtenir un avantage sur un test de Magic en échange d’un point d’Anarchy.</p>"
+        },
+        {
+            "id": "Long court",
+            "name": "Long Short",
+            "description": ""
+        },
+        {
+            "id": "Lost in translation",
+            "name": "Lost in Translation",
+            "description": "<p>Le personnage ne parle pas très bien la langue locale et/ou ne comprend pas la culture locale. La plupart du temps il se débrouille, mais parfois il comprend ou fait les choses de travers ou utilise le mot qu’il ne faut pas…</p><p>Peut récupérer un point d’Anarchy lorsqu’un malentendu est source de problèmes.</p><p>Note : peut aussi être l’objet d’un comportement ou d’une citation plutôt qu’être un trait.</p>"
+        },
+        {
+            "id": "Loyauté envers une marque",
+            "name": "Brand Loyalty",
+            "description": "<p>Permet au personnage d’obtenir un avantage en échange d’un point d’Anarchy lorsqu’il utilise un appareil de sa marque favorite. Note : peut aussi être l’objet d’un comportement plutôt qu’être un trait.</p>"
+        },
+        {
+            "id": "M79B1",
+            "name": "M79B1",
+            "description": "<p>Lance-roquette. VD 14 contre les Vehicles. Dégâts de zone. Compact (facile à transporter). Jetable (usage unique par scène)</p>"
+        },
+        {
+            "id": "Magicien complet",
+            "name": "Full Magician",
+            "description": ""
+        },
+        {
+            "id": "Mains mortelles",
+            "name": "Deadly Hands",
+            "description": ""
+        },
+        {
+            "id": "Mains nues",
+            "name": "Unarmed",
+            "description": "<p>Dommages étourdissants</p>"
+        },
+        {
+            "id": "Maitrise des projectiles",
+            "name": "Projectile Mastery",
+            "description": "<p>Arme \"Projectile\" crée dans \"Magic - pouvoirs d'adepte/Armes\"</p>"
+        },
+        {
+            "id": "Manteau renforcé",
+            "name": "Reinforced Coat",
+            "description": ""
+        },
+        {
+            "id": "Markus \"Le Finlandais\" Laitinen, fournisseur de matériel matriciel",
+            "name": "Markus \"Le Finlandais\" Laitinen, matrix equipment supplier",
+            "description": ""
+        },
+        {
+            "id": "Marqueurs furtifs",
+            "name": "Stealth Tags",
+            "description": ""
+        },
+        {
+            "id": "Marqueurs furtifs",
+            "name": "Stealth Tags",
+            "description": "<p>Difficulté de détection matricielle 6</p>"
+        },
+        {
+            "id": "Marqueurs senseurs",
+            "name": "Sensor Tags",
+            "description": "<p>Difficulté de détection matricielle 6</p>"
+        },
+        {
+            "id": "Matériel d'escalade",
+            "name": "Climbing Gear",
+            "description": ""
+        },
+        {
+            "id": "MCT 360",
+            "name": "MCT 360",
+            "description": ""
+        },
+        {
+            "id": "Médikit autonome CrashCart Essential",
+            "name": "Medkit autonome CrashCart Essential",
+            "description": "<p>Medkit avec autopilote 6</p>"
+        },
+        {
+            "id": "Médikit autonome DocWagon Pro+",
+            "name": "Medkit autonome DocWagon Pro+",
+            "description": "<p>Medkit avec autopilote 9</p>"
+        },
+        {
+            "id": "Médikit standard",
+            "name": "Medkit standard",
+            "description": "<p>Permet de dépenser un point d’Anarchy pour <em>Obtenir un avantage</em> aux tests de Survival (premiers soins) + Logique pour soigner des cases de dommage</p>"
+        },
+        {
+            "id": "Mémoire photographique",
+            "name": "Photographic Memory",
+            "description": "<p>Le personnage se souvient de ce qu’il voit dans les moindres détails</p>"
+        },
+        {
+            "id": "Microphone directionnel",
+            "name": "Directional Microphone",
+            "description": ""
+        },
+        {
+            "id": "Microphone directionnel (Copy)",
+            "name": "Directional Microphone (Copy)",
+            "description": ""
+        },
+        {
+            "id": "Mine antipersonnel",
+            "name": "Anti-Personnel Mine",
+            "description": "<p>Explosives</p>"
+        },
+        {
+            "id": "Mines anti-véhicule",
+            "name": "Anti-Vehicle Mines",
+            "description": "<p>Explosives. VD 16 contre les Vehicles. Un métahumain ne déclenche normalement pas ce type de mine.</p>"
+        },
+        {
+            "id": "Monobe Synthacardium",
+            "name": "Monobe Synthacardium",
+            "description": ""
+        },
+        {
+            "id": "Monsieur Tout-le-Monde",
+            "name": "Mr. Everyman",
+            "description": "<p>Rien ne permet de distinguer le personnage du commun des mortels et il est donc plus difficile de se souvenir de lui ou de l’identifier.</p>"
+        },
+        {
+            "id": "Mossberg CMDT",
+            "name": "Mossberg CMDT",
+            "description": "<p>Shotgun</p>"
+        },
+        {
+            "id": "Move-by-wire",
+            "name": "Move-by-Wire",
+            "description": ""
+        },
+        {
+            "id": "Munitions APDS",
+            "name": "Ammunition APDS",
+            "description": "<p>Munition perce-Armor qui permettent d’ignorer complètement l’Armor en échange de la dépense d’un point d’Anarchy.</p>"
+        },
+        {
+            "id": "Munitions EX Explosives",
+            "name": "Ammunition EX Explosives",
+            "description": "<p>Permet de réduire définitivement (jusqu’à réparation) le niveau d’une Armor de 1 en échange d’un point d’Anarchy.</p><p>Ce type de Ammunition devrait être restreintes aux armes de gros calibres.</p>"
+        },
+        {
+            "id": "Munitions Explosives",
+            "name": "Ammunition Explosives",
+            "description": ""
+        },
+        {
+            "id": "Munitions Gel",
+            "name": "Ammunition Gel",
+            "description": "<p>Inflige des dégâts étourdissant plutôt que physique</p>"
+        },
+        {
+            "id": "Nain",
+            "name": "Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Nanocrème de maquillage",
+            "name": "Nanomakeup Cream",
+            "description": ""
+        },
+        {
+            "id": "Nature Duale",
+            "name": "Dual Nature",
+            "description": ""
+        },
+        {
+            "id": "Nécessaire de jeu de rôle",
+            "name": "Role-Playing Kit",
+            "description": ""
+        },
+        {
+            "id": "Ninjutsu",
+            "name": "Ninjutsu",
+            "description": ""
+        },
+        {
+            "id": "Nitro",
+            "name": "Nitro",
+            "description": ""
+        },
+        {
+            "id": "Novacoke",
+            "name": "Novacoke",
+            "description": ""
+        },
+        {
+            "id": "OEil de lynx",
+            "name": "Lynx Eye",
+            "description": "<p>incompatible avec des yeux cyber.</p>"
+        },
+        {
+            "id": "Orc",
+            "name": "Ork",
+            "description": ""
+        },
+        {
+            "id": "Oreilles cybernétiques standards",
+            "name": "Standard Cyberears",
+            "description": ""
+        },
+        {
+            "id": "Oreilles cybernétiques Universal Omnitech ProSound",
+            "name": "Universal Omnitech ProSound Cyberears",
+            "description": ""
+        },
+        {
+            "id": "Oreilles cybernétiques Universal Omnitech UltraSound",
+            "name": "Universal Omnitech UltraSound Cyberears",
+            "description": ""
+        },
+        {
+            "id": "Orthoderme",
+            "name": "Orthoskin",
+            "description": ""
+        },
+        {
+            "id": "Os de verre",
+            "name": "Glass Bones",
+            "description": "<p>Permet de récupérer un point d’Anarchy en échange d’une blessure légère lorsque le personnage doit résister à des dégâts (que ceux-ci génèrent ou non une blessure).</p>"
+        },
+        {
+            "id": "Ossature renforcée en aluminium",
+            "name": "Aluminum Bone Lacing",
+            "description": ""
+        },
+        {
+            "id": "Ossature renforcée en plastique",
+            "name": "Plastic Bone Lacing",
+            "description": ""
+        },
+        {
+            "id": "Ossature renforcée en titane",
+            "name": "Titanium Bone Lacing",
+            "description": ""
+        },
+        {
+            "id": "Parade de projectiles",
+            "name": "Projectile Parry",
+            "description": ""
+        },
+        {
+            "id": "Passage sans traces",
+            "name": "Traceless Passage",
+            "description": ""
+        },
+        {
+            "id": "Passe maglock",
+            "name": "Maglock Passkey",
+            "description": ""
+        },
+        {
+            "id": "Perception",
+            "name": "Perception",
+            "description": ""
+        },
+        {
+            "id": "Perception améliorée",
+            "name": "Improved Perception",
+            "description": "<p>Chaque niveau supplémentaire (+5 000¥)  permet de choisir un effet narratif additionnel (vision nocturne, vision thermographique, spectre auditif élargi, odorat canin, écholocation, etc.) au choix de l'atout.</p>"
+        },
+        {
+            "id": "Petrification",
+            "name": "Petrification",
+            "description": ""
+        },
+        {
+            "id": "Peur 1",
+            "name": "Fear 1",
+            "description": ""
+        },
+        {
+            "id": "Peur 2",
+            "name": "Fear 2",
+            "description": ""
+        },
+        {
+            "id": "Peur 3",
+            "name": "Fear 3",
+            "description": ""
+        },
+        {
+            "id": "Phéromones large spectre",
+            "name": "Broad Spectrum Pheromones",
+            "description": ""
+        },
+        {
+            "id": "Phéromones optimisées",
+            "name": "Optimized Pheromones",
+            "description": ""
+        },
+        {
+            "id": "Pilotage",
+            "name": "Piloting",
+            "description": ""
+        },
+        {
+            "id": "Pilote de course",
+            "name": "Race Driver",
+            "description": "<p>Permet d’obtenir un avantage en échange d’un point d’Anarchy lorsque le personnage tente d’aller plus vite qu’un opposant, pour faire la course ou semer quelqu’un par la vitesse. Note : peut aussi être l’objet d’un comportement plutôt qu’être un trait.</p>"
+        },
+        {
+            "id": "Piratage",
+            "name": "Hacking",
+            "description": ""
+        },
+        {
+            "id": "Plastic Composé XII (Explosifs)",
+            "name": "Plastic Composé XII (Explosives)",
+            "description": "<p>Permet de faire sauter des trucs avec une quantité moindre qu'un explosif commercial.</p>"
+        },
+        {
+            "id": "Poids plume",
+            "name": "Featherweight",
+            "description": ""
+        },
+        {
+            "id": "Poing américain",
+            "name": "Brass Knuckles",
+            "description": "<p>Couteaux, poings américains etc.</p>"
+        },
+        {
+            "id": "Pompe d’adrénaline",
+            "name": "Pompe d’adrénaline",
+            "description": ""
+        },
+        {
+            "id": "Précision améliorée",
+            "name": "Improved Accuracy",
+            "description": ""
+        },
+        {
+            "id": "Première impression",
+            "name": "First Impression",
+            "description": "<p>RR 1 Influence lors de la première interaction avec un personnage.</p>"
+        },
+        {
+            "id": "Proches influents",
+            "name": "Influential Contacts",
+            "description": "<p>RR 2 Networking (milieu au choix)</p>"
+        },
+        {
+            "id": "Producteurs de plaquettes",
+            "name": "Platelet Factories",
+            "description": ""
+        },
+        {
+            "id": "Projectile",
+            "name": "Projectile",
+            "description": ""
+        },
+        {
+            "id": "Proteus Poseidon (drones aquatiques)",
+            "name": "Proteus Poseidon (Aquatic Drones)",
+            "description": ""
+        },
+        {
+            "id": "Proteus Poseidon (drones terrestres)",
+            "name": "Proteus Poseidon (Ground Drones)",
+            "description": ""
+        },
+        {
+            "id": "Proteus Poseidon (drones volants)",
+            "name": "Proteus Poseidon (Flying Drones)",
+            "description": ""
+        },
+        {
+            "id": "Psyché",
+            "name": "Psyche",
+            "description": ""
+        },
+        {
+            "id": "Rage de vivre",
+            "name": "Rage to Live",
+            "description": "<p>Permet à un personnage Incapacité de faire un test de Survival pour se stabiliser de lui-même en échange d’un point d’Anarchy.</p>"
+        },
+        {
+            "id": "Ranger Arms SM-6",
+            "name": "Ranger Arms SM-6",
+            "description": "<p>Sniper Rifle</p>"
+        },
+        {
+            "id": "Réflexes accrus",
+            "name": "Increased Reflexes",
+            "description": ""
+        },
+        {
+            "id": "Réflexes améliorés",
+            "name": "Improved Reflexes",
+            "description": ""
+        },
+        {
+            "id": "Réflexes câblés Ares",
+            "name": "Ares Wired Reflexes",
+            "description": ""
+        },
+        {
+            "id": "Réflexes câblés Evo",
+            "name": "Evo Wired Reflexes",
+            "description": ""
+        },
+        {
+            "id": "Réflexes éclairs",
+            "name": "Lightning Reflexes",
+            "description": "<p>actions supplémentaires illimitées en échange de points d’Anarchy.</p>"
+        },
+        {
+            "id": "Relais satellite",
+            "name": "Satellite Relay",
+            "description": ""
+        },
+        {
+            "id": "Remington 750",
+            "name": "Remington 750",
+            "description": "<p>Sport Rifle</p>"
+        },
+        {
+            "id": "Renforcement musculaire",
+            "name": "Muscle Augmentation",
+            "description": ""
+        },
+        {
+            "id": "Renfort neuronal",
+            "name": "Neural Boost",
+            "description": "<p>Armor matricielle +1 (n’oubliez pas que vous ne pouvez pas la cumuler avec un autre atout offrant de l’Armor matricielle)</p>"
+        },
+        {
+            "id": "Renraku Kitsune",
+            "name": "Renraku Kitsune",
+            "description": ""
+        },
+        {
+            "id": "Réputation online",
+            "name": "Online Reputation",
+            "description": "<p>Que le personnage soit un célèbre blogueur, un joueur de jeux simsens reconnu ou autre chose, son icône matricielle est connue. RR 1 Influence lorsque le personnage interagit en ligne</p>"
+        },
+        {
+            "id": "Réseau",
+            "name": "Networking",
+            "description": ""
+        },
+        {
+            "id": "Résistance à la douleur",
+            "name": "Pain Resistance",
+            "description": ""
+        },
+        {
+            "id": "Résistance à la magie",
+            "name": "Résistance à la Magic",
+            "description": ""
+        },
+        {
+            "id": "Résistance au feu",
+            "name": "Fire Resistance",
+            "description": ""
+        },
+        {
+            "id": "Résistance mentale",
+            "name": "Mental Resistance",
+            "description": ""
+        },
+        {
+            "id": "Ruger 100",
+            "name": "Ruger 100",
+            "description": "<p>Sport Rifle</p>"
+        },
+        {
+            "id": "Ruger Super Warhawk",
+            "name": "Ruger Super Warhawk",
+            "description": "<p>Heavy Pistol</p>"
+        },
+        {
+            "id": "Salvatore Sepulveda, père, cadre supérieur chez Aztechnology",
+            "name": "Salvatore Sepulveda, père, Aztechnology Executive",
+            "description": ""
+        },
+        {
+            "id": "Sarah Carpenter, doc des rues",
+            "name": "Sarah Carpenter, street doc",
+            "description": ""
+        },
+        {
+            "id": "Savalette Guardian",
+            "name": "Savalette Guardian",
+            "description": "<p>Heavy Pistol</p>"
+        },
+        {
+            "id": "Sens accrus",
+            "name": "Increased Senses",
+            "description": ""
+        },
+        {
+            "id": "Sens amélioré",
+            "name": "Improved Sense",
+            "description": ""
+        },
+        {
+            "id": "Sens de l’orientation",
+            "name": "Sens de l’orientation",
+            "description": ""
+        },
+        {
+            "id": "Sens du combat",
+            "name": "Combat Sense",
+            "description": ""
+        },
+        {
+            "id": "Sens du danger",
+            "name": "Danger Sense",
+            "description": ""
+        },
+        {
+            "id": "Sens empathique",
+            "name": "Empathic Sense",
+            "description": ""
+        },
+        {
+            "id": "Sens magique",
+            "name": "Magic Sense",
+            "description": ""
+        },
+        {
+            "id": "ShadowSea, paradis numérique basé à Seattle",
+            "name": "ShadowSea, Seattle-based digital paradise",
+            "description": ""
+        },
+        {
+            "id": "Shiawase Cyber−6",
+            "name": "Shiawase Cyber−6",
+            "description": ""
+        },
+        {
+            "id": "Shiawaze Arms Puzzler",
+            "name": "Shiawaze Arms Puzzler",
+            "description": "<p>Light Pistol. RR2 pour le faire passer discrètement.</p>"
+        },
+        {
+            "id": "SIN",
+            "name": "SIN",
+            "description": ""
+        },
+        {
+            "id": "SINner",
+            "name": "SINner",
+            "description": "<p>Le personnage possède une SIN officielle. Parfois c’est un avantage qui peut ouvrir des portes (contre la dépense d’un point d’Anarchy), parfois être fiché et connu des systèmes est un handicape (qui permet de récupérer un point d’Anarchy).</p>"
+        },
+        {
+            "id": "Smartlink",
+            "name": "Smartlink",
+            "description": ""
+        },
+        {
+            "id": "Soins",
+            "name": "Healing",
+            "description": "<p>Chaque sort permet de soigner une blessure de la cible ou de la stabiliser� • Blessure légère : 3 Blessure grave : 5 • Blessure incapacitante : 6 • Stabilisation : 3</p>"
+        },
+        {
+            "id": "Soins empathiques",
+            "name": "Empathic Healing",
+            "description": ""
+        },
+        {
+            "id": "Sonde mentale",
+            "name": "Mind Probe",
+            "description": ""
+        },
+        {
+            "id": "Sorcellerie",
+            "name": "SOrkery",
+            "description": ""
+        },
+        {
+            "id": "Sorcier",
+            "name": "Sorcerer",
+            "description": ""
+        },
+        {
+            "id": "Spé : Appareils personnels",
+            "name": "Spec: Personal Devices",
+            "description": ""
+        },
+        {
+            "id": "Spé : Armes contondantes",
+            "name": "Spec: Blunt Weapons",
+            "description": ""
+        },
+        {
+            "id": "Spé : Armes contrôlées à distance",
+            "name": "Spec: Remote ConTrolled Weapons",
+            "description": ""
+        },
+        {
+            "id": "Spé : Armes de jet",
+            "name": "Spec: Thrown Weapons",
+            "description": ""
+        },
+        {
+            "id": "Spé : Armes de trait",
+            "name": "Spec: Thrown Weapons",
+            "description": ""
+        },
+        {
+            "id": "Spé : Armes lourdes",
+            "name": "Spec: Heavy Weapons",
+            "description": ""
+        },
+        {
+            "id": "Spé : Armes montées",
+            "name": "Spec: Mounted Weapons",
+            "description": ""
+        },
+        {
+            "id": "Spé : Backdoor",
+            "name": "Spec: Backdoor",
+            "description": ""
+        },
+        {
+            "id": "Spé : Bannissement",
+            "name": "Spec: Banishing",
+            "description": ""
+        },
+        {
+            "id": "Spé : Bluff",
+            "name": "Spec: Bluff",
+            "description": ""
+        },
+        {
+            "id": "Spé : C&R appareils électroniques",
+            "name": "Spec: C&R appareils Electronics",
+            "description": ""
+        },
+        {
+            "id": "Spé : C&R drones",
+            "name": "Spec: C&R Drones",
+            "description": ""
+        },
+        {
+            "id": "Spé : C&R engins mécaniques",
+            "name": "Spec: C&R Mechanical Devices",
+            "description": ""
+        },
+        {
+            "id": "Spé : C&R implants cybernétiques",
+            "name": "Spec: C&R Cybernetic Implants",
+            "description": ""
+        },
+        {
+            "id": "Spé : C&R véhicules",
+            "name": "Spec: C&R Vehicles",
+            "description": ""
+        },
+        {
+            "id": "Spé : Camions",
+            "name": "Spec: Trucks",
+            "description": ""
+        },
+        {
+            "id": "Spé : Combat astral",
+            "name": "Spec: Astral Combat",
+            "description": ""
+        },
+        {
+            "id": "Spé : Contresort",
+            "name": "Spec: Counterspelling",
+            "description": ""
+        },
+        {
+            "id": "Spé : Corporatiste",
+            "name": "Spec: Corporate",
+            "description": ""
+        },
+        {
+            "id": "Spé : Course",
+            "name": "Spec: Running",
+            "description": ""
+        },
+        {
+            "id": "Spé : Criminel",
+            "name": "Spec: Criminal",
+            "description": ""
+        },
+        {
+            "id": "Spé : Crochetage",
+            "name": "Spec: Lockpicking",
+            "description": ""
+        },
+        {
+            "id": "Spé : Crocs",
+            "name": "Spec: Fangs",
+            "description": ""
+        },
+        {
+            "id": "Spé : Cybercombat",
+            "name": "Spec: Cybercombat",
+            "description": ""
+        },
+        {
+            "id": "Spé : Défense",
+            "name": "Spec: Defense",
+            "description": ""
+        },
+        {
+            "id": "Spé : Défense à distance",
+            "name": "Spec: Ranged Defense",
+            "description": ""
+        },
+        {
+            "id": "Spé : Discrétion astrale",
+            "name": "Spec: Astral Stealth",
+            "description": ""
+        },
+        {
+            "id": "Spé : Discrétion matricielle",
+            "name": "Spec: Matrix Stealth",
+            "description": ""
+        },
+        {
+            "id": "Spé : Discrétion Physique",
+            "name": "Spec: Physical Stealth",
+            "description": ""
+        },
+        {
+            "id": "Spé : Dressage",
+            "name": "Spec: Animal Training",
+            "description": ""
+        },
+        {
+            "id": "Spé : Drones aquatiques",
+            "name": "Spec: Aquatic Drones",
+            "description": ""
+        },
+        {
+            "id": "Spé : Drones terrestres",
+            "name": "Spec: Ground Drones",
+            "description": ""
+        },
+        {
+            "id": "Spé : Drones volants",
+            "name": "Spec: Flying Drones",
+            "description": ""
+        },
+        {
+            "id": "Spé : Escalade",
+            "name": "Spec: Climbing",
+            "description": ""
+        },
+        {
+            "id": "Spé : Escamotage",
+            "name": "Spec: Stealth",
+            "description": ""
+        },
+        {
+            "id": "Spé : Esprit des aînés",
+            "name": "Spec: Esprit des aînés",
+            "description": ""
+        },
+        {
+            "id": "Spé : Esprits de l'air",
+            "name": "Spec: Air Spirits",
+            "description": ""
+        },
+        {
+            "id": "Spé : Esprits de la terre",
+            "name": "Spec: Earth Spirits",
+            "description": ""
+        },
+        {
+            "id": "Spé : Esprits des bêtes",
+            "name": "Spec: Beast Spirits",
+            "description": ""
+        },
+        {
+            "id": "Spé : Esprits des plantes",
+            "name": "Spec: Plant Spirits",
+            "description": ""
+        },
+        {
+            "id": "Spé : Esprits du feu",
+            "name": "Spec: Fire Spirits",
+            "description": ""
+        },
+        {
+            "id": "Spé : Étiquette",
+            "name": "Spec: Etiquette",
+            "description": ""
+        },
+        {
+            "id": "Spé : Explosifs",
+            "name": "Spec: Explosives",
+            "description": ""
+        },
+        {
+            "id": "Spé : Force brute",
+            "name": "Spec: Brute FOrke",
+            "description": ""
+        },
+        {
+            "id": "Spé : Fusils",
+            "name": "Spec: Rifles",
+            "description": ""
+        },
+        {
+            "id": "Spé : Gouvernemental",
+            "name": "Spec: Government",
+            "description": ""
+        },
+        {
+            "id": "Spé : Guerre électronique",
+            "name": "Spec: Electronic Warfare",
+            "description": ""
+        },
+        {
+            "id": "Spé : Imposture",
+            "name": "Spec: Impersonation",
+            "description": ""
+        },
+        {
+            "id": "Spé : Ingénierie",
+            "name": "Spec: Engineering",
+            "description": ""
+        },
+        {
+            "id": "Spé : Intimidation",
+            "name": "Spec: Intimidation",
+            "description": ""
+        },
+        {
+            "id": "Spé : La rue",
+            "name": "Spec: La rue",
+            "description": ""
+        },
+        {
+            "id": "Spé : Lames",
+            "name": "Spec: Blades",
+            "description": ""
+        },
+        {
+            "id": "Spé : Lance-grenades",
+            "name": "Spec: Grenade Launchers",
+            "description": ""
+        },
+        {
+            "id": "Spé : Magique",
+            "name": "Spec: Magic",
+            "description": ""
+        },
+        {
+            "id": "Spé : Mains nues",
+            "name": "Spec: Unarmed",
+            "description": ""
+        },
+        {
+            "id": "Spé : Matriciel",
+            "name": "Spec: Matrix",
+            "description": ""
+        },
+        {
+            "id": "Spé : Matricielle",
+            "name": "Spec: Matrix",
+            "description": ""
+        },
+        {
+            "id": "Spé : Médiatique",
+            "name": "Spec: Media",
+            "description": ""
+        },
+        {
+            "id": "Spé : Médical",
+            "name": "Spec: Medical",
+            "description": ""
+        },
+        {
+            "id": "Spé : Mitraillettes",
+            "name": "Spec: SMGs",
+            "description": ""
+        },
+        {
+            "id": "Spé : monofilament",
+            "name": "Spec: monofilament",
+            "description": ""
+        },
+        {
+            "id": "Spé : Motos",
+            "name": "Spec: MotOrkycles",
+            "description": ""
+        },
+        {
+            "id": "Spé : Natation",
+            "name": "Spec: Swimming",
+            "description": ""
+        },
+        {
+            "id": "Spé : Négociation",
+            "name": "Spec: Negotiation",
+            "description": ""
+        },
+        {
+            "id": "Spé : Orientation",
+            "name": "Spec: Navigation",
+            "description": ""
+        },
+        {
+            "id": "Spé : Parkour",
+            "name": "Spec: Parkour",
+            "description": ""
+        },
+        {
+            "id": "Spé : Perception astrale",
+            "name": "Spec: Astral Perception",
+            "description": ""
+        },
+        {
+            "id": "Spé : Perception matricielle",
+            "name": "Spec: Perception matricielle",
+            "description": ""
+        },
+        {
+            "id": "Spé : Perception physique",
+            "name": "Spec: Physical Perception",
+            "description": ""
+        },
+        {
+            "id": "Spé : Perception sociale",
+            "name": "Spec: Perception sociale",
+            "description": ""
+        },
+        {
+            "id": "Spé : Physique",
+            "name": "Spec: Physical",
+            "description": ""
+        },
+        {
+            "id": "Spé : Pistolets",
+            "name": "Spec: Pistols",
+            "description": ""
+        },
+        {
+            "id": "Spé : Premiers soins",
+            "name": "Spec: First Aid",
+            "description": ""
+        },
+        {
+            "id": "Spé : Protection matricielle",
+            "name": "Spec: Matrix Protection",
+            "description": ""
+        },
+        {
+            "id": "Spé : Recherche matricielle",
+            "name": "Spec: Matrix Search",
+            "description": ""
+        },
+        {
+            "id": "Spé : Sang-froid",
+            "name": "Spec: Sang-froid",
+            "description": ""
+        },
+        {
+            "id": "Spé : Shotguns",
+            "name": "Spec: Shotguns",
+            "description": ""
+        },
+        {
+            "id": "Spé : Sorts d'illusion",
+            "name": "Spec: Illusion Spells",
+            "description": ""
+        },
+        {
+            "id": "Spé : Sorts de combat",
+            "name": "Spec: Combat Spells",
+            "description": ""
+        },
+        {
+            "id": "Spé : Sorts de détection",
+            "name": "Spec: Detection Spells",
+            "description": ""
+        },
+        {
+            "id": "Spé : Sorts de manipulation",
+            "name": "Spec: Manipulation Spells",
+            "description": ""
+        },
+        {
+            "id": "Spé : Sorts de santé",
+            "name": "Spec: Health Spells",
+            "description": ""
+        },
+        {
+            "id": "Spé : Survie en milieu naturel",
+            "name": "Spec: Wilderness Survival",
+            "description": ""
+        },
+        {
+            "id": "Spé : Universitaire",
+            "name": "Spec: Universitaire",
+            "description": ""
+        },
+        {
+            "id": "Spé : Véhicules aquatiques",
+            "name": "Spec: Aquatic Vehicles",
+            "description": ""
+        },
+        {
+            "id": "Spé : Véhicules volants",
+            "name": "Spec: Flying Vehicles",
+            "description": ""
+        },
+        {
+            "id": "Spé : Voitures",
+            "name": "Spec: Cars",
+            "description": ""
+        },
+        {
+            "id": "Spinrad Falcon",
+            "name": "Spinrad Falcon",
+            "description": ""
+        },
+        {
+            "id": "Steyr AUG CSL (Conf : Fusil d'assaut)",
+            "name": "Steyr AUG CSL (Config: Assault Rifle)",
+            "description": "<p>Convertible : Assault Rifle - Sport Rifle - SMG</p>"
+        },
+        {
+            "id": "Steyr AUG CSL (Conf : Fusil de sport)",
+            "name": "Steyr AUG CSL (Config: Sport Rifle)",
+            "description": "<p>Convertible : Assault Rifle - Sport Rifle - SMG</p>"
+        },
+        {
+            "id": "Steyr AUG CSL (Conf : Mitraillette)",
+            "name": "Steyr AUG CSL (Config: SMG)",
+            "description": "<p>Convertible : Assault Rifle - Sport Rifle - SMG</p>"
+        },
+        {
+            "id": "Steyr TMP",
+            "name": "Steyr TMP",
+            "description": "<p>Automatic Pistol. Automatic Fire.</p>"
+        },
+        {
+            "id": "Stim Patch",
+            "name": "Stim Patch",
+            "description": "<p>Permet d’ignorer le désavantage causé par une blessure grave, mais inflige une blessure légère après environ un quart d’heure</p>"
+        },
+        {
+            "id": "Stoner Ares M202",
+            "name": "Stoner Ares M202",
+            "description": "<p>Machine Gun. Automatic Fire</p>"
+        },
+        {
+            "id": "Streeline special",
+            "name": "Streeline Special",
+            "description": "<p>Holdout Pistol</p>"
+        },
+        {
+            "id": "Subsistance",
+            "name": "Subsistence",
+            "description": ""
+        },
+        {
+            "id": "Substituts musculaires",
+            "name": "Muscle Replacement",
+            "description": ""
+        },
+        {
+            "id": "Survie",
+            "name": "Survival",
+            "description": ""
+        },
+        {
+            "id": "Swing parfait",
+            "name": "Perfect Swing",
+            "description": "<p>Le personnage est le genre de batteur capable de frapper des home runs sur commande.</p>"
+        },
+        {
+            "id": "Synthécuir au couleur du gang",
+            "name": "Synthleather in Gang Colors",
+            "description": ""
+        },
+        {
+            "id": "Tête brûlée",
+            "name": "Burnout",
+            "description": ""
+        },
+        {
+            "id": "Thunderstruck Gauss Rifle",
+            "name": "Thunderstruck Gauss Rifle",
+            "description": "<p>Sniper Rifle. Smartlink (RR)</p>"
+        },
+        {
+            "id": "Tolérance au cyberware",
+            "name": "Cyberware Tolerance",
+            "description": "<p>Le dernier point d’essence du personnage compte double, il peut donc bénéficier d’un implant supplémentaire sans mourir, mais cela ne change rien aux malus liés à la perte d’essence</p>"
+        },
+        {
+            "id": "Tonification musculaire",
+            "name": "Muscle Toner",
+            "description": ""
+        },
+        {
+            "id": "Trait de feu",
+            "name": "Fire Trait",
+            "description": ""
+        },
+        {
+            "id": "Trauma Patch",
+            "name": "Trauma Patch",
+            "description": "<p>Permet de dépenser un point d’Anarchy pour <em>Obtenir un avantage</em> aux tests de Survival (premiers soins) + Logique pour stabiliser un personnage</p>"
+        },
+        {
+            "id": "Tripes",
+            "name": "Guts",
+            "description": ""
+        },
+        {
+            "id": "Troll",
+            "name": "Troll",
+            "description": ""
+        },
+        {
+            "id": "Uzi V",
+            "name": "Uzi V",
+            "description": "<p>SMG. Automatic Fire.</p>"
+        },
+        {
+            "id": "Veille de nuit",
+            "name": "Night Watch",
+            "description": ""
+        },
+        {
+            "id": "Vertiges RA",
+            "name": "AR Vertigo",
+            "description": "<p>Le personnage supporte mal la RA. Lorsqu’il y a trop d’information affichée dans l’environnement RA du personnage, celui-ci finit par être sujet à des nausées et des vertiges. Il subit alors un désavantage à ses actions tant qu’il ne prend pas le temps de soufflé en coupant son Environnement RA, mais récupère un point d’Anarchy en échange.</p>"
+        },
+        {
+            "id": "Veste pare-balles",
+            "name": "Ballistic Jacket",
+            "description": ""
+        },
+        {
+            "id": "Vêtement pare-balle avec manteau",
+            "name": "Ballistic Clothing with Coat",
+            "description": ""
+        },
+        {
+            "id": "Vêtements pare-balles légers",
+            "name": "Light Ballistic Clothing",
+            "description": ""
+        },
+        {
+            "id": "Vincent Terranova, flic sous couverture",
+            "name": "Vincent Terranova, undercover cop",
+            "description": ""
+        },
+        {
+            "id": "Vision de chat",
+            "name": "Cat Vision",
+            "description": "<p>Vision nocturne</p>"
+        },
+        {
+            "id": "Vision de troll",
+            "name": "Troll Vision",
+            "description": "<p>Vision thermographique</p>"
+        },
+        {
+            "id": "Vision nocturne",
+            "name": "Night Vision",
+            "description": "<p>Le personnage est capable de voir à la manière d’un elfe dans la pénombre.</p>"
+        },
+        {
+            "id": "Vision véritable",
+            "name": "True Vision",
+            "description": ""
+        },
+        {
+            "id": "Voile",
+            "name": "Veil",
+            "description": ""
+        },
+        {
+            "id": "Voix de commandement",
+            "name": "Command Voice",
+            "description": ""
+        },
+        {
+            "id": "Walter MA-2100",
+            "name": "Walter MA-2100",
+            "description": "<p>Sniper Rifle</p>"
+        },
+        {
+            "id": "Walter Palm Pistol",
+            "name": "Walter Palm Pistol",
+            "description": "<p>Holdout Pistol</p>"
+        },
+        {
+            "id": "Yamaha Pulsar (Taser)",
+            "name": "Yamaha Pulsar (Taser)",
+            "description": "<p>Dommages étourdissants</p>"
+        },
+        {
+            "id": "Yeong-mu",
+            "name": "Yeong-mu",
+            "description": "<p>Le personnage maitrise les principes du Yeong-mu, art martial mystique coréen utilisé dans l’espace astral :</p><p>RR 1 Close Combat (combat astral)</p>"
+        },
+        {
+            "id": "Yeux cybernétiques Ares ProShooter",
+            "name": "Ares ProShooter Cybereyes",
+            "description": ""
+        },
+        {
+            "id": "Yeux cybernétiques Ares SharpShooter",
+            "name": "Ares SharpShooter Cybereyes",
+            "description": ""
+        },
+        {
+            "id": "Yeux cybernétiques avec smartlink",
+            "name": "Cybereyes with Smartlink",
+            "description": ""
+        },
+        {
+            "id": "Yeux cybernétiques Evo EyeDrone",
+            "name": "Evo EyeDrone Cybereyes",
+            "description": "<p>Ajouter un micro-drone oculaire (Autopilote 6, Structure 0, Maniabilité 10, Vitesse 0, Blindage 0, avantage en Stealth (discrétion physique), aucune monture d’arme).</p><p></p>"
+        },
+        {
+            "id": "Yeux cybernétiques L’Oréal Fashion Top",
+            "name": "Yeux cybernétiques L’Oréal Fashion Top",
+            "description": ""
+        },
+        {
+            "id": "Yeux cybernétiques standards",
+            "name": "Standard Cybereyes",
+            "description": ""
+        },
+        {
+            "id": "Yeux cybernétiques Universal Omnitech AbsoluteView",
+            "name": "Universal Omnitech AbsoluteView Cybereyes",
+            "description": ""
+        },
+        {
+            "id": "Yeux cybernétiques Universal Omnitech ProView",
+            "name": "Universal Omnitech ProView Cybereyes",
+            "description": ""
+        },
+        {
+            "id": "Zélé",
+            "name": "Zealous",
+            "description": "<p> Zélé (trait) : Volonté +1 pour résister à l’intimidation ou la peur ; combativité forte.</p>"
+        },
+        {
+            "id": "Zen",
+            "name": "Zen",
+            "description": ""
+        }
+    ]
+}

@@ -479,7 +479,6 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       }
       const linkedVehicles = this.linkedVehicles || [];
       if (linkedVehicles.length > 0) {
-        console.log(linkedVehicles);
         for (const vehicleUuid of linkedVehicles) {
           try {
             let vehicleActor = null;
@@ -11698,6 +11697,7 @@ class SRA2System {
     if (game.system) {
       game.system.sra2 = this;
     }
+    Hooks.once("setup", () => this.initializeBabele());
     Hooks.once("init", () => this.onInit());
   }
   onInit() {
@@ -13084,6 +13084,14 @@ class SRA2System {
   /**
    * Register the Group Anarchy setting
    */
+  /**
+   * Initialize Babele translations if the module is available
+   */
+  initializeBabele() {
+    if (game.babele && game.babele.modules.every((module) => module.module !== game.settings.get(CONFIG.l5r5e.namespace, "custom-compendium-name"))) {
+      game.babele.setSystemTranslationsDir("lang");
+    }
+  }
   registerGroupAnarchySetting() {
     game.settings.register(SYSTEM$1.id, "groupAnarchy", {
       name: "SRA2.ANARCHY_COUNTER.SETTING_NAME",

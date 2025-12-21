@@ -42,7 +42,7 @@ import { HOOKS } from "./hooks.mjs";
 export class SRA2System {
   // Set to track skills being created to avoid duplicate creation
   static skillsBeingCreated: Set<string> = new Set();
-  
+
   static start(): void {
     new SRA2System();
   }
@@ -51,9 +51,13 @@ export class SRA2System {
     if (game.system) {
       game.system.sra2 = this;
     }
+
+    // Initialize Babele translations if module is available (after setup, before init)
+    Hooks.once('setup', () => this.initializeBabele());
+    
     Hooks.once('init', () => this.onInit());
   }
-  
+
   onInit(): void {
     console.log(SYSTEM.LOG.HEAD + 'SRA2System.onInit');
     if (game.system) {
@@ -63,18 +67,18 @@ export class SRA2System {
         documents,
       };
     }
-    
+
     // Register theme setting
     this.registerThemeSetting();
-    
+
     // Register group anarchy setting
     this.registerGroupAnarchySetting();
-    
+
     // Configure UI elements (icons, banners)
     setSidebarIcons();
     setControlIcons();
     setCompendiumBanners();
-    
+
     // Register migrations
     new Migrations();
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration: any) => {
@@ -89,17 +93,17 @@ export class SRA2System {
       declareMigration(new Migration_13_0_11());
       declareMigration(new Migration_13_0_12());
     });
-    
+
     // Register custom Actor document class
     CONFIG.Actor.documentClass = documents.SRA2Actor;
-    
+
     // Register Actor data models
     CONFIG.Actor.dataModels = {
       character: models.CharacterDataModel,
       vehicle: models.VehicleDataModel,
       ice: models.IceDataModel,
     };
-    
+
     // Register Item data models
     CONFIG.Item.dataModels = {
       skill: models.SkillDataModel,
@@ -107,52 +111,52 @@ export class SRA2System {
       specialization: models.SpecializationDataModel,
       metatype: models.MetatypeDataModel,
     };
-    
+
     // Register character sheet (detailed view)
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
       types: ["character"],
       makeDefault: false,
       label: "SRA2.SHEET.CHARACTER"
     });
-    
+
     // Register character sheet V2 (in-run view - default)
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheetV2, {
       types: ["character"],
       makeDefault: true,
       label: "SRA2.SHEET.CHARACTER_V2"
     });
-    
+
     // Register vehicle sheet
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.VehicleSheet, {
       types: ["vehicle"],
       makeDefault: true,
       label: "SRA2.SHEET.VEHICLE"
     });
-    
+
     // Register ICE sheet
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.IceSheet, {
       types: ["ice"],
       makeDefault: true,
       label: "SRA2.SHEET.ICE"
     });
-    
+
     // Hook to ensure all vehicle actors are available in game.actors before cost calculations
     // This runs after all actors are loaded to ensure vehicles are accessible synchronously
     Hooks.on('ready', () => {
       if (!game.actors) return;
-      
+
       // Find all character actors and ensure their linked vehicles have calculatedCost
       const characterActors = (game.actors as any).filter((actor: any) => actor.type === 'character');
-      
+
       for (const charActor of characterActors) {
         const linkedVehicles = (charActor.system as any)?.linkedVehicles || [];
-        
+
         // Ensure all linked vehicles have their costs calculated
         for (const vehicleUuid of linkedVehicles) {
           try {
             // Find vehicle in game.actors (should be available at 'ready' hook)
             let vehicleActor = (game.actors as any).find((actor: any) => actor.uuid === vehicleUuid);
-            
+
             // If not found by UUID, try by ID
             if (!vehicleActor) {
               const uuidParts = vehicleUuid.split('.');
@@ -161,7 +165,7 @@ export class SRA2System {
                 vehicleActor = (game.actors as any).get(actorId);
               }
             }
-            
+
             // If vehicle found and it's a vehicle type, ensure its cost is calculated
             if (vehicleActor && vehicleActor.type === 'vehicle') {
               // Trigger prepareDerivedData on vehicle if not already calculated
@@ -173,7 +177,7 @@ export class SRA2System {
             console.debug(`Vehicle ${vehicleUuid} not found in game.actors (may be in compendium)`);
           }
         }
-        
+
         // Now trigger prepareDerivedData on character to recalculate cost with vehicles
         try {
           if (charActor.system && (charActor.system as any).prepareDerivedData) {
@@ -184,7 +188,7 @@ export class SRA2System {
         }
       }
     });
-    
+
     // Hook to update character sheets when linked vehicles are updated
     Hooks.on('updateActor', (actor: any, updateData: any, options: any, userId: string) => {
       // DEBUG: Log all actor updates
@@ -195,15 +199,15 @@ export class SRA2System {
         'updateData keys': updateData ? Object.keys(updateData) : 'no updateData',
         'updateData.system keys': updateData?.system ? Object.keys(updateData.system) : 'no system'
       });
-      
+
       // Only process vehicle actors
       if (actor.type !== 'vehicle') return;
-      
+
       // Force vehicle to recalculate its cost first
       if (actor.system) {
         (actor.system as any).prepareDerivedData();
       }
-      
+
       // Find all character actors that have this vehicle linked
       if (game.actors) {
         const vehicleUuid = actor.uuid;
@@ -212,7 +216,7 @@ export class SRA2System {
           const linkedVehicles = (char.system as any)?.linkedVehicles || [];
           return linkedVehicles.includes(vehicleUuid);
         });
-        
+
         // DEBUG: Log which character sheets will be re-rendered
         if (characterActors.length > 0) {
           console.log('Hook updateActor - Re-rendering character sheets:', {
@@ -222,7 +226,7 @@ export class SRA2System {
             'characters': characterActors.map((c: any) => ({ id: c.id, name: c.name }))
           });
         }
-        
+
         // Re-render character sheets that have this vehicle linked
         // Use a small delay to ensure derived data is recalculated
         setTimeout(() => {
@@ -319,7 +323,7 @@ export class SRA2System {
     Hooks.on('createItem', async (item: any, options: any, userId: string) => {
       // Only process specializations on character actors
       if (item.type !== 'specialization') return;
-      
+
       const actor = item.parent;
       if (!actor || actor.type !== 'character') return;
 
@@ -349,7 +353,7 @@ export class SRA2System {
       try {
         // Try to find the skill in game.items
         const skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
-        
+
         if (skillTemplate) {
           // Skill found in game.items, create it on the actor
           try {
@@ -372,7 +376,7 @@ export class SRA2System {
               bookmarked: false
             }
           };
-          
+
           try {
             await actor.createEmbeddedDocuments('Item', [skillData]);
             console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
@@ -385,12 +389,12 @@ export class SRA2System {
         SRA2System.skillsBeingCreated.delete(skillKey);
       }
     });
-    
+
     // Also handle when vehicle is deleted
     Hooks.on('deleteActor', (actor: any, options: any, userId: string) => {
       // Only process vehicle actors
       if (actor.type !== 'vehicle') return;
-      
+
       // Find all character actors that have this vehicle linked and remove it
       if (game.actors) {
         const vehicleUuid = actor.uuid;
@@ -399,43 +403,43 @@ export class SRA2System {
           const linkedVehicles = (char.system as any)?.linkedVehicles || [];
           return linkedVehicles.includes(vehicleUuid);
         });
-        
+
         // Remove the vehicle from linked vehicles and re-render
         characterActors.forEach(async (char: any) => {
           const linkedVehicles = (char.system as any)?.linkedVehicles || [];
           const updatedLinkedVehicles = linkedVehicles.filter((uuid: string) => uuid !== vehicleUuid);
           await char.update({ 'system.linkedVehicles': updatedLinkedVehicles });
-          
+
           if (char.sheet && char.sheet.rendered) {
             char.sheet.render(false);
           }
         });
       }
     });
-    
+
     // Hook to duplicate linked vehicles when duplicating a character actor
     // This ensures the duplicated character has its own copies of vehicles
     Hooks.on('createActor', async (actor: any, options: any, userId: string) => {
       // Only process if this is from the current user
       if (game.user?.id !== userId) return;
-      
+
       // Skip if this is a vehicle being created as part of duplication (to avoid infinite loop)
       if (options.sra2VehicleDuplication) return;
-      
+
       // Only process character actors
       if (actor.type !== 'character') return;
-      
+
       // Get linked vehicles
       const linkedVehicles = (actor.system as any)?.linkedVehicles || [];
       if (linkedVehicles.length === 0) return;
-      
+
       // Check if any of these vehicles belong to another actor (meaning this is a duplicate)
       // If the vehicle's UUID points to an existing vehicle that's also linked to another character,
       // we need to duplicate the vehicles
-      const existingCharacters = (game.actors as any).filter((a: any) => 
+      const existingCharacters = (game.actors as any).filter((a: any) =>
         a.type === 'character' && a.id !== actor.id
       );
-      
+
       let needsDuplication = false;
       for (const vehicleUuid of linkedVehicles) {
         for (const otherChar of existingCharacters) {
@@ -447,14 +451,14 @@ export class SRA2System {
         }
         if (needsDuplication) break;
       }
-      
+
       if (!needsDuplication) return;
-      
+
       console.log(SYSTEM.LOG.HEAD + `Duplicating linked vehicles for actor ${actor.name}`);
-      
+
       // Duplicate each linked vehicle and update references
       const newVehicleUuids: string[] = [];
-      
+
       for (const vehicleUuid of linkedVehicles) {
         try {
           // Get the original vehicle
@@ -463,14 +467,14 @@ export class SRA2System {
             console.warn(SYSTEM.LOG.HEAD + `Could not find vehicle ${vehicleUuid} for duplication`);
             continue;
           }
-          
+
           // Create a duplicate of the vehicle
           const vehicleData = originalVehicle.toObject();
           delete vehicleData._id;
           vehicleData.name = `${originalVehicle.name} (${actor.name})`;
-          
+
           const [newVehicle] = await Actor.createDocuments([vehicleData], { sra2VehicleDuplication: true } as any);
-          
+
           if (newVehicle) {
             newVehicleUuids.push(newVehicle.uuid);
             console.log(SYSTEM.LOG.HEAD + `Duplicated vehicle ${originalVehicle.name} -> ${newVehicle.name}`);
@@ -479,35 +483,35 @@ export class SRA2System {
           console.error(SYSTEM.LOG.HEAD + `Error duplicating vehicle ${vehicleUuid}:`, error);
         }
       }
-      
+
       // Update the actor's linkedVehicles with the new UUIDs
       if (newVehicleUuids.length > 0) {
         await actor.update({ 'system.linkedVehicles': newVehicleUuids });
         console.log(SYSTEM.LOG.HEAD + `Updated ${actor.name} with ${newVehicleUuids.length} duplicated vehicles`);
       }
     });
-    
+
     // Hook to handle feat choice configuration when dropping a token
     // This displays a dialog for optional/choice feats before creating the token
     Hooks.on('preCreateToken', (tokenDoc: any, _data: any, options: any, userId: string) => {
       // Only process if this is from the current user
       if (game.user?.id !== userId) return true;
-      
+
       // Skip if this is a token being created after the dialog (to avoid infinite loop)
       if (options.sra2SkipFeatChoice) return true;
-      
+
       // Get the source actor
       const actor = tokenDoc.actor;
       if (!actor) return true;
-      
+
       // Process both character and NPC actors (but not vehicles or ICE)
       if (actor.type !== 'character') return true;
-      
+
       // Get feats with isOptional or isAChoice set
       const allFeats = actor.items.filter((item: any) => item.type === 'feat');
       const optionalFeats = allFeats.filter((feat: any) => (feat.system as any).isOptional === true);
       const choiceFeats = allFeats.filter((feat: any) => (feat.system as any).isAChoice === true);
-      
+
       // Calculate the total numberOfChoice from all feats that have it
       // Each feat with isAChoice contributes its own numberOfChoice
       let totalNumberOfChoice = 0;
@@ -519,37 +523,37 @@ export class SRA2System {
           break;
         }
       }
-      
+
       // If no optional or choice feats, continue normally
       if (optionalFeats.length === 0 && choiceFeats.length === 0) {
         return true;
       }
-      
+
       // Prevent default token creation - we'll handle it after dialog
       // Store data for later token creation
       const tokenData = tokenDoc.toObject();
       const sceneId = tokenDoc.parent?.id;
-      
+
       // Show dialog asynchronously and handle token creation
       (async () => {
         // Import and show the dialog
         const { FeatChoiceDialog } = await import('./applications/feat-choice-dialog.js');
-        
+
         const selections = await FeatChoiceDialog.show(
-          actor, 
-          optionalFeats.map((f: any) => f.toObject()), 
-          choiceFeats.map((f: any) => f.toObject()), 
+          actor,
+          optionalFeats.map((f: any) => f.toObject()),
+          choiceFeats.map((f: any) => f.toObject()),
           totalNumberOfChoice || choiceFeats.length
         );
-        
+
         // If dialog was cancelled, don't create the token
         if (!selections) {
           return;
         }
-        
+
         // Prepare item updates for the synthetic actor
         const itemUpdates: any[] = [];
-        
+
         // Process optional feats - activate selected, deactivate others
         for (const feat of optionalFeats) {
           const isSelected = selections.optional.includes(feat.id);
@@ -558,7 +562,7 @@ export class SRA2System {
             'system.active': isSelected
           });
         }
-        
+
         // Process choice feats - activate only selected ones, deactivate others
         for (const feat of choiceFeats) {
           const isSelected = selections.choices.includes(feat.id);
@@ -567,13 +571,13 @@ export class SRA2System {
             'system.active': isSelected
           });
         }
-        
+
         // Create the token manually after dialog with skip flag to avoid re-triggering
         const scene = sceneId ? game.scenes?.get(sceneId) : null;
         if (scene) {
           const createOptions = { ...options, sra2SkipFeatChoice: true };
           const [createdToken] = await (scene as any).createEmbeddedDocuments('Token', [tokenData], createOptions);
-          
+
           // Apply feat updates to the synthetic actor
           if (createdToken && itemUpdates.length > 0) {
             const syntheticActor = createdToken.actor;
@@ -584,68 +588,68 @@ export class SRA2System {
           }
         }
       })();
-      
+
       // Cancel the original token creation - we'll create it manually after dialog
       return false;
     });
-    
+
     // Register feat sheet
     DocumentSheetConfig.registerSheet(Item, "sra2", applications.FeatSheet, {
       types: ["feat"],
       makeDefault: true,
       label: "SRA2.SHEET.FEAT"
     });
-    
+
     // Register skill sheet
     DocumentSheetConfig.registerSheet(Item, "sra2", applications.SkillSheet, {
       types: ["skill"],
       makeDefault: true,
       label: "SRA2.SHEET.SKILL"
     });
-    
+
     // Register specialization sheet
     DocumentSheetConfig.registerSheet(Item, "sra2", applications.SpecializationSheet, {
       types: ["specialization"],
       makeDefault: true,
       label: "SRA2.SHEET.SPECIALIZATION"
     });
-    
+
     // Register metatype sheet
     DocumentSheetConfig.registerSheet(Item, "sra2", applications.MetatypeSheet, {
       types: ["metatype"],
       makeDefault: true,
       label: "SRA2.SHEET.METATYPE"
     });
-    
+
     // Register Handlebars helpers
-    Handlebars.registerHelper('add', function(a: number, b: number) {
+    Handlebars.registerHelper('add', function (a: number, b: number) {
       return a + b;
     });
-    
-    Handlebars.registerHelper('eq', function(a: any, b: any) {
+
+    Handlebars.registerHelper('eq', function (a: any, b: any) {
       return a === b;
     });
-    
-    Handlebars.registerHelper('gt', function(a: any, b: any) {
+
+    Handlebars.registerHelper('gt', function (a: any, b: any) {
       return a > b;
     });
-    
-    Handlebars.registerHelper('gte', function(a: any, b: any) {
+
+    Handlebars.registerHelper('gte', function (a: any, b: any) {
       return a >= b;
     });
-    
-    Handlebars.registerHelper('concat', function(...args: any[]) {
+
+    Handlebars.registerHelper('concat', function (...args: any[]) {
       // Remove the last argument which is the Handlebars options object
       const values = args.slice(0, -1);
       return values.join('');
     });
-    
-    Handlebars.registerHelper('uppercase', function(str: string) {
+
+    Handlebars.registerHelper('uppercase', function (str: string) {
       return str ? str.toUpperCase() : '';
     });
-    
+
     // Helper to check if a dice result is a success based on roll mode
-    Handlebars.registerHelper('isSuccess', function(result: number, rollMode: string) {
+    Handlebars.registerHelper('isSuccess', function (result: number, rollMode: string) {
       if (rollMode === 'advantage') {
         return result >= 4;
       } else if (rollMode === 'disadvantage') {
@@ -654,62 +658,62 @@ export class SRA2System {
         return result >= 5;
       }
     });
-    
+
     // Helper to multiply two numbers
-    Handlebars.registerHelper('multiply', function(a: number, b: number) {
+    Handlebars.registerHelper('multiply', function (a: number, b: number) {
       return a * b;
     });
-    
+
     // Helper to check if two values are not equal
-    Handlebars.registerHelper('ne', function(a: any, b: any) {
+    Handlebars.registerHelper('ne', function (a: any, b: any) {
       return a !== b;
     });
-    
+
     // Helper to stringify JSON
-    Handlebars.registerHelper('json', function(context: any) {
+    Handlebars.registerHelper('json', function (context: any) {
       return JSON.stringify(context);
     });
-    
+
     // Register chat message hook for apply damage buttons
     Hooks.on('renderChatMessage', (message: any, html: any) => {
       // Remove existing handlers first to prevent duplicates
       html.find('.apply-damage-button').off('click');
-      
+
       html.find('.apply-damage-button').on('click', async (event: any) => {
         event.preventDefault();
         event.stopImmediatePropagation(); // Prevent other handlers from executing
-        
+
         const button = $(event.currentTarget);
-        
+
         // Check if button is already disabled to prevent double-clicks
         if (button.prop('disabled')) {
           return;
         }
-        
+
         // Template uses data-target-uuid, not data-defender-uuid
         const targetUuid = button.data('target-uuid') || button.data('defender-uuid');
         const damage = parseInt(button.data('damage')) || 0;
         const targetName = button.data('target-name') || button.data('defender-name');
-        
+
         // Get damage type from button's data attribute (set from weapon's damageType in template)
         const damageType = (button.data('damage-type') || 'physical') as 'physical' | 'mental' | 'matrix';
-        
+
         if (!targetUuid) {
           console.error('Apply damage button: No target UUID found in button data attributes');
           ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET'));
           return;
         }
-        
+
         if (damage <= 0) {
           ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.NO_DAMAGE_TO_APPLY'));
           return;
         }
-        
+
         // Disable button to prevent double-click
         button.prop('disabled', true);
-        
+
         console.log('Apply damage button clicked:', { targetUuid, targetName, damage, damageType });
-        
+
         try {
           await CombatHelpers.applyDamage(targetUuid, damage, targetName, damageType);
         } catch (error) {
@@ -723,10 +727,10 @@ export class SRA2System {
 
       // Defense button handler - remove existing handlers first to prevent duplicates
       html.find('.defend-button').off('click');
-      
+
       html.find('.defend-button').on('click', async (event: any) => {
         event.preventDefault();
-        
+
         // Get data from message flags (more reliable)
         const messageFlags = message.flags?.sra2;
         if (!messageFlags) {
@@ -736,7 +740,7 @@ export class SRA2System {
 
         const rollResult = messageFlags.rollResult;
         const rollData = messageFlags.rollData;
-        
+
         if (!rollResult || !rollData) {
           console.error('Missing roll data in message flags');
           return;
@@ -747,7 +751,7 @@ export class SRA2System {
         let defenderToken: any = null;
         let attacker: any = null;
         let defender: any = null;
-        
+
         // Log all flags for debugging
         console.log('=== DEFENSE BUTTON - MESSAGE FLAGS ===');
         console.log('attackerUuid flag:', messageFlags.attackerUuid || 'Not set');
@@ -757,7 +761,7 @@ export class SRA2System {
         console.log('defenderTokenUuid flag:', messageFlags.defenderTokenUuid || 'Not set');
         console.log('defenderId flag:', messageFlags.defenderId || 'Not set');
         console.log('======================================');
-        
+
         // Use attacker UUID directly from flags (already correctly calculated)
         // Priority: 1) attackerUuid from flags (already calculated correctly), 2) attackerTokenUuid from flags
         if (messageFlags.attackerUuid) {
@@ -770,7 +774,7 @@ export class SRA2System {
             console.warn('Defense button: Failed to load attacker from attackerUuid flag:', e);
           }
         }
-        
+
         // Get attacker token from UUID if available (priority: flag > canvas search)
         if (messageFlags.attackerTokenUuid) {
           try {
@@ -784,24 +788,24 @@ export class SRA2System {
             console.warn('Defense button: Failed to load attacker token from attackerTokenUuid flag:', e);
           }
         }
-        
+
         // Fallback: try to get actor and find token on canvas (only if flags didn't work)
         if (!attacker) {
           if (messageFlags.attackerId) {
             attacker = game.actors?.get(messageFlags.attackerId) || null;
           }
-          
+
           if (attacker && !attackerToken) {
             attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
               return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
             }) || null;
           }
         }
-        
+
         // Check if this is a vehicle weapon attack
         const isVehicleWeapon = rollData.isVehicleWeapon;
         const vehicleUuid = rollData.vehicleUuid;
-        
+
         // For vehicle weapons, prioritize selected targets over flags to avoid using the drone as defender
         // The defender should be the target, not the vehicle/drone itself
         const selectedTargets = Array.from(game.user?.targets || []);
@@ -813,7 +817,7 @@ export class SRA2System {
             console.log('Defense button: For vehicle weapon, using selected target as defender:', defender?.name);
           }
         }
-        
+
         // Use defender UUID directly from flags (already correctly calculated)
         // Priority: 1) defenderUuid from flags (already calculated correctly), 2) defenderTokenUuid from flags
         // Skip if we already have a defender from selected targets for vehicle weapons
@@ -833,7 +837,7 @@ export class SRA2System {
             console.warn('Defense button: Failed to load defender from defenderUuid flag:', e);
           }
         }
-        
+
         // Get defender token from UUID if available (priority: flag > canvas search)
         // Skip if we already have a defender from selected targets for vehicle weapons
         if (!defenderToken && messageFlags.defenderTokenUuid) {
@@ -864,7 +868,7 @@ export class SRA2System {
             console.warn('Defense button: Failed to load defender token from defenderTokenUuid flag:', e);
           }
         }
-        
+
         // Fallback: try to get actor and find token on canvas (only if flags didn't work)
         if (!defender) {
           if (messageFlags.defenderId) {
@@ -878,7 +882,7 @@ export class SRA2System {
               }
             }
           }
-          
+
           if (defender && !defenderToken) {
             defenderToken = canvas?.tokens?.placeables?.find((token: any) => {
               return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
@@ -901,7 +905,7 @@ export class SRA2System {
           // Fallback to flag UUID only if we don't have a valid defender
           defenderUuid = messageFlags.defenderUuid || defender?.uuid || 'Unknown';
         }
-        
+
         // Log the UUIDs that will be used
         console.log('--- UUIDs being used from flags ---');
         console.log('attackerUuid (from flag):', messageFlags.attackerUuid || 'Not in flag, using:', attacker?.uuid || 'Unknown');
@@ -937,7 +941,7 @@ export class SRA2System {
 
         // Check if defender is a vehicle (vehicles use autopilot instead of defense skill)
         const isVehicleDefender = defender?.type === 'vehicle';
-        
+
         // Open defense roll dialog
         if (!defender) {
           console.error('Missing defender');
@@ -948,7 +952,7 @@ export class SRA2System {
         // For NPCs, the actor is linked to the token, so we need to use the token's actor
         let defenderTokenForRoll: any = null;
         let defenderActorForRoll: any = defender; // Default to defender actor
-        
+
         // For vehicle weapons, use the defender we already found (which should be the target, not the drone)
         if (isVehicleWeapon && defenderToken) {
           defenderTokenForRoll = defenderToken;
@@ -1000,12 +1004,12 @@ export class SRA2System {
 
         // Check if this is an ICE attack
         const isIceAttack = messageFlags.rollType === 'ice-attack' || rollData.itemType === 'ice-attack';
-        
+
         // Determine which skill/spec to use for defense
         // Priority: 1) attack spec from weapon (if using weapon for defense), 2) defenseSpec if found, 3) defenseSkill if found, 4) fallback based on attack type
         let finalDefenseSkill: string | null = null;
         let finalDefenseSpec: string | null = null;
-        
+
         // For ICE attacks, always use Piratage (cybercombat)
         if (isIceAttack) {
           finalDefenseSkill = 'Piratage';
@@ -1019,7 +1023,7 @@ export class SRA2System {
             finalDefenseSpec = 'Cybercombat';
           }
         }
-        
+
         // First, try to use the attack specialization from the weapon (if defending with a weapon)
         // This allows using "Lames" specialization when defending with a short weapon
         // Priority: use attack spec over defense spec when defending with a weapon
@@ -1036,10 +1040,10 @@ export class SRA2System {
             finalDefenseSkill = specSystem.linkedSkill;
           }
         }
-        
+
         // Try to find the defense spec (from weapon's linkedDefenseSpecialization)
         if (!finalDefenseSpec && defenseSpec) {
-          const spec = defenderActorForRoll.items.find((item: any) => 
+          const spec = defenderActorForRoll.items.find((item: any) =>
             item.type === 'specialization' && item.name === defenseSpec
           );
           if (spec) {
@@ -1049,17 +1053,17 @@ export class SRA2System {
             finalDefenseSkill = linkedSkillName;
           }
         }
-        
+
         // If spec not found, try to find the defense skill
         if (!finalDefenseSpec && defenseSkill) {
-          const skill = defenderActorForRoll.items.find((item: any) => 
+          const skill = defenderActorForRoll.items.find((item: any) =>
             item.type === 'skill' && item.name === defenseSkill
           );
           if (skill) {
             finalDefenseSkill = defenseSkill;
           }
         }
-        
+
         // Calculate skill/spec levels for defender (use token's actor for NPCs)
         let defenseSkillLevel: number | undefined = undefined;
         let defenseSpecLevel: number | undefined = undefined;
@@ -1086,13 +1090,13 @@ export class SRA2System {
 
           // Calculate skill/spec levels for defender
           if (finalDefenseSpec) {
-            const spec = defenderActorForRoll.items.find((item: any) => 
+            const spec = defenderActorForRoll.items.find((item: any) =>
               item.type === 'specialization' && item.name === finalDefenseSpec
             );
             if (spec) {
               const specSystem = spec.system as any;
               const linkedSkillName = specSystem.linkedSkill;
-              const linkedSkill = defenderActorForRoll.items.find((item: any) => 
+              const linkedSkill = defenderActorForRoll.items.find((item: any) =>
                 item.type === 'skill' && item.name === linkedSkillName
               );
               if (linkedSkill) {
@@ -1100,13 +1104,13 @@ export class SRA2System {
                 const specRating = specSystem.rating || 0;
                 defenseLinkedAttribute = specSystem.linkedAttribute || (linkedSkill.system as any).linkedAttribute || 'strength';
                 const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
-                
+
                 defenseSkillLevel = attributeValue + skillRating;
                 defenseSpecLevel = defenseSkillLevel + specRating;
               }
             }
           } else if (finalDefenseSkill) {
-            const skill = defenderActorForRoll.items.find((item: any) => 
+            const skill = defenderActorForRoll.items.find((item: any) =>
               item.type === 'skill' && item.name === finalDefenseSkill
             );
             if (skill) {
@@ -1114,7 +1118,7 @@ export class SRA2System {
               const skillRating = skillSystem.rating || 0;
               defenseLinkedAttribute = skillSystem.linkedAttribute || 'strength';
               const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
-              
+
               defenseSkillLevel = attributeValue + skillRating;
             }
           }
@@ -1151,7 +1155,7 @@ export class SRA2System {
         // For defense: attacker = defender (one defending), defender = original attacker
         const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || messageFlags.attackerTokenUuid || undefined;
         const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || messageFlags.defenderTokenUuid || undefined;
-        
+
         // Prepare defense roll data
         // In defense context:
         // - attacker = defender (one defending) -> attackerTokenUuid should be defender's token
@@ -1163,22 +1167,22 @@ export class SRA2System {
           linkedAttribute: defenseLinkedAttribute,
           skillLevel: defenseSkillLevel,
           specLevel: defenseSpecLevel,
-          
+
           // Actor is the defender - for vehicle weapons, use the actual defender (target) UUID, not the vehicle
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid, // Use the actual defender actor UUID (target, not drone)
-          
+
           // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
           attackerTokenUuid: defenderTokenUuid, // Defender's token (one defending) - this is what will be attacker in RollDialog
           defenderTokenUuid: originalAttackerTokenUuid, // Original attacker's token (target) - this is what will be target/defender in RollDialog
-          
+
           // RR List
           rrList: defenseRRList,
-          
+
           // Defense flags
           isDefend: true,
           isCounterAttack: false,
-          
+
           // Store original attack roll data for comparison
           attackRollResult: rollResult,
           attackRollData: rollData
@@ -1187,13 +1191,13 @@ export class SRA2System {
         // Import and open RollDialog
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(defenseRollData);
-        
+
         // Set target token to original attacker's token (in defense context, target = original attacker)
         // For vehicle weapons, this should be the character's token (the one who attacked), not the drone
         if (attackerToken) {
           (dialog as any).targetToken = attackerToken;
         }
-        
+
         // For vehicle weapons, make sure we don't use the vehicle as target
         // The target should be the character who attacked with the drone weapon
         if (isVehicleWeapon && vehicleUuid) {
@@ -1209,16 +1213,16 @@ export class SRA2System {
             }
           }
         }
-        
+
         dialog.render(true);
       });
 
       // Counter-attack button handler - remove existing handlers first to prevent duplicates
       html.find('.counter-attack-button').off('click');
-      
+
       html.find('.counter-attack-button').on('click', async (event: any) => {
         event.preventDefault();
-        
+
         // Get data from message flags (more reliable)
         const messageFlags = message.flags?.sra2;
         if (!messageFlags) {
@@ -1228,7 +1232,7 @@ export class SRA2System {
 
         const rollResult = messageFlags.rollResult;
         const rollData = messageFlags.rollData;
-        
+
         if (!rollResult || !rollData) {
           console.error('Missing roll data in message flags');
           return;
@@ -1239,7 +1243,7 @@ export class SRA2System {
         let defenderToken: any = null;
         let attacker: any = null;
         let defender: any = null;
-        
+
         // Log all flags for debugging
         console.log('=== COUNTER-ATTACK BUTTON - MESSAGE FLAGS ===');
         console.log('attackerUuid flag:', messageFlags.attackerUuid || 'Not set');
@@ -1249,7 +1253,7 @@ export class SRA2System {
         console.log('defenderTokenUuid flag:', messageFlags.defenderTokenUuid || 'Not set');
         console.log('defenderId flag:', messageFlags.defenderId || 'Not set');
         console.log('==============================================');
-        
+
         // Use attacker UUID directly from flags (already correctly calculated)
         // Priority: 1) attackerUuid from flags (already calculated correctly), 2) attackerTokenUuid from flags
         if (messageFlags.attackerUuid) {
@@ -1262,7 +1266,7 @@ export class SRA2System {
             console.warn('Counter-attack button: Failed to load attacker from attackerUuid flag:', e);
           }
         }
-        
+
         // Get attacker token from UUID if available (priority: flag > canvas search)
         if (messageFlags.attackerTokenUuid) {
           try {
@@ -1276,20 +1280,20 @@ export class SRA2System {
             console.warn('Counter-attack button: Failed to load attacker token from attackerTokenUuid flag:', e);
           }
         }
-        
+
         // Fallback: try to get actor and find token on canvas (only if flags didn't work)
         if (!attacker) {
           if (messageFlags.attackerId) {
             attacker = game.actors?.get(messageFlags.attackerId) || null;
           }
-          
+
           if (attacker && !attackerToken) {
             attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
               return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
             }) || null;
           }
         }
-        
+
         // Use defender UUID directly from flags (already correctly calculated)
         // Priority: 1) defenderUuid from flags (already calculated correctly), 2) defenderTokenUuid from flags
         if (messageFlags.defenderUuid) {
@@ -1302,7 +1306,7 @@ export class SRA2System {
             console.warn('Counter-attack button: Failed to load defender from defenderUuid flag:', e);
           }
         }
-        
+
         // Get defender token from UUID if available (priority: flag > canvas search)
         if (messageFlags.defenderTokenUuid) {
           try {
@@ -1316,13 +1320,13 @@ export class SRA2System {
             console.warn('Counter-attack button: Failed to load defender token from defenderTokenUuid flag:', e);
           }
         }
-        
+
         // Fallback: try to get actor and find token on canvas (only if flags didn't work)
         if (!defender) {
           if (messageFlags.defenderId) {
             defender = game.actors?.get(messageFlags.defenderId) || null;
           }
-          
+
           if (defender && !defenderToken) {
             defenderToken = canvas?.tokens?.placeables?.find((token: any) => {
               return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
@@ -1340,7 +1344,7 @@ export class SRA2System {
         console.log('defender loaded:', defender ? `${defender.name} (${defender.uuid})` : 'Not loaded');
         console.log('attackerToken loaded:', attackerToken ? `Found (${attackerToken.uuid || attackerToken.document?.uuid})` : 'Not loaded');
         console.log('defenderToken loaded:', defenderToken ? `Found (${defenderToken.uuid || defenderToken.document?.uuid})` : 'Not loaded');
-        
+
         // Open counter-attack roll dialog
         if (!defender) {
           console.error('Missing defender');
@@ -1352,7 +1356,7 @@ export class SRA2System {
         // Use defenderTokenUuid directly from flags (already correctly calculated)
         let defenderTokenForRoll: any = null;
         let defenderActorForRoll: any = defender; // Default to defender actor
-        
+
         const defenderTokenUuidForCounter = messageFlags.defenderTokenUuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
         if (defenderTokenUuidForCounter) {
           try {
@@ -1385,18 +1389,18 @@ export class SRA2System {
 
         // Import WEAPON_TYPES to check melee capability
         const { WEAPON_TYPES } = await import('./models/item-feat.js');
-        
+
         // Filter weapons that:
         // 1. Have melee "ok" or "disadvantage"
         // 2. Are linked to "Combat rapproché" skill or a specialization of "Combat rapproché"
         const defenderWeapons = allWeapons.filter((weapon: any) => {
           const weaponSystem = weapon.system as any;
           const weaponType = weaponSystem.weaponType;
-          
+
           // Check meleeRange in weapon system
           const meleeRange = weaponSystem.meleeRange || 'none';
           const hasMeleeInSystem = meleeRange === 'ok' || meleeRange === 'disadvantage';
-          
+
           // Check melee in weapon type
           let hasMeleeInType = false;
           if (weaponType && weaponType !== 'custom-weapon') {
@@ -1405,12 +1409,12 @@ export class SRA2System {
               hasMeleeInType = weaponStats.melee === 'ok' || weaponStats.melee === 'disadvantage';
             }
           }
-          
+
           // Must have melee capability
           if (!hasMeleeInSystem && !hasMeleeInType) {
             return false;
           }
-          
+
           // Get linked attack skill
           let linkedAttackSkill = weaponSystem.linkedAttackSkill;
 
@@ -1421,40 +1425,40 @@ export class SRA2System {
               linkedAttackSkill = weaponStats.linkedSkill;
             }
           }
-          
+
           // Must be linked to "Combat rapproché" skill
           if (linkedAttackSkill === 'Combat rapproché') {
             return true;
           }
-          
+
           // Check if weapon has a specialization linked to "Combat rapproché"
           // Look for specializations linked to "Combat rapproché" in the actor's items
-          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) => 
-            item.type === 'specialization' && 
+          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) =>
+            item.type === 'specialization' &&
             item.system.linkedSkill === 'Combat rapproché'
           );
-          
+
           // Check if weapon's linkedAttackSkill matches any specialization name
           if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
-            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) => 
+            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) =>
               spec.name === linkedAttackSkill
             );
             if (hasCombatRapprocheSpec) {
               return true;
             }
           }
-          
+
           // Also check weapon's linkedAttackSpecialization
           const linkedAttackSpecialization = weaponSystem.linkedAttackSpecialization;
           if (linkedAttackSpecialization) {
-            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) => 
+            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) =>
               spec.name === linkedAttackSpecialization
             );
             if (hasCombatRapprocheSpec) {
               return true;
             }
           }
-          
+
           return false;
         });
 
@@ -1482,23 +1486,23 @@ export class SRA2System {
           const weaponSystem = weapon.system as any;
           const weaponType = weaponSystem.weaponType;
           let linkedAttackSkill = weaponSystem.linkedAttackSkill;
-          
+
           // If no linkedAttackSkill, try to get it from weapon type
           if (!linkedAttackSkill && weaponType && weaponType !== 'custom-weapon') {
             const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
             if (weaponStats) {
               linkedAttackSkill = weaponStats.linkedSkill;
             }
-        }
+          }
 
           // Check if linkedAttackSkill is a specialization of "Combat rapproché"
-          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) => 
-            item.type === 'specialization' && 
+          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) =>
+            item.type === 'specialization' &&
             item.system.linkedSkill === 'Combat rapproché'
           );
-          
+
           if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
-            const isCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) => 
+            const isCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) =>
               spec.name === linkedAttackSkill
             );
             if (isCombatRapprocheSpec) {
@@ -1512,12 +1516,12 @@ export class SRA2System {
             // Default to "Combat rapproché" if still no skill
             linkedAttackSkill = 'Combat rapproché';
           }
-          
+
           // Get weapon stats from WEAPON_TYPES if weapon type exists
-          const weaponStats = weaponType && weaponType !== 'custom-weapon' 
-            ? WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES] 
+          const weaponStats = weaponType && weaponType !== 'custom-weapon'
+            ? WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES]
             : undefined;
-          
+
           return {
             id: weapon.id,
             name: weapon.name,
@@ -1535,26 +1539,26 @@ export class SRA2System {
         // Get token UUIDs
         const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
         const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
-        
+
         // Prepare counter-attack roll data with available weapons
         // Use UUIDs directly from flags (already correctly calculated)
         const counterAttackRollData: any = {
           // Actor is the defender - use UUID directly from flags (already correctly calculated)
           actorId: defenderActorForRoll.id,
           actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid, // Use flag UUID first
-          
+
           // Token UUIDs - for counter-attack, the defender becomes the attacker
           // Use UUIDs directly from flags (already correctly calculated)
           attackerTokenUuid: messageFlags.defenderTokenUuid || counterAttackerTokenUuid, // Token of the defender (who is counter-attacking)
           defenderTokenUuid: messageFlags.attackerTokenUuid || originalAttackerTokenUuid, // Token of the original attacker
-          
+
           // Available weapons for selection
           availableWeapons: availableWeapons,
-          
+
           // Counter-attack flags
           isDefend: false,
           isCounterAttack: true,
-          
+
           // Store original attack roll data for comparison
           attackRollResult: rollResult,
           attackRollData: rollData
@@ -1563,27 +1567,27 @@ export class SRA2System {
         // Import and open RollDialog
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(counterAttackRollData);
-        
+
         // Note: targetToken should already be loaded from defenderTokenUuid in RollDialog constructor
         // Only set it manually if it wasn't loaded from UUID (fallback)
         if (attackerToken && !(dialog as any).targetToken) {
           (dialog as any).targetToken = attackerToken;
         }
-        
+
         dialog.render(true);
       });
     });
-    
+
     // Register token context menu hook for bookmarks/favorites
     (Hooks as any).on('getTokenHUDOptions', (_hud: any, buttons: any[], token: any) => {
       const actor = token.actor;
       if (!actor) return;
-      
+
       // Get bookmarked items
-      const bookmarkedItems = actor.items.filter((i: any) => 
+      const bookmarkedItems = actor.items.filter((i: any) =>
         (i.type === 'skill' || i.type === 'feat') && i.system.bookmarked
       );
-      
+
       if (bookmarkedItems.length > 0) {
         buttons.unshift({
           name: 'SRA2_BOOKMARKS',
@@ -1597,7 +1601,7 @@ export class SRA2System {
         });
       }
     });
-    
+
     // Function to add roll dice button to chat
     const addRollDiceButton = () => {
       // Find the chat message input form in the DOM
@@ -1605,12 +1609,12 @@ export class SRA2System {
       if (chatForm.length === 0) {
         return false;
       }
-      
+
       // Check if button already exists to avoid duplicates
       if (chatForm.find('.sra2-roll-dice-container').length > 0) {
         return true;
       }
-      
+
       // Create the roll dice container with inputs and radio
       const rollDiceContainer = $(`
         <div class="sra2-roll-dice-container">
@@ -1638,20 +1642,20 @@ export class SRA2System {
           </button>
         </div>
       `);
-      
+
       // Insert container as first element in .chat-form
       chatForm.prepend(rollDiceContainer);
-      
+
       // Add click handler to button
       const rollDiceButton = rollDiceContainer.find('.sra2-roll-dice-button');
       rollDiceButton.on('click', async (event: any) => {
         event.preventDefault();
         event.stopPropagation();
-        
+
         // Get controlled actor (first controlled token's actor, or first owned actor)
         let actor: any = null;
         const controlledTokens = canvas?.tokens?.controlled || [];
-        
+
         if (controlledTokens.length > 0) {
           actor = controlledTokens[0].actor;
         } else {
@@ -1661,49 +1665,49 @@ export class SRA2System {
             actor = ownedActors[0];
           }
         }
-        
+
         if (!actor) {
           ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.NO_ACTOR') || 'No controlled character');
           return;
         }
-        
+
         // Get values from inputs and radio
         const diceCount = parseInt(rollDiceContainer.find('.sra2-dice-count-input').val() as string) || 0;
         const riskDiceCount = parseInt(rollDiceContainer.find('.sra2-risk-dice-input').val() as string) || 0;
         const rr = parseInt(rollDiceContainer.find('.sra2-rr-input').val() as string) || 0;
         const rollMode = rollDiceContainer.find('input[name="sra2-roll-mode"]:checked').val() as string || 'normal';
-        
+
         if (diceCount <= 0) {
           ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.INVALID_DICE_COUNT'));
           return;
         }
-        
+
         // Import dice roller functions
         const DiceRoller = await import('./helpers/dice-roller.js');
         const { getSuccessThreshold } = DiceRoller;
-        
+
         // Use manual risk dice count, ensure it doesn't exceed total dice count
         const finalRiskDiceCount = Math.min(riskDiceCount, diceCount);
         const normalDiceCount = Math.max(0, diceCount - finalRiskDiceCount);
         const finalRR = Math.min(3, Math.max(0, rr));
-        
+
         // Roll dice
         let normalRoll: any = null;
         let riskRoll: any = null;
-        
+
         if (normalDiceCount > 0) {
           normalRoll = new Roll(`${normalDiceCount}d6`);
           await normalRoll.evaluate();
-          
+
           if ((game as any).dice3d && normalRoll) {
             (game as any).dice3d.showForRoll(normalRoll, game.user, true, null, false);
           }
         }
-        
+
         if (finalRiskDiceCount > 0) {
           riskRoll = new Roll(`${finalRiskDiceCount}d6`);
           await riskRoll.evaluate();
-          
+
           if ((game as any).dice3d && riskRoll) {
             const dice3dConfig = {
               colorset: 'purple',
@@ -1712,13 +1716,13 @@ export class SRA2System {
             (game as any).dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
           }
         }
-        
+
         // Calculate results
         const normalResults: number[] = normalRoll ? (normalRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
         const riskResults: number[] = riskRoll ? (riskRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
-        
+
         const successThreshold = getSuccessThreshold(rollMode);
-        
+
         // Calculate successes for normal dice
         let normalSuccesses = 0;
         for (const result of normalResults) {
@@ -1726,7 +1730,7 @@ export class SRA2System {
             normalSuccesses++;
           }
         }
-        
+
         // Calculate successes and critical failures for risk dice
         let riskSuccesses = 0;
         let criticalFailures = 0;
@@ -1737,14 +1741,14 @@ export class SRA2System {
             riskSuccesses++;
           }
         }
-        
+
         // Risk dice successes count double
         const totalRiskSuccesses = riskSuccesses * 2;
         const totalSuccesses = normalSuccesses + totalRiskSuccesses;
-        
+
         // Calculate complications
         const remainingFailures = Math.max(0, criticalFailures - finalRR);
-        
+
         let complication: 'none' | 'minor' | 'critical' | 'disaster' = 'none';
         if (remainingFailures === 1) {
           complication = 'minor';
@@ -1753,7 +1757,7 @@ export class SRA2System {
         } else if (remainingFailures >= 3) {
           complication = 'disaster';
         }
-        
+
         const rollResult = {
           normalDice: normalResults,
           riskDice: riskResults,
@@ -1765,11 +1769,11 @@ export class SRA2System {
           remainingFailures: remainingFailures,
           complication: complication
         };
-        
+
         // Get actor token if available
         const actorTokens = canvas?.tokens?.controlled || [];
         const actorToken = actorTokens.length > 0 ? actorTokens[0] : null;
-        
+
         // Create roll data for template
         const rollData: any = {
           dicePool: diceCount,
@@ -1780,7 +1784,7 @@ export class SRA2System {
           actorUuid: actor.uuid,
           actorName: actor.name
         };
-        
+
         // Prepare template data
         const templateData: any = {
           attacker: actor,
@@ -1799,10 +1803,10 @@ export class SRA2System {
           attackerTokenUuid: (actorToken as any)?.uuid || (actorToken as any)?.document?.uuid,
           defenderTokenUuid: null
         };
-        
+
         // Render template
         const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);
-        
+
         // Create chat message
         const messageData: any = {
           user: game.user?.id,
@@ -1823,13 +1827,13 @@ export class SRA2System {
             }
           }
         };
-        
+
         await ChatMessage.create(messageData);
       });
-      
+
       return true;
     };
-    
+
     // Register chat log hook to add roll dice button
     // Using a more generic approach that works with Foundry's hook system
     Hooks.on('renderChatLog' as any, (app: any, html: any, data: any) => {
@@ -1841,7 +1845,7 @@ export class SRA2System {
         }
       }, 100);
     });
-    
+
     // Also register for chat popout
     Hooks.on('renderChatPopout' as any, (app: any, html: any, data: any) => {
       setTimeout(() => {
@@ -1850,17 +1854,17 @@ export class SRA2System {
         }
       }, 100);
     });
-    
+
     // Use MutationObserver to watch for chat form appearance (more robust)
     Hooks.once('ready', () => {
       // Try immediately
       addRollDiceButton();
-      
+
       // Also set up a MutationObserver to watch for chat form
       const observer = new MutationObserver(() => {
         addRollDiceButton();
       });
-      
+
       // Observe the document body for changes
       if (document.body) {
         observer.observe(document.body, {
@@ -1869,19 +1873,19 @@ export class SRA2System {
         });
       }
     });
-    
+
     Hooks.once("ready", () => this.onReady());
   }
-  
+
   /**
    * Show bookmarks/favorites dialog for quick actions
    */
   showBookmarksDialog(actor: any): void {
     const bookmarkedSkills = actor.items.filter((i: any) => i.type === 'skill' && i.system.bookmarked);
     const bookmarkedFeats = actor.items.filter((i: any) => i.type === 'feat' && i.system.bookmarked);
-    
+
     let content = '<div class="sra2-bookmark-menu">';
-    
+
     if (bookmarkedSkills.length > 0) {
       content += '<h3>' + game.i18n!.localize('SRA2.SKILLS.LABEL') + '</h3>';
       content += '<div class="bookmark-list">';
@@ -1892,7 +1896,7 @@ export class SRA2System {
       });
       content += '</div>';
     }
-    
+
     if (bookmarkedFeats.length > 0) {
       content += '<h3>' + game.i18n!.localize('SRA2.FEATS.LABEL') + '</h3>';
       content += '<div class="bookmark-list">';
@@ -1903,9 +1907,9 @@ export class SRA2System {
       });
       content += '</div>';
     }
-    
+
     content += '</div>';
-    
+
     new Dialog({
       title: game.i18n!.localize('SRA2.BOOKMARKS.TITLE') + ' - ' + actor.name,
       content,
@@ -1920,7 +1924,7 @@ export class SRA2System {
           const itemId = $(event.currentTarget).data('item-id');
           const item = actor.items.get(itemId);
           if (!item) return;
-          
+
           // Open item sheet
           item.sheet?.render(true);
         });
@@ -1953,6 +1957,18 @@ export class SRA2System {
   /**
    * Register the Group Anarchy setting
    */
+  /**
+   * Initialize Babele translations if the module is available
+   */
+  initializeBabele(): void {
+    if (
+      game.babele &&
+      game.babele.modules.every((module) => module.module !== game.settings.get(CONFIG.l5r5e.namespace, "custom-compendium-name"))
+    ) {
+      game.babele.setSystemTranslationsDir("lang"); // Since Babele v2.0.7
+    }
+  }
+
   registerGroupAnarchySetting(): void {
     game.settings.register(SYSTEM.id, 'groupAnarchy', {
       name: 'SRA2.ANARCHY_COUNTER.SETTING_NAME',
@@ -1999,37 +2015,37 @@ export class SRA2System {
 
   async onReady(): Promise<void> {
     console.log(SYSTEM.LOG.HEAD + 'SRA2System.onReady');
-    
+
     // Apply theme from setting
     this.applyTheme();
-    
+
     // Initialize the Group Anarchy Counter (visible to all)
     applications.AnarchyCounter.instance.render(true);
-    
+
     // Run migrations
     const migrations = new Migrations();
     migrations.migrate();
-    
+
     // Migrate old feat data to new array format (deprecated, keeping for older versions)
     await this.migrateFeatsToArrayFormat();
-    
+
     // Migrate anarchyNimbus to anarchySpent
     await this.migrateAnarchyNimbusToSpent();
   }
-  
+
   /**
    * Migrate old feat data (single rrType/rrValue/rrTarget) to new array format
    */
   async migrateFeatsToArrayFormat(): Promise<void> {
     const featsToUpdate: any[] = [];
-    
+
     // Check all feats in the world
     for (const item of game.items! as any) {
       if ((item as any).type === 'feat') {
         const system = (item as any).system as any;
         let needsUpdate = false;
         const updates: any = { _id: (item as any).id };
-        
+
         // Check if rrType is not an array (old format)
         if (system.rrType !== undefined && !Array.isArray(system.rrType)) {
           needsUpdate = true;
@@ -2044,23 +2060,23 @@ export class SRA2System {
             updates['system.rrTarget'] = [];
           }
         }
-        
+
         if (needsUpdate) {
           featsToUpdate.push(updates);
         }
       }
     }
-    
+
     // Check all feats on actors
     for (const actor of game.actors! as any) {
       const actorUpdates: any[] = [];
-      
+
       for (const item of (actor as any).items) {
         if ((item as any).type === 'feat') {
           const system = (item as any).system as any;
           let needsUpdate = false;
           const updates: any = { _id: (item as any).id };
-          
+
           // Check if rrType is not an array (old format)
           if (system.rrType !== undefined && !Array.isArray(system.rrType)) {
             needsUpdate = true;
@@ -2075,40 +2091,40 @@ export class SRA2System {
               updates['system.rrTarget'] = [];
             }
           }
-          
+
           if (needsUpdate) {
             actorUpdates.push(updates);
           }
         }
       }
-      
+
       if (actorUpdates.length > 0) {
         console.log(`${SYSTEM.LOG.HEAD} Migrating ${actorUpdates.length} feats on actor ${(actor as any).name}`);
         await (actor as any).updateEmbeddedDocuments('Item', actorUpdates);
       }
     }
-    
+
     if (featsToUpdate.length > 0) {
       console.log(`${SYSTEM.LOG.HEAD} Migrating ${featsToUpdate.length} world feats`);
       await Item.updateDocuments(featsToUpdate);
     }
-    
+
     if (featsToUpdate.length > 0 || (game.actors! as any).some((a: any) => a.items.some((i: any) => i.type === 'feat'))) {
       console.log(`${SYSTEM.LOG.HEAD} Feat migration to array format complete`);
     }
   }
-  
+
   /**
    * Migrate anarchyNimbus to anarchySpent
    */
   async migrateAnarchyNimbusToSpent(): Promise<void> {
     const actorsToUpdate: any[] = [];
-    
+
     // Check all character actors in the world
     for (const actor of game.actors! as any) {
       if ((actor as any).type === 'character') {
         const system = (actor as any).system as any;
-        
+
         // Check if the old anarchyNimbus field exists
         if (system.anarchyNimbus !== undefined && system.anarchySpent === undefined) {
           actorsToUpdate.push({
@@ -2118,7 +2134,7 @@ export class SRA2System {
         }
       }
     }
-    
+
     if (actorsToUpdate.length > 0) {
       console.log(`${SYSTEM.LOG.HEAD} Migrating anarchyNimbus to anarchySpent for ${actorsToUpdate.length} actors`);
       await Actor.updateDocuments(actorsToUpdate);

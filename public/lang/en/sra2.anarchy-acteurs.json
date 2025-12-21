@@ -1,0 +1,808 @@
+{
+    "label": "anarchy-acteurs",
+    "mapping": {
+        "description": "system.description"
+    },
+    "entries": [
+        {
+            "id": "(à finir RR+1) Mitsubishi Nightsky (limousine)",
+            "name": "(à finir RR+1) Mitsubishi Nightsky (limouSINe)",
+            "description": ""
+        },
+        {
+            "id": "(Casper) Cyberspace Design Quadrotor - 1",
+            "name": "(Casper) Cyberspace Design Quadrotor - 1",
+            "description": ""
+        },
+        {
+            "id": "(Casper) Cyberspace Design Quadrotor - 2",
+            "name": "(Casper) Cyberspace Design Quadrotor - 2",
+            "description": ""
+        },
+        {
+            "id": "(Casper) MCT Gnat endommagé (drone volant)",
+            "name": "(Casper) MCT Gnat endommagé (drone volant)",
+            "description": ""
+        },
+        {
+            "id": "(Charon) Cyberspace Design Quadrotor",
+            "name": "(Charon) Cyberspace Design Quadrotor",
+            "description": ""
+        },
+        {
+            "id": "Acide I",
+            "name": "Acide I",
+            "description": ""
+        },
+        {
+            "id": "Acide II",
+            "name": "Acide II",
+            "description": ""
+        },
+        {
+            "id": "Acide III",
+            "name": "Acide III",
+            "description": ""
+        },
+        {
+            "id": "Acide IV",
+            "name": "Acide IV",
+            "description": ""
+        },
+        {
+            "id": "Acide V",
+            "name": "Acide V",
+            "description": ""
+        },
+        {
+            "id": "Acide VI",
+            "name": "Acide VI",
+            "description": ""
+        },
+        {
+            "id": "Acide VII",
+            "name": "Acide VII",
+            "description": ""
+        },
+        {
+            "id": "Acide VIII",
+            "name": "Acide VIII",
+            "description": ""
+        },
+        {
+            "id": "Adepte de sécurité / Police Elfe",
+            "name": "Adept de sécurité / Police Elf",
+            "description": ""
+        },
+        {
+            "id": "Adepte de sécurité / Police humain",
+            "name": "Adept de sécurité / Police Human",
+            "description": ""
+        },
+        {
+            "id": "Adepte de sécurité / Police Nain",
+            "name": "Adept de sécurité / Police Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Adepte de sécurité / Police Orc",
+            "name": "Adept de sécurité / Police Ork",
+            "description": ""
+        },
+        {
+            "id": "Adepte de sécurité / Police Troll",
+            "name": "Adept de sécurité / Police Troll",
+            "description": ""
+        },
+        {
+            "id": "Agent de sécurité Elfe",
+            "name": "Agent de sécurité Elf",
+            "description": ""
+        },
+        {
+            "id": "Agent de sécurité humain",
+            "name": "Agent de sécurité Human",
+            "description": ""
+        },
+        {
+            "id": "Agent de sécurité humain Orc",
+            "name": "Agent de sécurité Human Ork",
+            "description": ""
+        },
+        {
+            "id": "Agent de sécurité Nain",
+            "name": "Agent de sécurité Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Agent de sécurité Troll",
+            "name": "Agent de sécurité Troll",
+            "description": ""
+        },
+        {
+            "id": "Aponi",
+            "name": "Aponi",
+            "description": ""
+        },
+        {
+            "id": "Ares Humvee (SUV/Pick-up)",
+            "name": "Ares Humvee (SUV/Pick-up)",
+            "description": ""
+        },
+        {
+            "id": "Ares Roadmaster (fourgon blindé)",
+            "name": "Ares Roadmaster (fourgon blindé)",
+            "description": ""
+        },
+        {
+            "id": "Barghest",
+            "name": "Barghest",
+            "description": ""
+        },
+        {
+            "id": "Basilic",
+            "name": "Basilic",
+            "description": ""
+        },
+        {
+            "id": "Blaster I",
+            "name": "Blaster I",
+            "description": ""
+        },
+        {
+            "id": "Blaster II",
+            "name": "Blaster II",
+            "description": ""
+        },
+        {
+            "id": "Blaster III",
+            "name": "Blaster III",
+            "description": ""
+        },
+        {
+            "id": "Blaster IV",
+            "name": "Blaster IV",
+            "description": ""
+        },
+        {
+            "id": "Blaster V",
+            "name": "Blaster V",
+            "description": ""
+        },
+        {
+            "id": "Blaster VI",
+            "name": "Blaster VI",
+            "description": ""
+        },
+        {
+            "id": "Blaster VII",
+            "name": "Blaster VII",
+            "description": ""
+        },
+        {
+            "id": "Blaster VIII",
+            "name": "Blaster VIII",
+            "description": ""
+        },
+        {
+            "id": "Capitàn",
+            "name": "Capitàn",
+            "description": ""
+        },
+        {
+            "id": "Casper",
+            "name": "Casper",
+            "description": ""
+        },
+        {
+            "id": "Charon",
+            "name": "Charon",
+            "description": ""
+        },
+        {
+            "id": "Chien de l'enfer",
+            "name": "Chien de l'enfer",
+            "description": ""
+        },
+        {
+            "id": "Chopper",
+            "name": "Chopper",
+            "description": ""
+        },
+        {
+            "id": "Chrysler-Nissan Pursuit V",
+            "name": "Chrysler-Nissan Pursuit V",
+            "description": ""
+        },
+        {
+            "id": "Cocatrix",
+            "name": "Cocatrix",
+            "description": ""
+        },
+        {
+            "id": "Conestoga Vista (bus)",
+            "name": "Conestoga Vista (bus)",
+            "description": ""
+        },
+        {
+            "id": "Cyberspace Design Halo",
+            "name": "Cyberspace Design Halo",
+            "description": ""
+        },
+        {
+            "id": "Cyberspace Design Quadrotor",
+            "name": "Cyberspace Design Quadrotor",
+            "description": ""
+        },
+        {
+            "id": "Dobberman",
+            "name": "Dobberman",
+            "description": ""
+        },
+        {
+            "id": "Drakk",
+            "name": "Drakk",
+            "description": ""
+        },
+        {
+            "id": "Echo",
+            "name": "Echo",
+            "description": ""
+        },
+        {
+            "id": "Elsa Pawn",
+            "name": "Elsa Pawn",
+            "description": ""
+        },
+        {
+            "id": "Eurocar Northstar 2.0 (SUV)",
+            "name": "Eurocar Northstar 2.0 (SUV)",
+            "description": ""
+        },
+        {
+            "id": "Eurocar Westwind X80 (voiture de sport)",
+            "name": "Eurocar Westwind X80 (voiture de sport)",
+            "description": ""
+        },
+        {
+            "id": "Evo Proletarian III",
+            "name": "Evo Proletarian III",
+            "description": ""
+        },
+        {
+            "id": "Ferrari Diabolus (voiture de sport)",
+            "name": "Ferrari Diabolus (voiture de sport)",
+            "description": ""
+        },
+        {
+            "id": "Ford Americar (berline)",
+            "name": "Ford Americar (berline)",
+            "description": ""
+        },
+        {
+            "id": "Ford Dasher (berline)",
+            "name": "Ford Dasher (berline)",
+            "description": ""
+        },
+        {
+            "id": "Ford-Canada Bison III (camping-car)",
+            "name": "Ford-Canada Bison III (camping-car)",
+            "description": ""
+        },
+        {
+            "id": "Gambit",
+            "name": "Gambit",
+            "description": ""
+        },
+        {
+            "id": "Ganger adepte elfe",
+            "name": "ganger Adept Elf",
+            "description": ""
+        },
+        {
+            "id": "Ganger adepte humain",
+            "name": "ganger Adept Human",
+            "description": ""
+        },
+        {
+            "id": "Ganger adepte nain",
+            "name": "ganger Adept Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Ganger adepte orc",
+            "name": "ganger Adept Ork",
+            "description": ""
+        },
+        {
+            "id": "Ganger adepte troll",
+            "name": "ganger Adept Troll",
+            "description": ""
+        },
+        {
+            "id": "Ganger decker Elfe",
+            "name": "ganger decker Elf",
+            "description": ""
+        },
+        {
+            "id": "Ganger decker human",
+            "name": "ganger decker human",
+            "description": ""
+        },
+        {
+            "id": "Ganger decker Nain",
+            "name": "ganger decker Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Ganger decker Orc",
+            "name": "ganger decker Ork",
+            "description": ""
+        },
+        {
+            "id": "Ganger decker Troll",
+            "name": "ganger decker Troll",
+            "description": ""
+        },
+        {
+            "id": "Ganger Elfe",
+            "name": "ganger Elf",
+            "description": ""
+        },
+        {
+            "id": "Ganger élite humain",
+            "name": "ganger élite Human",
+            "description": ""
+        },
+        {
+            "id": "Ganger élite humain elf",
+            "name": "ganger élite Human elf",
+            "description": ""
+        },
+        {
+            "id": "Ganger élite humain orc",
+            "name": "ganger élite Human Ork",
+            "description": ""
+        },
+        {
+            "id": "Ganger élite nain",
+            "name": "ganger élite Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Ganger élite troll",
+            "name": "ganger élite Troll",
+            "description": ""
+        },
+        {
+            "id": "Ganger éveillé elfe",
+            "name": "ganger éveillé Elf",
+            "description": ""
+        },
+        {
+            "id": "Ganger éveillé humain",
+            "name": "ganger éveillé Human",
+            "description": ""
+        },
+        {
+            "id": "Ganger éveillé nain",
+            "name": "ganger éveillé Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Ganger éveillé orc",
+            "name": "ganger éveillé Ork",
+            "description": ""
+        },
+        {
+            "id": "Ganger éveillé troll",
+            "name": "ganger éveillé Troll",
+            "description": ""
+        },
+        {
+            "id": "Ganger Human",
+            "name": "ganger Human",
+            "description": ""
+        },
+        {
+            "id": "Ganger Nain",
+            "name": "ganger Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Ganger Orc",
+            "name": "ganger Ork",
+            "description": ""
+        },
+        {
+            "id": "Ganger Rigger elfe",
+            "name": "ganger Rigger Elf",
+            "description": ""
+        },
+        {
+            "id": "Ganger Rigger human",
+            "name": "ganger Rigger human",
+            "description": ""
+        },
+        {
+            "id": "Ganger Rigger nain",
+            "name": "ganger Rigger Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Ganger Rigger orc",
+            "name": "ganger Rigger Ork",
+            "description": ""
+        },
+        {
+            "id": "Ganger Rigger troll",
+            "name": "ganger Rigger Troll",
+            "description": ""
+        },
+        {
+            "id": "Ganger Troll",
+            "name": "ganger Troll",
+            "description": ""
+        },
+        {
+            "id": "GMC-Bulldog Step-van (van)",
+            "name": "GMC-Bulldog Step-van (van)",
+            "description": ""
+        },
+        {
+            "id": "Go-Ganger elfe",
+            "name": "Go-ganger Elf",
+            "description": ""
+        },
+        {
+            "id": "Go-Ganger human",
+            "name": "Go-ganger human",
+            "description": ""
+        },
+        {
+            "id": "Go-Ganger nain",
+            "name": "Go-ganger Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Go-Ganger orc",
+            "name": "Go-ganger Ork",
+            "description": ""
+        },
+        {
+            "id": "Go-Ganger troll",
+            "name": "Go-ganger Troll",
+            "description": ""
+        },
+        {
+            "id": "Hercules",
+            "name": "Hercules",
+            "description": ""
+        },
+        {
+            "id": "Honda Citizen (berline)",
+            "name": "Honda CitiZen (berline)",
+            "description": ""
+        },
+        {
+            "id": "Hyundai Shin-hyun (berline)",
+            "name": "Hyundai Shin-hyun (berline)",
+            "description": ""
+        },
+        {
+            "id": "Lockheed Optic-X2",
+            "name": "Lockheed Optic-X2",
+            "description": ""
+        },
+        {
+            "id": "Luna",
+            "name": "Luna",
+            "description": ""
+        },
+        {
+            "id": "Mage de sécurité / police elfe",
+            "name": "Mage de sécurité / police Elf",
+            "description": ""
+        },
+        {
+            "id": "Mage de sécurité / police humain",
+            "name": "Mage de sécurité / police Human",
+            "description": ""
+        },
+        {
+            "id": "Mage de sécurité / police nain",
+            "name": "Mage de sécurité / police Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Mage de sécurité / police orc",
+            "name": "Mage de sécurité / police Ork",
+            "description": ""
+        },
+        {
+            "id": "Mage de sécurité / police troll",
+            "name": "Mage de sécurité / police Troll",
+            "description": ""
+        },
+        {
+            "id": "MCT-Nissan Roto-drone (drone volant)",
+            "name": "MCT-Nissan Roto-drone (drone volant)",
+            "description": ""
+        },
+        {
+            "id": "Mercury Comet (berline)",
+            "name": "Mercury Comet (berline)",
+            "description": ""
+        },
+        {
+            "id": "Microdrone",
+            "name": "Microdrone",
+            "description": ""
+        },
+        {
+            "id": "Mictlan",
+            "name": "Mictlan",
+            "description": ""
+        },
+        {
+            "id": "Moto de course",
+            "name": "Moto de course",
+            "description": ""
+        },
+        {
+            "id": "Noir I",
+            "name": "Noir I",
+            "description": ""
+        },
+        {
+            "id": "Noir II",
+            "name": "Noir II",
+            "description": ""
+        },
+        {
+            "id": "Noir III",
+            "name": "Noir III",
+            "description": ""
+        },
+        {
+            "id": "Noir IV",
+            "name": "Noir IV",
+            "description": ""
+        },
+        {
+            "id": "Noir V",
+            "name": "Noir V",
+            "description": ""
+        },
+        {
+            "id": "Noir VI",
+            "name": "Noir VI",
+            "description": ""
+        },
+        {
+            "id": "Noir VII",
+            "name": "Noir VII",
+            "description": ""
+        },
+        {
+            "id": "Noir VIII",
+            "name": "Noir VIII",
+            "description": ""
+        },
+        {
+            "id": "Nordkapp Zugmaschine (semi-remorque autonome)",
+            "name": "Nordkapp Zugmaschine (semi-remorque autonome)",
+            "description": ""
+        },
+        {
+            "id": "Officier de sécurité / Police Elfe",
+            "name": "Officier de sécurité / Police Elf",
+            "description": ""
+        },
+        {
+            "id": "Officier de sécurité / Police humain",
+            "name": "Officier de sécurité / Police Human",
+            "description": ""
+        },
+        {
+            "id": "Officier de sécurité / Police Nain",
+            "name": "Officier de sécurité / Police Dwarf",
+            "description": ""
+        },
+        {
+            "id": "Officier de sécurité / Police Orc",
+            "name": "Officier de sécurité / Police Ork",
+            "description": ""
+        },
+        {
+            "id": "Officier de sécurité / Police Troll",
+            "name": "Officier de sécurité / Police Troll",
+            "description": ""
+        },
+        {
+            "id": "Petit drone",
+            "name": "Petit drone",
+            "description": ""
+        },
+        {
+            "id": "Petit drone volant",
+            "name": "Petit drone volant",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle I",
+            "name": "Pot de colle I",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle II",
+            "name": "Pot de colle II",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle III",
+            "name": "Pot de colle III",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle IV",
+            "name": "Pot de colle IV",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle V",
+            "name": "Pot de colle V",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle VI",
+            "name": "Pot de colle VI",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle VII",
+            "name": "Pot de colle VII",
+            "description": ""
+        },
+        {
+            "id": "Pot de colle VIII",
+            "name": "Pot de colle VIII",
+            "description": ""
+        },
+        {
+            "id": "Range Rover 2080 (SUV/Pick-up)",
+            "name": "Range Rover 2080 (SUV/Pick-up)",
+            "description": ""
+        },
+        {
+            "id": "Renault-Fiat Eurovan (van)",
+            "name": "Renault-Fiat Eurovan (van)",
+            "description": ""
+        },
+        {
+            "id": "Saab Dynamite 778TI (voiture de sport)",
+            "name": "Saab Dynamite 778TI (voiture de sport)",
+            "description": ""
+        },
+        {
+            "id": "Scania VM 42 (semi-remorque)",
+            "name": "Scania VM 42 (semi-remorque)",
+            "description": ""
+        },
+        {
+            "id": "Shiawase Kanmushi",
+            "name": "Shiawase Kanmushi",
+            "description": ""
+        },
+        {
+            "id": "Tigre Cyber-Augmenté Shiawase",
+            "name": "Tigre Cyber-Augmenté Shiawase",
+            "description": ""
+        },
+        {
+            "id": "Toyota Gopher (SUV/Pick-up)",
+            "name": "Toyota Gopher (SUV/Pick-up)",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse I",
+            "name": "Traqueuse I",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse II",
+            "name": "Traqueuse II",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse III",
+            "name": "Traqueuse III",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse IV",
+            "name": "Traqueuse IV",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse V",
+            "name": "Traqueuse V",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse VI",
+            "name": "Traqueuse VI",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse VII",
+            "name": "Traqueuse VII",
+            "description": ""
+        },
+        {
+            "id": "Traqueuse VIII",
+            "name": "Traqueuse VIII",
+            "description": ""
+        },
+        {
+            "id": "Trash",
+            "name": "Trash",
+            "description": ""
+        },
+        {
+            "id": "Tueuse I",
+            "name": "Tueuse I",
+            "description": ""
+        },
+        {
+            "id": "Tueuse II",
+            "name": "Tueuse II",
+            "description": ""
+        },
+        {
+            "id": "Tueuse III",
+            "name": "Tueuse III",
+            "description": ""
+        },
+        {
+            "id": "Tueuse IV",
+            "name": "Tueuse IV",
+            "description": ""
+        },
+        {
+            "id": "Tueuse V",
+            "name": "Tueuse V",
+            "description": ""
+        },
+        {
+            "id": "Tueuse VI",
+            "name": "Tueuse VI",
+            "description": ""
+        },
+        {
+            "id": "Tueuse VII",
+            "name": "Tueuse VII",
+            "description": ""
+        },
+        {
+            "id": "Tueuse VIII",
+            "name": "Tueuse VIII",
+            "description": ""
+        },
+        {
+            "id": "Voiture sportive",
+            "name": "Voiture sportive",
+            "description": ""
+        },
+        {
+            "id": "White_Rabbit",
+            "name": "White_Rabbit",
+            "description": ""
+        },
+        {
+            "id": "Wild Jane",
+            "name": "Wild Jane",
+            "description": ""
+        }
+    ]
+}
