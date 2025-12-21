@@ -89,6 +89,7 @@
             "ROLL_WEAPON_WITH_AUTOPILOT": "Lancer l'attaque avec l'autopilote du drone",
             "ADD_WEAPON": "Ajouter une arme",
             "ONLY_WEAPONS_ALLOWED": "Seules les armes peuvent être ajoutées aux véhicules",
+            "ONLY_VEHICLES_ALLOWED": "Seuls les véhicules peuvent être déposés sur les fiches de personnage",
             "BONUSES_AND_OPTIONS": "Bonus et Options",
             "NARRATIVE_EFFECTS": "Effets Narratifs",
             "NARRATIVE_EFFECTS_HINT": "Chaque effet narratif coûte 5000¥ (sauf si la valeur est 0)",

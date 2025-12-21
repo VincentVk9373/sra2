@@ -3181,10 +3181,13 @@ async function handleVehicleActorDrop(event, actor) {
   const data = TextEditor.getDragEventData(event);
   if (data && data.type === "Actor") {
     try {
-      const sourceVehicle = await fromUuid(data.uuid);
-      if (!sourceVehicle) return false;
-      if (sourceVehicle.type !== "vehicle") return false;
-      const vehicleData = sourceVehicle.toObject();
+      const sourceActor = await fromUuid(data.uuid);
+      if (!sourceActor) return false;
+      if (sourceActor.type !== "vehicle") {
+        ui.notifications?.warn(game.i18n.localize("SRA2.VEHICLE.ONLY_VEHICLES_ALLOWED"));
+        return true;
+      }
+      const vehicleData = sourceActor.toObject();
       const ownerName = actor.name || "Character";
       const baseName = vehicleData.name;
       const generateMatricule = () => {
@@ -6198,7 +6201,17 @@ class CharacterSheet extends ActorSheet {
       const weaponType = itemSystem.weaponType;
       const crr = itemSystem.crr || 0;
       const rawItemRRList = itemSystem.rrList || [];
-      const itemRRList = rawItemRRList.map((rrEntry) => ({
+      const itemRRList = rawItemRRList.filter((rr) => {
+        if (!rr.rrTarget) return true;
+        const rrTarget = rr.rrTarget;
+        const isSkillSpecAttributeRR = this.actor.items.some((item) => {
+          if (item.type === "skill" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
+          if (item.type === "specialization" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
+          if (["strength", "agility", "willpower", "logic", "charisma"].includes(rrTarget.toLowerCase())) return true;
+          return false;
+        });
+        return !isSkillSpecAttributeRR;
+      }).map((rrEntry) => ({
         ...rrEntry,
         featName: weapon.name
       }));
@@ -6386,7 +6399,17 @@ class CharacterSheet extends ActorSheet {
       }
     }
     const rawItemRRList = itemSystem.rrList || [];
-    const itemRRList = rawItemRRList.map((rrEntry) => ({
+    const itemRRList = rawItemRRList.filter((rr) => {
+      if (!rr.rrTarget) return true;
+      const rrTarget = rr.rrTarget;
+      const isSkillSpecAttributeRR = this.actor.items.some((item2) => {
+        if (item2.type === "skill" && normalizeSearchText(item2.name) === normalizeSearchText(rrTarget)) return true;
+        if (item2.type === "specialization" && normalizeSearchText(item2.name) === normalizeSearchText(rrTarget)) return true;
+        if (["strength", "agility", "willpower", "logic", "charisma"].includes(rrTarget.toLowerCase())) return true;
+        return false;
+      });
+      return !isSkillSpecAttributeRR;
+    }).map((rrEntry) => ({
       ...rrEntry,
       featName: item.name
       // Add featName (the item name itself)
@@ -11884,7 +11907,7 @@ class SRA2System {
       let totalNumberOfChoice = 0;
       for (const feat of allFeats) {
         const featSystem = feat.system;
-        if (featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
+        if (featSystem.isAChoice && featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
           totalNumberOfChoice = featSystem.numberOfChoice;
           break;
         }

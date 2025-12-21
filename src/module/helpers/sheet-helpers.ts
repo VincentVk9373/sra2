@@ -240,15 +240,19 @@ export async function handleVehicleActorDrop(
   // Handle Actor drops (specifically vehicle actors)
   if (data && data.type === 'Actor') {
     try {
-      const sourceVehicle = await fromUuid(data.uuid) as any;
+      const sourceActor = await fromUuid(data.uuid) as any;
 
-      if (!sourceVehicle) return false;
+      if (!sourceActor) return false;
 
       // Check if it's a vehicle actor
-      if (sourceVehicle.type !== 'vehicle') return false;
+      if (sourceActor.type !== 'vehicle') {
+        // Block non-vehicle actors from being dropped (prevent default Foundry dialog)
+        ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_VEHICLES_ALLOWED'));
+        return true; // Return true to prevent default behavior
+      }
 
       // Create a copy of the vehicle instead of linking to the original
-      const vehicleData = sourceVehicle.toObject();
+      const vehicleData = sourceActor.toObject();
 
       // Generate a unique name for the copy with a matricule (2 letters + 1 digit)
       const ownerName = actor.name || 'Character';

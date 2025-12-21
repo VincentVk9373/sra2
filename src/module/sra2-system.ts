@@ -500,7 +500,7 @@ export class SRA2System {
       const actor = tokenDoc.actor;
       if (!actor) return true;
       
-      // Only process character actors
+      // Process both character and NPC actors (but not vehicles or ICE)
       if (actor.type !== 'character') return true;
       
       // Get feats with isOptional or isAChoice set
@@ -513,7 +513,7 @@ export class SRA2System {
       let totalNumberOfChoice = 0;
       for (const feat of allFeats) {
         const featSystem = feat.system as any;
-        if (featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
+        if (featSystem.isAChoice && featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
           // take the first feat with numberOfChoice
           totalNumberOfChoice = featSystem.numberOfChoice;
           break;

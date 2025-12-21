@@ -89,6 +89,7 @@
             "ROLL_WEAPON_WITH_AUTOPILOT": "Roll attack with drone autopilot",
             "ADD_WEAPON": "Add Weapon",
             "ONLY_WEAPONS_ALLOWED": "Only weapons can be added to vehicles",
+            "ONLY_VEHICLES_ALLOWED": "Only vehicle actors can be dropped on character sheets",
             "BONUSES_AND_OPTIONS": "Bonuses and Options",
             "NARRATIVE_EFFECTS": "Narrative Effects",
             "NARRATIVE_EFFECTS_HINT": "Each narrative effect costs 5000¥ (except if value is 0)",
