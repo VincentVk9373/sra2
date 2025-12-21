@@ -462,7 +462,6 @@ const chopper = { "autopilot": 6, "structure": 5, "handling": 2, "speed": 5, "fl
 const sedan = { "autopilot": 6, "structure": 6, "handling": 2, "speed": 4, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const van = { "autopilot": 6, "structure": 8, "handling": 1, "speed": 3, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const vtol = { "autopilot": 6, "structure": 10, "handling": 3, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
-const t_bird = { "autopilot": 6, "structure": 10, "handling": 3, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const vehicleTypesData = {
   microdrone,
   minidrone,
@@ -481,7 +480,8 @@ const vehicleTypesData = {
   "jet-ski": { "autopilot": 6, "structure": 5, "handling": 5, "speed": 2, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
   "civil-helicopter": { "autopilot": 6, "structure": 9, "handling": 4, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
   vtol,
-  t_bird
+  "t-bird": { "autopilot": 6, "structure": 10, "handling": 3, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
+  "glider-wing": { "autopilot": 6, "structure": 3, "handling": 7, "speed": 0, "flyingSpeed": 4, "armor": 0, "weaponMount": "none" }
 };
 const WEAPON_TYPES = {
   "custom-weapon": {
@@ -3569,7 +3569,7 @@ function getCurrentActiveSection(html) {
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat) => {
     feat.rrEntries = [];
-    const itemRRList = feat.system.rrList || [];
+    const itemRRList = [];
     let allRRList = [...itemRRList];
     if (actor && (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells")) {
       const { normalizeSearchText: normalizeSearchText2 } = ItemSearch;
@@ -3827,11 +3827,21 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
   let skillRRSources = [];
   let specRRSources = [];
   let attributeRRSources = [];
-  if (skillSpecResult.specName) {
-    specRRSources = getRRSources(actor, "specialization", skillSpecResult.specName);
+  if (skillSpecResult.specName && skillSpecResult.specLevel !== void 0) {
+    const specExists = actor.items.some(
+      (item) => item.type === "specialization" && normalizeSearchText(item.name) === normalizeSearchText(skillSpecResult.specName)
+    );
+    if (specExists) {
+      specRRSources = getRRSources(actor, "specialization", skillSpecResult.specName);
+    }
   }
-  if (skillSpecResult.skillName) {
-    skillRRSources = getRRSources(actor, "skill", skillSpecResult.skillName);
+  if (skillSpecResult.skillName && skillSpecResult.skillLevel !== void 0) {
+    const skillExists = actor.items.some(
+      (item) => item.type === "skill" && normalizeSearchText(item.name) === normalizeSearchText(skillSpecResult.skillName)
+    );
+    if (skillExists) {
+      skillRRSources = getRRSources(actor, "skill", skillSpecResult.skillName);
+    }
   }
   if (skillSpecResult.linkedAttribute) {
     attributeRRSources = getRRSources(actor, "attribute", skillSpecResult.linkedAttribute);
@@ -4797,10 +4807,21 @@ class CharacterSheet extends ActorSheet {
         finalAttackSkill,
         { defaultAttribute }
       );
+      const itemRRList = (weaponSystem.rrList || []).filter((rr) => {
+        if (!rr.rrTarget) return true;
+        const rrTarget = rr.rrTarget;
+        const isSkillSpecAttributeRR = this.actor.items.some((item) => {
+          if (item.type === "skill" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
+          if (item.type === "specialization" && normalizeSearchText(item.name) === normalizeSearchText(rrTarget)) return true;
+          if (["strength", "agility", "willpower", "logic", "charisma"].includes(rrTarget.toLowerCase())) return true;
+          return false;
+        });
+        return !isSkillSpecAttributeRR;
+      });
       const poolResult = calculateAttackPool(
         this.actor,
         skillSpecResult,
-        weaponSystem.rrList || [],
+        itemRRList,
         weapon.name
       );
       weapon.totalDicePool = poolResult.totalDicePool;
