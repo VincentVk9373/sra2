@@ -551,24 +551,32 @@ async function createRollChatMessage(
         attackFailed = false;
       } else {
         // Normal attack damage calculation
-        let damageValue = 0;
+        // damageValue should already be a numeric string (calculated value, not "attribut+bonus")
         const damageValueStr = rollData.attackRollData.damageValue || '0';
         
-        // Handle "FOR" or "FOR+X" damage values
-        if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
-          // Get original attacker's strength (defender in defense context is the original attacker)
-          const attackerStrength = (defender?.system as any)?.attributes?.strength || 1;
-          if (damageValueStr === 'FOR') {
-            damageValue = attackerStrength;
-          } else if (damageValueStr.startsWith('FOR+')) {
-            const bonus = parseInt(damageValueStr.substring(4)) || 0;
-            damageValue = attackerStrength + bonus;
+        // Try to parse as numeric first (most common case now)
+        let damageValue = parseInt(damageValueStr, 10);
+        
+        // If not a simple number, try to parse with attributes (backward compatibility)
+        if (isNaN(damageValue)) {
+          const attackerAttributes = (defender?.system as any)?.attributes || {};
+          try {
+            const parsed = SheetHelpers.parseDamageValue(damageValueStr, attackerAttributes, 0);
+            damageValue = parsed.numericValue;
+          } catch (error) {
+            console.error('SRA2 | Error parsing damage value:', damageValueStr, error);
+            damageValue = 0;
           }
-        } else {
-          damageValue = parseInt(damageValueStr, 10) || 0;
         }
         
-        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        // Ensure damageValue is a valid number
+        if (isNaN(damageValue) || damageValue === null || damageValue === undefined) {
+          console.error('SRA2 | Invalid damage value:', damageValueStr);
+          calculatedDamage = 0;
+        } else {
+          calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        }
+        
         attackFailed = false;
       }
     } else {
@@ -629,39 +637,53 @@ async function createRollChatMessage(
     const counterAttackSuccesses = rollResult.totalSuccesses;
     
     // Get damage values for the original attacker
-    // damageValue already includes bonus (finalDamageValue)
+    // damageValue should already be a numeric string (calculated value, not "attribut+bonus")
     let attackDamageValue = 0;
     const attackDamageValueStr = rollData.attackRollData.damageValue || '0';
     
-    // Handle "FOR" or "FOR+X" damage values for the attacker (defender in counter-attack context)
-    if (attackDamageValueStr === 'FOR' || attackDamageValueStr.startsWith('FOR+')) {
-      const attackerStrength = (defender?.system as any)?.attributes?.strength || 1; // defender = original attacker
-      if (attackDamageValueStr === 'FOR') {
-        attackDamageValue = attackerStrength;
-      } else if (attackDamageValueStr.startsWith('FOR+')) {
-        const bonus = parseInt(attackDamageValueStr.substring(4)) || 0;
-        attackDamageValue = attackerStrength + bonus;
+    // Try to parse as numeric first (most common case now)
+    attackDamageValue = parseInt(attackDamageValueStr, 10);
+    
+    // If not a simple number, try to parse with attributes (backward compatibility)
+    if (isNaN(attackDamageValue)) {
+      const attackerAttributes = (defender?.system as any)?.attributes || {}; // defender = original attacker
+      try {
+        const attackParsed = SheetHelpers.parseDamageValue(attackDamageValueStr, attackerAttributes, 0);
+        attackDamageValue = attackParsed.numericValue;
+      } catch (error) {
+        console.error('SRA2 | Error parsing attack damage value:', attackDamageValueStr, error);
+        attackDamageValue = 0;
       }
-    } else {
-      attackDamageValue = parseInt(attackDamageValueStr, 10) || 0;
+    }
+    
+    if (isNaN(attackDamageValue) || attackDamageValue === null || attackDamageValue === undefined) {
+      console.error('SRA2 | Invalid attack damage value:', attackDamageValueStr);
+      attackDamageValue = 0;
     }
     
     // Get counter-attack damage value from rollData
-    // rollData.damageValue should already be set from the selected weapon (includes bonus)
+    // rollData.damageValue should already be a numeric string (calculated value)
     let counterAttackDamageValue = 0;
     const damageValueStr = rollData.damageValue || '0';
     
-    // Handle "FOR" or "FOR+X" damage values
-    if (damageValueStr === 'FOR' || damageValueStr.startsWith('FOR+')) {
-      const actorStrength = (attacker.system as any)?.attributes?.strength || 1;
-      if (damageValueStr === 'FOR') {
-        counterAttackDamageValue = actorStrength;
-      } else if (damageValueStr.startsWith('FOR+')) {
-        const bonus = parseInt(damageValueStr.substring(4)) || 0;
-        counterAttackDamageValue = actorStrength + bonus;
+    // Try to parse as numeric first (most common case now)
+    counterAttackDamageValue = parseInt(damageValueStr, 10);
+    
+    // If not a simple number, try to parse with attributes (backward compatibility)
+    if (isNaN(counterAttackDamageValue)) {
+      const counterAttackerAttributes = (attacker?.system as any)?.attributes || {};
+      try {
+        const counterParsed = SheetHelpers.parseDamageValue(damageValueStr, counterAttackerAttributes, 0);
+        counterAttackDamageValue = counterParsed.numericValue;
+      } catch (error) {
+        console.error('SRA2 | Error parsing counter-attack damage value:', damageValueStr, error);
+        counterAttackDamageValue = 0;
       }
-    } else {
-      counterAttackDamageValue = parseInt(damageValueStr, 10) || 0;
+    }
+    
+    if (isNaN(counterAttackDamageValue) || counterAttackDamageValue === null || counterAttackDamageValue === undefined) {
+      console.error('SRA2 | Invalid counter-attack damage value:', damageValueStr);
+      counterAttackDamageValue = 0;
     }
     
     // If still no damage value, try to find weapon (fallback)
@@ -672,33 +694,21 @@ async function createRollChatMessage(
           const weapon = attacker.items.find((item: any) => item.id === selectedWeaponId);
           if (weapon) {
             const weaponSystem = weapon.system as any;
-            // Calculate finalDamageValue from weapon (same logic as character-sheet.ts)
+            // Calculate finalDamageValue from weapon using helper
             const baseDamageValue = weaponSystem.damageValue || '0';
             const damageValueBonus = weaponSystem.damageValueBonus || 0;
-            let weaponDamageValueStr = baseDamageValue;
             
-            if (damageValueBonus > 0 && baseDamageValue !== '0') {
-              if (baseDamageValue === 'FOR') {
-                weaponDamageValueStr = `FOR+${damageValueBonus}`;
-              } else if (baseDamageValue.startsWith('FOR+')) {
-                const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-                weaponDamageValueStr = `FOR+${baseModifier + damageValueBonus}`;
-              } else if (baseDamageValue !== 'toxin') {
-                const baseValue = parseInt(baseDamageValue) || 0;
-                weaponDamageValueStr = (baseValue + damageValueBonus).toString();
-              }
-            }
-            
-            if (weaponDamageValueStr === 'FOR' || weaponDamageValueStr.startsWith('FOR+')) {
-              const actorStrength = (attacker.system as any)?.attributes?.strength || 1;
-              if (weaponDamageValueStr === 'FOR') {
-                counterAttackDamageValue = actorStrength;
-              } else if (weaponDamageValueStr.startsWith('FOR+')) {
-                const bonus = parseInt(weaponDamageValueStr.substring(4)) || 0;
-                counterAttackDamageValue = actorStrength + bonus;
-              }
-            } else {
-              counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
+            // Calculate final numeric damage value
+            const counterAttackerAttributes = (attacker?.system as any)?.attributes || {};
+            try {
+              counterAttackDamageValue = SheetHelpers.calculateFinalNumericDamageValue(
+                baseDamageValue,
+                counterAttackerAttributes,
+                damageValueBonus
+              );
+            } catch (error) {
+              console.error('SRA2 | Error calculating weapon damage value:', baseDamageValue, error);
+              counterAttackDamageValue = 0;
             }
         }
       }

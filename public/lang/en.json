@@ -635,6 +635,14 @@
                 "DAMAGE_VALUE_BONUS_HINT": "Each checked box adds +1 to DV and +1 to recommended level",
                 "BONUS_1": "+1 DV (+1 level)",
                 "BONUS_2": "+2 DV (+2 levels)",
+                "VD_MODE": {
+                    "LABEL": "DV Mode",
+                    "CUSTOM": "Custom value",
+                    "ATTRIBUTE": "Attribute + bonus"
+                },
+                "VD_CUSTOM_VALUE": "Custom DV value",
+                "VD_ATTRIBUTE": "Attribute for DV",
+                "VD_BONUS": "DV Bonus",
                 "DAMAGE_TYPE": "Damage Type",
                 "DAMAGE_TYPE_PHYSICAL": "Physical",
                 "DAMAGE_TYPE_MAGIC": "Magic",

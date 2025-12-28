@@ -91,16 +91,38 @@ export function handleSheetUpdate(actor: any, formData: any): any {
 /**
  * Calculate final damage value for weapon/spell display
  */
-export function calculateFinalDamageValue(damageValue: string, damageValueBonus: number, strength: number): string {
+export function calculateFinalDamageValue(
+  damageValue: string, 
+  damageValueBonus: number, 
+  strength: number,
+  allAttributes?: Record<string, number>
+): string {
+  const attributes = allAttributes || { strength };
+  const actorStrength = attributes.strength || strength;
+  
   if (damageValue === "FOR") {
-    const total = strength + damageValueBonus;
+    const total = actorStrength + damageValueBonus;
     return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
   } else if (damageValue.startsWith("FOR+")) {
     const modifier = parseInt(damageValue.substring(4)) || 0;
-    const total = strength + modifier + damageValueBonus;
+    const total = actorStrength + modifier + damageValueBonus;
     return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
   } else if (damageValue === "toxin") {
     return game.i18n?.localize('SRA2.FEATS.WEAPON.TOXIN_DAMAGE') || 'according to toxin';
+  } else if (damageValue.includes('+') && !damageValue.startsWith('FOR')) {
+    // Handle attribute+bonus format (e.g., "agility+2")
+    const parts = damageValue.split('+');
+    const attributeName = parts[0].trim();
+    const bonus = parseInt(parts[1]) || 0;
+    const attributeValue = attributes[attributeName] || 0;
+    const total = attributeValue + bonus + damageValueBonus;
+    const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
+    
+    if (damageValueBonus > 0) {
+      return `${total} (${attributeLabel}+${bonus}+${damageValueBonus})`;
+    } else {
+      return `${total} (${attributeLabel}+${bonus})`;
+    }
   } else {
     const base = parseInt(damageValue) || 0;
     const total = base + damageValueBonus;
@@ -634,16 +656,16 @@ export interface DamageValueResult {
 
 /**
  * Parse a damage value string and calculate the final numeric value
- * Handles: FOR, FOR+X, numeric values, and toxin
+ * Handles: FOR, FOR+X, numeric values, attribute+bonus format, and toxin
  * 
- * @param damageValueStr - The damage value string (e.g., "FOR", "FOR+2", "5", "toxin")
- * @param actorStrength - The actor's strength attribute value
+ * @param damageValueStr - The damage value string (e.g., "FOR", "FOR+2", "5", "agility+2", "toxin")
+ * @param actorAttributes - The actor's attributes object (or just strength for backward compatibility)
  * @param damageValueBonus - Additional bonus from feats/items (default: 0)
  * @returns Parsed damage value result
  */
 export function parseDamageValue(
   damageValueStr: string,
-  actorStrength: number,
+  actorAttributes: number | Record<string, number>,
   damageValueBonus: number = 0
 ): DamageValueResult {
   const result: DamageValueResult = {
@@ -653,6 +675,16 @@ export function parseDamageValue(
     isStrengthBased: false,
     isToxin: false
   };
+
+  // Handle backward compatibility: if actorAttributes is a number, treat it as strength
+  let attributes: Record<string, number>;
+  if (typeof actorAttributes === 'number') {
+    attributes = { strength: actorAttributes };
+  } else {
+    attributes = actorAttributes || {};
+  }
+  
+  const actorStrength = attributes.strength || 0;
 
   // Handle toxin damage
   if (damageValueStr === 'toxin') {
@@ -691,6 +723,61 @@ export function parseDamageValue(
     return result;
   }
 
+  // Handle attribute+bonus format (e.g., "agility+2", "willpower+1")
+  if (damageValueStr.includes('+') && !damageValueStr.startsWith('FOR')) {
+    const parts = damageValueStr.split('+');
+    const attributeName = parts[0]?.trim();
+    
+    // Validate attribute name exists
+    if (!attributeName) {
+      // Fallback to numeric parsing if attribute name is missing
+      const base = parseInt(damageValueStr) || 0;
+      result.numericValue = base + damageValueBonus;
+      if (damageValueBonus > 0) {
+        result.displayValue = `${result.numericValue} (${base}+${damageValueBonus})`;
+        result.rawDamageString = result.numericValue.toString();
+      } else {
+        result.displayValue = result.numericValue.toString();
+        result.rawDamageString = damageValueStr;
+      }
+      return result;
+    }
+    
+    // Parse bonus safely
+    const bonusStr = parts[1];
+    const bonus = (bonusStr !== undefined && bonusStr !== null) ? (parseInt(bonusStr) || 0) : 0;
+    
+    // Get attribute value safely
+    const attributeValue = (attributes[attributeName] !== undefined && attributes[attributeName] !== null) 
+      ? attributes[attributeName] 
+      : 0;
+    
+    // Calculate numeric value
+    result.numericValue = attributeValue + bonus + damageValueBonus;
+    
+    // Ensure we have a valid number
+    if (isNaN(result.numericValue)) {
+      result.numericValue = 0;
+    }
+    
+    const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
+    
+    if (damageValueBonus > 0) {
+      result.displayValue = `${result.numericValue} (${attributeLabel}+${bonus}+${damageValueBonus})`;
+      result.rawDamageString = `${attributeName}+${bonus + damageValueBonus}`;
+    } else {
+      result.displayValue = `${result.numericValue} (${attributeLabel}+${bonus})`;
+      result.rawDamageString = damageValueStr;
+    }
+    
+    // Mark as strength-based if it's strength
+    if (attributeName === 'strength') {
+      result.isStrengthBased = true;
+    }
+    
+    return result;
+  }
+
   // Handle numeric damage
   const base = parseInt(damageValueStr) || 0;
   result.numericValue = base + damageValueBonus;
@@ -707,7 +794,7 @@ export function parseDamageValue(
 
 /**
  * Calculate raw damage string with bonus applied (for roll data)
- * This returns the string to be used in roll requests (e.g., "FOR+3" or "7")
+ * This returns the string to be used in roll requests (e.g., "FOR+3", "agility+2", or "7")
  */
 export function calculateRawDamageString(
   baseDamageValue: string,
@@ -726,9 +813,35 @@ export function calculateRawDamageString(
     return `FOR+${baseModifier + damageValueBonus}`;
   }
 
+  // Handle attribute+bonus format (e.g., "agility+2")
+  if (baseDamageValue.includes('+') && !baseDamageValue.startsWith('FOR')) {
+    const parts = baseDamageValue.split('+');
+    const attributeName = parts[0].trim();
+    const baseBonus = parseInt(parts[1]) || 0;
+    return `${attributeName}+${baseBonus + damageValueBonus}`;
+  }
+
   // Numeric value
   const baseValue = parseInt(baseDamageValue) || 0;
   return (baseValue + damageValueBonus).toString();
+}
+
+/**
+ * Calculate final numeric damage value from damage string and actor attributes
+ * This returns the actual numeric value to use in roll data (e.g., 5 instead of "agility+2")
+ * 
+ * @param damageValueStr - The damage value string (e.g., "FOR", "FOR+2", "5", "agility+2")
+ * @param actorAttributes - The actor's attributes object
+ * @param damageValueBonus - Additional bonus from feats/items (default: 0)
+ * @returns The final numeric damage value
+ */
+export function calculateFinalNumericDamageValue(
+  damageValueStr: string,
+  actorAttributes: Record<string, number>,
+  damageValueBonus: number = 0
+): number {
+  const parsed = parseDamageValue(damageValueStr, actorAttributes, damageValueBonus);
+  return parsed.numericValue;
 }
 
 // ============================================================================
@@ -1031,6 +1144,7 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       // This applies to all weapons, including adept power weapons
       if (actor) {
         const weaponType = feat.system.weaponType || '';
+        const actorAttributes = (actor.system as any)?.attributes || {};
         const activeFeats = actor.items.filter((item: any) =>
           item.type === 'feat' &&
           item.system.active === true &&
@@ -1046,7 +1160,15 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
 
-      feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
+      // Get all actor attributes for damage calculation
+      const actorAttributes = actor ? ((actor.system as any)?.attributes || {}) : { strength: actorStrength };
+      
+      // Call with all attributes if available, otherwise just strength
+      if (actor && actorAttributes) {
+        feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength, actorAttributes);
+      } else {
+        feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
+      }
     }
 
     // Add narrative effects tooltip

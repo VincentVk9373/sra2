@@ -410,6 +410,8 @@
     }
 
     .form-group {
+      border-bottom: 1px dashed var(--sr-ui-border-color);
+      padding-bottom: 1rem;
       margin-bottom: 1rem;
 
       label {
@@ -484,6 +486,10 @@
         background: rgba(15, 52, 96, 0.3);
         font-weight: bold;
         color: var(--sr-text-color-flash);
+      }
+
+      .vd-mode-selection, .vd-attribute-mode {
+        margin:0 0.5rem;
       }
 
       /* Recommended Level Display */

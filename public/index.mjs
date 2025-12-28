@@ -980,6 +980,45 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"
       }),
+      // VD mode for custom weapons: "custom" or "attribute"
+      vdMode: new fields.StringField({
+        required: true,
+        initial: "custom",
+        choices: {
+          "custom": "SRA2.FEATS.WEAPON.VD_MODE.CUSTOM",
+          "attribute": "SRA2.FEATS.WEAPON.VD_MODE.ATTRIBUTE"
+        },
+        label: "SRA2.FEATS.WEAPON.VD_MODE.LABEL"
+      }),
+      // Custom VD value (for vdMode = "custom")
+      vdCustomValue: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON.VD_CUSTOM_VALUE"
+      }),
+      // Attribute for VD calculation (for vdMode = "attribute")
+      vdAttribute: new fields.StringField({
+        required: true,
+        initial: "strength",
+        choices: {
+          strength: "SRA2.ATTRIBUTES.STRENGTH",
+          agility: "SRA2.ATTRIBUTES.AGILITY",
+          willpower: "SRA2.ATTRIBUTES.WILLPOWER",
+          logic: "SRA2.ATTRIBUTES.LOGIC",
+          charisma: "SRA2.ATTRIBUTES.CHARISMA"
+        },
+        label: "SRA2.FEATS.WEAPON.VD_ATTRIBUTE"
+      }),
+      // Bonus for VD calculation (for vdMode = "attribute")
+      vdBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON.VD_BONUS"
+      }),
       damageType: new fields.StringField({
         required: true,
         initial: "physical",
@@ -1433,6 +1472,26 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         "counterspell": "Spé: Contresort"
       };
       this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+    }
+    const weaponType = this.weaponType || "";
+    if (weaponType === "custom-weapon" && (featType === "weapon" || featType === "weapons-spells")) {
+      const vdMode = this.vdMode || "custom";
+      if (vdMode === "custom") {
+        const vdCustomValue = this.vdCustomValue ?? 0;
+        this.damageValue = vdCustomValue.toString();
+      } else {
+        const vdAttribute = this.vdAttribute || "strength";
+        const vdBonus = this.vdBonus ?? 0;
+        if (vdAttribute === "strength") {
+          if (vdBonus === 0) {
+            this.damageValue = "FOR";
+          } else {
+            this.damageValue = `FOR+${vdBonus}`;
+          }
+        } else {
+          this.damageValue = `${vdAttribute}+${vdBonus}`;
+        }
+      }
     }
     let calculatedCost = 0;
     if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
@@ -2706,20 +2765,24 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
         calculatedDamage = damageValue;
         attackFailed = false;
       } else {
-        let damageValue = 0;
         const damageValueStr = rollData.attackRollData.damageValue || "0";
-        if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
-          const attackerStrength = defender?.system?.attributes?.strength || 1;
-          if (damageValueStr === "FOR") {
-            damageValue = attackerStrength;
-          } else if (damageValueStr.startsWith("FOR+")) {
-            const bonus = parseInt(damageValueStr.substring(4)) || 0;
-            damageValue = attackerStrength + bonus;
+        let damageValue = parseInt(damageValueStr, 10);
+        if (isNaN(damageValue)) {
+          const attackerAttributes = defender?.system?.attributes || {};
+          try {
+            const parsed = SheetHelpers.parseDamageValue(damageValueStr, attackerAttributes, 0);
+            damageValue = parsed.numericValue;
+          } catch (error) {
+            console.error("SRA2 | Error parsing damage value:", damageValueStr, error);
+            damageValue = 0;
           }
-        } else {
-          damageValue = parseInt(damageValueStr, 10) || 0;
         }
-        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        if (isNaN(damageValue) || damageValue === null || damageValue === void 0) {
+          console.error("SRA2 | Invalid damage value:", damageValueStr);
+          calculatedDamage = 0;
+        } else {
+          calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        }
         attackFailed = false;
       }
     } else {
@@ -2757,29 +2820,37 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     const counterAttackSuccesses = rollResult.totalSuccesses;
     let attackDamageValue = 0;
     const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
-    if (attackDamageValueStr === "FOR" || attackDamageValueStr.startsWith("FOR+")) {
-      const attackerStrength = defender?.system?.attributes?.strength || 1;
-      if (attackDamageValueStr === "FOR") {
-        attackDamageValue = attackerStrength;
-      } else if (attackDamageValueStr.startsWith("FOR+")) {
-        const bonus = parseInt(attackDamageValueStr.substring(4)) || 0;
-        attackDamageValue = attackerStrength + bonus;
+    attackDamageValue = parseInt(attackDamageValueStr, 10);
+    if (isNaN(attackDamageValue)) {
+      const attackerAttributes = defender?.system?.attributes || {};
+      try {
+        const attackParsed = SheetHelpers.parseDamageValue(attackDamageValueStr, attackerAttributes, 0);
+        attackDamageValue = attackParsed.numericValue;
+      } catch (error) {
+        console.error("SRA2 | Error parsing attack damage value:", attackDamageValueStr, error);
+        attackDamageValue = 0;
       }
-    } else {
-      attackDamageValue = parseInt(attackDamageValueStr, 10) || 0;
+    }
+    if (isNaN(attackDamageValue) || attackDamageValue === null || attackDamageValue === void 0) {
+      console.error("SRA2 | Invalid attack damage value:", attackDamageValueStr);
+      attackDamageValue = 0;
     }
     let counterAttackDamageValue = 0;
     const damageValueStr = rollData.damageValue || "0";
-    if (damageValueStr === "FOR" || damageValueStr.startsWith("FOR+")) {
-      const actorStrength = attacker.system?.attributes?.strength || 1;
-      if (damageValueStr === "FOR") {
-        counterAttackDamageValue = actorStrength;
-      } else if (damageValueStr.startsWith("FOR+")) {
-        const bonus = parseInt(damageValueStr.substring(4)) || 0;
-        counterAttackDamageValue = actorStrength + bonus;
+    counterAttackDamageValue = parseInt(damageValueStr, 10);
+    if (isNaN(counterAttackDamageValue)) {
+      const counterAttackerAttributes = attacker?.system?.attributes || {};
+      try {
+        const counterParsed = SheetHelpers.parseDamageValue(damageValueStr, counterAttackerAttributes, 0);
+        counterAttackDamageValue = counterParsed.numericValue;
+      } catch (error) {
+        console.error("SRA2 | Error parsing counter-attack damage value:", damageValueStr, error);
+        counterAttackDamageValue = 0;
       }
-    } else {
-      counterAttackDamageValue = parseInt(damageValueStr, 10) || 0;
+    }
+    if (isNaN(counterAttackDamageValue) || counterAttackDamageValue === null || counterAttackDamageValue === void 0) {
+      console.error("SRA2 | Invalid counter-attack damage value:", damageValueStr);
+      counterAttackDamageValue = 0;
     }
     if (!counterAttackDamageValue && attacker) {
       const selectedWeaponId = rollData.selectedWeaponId;
@@ -2789,28 +2860,16 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
           const weaponSystem = weapon.system;
           const baseDamageValue = weaponSystem.damageValue || "0";
           const damageValueBonus = weaponSystem.damageValueBonus || 0;
-          let weaponDamageValueStr = baseDamageValue;
-          if (damageValueBonus > 0 && baseDamageValue !== "0") {
-            if (baseDamageValue === "FOR") {
-              weaponDamageValueStr = `FOR+${damageValueBonus}`;
-            } else if (baseDamageValue.startsWith("FOR+")) {
-              const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
-              weaponDamageValueStr = `FOR+${baseModifier + damageValueBonus}`;
-            } else if (baseDamageValue !== "toxin") {
-              const baseValue = parseInt(baseDamageValue) || 0;
-              weaponDamageValueStr = (baseValue + damageValueBonus).toString();
-            }
-          }
-          if (weaponDamageValueStr === "FOR" || weaponDamageValueStr.startsWith("FOR+")) {
-            const actorStrength = attacker.system?.attributes?.strength || 1;
-            if (weaponDamageValueStr === "FOR") {
-              counterAttackDamageValue = actorStrength;
-            } else if (weaponDamageValueStr.startsWith("FOR+")) {
-              const bonus = parseInt(weaponDamageValueStr.substring(4)) || 0;
-              counterAttackDamageValue = actorStrength + bonus;
-            }
-          } else {
-            counterAttackDamageValue = parseInt(weaponDamageValueStr, 10) || 0;
+          const counterAttackerAttributes = attacker?.system?.attributes || {};
+          try {
+            counterAttackDamageValue = SheetHelpers.calculateFinalNumericDamageValue(
+              baseDamageValue,
+              counterAttackerAttributes,
+              damageValueBonus
+            );
+          } catch (error) {
+            console.error("SRA2 | Error calculating weapon damage value:", baseDamageValue, error);
+            counterAttackDamageValue = 0;
           }
         }
       }
@@ -3162,16 +3221,30 @@ function handleSheetUpdate(actor, formData) {
   processDamageData("matrixDamage");
   return expandedData;
 }
-function calculateFinalDamageValue(damageValue, damageValueBonus, strength) {
+function calculateFinalDamageValue(damageValue, damageValueBonus, strength, allAttributes) {
+  const attributes = allAttributes || { strength };
+  const actorStrength = attributes.strength || strength;
   if (damageValue === "FOR") {
-    const total = strength + damageValueBonus;
+    const total = actorStrength + damageValueBonus;
     return damageValueBonus > 0 ? `${total} (FOR+${damageValueBonus})` : `${total} (FOR)`;
   } else if (damageValue.startsWith("FOR+")) {
     const modifier = parseInt(damageValue.substring(4)) || 0;
-    const total = strength + modifier + damageValueBonus;
+    const total = actorStrength + modifier + damageValueBonus;
     return damageValueBonus > 0 ? `${total} (FOR+${modifier}+${damageValueBonus})` : `${total} (FOR+${modifier})`;
   } else if (damageValue === "toxin") {
     return game.i18n?.localize("SRA2.FEATS.WEAPON.TOXIN_DAMAGE") || "according to toxin";
+  } else if (damageValue.includes("+") && !damageValue.startsWith("FOR")) {
+    const parts = damageValue.split("+");
+    const attributeName = parts[0].trim();
+    const bonus = parseInt(parts[1]) || 0;
+    const attributeValue = attributes[attributeName] || 0;
+    const total = attributeValue + bonus + damageValueBonus;
+    const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
+    if (damageValueBonus > 0) {
+      return `${total} (${attributeLabel}+${bonus}+${damageValueBonus})`;
+    } else {
+      return `${total} (${attributeLabel}+${bonus})`;
+    }
   } else {
     const base = parseInt(damageValue) || 0;
     const total = base + damageValueBonus;
@@ -3516,7 +3589,7 @@ async function handleDeleteItem(event, actor, sheetRender) {
     console.warn("[SheetHelpers.handleDeleteItem] Item not found in actor!");
   }
 }
-function parseDamageValue(damageValueStr, actorStrength, damageValueBonus = 0) {
+function parseDamageValue(damageValueStr, actorAttributes, damageValueBonus = 0) {
   const result = {
     numericValue: 0,
     displayValue: damageValueStr,
@@ -3524,6 +3597,13 @@ function parseDamageValue(damageValueStr, actorStrength, damageValueBonus = 0) {
     isStrengthBased: false,
     isToxin: false
   };
+  let attributes;
+  if (typeof actorAttributes === "number") {
+    attributes = { strength: actorAttributes };
+  } else {
+    attributes = actorAttributes || {};
+  }
+  const actorStrength = attributes.strength || 0;
   if (damageValueStr === "toxin") {
     result.isToxin = true;
     result.displayValue = game.i18n?.localize("SRA2.FEATS.WEAPON.TOXIN_DAMAGE") || "according to toxin";
@@ -3555,6 +3635,41 @@ function parseDamageValue(damageValueStr, actorStrength, damageValueBonus = 0) {
     }
     return result;
   }
+  if (damageValueStr.includes("+") && !damageValueStr.startsWith("FOR")) {
+    const parts = damageValueStr.split("+");
+    const attributeName = parts[0]?.trim();
+    if (!attributeName) {
+      const base2 = parseInt(damageValueStr) || 0;
+      result.numericValue = base2 + damageValueBonus;
+      if (damageValueBonus > 0) {
+        result.displayValue = `${result.numericValue} (${base2}+${damageValueBonus})`;
+        result.rawDamageString = result.numericValue.toString();
+      } else {
+        result.displayValue = result.numericValue.toString();
+        result.rawDamageString = damageValueStr;
+      }
+      return result;
+    }
+    const bonusStr = parts[1];
+    const bonus = bonusStr !== void 0 && bonusStr !== null ? parseInt(bonusStr) || 0 : 0;
+    const attributeValue = attributes[attributeName] !== void 0 && attributes[attributeName] !== null ? attributes[attributeName] : 0;
+    result.numericValue = attributeValue + bonus + damageValueBonus;
+    if (isNaN(result.numericValue)) {
+      result.numericValue = 0;
+    }
+    const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
+    if (damageValueBonus > 0) {
+      result.displayValue = `${result.numericValue} (${attributeLabel}+${bonus}+${damageValueBonus})`;
+      result.rawDamageString = `${attributeName}+${bonus + damageValueBonus}`;
+    } else {
+      result.displayValue = `${result.numericValue} (${attributeLabel}+${bonus})`;
+      result.rawDamageString = damageValueStr;
+    }
+    if (attributeName === "strength") {
+      result.isStrengthBased = true;
+    }
+    return result;
+  }
   const base = parseInt(damageValueStr) || 0;
   result.numericValue = base + damageValueBonus;
   if (damageValueBonus > 0) {
@@ -3577,8 +3692,18 @@ function calculateRawDamageString(baseDamageValue, damageValueBonus) {
     const baseModifier = parseInt(baseDamageValue.substring(4)) || 0;
     return `FOR+${baseModifier + damageValueBonus}`;
   }
+  if (baseDamageValue.includes("+") && !baseDamageValue.startsWith("FOR")) {
+    const parts = baseDamageValue.split("+");
+    const attributeName = parts[0].trim();
+    const baseBonus = parseInt(parts[1]) || 0;
+    return `${attributeName}+${baseBonus + damageValueBonus}`;
+  }
   const baseValue = parseInt(baseDamageValue) || 0;
   return (baseValue + damageValueBonus).toString();
+}
+function calculateFinalNumericDamageValue(damageValueStr, actorAttributes, damageValueBonus = 0) {
+  const parsed = parseDamageValue(damageValueStr, actorAttributes, damageValueBonus);
+  return parsed.numericValue;
 }
 function parseDamageCheckboxChange(inputName, checked, currentDamage) {
   const match = inputName.match(/(?:damage|magicDamage|matrixDamage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
@@ -3744,6 +3869,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
       let damageValueBonus = feat.system.damageValueBonus || 0;
       if (actor) {
         const weaponType = feat.system.weaponType || "";
+        actor.system?.attributes || {};
         const activeFeats = actor.items.filter(
           (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
         );
@@ -3752,7 +3878,12 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
         });
       }
       damageValueBonus = Math.min(damageValueBonus, 2);
-      feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
+      const actorAttributes = actor ? actor.system?.attributes || {} : { strength: actorStrength };
+      if (actor && actorAttributes) {
+        feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength, actorAttributes);
+      } else {
+        feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
+      }
     }
     feat.narrativeEffectsTooltip = formatNarrativeEffectsTooltip(
       feat.system.narrativeEffects || [],
@@ -4177,10 +4308,11 @@ function formatNarrativeEffectsTooltip(narrativeEffects, description, rrEntries,
   }
   return game.i18n?.localize("SRA2.SKILLS.NO_NARRATIVE_EFFECTS") || "";
 }
-const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const SheetHelpers$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   calculateAttackPool,
   calculateFinalDamageValue,
+  calculateFinalNumericDamageValue,
   calculateRR,
   calculateRawDamageString,
   calculateSkillDicePool,
@@ -6349,7 +6481,13 @@ class CharacterSheet extends ActorSheet {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
       damageValueBonus = Math.min(damageValueBonus, 2);
-      const finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+      const actorAttributes = this.actor.system?.attributes || {};
+      const finalNumericDamage = calculateFinalNumericDamageValue(
+        baseDamageValue,
+        actorAttributes,
+        damageValueBonus
+      );
+      const finalDamageValue = finalNumericDamage.toString();
       const poolResult = calculateAttackPool(
         this.actor,
         attackSkillSpecResult,
@@ -6579,7 +6717,13 @@ class CharacterSheet extends ActorSheet {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
       damageValueBonus = Math.min(damageValueBonus, 2);
-      finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+      const actorAttributes = this.actor.system?.attributes || {};
+      const finalNumericDamage = calculateFinalNumericDamageValue(
+        baseDamageValue,
+        actorAttributes,
+        damageValueBonus
+      );
+      finalDamageValue = finalNumericDamage.toString();
     }
     const poolResult = calculateAttackPool(
       this.actor,
@@ -6671,7 +6815,13 @@ class CharacterSheet extends ActorSheet {
     const baseDamageValue = powerSystem.damageValue || "0";
     let damageValueBonus = powerSystem.damageValueBonus || 0;
     damageValueBonus = Math.min(damageValueBonus, 2);
-    const finalDamageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+    const actorAttributes = this.actor.system?.attributes || {};
+    const finalNumericDamage = calculateFinalNumericDamageValue(
+      baseDamageValue,
+      actorAttributes,
+      damageValueBonus
+    );
+    const finalDamageValue = finalNumericDamage.toString();
     handleRollRequest({
       itemType: "power",
       itemName: power.name,
@@ -7891,6 +8041,12 @@ class FeatSheet extends ItemSheet {
     html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
     html.find('input[name^="system.narrativeEffects"][name$=".isNegative"]').on("change", this._onNarrativeEffectNegativeChange.bind(this));
     html.find('[data-action="select-weapon-type"]').on("change", this._onWeaponTypeChange.bind(this));
+    html.on("change", ".vd-mode-select", this._onVdModeChange.bind(this));
+    html.on("change", 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
+    html.on("blur", 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
+    html.on("change", 'select[name="system.vdAttribute"]', this._onVdValueChange.bind(this));
+    html.on("change", 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
+    html.on("blur", 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
     html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
     html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
     html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
@@ -8075,12 +8231,45 @@ class FeatSheet extends ItemSheet {
     this.render(false);
   }
   /**
-   * Calculate the final damage value taking into account STRENGTH attribute
+   * Calculate damageValue from vdMode and related fields (for custom weapons)
+   */
+  _calculateDamageValueFromVdMode() {
+    const weaponType = this.item.system.weaponType || "";
+    const vdMode = this.item.system.vdMode || "custom";
+    if (weaponType !== "custom-weapon") {
+      return this.item.system.damageValue || "0";
+    }
+    if (vdMode === "custom") {
+      const vdCustomValue = this.item.system.vdCustomValue || 0;
+      return vdCustomValue.toString();
+    } else {
+      const vdAttribute = this.item.system.vdAttribute || "strength";
+      const vdBonus = this.item.system.vdBonus || 0;
+      if (vdAttribute === "strength") {
+        if (vdBonus === 0) {
+          return "FOR";
+        } else {
+          return `FOR+${vdBonus}`;
+        }
+      } else {
+        return `${vdAttribute}+${vdBonus}`;
+      }
+    }
+  }
+  /**
+   * Calculate the final damage value taking into account attributes and bonuses
    */
   _calculateFinalDamageValue() {
-    const damageValue = this.item.system.damageValue || "0";
+    const weaponType = this.item.system.weaponType || "";
     const damageValueBonus = this.item.system.damageValueBonus || 0;
-    const strength = this.item.actor ? this.item.actor.system?.attributes?.strength || 0 : 0;
+    let damageValue;
+    if (weaponType === "custom-weapon") {
+      damageValue = this._calculateDamageValueFromVdMode();
+    } else {
+      damageValue = this.item.system.damageValue || "0";
+    }
+    const actorAttributes = this.item.actor ? this.item.actor.system?.attributes || {} : {};
+    const strength = actorAttributes.strength || 0;
     if (damageValue === "FOR") {
       const total = strength + damageValueBonus;
       if (!this.item.actor) {
@@ -8094,6 +8283,22 @@ class FeatSheet extends ItemSheet {
         return damageValueBonus > 0 ? `FOR+${modifier}+${damageValueBonus}` : `FOR+${modifier}`;
       }
       return `${total} (FOR+${modifier}${damageValueBonus > 0 ? `+${damageValueBonus}` : ""})`;
+    } else if (damageValue.includes("+") && !damageValue.startsWith("FOR")) {
+      const parts = damageValue.split("+");
+      const attributeName = parts[0]?.trim();
+      const bonus = parts[1] ? parseInt(parts[1]) : 0;
+      if (!attributeName) {
+        const base = parseInt(damageValue) || 0;
+        const total2 = base + damageValueBonus;
+        return damageValueBonus > 0 ? `${total2} (${base}+${damageValueBonus})` : total2.toString();
+      }
+      const attributeValue = actorAttributes[attributeName] || 0;
+      const total = attributeValue + bonus + damageValueBonus;
+      const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
+      if (!this.item.actor) {
+        return damageValueBonus > 0 ? `${attributeLabel}+${bonus}+${damageValueBonus}` : `${attributeLabel}+${bonus}`;
+      }
+      return `${total} (${attributeLabel}+${bonus}${damageValueBonus > 0 ? `+${damageValueBonus}` : ""})`;
     } else if (damageValue === "toxin") {
       return game.i18n?.localize("SRA2.FEATS.WEAPON.TOXIN_DAMAGE") || "according to toxin";
     } else {
@@ -8806,6 +9011,73 @@ class FeatSheet extends ItemSheet {
       }
     }, 300);
   }
+  /**
+   * Handle VD mode change (for custom weapons)
+   */
+  async _onVdModeChange(event) {
+    const select = event.currentTarget;
+    const vdMode = select.value;
+    const newDamageValue = this._calculateDamageValueFromVdMode();
+    await this.item.update({
+      "system.vdMode": vdMode,
+      "system.damageValue": newDamageValue
+    });
+    this.render(false);
+  }
+  /**
+   * Handle VD value changes (custom value, attribute, or bonus)
+   */
+  vdValueChangeTimeout = null;
+  async _onVdValueChange(event) {
+    const target = event.target;
+    if (!target) return;
+    if (this.vdValueChangeTimeout) {
+      clearTimeout(this.vdValueChangeTimeout);
+    }
+    this.vdValueChangeTimeout = setTimeout(async () => {
+      const form = this.form;
+      if (!form) return;
+      const vdModeInput = form.querySelector('select[name="system.vdMode"]');
+      const vdCustomValueInput = form.querySelector('input[name="system.vdCustomValue"]');
+      const vdAttributeInput = form.querySelector('select[name="system.vdAttribute"]');
+      const vdBonusInput = form.querySelector('input[name="system.vdBonus"]');
+      const vdMode = vdModeInput?.value || this.item.system.vdMode || "custom";
+      const weaponType = this.item.system.weaponType || "";
+      if (weaponType !== "custom-weapon") return;
+      let newDamageValue = "0";
+      const updateData = {};
+      if (vdMode === "custom") {
+        const vdCustomValue = vdCustomValueInput?.value ? parseInt(vdCustomValueInput.value) : this.item.system.vdCustomValue ?? 0;
+        newDamageValue = vdCustomValue.toString();
+        if (vdCustomValueInput) {
+          updateData["system.vdCustomValue"] = vdCustomValue;
+        }
+      } else {
+        const vdAttribute = vdAttributeInput?.value || this.item.system.vdAttribute || "strength";
+        const vdBonus = vdBonusInput?.value ? parseInt(vdBonusInput.value) : this.item.system.vdBonus ?? 0;
+        if (vdAttributeInput) {
+          updateData["system.vdAttribute"] = vdAttribute;
+        }
+        if (vdBonusInput) {
+          updateData["system.vdBonus"] = vdBonus;
+        }
+        if (vdAttribute === "strength") {
+          if (vdBonus === 0) {
+            newDamageValue = "FOR";
+          } else {
+            newDamageValue = `FOR+${vdBonus}`;
+          }
+        } else {
+          newDamageValue = `${vdAttribute}+${vdBonus}`;
+        }
+      }
+      updateData["system.damageValue"] = newDamageValue;
+      await this.item.update(updateData);
+      if (target.tagName === "SELECT" || target.tagName === "INPUT" && target.type === "number") {
+        this.render(false);
+      }
+    }, 50);
+  }
   async close(options) {
     $(document).off("click.rr-target-search");
     $(document).off("click.power-search");
@@ -8813,6 +9085,25 @@ class FeatSheet extends ItemSheet {
   }
   async _updateObject(_event, formData) {
     const expandedData = foundry.utils.expandObject(formData);
+    if (expandedData.system?.weaponType === "custom-weapon") {
+      const vdMode = expandedData.system?.vdMode || this.item.system.vdMode || "custom";
+      if (vdMode === "custom") {
+        const vdCustomValue = expandedData.system?.vdCustomValue ?? this.item.system.vdCustomValue ?? 0;
+        expandedData.system.damageValue = vdCustomValue.toString();
+      } else {
+        const vdAttribute = expandedData.system?.vdAttribute || this.item.system.vdAttribute || "strength";
+        const vdBonus = expandedData.system?.vdBonus ?? this.item.system.vdBonus ?? 0;
+        if (vdAttribute === "strength") {
+          if (vdBonus === 0) {
+            expandedData.system.damageValue = "FOR";
+          } else {
+            expandedData.system.damageValue = `FOR+${vdBonus}`;
+          }
+        } else {
+          expandedData.system.damageValue = `${vdAttribute}+${vdBonus}`;
+        }
+      }
+    }
     if (expandedData.system?.astralProjection === true) {
       expandedData.system.astralPerception = true;
     }
@@ -9297,16 +9588,10 @@ class RollDialog extends Application {
     let highestDamage = -1;
     for (const weapon of this.rollData.availableWeapons) {
       const damageValueStr = weapon.damageValue || "0";
-      let damageValue = 0;
-      if (damageValueStr === "FOR") {
-        damageValue = this.actor.system?.attributes?.strength || 1;
-      } else if (damageValueStr.startsWith("FOR+")) {
-        const bonus = parseInt(damageValueStr.substring(4)) || 0;
-        damageValue = (this.actor.system?.attributes?.strength || 1) + bonus;
-      } else {
-        damageValue = parseInt(damageValueStr, 10) || 0;
-      }
-      damageValue += weapon.damageValueBonus || 0;
+      const damageValueBonus = weapon.damageValueBonus || 0;
+      const actorAttributes = this.actor.system?.attributes || {};
+      const parsed = parseDamageValue(damageValueStr, actorAttributes, damageValueBonus);
+      const damageValue = parsed.numericValue;
       if (damageValue > highestDamage) {
         highestDamage = damageValue;
         bestWeapon = weapon;
@@ -9343,7 +9628,13 @@ class RollDialog extends Application {
       });
     }
     damageValueBonus = Math.min(damageValueBonus, 2);
-    const damageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+    const actorAttributes = this.actor.system?.attributes || {};
+    const finalNumericDamage = calculateFinalNumericDamageValue(
+      baseDamageValue,
+      actorAttributes,
+      damageValueBonus
+    );
+    const damageValue = finalNumericDamage.toString();
     if (!baseSkillName) {
       baseSkillName = "Combat rapproché";
     }
@@ -9589,7 +9880,7 @@ class RollDialog extends Application {
     context.hasThreshold = threshold !== void 0;
     context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || "Aucune";
     if (this.rollData.isDefend && this.actor) {
-      const { getRRSources: getRRSources2 } = SheetHelpers;
+      const { getRRSources: getRRSources2 } = SheetHelpers$1;
       let defenseRRList = [];
       if (this.rollData.specName) {
         const rrSources2 = getRRSources2(this.actor, "specialization", this.rollData.specName);
@@ -9986,7 +10277,13 @@ class RollDialog extends Application {
         });
       }
       damageValueBonus = Math.min(damageValueBonus, 2);
-      const damageValue = calculateRawDamageString(baseDamageValue, damageValueBonus);
+      const actorAttributes = this.actor.system?.attributes || {};
+      const finalNumericDamage = calculateFinalNumericDamageValue(
+        baseDamageValue,
+        actorAttributes,
+        damageValueBonus
+      );
+      const damageValue = finalNumericDamage.toString();
       if (!baseSkillName) {
         baseSkillName = "Combat rapproché";
       }
@@ -10017,7 +10314,7 @@ class RollDialog extends Application {
         const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
         skillLevel = attributeValue + skillRating;
       }
-      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
+      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers$1);
       const weaponRRList = weaponSystem?.rrList || [];
       const itemRRList = weaponRRList.map((rrEntry) => ({
         ...rrEntry,
@@ -12467,7 +12764,7 @@ class SRA2System {
           console.error("Could not determine defense skill for non-vehicle defender");
           return;
         }
-        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
+        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers$1);
         let defenseRRList = [];
         if (!isVehicleDefender) {
           if (finalDefenseSpec) {

@@ -563,22 +563,65 @@
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.DAMAGE_VALUE"}}</label>
-            <div class="damage-value-display">
-              <input type="text" name="system.damageValue" value="{{system.damageValue}}" {{#if (and system.weaponType
-                (ne system.weaponType "custom-weapon" ))}}disabled{{/if}} />
-              {{#if system.weaponType}}
-              <div class="calculated-damage">
-                <span class="label-small">{{localize "SRA2.FEATS.WEAPON.FINAL_VALUE"}}:</span>
-                <span class="value-display">{{finalDamageValue}}</span>
-              </div>
-              {{#unless item.actor}}
-              <p class="notes warning-note">
-                <i class="fas fa-info-circle"></i>
-                {{localize "SRA2.FEATS.WEAPON.NEEDS_ACTOR_FOR_CALCULATION"}}
-              </p>
-              {{/unless}}
-              {{/if}}
+            {{#if (eq system.weaponType "custom-weapon")}}
+            <!-- Custom weapon: VD mode selection -->
+            <div class="vd-mode-selection">
+              <label>{{localize "SRA2.FEATS.WEAPON.VD_MODE.LABEL"}}</label>
+              <select name="system.vdMode" class="vd-mode-select">
+                <option value="custom" {{#if (eq system.vdMode "custom")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.VD_MODE.CUSTOM"}}</option>
+                <option value="attribute" {{#if (eq system.vdMode "attribute")}}selected{{/if}}>{{localize "SRA2.FEATS.WEAPON.VD_MODE.ATTRIBUTE"}}</option>
+              </select>
             </div>
+            
+            {{#if (eq system.vdMode "custom")}}
+            <!-- Custom value mode -->
+            <div class="vd-custom-mode">
+              <label>{{localize "SRA2.FEATS.WEAPON.VD_CUSTOM_VALUE"}}</label>
+              <input type="number" name="system.vdCustomValue" value="{{system.vdCustomValue}}" min="0" step="1" />
+            </div>
+            {{else}}
+            <!-- Attribute + bonus mode -->
+            <div class="vd-attribute-mode">
+              <div class="form-row">
+                <div class="form-col">
+                  <label>{{localize "SRA2.FEATS.WEAPON.VD_ATTRIBUTE"}}</label>
+                  <select name="system.vdAttribute">
+                    <option value="strength" {{#if (eq system.vdAttribute "strength")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.STRENGTH"}}</option>
+                    <option value="agility" {{#if (eq system.vdAttribute "agility")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.AGILITY"}}</option>
+                    <option value="willpower" {{#if (eq system.vdAttribute "willpower")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.WILLPOWER"}}</option>
+                    <option value="logic" {{#if (eq system.vdAttribute "logic")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</option>
+                    <option value="charisma" {{#if (eq system.vdAttribute "charisma")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</option>
+                  </select>
+                </div>
+                <div class="form-col">
+                  <label>{{localize "SRA2.FEATS.WEAPON.VD_BONUS"}}</label>
+                  <input type="number" name="system.vdBonus" value="{{system.vdBonus}}" min="0" step="1" />
+                </div>
+              </div>
+            </div>
+            {{/if}}
+            
+            <!-- Hidden damageValue field (calculated dynamically) -->
+            <input type="hidden" name="system.damageValue" value="{{system.damageValue}}" />
+            {{else}}
+            <!-- Non-custom weapon: use standard damageValue field -->
+            <div class="damage-value-display">
+              <input type="text" name="system.damageValue" value="{{system.damageValue}}" disabled />
+            </div>
+            {{/if}}
+            
+            {{#if system.weaponType}}
+            <div class="calculated-damage">
+              <span class="label-small">{{localize "SRA2.FEATS.WEAPON.FINAL_VALUE"}}:</span>
+              <span class="value-display">{{finalDamageValue}}</span>
+            </div>
+            {{#unless item.actor}}
+            <p class="notes warning-note">
+              <i class="fas fa-info-circle"></i>
+              {{localize "SRA2.FEATS.WEAPON.NEEDS_ACTOR_FOR_CALCULATION"}}
+            </p>
+            {{/unless}}
+            {{/if}}
           </div>
 
           <div class="form-group damage-value-bonus-group">

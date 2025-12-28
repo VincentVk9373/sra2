@@ -106,6 +106,18 @@ export class FeatSheet extends ItemSheet {
     // Weapon type selection
     html.find('[data-action="select-weapon-type"]').on('change', this._onWeaponTypeChange.bind(this));
     
+    // VD mode selection (for custom weapons) - use event delegation
+    html.on('change', '.vd-mode-select', this._onVdModeChange.bind(this));
+    
+    // VD custom value change - use change event for number inputs to work better with submitOnChange
+    html.on('change', 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
+    html.on('blur', 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
+    
+    // VD attribute and bonus changes - use change event for both
+    html.on('change', 'select[name="system.vdAttribute"]', this._onVdValueChange.bind(this));
+    html.on('change', 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
+    html.on('blur', 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
+    
     // Damage value bonus checkboxes
     html.find('.damage-bonus-checkbox').on('change', this._onDamageValueBonusChange.bind(this));
     
@@ -375,14 +387,58 @@ export class FeatSheet extends ItemSheet {
   }
 
   /**
-   * Calculate the final damage value taking into account STRENGTH attribute
+   * Calculate damageValue from vdMode and related fields (for custom weapons)
+   */
+  private _calculateDamageValueFromVdMode(): string {
+    const weaponType = (this.item.system as any).weaponType || '';
+    const vdMode = (this.item.system as any).vdMode || 'custom';
+    
+    // Only for custom weapons
+    if (weaponType !== 'custom-weapon') {
+      return (this.item.system as any).damageValue || "0";
+    }
+    
+    if (vdMode === 'custom') {
+      // Use custom value
+      const vdCustomValue = (this.item.system as any).vdCustomValue || 0;
+      return vdCustomValue.toString();
+    } else {
+      // Use attribute + bonus
+      const vdAttribute = (this.item.system as any).vdAttribute || 'strength';
+      const vdBonus = (this.item.system as any).vdBonus || 0;
+      
+      // For strength, use "FOR" format for compatibility
+      if (vdAttribute === 'strength') {
+        if (vdBonus === 0) {
+          return 'FOR';
+        } else {
+          return `FOR+${vdBonus}`;
+        }
+      } else {
+        // For other attributes, use format "attribute+bonus"
+        return `${vdAttribute}+${vdBonus}`;
+      }
+    }
+  }
+
+  /**
+   * Calculate the final damage value taking into account attributes and bonuses
    */
   private _calculateFinalDamageValue(): string {
-    const damageValue = (this.item.system as any).damageValue || "0";
+    const weaponType = (this.item.system as any).weaponType || '';
     const damageValueBonus = (this.item.system as any).damageValueBonus || 0;
     
-    // Get the actor's strength if available
-    const strength = this.item.actor ? ((this.item.actor.system as any)?.attributes?.strength || 0) : 0;
+    // For custom weapons, calculate damageValue from vdMode
+    let damageValue: string;
+    if (weaponType === 'custom-weapon') {
+      damageValue = this._calculateDamageValueFromVdMode();
+    } else {
+      damageValue = (this.item.system as any).damageValue || "0";
+    }
+    
+    // Get actor attributes if available
+    const actorAttributes = this.item.actor ? ((this.item.actor.system as any)?.attributes || {}) : {};
+    const strength = actorAttributes.strength || 0;
     
     // Parse the damage value
     if (damageValue === "FOR") {
@@ -400,6 +456,27 @@ export class FeatSheet extends ItemSheet {
         return damageValueBonus > 0 ? `FOR+${modifier}+${damageValueBonus}` : `FOR+${modifier}`;
       }
       return `${total} (FOR+${modifier}${damageValueBonus > 0 ? `+${damageValueBonus}` : ''})`;
+    } else if (damageValue.includes('+') && !damageValue.startsWith('FOR')) {
+      // Attribute + bonus format (e.g., "agility+2")
+      const parts = damageValue.split('+');
+      const attributeName = parts[0]?.trim();
+      const bonus = parts[1] ? parseInt(parts[1]) : 0;
+      
+      if (!attributeName) {
+        // Fallback to numeric if parsing fails
+        const base = parseInt(damageValue) || 0;
+        const total = base + damageValueBonus;
+        return damageValueBonus > 0 ? `${total} (${base}+${damageValueBonus})` : total.toString();
+      }
+      
+      const attributeValue = actorAttributes[attributeName] || 0;
+      const total = attributeValue + bonus + damageValueBonus;
+      
+      const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
+      if (!this.item.actor) {
+        return damageValueBonus > 0 ? `${attributeLabel}+${bonus}+${damageValueBonus}` : `${attributeLabel}+${bonus}`;
+      }
+      return `${total} (${attributeLabel}+${bonus}${damageValueBonus > 0 ? `+${damageValueBonus}` : ''})`;
     } else if (damageValue === "toxin") {
       // Special case for gas grenades
       return game.i18n?.localize('SRA2.FEATS.WEAPON.TOXIN_DAMAGE') || 'according to toxin';
@@ -1352,6 +1429,104 @@ export class FeatSheet extends ItemSheet {
     }, 300); // Increased delay to allow button clicks to register
   }
 
+  /**
+   * Handle VD mode change (for custom weapons)
+   */
+  private async _onVdModeChange(event: Event): Promise<void> {
+    const select = event.currentTarget as HTMLSelectElement;
+    const vdMode = select.value;
+    
+    // Update damageValue based on new mode
+    const newDamageValue = this._calculateDamageValueFromVdMode();
+    
+    await this.item.update({
+      'system.vdMode': vdMode,
+      'system.damageValue': newDamageValue
+    } as any);
+    
+    this.render(false);
+  }
+
+  /**
+   * Handle VD value changes (custom value, attribute, or bonus)
+   */
+  private vdValueChangeTimeout: any = null;
+  
+  private async _onVdValueChange(event: Event): Promise<void> {
+    // For number inputs, use 'change' event instead of 'input' to avoid conflicts with submitOnChange
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
+    if (!target) return;
+    
+    // Debounce to avoid too many updates, but shorter delay for better responsiveness
+    if (this.vdValueChangeTimeout) {
+      clearTimeout(this.vdValueChangeTimeout);
+    }
+    
+    this.vdValueChangeTimeout = setTimeout(async () => {
+      // Read values directly from the form to get the latest values
+      const form = this.form as HTMLFormElement;
+      if (!form) return;
+      
+      // Get the actual input/select element values directly
+      const vdModeInput = form.querySelector('select[name="system.vdMode"]') as HTMLSelectElement;
+      const vdCustomValueInput = form.querySelector('input[name="system.vdCustomValue"]') as HTMLInputElement;
+      const vdAttributeInput = form.querySelector('select[name="system.vdAttribute"]') as HTMLSelectElement;
+      const vdBonusInput = form.querySelector('input[name="system.vdBonus"]') as HTMLInputElement;
+      
+      const vdMode = vdModeInput?.value || (this.item.system as any).vdMode || 'custom';
+      const weaponType = (this.item.system as any).weaponType || '';
+      
+      // Only update for custom weapons
+      if (weaponType !== 'custom-weapon') return;
+      
+      let newDamageValue = '0';
+      const updateData: any = {};
+      
+      if (vdMode === 'custom') {
+        const vdCustomValue = vdCustomValueInput?.value ? parseInt(vdCustomValueInput.value) : 
+                             ((this.item.system as any).vdCustomValue ?? 0);
+        newDamageValue = vdCustomValue.toString();
+        if (vdCustomValueInput) {
+          updateData['system.vdCustomValue'] = vdCustomValue;
+        }
+      } else {
+        const vdAttribute = vdAttributeInput?.value || 
+                            (this.item.system as any).vdAttribute || 'strength';
+        const vdBonus = vdBonusInput?.value ? parseInt(vdBonusInput.value) : 
+                       ((this.item.system as any).vdBonus ?? 0);
+        
+        // Update the actual fields
+        if (vdAttributeInput) {
+          updateData['system.vdAttribute'] = vdAttribute;
+        }
+        if (vdBonusInput) {
+          updateData['system.vdBonus'] = vdBonus;
+        }
+        
+        if (vdAttribute === 'strength') {
+          if (vdBonus === 0) {
+            newDamageValue = 'FOR';
+          } else {
+            newDamageValue = `FOR+${vdBonus}`;
+          }
+        } else {
+          newDamageValue = `${vdAttribute}+${vdBonus}`;
+        }
+      }
+      
+      updateData['system.damageValue'] = newDamageValue;
+      
+      await this.item.update(updateData);
+      
+      // Only re-render if we're not in the middle of a form submission
+      // This prevents the form from being reset while the user is typing
+      if (target.tagName === 'SELECT' || (target.tagName === 'INPUT' && target.type === 'number')) {
+        // For selects and number inputs, re-render to update the calculated damage value display
+        this.render(false);
+      }
+    }, 50);
+  }
+
   override async close(options?: Application.CloseOptions): Promise<void> {
     // Clean up document-level event listeners
     $(document).off('click.rr-target-search');
@@ -1361,6 +1536,29 @@ export class FeatSheet extends ItemSheet {
 
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
     const expandedData = foundry.utils.expandObject(formData) as any;
+    
+    // For custom weapons, calculate damageValue from vdMode before updating
+    if (expandedData.system?.weaponType === 'custom-weapon') {
+      const vdMode = expandedData.system?.vdMode || (this.item.system as any).vdMode || 'custom';
+      
+      if (vdMode === 'custom') {
+        const vdCustomValue = expandedData.system?.vdCustomValue ?? (this.item.system as any).vdCustomValue ?? 0;
+        expandedData.system.damageValue = vdCustomValue.toString();
+      } else {
+        const vdAttribute = expandedData.system?.vdAttribute || (this.item.system as any).vdAttribute || 'strength';
+        const vdBonus = expandedData.system?.vdBonus ?? (this.item.system as any).vdBonus ?? 0;
+        
+        if (vdAttribute === 'strength') {
+          if (vdBonus === 0) {
+            expandedData.system.damageValue = 'FOR';
+          } else {
+            expandedData.system.damageValue = `FOR+${vdBonus}`;
+          }
+        } else {
+          expandedData.system.damageValue = `${vdAttribute}+${vdBonus}`;
+        }
+      }
+    }
     
     // If astral projection is enabled, automatically enable astral perception
     if (expandedData.system?.astralProjection === true) {

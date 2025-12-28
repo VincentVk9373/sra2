@@ -2338,7 +2338,14 @@ export class CharacterSheet extends ActorSheet {
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
       
-      const finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
+      // Calculate final numeric damage value (resolved with actor attributes)
+      const actorAttributes = (this.actor.system as any)?.attributes || {};
+      const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
+        baseDamageValue, 
+        actorAttributes, 
+        damageValueBonus
+      );
+      const finalDamageValue = finalNumericDamage.toString();
       
       // Calculate attack pool with all RR sources using unified helper
       const poolResult = SheetHelpers.calculateAttackPool(
@@ -2638,7 +2645,14 @@ export class CharacterSheet extends ActorSheet {
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
       
-      finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
+      // Calculate final numeric damage value (resolved with actor attributes)
+      const actorAttributes = (this.actor.system as any)?.attributes || {};
+      const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
+        baseDamageValue, 
+        actorAttributes, 
+        damageValueBonus
+      );
+      finalDamageValue = finalNumericDamage.toString();
     }
 
     // Calculate attack pool with all RR sources using unified helper
@@ -2755,7 +2769,14 @@ export class CharacterSheet extends ActorSheet {
     // Limit total bonus to 2 maximum
     damageValueBonus = Math.min(damageValueBonus, 2);
     
-    const finalDamageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
+    // Calculate final numeric damage value (resolved with actor attributes)
+    const actorAttributes = (this.actor.system as any)?.attributes || {};
+    const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
+      baseDamageValue, 
+      actorAttributes, 
+      damageValueBonus
+    );
+    const finalDamageValue = finalNumericDamage.toString();
     
     DiceRoller.handleRollRequest({
       itemType: 'power',

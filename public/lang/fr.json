@@ -540,6 +540,14 @@
                 "DAMAGE_VALUE_BONUS_HINT": "Chaque case cochée ajoute +1 au VD et +1 au niveau recommandé",
                 "BONUS_1": "+1 VD (+1 niveau)",
                 "BONUS_2": "+2 VD (+2 niveaux)",
+                "VD_MODE": {
+                    "LABEL": "Mode de VD",
+                    "CUSTOM": "Valeur custom",
+                    "ATTRIBUTE": "Attribut + bonus"
+                },
+                "VD_CUSTOM_VALUE": "Valeur VD custom",
+                "VD_ATTRIBUTE": "Attribut pour VD",
+                "VD_BONUS": "Bonus VD",
                 "DAMAGE_TYPE": "Type de dégâts",
                 "DAMAGE_TYPE_PHYSICAL": "Physique",
                 "DAMAGE_TYPE_MAGIC": "Magic",

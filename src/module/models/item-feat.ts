@@ -336,6 +336,45 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.WEAPON.DAMAGE_VALUE_BONUS"
       }),
+      // VD mode for custom weapons: "custom" or "attribute"
+      vdMode: new fields.StringField({
+        required: true,
+        initial: "custom",
+        choices: {
+          "custom": "SRA2.FEATS.WEAPON.VD_MODE.CUSTOM",
+          "attribute": "SRA2.FEATS.WEAPON.VD_MODE.ATTRIBUTE"
+        },
+        label: "SRA2.FEATS.WEAPON.VD_MODE.LABEL"
+      }),
+      // Custom VD value (for vdMode = "custom")
+      vdCustomValue: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON.VD_CUSTOM_VALUE"
+      }),
+      // Attribute for VD calculation (for vdMode = "attribute")
+      vdAttribute: new fields.StringField({
+        required: true,
+        initial: "strength",
+        choices: {
+          strength: "SRA2.ATTRIBUTES.STRENGTH",
+          agility: "SRA2.ATTRIBUTES.AGILITY",
+          willpower: "SRA2.ATTRIBUTES.WILLPOWER",
+          logic: "SRA2.ATTRIBUTES.LOGIC",
+          charisma: "SRA2.ATTRIBUTES.CHARISMA"
+        },
+        label: "SRA2.FEATS.WEAPON.VD_ATTRIBUTE"
+      }),
+      // Bonus for VD calculation (for vdMode = "attribute")
+      vdBonus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.WEAPON.VD_BONUS"
+      }),
       damageType: new fields.StringField({
         required: true,
         initial: "physical",
@@ -798,6 +837,30 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         'counterspell': 'Spé: Contresort'
       };
       (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+    }
+    
+    // For custom weapons, calculate damageValue from vdMode
+    const weaponType = (this as any).weaponType || '';
+    if (weaponType === 'custom-weapon' && (featType === 'weapon' || featType === 'weapons-spells')) {
+      const vdMode = (this as any).vdMode || 'custom';
+      
+      if (vdMode === 'custom') {
+        const vdCustomValue = (this as any).vdCustomValue ?? 0;
+        (this as any).damageValue = vdCustomValue.toString();
+      } else {
+        const vdAttribute = (this as any).vdAttribute || 'strength';
+        const vdBonus = (this as any).vdBonus ?? 0;
+        
+        if (vdAttribute === 'strength') {
+          if (vdBonus === 0) {
+            (this as any).damageValue = 'FOR';
+          } else {
+            (this as any).damageValue = `FOR+${vdBonus}`;
+          }
+        } else {
+          (this as any).damageValue = `${vdAttribute}+${vdBonus}`;
+        }
+      }
     }
     
     // Calculate cost based on cost type (for equipment and weapons)

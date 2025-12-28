@@ -127,20 +127,12 @@ export class RollDialog extends Application {
     
     for (const weapon of this.rollData.availableWeapons) {
       const damageValueStr = weapon.damageValue || '0';
-      let damageValue = 0;
+      const damageValueBonus = weapon.damageValueBonus || 0;
       
-      // Parse damage value (handle FOR, FOR+X, or numeric)
-      if (damageValueStr === 'FOR') {
-        damageValue = (this.actor.system as any)?.attributes?.strength || 1;
-      } else if (damageValueStr.startsWith('FOR+')) {
-        const bonus = parseInt(damageValueStr.substring(4)) || 0;
-        damageValue = ((this.actor.system as any)?.attributes?.strength || 1) + bonus;
-      } else {
-        damageValue = parseInt(damageValueStr, 10) || 0;
-      }
-      
-      // Add bonus
-      damageValue += weapon.damageValueBonus || 0;
+      // Parse damage value using helper (handles FOR, FOR+X, attribute+bonus, numeric)
+      const actorAttributes = (this.actor.system as any)?.attributes || {};
+      const parsed = SheetHelpers.parseDamageValue(damageValueStr, actorAttributes, damageValueBonus);
+      const damageValue = parsed.numericValue;
       
       if (damageValue > highestDamage) {
         highestDamage = damageValue;
@@ -200,8 +192,14 @@ export class RollDialog extends Application {
     // Limit total bonus to 2 maximum
     damageValueBonus = Math.min(damageValueBonus, 2);
     
-    // Calculate final damage value string
-    const damageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
+    // Calculate final numeric damage value (resolved with actor attributes)
+    const actorAttributes = (this.actor.system as any)?.attributes || {};
+    const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
+      baseDamageValue, 
+      actorAttributes, 
+      damageValueBonus
+    );
+    const damageValue = finalNumericDamage.toString();
     
     // Default to "Combat rapproché" if no skill found
     if (!baseSkillName) {
@@ -1090,8 +1088,14 @@ export class RollDialog extends Application {
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
       
-      // Calculate final damage value string
-      const damageValue = SheetHelpers.calculateRawDamageString(baseDamageValue, damageValueBonus);
+      // Calculate final numeric damage value (resolved with actor attributes)
+      const actorAttributes = (this.actor.system as any)?.attributes || {};
+      const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
+        baseDamageValue, 
+        actorAttributes, 
+        damageValueBonus
+      );
+      const damageValue = finalNumericDamage.toString();
 
       // Default to "Combat rapproché" if no skill found
       if (!baseSkillName) {
