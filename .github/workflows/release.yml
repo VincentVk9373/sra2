@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# Cancel any in-progress runs when a new one is triggered
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -69,6 +74,25 @@ jobs:
       - name: Pack compendiums
         run: node ./tools/compendium/packCompendiumsToPublic.mjs
 
+      - name: Update master branch with new system.json
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Commit the updated system.json
+          git add public/system.json
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update system.json for release ${{ steps.version.outputs.tag }}"
+            echo "📝 Committed system.json changes"
+          else
+            echo "ℹ️ No changes to system.json"
+          fi
+          
+          # Push to master - FAIL if this doesn't work
+          echo "🚀 Pushing to master branch..."
+          git push origin HEAD:master
+          echo "✅ Successfully pushed to master"
+
       - name: Create release archive
         run: |
           TAG=${{ steps.version.outputs.tag }}
@@ -113,16 +137,4 @@ jobs:
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, 'beta') || contains(steps.version.outputs.tag, 'alpha') }}
           generate_release_notes: true
-
-      - name: Update master branch with new system.json
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          # Commit the updated system.json
-          git add public/system.json
-          git diff --staged --quiet || git commit -m "chore: update system.json for release ${{ steps.version.outputs.tag }}"
-          
-          # Push to master
-          git push origin HEAD:master || echo "⚠️ Could not push to master (may need manual update)"
 
