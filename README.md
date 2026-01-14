@@ -81,14 +81,10 @@ All character abilities, equipment, and powers are managed as Feats:
 | **Cyberware/Bioware** | Cybernetic and biological enhancements (with Essence cost) |
 | **Cyberdecks** | Matrix equipment with Firewall and Attack ratings |
 | **Vehicles/Drones** | Transportation and remote units |
-| **Weapons & Spells** | Combat equipment and magical abilities (40+ weapon types with DV, ranges, linked skills; spell categories: Combat, Detection, Health, Illusion, Manipulation) |
+| **Weapons** | Combat equipment (40+ weapon types with DV, ranges, linked skills) |
+| **Spells** | Magical abilities (spell categories: Combat, Detection, Health, Illusion, Manipulation) |
 | **Powers** | Special abilities and powers |
 | **Knowledge** | Knowledge-based abilities |
-
-### Metatypes
-- Human, Elf, Dwarf, Ork, Troll
-- Maximum attribute limits
-- Anarchy bonus configuration
 
 ## Combat System
 

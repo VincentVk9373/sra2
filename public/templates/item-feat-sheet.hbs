@@ -15,7 +15,6 @@
           {{else if (eq system.featType "cyberware")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERWARE"}}
           {{else if (eq system.featType "cyberdeck")}}{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}
           {{else if (eq system.featType "vehicle")}}{{localize "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}
-          {{else if (eq system.featType "weapons-spells")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}
           {{else if (eq system.featType "weapon")}}{{localize "SRA2.FEATS.FEAT_TYPE.WEAPON"}}
           {{else if (eq system.featType "spell")}}{{localize "SRA2.FEATS.FEAT_TYPE.SPELL"}}
           {{else if (eq system.featType "power")}}{{localize "SRA2.FEATS.FEAT_TYPE.POWER"}}
@@ -42,7 +41,7 @@
           title="{{localize 'SRA2.FEATS.SECTION.STATS'}}">
           <i class="fas fa-chart-bar"></i>
         </button>
-        {{#if (or (eq system.featType "weapon") (eq system.featType "weapons-spells"))}}
+        {{#if (eq system.featType "weapon")}}
         <button type="button" class="nav-item {{#if (eq activeSection 'weapon')}}active{{/if}}" data-section="weapon"
           title="{{localize 'SRA2.FEATS.SECTION.WEAPON'}}">
           <i class="fas fa-crosshairs"></i>
@@ -126,8 +125,6 @@
                 "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</option>
               <option value="vehicle" {{#if (eq system.featType "vehicle" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.VEHICLE"}}</option>
-              <option value="weapons-spells" {{#if (eq system.featType "weapons-spells" )}}selected{{/if}}>{{localize
-                "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS"}}</option>
               <option value="weapon" {{#if (eq system.featType "weapon" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</option>
               <option value="spell" {{#if (eq system.featType "spell" )}}selected{{/if}}>{{localize
@@ -146,8 +143,7 @@
             <p class="notes">{{localize "SRA2.FEATS.RATING_AUTO_CALCULATED"}}</p>
           </div>
 
-          {{#if (or (eq system.featType "equipment") (eq system.featType "weapon") (eq system.featType
-          "weapons-spells"))}}
+          {{#if (or (eq system.featType "equipment") (eq system.featType "weapon"))}}
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.COST.LABEL"}}</label>
             <select name="system.cost">
@@ -401,7 +397,7 @@
         </section>
 
         <!-- Weapon Section -->
-        {{#if (or (eq system.featType "weapon") (eq system.featType "weapons-spells"))}}
+        {{#if (eq system.featType "weapon")}}
         <section class="content-section {{#if (eq activeSection 'weapon')}}active{{/if}}" data-section-content="weapon">
           <h2><i class="fas fa-crosshairs"></i> {{localize "SRA2.FEATS.WEAPON.SECTION_TITLE"}}</h2>
 
