@@ -12035,11 +12035,6 @@ class SRA2System {
       specialization: SpecializationDataModel,
       metatype: MetatypeDataModel
     };
-    DocumentSheetConfig.registerSheet(Actor, "sra2", CharacterSheet, {
-      types: ["character"],
-      makeDefault: false,
-      label: "SRA2.SHEET.CHARACTER"
-    });
     DocumentSheetConfig.registerSheet(Actor, "sra2", CharacterSheetV2, {
       types: ["character"],
       makeDefault: true,

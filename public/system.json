@@ -7,7 +7,7 @@
   "url": "https://github.com/VincentVk9373/sra2",
   "bugs": "https://github.com/VincentVk9373/sra2/issues",
   "title": "Shadowrun Anarchy 2",
-  "description": "Shadowrun Anarchy 2 system for FoundryVTT",
+  "description": "Shadowrun Anarchy 2 unofficial system for FoundryVTT",
   "compatibility": {
     "minimum": 13,
     "verified": 13

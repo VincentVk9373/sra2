@@ -112,12 +112,12 @@ export class SRA2System {
       metatype: models.MetatypeDataModel,
     };
 
-    // Register character sheet (detailed view)
-    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
-      types: ["character"],
-      makeDefault: false,
-      label: "SRA2.SHEET.CHARACTER"
-    });
+    // Register character sheet (detailed view) - Hidden from selection
+    // DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
+    //   types: ["character"],
+    //   makeDefault: false,
+    //   label: "SRA2.SHEET.CHARACTER"
+    // });
 
     // Register character sheet V2 (in-run view - default)
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheetV2, {
