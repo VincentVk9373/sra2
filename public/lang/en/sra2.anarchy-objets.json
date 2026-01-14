@@ -530,8 +530,8 @@
             "description": ""
         },
         {
-            "id": "Combat ASTRAL",
-            "name": "ASTRAL Combat",
+            "id": "Combat astral",
+            "name": "Astral Combat",
             "description": ""
         },
         {
@@ -2116,7 +2116,7 @@
         },
         {
             "id": "Sorcellerie",
-            "name": "SOrkery",
+            "name": "Spellcrafting",
             "description": ""
         },
         {

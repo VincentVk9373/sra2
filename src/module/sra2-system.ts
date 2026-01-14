@@ -53,7 +53,7 @@ export class SRA2System {
     }
 
     // Initialize Babele translations if module is available (after setup, before init)
-    Hooks.once('setup', () => this.initializeBabele());
+    // Hooks.once('setup', () => this.initializeBabele()); // Deactivated
     
     Hooks.once('init', () => this.onInit());
   }

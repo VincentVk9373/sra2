@@ -1,0 +1,106 @@
+# Rules for translation injection
+
+## Translation file structure
+
+### Main files (Foundry VTT standard)
+- `public/lang/en.json` : English translations (reference file)
+- `public/lang/fr.json` : French translations
+- `public/lang/en` : English translation directory (reference)
+- `public/lang/fr` : French translation directory
+
+Hierarchical JSON structure with dotted keys (e.g.: `SRA2.SHEET.CHARACTER`).
+
+**Format:**
+```json
+{
+    "SRA2": {
+        "SHEET": {
+            "CHARACTER": "Detailed",
+            "CHARACTER_V2": "In Run"
+        }
+    }
+}
+```
+
+**Usage in code:**
+- `game.i18n.localize('SRA2.SHEET.CHARACTER')` → "Detailed"
+- `game.i18n.format('SRA2.MIGRATION.EXECUTING', { code: 'migration', version: '1.0.0' })` → for strings with parameters
+
+### Babele files (compendiums)
+Files in `public/lang/en/` and `public/lang/fr/`:
+- `sra2.anarchy-objets.json` : Object translations
+- `sra2.anarchy-acteurs.json` : Actor translations
+- `sra2.sra2-skills.json` : Skill translations
+
+**Format:**
+```json
+{
+    "label": "anarchy-objets",
+    "mapping": {
+        "description": "system.description"
+    },
+    "entries": [
+        {
+            "id": "ID_ORIGINAL_FR",
+            "name": "Name in English",
+            "description": "Description in English"
+        }
+    ]
+}
+```
+
+**Fields:**
+- `id` : Original identifier (usually in French)
+- `name` : Translated name (in English for `en/`)
+- `description` : Translated description (may contain HTML)
+
+## Instructions for injecting translations
+
+### For main files (`en.json`, `fr.json`)
+
+1. **Locate the key** : Find the key in the file (hierarchical structure)
+2. **Verify structure** : Ensure the key exists in both files (en/fr)
+3. **Add/Modify** : 
+   - If the key doesn't exist, add it at the correct position in the hierarchy
+   - If it exists, modify the value
+4. **Preserve JSON format** : Maintain structure, indentation (2 spaces) and commas
+
+**Example:**
+- Key: `SRA2.NEW_FEATURE.TITLE`
+- In `en.json` : `"TITLE": "New Feature"`
+- In `fr.json` : `"TITLE": "Nouvelle Fonctionnalité"`
+
+### For Babele files
+
+1. **Identify the file** : Determine if it's an object, actor or skill
+2. **Find the entry** : Search by `id` in the file
+3. **Update** : Modify `name` and/or `description`
+4. **Maintain consistency** : `id` values must match between languages
+
+**Example:**
+- ID: `"Amortisseur traumatique"`
+- In `en/sra2.anarchy-objets.json` : `"name": "Trauma Damper"`
+- In `fr/sra2.anarchy-objets.json` : `"name": "Amortisseur traumatique"` (original)
+
+## Important conventions
+
+1. **Hierarchical structure** : Respect key hierarchy (SRA2 → SECTION → KEY)
+2. **UPPERCASE keys** : Use SCREAMING_SNAKE_CASE for keys
+3. **JSON format** : Always validate JSON after modification
+4. **Consistency** : If a key is added in `en.json`, it must also be added in `fr.json`
+5. **Babele** : `id` values in Babele files are usually in French (original source)
+
+## Injection process for AI
+
+When the user requests to inject a translation:
+
+1. **Read the concerned translation file** (en.json, fr.json, or Babele file)
+2. **Identify the exact location in the hierarchy**
+3. **Add/modify the translation while preserving:**
+   - Valid JSON structure
+   - Indentation (2 spaces)
+   - Appropriate commas
+   - Key hierarchy
+4. **If it's a new key**, add it in both languages (en/fr)
+5. **For Babele**, update `name` and `description` if necessary
+6. **Validate JSON** after modification

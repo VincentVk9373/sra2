@@ -87,9 +87,9 @@
   ],
   "packs": [
     {
-      "name": "anarchy-acteurs",
-      "label": "Anarchy Acteurs",
-      "type": "Actor",
+      "name": "anarchy-items-en",
+      "label": "Anarchy Items (EN)",
+      "type": "Item",
       "system": "sra2",
       "ownership": {
         "PLAYER": "OBSERVER",
@@ -97,8 +97,8 @@
       }
     },
     {
-      "name": "anarchy-objets",
-      "label": "Anarchy Objets",
+      "name": "anarchy-items-fr",
+      "label": "Anarchy Items (FR)",
       "type": "Item",
       "system": "sra2",
       "ownership": {

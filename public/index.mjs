@@ -11994,7 +11994,6 @@ class SRA2System {
     if (game.system) {
       game.system.sra2 = this;
     }
-    Hooks.once("setup", () => this.initializeBabele());
     Hooks.once("init", () => this.onInit());
   }
   onInit() {
