@@ -948,7 +948,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
-          "weapons-spells": "SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
           "connaissance": "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE",

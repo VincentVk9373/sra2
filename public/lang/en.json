@@ -70,8 +70,7 @@
                 "INFO": "Information",
                 "COMBAT": "Combat",
                 "SKILLS": "Skills",
-                "FEATS": "Feats",
-                "WEAPONS_SPELLS": "Weapons and Spells"
+                "FEATS": "Feats"
             }
         },
         "VEHICLE": {

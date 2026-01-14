@@ -145,8 +145,8 @@ Cette séparation évite la duplication et met en avant les capacités offensive
   - Effets de survol rouge/violet
 
 ### Traductions
-- FR : `ATTACK_WITH_WEAPON`, `CAST_SPELL`, `ATTACK`, `SECTION.WEAPONS_SPELLS`
-- EN : `ATTACK_WITH_WEAPON`, `CAST_SPELL`, `ATTACK`, `SECTION.WEAPONS_SPELLS`
+- FR : `ATTACK_WITH_WEAPON`, `CAST_SPELL`, `ATTACK`
+- EN : `ATTACK_WITH_WEAPON`, `CAST_SPELL`, `ATTACK`
 
 ## Avantages
 
