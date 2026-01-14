@@ -25,9 +25,6 @@ No compendiums are provided to not infringe CGL or BBE copyrights. This may chan
 ## Advanced Mode
 ![Advanced Mode with detailed metrics](./docs/img/advanced_mode.png)
 
-## Quick NPC Creation
-![NPC Selection Dialog](./docs/img/choose_npc.png)
-
 ## Simplified NPC View
 ![Small NPC Sheet](./docs/img/small-npc.png)
 
