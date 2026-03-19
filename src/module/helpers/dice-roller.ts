@@ -227,6 +227,7 @@ export interface RollRequestData {
   // Spell-specific properties
   spellType?: 'direct' | 'indirect';  // For spells: 'direct' or 'indirect'
   isSpellDirect?: boolean;  // Flag for direct spells (no defense allowed)
+  damageSuccesses?: number;  // For indirect spells: how many successes were allocated to damage (rest goes to zone)
   
   // ICE-specific properties
   iceType?: string;  // Type of ICE (blaster, black, killer, etc.)
@@ -477,17 +478,25 @@ function buildDefenseResult(
   let calculatedDamage = 0;
   let attackFailed = false;
 
-  if (attackSuccesses >= defenseSuccesses) {
+  // For indirect spells with zone allocation: use player-allocated damage successes
+  // instead of total attack successes for both comparison and damage calculation
+  const isIndirectSpellWithAllocation = rollData.attackRollData!.spellType === 'indirect'
+    && rollData.attackRollData!.damageSuccesses !== undefined;
+  const effectiveAttackSuccesses = isIndirectSpellWithAllocation
+    ? rollData.attackRollData!.damageSuccesses!
+    : attackSuccesses;
+
+  if (effectiveAttackSuccesses >= defenseSuccesses) {
     if (isIceAttack) {
       const iceDamageValue = rollData.attackRollData!.iceDamageValue || 0;
       if (iceType === 'blaster' || iceType === 'black' || iceType === 'killer') {
-        calculatedDamage = iceDamageValue + attackSuccesses - defenseSuccesses;
+        calculatedDamage = iceDamageValue + effectiveAttackSuccesses - defenseSuccesses;
       }
     } else {
       const damageValueStr = rollData.attackRollData!.damageValue || '0';
       const attackerAttributes = (defender?.system as any)?.attributes || {};
       const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, 'defense');
-      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+      calculatedDamage = damageValue + effectiveAttackSuccesses - defenseSuccesses;
     }
   } else {
     attackFailed = true;
@@ -506,7 +515,7 @@ function buildDefenseResult(
   const attackDamageType = (rollData.attackRollData!.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
 
   return {
-    attackSuccesses,
+    attackSuccesses: effectiveAttackSuccesses,
     defenseSuccesses,
     calculatedDamage,
     attackFailed,
@@ -711,6 +720,7 @@ async function createRollChatMessage(
     attackerTokenUuid,
     defenderTokenUuid,
     isSpellDirect:   rollData.isSpellDirect || false,
+    isSpellIndirect: isAttack && rollData.spellType === 'indirect' && !rollData.isSpellDirect,
   };
 
   const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);

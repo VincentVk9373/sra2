@@ -806,6 +806,45 @@ export class SRA2System {
         }
       });
 
+      // Spell success distribution handlers
+      html.find('.spell-dist-btn').off('click');
+      html.find('.spell-dist-btn').on('click', (event: any) => {
+        event.preventDefault();
+        const btn = $(event.currentTarget);
+        const target = btn.data('target') as 'damage' | 'zone';
+        const dist = btn.closest('.spell-distribution');
+        const total = parseInt(dist.data('total-successes') as string) || 0;
+        let dmg = parseInt(dist.data('damage-successes') as string) || 0;
+        let zone = parseInt(dist.data('zone-successes') as string) || 0;
+
+        if (btn.hasClass('spell-dist-plus')) {
+          if (target === 'damage' && dmg < total) { dmg++; zone--; }
+          else if (target === 'zone' && zone < total) { zone++; dmg--; }
+        } else {
+          if (target === 'damage' && dmg > 0) { dmg--; zone++; }
+          else if (target === 'zone' && zone > 0) { zone--; dmg++; }
+        }
+
+        dist.data('damage-successes', dmg);
+        dist.data('zone-successes', zone);
+        dist.find('.spell-damage-count').text(dmg);
+        dist.find('.spell-zone-count').text(zone);
+        dist.find('.spell-zone-meters').text(zone * 3);
+
+        // For direct spells: also update the displayed final damage and apply button
+        const directContainer = dist.closest('.spell-direct-damage');
+        if (directContainer.length) {
+          dist.find('.spell-damage-bonus').text(dmg);
+          directContainer.find('.spell-final-damage').text(dmg);
+          directContainer.find('.apply-damage-button').data('damage', dmg);
+          // Reflect on the damage attribute so the click handler reads the updated value
+          directContainer.find('.apply-damage-button').attr('data-damage', dmg.toString());
+        } else {
+          // Indirect spell: update damage successes display
+          dist.find('.spell-damage-bonus').text(dmg);
+        }
+      });
+
       // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
       html.off('mouseenter', '.defend-button, .counter-attack-button');
       html.on('mouseenter', '.defend-button, .counter-attack-button', (event: any) => {
@@ -896,7 +935,16 @@ export class SRA2System {
           isDefend:        true,
           isCounterAttack: false,
           attackRollResult: rollResult,
-          attackRollData:   rollData,
+          // For indirect spells: pass the player-allocated damage successes so buildDefenseResult uses them
+          attackRollData: (() => {
+            const spellDist = $(event.currentTarget).closest('.sra2-roll-result').find('.spell-distribution');
+            const allocatedDamage = spellDist.length
+              ? (parseInt(spellDist.data('damage-successes') as string) || undefined)
+              : undefined;
+            return allocatedDamage !== undefined
+              ? { ...rollData, damageSuccesses: allocatedDamage }
+              : rollData;
+          })(),
         };
 
         const { RollDialog } = await import('./applications/roll-dialog.js');

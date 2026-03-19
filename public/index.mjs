@@ -4041,17 +4041,19 @@ function buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefend
   const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
   let calculatedDamage = 0;
   let attackFailed = false;
-  if (attackSuccesses >= defenseSuccesses) {
+  const isIndirectSpellWithAllocation = rollData.attackRollData.spellType === "indirect" && rollData.attackRollData.damageSuccesses !== void 0;
+  const effectiveAttackSuccesses = isIndirectSpellWithAllocation ? rollData.attackRollData.damageSuccesses : attackSuccesses;
+  if (effectiveAttackSuccesses >= defenseSuccesses) {
     if (isIceAttack) {
       const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
       if (iceType === "blaster" || iceType === "black" || iceType === "killer") {
-        calculatedDamage = iceDamageValue + attackSuccesses - defenseSuccesses;
+        calculatedDamage = iceDamageValue + effectiveAttackSuccesses - defenseSuccesses;
       }
     } else {
       const damageValueStr = rollData.attackRollData.damageValue || "0";
       const attackerAttributes = defender?.system?.attributes || {};
       const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, "defense");
-      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+      calculatedDamage = damageValue + effectiveAttackSuccesses - defenseSuccesses;
     }
   } else {
     attackFailed = true;
@@ -4066,7 +4068,7 @@ function buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefend
   }
   const attackDamageType = rollData.attackRollData.damageType || "physical";
   return {
-    attackSuccesses,
+    attackSuccesses: effectiveAttackSuccesses,
     defenseSuccesses,
     calculatedDamage,
     attackFailed,
@@ -4214,7 +4216,8 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
     defenderUuid: finalDefenderUuid,
     attackerTokenUuid,
     defenderTokenUuid,
-    isSpellDirect: rollData.isSpellDirect || false
+    isSpellDirect: rollData.isSpellDirect || false,
+    isSpellIndirect: isAttack && rollData.spellType === "indirect" && !rollData.isSpellDirect
   };
   const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
   const messageData = {
@@ -12446,6 +12449,47 @@ class SRA2System {
           setTimeout(() => button.prop("disabled", false), DELAYS.BUTTON_REENABLE);
         }
       });
+      html.find(".spell-dist-btn").off("click");
+      html.find(".spell-dist-btn").on("click", (event) => {
+        event.preventDefault();
+        const btn = $(event.currentTarget);
+        const target = btn.data("target");
+        const dist = btn.closest(".spell-distribution");
+        const total = parseInt(dist.data("total-successes")) || 0;
+        let dmg = parseInt(dist.data("damage-successes")) || 0;
+        let zone = parseInt(dist.data("zone-successes")) || 0;
+        if (btn.hasClass("spell-dist-plus")) {
+          if (target === "damage" && dmg < total) {
+            dmg++;
+            zone--;
+          } else if (target === "zone" && zone < total) {
+            zone++;
+            dmg--;
+          }
+        } else {
+          if (target === "damage" && dmg > 0) {
+            dmg--;
+            zone++;
+          } else if (target === "zone" && zone > 0) {
+            zone--;
+            dmg++;
+          }
+        }
+        dist.data("damage-successes", dmg);
+        dist.data("zone-successes", zone);
+        dist.find(".spell-damage-count").text(dmg);
+        dist.find(".spell-zone-count").text(zone);
+        dist.find(".spell-zone-meters").text(zone * 3);
+        const directContainer = dist.closest(".spell-direct-damage");
+        if (directContainer.length) {
+          dist.find(".spell-damage-bonus").text(dmg);
+          directContainer.find(".spell-final-damage").text(dmg);
+          directContainer.find(".apply-damage-button").data("damage", dmg);
+          directContainer.find(".apply-damage-button").attr("data-damage", dmg.toString());
+        } else {
+          dist.find(".spell-damage-bonus").text(dmg);
+        }
+      });
       html.off("mouseenter", ".defend-button, .counter-attack-button");
       html.on("mouseenter", ".defend-button, .counter-attack-button", (event) => {
         const tokenUuid = $(event.currentTarget).data("defender-token-uuid") ?? $(event.currentTarget).closest(".attack-actions").data("defender-token-uuid");
@@ -12526,7 +12570,12 @@ class SRA2System {
           isDefend: true,
           isCounterAttack: false,
           attackRollResult: rollResult,
-          attackRollData: rollData
+          // For indirect spells: pass the player-allocated damage successes so buildDefenseResult uses them
+          attackRollData: (() => {
+            const spellDist = $(event.currentTarget).closest(".sra2-roll-result").find(".spell-distribution");
+            const allocatedDamage = spellDist.length ? parseInt(spellDist.data("damage-successes")) || void 0 : void 0;
+            return allocatedDamage !== void 0 ? { ...rollData, damageSuccesses: allocatedDamage } : rollData;
+          })()
         };
         const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
         const dialog = new RollDialog2(defenseRollData);

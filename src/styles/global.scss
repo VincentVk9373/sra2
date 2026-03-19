@@ -1208,6 +1208,94 @@ select {
     }
 }
 
+/* Spell success distribution widget */
+.sra2-roll-result {
+    .spell-distribution {
+        margin-top: 8px;
+        padding: 6px 8px;
+        background: rgba(100, 60, 160, 0.15);
+        border: 1px solid rgba(150, 80, 220, 0.4);
+        border-radius: 6px;
+
+        .spell-distribution-header {
+            font-size: 0.75rem;
+            color: rgba(190, 140, 255, 0.9);
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+
+            i { margin-right: 4px; }
+        }
+
+        .spell-distribution-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .distribution-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .distribution-label {
+                font-size: 0.72rem;
+                color: rgba(220, 200, 255, 0.85);
+                width: 70px;
+                flex-shrink: 0;
+
+                i { margin-right: 3px; }
+            }
+
+            .distribution-counter {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .spell-dist-btn {
+                    width: 20px;
+                    height: 20px;
+                    padding: 0;
+                    font-size: 0.85rem;
+                    line-height: 1;
+                    border-radius: 4px;
+                    background: rgba(150, 80, 220, 0.5);
+                    border: 1px solid rgba(180, 100, 255, 0.5);
+                    color: #fff;
+                    cursor: pointer;
+                    min-height: unset;
+
+                    &:hover {
+                        background: rgba(180, 100, 255, 0.7);
+                    }
+                }
+
+                .spell-damage-count,
+                .spell-zone-count {
+                    min-width: 20px;
+                    text-align: center;
+                    font-size: 0.9rem;
+                    font-weight: bold;
+                    color: #fff;
+                }
+            }
+
+            .distribution-result {
+                font-size: 0.72rem;
+                color: rgba(220, 200, 255, 0.75);
+                flex: 1;
+                text-align: right;
+            }
+        }
+    }
+
+    .spell-indirect-distribution {
+        margin-top: 8px;
+        margin-bottom: 4px;
+    }
+}
+
 /* ================================
    GROUP ANARCHY COUNTER POPUP
    ================================ */
