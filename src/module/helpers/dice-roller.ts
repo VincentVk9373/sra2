@@ -737,7 +737,7 @@ async function createRollChatMessage(
   };
 
   await ChatMessage.create(messageData);
-  
+
   // Handle drain for Sorcery and Conjuration tests
   await handleDrain(attacker, rollData, rollResult);
 }

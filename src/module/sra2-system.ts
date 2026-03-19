@@ -973,6 +973,7 @@ export class SRA2System {
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
       });
+
     });
 
     // Register token context menu hook for bookmarks/favorites

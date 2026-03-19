@@ -1009,6 +1009,7 @@
             "RISK_REDUCTION": "Risk Reduction",
             "RR": "RR",
             "SUCCESSES": "Hits",
+            "DEFENDS": "Defends",
             "NORMAL_DICE": "Normal Dice",
             "MANUAL_RR_BONUS": "Manual RR Bonus",
             "MANUAL_RR_BONUS_TOOLTIP": "Add a manual RR bonus (0-3)",
