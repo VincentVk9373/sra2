@@ -22,7 +22,8 @@ export class SpecializationSheet extends ItemSheet {
   override getData(): any {
     const context = super.getData() as any;
     context.system = this.item.system;
-    
+    context.isGM = (game as any).user?.isGM ?? false;
+
     // Get linked skill info if exists
     if (context.system.linkedSkill) {
       // linkedSkill is stored as a name, so we display it directly

@@ -157,6 +157,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: ""
       }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
+      }),
       bookmarked: new fields.BooleanField({
         required: true,
         initial: false,

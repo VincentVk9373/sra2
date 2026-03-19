@@ -154,6 +154,11 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         notes: new fields.HTMLField({
           required: true,
           initial: ""
+        }),
+        gmDescription: new fields.HTMLField({
+          required: false,
+          initial: "",
+          label: "SRA2.GM_DESCRIPTION"
         })
       }),
       keywords: new fields.SchemaField({

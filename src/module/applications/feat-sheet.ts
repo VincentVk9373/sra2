@@ -32,7 +32,8 @@ export class FeatSheet extends ItemSheet {
     this.item.prepareData();
     
     context.system = this.item.system;
-    
+    context.isGM = (game as any).user?.isGM ?? false;
+
     // Pass the active section to the template
     context.activeSection = this._activeSection;
     

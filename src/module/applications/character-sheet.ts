@@ -55,6 +55,7 @@ export class CharacterSheet extends ActorSheet {
     this._loadSkillsAndSpecializations(context);
 
     context.activeSection = this._activeSection;
+    context.isGM = (game as any).user?.isGM ?? false;
     const damage = systemData.damage || {};
     context.hasSevereDamage = (Array.isArray(damage.severe) ? damage.severe : [false]).some((b: boolean) => b);
 

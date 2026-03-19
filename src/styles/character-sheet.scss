@@ -4316,3 +4316,39 @@
     margin-bottom: 1rem;
   }
 }
+/* GM-only description section */
+.gm-description-section {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(180, 50, 50, 0.08);
+  border: 1px dashed rgba(180, 50, 50, 0.4);
+  border-radius: 6px;
+
+  h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(200, 80, 80, 0.9);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    i {
+      font-size: 0.8rem;
+    }
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(180, 50, 50, 0.3);
+    border-radius: 4px;
+    color: #ccc;
+    padding: 0.5rem;
+    resize: vertical;
+    font-size: 0.85rem;
+  }
+}

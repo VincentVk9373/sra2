@@ -73,6 +73,7 @@ export class VehicleSheet extends ActorSheet {
 
     // Ensure system data is available
     context.system = this.actor.system;
+    context.isGM = (game as any).user?.isGM ?? false;
 
     // DEBUG: Log damage data at vehicle sheet opening
     const actorSource = (this.actor as any)._source;

@@ -1027,6 +1027,8 @@
             }
         },
         "REFERENCE": "Reference",
+        "GM_DESCRIPTION": "GM Notes",
+        "GM_DESCRIPTION_PLACEHOLDER": "GM notes (hidden from players)...",
         "CONFIRM": "Confirm",
         "CANCEL": "Cancel",
         "COMMON": {

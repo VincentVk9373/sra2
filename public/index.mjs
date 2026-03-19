@@ -234,6 +234,11 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         notes: new fields.HTMLField({
           required: true,
           initial: ""
+        }),
+        gmDescription: new fields.HTMLField({
+          required: false,
+          initial: "",
+          label: "SRA2.GM_DESCRIPTION"
         })
       }),
       keywords: new fields.SchemaField({
@@ -801,6 +806,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       description: new fields.HTMLField({
         required: true,
         initial: ""
+      }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
       }),
       bookmarked: new fields.BooleanField({
         required: true,
@@ -1907,6 +1917,11 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
         initial: "",
         label: "SRA2.VEHICLE.DESCRIPTION"
       }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -2165,6 +2180,11 @@ class SkillDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: ""
       }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
+      }),
       bookmarked: new fields.BooleanField({
         required: true,
         initial: false,
@@ -2213,6 +2233,11 @@ class SpecializationDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: ""
       }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
+      }),
       bookmarked: new fields.BooleanField({
         required: true,
         initial: false,
@@ -2236,6 +2261,11 @@ class MetatypeDataModel extends foundry.abstract.TypeDataModel {
       description: new fields.HTMLField({
         required: true,
         initial: ""
+      }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
       }),
       maxStrength: new fields.NumberField({
         required: true,
@@ -4799,6 +4829,7 @@ class CharacterSheet extends ActorSheet {
     this._enrichFeatsByType(context, allFeats, linkedVehicles);
     this._loadSkillsAndSpecializations(context);
     context.activeSection = this._activeSection;
+    context.isGM = game.user?.isGM ?? false;
     const damage = systemData.damage || {};
     context.hasSevereDamage = (Array.isArray(damage.severe) ? damage.severe : [false]).some((b) => b);
     return context;
@@ -7338,6 +7369,7 @@ class VehicleSheet extends ActorSheet {
       "context.actor.name": context.actor?.name
     });
     context.system = this.actor.system;
+    context.isGM = game.user?.isGM ?? false;
     const actorSource = this.actor._source;
     const sourceDamage = actorSource?.system?.damage;
     const currentDamage = this.actor.system.damage;
@@ -7909,6 +7941,7 @@ class FeatSheet extends ItemSheet {
     const context = super.getData();
     this.item.prepareData();
     context.system = this.item.system;
+    context.isGM = game.user?.isGM ?? false;
     context.activeSection = this._activeSection;
     context.finalDamageValue = this._calculateFinalDamageValue();
     context.cyberdeckDamageThresholds = this._calculateCyberdeckDamageThresholds();
@@ -9058,6 +9091,7 @@ class SkillSheet extends ItemSheet {
   getData() {
     const context = super.getData();
     context.system = this.item.system;
+    context.isGM = game.user?.isGM ?? false;
     return context;
   }
   async _updateObject(_event, formData) {
@@ -9082,6 +9116,7 @@ class SpecializationSheet extends ItemSheet {
   getData() {
     const context = super.getData();
     context.system = this.item.system;
+    context.isGM = game.user?.isGM ?? false;
     if (context.system.linkedSkill) {
       context.linkedSkillName = context.system.linkedSkill;
       if (this.item.actor) {
@@ -9391,6 +9426,7 @@ class MetatypeSheet extends ItemSheet {
   getData() {
     const context = super.getData();
     context.system = this.item.system;
+    context.isGM = game.user?.isGM ?? false;
     return context;
   }
   async _updateObject(_event, formData) {

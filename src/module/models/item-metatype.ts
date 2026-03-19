@@ -11,6 +11,11 @@ export class MetatypeDataModel extends foundry.abstract.TypeDataModel<any, Item>
         required: true,
         initial: ""
       }),
+      gmDescription: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.GM_DESCRIPTION"
+      }),
       maxStrength: new fields.NumberField({
         required: true,
         initial: 4,

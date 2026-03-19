@@ -432,6 +432,12 @@
 
             </div>
           </section>
+          {{#if isGM}}
+          <div class="gm-description-section">
+            <h3><i class="fas fa-eye-slash"></i> {{localize "SRA2.GM_DESCRIPTION"}}</h3>
+            <div class="editor-content">{{editor system.bio.gmDescription target="system.bio.gmDescription" button=true engine="prosemirror" collaborate=false}}</div>
+          </div>
+          {{/if}}
         </section>
 
         <!-- Combat Section -->

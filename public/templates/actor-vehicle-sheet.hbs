@@ -423,6 +423,12 @@
         <div class="vehicle-description-section">
           <textarea name="system.description" class="vehicle-description" placeholder="{{localize 'SRA2.VEHICLE.DESCRIPTION_PLACEHOLDER'}}">{{system.description}}</textarea>
         </div>
+        {{#if isGM}}
+        <div class="gm-description-section">
+          <h3><i class="fas fa-eye-slash"></i> {{localize "SRA2.GM_DESCRIPTION"}}</h3>
+          <textarea name="system.gmDescription" class="vehicle-description" placeholder="{{localize 'SRA2.GM_DESCRIPTION_PLACEHOLDER'}}">{{system.gmDescription}}</textarea>
+        </div>
+        {{/if}}
       </section>
     </div>
   </div>

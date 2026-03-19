@@ -16,6 +16,7 @@ export class SkillSheet extends ItemSheet {
   override getData(): any {
     const context = super.getData() as any;
     context.system = this.item.system;
+    context.isGM = (game as any).user?.isGM ?? false;
     return context;
   }
 
