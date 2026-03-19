@@ -12816,11 +12816,10 @@ class SRA2System {
         const controlledTokens = canvas?.tokens?.controlled || [];
         if (controlledTokens.length > 0) {
           actor = controlledTokens[0]?.actor;
+        } else if (game.user?.character) {
+          actor = game.user.character;
         } else {
-          const ownedActors = game.actors.filter((a) => a.isOwner);
-          if (ownedActors.length > 0) {
-            actor = ownedActors[0];
-          }
+          actor = { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
         }
         if (!actor) {
           ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.NO_ACTOR") || "No controlled character");

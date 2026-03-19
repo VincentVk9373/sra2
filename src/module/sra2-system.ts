@@ -1111,18 +1111,18 @@ export class SRA2System {
         event.preventDefault();
         event.stopPropagation();
 
-        // Get controlled actor (first controlled token's actor, or first owned actor)
+        // Get controlled actor (first controlled token's actor, or player's assigned character, or fake actor from user name)
         let actor: any = null;
         const controlledTokens = canvas?.tokens?.controlled || [];
 
         if (controlledTokens.length > 0) {
           actor = controlledTokens[0]?.actor;
+        } else if ((game.user as any)?.character) {
+          // Use the character assigned to the player in user config
+          actor = (game.user as any).character;
         } else {
-          // Fallback: get first owned actor
-          const ownedActors = (game.actors as any).filter((a: any) => a.isOwner);
-          if (ownedActors.length > 0) {
-            actor = ownedActors[0];
-          }
+          // Last fallback: fake actor-like object with player name
+          actor = { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
         }
 
         if (!actor) {
