@@ -791,6 +791,22 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         },
         label: "SRA2.FEATS.SPELL.SPECIALIZATION.TYPE"
       }),
+      // Illusion spell subtype (only relevant when spellSpecializationType === "illusion")
+      illusionType: new fields.StringField({
+        required: false,
+        initial: "alteration",
+        choices: {
+          "alteration": "SRA2.FEATS.SPELL.ILLUSION.ALTERATION",
+          "psychotropic": "SRA2.FEATS.SPELL.ILLUSION.PSYCHOTROPIC"
+        },
+        label: "SRA2.FEATS.SPELL.ILLUSION.TYPE"
+      }),
+      // Zone field: for alteration = size of illusion, for psychotropic = affected target
+      illusionZone: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.FEATS.SPELL.ILLUSION.ZONE"
+      }),
       // Linked skills and specializations for weapons (for custom weapons)
       linkedAttackSkill: new fields.StringField({
         required: true,
