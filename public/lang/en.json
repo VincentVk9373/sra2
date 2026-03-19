@@ -207,6 +207,7 @@
             "COUNTER_ATTACK": {
                 "TITLE": "Counter-Attack - Weapon Selection",
                 "SELECT_WEAPON": "Select a weapon for the counter-attack:",
+                "SELECT_WEAPON_PLACEHOLDER": "-- Choose a weapon --",
                 "NO_WEAPONS": "No weapons available for counter-attack",
                 "NO_WEAPON_SELECTED": "Please select a weapon for the counter-attack",
                 "NO_DICE_POOL": "The dice pool for the counter-attack is 0. Please select a valid weapon."

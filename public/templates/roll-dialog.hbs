@@ -36,7 +36,7 @@
             <div class="counterattack-weapon-selection">
                 <label class="weapon-select-label">{{localize "SRA2.ROLL_DIALOG.SELECT_WEAPON"}}</label>
                 <select class="weapon-select" name="selectedWeapon">
-                    <option value="">-- Choisissez une arme --</option>
+                    <option value="">{{localize "SRA2.COMBAT.COUNTER_ATTACK.SELECT_WEAPON_PLACEHOLDER"}}</option>
                     {{#each rollData.availableWeapons}}
                     <option value="{{this.id}}" {{#if (eq this.id ../rollData.selectedWeaponId)}}selected{{/if}}
                         data-linked-skill="{{this.linkedAttackSkill}}" data-damage-value="{{this.damageValue}}"
