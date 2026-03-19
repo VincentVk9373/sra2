@@ -75,12 +75,6 @@
                     {{localize "SRA2.ROLL_DIALOG.DEFENSE_SKILL"}}
                     {{/if}}
                 </div>
-                <div class="cover-bonus-row">
-                    <label class="cover-bonus-label">
-                        <i class="fas fa-shield"></i> {{localize "SRA2.ROLL_DIALOG.COVER_BONUS"}}
-                    </label>
-                    <input type="number" class="cover-bonus-input" value="{{coverBonus}}" min="0" max="20" />
-                </div>
             </div>
         </section>
         {{else}}
@@ -215,6 +209,14 @@
                     </div>
                     {{/if}}
                 </div>
+                {{#if rollData.isDefend}}
+                <div class="cover-bonus-row">
+                    <label class="cover-bonus-label">
+                        <i class="fas fa-shield"></i> {{localize "SRA2.ROLL_DIALOG.COVER_BONUS"}}
+                    </label>
+                    <input type="number" class="cover-bonus-input" value="{{coverBonus}}" min="0" max="20" />
+                </div>
+                {{/if}}
             </section>
             <!-- Attribute Selection (for skill/spec/attribute rolls) -->
             <section class="roll-section range-section no-border-left">
