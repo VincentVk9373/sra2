@@ -25,7 +25,7 @@
 
     .sheet-header {
         display: flex;
-        grid-template-columns: 76px 1fr auto; 
+        grid-template-columns: 76px 1fr auto;
         padding: 0 8px;
         position: sticky;
         top: 0;
@@ -723,16 +723,20 @@
 
                     .name-wrapper {
                         cursor: pointer;
-                        display: flex;
+                        display:block;
                         gap: 8px;
                         transition: all 0.5s;
                         position: relative; // Required for context-menu positioning
+                        width: 100%;
+                        padding-right: 8px;
 
                         &:hover {
                             color: gold !important;
                         }
 
                         &.spe {
+                            display:flex;
+                            width: auto;
                             color: var(--neutral-light);
                         }
 
@@ -744,8 +748,7 @@
                         }
 
                         .name {
-                            width: 100%;
-                            padding-right: 4px;
+                            witdh:100%;
                         }
 
                         .weapon-stats {
@@ -1394,10 +1397,10 @@
                     &.create-new-item {
                         background: rgba(0, 229, 255, 0.05);
                         border-top: 1px solid rgba(0, 229, 255, 0.2);
-                        
+
                         .result-name {
                             color: var(--light-blue);
-                            
+
                             i {
                                 margin-right: 6px;
                             }
@@ -1581,16 +1584,16 @@
     opacity: 0.85;
     border-left: 2px solid var(--sr-text-color-error, #e74c3c) !important;
     position: relative; // Create stacking context for menu
-    
+
     .name-wrapper {
         position: relative; // Required for context-menu positioning
         z-index: 1;
-        
+
         .name {
             color: var(--sr-text-color-error, #e74c3c) !important;
             text-decoration: line-through;
             cursor: pointer;
-            
+
             .missing-skill-hint {
                 font-size: 0.75rem;
                 font-style: italic;
@@ -1599,41 +1602,41 @@
                 text-decoration: none;
                 display: inline-block;
             }
-            
+
             &:hover {
                 text-decoration: line-through;
                 filter: brightness(1.2);
             }
         }
-        
+
         .arrow {
             color: var(--sr-text-color-error, #e74c3c);
         }
-        
+
         .context-menu {
             z-index: 10001 !important; // Higher than other elements
         }
     }
-    
+
     // When menu is active, elevate the entire row
     &:has(.context-menu.active) {
         z-index: 100;
     }
-    
+
     .orphan-dice {
         color: var(--sr-text-color-error, #e74c3c) !important;
         cursor: pointer;
-        
+
         &:hover {
             background: rgba(231, 76, 60, 0.2) !important;
         }
     }
-    
+
     .orphan-rr-value {
         color: var(--sr-text-color-error, #e74c3c) !important;
         font-weight: bold;
     }
-    
+
     &:hover {
         background: rgba(231, 76, 60, 0.1);
     }
@@ -1644,12 +1647,12 @@
     opacity: 0.85;
     background: rgba(155, 89, 182, 0.1) !important;
     border-left: 2px solid var(--sr-accent-color, #9b59b6) !important;
-    
+
     .name-wrapper {
         .phantom-name {
             color: var(--sr-accent-color, #9b59b6) !important;
             font-style: italic;
-            
+
             .phantom-hint {
                 font-size: 0.75rem;
                 font-style: normal;
@@ -1657,22 +1660,22 @@
                 margin-left: 4px;
             }
         }
-        
+
         .arrow {
             color: var(--sr-accent-color, #9b59b6);
             opacity: 0.6;
         }
     }
-    
+
     .phantom-dice {
         color: var(--sr-accent-color, #9b59b6) !important;
     }
-    
+
     .phantom-rr-value {
         color: var(--sr-accent-color, #9b59b6) !important;
         font-weight: bold;
     }
-    
+
     &:hover {
         background: rgba(155, 89, 182, 0.2) !important;
     }
