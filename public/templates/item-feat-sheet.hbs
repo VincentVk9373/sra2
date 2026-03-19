@@ -833,30 +833,6 @@
                 {{localize "SRA2.FEATS.SPELL.SPECIALIZATION.COUNTERSPELL"}}</option>
             </select>
           </div>
-
-          {{#if (eq system.spellSpecializationType "illusion")}}
-          <div class="illusion-spell-section">
-            <div class="form-group">
-              <label>{{localize "SRA2.FEATS.SPELL.ILLUSION.TYPE"}}</label>
-              <select name="system.illusionType">
-                <option value="alteration" {{#if (eq system.illusionType "alteration")}}selected{{/if}}>
-                  {{localize "SRA2.FEATS.SPELL.ILLUSION.ALTERATION"}}</option>
-                <option value="psychotropic" {{#if (eq system.illusionType "psychotropic")}}selected{{/if}}>
-                  {{localize "SRA2.FEATS.SPELL.ILLUSION.PSYCHOTROPIC"}}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              {{#if (eq system.illusionType "alteration")}}
-              <label>{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_ALTERATION"}}</label>
-              <p class="notes">{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_ALTERATION_HINT"}}</p>
-              {{else}}
-              <label>{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_PSYCHOTROPIC"}}</label>
-              <p class="notes">{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_PSYCHOTROPIC_HINT"}}</p>
-              {{/if}}
-              <input type="text" name="system.illusionZone" value="{{system.illusionZone}}" />
-            </div>
-          </div>
-          {{/if}}
         </section>
         {{/if}}
 
