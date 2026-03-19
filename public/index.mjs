@@ -12416,6 +12416,8 @@ class SRA2System {
     });
     Handlebars.registerHelper("rangeLabel", function(value) {
       if (!value || value === "none") return "-";
+      if (value === "advantage") return "av";
+      if (value === "disadvantage") return "dés";
       return value;
     });
   }

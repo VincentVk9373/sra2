@@ -744,7 +744,8 @@
                         }
 
                         .weapon-stats {
-                            display: block;
+                            display: flex;
+                            justify-content: space-between;
                             font-size: 0.7rem;
                             opacity: 0.65;
                             font-weight: normal;
