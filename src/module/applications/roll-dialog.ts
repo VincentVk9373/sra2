@@ -21,7 +21,7 @@ export class RollDialog extends Application {
   private lastAutoRR: number = -1; // Track last RR value used for auto-selection
   private selectedRange: string | null = null; // Selected range: 'melee', 'short', 'medium', 'long'
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
-  private manualRRBonus: string = ''; // Manual RR bonus entered by user
+  private manualRRBonus: number = 0; // Manual RR bonus entered by user
 
   constructor(rollData: RollRequestData) {
     super();
@@ -1516,7 +1516,7 @@ export class RollDialog extends Application {
     html.find('.manual-rr-bonus-input').on('input', (event) => {
       const input = event.currentTarget as HTMLInputElement;
       const inputValue = input.value;
-      this.manualRRBonus = inputValue;
+      this.manualRRBonus = parseInt(inputValue) || 0;
       let manualRRBonus = 0;
       if (inputValue !== '' && !isNaN(Number(inputValue))) {
         manualRRBonus = parseInt(inputValue);

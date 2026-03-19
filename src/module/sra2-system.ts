@@ -15,7 +15,7 @@ import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
 import * as CombatHelpers from "./helpers/combat-helpers.ts";
 import * as SheetHelpers from "./helpers/sheet-helpers.ts";
-import { loadCombatantFromFlags, resolveTokenUuid, resolveActorUuid } from "./helpers/actor-uuid-resolver.ts";
+import { loadCombatantFromFlags } from "./helpers/actor-uuid-resolver.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
 // @ts-ignore - JavaScript module without type declarations
@@ -192,7 +192,7 @@ export class SRA2System {
     });
 
     // Hook to update character sheets when linked vehicles are updated
-    Hooks.on('updateActor', (actor: any, updateData: any, options: any, userId: string) => {
+    Hooks.on('updateActor', (actor: any, updateData: any, _options: any, _userId: string) => {
       // DEBUG: Log all actor updates
       console.log('Hook updateActor - DEBUG:', {
         'actor.id': actor?.id,
@@ -247,7 +247,7 @@ export class SRA2System {
 
     // Hook to update character sheets when items are created/deleted on linked vehicles
     // This ensures the cost is recalculated when weapons are added/removed
-    Hooks.on('createItem', (item: any, options: any, userId: string) => {
+    Hooks.on('createItem', (item: any, _options: any, _userId: string) => {
       const actor = item.parent;
       if (!actor || actor.type !== 'vehicle') return;
 
@@ -284,7 +284,7 @@ export class SRA2System {
       }
     });
 
-    Hooks.on('deleteItem', (item: any, options: any, userId: string) => {
+    Hooks.on('deleteItem', (item: any, _options: any, _userId: string) => {
       const actor = item.parent;
       if (!actor || actor.type !== 'vehicle') return;
 
@@ -325,7 +325,7 @@ export class SRA2System {
 
   private setupSkillCreationHooks(): void {
     // Hook to automatically add linked skill when a specialization is created
-    Hooks.on('createItem', async (item: any, options: any, userId: string) => {
+    Hooks.on('createItem', async (item: any, _options: any, _userId: string) => {
       // Only process specializations on character actors
       if (item.type !== 'specialization') return;
 
@@ -398,7 +398,7 @@ export class SRA2System {
 
   private setupActorLifecycleHooks(): void {
     // Handle when vehicle is deleted
-    Hooks.on('deleteActor', (actor: any, options: any, userId: string) => {
+    Hooks.on('deleteActor', (actor: any, _options: any, _userId: string) => {
       // Only process vehicle actors
       if (actor.type !== 'vehicle') return;
 
@@ -856,7 +856,7 @@ export class SRA2System {
             const defenderFromId = game.actors?.get(messageFlags.defenderId) || null;
             // For vehicle weapons, skip if this is the vehicle itself
             if (defenderFromId) {
-              if (isVehicleWeapon && vehicleUuid && defenderFromId.uuid === vehicleUuid) {
+              if (isVehicleWeapon && vehicleUuid && (defenderFromId as any).uuid === vehicleUuid) {
                 console.log('Defense button: Skipping vehicle as defender for vehicle weapon - need target instead');
               } else {
                 defender = defenderFromId;
@@ -1556,7 +1556,7 @@ export class SRA2System {
         const controlledTokens = canvas?.tokens?.controlled || [];
 
         if (controlledTokens.length > 0) {
-          actor = controlledTokens[0].actor;
+          actor = controlledTokens[0]?.actor;
         } else {
           // Fallback: get first owned actor
           const ownedActors = (game.actors as any).filter((a: any) => a.isOwner);
@@ -1735,7 +1735,7 @@ export class SRA2System {
 
     // Register chat log hook to add roll dice button
     // Using a more generic approach that works with Foundry's hook system
-    Hooks.on('renderChatLog' as any, (app: any, html: any, data: any) => {
+    Hooks.on('renderChatLog' as any, (_app: any, _html: any, _data: any) => {
       // Use setTimeout to ensure the chat form is fully rendered
       setTimeout(() => {
         if (!addRollDiceButton()) {
@@ -1746,7 +1746,7 @@ export class SRA2System {
     });
 
     // Also register for chat popout
-    Hooks.on('renderChatPopout' as any, (app: any, html: any, data: any) => {
+    Hooks.on('renderChatPopout' as any, (_app: any, _html: any, _data: any) => {
       setTimeout(() => {
         if (!addRollDiceButton()) {
           setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
@@ -1833,7 +1833,7 @@ export class SRA2System {
    * Register the UI theme setting
    */
   registerThemeSetting(): void {
-    game.settings.register(SYSTEM.id, 'uiTheme', {
+    (game.settings as any)!.register(SYSTEM.id, 'uiTheme', {
       name: 'SRA2.SETTINGS.THEME.TITLE',
       hint: 'SRA2.SETTINGS.THEME.DESC',
       scope: 'client',
@@ -1841,7 +1841,7 @@ export class SRA2System {
       type: String,
       choices: () => {
         return {
-          'sra2': game.i18n.localize('SRA2.SETTINGS.THEME.SRA2'),
+          'sra2': game.i18n!.localize('SRA2.SETTINGS.THEME.SRA2'),
         };
       },
       default: 'sra2',
@@ -1858,16 +1858,17 @@ export class SRA2System {
    * Initialize Babele translations if the module is available
    */
   initializeBabele(): void {
+    const g = game as any;
     if (
-      game.babele &&
-      game.babele.modules.every((module) => module.module !== game.settings.get(CONFIG.l5r5e.namespace, "custom-compendium-name"))
+      g.babele &&
+      g.babele.modules.every((module: any) => module.module !== (game.settings as any)?.get((CONFIG as any).l5r5e?.namespace, "custom-compendium-name"))
     ) {
-      game.babele.setSystemTranslationsDir("lang"); // Since Babele v2.0.7
+      g.babele.setSystemTranslationsDir("lang"); // Since Babele v2.0.7
     }
   }
 
   registerGroupAnarchySetting(): void {
-    game.settings.register(SYSTEM.id, 'groupAnarchy', {
+    (game.settings as any)!.register(SYSTEM.id, 'groupAnarchy', {
       name: 'SRA2.ANARCHY_COUNTER.SETTING_NAME',
       hint: 'SRA2.ANARCHY_COUNTER.SETTING_HINT',
       scope: 'world',
@@ -1894,7 +1895,7 @@ export class SRA2System {
 
     // Get theme from setting if not provided
     if (!theme) {
-      theme = game.settings.get(SYSTEM.id, 'uiTheme') as string || 'sra2';
+      theme = (game.settings as any)!.get(SYSTEM.id, 'uiTheme') as string || 'sra2';
     }
 
     // List of all possible theme classes

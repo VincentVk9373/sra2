@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { RISK_DICE_BY_RR, SUCCESS_THRESHOLDS as THRESHOLDS } from '../config/constants.js';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock ItemSearch since it has no Foundry dependencies but uses a .js extension
 vi.mock('../../../item-search.js', () => ({
@@ -81,7 +80,7 @@ describe('getRiskDiceByRR', () => {
   it('dice count increases monotonically with RR', () => {
     const counts = [0, 1, 2, 3].map(getRiskDiceByRR);
     for (let i = 1; i < counts.length; i++) {
-      expect(counts[i]).toBeGreaterThan(counts[i - 1]);
+      expect(counts[i]!).toBeGreaterThan(counts[i - 1]!);
     }
   });
 });

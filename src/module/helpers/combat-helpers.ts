@@ -43,7 +43,7 @@ export function calculateDamageThresholds(
   
   // Calculate base thresholds
   const basePhysical = strength + bonusPhysicalThreshold;
-  const baseMental = willpower + bonusMentalThreshold;
+  void (willpower + bonusMentalThreshold); // bonusMentalThreshold reserved for future mental threshold use
   
   // Apply armor if requested
   const physicalArmor = includeArmor ? armorLevel : 0;

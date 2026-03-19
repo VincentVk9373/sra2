@@ -113,8 +113,8 @@ export function calculateFinalDamageValue(
   } else if (damageValue.includes('+') && !damageValue.startsWith('FOR')) {
     // Handle attribute+bonus format (e.g., "agility+2")
     const parts = damageValue.split('+');
-    const attributeName = parts[0].trim();
-    const bonus = parseInt(parts[1]) || 0;
+    const attributeName = (parts[0] ?? '').trim();
+    const bonus = parseInt(parts[1] ?? '0') || 0;
     const attributeValue = attributes[attributeName] || 0;
     const total = attributeValue + bonus + damageValueBonus;
     const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
@@ -311,7 +311,7 @@ export async function handleVehicleActorDrop(
       // Configure the prototype token to be linked
       if (!vehicleData.prototypeToken) {
         vehicleData.prototypeToken = foundry.utils.mergeObject(
-          foundry.data.PrototypeToken.defaults,
+          (foundry.data.PrototypeToken as any).defaults,
           { actorLink: true }
         );
       } else {
@@ -817,8 +817,8 @@ export function calculateRawDamageString(
   // Handle attribute+bonus format (e.g., "agility+2")
   if (baseDamageValue.includes('+') && !baseDamageValue.startsWith('FOR')) {
     const parts = baseDamageValue.split('+');
-    const attributeName = parts[0].trim();
-    const baseBonus = parseInt(parts[1]) || 0;
+    const attributeName = (parts[0] ?? '').trim();
+    const baseBonus = parseInt(parts[1] ?? '0') || 0;
     return `${attributeName}+${baseBonus + damageValueBonus}`;
   }
 
@@ -1029,7 +1029,7 @@ export function getCurrentActiveSection(html: JQuery): string | null {
 /**
  * Enrich feats with RR entries and final damage values
  */
-export function enrichFeats(feats: any[], actorStrength: number, calculateFinalDamageValueFn: (dv: string, bonus: number, str: number) => string, actor?: any): any[] {
+export function enrichFeats(feats: any[], actorStrength: number, calculateFinalDamageValueFn: (dv: string, bonus: number, str: number, allAttributes?: Record<string, number>) => string, actor?: any): any[] {
   return feats.map((feat: any) => {
     // Add translated labels for attribute targets in RR entries
     feat.rrEntries = [];
@@ -1145,7 +1145,6 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       // This applies to all weapons, including adept power weapons
       if (actor) {
         const weaponType = feat.system.weaponType || '';
-        const actorAttributes = (actor.system as any)?.attributes || {};
         const activeFeats = actor.items.filter((item: any) =>
           item.type === 'feat' &&
           item.system.active === true &&

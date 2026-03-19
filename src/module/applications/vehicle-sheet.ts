@@ -307,7 +307,7 @@ export class VehicleSheet extends ActorSheet {
         const textareaElement = textarea as HTMLTextAreaElement;
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
-          const index = parseInt(nameMatch[1]);
+          const index = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || '';
           const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
@@ -352,7 +352,7 @@ export class VehicleSheet extends ActorSheet {
         const textareaElement = textarea as HTMLTextAreaElement;
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
-          const effectIndex = parseInt(nameMatch[1]);
+          const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || '';
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
@@ -397,7 +397,7 @@ export class VehicleSheet extends ActorSheet {
         const textareaElement = textarea as HTMLTextAreaElement;
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
-          const effectIndex = parseInt(nameMatch[1]);
+          const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || '';
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
@@ -437,7 +437,7 @@ export class VehicleSheet extends ActorSheet {
     });
     
     // Handle textarea changes (debounced save for input, immediate for change/blur)
-    html.find('textarea[name^="system.narrativeEffects."]').on('input', (event) => {
+    html.find('textarea[name^="system.narrativeEffects."]').on('input', (_event) => {
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
       }
@@ -448,7 +448,7 @@ export class VehicleSheet extends ActorSheet {
       }, NARRATIVE_SAVE_DEBOUNCE);
     });
     
-    html.find('textarea[name^="system.narrativeEffects."]').on('change blur', async (event) => {
+    html.find('textarea[name^="system.narrativeEffects."]').on('change blur', async (_event) => {
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
         narrativeEffectSaveTimeout = null;

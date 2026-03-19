@@ -2,6 +2,7 @@ import { CharacterSheet } from './character-sheet.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as ItemSearch from '../../../item-search.js';
 import { DELAYS } from '../config/constants.js';
+import { debounceSearchInput, handleSearchFocus, handleSearchBlur } from '../helpers/search-utils.js';
 
 /**
  * Character Sheet Application V2
@@ -308,22 +309,8 @@ export class CharacterSheetV2 extends CharacterSheet {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
-    
-    // Clear previous timeout
-    if (this._itemSearchTimeout) {
-      clearTimeout(this._itemSearchTimeout);
-    }
-    
-    // If search term is empty, hide results
-    if (searchTerm.length === 0) {
-      resultsDiv.style.display = 'none';
-      return;
-    }
-    
-    // Debounce search
-    this._itemSearchTimeout = setTimeout(async () => {
-      await this._performItemSearch(searchTerm, resultsDiv);
-    }, DELAYS.SEARCH_DEBOUNCE);
+    this._itemSearchTimeout = debounceSearchInput(this._itemSearchTimeout, searchTerm, resultsDiv, DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performItemSearch(searchTerm, resultsDiv));
   }
 
   /**
@@ -581,15 +568,7 @@ export class CharacterSheetV2 extends CharacterSheet {
    * Handle search input focus
    */
   private _onItemSearchFocus(event: JQuery.FocusEvent): void {
-    const input = event.currentTarget as HTMLInputElement;
-    
-    // If there's content, show results
-    if (input.value.trim().length > 0) {
-      const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
-      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
-        resultsDiv.style.display = 'block';
-      }
-    }
+    handleSearchFocus(event.currentTarget as HTMLInputElement, this.element.find('.item-search-results')[0] as HTMLElement);
   }
 
   /**
@@ -597,25 +576,8 @@ export class CharacterSheetV2 extends CharacterSheet {
    */
   private _onItemSearchBlur(event: JQuery.FocusEvent): void {
     const blurEvent = event.originalEvent as FocusEvent;
-    
-    // Delay hiding to allow clicking on results
-    setTimeout(() => {
-      const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
-      if (resultsDiv) {
-        // Check if focus moved to element in results
-        const relatedTarget = blurEvent?.relatedTarget as HTMLElement;
-        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
-          return;
-        }
-        
-        const activeElement = document.activeElement as HTMLElement;
-        if (activeElement && resultsDiv.contains(activeElement)) {
-          return;
-        }
-        
-        resultsDiv.style.display = 'none';
-      }
-    }, DELAYS.SEARCH_HIDE);
+    const resultsDiv = this.element.find('.item-search-results')[0] as HTMLElement;
+    handleSearchBlur(blurEvent?.relatedTarget as HTMLElement | null, resultsDiv, DELAYS.SEARCH_HIDE);
   }
 }
 

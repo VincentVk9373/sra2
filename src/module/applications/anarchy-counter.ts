@@ -27,7 +27,7 @@ export class AnarchyCounter extends Application {
   /**
    * Default application options
    */
-  static get defaultOptions(): ApplicationOptions {
+  static override get defaultOptions(): Application.Options {
     return foundry.utils.mergeObject(super.defaultOptions, {
       id: "sra2-anarchy-counter",
       template: `systems/${SYSTEM.id}/templates/anarchy-counter.hbs`,
@@ -38,7 +38,7 @@ export class AnarchyCounter extends Application {
       classes: ["sra2", "anarchy-counter"],
       width: 180,
       height: "auto",
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   /**
@@ -73,7 +73,7 @@ export class AnarchyCounter extends Application {
   /**
    * Override render to apply saved position only on first render
    */
-  async _render(force?: boolean, options?: Application.RenderOptions): Promise<void> {
+  override async _render(force?: boolean, options?: Application.RenderOptions): Promise<void> {
     await super._render(force, options);
     
     // Apply saved position only on first render
@@ -103,7 +103,7 @@ export class AnarchyCounter extends Application {
    * Get the current group anarchy value
    */
   static getGroupAnarchy(): number {
-    return (game.settings?.get(SYSTEM.id, "groupAnarchy") as number) || 0;
+    return ((game.settings as any)?.get(SYSTEM.id, "groupAnarchy") as number) || 0;
   }
 
   /**
@@ -118,13 +118,13 @@ export class AnarchyCounter extends Application {
     }
 
     const newValue = Math.max(0, value);
-    await game.settings?.set(SYSTEM.id, "groupAnarchy", newValue);
+    await (game.settings as any)?.set(SYSTEM.id, "groupAnarchy", newValue);
   }
 
   /**
    * Prepare data for rendering
    */
-  getData(options?: Partial<ApplicationOptions>): object {
+  override getData(_options?: Partial<Application.Options>): object {
     return {
       value: AnarchyCounter.getGroupAnarchy(),
       isGM: game.user?.isGM ?? false,
@@ -134,7 +134,8 @@ export class AnarchyCounter extends Application {
   /**
    * Set position and save to localStorage
    */
-  setPosition(options?: Partial<Application.Position>): Application.Position | void {
+  // @ts-ignore — Foundry v13 base class signature changed; override still works at runtime
+  override setPosition(options?: Partial<Application.Position>): Application.Position | void {
     const result = super.setPosition(options);
     
     // Save position after move (only if already initialized)
@@ -148,7 +149,7 @@ export class AnarchyCounter extends Application {
   /**
    * Activate event listeners
    */
-  activateListeners(html: JQuery): void {
+  override activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
     // Add button (GM only)
@@ -227,7 +228,7 @@ export class AnarchyCounter extends Application {
   /**
    * Override close to allow re-opening
    */
-  async close(options?: Application.CloseOptions): Promise<void> {
+  override async close(options?: Application.CloseOptions): Promise<void> {
     return super.close(options);
   }
 }

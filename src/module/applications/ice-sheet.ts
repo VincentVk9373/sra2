@@ -119,8 +119,8 @@ export class IceSheet extends ActorSheet {
     }
     
     const defenderToken = controlledTokens[0];
-    const defender = defenderToken.actor;
-    
+    const defender = defenderToken?.actor;
+
     if (!defender) {
       ui.notifications?.warn(game.i18n!.localize('SRA2.ICE.ATTACK.NO_TARGET'));
       return;

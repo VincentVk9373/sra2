@@ -15,7 +15,7 @@ export function setSidebarIcons(): void {
   CONFIG.JournalEntryPage.sidebarIcon = 'fas fa-book-open';
   CONFIG.Macro.sidebarIcon = 'fas fa-code';
   CONFIG.Playlist.sidebarIcon = 'fas fa-music';
-  CONFIG.PlaylistSound.sidebarIcon = 'fas fa-music';
+  (CONFIG.PlaylistSound as any).sidebarIcon = 'fas fa-music';
   CONFIG.RollTable.sidebarIcon = 'fas fa-th-list';
   CONFIG.Scene.sidebarIcon = 'fas fa-map';
 
@@ -26,7 +26,7 @@ export function setSidebarIcons(): void {
  * Configure control icons for Foundry VTT tokens
  */
 export function setControlIcons(): void {
-  CONFIG.controlIcons = {
+  (CONFIG.controlIcons as any) = {
     combat: 'icons/svg/combat.svg',
     visibility: 'icons/svg/cowled.svg',
     effects: 'icons/svg/aura.svg',

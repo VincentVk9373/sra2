@@ -4,6 +4,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import { DELAYS, RR_MAX } from '../config/constants.js';
+import { debounceSearchInput, handleSearchFocus, handleSearchBlur } from '../helpers/search-utils.js';
 
 /**
  * Character Sheet Application
@@ -60,7 +61,7 @@ export class CharacterSheet extends ActorSheet {
     return context;
   }
 
-  private _initializeDamageArrays(context: any, systemData: any): void {
+  private _initializeDamageArrays(_context: any, systemData: any): void {
     // Ensure damage arrays are properly initialized
     if (!systemData.damage) {
       systemData.damage = {
@@ -137,7 +138,7 @@ export class CharacterSheet extends ActorSheet {
     }));
   }
 
-  private async _loadLinkedVehicles(actorStrength: number, allFeats: any[]): Promise<any[]> {
+  private async _loadLinkedVehicles(actorStrength: number, _allFeats: any[]): Promise<any[]> {
     // Get linked vehicle actors
     const linkedVehicleUuids = (this.actor.system as any).linkedVehicles || [];
     const linkedVehicles: any[] = [];
@@ -868,7 +869,7 @@ export class CharacterSheet extends ActorSheet {
     if (!vehicleUuid) return;
     
     try {
-      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      const vehicleActor = await fromUuid(vehicleUuid as any) as any;
       if (vehicleActor && vehicleActor.sheet) {
         vehicleActor.sheet.render(true);
       }
@@ -891,11 +892,11 @@ export class CharacterSheet extends ActorSheet {
     const linkedVehicles = (this.actor.system as any).linkedVehicles || [];
     const updatedLinkedVehicles = linkedVehicles.filter((uuid: string) => uuid !== vehicleUuid);
     
-    await this.actor.update({ 'system.linkedVehicles': updatedLinkedVehicles });
+    await (this.actor as any).update({ 'system.linkedVehicles': updatedLinkedVehicles });
     
     // Optionally unlink the vehicle's token prototype (set actorLink to false)
     try {
-      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      const vehicleActor = await fromUuid(vehicleUuid as any) as any;
       if (vehicleActor) {
         await vehicleActor.update({ 'prototypeToken.actorLink': false });
       }
@@ -970,13 +971,13 @@ export class CharacterSheet extends ActorSheet {
     DiceRoller.handleRollRequest({
       itemType: 'specialization',
       itemName: specialization.name,
-      itemId: specialization.id,
+      itemId: specialization.id ?? undefined,
       specName: specialization.name,
       specLevel: attributeValue + effectiveRating,  // Total dice pool (attribute + effectiveRating)
       skillName: linkedSkillName,
       skillLevel: skillRating,  // Just the skill rating (without attribute)
       linkedAttribute: linkedAttribute,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: allRRSources
@@ -1022,7 +1023,7 @@ export class CharacterSheet extends ActorSheet {
       skillName: attributeLabel,
       skillLevel: attributeValue,
       linkedAttribute: attributeName,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: rrSources
@@ -1091,7 +1092,7 @@ export class CharacterSheet extends ActorSheet {
         skillName: associatedSkill.name,
         skillLevel: attributeValue + skillRating,
         linkedAttribute: skillAttribute,
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? undefined,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
         rrList: combinedRRSources
@@ -1114,7 +1115,7 @@ export class CharacterSheet extends ActorSheet {
         skillName: specSystem.linkedSkill || phantomName,
         skillLevel: attributeValue, // No +2 since no linked skill on actor
         linkedAttribute: specAttribute,
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? undefined,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
         rrList: combinedRRSources
@@ -1131,7 +1132,7 @@ export class CharacterSheet extends ActorSheet {
         specName: phantomType === 'specialization' ? phantomName : undefined,
         skillLevel: attributeValue,
         linkedAttribute: linkedAttribute,
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? undefined,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
         rrList: rrSources
@@ -1148,10 +1149,9 @@ export class CharacterSheet extends ActorSheet {
     const element = event.currentTarget as HTMLElement;
     const specName = element.dataset.specName;
     const linkedAttribute = element.dataset.attribute;
-    
+
     if (!specName || !linkedAttribute) return;
 
-    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
     const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
 
     // Get RR sources for this specialization
@@ -1163,7 +1163,7 @@ export class CharacterSheet extends ActorSheet {
       skillName: specName,
       skillLevel: 0, // No skill level since the linked skill doesn't exist
       linkedAttribute: linkedAttribute,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: rrSources
@@ -1196,12 +1196,12 @@ export class CharacterSheet extends ActorSheet {
     DiceRoller.handleRollRequest({
       itemType: 'skill',
       itemName: skill.name,
-      itemId: skill.id,
+      itemId: skill.id ?? undefined,
       itemRating: rating,
       skillName: skill.name,
       skillLevel: attributeValue + rating,  // Total dice pool (attribute + rating)
       linkedAttribute: linkedAttribute,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: allRRSources
@@ -1286,22 +1286,8 @@ export class CharacterSheet extends ActorSheet {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
-    
-    // Clear previous timeout
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
-    
-    // If search term is empty, hide results
-    if (searchTerm.length === 0) {
-      resultsDiv.style.display = 'none';
-      return;
-    }
-    
-    // Debounce search
-    this.searchTimeout = setTimeout(async () => {
-      await this._performSkillSearch(searchTerm, resultsDiv);
-    }, DELAYS.SEARCH_DEBOUNCE);
+    this.searchTimeout = debounceSearchInput(this.searchTimeout, searchTerm, resultsDiv, DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performSkillSearch(searchTerm, resultsDiv));
   }
 
   /**
@@ -1469,15 +1455,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onSkillSearchFocus(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    
-    // If there's already content and results, show them
-    if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
-      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
-        resultsDiv.style.display = 'block';
-      }
-    }
-    
+    handleSearchFocus(input, $(input).siblings('.skill-search-results')[0] as HTMLElement);
     return Promise.resolve();
   }
 
@@ -1486,30 +1464,8 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onSkillSearchBlur(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const blurEvent = event as FocusEvent;
-    
-    // Check if the new focus target is within the results div
-    setTimeout(() => {
-      const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
-      if (resultsDiv) {
-        // Check if the related target (where focus is going) is inside the results div
-        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
-        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
-          // Don't hide if focus is moving to an element within the results
-          return;
-        }
-        
-        // Also check if any element in the results is focused
-        const activeElement = document.activeElement as HTMLElement;
-        if (activeElement && resultsDiv.contains(activeElement)) {
-          // Don't hide if an element in results is active
-          return;
-        }
-
-        resultsDiv.style.display = 'none';
-      }
-    }, DELAYS.SEARCH_HIDE);
-
+    const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+    handleSearchBlur((event as FocusEvent).relatedTarget as HTMLElement | null, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
 
@@ -1584,22 +1540,8 @@ export class CharacterSheet extends ActorSheet {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
-    
-    // Clear previous timeout
-    if (this.featSearchTimeout) {
-      clearTimeout(this.featSearchTimeout);
-    }
-    
-    // If search term is empty, hide results
-    if (searchTerm.length === 0) {
-      resultsDiv.style.display = 'none';
-      return;
-    }
-    
-    // Debounce search
-    this.featSearchTimeout = setTimeout(async () => {
-      await this._performFeatSearch(searchTerm, resultsDiv);
-    }, DELAYS.SEARCH_DEBOUNCE);
+    this.featSearchTimeout = debounceSearchInput(this.featSearchTimeout, searchTerm, resultsDiv, DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performFeatSearch(searchTerm, resultsDiv));
   }
 
   /**
@@ -1818,15 +1760,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onFeatSearchFocus(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    
-    // If there's already content and results, show them
-    if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
-      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
-        resultsDiv.style.display = 'block';
-      }
-    }
-    
+    handleSearchFocus(input, $(input).siblings('.feat-search-results')[0] as HTMLElement);
     return Promise.resolve();
   }
 
@@ -1835,30 +1769,8 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onFeatSearchBlur(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const blurEvent = event as FocusEvent;
-    
-    // Check if the new focus target is within the results div
-    setTimeout(() => {
-      const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
-      if (resultsDiv) {
-        // Check if the related target (where focus is going) is inside the results div
-        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
-        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
-          // Don't hide if focus is moving to an element within the results
-          return;
-        }
-        
-        // Also check if any select element in the results is focused
-        const activeElement = document.activeElement as HTMLElement;
-        if (activeElement && resultsDiv.contains(activeElement)) {
-          // Don't hide if a select or other element in results is active
-          return;
-        }
-
-        resultsDiv.style.display = 'none';
-      }
-    }, DELAYS.SEARCH_HIDE);
-
+    const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
+    handleSearchBlur((event as FocusEvent).relatedTarget as HTMLElement | null, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
 
@@ -2172,7 +2084,7 @@ export class CharacterSheet extends ActorSheet {
     
     try {
       // Get vehicle actor
-      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      const vehicleActor = await fromUuid(vehicleUuid as any) as any;
       if (!vehicleActor || vehicleActor.type !== 'vehicle') {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_VEHICLE'));
         return;
@@ -2221,7 +2133,7 @@ export class CharacterSheet extends ActorSheet {
     
     try {
       // Get vehicle actor
-      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      const vehicleActor = await fromUuid(vehicleUuid as any) as any;
       if (!vehicleActor || vehicleActor.type !== 'vehicle') {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_VEHICLE'));
         return;
@@ -2262,7 +2174,7 @@ export class CharacterSheet extends ActorSheet {
   private async _onRollVehicleWeapon(vehicleUuid: string, weaponId: string): Promise<void> {
     try {
       // Get vehicle actor
-      const vehicleActor = await fromUuid(vehicleUuid) as any;
+      const vehicleActor = await fromUuid(vehicleUuid as any) as any;
       if (!vehicleActor || vehicleActor.type !== 'vehicle') {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_VEHICLE'));
         return;
@@ -2411,7 +2323,7 @@ export class CharacterSheet extends ActorSheet {
         defenseLinkedAttribute: defenseLinkedAttribute,
         
         // Actor information (character, not vehicle)
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? undefined,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name || '',
         
@@ -2718,7 +2630,7 @@ export class CharacterSheet extends ActorSheet {
       specLevel: attackSpecLevel,
       
       // Actor information
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || '',
       
@@ -2814,7 +2726,7 @@ export class CharacterSheet extends ActorSheet {
       longRange: powerSystem.longRange || 'none',
       
       // Actor information
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || '',
       
@@ -2825,21 +2737,6 @@ export class CharacterSheet extends ActorSheet {
       isPower: true
     });
   }
-
-  /**
-   * REMOVED: Skill with weapon roll - dialog creation disabled
-   */
-  private async _rollSkillWithWeapon(skill: any, weaponName: string, _skillType: 'skill', weaponDamageValue?: string, weapon?: any): Promise<void> {
-    console.log('Skill with weapon roll disabled', { skill: skill.name, weaponName });
-  }
-
-  /**
-   * REMOVED: Specialization with weapon roll - dialog creation disabled
-   */
-  private async _rollSpecializationWithWeapon(specialization: any, weaponName: string, effectiveRating: number, weaponDamageValue?: string, weapon?: any): Promise<void> {
-    console.log('Specialization with weapon roll disabled', { specialization: specialization.name, weaponName });
-  }
-
 
   /**
    * Handle creating a new feat from search

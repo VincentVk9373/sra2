@@ -2602,8 +2602,8 @@ function calculateFinalDamageValue(damageValue, damageValueBonus, strength, allA
     return game.i18n?.localize("SRA2.FEATS.WEAPON.TOXIN_DAMAGE") || "according to toxin";
   } else if (damageValue.includes("+") && !damageValue.startsWith("FOR")) {
     const parts = damageValue.split("+");
-    const attributeName = parts[0].trim();
-    const bonus = parseInt(parts[1]) || 0;
+    const attributeName = (parts[0] ?? "").trim();
+    const bonus = parseInt(parts[1] ?? "0") || 0;
     const attributeValue = attributes[attributeName] || 0;
     const total = attributeValue + bonus + damageValueBonus;
     const attributeLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${attributeName.toUpperCase()}`) || attributeName;
@@ -3061,8 +3061,8 @@ function calculateRawDamageString(baseDamageValue, damageValueBonus) {
   }
   if (baseDamageValue.includes("+") && !baseDamageValue.startsWith("FOR")) {
     const parts = baseDamageValue.split("+");
-    const attributeName = parts[0].trim();
-    const baseBonus = parseInt(parts[1]) || 0;
+    const attributeName = (parts[0] ?? "").trim();
+    const baseBonus = parseInt(parts[1] ?? "0") || 0;
     return `${attributeName}+${baseBonus + damageValueBonus}`;
   }
   const baseValue = parseInt(baseDamageValue) || 0;
@@ -3236,7 +3236,6 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
       let damageValueBonus = feat.system.damageValueBonus || 0;
       if (actor) {
         const weaponType = feat.system.weaponType || "";
-        actor.system?.attributes || {};
         const activeFeats = actor.items.filter(
           (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
         );
@@ -3913,6 +3912,142 @@ async function executeRoll(attacker, defender, attackerToken, defenderToken, rol
   }
   await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
 }
+function buildDefenderData(defender, defenderToken) {
+  if (!defender) return null;
+  let tokenImg = defender.img;
+  if (defenderToken) {
+    tokenImg = defenderToken.document?.texture?.src || defenderToken.document?.img || defenderToken.data?.img || defenderToken.texture?.src || defender.img;
+  }
+  return { ...defender, img: tokenImg };
+}
+function buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken) {
+  const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+  const defenseSuccesses = rollResult.totalSuccesses;
+  const isIceAttack = rollData.attackRollData.itemType === "ice-attack" || rollData.attackRollData.iceType;
+  const iceType = rollData.attackRollData.iceType;
+  const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
+  const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
+  let calculatedDamage = 0;
+  let attackFailed = false;
+  if (attackSuccesses >= defenseSuccesses) {
+    if (isIceAttack) {
+      const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
+      if (iceType === "blaster" || iceType === "black" || iceType === "killer") {
+        calculatedDamage = iceDamageValue + attackSuccesses - defenseSuccesses;
+      }
+    } else {
+      const damageValueStr = rollData.attackRollData.damageValue || "0";
+      const attackerAttributes = defender?.system?.attributes || {};
+      const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, "defense");
+      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+    }
+  } else {
+    attackFailed = true;
+    calculatedDamage = 0;
+  }
+  const originalAttackerUuid = finalDefenderUuid;
+  const defenderUuid = finalAttackerUuid;
+  console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
+  console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
+  console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
+  const attackDamageType = rollData.attackRollData.damageType || "physical";
+  return {
+    attackSuccesses,
+    defenseSuccesses,
+    calculatedDamage,
+    attackFailed,
+    originalAttackerName,
+    defenderName,
+    originalAttackerUuid,
+    defenderUuid,
+    isIceAttack,
+    iceType,
+    damageType: attackDamageType
+  };
+}
+function buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken) {
+  const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
+  const originalDefenderName = attackerToken?.document?.name || attackerToken?.name || attackerToken?.actor?.name || attacker?.name || "Inconnu";
+  const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+  const counterAttackSuccesses = rollResult.totalSuccesses;
+  const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
+  const originalAttackerAttributes = defender?.system?.attributes || {};
+  const attackDamageValue = parseDamageValueSafe(attackDamageValueStr, originalAttackerAttributes, "counter-attack original");
+  let counterAttackDamageValue = parseDamageValueSafe(rollData.damageValue || "0", attacker?.system?.attributes || {}, "counter-attack");
+  if (!counterAttackDamageValue && attacker) {
+    const selectedWeaponId = rollData.selectedWeaponId;
+    if (selectedWeaponId) {
+      const weapon = attacker.items.find((item) => item.id === selectedWeaponId);
+      if (weapon) {
+        const weaponSystem = weapon.system;
+        try {
+          counterAttackDamageValue = calculateFinalNumericDamageValue(
+            weaponSystem.damageValue || "0",
+            attacker?.system?.attributes || {},
+            weaponSystem.damageValueBonus || 0
+          );
+        } catch (error) {
+          console.error("SRA2 | Error calculating weapon damage value:", weaponSystem.damageValue, error);
+        }
+      }
+    }
+  }
+  let attackerDamage = 0;
+  let defenderDamage = 0;
+  let isTie = false;
+  let winner = "tie";
+  if (attackSuccesses > counterAttackSuccesses) {
+    winner = "attacker";
+    attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
+  } else if (counterAttackSuccesses > attackSuccesses) {
+    winner = "defender";
+    defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
+  } else {
+    isTie = true;
+  }
+  console.log("=== COUNTER-ATTACK RESULTS ===");
+  console.log("Attack Successes:", attackSuccesses, "| Counter-Attack Successes:", counterAttackSuccesses);
+  console.log("Attack Damage Value:", attackDamageValue, "| Counter-Attack Damage Value:", counterAttackDamageValue);
+  console.log("Winner:", winner, "| Attacker Damage:", attackerDamage, "| Defender Damage:", defenderDamage);
+  console.log("==============================");
+  const originalAttackerUuid = finalDefenderUuid;
+  const originalDefenderUuid = finalAttackerUuid;
+  let damageInflicterUuid;
+  let damageReceiverUuid;
+  let damageInflicterName = "";
+  let damageReceiverName = "";
+  if (winner === "attacker") {
+    damageInflicterUuid = originalAttackerUuid;
+    damageReceiverUuid = originalDefenderUuid;
+    damageInflicterName = originalAttackerName;
+    damageReceiverName = originalDefenderName;
+  } else if (winner === "defender") {
+    damageInflicterUuid = originalDefenderUuid;
+    damageReceiverUuid = originalAttackerUuid;
+    damageInflicterName = originalDefenderName;
+    damageReceiverName = originalAttackerName;
+  }
+  const attackerDamageType = rollData.attackRollData.damageType || "physical";
+  const defenderDamageType = rollData.damageType || "physical";
+  return {
+    attackSuccesses,
+    counterAttackSuccesses,
+    winner,
+    attackerDamage,
+    defenderDamage,
+    isTie,
+    originalAttackerName,
+    originalDefenderName,
+    originalAttackerUuid,
+    originalDefenderUuid,
+    damageInflicterUuid,
+    damageReceiverUuid,
+    damageInflicterName,
+    damageReceiverName,
+    attackerDamageType,
+    defenderDamageType
+  };
+}
 async function createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult) {
   const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
   console.log("=== CREATE ROLL CHAT MESSAGE ===");
@@ -3936,192 +4071,12 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
   console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
   console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
   console.log("================================");
-  let defenderData = null;
-  if (defender) {
-    let tokenImg = defender.img;
-    if (defenderToken) {
-      tokenImg = defenderToken.document?.texture?.src || defenderToken.document?.img || defenderToken.data?.img || defenderToken.texture?.src || defender.img;
-    }
-    defenderData = {
-      ...defender,
-      img: tokenImg
-    };
-  }
+  const defenderData = buildDefenderData(defender, defenderToken);
   let defenseResult = null;
-  let calculatedDamage = null;
-  let attackFailed = false;
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
-    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
-    const defenseSuccesses = rollResult.totalSuccesses;
-    const isIceAttack = rollData.attackRollData.itemType === "ice-attack" || rollData.attackRollData.iceType;
-    const iceType = rollData.attackRollData.iceType;
-    const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
-    const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
-    if (attackSuccesses >= defenseSuccesses) {
-      if (isIceAttack) {
-        let damageValue = 0;
-        const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
-        if (iceType === "blaster" || iceType === "black" || iceType === "killer") {
-          damageValue = iceDamageValue + attackSuccesses - defenseSuccesses;
-        }
-        calculatedDamage = damageValue;
-        attackFailed = false;
-      } else {
-        const damageValueStr = rollData.attackRollData.damageValue || "0";
-        const attackerAttributes = defender?.system?.attributes || {};
-        const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, "defense");
-        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
-        attackFailed = false;
-      }
-    } else {
-      attackFailed = true;
-      calculatedDamage = 0;
-    }
-    const originalAttackerUuid = finalDefenderUuid;
-    const defenderUuid = finalAttackerUuid;
-    console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
-    console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
-    console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
-    const attackDamageType = rollData.attackRollData?.damageType || "physical";
-    defenseResult = {
-      attackSuccesses,
-      defenseSuccesses,
-      calculatedDamage,
-      attackFailed,
-      originalAttackerName,
-      defenderName,
-      // UUIDs for applying damage
-      originalAttackerUuid,
-      // Who inflicts damage if attack succeeds
-      defenderUuid,
-      // Who receives damage if attack succeeds
-      // ICE-specific fields
-      isIceAttack,
-      iceType,
-      // Damage type from weapon/attack
-      damageType: attackDamageType
-    };
+    defenseResult = buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
-    const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
-    const originalDefenderName = attackerToken?.document?.name || attackerToken?.name || attackerToken?.actor?.name || attacker?.name || "Inconnu";
-    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
-    const counterAttackSuccesses = rollResult.totalSuccesses;
-    let attackDamageValue = 0;
-    const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
-    const originalAttackerAttributes = defender?.system?.attributes || {};
-    attackDamageValue = parseDamageValueSafe(attackDamageValueStr, originalAttackerAttributes, "counter-attack original");
-    let counterAttackDamageValue = 0;
-    const damageValueStr = rollData.damageValue || "0";
-    const counterAttackerAttributes = attacker?.system?.attributes || {};
-    counterAttackDamageValue = parseDamageValueSafe(damageValueStr, counterAttackerAttributes, "counter-attack");
-    if (!counterAttackDamageValue && attacker) {
-      const selectedWeaponId = rollData.selectedWeaponId;
-      if (selectedWeaponId) {
-        const weapon = attacker.items.find((item) => item.id === selectedWeaponId);
-        if (weapon) {
-          const weaponSystem = weapon.system;
-          const baseDamageValue = weaponSystem.damageValue || "0";
-          const damageValueBonus = weaponSystem.damageValueBonus || 0;
-          const counterAttackerAttributes2 = attacker?.system?.attributes || {};
-          try {
-            counterAttackDamageValue = calculateFinalNumericDamageValue(
-              baseDamageValue,
-              counterAttackerAttributes2,
-              damageValueBonus
-            );
-          } catch (error) {
-            console.error("SRA2 | Error calculating weapon damage value:", baseDamageValue, error);
-            counterAttackDamageValue = 0;
-          }
-        }
-      }
-    }
-    let attackerDamage = 0;
-    let defenderDamage = 0;
-    let isTie = false;
-    let winner = "tie";
-    if (attackSuccesses > counterAttackSuccesses) {
-      winner = "attacker";
-      attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
-    } else if (counterAttackSuccesses > attackSuccesses) {
-      winner = "defender";
-      defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
-    } else {
-      isTie = true;
-      winner = "tie";
-    }
-    console.log("=== COUNTER-ATTACK RESULTS ===");
-    console.log("Attack Successes:", attackSuccesses);
-    console.log("Counter-Attack Successes:", counterAttackSuccesses);
-    console.log("Attack Damage Value:", attackDamageValue);
-    console.log("Counter-Attack Damage Value:", counterAttackDamageValue);
-    console.log("Winner:", winner);
-    console.log("Attacker Damage:", attackerDamage);
-    console.log("Defender Damage:", defenderDamage);
-    console.log("Original Attacker Name:", originalAttackerName);
-    console.log("Original Defender Name:", originalDefenderName);
-    console.log("--- Context ---");
-    console.log("Attacker param:", attacker?.name);
-    console.log("Defender param:", defender?.name);
-    console.log("AttackerToken object:", attackerToken ? "Found" : "Not found");
-    console.log("AttackerToken.name:", attackerToken?.name);
-    console.log("AttackerToken.document?.name:", attackerToken?.document?.name);
-    console.log("AttackerToken.actor?.name:", attackerToken?.actor?.name);
-    console.log("DefenderToken object:", defenderToken ? "Found" : "Not found");
-    console.log("DefenderToken.name:", defenderToken?.name);
-    console.log("DefenderToken.document?.name:", defenderToken?.document?.name);
-    console.log("DefenderToken.actor?.name:", defenderToken?.actor?.name);
-    console.log("--- UUIDs to be stored in flags ---");
-    console.log("attackerUuid (final):", finalAttackerUuid || "Unknown");
-    console.log("attackerTokenUuid (final):", attackerTokenUuid || "Unknown");
-    console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
-    console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
-    console.log("==============================");
-    const originalAttackerUuid = finalDefenderUuid;
-    const originalDefenderUuid = finalAttackerUuid;
-    let damageInflicterUuid = void 0;
-    let damageReceiverUuid = void 0;
-    let damageInflicterName = "";
-    let damageReceiverName = "";
-    if (winner === "attacker") {
-      damageInflicterUuid = originalAttackerUuid;
-      damageReceiverUuid = originalDefenderUuid;
-      damageInflicterName = originalAttackerName;
-      damageReceiverName = originalDefenderName;
-      console.log("Counter-attack: Original attacker wins - inflicts damage to counter-attacker");
-      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
-      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
-    } else if (winner === "defender") {
-      damageInflicterUuid = originalDefenderUuid;
-      damageReceiverUuid = originalAttackerUuid;
-      damageInflicterName = originalDefenderName;
-      damageReceiverName = originalAttackerName;
-      console.log("Counter-attack: Counter-attacker wins - inflicts damage to original attacker");
-      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
-      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
-    }
-    const attackerDamageType = rollData.attackRollData?.damageType || "physical";
-    const defenderDamageType = rollData.damageType || "physical";
-    defenseResult = {
-      attackSuccesses,
-      counterAttackSuccesses,
-      winner,
-      attackerDamage,
-      defenderDamage,
-      isTie,
-      originalAttackerName,
-      originalDefenderName,
-      // UUIDs for applying damage
-      originalAttackerUuid,
-      originalDefenderUuid,
-      damageInflicterUuid,
-      damageReceiverUuid,
-      damageInflicterName,
-      damageReceiverName,
-      // Damage types
-      attackerDamageType,
-      defenderDamageType
-    };
+    defenseResult = buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   }
   const attackerWithUuid = attacker ? {
     ...attacker,
@@ -4712,6 +4667,28 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
     }));
   }
 }
+function debounceSearchInput(currentTimeout, searchTerm, resultsDiv, delay, perform) {
+  if (currentTimeout) clearTimeout(currentTimeout);
+  if (searchTerm.length === 0) {
+    resultsDiv.style.display = "none";
+    return null;
+  }
+  return setTimeout(perform, delay);
+}
+function handleSearchFocus(input, resultsDiv) {
+  if (input.value.trim().length > 0 && resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
+    resultsDiv.style.display = "block";
+  }
+}
+function handleSearchBlur(relatedTarget, resultsDiv, hideDelay) {
+  setTimeout(() => {
+    if (!resultsDiv) return;
+    if (relatedTarget && resultsDiv.contains(relatedTarget)) return;
+    const activeElement = document.activeElement;
+    if (activeElement && resultsDiv.contains(activeElement)) return;
+    resultsDiv.style.display = "none";
+  }, hideDelay);
+}
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -4754,7 +4731,7 @@ class CharacterSheet extends ActorSheet {
     context.hasSevereDamage = (Array.isArray(damage.severe) ? damage.severe : [false]).some((b) => b);
     return context;
   }
-  _initializeDamageArrays(context, systemData) {
+  _initializeDamageArrays(_context, systemData) {
     if (!systemData.damage) {
       systemData.damage = {
         light: [false, false],
@@ -4814,7 +4791,7 @@ class CharacterSheet extends ActorSheet {
       index
     }));
   }
-  async _loadLinkedVehicles(actorStrength, allFeats) {
+  async _loadLinkedVehicles(actorStrength, _allFeats) {
     const linkedVehicleUuids = this.actor.system.linkedVehicles || [];
     const linkedVehicles = [];
     for (const uuid of linkedVehicleUuids) {
@@ -5400,7 +5377,7 @@ class CharacterSheet extends ActorSheet {
     handleRollRequest({
       itemType: "specialization",
       itemName: specialization.name,
-      itemId: specialization.id,
+      itemId: specialization.id ?? void 0,
       specName: specialization.name,
       specLevel: attributeValue + effectiveRating,
       // Total dice pool (attribute + effectiveRating)
@@ -5408,7 +5385,7 @@ class CharacterSheet extends ActorSheet {
       skillLevel: skillRating,
       // Just the skill rating (without attribute)
       linkedAttribute,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? void 0,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: allRRSources
@@ -5443,7 +5420,7 @@ class CharacterSheet extends ActorSheet {
       skillName: attributeLabel,
       skillLevel: attributeValue,
       linkedAttribute: attributeName,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? void 0,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: rrSources
@@ -5495,7 +5472,7 @@ class CharacterSheet extends ActorSheet {
         skillName: associatedSkill.name,
         skillLevel: attributeValue + skillRating,
         linkedAttribute: skillAttribute,
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? void 0,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
         rrList: combinedRRSources
@@ -5515,7 +5492,7 @@ class CharacterSheet extends ActorSheet {
         skillLevel: attributeValue,
         // No +2 since no linked skill on actor
         linkedAttribute: specAttribute,
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? void 0,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
         rrList: combinedRRSources
@@ -5530,7 +5507,7 @@ class CharacterSheet extends ActorSheet {
         specName: phantomType === "specialization" ? phantomName : void 0,
         skillLevel: attributeValue,
         linkedAttribute,
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? void 0,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
         rrList: rrSources
@@ -5547,7 +5524,6 @@ class CharacterSheet extends ActorSheet {
     const specName = element.dataset.specName;
     const linkedAttribute = element.dataset.attribute;
     if (!specName || !linkedAttribute) return;
-    this.actor.system.attributes?.[linkedAttribute] || 0;
     const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
     const rrSources = this.getRRSources("specialization", specName);
     handleRollRequest({
@@ -5557,7 +5533,7 @@ class CharacterSheet extends ActorSheet {
       skillLevel: 0,
       // No skill level since the linked skill doesn't exist
       linkedAttribute,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? void 0,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: rrSources
@@ -5583,13 +5559,13 @@ class CharacterSheet extends ActorSheet {
     handleRollRequest({
       itemType: "skill",
       itemName: skill.name,
-      itemId: skill.id,
+      itemId: skill.id ?? void 0,
       itemRating: rating,
       skillName: skill.name,
       skillLevel: attributeValue + rating,
       // Total dice pool (attribute + rating)
       linkedAttribute,
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? void 0,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name,
       rrList: allRRSources
@@ -5655,16 +5631,13 @@ class CharacterSheet extends ActorSheet {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings(".skill-search-results")[0];
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
-    if (searchTerm.length === 0) {
-      resultsDiv.style.display = "none";
-      return;
-    }
-    this.searchTimeout = setTimeout(async () => {
-      await this._performSkillSearch(searchTerm, resultsDiv);
-    }, DELAYS.SEARCH_DEBOUNCE);
+    this.searchTimeout = debounceSearchInput(
+      this.searchTimeout,
+      searchTerm,
+      resultsDiv,
+      DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performSkillSearch(searchTerm, resultsDiv)
+    );
   }
   /**
    * Perform the actual skill search in compendiums and world items
@@ -5782,12 +5755,7 @@ class CharacterSheet extends ActorSheet {
    */
   _onSkillSearchFocus(event) {
     const input = event.currentTarget;
-    if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings(".skill-search-results")[0];
-      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
-        resultsDiv.style.display = "block";
-      }
-    }
+    handleSearchFocus(input, $(input).siblings(".skill-search-results")[0]);
     return Promise.resolve();
   }
   /**
@@ -5795,21 +5763,8 @@ class CharacterSheet extends ActorSheet {
    */
   _onSkillSearchBlur(event) {
     const input = event.currentTarget;
-    const blurEvent = event;
-    setTimeout(() => {
-      const resultsDiv = $(input).siblings(".skill-search-results")[0];
-      if (resultsDiv) {
-        const relatedTarget = blurEvent.relatedTarget;
-        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
-          return;
-        }
-        const activeElement = document.activeElement;
-        if (activeElement && resultsDiv.contains(activeElement)) {
-          return;
-        }
-        resultsDiv.style.display = "none";
-      }
-    }, DELAYS.SEARCH_HIDE);
+    const resultsDiv = $(input).siblings(".skill-search-results")[0];
+    handleSearchBlur(event.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
   /**
@@ -5862,16 +5817,13 @@ class CharacterSheet extends ActorSheet {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = $(input).siblings(".feat-search-results")[0];
-    if (this.featSearchTimeout) {
-      clearTimeout(this.featSearchTimeout);
-    }
-    if (searchTerm.length === 0) {
-      resultsDiv.style.display = "none";
-      return;
-    }
-    this.featSearchTimeout = setTimeout(async () => {
-      await this._performFeatSearch(searchTerm, resultsDiv);
-    }, DELAYS.SEARCH_DEBOUNCE);
+    this.featSearchTimeout = debounceSearchInput(
+      this.featSearchTimeout,
+      searchTerm,
+      resultsDiv,
+      DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performFeatSearch(searchTerm, resultsDiv)
+    );
   }
   /**
    * Perform the actual feat search in compendiums and world items
@@ -6037,12 +5989,7 @@ class CharacterSheet extends ActorSheet {
    */
   _onFeatSearchFocus(event) {
     const input = event.currentTarget;
-    if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings(".feat-search-results")[0];
-      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
-        resultsDiv.style.display = "block";
-      }
-    }
+    handleSearchFocus(input, $(input).siblings(".feat-search-results")[0]);
     return Promise.resolve();
   }
   /**
@@ -6050,21 +5997,8 @@ class CharacterSheet extends ActorSheet {
    */
   _onFeatSearchBlur(event) {
     const input = event.currentTarget;
-    const blurEvent = event;
-    setTimeout(() => {
-      const resultsDiv = $(input).siblings(".feat-search-results")[0];
-      if (resultsDiv) {
-        const relatedTarget = blurEvent.relatedTarget;
-        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
-          return;
-        }
-        const activeElement = document.activeElement;
-        if (activeElement && resultsDiv.contains(activeElement)) {
-          return;
-        }
-        resultsDiv.style.display = "none";
-      }
-    }, DELAYS.SEARCH_HIDE);
+    const resultsDiv = $(input).siblings(".feat-search-results")[0];
+    handleSearchBlur(event.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
   /**
@@ -6475,7 +6409,7 @@ class CharacterSheet extends ActorSheet {
         defenseSpecLevel,
         defenseLinkedAttribute,
         // Actor information (character, not vehicle)
-        actorId: this.actor.id,
+        actorId: this.actor.id ?? void 0,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name || "",
         // RR List (merged: item RR + skill/spec/attribute RR + CRR)
@@ -6708,7 +6642,7 @@ class CharacterSheet extends ActorSheet {
       specName: attackSpecName,
       specLevel: attackSpecLevel,
       // Actor information
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? void 0,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || "",
       // RR List (merged: item RR + skill/spec/attribute RR)
@@ -6782,7 +6716,7 @@ class CharacterSheet extends ActorSheet {
       mediumRange: powerSystem.mediumRange || "none",
       longRange: powerSystem.longRange || "none",
       // Actor information
-      actorId: this.actor.id,
+      actorId: this.actor.id ?? void 0,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || "",
       // RR List
@@ -6790,18 +6724,6 @@ class CharacterSheet extends ActorSheet {
       // Mark as power
       isPower: true
     });
-  }
-  /**
-   * REMOVED: Skill with weapon roll - dialog creation disabled
-   */
-  async _rollSkillWithWeapon(skill, weaponName, _skillType, weaponDamageValue, weapon) {
-    console.log("Skill with weapon roll disabled", { skill: skill.name, weaponName });
-  }
-  /**
-   * REMOVED: Specialization with weapon roll - dialog creation disabled
-   */
-  async _rollSpecializationWithWeapon(specialization, weaponName, effectiveRating, weaponDamageValue, weapon) {
-    console.log("Specialization with weapon roll disabled", { specialization: specialization.name, weaponName });
   }
   /**
    * Handle creating a new feat from search
@@ -7085,16 +7007,13 @@ class CharacterSheetV2 extends CharacterSheet {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
     const resultsDiv = this.element.find(".item-search-results")[0];
-    if (this._itemSearchTimeout) {
-      clearTimeout(this._itemSearchTimeout);
-    }
-    if (searchTerm.length === 0) {
-      resultsDiv.style.display = "none";
-      return;
-    }
-    this._itemSearchTimeout = setTimeout(async () => {
-      await this._performItemSearch(searchTerm, resultsDiv);
-    }, DELAYS.SEARCH_DEBOUNCE);
+    this._itemSearchTimeout = debounceSearchInput(
+      this._itemSearchTimeout,
+      searchTerm,
+      resultsDiv,
+      DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performItemSearch(searchTerm, resultsDiv)
+    );
   }
   /**
    * Perform the actual item search
@@ -7283,33 +7202,15 @@ class CharacterSheetV2 extends CharacterSheet {
    * Handle search input focus
    */
   _onItemSearchFocus(event) {
-    const input = event.currentTarget;
-    if (input.value.trim().length > 0) {
-      const resultsDiv = this.element.find(".item-search-results")[0];
-      if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
-        resultsDiv.style.display = "block";
-      }
-    }
+    handleSearchFocus(event.currentTarget, this.element.find(".item-search-results")[0]);
   }
   /**
    * Handle search input blur
    */
   _onItemSearchBlur(event) {
     const blurEvent = event.originalEvent;
-    setTimeout(() => {
-      const resultsDiv = this.element.find(".item-search-results")[0];
-      if (resultsDiv) {
-        const relatedTarget = blurEvent?.relatedTarget;
-        if (relatedTarget && resultsDiv.contains(relatedTarget)) {
-          return;
-        }
-        const activeElement = document.activeElement;
-        if (activeElement && resultsDiv.contains(activeElement)) {
-          return;
-        }
-        resultsDiv.style.display = "none";
-      }
-    }, DELAYS.SEARCH_HIDE);
+    const resultsDiv = this.element.find(".item-search-results")[0];
+    handleSearchBlur(blurEvent?.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
   }
 }
 const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -7534,7 +7435,7 @@ class VehicleSheet extends ActorSheet {
         const textareaElement = textarea;
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
-          const index = parseInt(nameMatch[1]);
+          const index = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || "";
           const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
@@ -7565,7 +7466,7 @@ class VehicleSheet extends ActorSheet {
         const textareaElement = textarea;
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
-          const effectIndex = parseInt(nameMatch[1]);
+          const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || "";
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
@@ -7595,7 +7496,7 @@ class VehicleSheet extends ActorSheet {
         const textareaElement = textarea;
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
-          const effectIndex = parseInt(nameMatch[1]);
+          const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || "";
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
@@ -7624,7 +7525,7 @@ class VehicleSheet extends ActorSheet {
       }
       await saveNarrativeEffects();
     });
-    html.find('textarea[name^="system.narrativeEffects."]').on("input", (event) => {
+    html.find('textarea[name^="system.narrativeEffects."]').on("input", (_event) => {
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
       }
@@ -7633,7 +7534,7 @@ class VehicleSheet extends ActorSheet {
         narrativeEffectSaveTimeout = null;
       }, NARRATIVE_SAVE_DEBOUNCE);
     });
-    html.find('textarea[name^="system.narrativeEffects."]').on("change blur", async (event) => {
+    html.find('textarea[name^="system.narrativeEffects."]').on("change blur", async (_event) => {
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
         narrativeEffectSaveTimeout = null;
@@ -7899,7 +7800,7 @@ class IceSheet extends ActorSheet {
       return;
     }
     const defenderToken = controlledTokens[0];
-    const defender = defenderToken.actor;
+    const defender = defenderToken?.actor;
     if (!defender) {
       ui.notifications?.warn(game.i18n.localize("SRA2.ICE.ATTACK.NO_TARGET"));
       return;
@@ -9445,7 +9346,7 @@ class RollDialog extends Application {
   // Selected range: 'melee', 'short', 'medium', 'long'
   rollMode = "normal";
   // Roll mode
-  manualRRBonus = "";
+  manualRRBonus = 0;
   // Manual RR bonus entered by user
   constructor(rollData) {
     super();
@@ -10506,7 +10407,7 @@ class RollDialog extends Application {
     html.find(".manual-rr-bonus-input").on("input", (event) => {
       const input = event.currentTarget;
       const inputValue = input.value;
-      this.manualRRBonus = inputValue;
+      this.manualRRBonus = parseInt(inputValue) || 0;
       let manualRRBonus = 0;
       if (inputValue !== "" && !isNaN(Number(inputValue))) {
         manualRRBonus = parseInt(inputValue);
@@ -10750,10 +10651,6 @@ const rollDialog = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   RollDialog
 }, Symbol.toStringTag, { value: "Module" }));
 class FeatChoiceDialog extends Dialog {
-  actor;
-  optionalFeats;
-  choiceFeats;
-  numberOfChoice;
   constructor(actor, optionalFeats, choiceFeats, numberOfChoice, callback) {
     const content = FeatChoiceDialog.buildContent(optionalFeats, choiceFeats, numberOfChoice);
     super({
@@ -10783,10 +10680,6 @@ class FeatChoiceDialog extends Dialog {
       classes: ["sra2", "dialog", "feat-choice-dialog"],
       width: 500
     });
-    this.actor = actor;
-    this.optionalFeats = optionalFeats;
-    this.choiceFeats = choiceFeats;
-    this.numberOfChoice = numberOfChoice;
   }
   /**
    * Build the HTML content for the dialog
@@ -10818,7 +10711,7 @@ class FeatChoiceDialog extends Dialog {
       `;
     }
     if (choiceFeats.length > 0) {
-      const selectLabel = game.i18n.format("SRA2.FEATS.CHOICE_DIALOG_SELECT_X", { count: numberOfChoice });
+      const selectLabel = game.i18n.format("SRA2.FEATS.CHOICE_DIALOG_SELECT_X", { count: String(numberOfChoice) });
       html += `
         <div class="feat-choice-section choice-section">
           <h3><i class="fas fa-list-check"></i> ${game.i18n.localize("SRA2.FEATS.CHOICE_DIALOG_CHOICES")}</h3>
@@ -10895,8 +10788,8 @@ class FeatChoiceDialog extends Dialog {
     if (choiceFeatsCount > 0 && choiceSelections.length !== numberOfChoice) {
       ui.notifications?.warn(
         game.i18n.format("SRA2.FEATS.CHOICE_DIALOG_WRONG_COUNT", {
-          expected: numberOfChoice,
-          actual: choiceSelections.length
+          expected: String(numberOfChoice),
+          actual: String(choiceSelections.length)
         })
       );
       return null;
@@ -11032,7 +10925,7 @@ class AnarchyCounter extends Application {
   /**
    * Prepare data for rendering
    */
-  getData(options) {
+  getData(_options) {
     return {
       value: AnarchyCounter.getGroupAnarchy(),
       isGM: game.user?.isGM ?? false
@@ -11041,6 +10934,7 @@ class AnarchyCounter extends Application {
   /**
    * Set position and save to localStorage
    */
+  // @ts-ignore — Foundry v13 base class signature changed; override still works at runtime
   setPosition(options) {
     const result = super.setPosition(options);
     if (this.positionInitialized) {
@@ -12034,7 +11928,7 @@ class SRA2System {
         }
       }
     });
-    Hooks.on("updateActor", (actor, updateData, options, userId) => {
+    Hooks.on("updateActor", (actor, updateData, _options, _userId) => {
       console.log("Hook updateActor - DEBUG:", {
         "actor.id": actor?.id,
         "actor.name": actor?.name,
@@ -12073,7 +11967,7 @@ class SRA2System {
         }, DELAYS.SHEET_RENDER);
       }
     });
-    Hooks.on("createItem", (item, options, userId) => {
+    Hooks.on("createItem", (item, _options, _userId) => {
       const actor = item.parent;
       if (!actor || actor.type !== "vehicle") return;
       const featType = item.system?.featType;
@@ -12100,7 +11994,7 @@ class SRA2System {
         });
       }
     });
-    Hooks.on("deleteItem", (item, options, userId) => {
+    Hooks.on("deleteItem", (item, _options, _userId) => {
       const actor = item.parent;
       if (!actor || actor.type !== "vehicle") return;
       const featType = item.system?.featType;
@@ -12129,7 +12023,7 @@ class SRA2System {
     });
   }
   setupSkillCreationHooks() {
-    Hooks.on("createItem", async (item, options, userId) => {
+    Hooks.on("createItem", async (item, _options, _userId) => {
       if (item.type !== "specialization") return;
       const actor = item.parent;
       if (!actor || actor.type !== "character") return;
@@ -12178,7 +12072,7 @@ class SRA2System {
     });
   }
   setupActorLifecycleHooks() {
-    Hooks.on("deleteActor", (actor, options, userId) => {
+    Hooks.on("deleteActor", (actor, _options, _userId) => {
       if (actor.type !== "vehicle") return;
       if (game.actors) {
         const vehicleUuid = actor.uuid;
@@ -13016,7 +12910,7 @@ class SRA2System {
         let actor = null;
         const controlledTokens = canvas?.tokens?.controlled || [];
         if (controlledTokens.length > 0) {
-          actor = controlledTokens[0].actor;
+          actor = controlledTokens[0]?.actor;
         } else {
           const ownedActors = game.actors.filter((a) => a.isOwner);
           if (ownedActors.length > 0) {
@@ -13152,14 +13046,14 @@ class SRA2System {
       });
       return true;
     };
-    Hooks.on("renderChatLog", (app, html, data) => {
+    Hooks.on("renderChatLog", (_app, _html, _data) => {
       setTimeout(() => {
         if (!addRollDiceButton()) {
           setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
         }
       }, DELAYS.SHEET_RENDER);
     });
-    Hooks.on("renderChatPopout", (app, html, data) => {
+    Hooks.on("renderChatPopout", (_app, _html, _data) => {
       setTimeout(() => {
         if (!addRollDiceButton()) {
           setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
@@ -13254,8 +13148,9 @@ class SRA2System {
    * Initialize Babele translations if the module is available
    */
   initializeBabele() {
-    if (game.babele && game.babele.modules.every((module) => module.module !== game.settings.get(CONFIG.l5r5e.namespace, "custom-compendium-name"))) {
-      game.babele.setSystemTranslationsDir("lang");
+    const g = game;
+    if (g.babele && g.babele.modules.every((module) => module.module !== game.settings?.get(CONFIG.l5r5e?.namespace, "custom-compendium-name"))) {
+      g.babele.setSystemTranslationsDir("lang");
     }
   }
   registerGroupAnarchySetting() {

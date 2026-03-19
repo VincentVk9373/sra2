@@ -243,6 +243,14 @@ export interface RollRequestData {
     meleeRange?: string;
   }>;
   selectedWeaponId?: string; // ID of selected weapon for counter-attack
+
+  // Vehicle weapon properties
+  isVehicleWeapon?: boolean;
+  vehicleUuid?: string; // UUID of the vehicle owning this weapon
+  vehicleName?: string; // Name of the vehicle for display
+
+  // Power/adept properties
+  isPower?: boolean;
 }
 
 /**
@@ -445,6 +453,204 @@ export async function executeRoll(
 }
 
 /**
+ * Build defender data object with correct token image.
+ */
+function buildDefenderData(defender: any, defenderToken: any): any {
+  if (!defender) return null;
+  let tokenImg = defender.img;
+  if (defenderToken) {
+    tokenImg = (defenderToken as any).document?.texture?.src ||
+               (defenderToken as any).document?.img ||
+               (defenderToken as any).data?.img ||
+               (defenderToken as any).texture?.src ||
+               defender.img;
+  }
+  return { ...defender, img: tokenImg };
+}
+
+/**
+ * Build the defenseResult object for a defense roll.
+ * For defense: attacker param = the one defending, defender param = the original attacker.
+ */
+function buildDefenseResult(
+  rollData: RollRequestData,
+  rollResult: RollResult,
+  finalAttackerUuid: string | undefined,
+  finalDefenderUuid: string | undefined,
+  attacker: any,
+  defender: any,
+  attackerToken: any,
+  defenderToken: any
+): any {
+  const attackSuccesses = rollData.attackRollResult!.totalSuccesses;
+  const defenseSuccesses = rollResult.totalSuccesses;
+  const isIceAttack = rollData.attackRollData!.itemType === 'ice-attack' || rollData.attackRollData!.iceType;
+  const iceType = rollData.attackRollData!.iceType;
+  const originalAttackerName = defenderToken?.name || defender?.name || 'Inconnu';
+  const defenderName = attackerToken?.name || attacker?.name || 'Inconnu';
+
+  let calculatedDamage = 0;
+  let attackFailed = false;
+
+  if (attackSuccesses >= defenseSuccesses) {
+    if (isIceAttack) {
+      const iceDamageValue = rollData.attackRollData!.iceDamageValue || 0;
+      if (iceType === 'blaster' || iceType === 'black' || iceType === 'killer') {
+        calculatedDamage = iceDamageValue + attackSuccesses - defenseSuccesses;
+      }
+    } else {
+      const damageValueStr = rollData.attackRollData!.damageValue || '0';
+      const attackerAttributes = (defender?.system as any)?.attributes || {};
+      const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, 'defense');
+      calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+    }
+  } else {
+    attackFailed = true;
+    calculatedDamage = 0;
+  }
+
+  const originalAttackerUuid = finalDefenderUuid;
+  const defenderUuid = finalAttackerUuid;
+
+  console.log('Defense: Attack succeeds - original attacker inflicts damage to defender');
+  console.log('  Original attacker (inflicter):', originalAttackerName, '(', originalAttackerUuid, ')');
+  console.log('  Defender (receiver):', defenderName, '(', defenderUuid, ')');
+
+  const attackDamageType = (rollData.attackRollData!.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
+
+  return {
+    attackSuccesses,
+    defenseSuccesses,
+    calculatedDamage,
+    attackFailed,
+    originalAttackerName,
+    defenderName,
+    originalAttackerUuid,
+    defenderUuid,
+    isIceAttack,
+    iceType,
+    damageType: attackDamageType
+  };
+}
+
+/**
+ * Build the defenseResult object for a counter-attack roll.
+ * For counter-attack: attacker param = original defender (counter-attacker), defender param = original attacker.
+ */
+function buildCounterAttackResult(
+  rollData: RollRequestData,
+  rollResult: RollResult,
+  finalAttackerUuid: string | undefined,
+  finalDefenderUuid: string | undefined,
+  attacker: any,
+  defender: any,
+  attackerToken: any,
+  defenderToken: any
+): any {
+  const originalAttackerName = defenderToken?.document?.name ||
+                               (defenderToken as any)?.name ||
+                               defenderToken?.actor?.name ||
+                               defender?.name ||
+                               'Inconnu';
+  const originalDefenderName = attackerToken?.document?.name ||
+                                (attackerToken as any)?.name ||
+                                attackerToken?.actor?.name ||
+                                attacker?.name ||
+                                'Inconnu';
+
+  const attackSuccesses = rollData.attackRollResult!.totalSuccesses;
+  const counterAttackSuccesses = rollResult.totalSuccesses;
+
+  const attackDamageValueStr = rollData.attackRollData!.damageValue || '0';
+  const originalAttackerAttributes = (defender?.system as any)?.attributes || {};
+  const attackDamageValue = parseDamageValueSafe(attackDamageValueStr, originalAttackerAttributes, 'counter-attack original');
+
+  let counterAttackDamageValue = parseDamageValueSafe(rollData.damageValue || '0', (attacker?.system as any)?.attributes || {}, 'counter-attack');
+
+  if (!counterAttackDamageValue && attacker) {
+    const selectedWeaponId = (rollData as any).selectedWeaponId;
+    if (selectedWeaponId) {
+      const weapon = attacker.items.find((item: any) => item.id === selectedWeaponId);
+      if (weapon) {
+        const weaponSystem = weapon.system as any;
+        try {
+          counterAttackDamageValue = SheetHelpers.calculateFinalNumericDamageValue(
+            weaponSystem.damageValue || '0',
+            (attacker?.system as any)?.attributes || {},
+            weaponSystem.damageValueBonus || 0
+          );
+        } catch (error) {
+          console.error('SRA2 | Error calculating weapon damage value:', weaponSystem.damageValue, error);
+        }
+      }
+    }
+  }
+
+  let attackerDamage = 0;
+  let defenderDamage = 0;
+  let isTie = false;
+  let winner: 'attacker' | 'defender' | 'tie' = 'tie';
+
+  if (attackSuccesses > counterAttackSuccesses) {
+    winner = 'attacker';
+    attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
+  } else if (counterAttackSuccesses > attackSuccesses) {
+    winner = 'defender';
+    defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
+  } else {
+    isTie = true;
+  }
+
+  console.log('=== COUNTER-ATTACK RESULTS ===');
+  console.log('Attack Successes:', attackSuccesses, '| Counter-Attack Successes:', counterAttackSuccesses);
+  console.log('Attack Damage Value:', attackDamageValue, '| Counter-Attack Damage Value:', counterAttackDamageValue);
+  console.log('Winner:', winner, '| Attacker Damage:', attackerDamage, '| Defender Damage:', defenderDamage);
+  console.log('==============================');
+
+  const originalAttackerUuid = finalDefenderUuid;
+  const originalDefenderUuid = finalAttackerUuid;
+
+  let damageInflicterUuid: string | undefined;
+  let damageReceiverUuid: string | undefined;
+  let damageInflicterName = '';
+  let damageReceiverName = '';
+
+  if (winner === 'attacker') {
+    damageInflicterUuid = originalAttackerUuid;
+    damageReceiverUuid = originalDefenderUuid;
+    damageInflicterName = originalAttackerName;
+    damageReceiverName = originalDefenderName;
+  } else if (winner === 'defender') {
+    damageInflicterUuid = originalDefenderUuid;
+    damageReceiverUuid = originalAttackerUuid;
+    damageInflicterName = originalDefenderName;
+    damageReceiverName = originalAttackerName;
+  }
+
+  const attackerDamageType = (rollData.attackRollData!.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
+  const defenderDamageType = (rollData.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
+
+  return {
+    attackSuccesses,
+    counterAttackSuccesses,
+    winner,
+    attackerDamage,
+    defenderDamage,
+    isTie,
+    originalAttackerName,
+    originalDefenderName,
+    originalAttackerUuid,
+    originalDefenderUuid,
+    damageInflicterUuid,
+    damageReceiverUuid,
+    damageInflicterName,
+    damageReceiverName,
+    attackerDamageType,
+    defenderDamageType
+  };
+}
+
+/**
  * Create chat message for roll result
  * Step 5: Display roll results in chat
  */
@@ -494,277 +700,15 @@ async function createRollChatMessage(
   console.log('================================');
 
   // Prepare defender data with token image if available
-  let defenderData: any = null;
-  if (defender) {
-    // Get token image - try different ways to access it depending on Foundry version
-    let tokenImg = defender.img; // fallback to actor image
-    if (defenderToken) {
-      // FoundryVTT v13: token.document.texture.src or token.document.img
-      tokenImg = (defenderToken as any).document?.texture?.src || 
-                 (defenderToken as any).document?.img || 
-                 (defenderToken as any).data?.img || 
-                 (defenderToken as any).texture?.src ||
-                 defender.img;
-    }
-    
-    defenderData = {
-      ...defender,
-      img: tokenImg
-    };
-  }
+  const defenderData = buildDefenderData(defender, defenderToken);
 
   // Handle defense/counter-attack rolls
   let defenseResult: any = null;
-  let calculatedDamage: number | null = null;
-  let attackFailed: boolean = false;
-  
+
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
-    // Defense roll: compare with attack
-    // For defense: attacker = defender (one defending), defender = original attacker
-    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
-    const defenseSuccesses = rollResult.totalSuccesses;
-    
-    // Check if this is an ICE attack
-    const isIceAttack = rollData.attackRollData.itemType === 'ice-attack' || rollData.attackRollData.iceType;
-    const iceType = rollData.attackRollData.iceType;
-    
-    // Get actor names (use token name if available, otherwise actor name)
-    const originalAttackerName = defenderToken?.name || defender?.name || 'Inconnu';
-    const defenderName = attackerToken?.name || attacker?.name || 'Inconnu';
-    
-    if (attackSuccesses >= defenseSuccesses) {
-      // Attack succeeds
-      if (isIceAttack) {
-        // For ICE attacks, calculate damage based on type
-        let damageValue = 0;
-        const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
-        
-        // ICE damage calculation: VD + (succès ICE - succès défense)
-        // But for some ICE types, there's no damage, only effects
-        if (iceType === 'blaster' || iceType === 'black' || iceType === 'killer') {
-          damageValue = iceDamageValue + attackSuccesses - defenseSuccesses;
-        }
-        // Other ICE types (acid, blocker, glue, tracker) don't deal damage
-        
-        calculatedDamage = damageValue;
-        attackFailed = false;
-      } else {
-        // Normal attack damage calculation
-        // damageValue should already be a numeric string (calculated value, not "attribut+bonus")
-        const damageValueStr = rollData.attackRollData.damageValue || '0';
-        
-        const attackerAttributes = (defender?.system as any)?.attributes || {};
-        const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, 'defense');
-        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
-        
-        attackFailed = false;
-      }
-    } else {
-      // Attack fails
-      attackFailed = true;
-      calculatedDamage = 0;
-    }
-    
-    // For defense: attacker = defender (one defending), defender = original attacker
-    // If attack succeeds, original attacker (defender in context) inflicts damage to defender (attacker in context)
-    const originalAttackerUuid = finalDefenderUuid; // Original attacker is defender in defense context
-    const defenderUuid = finalAttackerUuid; // Defender is attacker in defense context
-    
-    console.log('Defense: Attack succeeds - original attacker inflicts damage to defender');
-    console.log('  Original attacker (inflicter):', originalAttackerName, '(', originalAttackerUuid, ')');
-    console.log('  Defender (receiver):', defenderName, '(', defenderUuid, ')');
-    
-    // Get damage type from attack roll data (default to physical)
-    const attackDamageType = (rollData.attackRollData?.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
-    
-    defenseResult = {
-      attackSuccesses: attackSuccesses,
-      defenseSuccesses: defenseSuccesses,
-      calculatedDamage: calculatedDamage,
-      attackFailed: attackFailed,
-      originalAttackerName: originalAttackerName,
-      defenderName: defenderName,
-      // UUIDs for applying damage
-      originalAttackerUuid: originalAttackerUuid, // Who inflicts damage if attack succeeds
-      defenderUuid: defenderUuid, // Who receives damage if attack succeeds
-      // ICE-specific fields
-      isIceAttack: isIceAttack,
-      iceType: iceType,
-      // Damage type from weapon/attack
-      damageType: attackDamageType
-    };
+    defenseResult = buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
-    // Counter-attack: compare with original attack
-    // In counter-attack context:
-    // - attacker = original defender (the one doing counter-attack)
-    // - defender = original attacker (the one being counter-attacked)
-    
-    // Get actor names (use token name if available, otherwise actor name)
-    // For original attacker (defender in counter-attack context)
-    // Try: token.document.name, token.name, token.actor.name, actor.name
-    const originalAttackerName = defenderToken?.document?.name || 
-                                  (defenderToken as any)?.name || 
-                                  defenderToken?.actor?.name || 
-                                  defender?.name || 
-                                  'Inconnu';
-    // For original defender/counter-attacker (attacker in counter-attack context)
-    const originalDefenderName = attackerToken?.document?.name || 
-                                  (attackerToken as any)?.name || 
-                                  attackerToken?.actor?.name || 
-                                  attacker?.name || 
-                                  'Inconnu';
-    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
-    const counterAttackSuccesses = rollResult.totalSuccesses;
-    
-    // Get damage values for the original attacker
-    // damageValue should already be a numeric string (calculated value, not "attribut+bonus")
-    let attackDamageValue = 0;
-    const attackDamageValueStr = rollData.attackRollData.damageValue || '0';
-    
-    const originalAttackerAttributes = (defender?.system as any)?.attributes || {}; // defender = original attacker
-    attackDamageValue = parseDamageValueSafe(attackDamageValueStr, originalAttackerAttributes, 'counter-attack original');
-    
-    // Get counter-attack damage value from rollData
-    // rollData.damageValue should already be a numeric string (calculated value)
-    let counterAttackDamageValue = 0;
-    const damageValueStr = rollData.damageValue || '0';
-    
-    const counterAttackerAttributes = (attacker?.system as any)?.attributes || {};
-    counterAttackDamageValue = parseDamageValueSafe(damageValueStr, counterAttackerAttributes, 'counter-attack');
-    
-    // If still no damage value, try to find weapon (fallback)
-    if (!counterAttackDamageValue && attacker) {
-      // Find weapon matching the counter-attack skill/item
-      const selectedWeaponId = (rollData as any).selectedWeaponId;
-      if (selectedWeaponId) {
-          const weapon = attacker.items.find((item: any) => item.id === selectedWeaponId);
-          if (weapon) {
-            const weaponSystem = weapon.system as any;
-            // Calculate finalDamageValue from weapon using helper
-            const baseDamageValue = weaponSystem.damageValue || '0';
-            const damageValueBonus = weaponSystem.damageValueBonus || 0;
-            
-            // Calculate final numeric damage value
-            const counterAttackerAttributes = (attacker?.system as any)?.attributes || {};
-            try {
-              counterAttackDamageValue = SheetHelpers.calculateFinalNumericDamageValue(
-                baseDamageValue,
-                counterAttackerAttributes,
-                damageValueBonus
-              );
-            } catch (error) {
-              console.error('SRA2 | Error calculating weapon damage value:', baseDamageValue, error);
-              counterAttackDamageValue = 0;
-            }
-        }
-      }
-    }
-    
-    // Determine winner and calculate damage
-    let attackerDamage = 0;
-    let defenderDamage = 0;
-    let isTie = false;
-    let winner: 'attacker' | 'defender' | 'tie' = 'tie';
-    
-    if (attackSuccesses > counterAttackSuccesses) {
-      // Attacker wins
-      winner = 'attacker';
-      attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
-    } else if (counterAttackSuccesses > attackSuccesses) {
-      // Defender (counter-attacker) wins
-      winner = 'defender';
-      defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
-    } else {
-      // Tie
-      isTie = true;
-      winner = 'tie';
-    }
-    
-    console.log('=== COUNTER-ATTACK RESULTS ===');
-    console.log('Attack Successes:', attackSuccesses);
-    console.log('Counter-Attack Successes:', counterAttackSuccesses);
-    console.log('Attack Damage Value:', attackDamageValue);
-    console.log('Counter-Attack Damage Value:', counterAttackDamageValue);
-    console.log('Winner:', winner);
-    console.log('Attacker Damage:', attackerDamage);
-    console.log('Defender Damage:', defenderDamage);
-    console.log('Original Attacker Name:', originalAttackerName);
-    console.log('Original Defender Name:', originalDefenderName);
-    console.log('--- Context ---');
-    console.log('Attacker param:', attacker?.name);
-    console.log('Defender param:', defender?.name);
-    console.log('AttackerToken object:', attackerToken ? 'Found' : 'Not found');
-    console.log('AttackerToken.name:', (attackerToken as any)?.name);
-    console.log('AttackerToken.document?.name:', attackerToken?.document?.name);
-    console.log('AttackerToken.actor?.name:', attackerToken?.actor?.name);
-    console.log('DefenderToken object:', defenderToken ? 'Found' : 'Not found');
-    console.log('DefenderToken.name:', (defenderToken as any)?.name);
-    console.log('DefenderToken.document?.name:', defenderToken?.document?.name);
-    console.log('DefenderToken.actor?.name:', defenderToken?.actor?.name);
-    console.log('--- UUIDs to be stored in flags ---');
-    console.log('attackerUuid (final):', finalAttackerUuid || 'Unknown');
-    console.log('attackerTokenUuid (final):', attackerTokenUuid || 'Unknown');
-    console.log('defenderUuid (final):', finalDefenderUuid || 'Unknown');
-    console.log('defenderTokenUuid (final):', defenderTokenUuid || 'Unknown');
-    console.log('==============================');
-    
-    // For counter-attack: attacker = counter-attacker (original defender), defender = original attacker
-    // Winner is determined by who has more successes
-    const originalAttackerUuid = finalDefenderUuid; // Original attacker is defender in counter-attack context
-    const originalDefenderUuid = finalAttackerUuid; // Original defender/counter-attacker is attacker in counter-attack context
-    
-    // Determine who inflicts damage based on winner
-    let damageInflicterUuid: string | undefined = undefined;
-    let damageReceiverUuid: string | undefined = undefined;
-    let damageInflicterName: string = '';
-    let damageReceiverName: string = '';
-    
-    if (winner === 'attacker') {
-      // Original attacker wins (attackSuccesses > counterAttackSuccesses)
-      // Original attacker inflicts damage to counter-attacker
-      damageInflicterUuid = originalAttackerUuid;
-      damageReceiverUuid = originalDefenderUuid;
-      damageInflicterName = originalAttackerName;
-      damageReceiverName = originalDefenderName;
-      console.log('Counter-attack: Original attacker wins - inflicts damage to counter-attacker');
-      console.log('  Inflicter:', damageInflicterName, '(', damageInflicterUuid, ')');
-      console.log('  Receiver:', damageReceiverName, '(', damageReceiverUuid, ')');
-    } else if (winner === 'defender') {
-      // Counter-attacker wins (counterAttackSuccesses > attackSuccesses)
-      // Counter-attacker inflicts damage to original attacker
-      damageInflicterUuid = originalDefenderUuid;
-      damageReceiverUuid = originalAttackerUuid;
-      damageInflicterName = originalDefenderName;
-      damageReceiverName = originalAttackerName;
-      console.log('Counter-attack: Counter-attacker wins - inflicts damage to original attacker');
-      console.log('  Inflicter:', damageInflicterName, '(', damageInflicterUuid, ')');
-      console.log('  Receiver:', damageReceiverName, '(', damageReceiverUuid, ')');
-    }
-    
-    // Get damage types: attacker uses original attack's type, defender uses counter-attack weapon's type
-    const attackerDamageType = (rollData.attackRollData?.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
-    const defenderDamageType = (rollData.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
-    
-    defenseResult = {
-      attackSuccesses: attackSuccesses,
-      counterAttackSuccesses: counterAttackSuccesses,
-      winner: winner,
-      attackerDamage: attackerDamage,
-      defenderDamage: defenderDamage,
-      isTie: isTie,
-      originalAttackerName: originalAttackerName,
-      originalDefenderName: originalDefenderName,
-      // UUIDs for applying damage
-      originalAttackerUuid: originalAttackerUuid,
-      originalDefenderUuid: originalDefenderUuid,
-      damageInflicterUuid: damageInflicterUuid,
-      damageReceiverUuid: damageReceiverUuid,
-      damageInflicterName: damageInflicterName,
-      damageReceiverName: damageReceiverName,
-      // Damage types
-      attackerDamageType: attackerDamageType,
-      defenderDamageType: defenderDamageType
-    };
+    defenseResult = buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   }
 
   // Prepare template data
@@ -896,7 +840,7 @@ async function handleDrain(
   // Handle different complication levels
   if (rollResult.complication === 'minor') {
     // Minor complication: display message in chat about disadvantage until next narration
-    const message = game.i18n.localize('SRA2.SKILLS.DRAIN_MINOR_COMPLICATION');
+    const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_MINOR_COMPLICATION');
     await ChatMessage.create({
       user: game.user?.id,
       speaker: {
@@ -905,7 +849,7 @@ async function handleDrain(
       },
       content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
         <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
-        <strong style="color: #ffc107;">Drain - ${game.i18n.localize('SRA2.SKILLS.MINOR_COMPLICATION')}</strong>
+        <strong style="color: #ffc107;">Drain - ${game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION')}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`,
@@ -931,7 +875,7 @@ async function handleDrain(
         'system.damage.light': lightWounds
       });
       
-      const message = game.i18n.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
+      const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
       await ChatMessage.create({
         user: game.user?.id,
         speaker: {
@@ -940,7 +884,7 @@ async function handleDrain(
         },
         content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
           <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
-          <strong style="color: #dc3545;">Drain - ${game.i18n.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
+          <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
         </div>`,
@@ -970,7 +914,7 @@ async function handleDrain(
         });
       }
       
-      const message = game.i18n.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
+      const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
       await ChatMessage.create({
         user: game.user?.id,
         speaker: {
@@ -979,7 +923,7 @@ async function handleDrain(
         },
         content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
           <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
-          <strong style="color: #dc3545;">Drain - ${game.i18n.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
+          <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
         </div>`,
@@ -992,7 +936,7 @@ async function handleDrain(
       'system.damage.incapacitating': true
     });
     
-    const message = game.i18n.localize('SRA2.SKILLS.DRAIN_DISASTER');
+    const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_DISASTER');
     await ChatMessage.create({
       user: game.user?.id,
       speaker: {
@@ -1001,7 +945,7 @@ async function handleDrain(
       },
       content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
         <i class="fas fa-skull" style="color: #dc3545;"></i> 
-        <strong style="color: #dc3545;">Drain - ${game.i18n.localize('SRA2.SKILLS.DISASTER')}</strong>
+        <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.DISASTER')}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`,

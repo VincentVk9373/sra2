@@ -2,11 +2,6 @@
  * Dialog for choosing which feats to activate when dropping a token with optional/choice feats
  */
 export class FeatChoiceDialog extends Dialog {
-  private actor: Actor;
-  private optionalFeats: any[];
-  private choiceFeats: any[];
-  private numberOfChoice: number;
-
   constructor(actor: Actor, optionalFeats: any[], choiceFeats: any[], numberOfChoice: number, callback: (selections: { optional: string[], choices: string[] }) => void) {
     const content = FeatChoiceDialog.buildContent(optionalFeats, choiceFeats, numberOfChoice);
     
@@ -38,10 +33,7 @@ export class FeatChoiceDialog extends Dialog {
       width: 500,
     });
 
-    this.actor = actor;
-    this.optionalFeats = optionalFeats;
-    this.choiceFeats = choiceFeats;
-    this.numberOfChoice = numberOfChoice;
+    void actor; void optionalFeats; void choiceFeats; void numberOfChoice; // constructor params received but not stored
   }
 
   /**
@@ -80,7 +72,7 @@ export class FeatChoiceDialog extends Dialog {
     
     // Choice feats section
     if (choiceFeats.length > 0) {
-      const selectLabel = game.i18n!.format('SRA2.FEATS.CHOICE_DIALOG_SELECT_X', { count: numberOfChoice });
+      const selectLabel = game.i18n!.format('SRA2.FEATS.CHOICE_DIALOG_SELECT_X', { count: String(numberOfChoice) });
       html += `
         <div class="feat-choice-section choice-section">
           <h3><i class="fas fa-list-check"></i> ${game.i18n!.localize('SRA2.FEATS.CHOICE_DIALOG_CHOICES')}</h3>
@@ -181,9 +173,9 @@ export class FeatChoiceDialog extends Dialog {
     // Validate choice count
     if (choiceFeatsCount > 0 && choiceSelections.length !== numberOfChoice) {
       ui.notifications?.warn(
-        game.i18n!.format('SRA2.FEATS.CHOICE_DIALOG_WRONG_COUNT', { 
-          expected: numberOfChoice, 
-          actual: choiceSelections.length 
+        game.i18n!.format('SRA2.FEATS.CHOICE_DIALOG_WRONG_COUNT', {
+          expected: String(numberOfChoice),
+          actual: String(choiceSelections.length)
         })
       );
       return null;
