@@ -758,6 +758,7 @@
                 "ADDITIONAL_DRONE_COUNT_HINT": "Number of additional identical drones (max 3): +2 levels per drone",
                 "ACTOR_UUID": "Vehicle actor UUID",
                 "OPEN_SHEET": "Open vehicle sheet",
+                "ROLL_AUTOPILOT_SHORT": "Roll autopilot",
                 "UNLINK": "Unlink vehicle",
                 "OPEN_SHEET_ERROR": "Error opening vehicle sheet",
                 "TYPES": {
