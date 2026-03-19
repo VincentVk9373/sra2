@@ -756,7 +756,10 @@ export class SRA2System {
     Handlebars.registerHelper('rangeLabel', function (value: string) {
       if (!value || value === 'none') return '-';
       if (value === 'advantage') return 'av';
-      if (value === 'disadvantage') return 'dés';
+      if (value === 'disadvantage') {
+        const lang = (game as any).i18n?.lang ?? 'en';
+        return lang === 'fr' ? 'dés' : 'dis';
+      }
       return value;
     });
   }
