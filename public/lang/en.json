@@ -696,8 +696,10 @@
                 "ROLL_TITLE": "Roll {name}",
                 "CLICK_TO_ROLL": "Click to cast this spell",
                 "TYPE": "Spell Type",
-                "TYPE_DIRECT": "Alteration",
-                "TYPE_INDIRECT": "Psychotropic",
+                "TYPE_DIRECT": "Direct Spell",
+                "TYPE_INDIRECT": "Indirect Spell",
+                "TYPE_ALTERATION": "Alteration",
+                "TYPE_PSYCHOTROPIC": "Psychotropic",
                 "TYPE_HINT": "Direct spells affect the target directly (mana), indirect spells go through physical effects (elemental)",
                 "SPECIALIZATION": {
                     "TYPE": "Specialization Type",

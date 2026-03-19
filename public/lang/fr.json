@@ -692,8 +692,10 @@
                 "ROLL_TITLE": "Lancer {name}",
                 "CLICK_TO_ROLL": "Cliquer pour lancer ce sort",
                 "TYPE": "Type de Sort",
-                "TYPE_DIRECT": "Altération",
-                "TYPE_INDIRECT": "Psychotrope",
+                "TYPE_DIRECT": "Sort Direct",
+                "TYPE_INDIRECT": "Sort Indirect",
+                "TYPE_ALTERATION": "Altération",
+                "TYPE_PSYCHOTROPIC": "Psychotrope",
                 "TYPE_HINT": "Les sorts directs affectent directement la cible (mana), les sorts indirects passent par des effets physiques (élémentaux)",
                 "SPECIALIZATION": {
                     "TYPE": "Type de Spécialisation",
