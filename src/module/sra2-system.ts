@@ -17,7 +17,7 @@ import * as CombatHelpers from "./helpers/combat-helpers.ts";
 import * as SheetHelpers from "./helpers/sheet-helpers.ts";
 import * as DiceRoller from "./helpers/dice-roller.ts";
 import { WEAPON_TYPES } from "./models/item-feat.ts";
-import { registerDiceSoNice, SRA2_NORMAL_COLORSET, SRA2_RISK_COLORSET } from "./helpers/dice-so-nice.ts";
+import { registerDiceSoNice, SRA2_NORMAL_COLORSET, SRA2_RISK_COLORSET, buildAppearance } from "./helpers/dice-so-nice.ts";
 import { loadCombatantFromFlags, resolveDefenderForDefend, resolveDefenseSkillData } from "./helpers/actor-uuid-resolver.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
@@ -1157,7 +1157,7 @@ export class SRA2System {
           await normalRoll.evaluate();
 
           if ((game as any).dice3d && normalRoll) {
-            normalRoll.dice[0].options.appearance = { colorset: SRA2_NORMAL_COLORSET };
+            normalRoll.dice[0].options.appearance = buildAppearance(SRA2_NORMAL_COLORSET);
             (game as any).dice3d.showForRoll(normalRoll, game.user, true);
           }
         }
@@ -1167,7 +1167,7 @@ export class SRA2System {
           await riskRoll.evaluate();
 
           if ((game as any).dice3d && riskRoll) {
-            riskRoll.dice[0].options.appearance = { colorset: SRA2_RISK_COLORSET };
+            riskRoll.dice[0].options.appearance = buildAppearance(SRA2_RISK_COLORSET);
             (game as any).dice3d.showForRoll(riskRoll, game.user, true);
           }
         }
