@@ -983,6 +983,7 @@
             "DEFENSE_SKILL": "Defense skill",
             "DEFEND_TITLE": "Defend",
             "COVER_BONUS": "Cover Bonus",
+            "COVER_BONUS_HINT": "Added to defense threshold when calculating damage",
             "ROLL_FOR": "Roll for",
             "ATTACKER": "Attacker",
             "ATTRIBUTE": "Attribute",

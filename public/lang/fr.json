@@ -983,6 +983,7 @@
             "DEFENSE_SKILL": "Compétence de défense",
             "DEFEND_TITLE": "Se défendre",
             "COVER_BONUS": "Bonus de couverture",
+            "COVER_BONUS_HINT": "S'ajoute au seuil de défense lors du calcul des dégâts",
             "ROLL_FOR": "Faire un jet de",
             "ATTACKER": "Attaquant",
             "ATTRIBUTE": "Attribut",

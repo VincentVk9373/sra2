@@ -15,6 +15,8 @@ import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
 import * as CombatHelpers from "./helpers/combat-helpers.ts";
 import * as SheetHelpers from "./helpers/sheet-helpers.ts";
+import * as DiceRoller from "./helpers/dice-roller.ts";
+import { WEAPON_TYPES } from "./models/item-feat.ts";
 import { loadCombatantFromFlags, resolveDefenderForDefend, resolveDefenseSkillData } from "./helpers/actor-uuid-resolver.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
@@ -614,7 +616,7 @@ export class SRA2System {
       // Show dialog asynchronously and handle token creation
       (async () => {
         // Import and show the dialog
-        const { FeatChoiceDialog } = await import('./applications/feat-choice-dialog.js');
+        const { FeatChoiceDialog } = applications;
 
         const selections = await FeatChoiceDialog.show(
           actor,
@@ -918,7 +920,7 @@ export class SRA2System {
           return;
         }
 
-        const { getRRSources } = await import('./helpers/sheet-helpers.js');
+        const { getRRSources } = SheetHelpers;
         let rrList: any[] = [];
         if (!isVehicleDefender) {
           const rrTarget   = skillData.spec ?? skillData.skill!;
@@ -957,7 +959,7 @@ export class SRA2System {
           })(),
         };
 
-        const { RollDialog } = await import('./applications/roll-dialog.js');
+        const { RollDialog } = applications;
         const dialog = new RollDialog(defenseRollData);
         // Override any stale canvas target with the known original attacker token
         if (attackerToken) (dialog as any).targetToken = attackerToken;
@@ -1003,7 +1005,6 @@ export class SRA2System {
 
         const defenderActorForRoll = defenderToken?.actor ?? defender;
 
-        const { WEAPON_TYPES } = await import('./models/item-feat.js');
         const availableWeapons = getMeleeWeaponsForCounterAttack(defenderActorForRoll, WEAPON_TYPES);
         if (availableWeapons.length === 0) {
           ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS'));
@@ -1025,7 +1026,7 @@ export class SRA2System {
           attackRollData:   rollData,
         };
 
-        const { RollDialog } = await import('./applications/roll-dialog.js');
+        const { RollDialog } = applications;
         const dialog = new RollDialog(counterAttackRollData);
         // Always override with the known original attacker token (constructor may have captured stale targets)
         if (attackerToken) (dialog as any).targetToken = attackerToken;
@@ -1138,8 +1139,6 @@ export class SRA2System {
           return;
         }
 
-        // Import dice roller functions
-        const DiceRoller = await import('./helpers/dice-roller.js');
         const { getSuccessThreshold } = DiceRoller;
 
         // Use manual risk dice count, ensure it doesn't exceed total dice count

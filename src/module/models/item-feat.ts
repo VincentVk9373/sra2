@@ -927,7 +927,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const isAdeptPowerWeapon = (this as any).isAdeptPowerWeapon || false;
     const isBioware = (this as any).isBioware || false;
     const bonusAnarchy = (this as any).bonusAnarchy || 0;
-    const grantsNarration = (this as any).grantsNarration || false;
     const narrativeEffects = (this as any).narrativeEffects || [];
     const rrList = (this as any).rrList || [];
     const isFirstFeat = (this as any).isFirstFeat || false;

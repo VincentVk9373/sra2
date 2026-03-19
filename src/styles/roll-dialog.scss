@@ -2,20 +2,24 @@
 
 /* Glow animation for risk dice */
 @keyframes risk-glow {
-
     0%,
     100% {
-        box-shadow: 0 0 8px rgba(139, 0, 0, 0.8), 0 0 12px rgba(139, 0, 0, 0.6), 0 0 16px rgba(139, 0, 0, 0.4);
+        box-shadow:
+            0 0 8px rgba(139, 0, 0, 0.8),
+            0 0 12px rgba(139, 0, 0, 0.6),
+            0 0 16px rgba(139, 0, 0, 0.4);
     }
 
     50% {
-        box-shadow: 0 0 12px rgba(139, 0, 0, 1), 0 0 18px rgba(139, 0, 0, 0.8), 0 0 24px rgba(139, 0, 0, 0.6);
+        box-shadow:
+            0 0 12px rgba(139, 0, 0, 1),
+            0 0 18px rgba(139, 0, 0, 0.8),
+            0 0 24px rgba(139, 0, 0, 0.6);
     }
 }
 
-
 .sra2.roll-dialog {
-    background-image: url('../../public/img/interface/sra2/sra2_background_window_dark.webp');
+    background-image: url("../../public/img/interface/sra2/sra2_background_window_dark.webp");
     color: var(--sr-text-color-light);
     border: 2px solid var(--sr-ui-border-color);
     border-radius: var(--sr-border-radius-md);
@@ -140,7 +144,8 @@
             }
         }
 
-        .skill-roll-name,.counterattack-skill {
+        .skill-roll-name,
+        .counterattack-skill {
             font-size: 0.8rem;
             font-weight: 500;
             color: var(--sr-text-color-light);
@@ -164,35 +169,6 @@
                     padding: 0.3rem;
                     background: rgba(255, 255, 255, 0.05);
                     border-radius: var(--sr-border-radius-xs);
-                }
-
-                .cover-bonus-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-top: 0.4rem;
-                    padding: 0.2rem 0.3rem;
-
-                    .cover-bonus-label {
-                        font-size: 0.8rem;
-                        color: var(--sr-text-color-light);
-                        white-space: nowrap;
-                        i { margin-right: 4px; opacity: 0.7; }
-                    }
-
-                    .cover-bonus-input {
-                        width: 48px;
-                        height: 22px;
-                        text-align: center;
-                        font-size: 0.85rem;
-                        font-weight: bold;
-                        background: rgba(255, 255, 255, 0.15);
-                        border: 1px solid rgba(255, 255, 255, 0.5);
-                        border-radius: 4px;
-                        color: #fff;
-
-                        &:focus { outline: none; border-color: var(--sr-ui-color); }
-                    }
                 }
             }
         }
@@ -273,7 +249,6 @@
                 }
             }
         }
-
     }
 
     /* Body */
@@ -284,6 +259,38 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+    }
+
+    .cover-bonus-section {
+        .cover-bonus-display {
+            display: flex;
+            gap: 0.6rem;
+            height: 100%;
+        }
+
+        .cover-bonus-input {
+            width: 64px;
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            color: #fff;
+
+            &:focus {
+                outline: none;
+                border-color: var(--sr-ui-color);
+            }
+        }
+
+        .cover-bonus-hint {
+            font-size: 0.72rem;
+            color: var(--sr-text-color-light, rgba(255, 255, 255, 0.55));
+            font-style: italic;
+            line-height: 1.2;
+        }
     }
 
     .section-title.invalid-range {
@@ -323,7 +330,6 @@
             color: var(--sr-text-color-light);
         }
     }
-
 
     .severe-wound-warning {
         display: inline-flex;
@@ -395,17 +401,16 @@
                 }
             }
 
-            input[type="radio"]:checked+span {
+            input[type="radio"]:checked + span {
                 color: var(--sr-text-color-light);
                 font-weight: bold;
             }
 
-            &.forced input[type="radio"]:checked+span {
+            &.forced input[type="radio"]:checked + span {
                 color: #ff6b6b;
             }
         }
     }
-
 
     /* Section Styles */
     .roll-section {
@@ -550,34 +555,58 @@
 
                         // Risk color classes (based on RR and position)
                         &.dice-green {
-                            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+                            background: linear-gradient(
+                                135deg,
+                                #4caf50 0%,
+                                #2e7d32 100%
+                            );
                             border: 2px solid #4caf50;
                         }
 
                         &.dice-blue {
-                            background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+                            background: linear-gradient(
+                                135deg,
+                                #2196f3 0%,
+                                #1565c0 100%
+                            );
                             border: 2px solid #2196f3;
                         }
 
                         &.dice-yellow {
-                            background: linear-gradient(135deg, #ffeb3b 0%, #fbc02d 100%);
+                            background: linear-gradient(
+                                135deg,
+                                #ffeb3b 0%,
+                                #fbc02d 100%
+                            );
                             border: 2px solid #ffeb3b;
                         }
 
                         &.dice-orange {
-                            background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+                            background: linear-gradient(
+                                135deg,
+                                #ff6f00 0%,
+                                #e65100 100%
+                            );
                             border: 2px solid #ff6f00;
                         }
 
                         &.dice-red {
-                            background: linear-gradient(135deg, #7d2a24 0%, #b71c1c 100%);
+                            background: linear-gradient(
+                                135deg,
+                                #7d2a24 0%,
+                                #b71c1c 100%
+                            );
                             border: 2px solid #f44336;
                         }
 
                         // Risk dice (selected as risk dice) - purple background, risk color for icon
                         &.risk-dice {
                             // Purple background for risk dice
-                            background: linear-gradient(135deg, #9000a9 0%, #7a008f 100%) !important;
+                            background: linear-gradient(
+                                135deg,
+                                #9000a9 0%,
+                                #7a008f 100%
+                            ) !important;
                             border-color: #5a0068 !important; // Darker purple for border
                             position: relative;
 
@@ -930,7 +959,11 @@
                 }
             }
 
-            background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, var(--sr-ui-border-color) 100%);
+            background: linear-gradient(
+                135deg,
+                var(--sr-ui-color-active) 0%,
+                var(--sr-ui-border-color) 100%
+            );
             border: 2px solid var(--sr-ui-color-active);
             border-radius: var(--sr-border-radius-md);
             color: #fff;
@@ -947,7 +980,11 @@
             }
 
             &:hover {
-                background: linear-gradient(135deg, var(--sr-ui-color) 0%, var(--sr-ui-color-active) 100%);
+                background: linear-gradient(
+                    135deg,
+                    var(--sr-ui-color) 0%,
+                    var(--sr-ui-color-active) 100%
+                );
                 box-shadow: 0 4px 12px rgba(0, 212, 255, 0.5);
                 transform: translateY(-2px);
             }

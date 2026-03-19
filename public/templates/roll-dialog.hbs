@@ -209,14 +209,6 @@
                     </div>
                     {{/if}}
                 </div>
-                {{#if rollData.isDefend}}
-                <div class="cover-bonus-row">
-                    <label class="cover-bonus-label">
-                        <i class="fas fa-shield"></i> {{localize "SRA2.ROLL_DIALOG.COVER_BONUS"}}
-                    </label>
-                    <input type="number" class="cover-bonus-input" value="{{coverBonus}}" min="0" max="20" />
-                </div>
-                {{/if}}
             </section>
             <!-- Attribute Selection (for skill/spec/attribute rolls) -->
             <section class="roll-section range-section no-border-left">
@@ -238,7 +230,7 @@
         <!-- Roll Mode Selection -->
         {{#if (or isWeaponRoll rollData.isDefend isSkillSpecAttributeRoll)}}
         <div
-            style="display: grid; grid-template-columns: {{#if (and isWeaponRoll (not rollData.isDefend))}}1fr 1fr{{else}}1fr{{/if}};">
+            style="display: grid; grid-template-columns: {{#if (or (and isWeaponRoll (not rollData.isDefend)) rollData.isDefend)}}1fr 1fr{{else}}1fr{{/if}};">
 
             <section class="roll-section roll-mode-section">
                 <h3 class="section-title">
@@ -269,6 +261,19 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Cover Bonus (defense only) -->
+            {{#if rollData.isDefend}}
+            <section class="roll-section cover-bonus-section no-border-left">
+                <h3 class="section-title">
+                    <i class="fas fa-shield-alt"></i> {{localize "SRA2.ROLL_DIALOG.COVER_BONUS"}}
+                </h3>
+                <div class="cover-bonus-display">
+                    <input type="number" class="cover-bonus-input" value="{{coverBonus}}" min="0" max="20" />
+                    <span class="cover-bonus-hint">{{localize "SRA2.ROLL_DIALOG.COVER_BONUS_HINT"}}</span>
+                </div>
+            </section>
+            {{/if}}
 
             <!-- Range Selection (for weapons only, not for defense or skill/spec/attribute rolls) -->
             {{#if (and isWeaponRoll (not rollData.isDefend))}}

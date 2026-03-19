@@ -13,6 +13,7 @@ import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from './sheet-helpers.js';
 import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER } from '../config/constants.js';
 import { resolveTokenUuid, resolveActorUuid } from './actor-uuid-resolver.js';
+import { RollDialog } from '../applications/roll-dialog.js';
 
 /**
  * Parse a damage value string to a safe numeric value.
@@ -233,6 +234,9 @@ export interface RollRequestData {
   iceType?: string;  // Type of ICE (blaster, black, killer, etc.)
   iceDamageValue?: number;  // ICE damage value (stored separately for defense calculation)
   
+  // Cover bonus (defense rolls only): added to defense successes when calculating damage
+  coverBonus?: number;
+
   // Attack roll data (for defense/counter-attack rolls)
   attackRollResult?: RollResult;
   attackRollData?: RollRequestData;
@@ -291,11 +295,8 @@ export function handleRollRequest(data: RollRequestData): void {
     rrList: data.rrList
   });
 
-  // Import RollDialog dynamically to avoid circular dependencies
-  import('../applications/roll-dialog.js').then((module) => {
-    const dialog = new module.RollDialog(data);
-    dialog.render(true);
-  });
+  const dialog = new RollDialog(data);
+  dialog.render(true);
 }
 
 /**
@@ -486,17 +487,19 @@ function buildDefenseResult(
     ? rollData.attackRollData!.damageSuccesses!
     : attackSuccesses;
 
-  if (effectiveAttackSuccesses >= defenseSuccesses) {
+  const effectiveDefenseSuccesses = defenseSuccesses + (rollData.coverBonus || 0);
+
+  if (effectiveAttackSuccesses >= effectiveDefenseSuccesses) {
     if (isIceAttack) {
       const iceDamageValue = rollData.attackRollData!.iceDamageValue || 0;
       if (iceType === 'blaster' || iceType === 'black' || iceType === 'killer') {
-        calculatedDamage = iceDamageValue + effectiveAttackSuccesses - defenseSuccesses;
+        calculatedDamage = iceDamageValue + effectiveAttackSuccesses - effectiveDefenseSuccesses;
       }
     } else {
       const damageValueStr = rollData.attackRollData!.damageValue || '0';
       const attackerAttributes = (defender?.system as any)?.attributes || {};
       const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, 'defense');
-      calculatedDamage = damageValue + effectiveAttackSuccesses - defenseSuccesses;
+      calculatedDamage = damageValue + effectiveAttackSuccesses - effectiveDefenseSuccesses;
     }
   } else {
     attackFailed = true;
@@ -516,7 +519,7 @@ function buildDefenseResult(
 
   return {
     attackSuccesses: effectiveAttackSuccesses,
-    defenseSuccesses,
+    defenseSuccesses: effectiveDefenseSuccesses,
     calculatedDamage,
     attackFailed,
     originalAttackerName,

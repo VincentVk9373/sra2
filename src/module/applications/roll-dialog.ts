@@ -527,10 +527,6 @@ export class RollDialog extends Application {
       specName: this.rollData.specName
     });
     
-    // Add cover bonus dice for defense rolls
-    if (this.rollData.isDefend) {
-      dicePool += this.coverBonus;
-    }
     context.dicePool = dicePool;
     context.coverBonus = this.coverBonus;
 
@@ -1149,7 +1145,7 @@ export class RollDialog extends Application {
       }
 
       // Get RR sources (weapon RR + skill/spec/attribute RR)
-      const { getRRSources } = await import('../helpers/sheet-helpers.js');
+      const { getRRSources } = SheetHelpers;
       
       // Get RR from weapon itself
       const weaponRRList = weaponSystem?.rrList || [];
@@ -1519,10 +1515,9 @@ export class RollDialog extends Application {
       }
     });
 
-    // Cover bonus input (defense only)
-    html.find('.cover-bonus-input').on('input', (event) => {
+    // Cover bonus input (defense only) — read on blur to avoid re-render while typing
+    html.find('.cover-bonus-input').on('blur', (event) => {
       this.coverBonus = parseInt((event.currentTarget as HTMLInputElement).value) || 0;
-      this.render();
     });
 
     // Manual RR bonus input
@@ -1637,11 +1632,6 @@ export class RollDialog extends Application {
         dicePool = attributeValue;
       }
       
-      // Add cover bonus for defense rolls
-      if (this.rollData.isDefend) {
-        dicePool += this.coverBonus;
-      }
-
       // Block defense roll if no skill/spec is selected (unless using threshold for NPCs)
       if (this.rollData.isDefend && !this.rollData.threshold) {
         if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
@@ -1721,11 +1711,10 @@ export class RollDialog extends Application {
         dicePool:         dicePool,
         attackerTokenUuid,
         defenderTokenUuid,
+        coverBonus:       this.coverBonus,
       };
 
-      // Import and execute roll
-      const { executeRoll } = await import('../helpers/dice-roller.js');
-      await executeRoll(attacker, defenders, attackerToken, updatedRollData);
+      await DiceRoller.executeRoll(attacker, defenders, attackerToken, updatedRollData);
       
       // Close the dialog
       this.close();

@@ -3,6 +3,7 @@ import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
+import { CharacterSheetV2 } from './character-sheet-v2.js';
 import { DELAYS, RR_MAX } from '../config/constants.js';
 import { debounceSearchInput, handleSearchFocus, handleSearchBlur } from '../helpers/search-utils.js';
 
@@ -2816,9 +2817,6 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _onSwitchSheet(event: Event): Promise<void> {
     event.preventDefault();
-    
-    // Import CharacterSheetV2 dynamically to avoid circular dependencies
-    const { CharacterSheetV2 } = await import('./character-sheet-v2.js');
     
     // Determine target sheet class based on current sheet type
     const isV2 = this instanceof CharacterSheetV2;
