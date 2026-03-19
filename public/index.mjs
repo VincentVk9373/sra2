@@ -6151,427 +6151,6 @@ function handleSearchBlur(relatedTarget, resultsDiv, hideDelay) {
     resultsDiv.style.display = "none";
   }, hideDelay);
 }
-class CharacterSheetV2 extends CharacterSheet {
-  /** Track advanced mode state */
-  _advancedMode = false;
-  /** Current search type */
-  _currentSearchType = "skill";
-  /** Search timeout for debouncing */
-  _itemSearchTimeout = null;
-  /** Last search term */
-  _lastSearchTerm = "";
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ["sra2", "sheet", "actor", "character", "character-v2"],
-      template: "systems/sra2/templates/actor-character-sheet-v2.hbs"
-      // Vous pouvez aussi changer width/height si nécessaire
-      // width: 1000,
-      // height: 800,
-    });
-  }
-  async getData() {
-    const context = await super.getData();
-    context.advancedMode = this._advancedMode;
-    return context;
-  }
-  activateListeners(html) {
-    super.activateListeners(html);
-    const keydownNamespace = `keydown-v2-${this.id}`;
-    $(document).off(`.${keydownNamespace}`);
-    $(document).on(`keydown.${keydownNamespace}`, (event) => {
-      if (event.ctrlKey && event.key.toLowerCase() === "e") {
-        if (this.element && this.element.is(":visible")) {
-          event.preventDefault();
-          this._onToggleAdvancedMode(event);
-        }
-      }
-    });
-    html.find('[data-action="show-context-menu"]').on("click", this._onShowContextMenu.bind(this));
-    const namespace = `context-menu-v2-${this.id}`;
-    $(document).on(`click.${namespace}`, (event) => {
-      const target = event.target;
-      if (!$(target).closest('.context-menu, [data-action="show-context-menu"]').length) {
-        this.element.find(".context-menu.active").removeClass("active");
-      }
-    });
-    html.find(".context-menu-item").on("click", (event) => {
-      event.stopPropagation();
-      const target = event.currentTarget;
-      const menu = $(target).closest(".context-menu");
-      if (target.dataset.action === "toggle-bookmark") {
-        setTimeout(() => {
-          menu.removeClass("active");
-        }, DELAYS.SHEET_RENDER);
-      } else {
-        menu.removeClass("active");
-      }
-    });
-    html.find('[data-action="toggle-active"]').on("click", this._onToggleActive.bind(this));
-    html.find('[data-action="toggle-bookmark"]').on("click", (event) => {
-      this._onToggleBookmark(event);
-    });
-    html.find('[data-action="toggle-advanced-mode"]').on("click", this._onToggleAdvancedMode.bind(this));
-    html.find(".skill-rating-input").on("change", this._onUpdateSkillRating.bind(this));
-    html.find(".attribute-input").on("change", this._onUpdateAttribute.bind(this));
-    html.find(".attribute-input").on("click", (event) => {
-      event.stopPropagation();
-      const input = event.currentTarget;
-      input.select();
-    });
-    html.find(".skill-rating-input").on("click", (event) => {
-      event.stopPropagation();
-      const input = event.currentTarget;
-      input.select();
-    });
-    const editMetatypeElements = html.find('[data-action="edit-metatype"]');
-    const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
-    console.log("[CharacterSheetV2] Edit metatype elements found:", editMetatypeElements.length);
-    console.log("[CharacterSheetV2] Delete metatype elements found:", deleteMetatypeElements.length);
-    editMetatypeElements.on("mousedown", this._onEditMetatypeV2.bind(this));
-    deleteMetatypeElements.on("mousedown", this._onDeleteMetatypeV2.bind(this));
-    html.find(".search-tab").on("click", this._onSearchTabClick.bind(this));
-    html.find(".item-search-input").on("input", this._onItemSearchInput.bind(this));
-    html.find(".item-search-input").on("focus", this._onItemSearchFocus.bind(this));
-    html.find(".item-search-input").on("blur", this._onItemSearchBlur.bind(this));
-  }
-  /**
-   * Edit metatype (V2 specific handler)
-   */
-  async _onEditMetatypeV2(event) {
-    console.log("[CharacterSheetV2] Edit metatype clicked");
-    event.preventDefault();
-    event.stopPropagation();
-    return handleEditItem(event, this.actor);
-  }
-  /**
-   * Delete metatype (V2 specific handler)
-   */
-  async _onDeleteMetatypeV2(event) {
-    console.log("[CharacterSheetV2] Delete metatype clicked");
-    event.preventDefault();
-    event.stopPropagation();
-    return handleDeleteItem(event, this.actor, this.render.bind(this));
-  }
-  /**
-   * Toggle advanced mode
-   */
-  _onToggleAdvancedMode(event) {
-    event.preventDefault();
-    this._advancedMode = !this._advancedMode;
-    this.render(false);
-  }
-  /**
-   * Update skill rating in advanced mode
-   */
-  async _onUpdateSkillRating(event) {
-    const input = event.currentTarget;
-    const itemId = input.dataset.itemId;
-    const value = parseInt(input.value);
-    if (itemId && !isNaN(value)) {
-      const item = this.actor.items.get(itemId);
-      if (item && item.type === "skill") {
-        await item.update({ "system.rating": value });
-        this.render(false);
-      }
-    }
-  }
-  /**
-   * Update attribute value in advanced mode
-   */
-  async _onUpdateAttribute(event) {
-    const input = event.currentTarget;
-    const attribute = input.name.split(".").pop();
-    const value = parseInt(input.value);
-    if (attribute && !isNaN(value)) {
-      await this.actor.update({ [`system.attributes.${attribute}`]: value });
-      this.render(false);
-    }
-  }
-  close(options) {
-    $(document).off(`click.context-menu-v2-${this.id}`);
-    $(document).off(`keydown.keydown-v2-${this.id}`);
-    return super.close(options);
-  }
-  _onShowContextMenu(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    const vehicleUuid = element.dataset.vehicleUuid;
-    this.element.find(".context-menu.active").removeClass("active");
-    let menu;
-    if (itemId) {
-      const $clickedElement = $(element);
-      const $row = $clickedElement.closest(".row");
-      menu = $row.find(`.context-menu[data-item-id="${itemId}"]`);
-      if (menu.length === 0) {
-        menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`).first();
-      }
-    } else if (vehicleUuid) {
-      const $clickedElement = $(element);
-      const $row = $clickedElement.closest(".row");
-      menu = $row.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
-      if (menu.length === 0) {
-        menu = this.element.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`).first();
-      }
-    } else {
-      return;
-    }
-    if (menu.length) {
-      menu.addClass("active");
-    }
-  }
-  /**
-   * Toggle active state of a feat
-   */
-  async _onToggleActive(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) return;
-    const item = this.actor.items.get(itemId);
-    if (!item || item.type !== "feat") return;
-    const currentActive = item.system.active ?? true;
-    await item.update({ "system.active": !currentActive });
-    this.render(false);
-  }
-  /**
-   * Handle search tab click
-   */
-  _onSearchTabClick(event) {
-    event.preventDefault();
-    const target = event.currentTarget;
-    const searchType = target.dataset.searchType;
-    if (!searchType) return;
-    this._currentSearchType = searchType;
-    this.element.find(".search-tab").removeClass("active");
-    $(target).addClass("active");
-    const input = this.element.find(".item-search-input")[0];
-    if (input) {
-      input.dataset.searchType = searchType;
-      const placeholderKey = `SRA2.SEARCH.PLACEHOLDER_${searchType.toUpperCase()}`;
-      input.placeholder = game.i18n.localize(placeholderKey) || game.i18n.localize("SRA2.SEARCH.PLACEHOLDER");
-      input.value = "";
-    }
-    const resultsDiv = this.element.find(".item-search-results")[0];
-    if (resultsDiv) {
-      resultsDiv.style.display = "none";
-    }
-  }
-  /**
-   * Handle item search input
-   */
-  async _onItemSearchInput(event) {
-    const input = event.currentTarget;
-    const searchTerm = normalizeSearchText(input.value.trim());
-    const resultsDiv = this.element.find(".item-search-results")[0];
-    this._itemSearchTimeout = debounceSearchInput(
-      this._itemSearchTimeout,
-      searchTerm,
-      resultsDiv,
-      DELAYS.SEARCH_DEBOUNCE,
-      async () => this._performItemSearch(searchTerm, resultsDiv)
-    );
-  }
-  /**
-   * Perform the actual item search
-   */
-  async _performItemSearch(searchTerm, resultsDiv) {
-    this._lastSearchTerm = searchTerm;
-    const searchType = this._currentSearchType;
-    const existingItemsCheck = (itemName) => itemExistsOnActor(this.actor, searchType, itemName);
-    const results = await searchItemsEverywhere(
-      searchType,
-      searchTerm,
-      void 0,
-      existingItemsCheck
-    );
-    this._displayItemSearchResults(results, resultsDiv);
-  }
-  /**
-   * Display item search results
-   */
-  async _displayItemSearchResults(results, resultsDiv) {
-    const searchType = this._currentSearchType;
-    const formattedSearchTerm = this._lastSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
-    const exactMatchOnActor = this.actor.items.find(
-      (i) => i.type === searchType && normalizeSearchText(i.name) === normalizeSearchText(this._lastSearchTerm)
-    );
-    let html = "";
-    if (results.length === 0) {
-      html = `
-        <div class="search-result-item no-results">
-          <div class="no-results-text">
-            ${game.i18n.localize("SRA2.SEARCH.NO_RESULTS")}
-          </div>
-          ${this._getCreateItemHtml(searchType, formattedSearchTerm)}
-        </div>
-      `;
-    } else {
-      for (const result of results) {
-        const disabledClass = result.alreadyExists ? "disabled" : "";
-        const buttonText = result.alreadyExists ? '<i class="fas fa-check"></i>' : game.i18n.localize("SRA2.SEARCH.ADD");
-        html += `
-          <div class="search-result-item ${disabledClass}" data-uuid="${result.uuid}">
-            <div class="result-info">
-              <span class="result-name">${result.name}</span>
-              <span class="result-pack">${result.source}</span>
-            </div>
-            ${result.alreadyExists ? `<span class="already-exists-label">${game.i18n.localize("SRA2.SEARCH.ALREADY_ON_SHEET")}</span>` : `<button type="button" class="add-item-btn" data-uuid="${result.uuid}">${buttonText}</button>`}
-          </div>
-        `;
-      }
-      if (!exactMatchOnActor) {
-        html += `
-          <div class="search-result-item create-new-item">
-            <div class="result-info">
-              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
-              <span class="result-pack">${game.i18n.localize("SRA2.SEARCH.CREATE_NEW")}</span>
-            </div>
-            ${this._getCreateItemHtml(searchType, formattedSearchTerm, true)}
-          </div>
-        `;
-      }
-    }
-    resultsDiv.innerHTML = html;
-    resultsDiv.style.display = "block";
-    $(resultsDiv).find(".add-item-btn").on("click", this._onAddItemFromSearch.bind(this));
-    $(resultsDiv).find(".create-item-btn").on("click", this._onCreateNewItem.bind(this));
-    $(resultsDiv).find(".search-result-item:not(.disabled):not(.no-results):not(.create-new-item)").on("click", (event) => {
-      if ($(event.target).closest(".add-item-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".add-item-btn")[0];
-      if (button && !button.disabled) {
-        $(button).trigger("click");
-      }
-    });
-  }
-  /**
-   * Get HTML for create item button
-   */
-  _getCreateItemHtml(searchType, itemName, inline = false) {
-    const buttonClass = inline ? "create-item-btn" : "create-item-btn";
-    if (searchType === "feat") {
-      return `
-        <select class="feat-type-selector">
-          <option value="equipment">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.EQUIPMENT")}</option>
-          <option value="trait">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.TRAIT")}</option>
-          <option value="contact">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONTACT")}</option>
-          <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
-          <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
-          <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
-          <option value="armor">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.ARMOR")}</option>
-          <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.KNOWLEDGE")}</option>
-        </select>
-        <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
-          <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
-        </button>
-      `;
-    }
-    return `
-      <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
-        <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
-      </button>
-    `;
-  }
-  /**
-   * Handle adding item from search results
-   */
-  async _onAddItemFromSearch(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const button = event.currentTarget;
-    const uuid = button.dataset.uuid;
-    if (!uuid) return;
-    const success = await addItemToActorFromUuid(this.actor, uuid);
-    if (success) {
-      button.innerHTML = '<i class="fas fa-check"></i>';
-      button.disabled = true;
-      button.closest(".search-result-item")?.classList.add("disabled");
-      this.render(false);
-    }
-  }
-  /**
-   * Handle creating a new item
-   */
-  async _onCreateNewItem(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const button = event.currentTarget;
-    const itemName = button.dataset.itemName;
-    const itemType = button.dataset.itemType;
-    if (!itemName || !itemType) return;
-    const formattedName = itemName.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
-    let itemData;
-    if (itemType === "skill") {
-      itemData = {
-        name: formattedName,
-        type: "skill",
-        system: {
-          rating: 1,
-          linkedAttribute: "strength",
-          description: ""
-        }
-      };
-    } else if (itemType === "specialization") {
-      itemData = {
-        name: formattedName,
-        type: "specialization",
-        system: {
-          rating: 1,
-          linkedSkill: "",
-          description: ""
-        }
-      };
-    } else if (itemType === "feat") {
-      const selector = $(button).siblings(".feat-type-selector")[0];
-      const featType = selector?.value || "equipment";
-      itemData = {
-        name: formattedName,
-        type: "feat",
-        system: {
-          featType,
-          rating: 1,
-          description: ""
-        }
-      };
-    }
-    if (!itemData) return;
-    const createdItems = await this.actor.createEmbeddedDocuments("Item", [itemData]);
-    if (createdItems && createdItems.length > 0) {
-      const newItem = createdItems[0];
-      const searchInput = this.element.find(".item-search-input")[0];
-      if (searchInput) {
-        searchInput.value = "";
-      }
-      const resultsDiv = this.element.find(".item-search-results")[0];
-      if (resultsDiv) {
-        resultsDiv.style.display = "none";
-      }
-      if (newItem && newItem.sheet) {
-        setTimeout(() => {
-          newItem.sheet.render(true);
-        }, DELAYS.SHEET_RENDER);
-      }
-      ui.notifications?.info(game.i18n.format("SRA2.SEARCH.ITEM_CREATED", { name: formattedName }));
-      this.render(false);
-    }
-  }
-  /**
-   * Handle search input focus
-   */
-  _onItemSearchFocus(event) {
-    handleSearchFocus(event.currentTarget, this.element.find(".item-search-results")[0]);
-  }
-  /**
-   * Handle search input blur
-   */
-  _onItemSearchBlur(event) {
-    const blurEvent = event.originalEvent;
-    const resultsDiv = this.element.find(".item-search-results")[0];
-    handleSearchBlur(blurEvent?.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
-  }
-}
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -8665,16 +8244,442 @@ class CharacterSheet extends ActorSheet {
    */
   async _onSwitchSheet(event) {
     event.preventDefault();
-    const isV2 = this instanceof CharacterSheetV2;
+    const { CharacterSheetV2: CharacterSheetV22 } = await Promise.resolve().then(() => characterSheetV2);
+    const isV2 = this instanceof CharacterSheetV22;
     const actor = this.actor;
     await this.close();
-    const targetSheetClass = isV2 ? CharacterSheet : CharacterSheetV2;
+    const targetSheetClass = isV2 ? CharacterSheet : CharacterSheetV22;
     const newSheet = new targetSheetClass(actor);
     setTimeout(() => {
       newSheet.render(true);
     }, DELAYS.SHEET_RENDER);
   }
 }
+class CharacterSheetV2 extends CharacterSheet {
+  /** Track advanced mode state */
+  _advancedMode = false;
+  /** Current search type */
+  _currentSearchType = "skill";
+  /** Search timeout for debouncing */
+  _itemSearchTimeout = null;
+  /** Last search term */
+  _lastSearchTerm = "";
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "sheet", "actor", "character", "character-v2"],
+      template: "systems/sra2/templates/actor-character-sheet-v2.hbs"
+      // Vous pouvez aussi changer width/height si nécessaire
+      // width: 1000,
+      // height: 800,
+    });
+  }
+  async getData() {
+    const context = await super.getData();
+    context.advancedMode = this._advancedMode;
+    return context;
+  }
+  activateListeners(html) {
+    super.activateListeners(html);
+    const keydownNamespace = `keydown-v2-${this.id}`;
+    $(document).off(`.${keydownNamespace}`);
+    $(document).on(`keydown.${keydownNamespace}`, (event) => {
+      if (event.ctrlKey && event.key.toLowerCase() === "e") {
+        if (this.element && this.element.is(":visible")) {
+          event.preventDefault();
+          this._onToggleAdvancedMode(event);
+        }
+      }
+    });
+    html.find('[data-action="show-context-menu"]').on("click", this._onShowContextMenu.bind(this));
+    const namespace = `context-menu-v2-${this.id}`;
+    $(document).on(`click.${namespace}`, (event) => {
+      const target = event.target;
+      if (!$(target).closest('.context-menu, [data-action="show-context-menu"]').length) {
+        this.element.find(".context-menu.active").removeClass("active");
+      }
+    });
+    html.find(".context-menu-item").on("click", (event) => {
+      event.stopPropagation();
+      const target = event.currentTarget;
+      const menu = $(target).closest(".context-menu");
+      if (target.dataset.action === "toggle-bookmark") {
+        setTimeout(() => {
+          menu.removeClass("active");
+        }, DELAYS.SHEET_RENDER);
+      } else {
+        menu.removeClass("active");
+      }
+    });
+    html.find('[data-action="toggle-active"]').on("click", this._onToggleActive.bind(this));
+    html.find('[data-action="toggle-bookmark"]').on("click", (event) => {
+      this._onToggleBookmark(event);
+    });
+    html.find('[data-action="toggle-advanced-mode"]').on("click", this._onToggleAdvancedMode.bind(this));
+    html.find(".skill-rating-input").on("change", this._onUpdateSkillRating.bind(this));
+    html.find(".attribute-input").on("change", this._onUpdateAttribute.bind(this));
+    html.find(".attribute-input").on("click", (event) => {
+      event.stopPropagation();
+      const input = event.currentTarget;
+      input.select();
+    });
+    html.find(".skill-rating-input").on("click", (event) => {
+      event.stopPropagation();
+      const input = event.currentTarget;
+      input.select();
+    });
+    const editMetatypeElements = html.find('[data-action="edit-metatype"]');
+    const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
+    console.log("[CharacterSheetV2] Edit metatype elements found:", editMetatypeElements.length);
+    console.log("[CharacterSheetV2] Delete metatype elements found:", deleteMetatypeElements.length);
+    editMetatypeElements.on("mousedown", this._onEditMetatypeV2.bind(this));
+    deleteMetatypeElements.on("mousedown", this._onDeleteMetatypeV2.bind(this));
+    html.find(".search-tab").on("click", this._onSearchTabClick.bind(this));
+    html.find(".item-search-input").on("input", this._onItemSearchInput.bind(this));
+    html.find(".item-search-input").on("focus", this._onItemSearchFocus.bind(this));
+    html.find(".item-search-input").on("blur", this._onItemSearchBlur.bind(this));
+  }
+  /**
+   * Edit metatype (V2 specific handler)
+   */
+  async _onEditMetatypeV2(event) {
+    console.log("[CharacterSheetV2] Edit metatype clicked");
+    event.preventDefault();
+    event.stopPropagation();
+    return handleEditItem(event, this.actor);
+  }
+  /**
+   * Delete metatype (V2 specific handler)
+   */
+  async _onDeleteMetatypeV2(event) {
+    console.log("[CharacterSheetV2] Delete metatype clicked");
+    event.preventDefault();
+    event.stopPropagation();
+    return handleDeleteItem(event, this.actor, this.render.bind(this));
+  }
+  /**
+   * Toggle advanced mode
+   */
+  _onToggleAdvancedMode(event) {
+    event.preventDefault();
+    this._advancedMode = !this._advancedMode;
+    this.render(false);
+  }
+  /**
+   * Update skill rating in advanced mode
+   */
+  async _onUpdateSkillRating(event) {
+    const input = event.currentTarget;
+    const itemId = input.dataset.itemId;
+    const value = parseInt(input.value);
+    if (itemId && !isNaN(value)) {
+      const item = this.actor.items.get(itemId);
+      if (item && item.type === "skill") {
+        await item.update({ "system.rating": value });
+        this.render(false);
+      }
+    }
+  }
+  /**
+   * Update attribute value in advanced mode
+   */
+  async _onUpdateAttribute(event) {
+    const input = event.currentTarget;
+    const attribute = input.name.split(".").pop();
+    const value = parseInt(input.value);
+    if (attribute && !isNaN(value)) {
+      await this.actor.update({ [`system.attributes.${attribute}`]: value });
+      this.render(false);
+    }
+  }
+  close(options) {
+    $(document).off(`click.context-menu-v2-${this.id}`);
+    $(document).off(`keydown.keydown-v2-${this.id}`);
+    return super.close(options);
+  }
+  _onShowContextMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    this.element.find(".context-menu.active").removeClass("active");
+    let menu;
+    if (itemId) {
+      const $clickedElement = $(element);
+      const $row = $clickedElement.closest(".row");
+      menu = $row.find(`.context-menu[data-item-id="${itemId}"]`);
+      if (menu.length === 0) {
+        menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`).first();
+      }
+    } else if (vehicleUuid) {
+      const $clickedElement = $(element);
+      const $row = $clickedElement.closest(".row");
+      menu = $row.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
+      if (menu.length === 0) {
+        menu = this.element.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`).first();
+      }
+    } else {
+      return;
+    }
+    if (menu.length) {
+      menu.addClass("active");
+    }
+  }
+  /**
+   * Toggle active state of a feat
+   */
+  async _onToggleActive(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item || item.type !== "feat") return;
+    const currentActive = item.system.active ?? true;
+    await item.update({ "system.active": !currentActive });
+    this.render(false);
+  }
+  /**
+   * Handle search tab click
+   */
+  _onSearchTabClick(event) {
+    event.preventDefault();
+    const target = event.currentTarget;
+    const searchType = target.dataset.searchType;
+    if (!searchType) return;
+    this._currentSearchType = searchType;
+    this.element.find(".search-tab").removeClass("active");
+    $(target).addClass("active");
+    const input = this.element.find(".item-search-input")[0];
+    if (input) {
+      input.dataset.searchType = searchType;
+      const placeholderKey = `SRA2.SEARCH.PLACEHOLDER_${searchType.toUpperCase()}`;
+      input.placeholder = game.i18n.localize(placeholderKey) || game.i18n.localize("SRA2.SEARCH.PLACEHOLDER");
+      input.value = "";
+    }
+    const resultsDiv = this.element.find(".item-search-results")[0];
+    if (resultsDiv) {
+      resultsDiv.style.display = "none";
+    }
+  }
+  /**
+   * Handle item search input
+   */
+  async _onItemSearchInput(event) {
+    const input = event.currentTarget;
+    const searchTerm = normalizeSearchText(input.value.trim());
+    const resultsDiv = this.element.find(".item-search-results")[0];
+    this._itemSearchTimeout = debounceSearchInput(
+      this._itemSearchTimeout,
+      searchTerm,
+      resultsDiv,
+      DELAYS.SEARCH_DEBOUNCE,
+      async () => this._performItemSearch(searchTerm, resultsDiv)
+    );
+  }
+  /**
+   * Perform the actual item search
+   */
+  async _performItemSearch(searchTerm, resultsDiv) {
+    this._lastSearchTerm = searchTerm;
+    const searchType = this._currentSearchType;
+    const existingItemsCheck = (itemName) => itemExistsOnActor(this.actor, searchType, itemName);
+    const results = await searchItemsEverywhere(
+      searchType,
+      searchTerm,
+      void 0,
+      existingItemsCheck
+    );
+    this._displayItemSearchResults(results, resultsDiv);
+  }
+  /**
+   * Display item search results
+   */
+  async _displayItemSearchResults(results, resultsDiv) {
+    const searchType = this._currentSearchType;
+    const formattedSearchTerm = this._lastSearchTerm.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+    const exactMatchOnActor = this.actor.items.find(
+      (i) => i.type === searchType && normalizeSearchText(i.name) === normalizeSearchText(this._lastSearchTerm)
+    );
+    let html = "";
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n.localize("SRA2.SEARCH.NO_RESULTS")}
+          </div>
+          ${this._getCreateItemHtml(searchType, formattedSearchTerm)}
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        const disabledClass = result.alreadyExists ? "disabled" : "";
+        const buttonText = result.alreadyExists ? '<i class="fas fa-check"></i>' : game.i18n.localize("SRA2.SEARCH.ADD");
+        html += `
+          <div class="search-result-item ${disabledClass}" data-uuid="${result.uuid}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source}</span>
+            </div>
+            ${result.alreadyExists ? `<span class="already-exists-label">${game.i18n.localize("SRA2.SEARCH.ALREADY_ON_SHEET")}</span>` : `<button type="button" class="add-item-btn" data-uuid="${result.uuid}">${buttonText}</button>`}
+          </div>
+        `;
+      }
+      if (!exactMatchOnActor) {
+        html += `
+          <div class="search-result-item create-new-item">
+            <div class="result-info">
+              <span class="result-name"><i class="fas fa-plus-circle"></i> ${formattedSearchTerm}</span>
+              <span class="result-pack">${game.i18n.localize("SRA2.SEARCH.CREATE_NEW")}</span>
+            </div>
+            ${this._getCreateItemHtml(searchType, formattedSearchTerm, true)}
+          </div>
+        `;
+      }
+    }
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+    $(resultsDiv).find(".add-item-btn").on("click", this._onAddItemFromSearch.bind(this));
+    $(resultsDiv).find(".create-item-btn").on("click", this._onCreateNewItem.bind(this));
+    $(resultsDiv).find(".search-result-item:not(.disabled):not(.no-results):not(.create-new-item)").on("click", (event) => {
+      if ($(event.target).closest(".add-item-btn").length > 0) return;
+      const button = $(event.currentTarget).find(".add-item-btn")[0];
+      if (button && !button.disabled) {
+        $(button).trigger("click");
+      }
+    });
+  }
+  /**
+   * Get HTML for create item button
+   */
+  _getCreateItemHtml(searchType, itemName, inline = false) {
+    const buttonClass = inline ? "create-item-btn" : "create-item-btn";
+    if (searchType === "feat") {
+      return `
+        <select class="feat-type-selector">
+          <option value="equipment">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.EQUIPMENT")}</option>
+          <option value="trait">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.TRAIT")}</option>
+          <option value="contact">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CONTACT")}</option>
+          <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
+          <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
+          <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
+          <option value="armor">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.ARMOR")}</option>
+          <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.KNOWLEDGE")}</option>
+        </select>
+        <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
+          <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
+        </button>
+      `;
+    }
+    return `
+      <button type="button" class="${buttonClass}" data-item-name="${itemName}" data-item-type="${searchType}">
+        <i class="fas fa-plus"></i> ${game.i18n.localize("SRA2.SEARCH.CREATE")}
+      </button>
+    `;
+  }
+  /**
+   * Handle adding item from search results
+   */
+  async _onAddItemFromSearch(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const uuid = button.dataset.uuid;
+    if (!uuid) return;
+    const success = await addItemToActorFromUuid(this.actor, uuid);
+    if (success) {
+      button.innerHTML = '<i class="fas fa-check"></i>';
+      button.disabled = true;
+      button.closest(".search-result-item")?.classList.add("disabled");
+      this.render(false);
+    }
+  }
+  /**
+   * Handle creating a new item
+   */
+  async _onCreateNewItem(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const itemName = button.dataset.itemName;
+    const itemType = button.dataset.itemType;
+    if (!itemName || !itemType) return;
+    const formattedName = itemName.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+    let itemData;
+    if (itemType === "skill") {
+      itemData = {
+        name: formattedName,
+        type: "skill",
+        system: {
+          rating: 1,
+          linkedAttribute: "strength",
+          description: ""
+        }
+      };
+    } else if (itemType === "specialization") {
+      itemData = {
+        name: formattedName,
+        type: "specialization",
+        system: {
+          rating: 1,
+          linkedSkill: "",
+          description: ""
+        }
+      };
+    } else if (itemType === "feat") {
+      const selector = $(button).siblings(".feat-type-selector")[0];
+      const featType = selector?.value || "equipment";
+      itemData = {
+        name: formattedName,
+        type: "feat",
+        system: {
+          featType,
+          rating: 1,
+          description: ""
+        }
+      };
+    }
+    if (!itemData) return;
+    const createdItems = await this.actor.createEmbeddedDocuments("Item", [itemData]);
+    if (createdItems && createdItems.length > 0) {
+      const newItem = createdItems[0];
+      const searchInput = this.element.find(".item-search-input")[0];
+      if (searchInput) {
+        searchInput.value = "";
+      }
+      const resultsDiv = this.element.find(".item-search-results")[0];
+      if (resultsDiv) {
+        resultsDiv.style.display = "none";
+      }
+      if (newItem && newItem.sheet) {
+        setTimeout(() => {
+          newItem.sheet.render(true);
+        }, DELAYS.SHEET_RENDER);
+      }
+      ui.notifications?.info(game.i18n.format("SRA2.SEARCH.ITEM_CREATED", { name: formattedName }));
+      this.render(false);
+    }
+  }
+  /**
+   * Handle search input focus
+   */
+  _onItemSearchFocus(event) {
+    handleSearchFocus(event.currentTarget, this.element.find(".item-search-results")[0]);
+  }
+  /**
+   * Handle search input blur
+   */
+  _onItemSearchBlur(event) {
+    const blurEvent = event.originalEvent;
+    const resultsDiv = this.element.find(".item-search-results")[0];
+    handleSearchBlur(blurEvent?.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
+  }
+}
+const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  CharacterSheetV2
+}, Symbol.toStringTag, { value: "Module" }));
 class VehicleSheet extends ActorSheet {
   _activeSection = null;
   static get defaultOptions() {
