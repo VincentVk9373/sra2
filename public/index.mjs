@@ -5188,6 +5188,49 @@ class RollDialog extends Application {
     }
   }
 }
+const SYSTEM_NAME = SYSTEM$1.id;
+const SYSTEM_DESCRIPTION = "Shadowrun Anarchy 2";
+const DICE_GLITCH = `${SYSTEM$1.PATH.STYLE}/danger-point.webp`;
+const DICE_PROWESS = `${SYSTEM$1.PATH.STYLE}/anarchy-point.webp`;
+const SRA2_NORMAL_COLORSET = "sra2-normal";
+const SRA2_RISK_COLORSET = "sra2-risk";
+function registerDiceSoNice(dice3d) {
+  dice3d.addSystem({ id: SYSTEM_NAME, name: SYSTEM_DESCRIPTION }, "preferred");
+  dice3d.addColorset({
+    name: SRA2_NORMAL_COLORSET,
+    description: "SRA2 - Normal dice",
+    category: SYSTEM_DESCRIPTION,
+    foreground: "#faecd1",
+    background: "#0a2a2a",
+    outline: "none",
+    edge: "none",
+    texture: "ice",
+    material: "metal"
+  });
+  dice3d.addColorset({
+    name: SRA2_RISK_COLORSET,
+    description: "SRA2 - Risk dice",
+    category: SYSTEM_DESCRIPTION,
+    foreground: "#faecd1",
+    background: "#040101",
+    outline: "none",
+    edge: "none",
+    texture: "fire",
+    material: "metal"
+  });
+  dice3d.addDicePreset({
+    type: "d6",
+    labels: [DICE_GLITCH, "2", "3", "4", DICE_PROWESS, DICE_PROWESS],
+    colorset: SRA2_NORMAL_COLORSET,
+    system: SYSTEM_NAME
+  });
+  dice3d.addDicePreset({
+    type: "d6",
+    labels: [DICE_GLITCH, "2", "3", "4", DICE_PROWESS, DICE_PROWESS],
+    colorset: SRA2_RISK_COLORSET,
+    system: SYSTEM_NAME
+  });
+}
 function parseDamageValueSafe(valueStr, attributes, context) {
   let value = parseInt(valueStr, 10);
   if (isNaN(value)) {
@@ -5321,18 +5364,15 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       normalRoll = new Roll(`${normalDiceCount}d6`);
       await normalRoll.evaluate();
       if (game.dice3d && normalRoll) {
-        game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+        normalRoll.dice[0].options.appearance = { colorset: SRA2_NORMAL_COLORSET };
+        game.dice3d.showForRoll(normalRoll, game.user, true);
       }
     }
     if (riskDiceCount > 0) {
       riskRoll = new Roll(`${riskDiceCount}d6`);
       await riskRoll.evaluate();
       if (game.dice3d && riskRoll) {
-        riskRoll.dice[0].options.appearance = {
-          background: "#800080",
-          foreground: "#ffffff",
-          edge: "#4b0082"
-        };
+        riskRoll.dice[0].options.appearance = { colorset: SRA2_RISK_COLORSET };
         game.dice3d.showForRoll(riskRoll, game.user, true);
       }
     }
@@ -12023,6 +12063,7 @@ class SRA2System {
       game.system.sra2 = this;
     }
     Hooks.once("init", () => this.onInit());
+    Hooks.once("diceSoNiceReady", (dice3d) => registerDiceSoNice(dice3d));
   }
   onInit() {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onInit");
@@ -12789,18 +12830,15 @@ class SRA2System {
           normalRoll = new Roll(`${normalDiceCount}d6`);
           await normalRoll.evaluate();
           if (game.dice3d && normalRoll) {
-            game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+            normalRoll.dice[0].options.appearance = { colorset: SRA2_NORMAL_COLORSET };
+            game.dice3d.showForRoll(normalRoll, game.user, true);
           }
         }
         if (finalRiskDiceCount > 0) {
           riskRoll = new Roll(`${finalRiskDiceCount}d6`);
           await riskRoll.evaluate();
           if (game.dice3d && riskRoll) {
-            riskRoll.dice[0].options.appearance = {
-              background: "#800080",
-              foreground: "#ffffff",
-              edge: "#4b0082"
-            };
+            riskRoll.dice[0].options.appearance = { colorset: SRA2_RISK_COLORSET };
             game.dice3d.showForRoll(riskRoll, game.user, true);
           }
         }

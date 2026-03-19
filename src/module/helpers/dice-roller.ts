@@ -14,6 +14,7 @@ import * as SheetHelpers from './sheet-helpers.js';
 import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER } from '../config/constants.js';
 import { resolveTokenUuid, resolveActorUuid } from './actor-uuid-resolver.js';
 import { RollDialog } from '../applications/roll-dialog.js';
+import { SRA2_NORMAL_COLORSET, SRA2_RISK_COLORSET } from './dice-so-nice.js';
 
 /**
  * Parse a damage value string to a safe numeric value.
@@ -365,22 +366,18 @@ export async function executeRoll(
     
     // Show DiceSoNice animation for normal dice
     if ((game as any).dice3d && normalRoll) {
-      (game as any).dice3d.showForRoll(normalRoll, game.user, true, null, false);
+      normalRoll.dice[0].options.appearance = { colorset: SRA2_NORMAL_COLORSET };
+      (game as any).dice3d.showForRoll(normalRoll, game.user, true);
     }
   }
 
-  // Roll risk dice with purple color
+  // Roll risk dice
   if (riskDiceCount > 0) {
     riskRoll = new Roll(`${riskDiceCount}d6`);
     await riskRoll.evaluate();
-    
-    // Show DiceSoNice animation for risk dice with purple appearance
+
     if ((game as any).dice3d && riskRoll) {
-      riskRoll.dice[0].options.appearance = {
-        background: "#800080",
-        foreground: "#ffffff",
-        edge: "#4b0082"
-      };
+      riskRoll.dice[0].options.appearance = { colorset: SRA2_RISK_COLORSET };
       (game as any).dice3d.showForRoll(riskRoll, game.user, true);
     }
   }
