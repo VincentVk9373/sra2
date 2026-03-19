@@ -169,29 +169,27 @@
                 .cover-bonus-row {
                     display: flex;
                     align-items: center;
-                    justify-content: space-between;
                     gap: 0.5rem;
                     margin-top: 0.4rem;
-                    padding: 0.3rem;
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: var(--sr-border-radius-xs);
+                    padding: 0.2rem 0.3rem;
 
                     .cover-bonus-label {
                         font-size: 0.8rem;
                         color: var(--sr-text-color-light);
+                        white-space: nowrap;
                         i { margin-right: 4px; opacity: 0.7; }
                     }
 
                     .cover-bonus-input {
                         width: 48px;
-                        height: 24px;
+                        height: 22px;
                         text-align: center;
                         font-size: 0.85rem;
                         font-weight: bold;
-                        background: rgba(255, 255, 255, 0.1);
-                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        background: rgba(255, 255, 255, 0.15);
+                        border: 1px solid rgba(255, 255, 255, 0.5);
                         border-radius: 4px;
-                        color: var(--sr-text-color-light);
+                        color: #fff;
 
                         &:focus { outline: none; border-color: var(--sr-ui-color); }
                     }
