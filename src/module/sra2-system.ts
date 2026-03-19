@@ -15,6 +15,7 @@ import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
 import * as CombatHelpers from "./helpers/combat-helpers.ts";
 import * as SheetHelpers from "./helpers/sheet-helpers.ts";
+import { loadCombatantFromFlags, resolveTokenUuid, resolveActorUuid } from "./helpers/actor-uuid-resolver.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
 // @ts-ignore - JavaScript module without type declarations
@@ -763,45 +764,13 @@ export class SRA2System {
         console.log('defenderId flag:', messageFlags.defenderId || 'Not set');
         console.log('======================================');
 
-        // Use attacker UUID directly from flags (already correctly calculated)
-        // Priority: 1) attackerUuid from flags (already calculated correctly), 2) attackerTokenUuid from flags
-        if (messageFlags.attackerUuid) {
-          try {
-            attacker = (foundry.utils as any)?.fromUuidSync?.(messageFlags.attackerUuid) || null;
-            if (attacker) {
-              console.log('Defense button: Attacker loaded directly from attackerUuid flag:', messageFlags.attackerUuid);
-            }
-          } catch (e) {
-            console.warn('Defense button: Failed to load attacker from attackerUuid flag:', e);
-          }
-        }
-
-        // Get attacker token from UUID if available (priority: flag > canvas search)
-        if (messageFlags.attackerTokenUuid) {
-          try {
-            attackerToken = (foundry.utils as any)?.fromUuidSync?.(messageFlags.attackerTokenUuid) || null;
-            if (attackerToken?.actor && !attacker) {
-              // Use token's actor if attacker not loaded yet
-              attacker = attackerToken.actor;
-              console.log('Defense button: Attacker loaded from attackerTokenUuid flag, using token actor');
-            }
-          } catch (e) {
-            console.warn('Defense button: Failed to load attacker token from attackerTokenUuid flag:', e);
-          }
-        }
-
-        // Fallback: try to get actor and find token on canvas (only if flags didn't work)
-        if (!attacker) {
-          if (messageFlags.attackerId) {
-            attacker = game.actors?.get(messageFlags.attackerId) || null;
-          }
-
-          if (attacker && !attackerToken) {
-            attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
-              return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
-            }) || null;
-          }
-        }
+        // Load attacker from message flags (UUID > ID > canvas fallback)
+        const attackerResult = loadCombatantFromFlags(
+          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+          'Defense Attacker'
+        );
+        attacker = attackerResult.actor;
+        attackerToken = attackerResult.token;
 
         // Check if this is a vehicle weapon attack
         const isVehicleWeapon = rollData.isVehicleWeapon;
@@ -1239,101 +1208,19 @@ export class SRA2System {
           return;
         }
 
-        // Get tokens from flags (priority: token UUID > actor UUID > actor ID)
-        let attackerToken: any = null;
-        let defenderToken: any = null;
-        let attacker: any = null;
-        let defender: any = null;
-
-        // Log all flags for debugging
-        console.log('=== COUNTER-ATTACK BUTTON - MESSAGE FLAGS ===');
-        console.log('attackerUuid flag:', messageFlags.attackerUuid || 'Not set');
-        console.log('attackerTokenUuid flag:', messageFlags.attackerTokenUuid || 'Not set');
-        console.log('attackerId flag:', messageFlags.attackerId || 'Not set');
-        console.log('defenderUuid flag:', messageFlags.defenderUuid || 'Not set');
-        console.log('defenderTokenUuid flag:', messageFlags.defenderTokenUuid || 'Not set');
-        console.log('defenderId flag:', messageFlags.defenderId || 'Not set');
-        console.log('==============================================');
-
-        // Use attacker UUID directly from flags (already correctly calculated)
-        // Priority: 1) attackerUuid from flags (already calculated correctly), 2) attackerTokenUuid from flags
-        if (messageFlags.attackerUuid) {
-          try {
-            attacker = (foundry.utils as any)?.fromUuidSync?.(messageFlags.attackerUuid) || null;
-            if (attacker) {
-              console.log('Counter-attack button: Attacker loaded directly from attackerUuid flag');
-            }
-          } catch (e) {
-            console.warn('Counter-attack button: Failed to load attacker from attackerUuid flag:', e);
-          }
-        }
-
-        // Get attacker token from UUID if available (priority: flag > canvas search)
-        if (messageFlags.attackerTokenUuid) {
-          try {
-            attackerToken = (foundry.utils as any)?.fromUuidSync?.(messageFlags.attackerTokenUuid) || null;
-            if (attackerToken?.actor && !attacker) {
-              // Use token's actor if attacker not loaded yet
-              attacker = attackerToken.actor;
-              console.log('Counter-attack button: Attacker loaded from attackerTokenUuid flag, using token actor');
-            }
-          } catch (e) {
-            console.warn('Counter-attack button: Failed to load attacker token from attackerTokenUuid flag:', e);
-          }
-        }
-
-        // Fallback: try to get actor and find token on canvas (only if flags didn't work)
-        if (!attacker) {
-          if (messageFlags.attackerId) {
-            attacker = game.actors?.get(messageFlags.attackerId) || null;
-          }
-
-          if (attacker && !attackerToken) {
-            attackerToken = canvas?.tokens?.placeables?.find((token: any) => {
-              return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
-            }) || null;
-          }
-        }
-
-        // Use defender UUID directly from flags (already correctly calculated)
-        // Priority: 1) defenderUuid from flags (already calculated correctly), 2) defenderTokenUuid from flags
-        if (messageFlags.defenderUuid) {
-          try {
-            defender = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-            if (defender) {
-              console.log('Counter-attack button: Defender loaded directly from defenderUuid flag');
-            }
-          } catch (e) {
-            console.warn('Counter-attack button: Failed to load defender from defenderUuid flag:', e);
-          }
-        }
-
-        // Get defender token from UUID if available (priority: flag > canvas search)
-        if (messageFlags.defenderTokenUuid) {
-          try {
-            defenderToken = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
-            if (defenderToken?.actor && !defender) {
-              // Use token's actor if defender not loaded yet
-              defender = defenderToken.actor;
-              console.log('Counter-attack button: Defender loaded from defenderTokenUuid flag, using token actor');
-            }
-          } catch (e) {
-            console.warn('Counter-attack button: Failed to load defender token from defenderTokenUuid flag:', e);
-          }
-        }
-
-        // Fallback: try to get actor and find token on canvas (only if flags didn't work)
-        if (!defender) {
-          if (messageFlags.defenderId) {
-            defender = game.actors?.get(messageFlags.defenderId) || null;
-          }
-
-          if (defender && !defenderToken) {
-            defenderToken = canvas?.tokens?.placeables?.find((token: any) => {
-              return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
-            }) || null;
-          }
-        }
+        // Load attacker and defender from message flags (UUID > ID > canvas fallback)
+        const attackerResult = loadCombatantFromFlags(
+          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+          'Counter-attack Attacker'
+        );
+        const defenderResult = loadCombatantFromFlags(
+          { actorUuid: messageFlags.defenderUuid, tokenUuid: messageFlags.defenderTokenUuid, actorId: messageFlags.defenderId },
+          'Counter-attack Defender'
+        );
+        let attacker: any = attackerResult.actor;
+        let attackerToken: any = attackerResult.token;
+        let defender: any = defenderResult.actor;
+        let defenderToken: any = defenderResult.token;
 
         // Log the UUIDs that will be used
         console.log('--- UUIDs being used from flags (counter-attack) ---');

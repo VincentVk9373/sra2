@@ -6,6 +6,7 @@
 import * as SheetHelpers from './sheet-helpers.js';
 import { VEHICLE_TYPES } from '../models/item-feat.js';
 import { DAMAGE_STEP, SPECIALIZATION_BONUS } from '../config/constants.js';
+import { fillFirstEmptyBox } from './damage-box-utils.js';
 
 /**
  * Calculate damage thresholds for a character actor
@@ -675,19 +676,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     } else if (damageValue > (damageThresholds?.severe || 0)) {
       // Severe wound: VD > 2
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
-      
-      // Find first empty severe box
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in severe, overflow to incapacitating
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.severe)) {
         ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
         damage.incapacitating = true;
         overflow = true;
@@ -695,33 +684,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     } else if (damageValue > damageThresholds.light) {
       // Light wound: VD > 1
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
-      
-      // Find first empty light box
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in light, overflow to severe
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.light)) {
         ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT'));
-        
-        // Try to apply to severe
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        
-        // If no space in severe either, overflow to incapacitating
-        if (!severeApplied) {
+        if (!fillFirstEmptyBox(damage.severe)) {
           ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
           damage.incapacitating = true;
         }
@@ -729,9 +694,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
       }
     } else {
       // Damage below light threshold, no wound: VD ≤ 1
-      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
+      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', {
         damage: `${damageValue} (en dessous du seuil)`,
-        target: defenderName 
+        target: defenderName
       }));
       return;
     }
@@ -744,19 +709,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     } else if (damageValue > (damageThresholds.severe || 0)) {
       // Severe wound: VD > (2 × Structure) + Blindage
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
-      
-      // Find first empty severe box
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in severe, overflow to incapacitating
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.severe)) {
         ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
         damage.incapacitating = true;
         overflow = true;
@@ -764,33 +717,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     } else if (damageValue > damageThresholds.light) {
       // Light wound: VD > Structure + Blindage
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
-      
-      // Find first empty light box
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in light, overflow to severe
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.light)) {
         ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT'));
-        
-        // Try to apply to severe
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        
-        // If no space in severe either, overflow to incapacitating
-        if (!severeApplied) {
+        if (!fillFirstEmptyBox(damage.severe)) {
           ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
           damage.incapacitating = true;
         }
@@ -798,9 +727,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
       }
     } else {
       // Damage below light threshold, no wound: VD ≤ Structure + Blindage
-      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
+      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', {
         damage: `${damageValue} (en dessous du seuil)`,
-        target: defenderName 
+        target: defenderName
       }));
       return;
     }
@@ -813,19 +742,7 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     } else if (damageThresholds.severe && damageValue > (damageThresholds.severe || 0)) {
       // Severe wound
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
-      
-      // Find first empty severe box
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in severe, overflow to incapacitating
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.severe)) {
         ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
         damage.incapacitating = true;
         overflow = true;
@@ -833,33 +750,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     } else if (damageValue > damageThresholds.light) {
       // Light wound
       woundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
-      
-      // Find first empty light box
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      
-      // If no space in light, overflow to severe
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.light)) {
         ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT'));
-        
-        // Try to apply to severe
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        
-        // If no space in severe either, overflow to incapacitating
-        if (!severeApplied) {
+        if (!fillFirstEmptyBox(damage.severe)) {
           ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE'));
           damage.incapacitating = true;
         }
@@ -867,9 +760,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
       }
     } else {
       // Damage below light threshold, no wound
-      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', { 
+      ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', {
         damage: `${damageValue} (en dessous du seuil)`,
-        target: defenderName 
+        target: defenderName
       }));
       return;
     }

@@ -10,7 +10,38 @@ declare const ChatMessage: any;
 
 // Import ItemSearch for text normalization
 import * as ItemSearch from '../../../item-search.js';
+import * as SheetHelpers from './sheet-helpers.js';
 import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER } from '../config/constants.js';
+import { resolveTokenUuid, resolveActorUuid } from './actor-uuid-resolver.js';
+
+/**
+ * Parse a damage value string to a safe numeric value.
+ * Tries direct parseInt first; falls back to SheetHelpers.parseDamageValue for
+ * legacy attribute-expression strings (e.g. "strength+2").
+ * Always returns a finite number (0 on failure).
+ */
+function parseDamageValueSafe(
+  valueStr: string,
+  attributes: Record<string, number>,
+  context: string
+): number {
+  let value = parseInt(valueStr, 10);
+  if (isNaN(value)) {
+    try {
+      // Late import to avoid circular dependency — SheetHelpers is already imported later
+      const parsed = SheetHelpers.parseDamageValue(valueStr, attributes, 0);
+      value = parsed.numericValue;
+    } catch (error) {
+      console.error(`SRA2 | Error parsing ${context} damage value:`, valueStr, error);
+      return 0;
+    }
+  }
+  if (isNaN(value) || value == null) {
+    console.error(`SRA2 | Invalid ${context} damage value:`, valueStr);
+    return 0;
+  }
+  return value;
+}
 
 /**
  * RR source information
@@ -437,21 +468,11 @@ async function createRollChatMessage(
   console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
   
   // Get attacker token UUID (priority: token > rollData)
-  let attackerTokenUuid: string | undefined = undefined;
-  if (attackerToken) {
-    attackerTokenUuid = attackerToken.uuid || attackerToken.document?.uuid || undefined;
-    console.log('Attacker Token UUID:', attackerTokenUuid || 'Unknown');
-    // If token exists, use token's actor UUID (for NPCs)
-    if (attackerToken.actor) {
-      console.log('Attacker Token Actor UUID:', attackerToken.actor.uuid || 'Unknown');
-    }
-  } else if (rollData.attackerTokenUuid) {
-    attackerTokenUuid = rollData.attackerTokenUuid;
-    console.log('Attacker Token UUID (from rollData):', attackerTokenUuid);
-  }
-  
+  const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
+  console.log('Attacker Token UUID:', attackerTokenUuid || 'Unknown');
+
   // Determine final attacker UUID: if token exists, use token's actor UUID, otherwise use actor UUID
-  const finalAttackerUuid = attackerToken?.actor?.uuid || attacker?.uuid;
+  const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
   console.log('Final Attacker UUID (token actor or actor):', finalAttackerUuid || 'Unknown');
   
   console.log('Defender:', defender?.name || 'None');
@@ -459,21 +480,11 @@ async function createRollChatMessage(
   console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
   
   // Get defender token UUID (priority: token > rollData)
-  let defenderTokenUuid: string | undefined = undefined;
-  if (defenderToken) {
-    defenderTokenUuid = defenderToken.uuid || defenderToken.document?.uuid || undefined;
-    console.log('Defender Token UUID:', defenderTokenUuid || 'Unknown');
-    // If token exists, use token's actor UUID (for NPCs)
-    if (defenderToken.actor) {
-      console.log('Defender Token Actor UUID:', defenderToken.actor.uuid || 'Unknown');
-    }
-  } else if (rollData.defenderTokenUuid) {
-    defenderTokenUuid = rollData.defenderTokenUuid;
-    console.log('Defender Token UUID (from rollData):', defenderTokenUuid);
-  }
-  
+  const defenderTokenUuid = resolveTokenUuid(defenderToken, rollData.defenderTokenUuid);
+  console.log('Defender Token UUID:', defenderTokenUuid || 'Unknown');
+
   // Determine final defender UUID: if token exists, use token's actor UUID, otherwise use actor UUID
-  const finalDefenderUuid = defenderToken?.actor?.uuid || defender?.uuid;
+  const finalDefenderUuid = resolveActorUuid(defenderToken, defender);
   console.log('Final Defender UUID (token actor or actor):', finalDefenderUuid || 'Unknown');
   console.log('--- UUIDs to be stored in flags ---');
   console.log('attackerUuid (final):', finalAttackerUuid || 'Unknown');
@@ -542,28 +553,9 @@ async function createRollChatMessage(
         // damageValue should already be a numeric string (calculated value, not "attribut+bonus")
         const damageValueStr = rollData.attackRollData.damageValue || '0';
         
-        // Try to parse as numeric first (most common case now)
-        let damageValue = parseInt(damageValueStr, 10);
-        
-        // If not a simple number, try to parse with attributes (backward compatibility)
-        if (isNaN(damageValue)) {
-          const attackerAttributes = (defender?.system as any)?.attributes || {};
-          try {
-            const parsed = SheetHelpers.parseDamageValue(damageValueStr, attackerAttributes, 0);
-            damageValue = parsed.numericValue;
-          } catch (error) {
-            console.error('SRA2 | Error parsing damage value:', damageValueStr, error);
-            damageValue = 0;
-          }
-        }
-        
-        // Ensure damageValue is a valid number
-        if (isNaN(damageValue) || damageValue === null || damageValue === undefined) {
-          console.error('SRA2 | Invalid damage value:', damageValueStr);
-          calculatedDamage = 0;
-        } else {
-          calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
-        }
+        const attackerAttributes = (defender?.system as any)?.attributes || {};
+        const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, 'defense');
+        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
         
         attackFailed = false;
       }
@@ -629,50 +621,16 @@ async function createRollChatMessage(
     let attackDamageValue = 0;
     const attackDamageValueStr = rollData.attackRollData.damageValue || '0';
     
-    // Try to parse as numeric first (most common case now)
-    attackDamageValue = parseInt(attackDamageValueStr, 10);
-    
-    // If not a simple number, try to parse with attributes (backward compatibility)
-    if (isNaN(attackDamageValue)) {
-      const attackerAttributes = (defender?.system as any)?.attributes || {}; // defender = original attacker
-      try {
-        const attackParsed = SheetHelpers.parseDamageValue(attackDamageValueStr, attackerAttributes, 0);
-        attackDamageValue = attackParsed.numericValue;
-      } catch (error) {
-        console.error('SRA2 | Error parsing attack damage value:', attackDamageValueStr, error);
-        attackDamageValue = 0;
-      }
-    }
-    
-    if (isNaN(attackDamageValue) || attackDamageValue === null || attackDamageValue === undefined) {
-      console.error('SRA2 | Invalid attack damage value:', attackDamageValueStr);
-      attackDamageValue = 0;
-    }
+    const originalAttackerAttributes = (defender?.system as any)?.attributes || {}; // defender = original attacker
+    attackDamageValue = parseDamageValueSafe(attackDamageValueStr, originalAttackerAttributes, 'counter-attack original');
     
     // Get counter-attack damage value from rollData
     // rollData.damageValue should already be a numeric string (calculated value)
     let counterAttackDamageValue = 0;
     const damageValueStr = rollData.damageValue || '0';
     
-    // Try to parse as numeric first (most common case now)
-    counterAttackDamageValue = parseInt(damageValueStr, 10);
-    
-    // If not a simple number, try to parse with attributes (backward compatibility)
-    if (isNaN(counterAttackDamageValue)) {
-      const counterAttackerAttributes = (attacker?.system as any)?.attributes || {};
-      try {
-        const counterParsed = SheetHelpers.parseDamageValue(damageValueStr, counterAttackerAttributes, 0);
-        counterAttackDamageValue = counterParsed.numericValue;
-      } catch (error) {
-        console.error('SRA2 | Error parsing counter-attack damage value:', damageValueStr, error);
-        counterAttackDamageValue = 0;
-      }
-    }
-    
-    if (isNaN(counterAttackDamageValue) || counterAttackDamageValue === null || counterAttackDamageValue === undefined) {
-      console.error('SRA2 | Invalid counter-attack damage value:', damageValueStr);
-      counterAttackDamageValue = 0;
-    }
+    const counterAttackerAttributes = (attacker?.system as any)?.attributes || {};
+    counterAttackDamageValue = parseDamageValueSafe(damageValueStr, counterAttackerAttributes, 'counter-attack');
     
     // If still no damage value, try to find weapon (fallback)
     if (!counterAttackDamageValue && attacker) {
