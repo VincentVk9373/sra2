@@ -1106,8 +1106,9 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS', labelParams: `(${bonusAnarchy})`, value });
     }
     
-    // Grants narration: +3 levels
-    if (grantsNarration) {
+    // Grants narration: +3 levels (based on narrationActions > 0)
+    const narrationActions = (this as any).narrationActions || 0;
+    if (narrationActions > 0) {
       recommendedLevel += 3;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
     }

@@ -1558,7 +1558,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const isAdeptPowerWeapon = this.isAdeptPowerWeapon || false;
     const isBioware = this.isBioware || false;
     const bonusAnarchy = this.bonusAnarchy || 0;
-    const grantsNarration = this.grantsNarration || false;
+    this.grantsNarration || false;
     const narrativeEffects = this.narrativeEffects || [];
     const rrList = this.rrList || [];
     const isFirstFeat = this.isFirstFeat || false;
@@ -1686,7 +1686,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       recommendedLevel += value;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS", labelParams: `(${bonusAnarchy})`, value });
     }
-    if (grantsNarration) {
+    const narrationActions = this.narrationActions || 0;
+    if (narrationActions > 0) {
       recommendedLevel += 3;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
     }

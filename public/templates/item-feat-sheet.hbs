@@ -356,17 +356,9 @@
           </div>
 
           <div class="form-group">
-            <label>
-              <input type="checkbox" name="system.grantsNarration" {{checked system.grantsNarration}} />
-              {{localize "SRA2.FEATS.GRANTS_NARRATION"}}
-            </label>
-            <p class="notes">{{localize "SRA2.FEATS.GRANTS_NARRATION_HINT"}}</p>
-          </div>
-
-          {{#if system.grantsNarration}}
-          <div class="form-group">
             <label>{{localize "SRA2.FEATS.NARRATION_ACTIONS"}}</label>
             <select name="system.narrationActions">
+              <option value="0" {{#if (eq system.narrationActions 0)}}selected{{/if}}>0</option>
               <option value="1" {{#if (eq system.narrationActions 1)}}selected{{/if}}>1 {{localize
                 "SRA2.FEATS.NARRATION_ACTION"}}</option>
               <option value="2" {{#if (eq system.narrationActions 2)}}selected{{/if}}>2 {{localize
@@ -374,7 +366,6 @@
             </select>
             <p class="notes">{{localize "SRA2.FEATS.NARRATION_ACTIONS_HINT"}}</p>
           </div>
-          {{/if}}
 
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.RIGGER_CONSOLE_COUNT"}}</label>
