@@ -63,25 +63,31 @@ export class SRA2System {
   onInit(): void {
     console.log(SYSTEM.LOG.HEAD + 'SRA2System.onInit');
     if (game.system) {
-      game.system.api = {
-        applications,
-        models,
-        documents,
-      };
+      game.system.api = { applications, models, documents };
     }
 
-    // Register theme setting
     this.registerThemeSetting();
-
-    // Register group anarchy setting
     this.registerGroupAnarchySetting();
 
-    // Configure UI elements (icons, banners)
     setSidebarIcons();
     setControlIcons();
     setCompendiumBanners();
 
-    // Register migrations
+    this.registerMigrations();
+    this.registerDataModels();
+    this.registerActorSheets();
+    this.setupVehicleHooks();
+    this.setupSkillCreationHooks();
+    this.setupActorLifecycleHooks();
+    this.setupTokenHooks();
+    this.registerItemSheets();
+    this.registerHandlebarsHelpers();
+    this.setupChatHandlers();
+
+    Hooks.once("ready", () => this.onReady());
+  }
+
+  private registerMigrations(): void {
     new Migrations();
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration: any) => {
       declareMigration(new Migration_13_0_3());
@@ -95,7 +101,9 @@ export class SRA2System {
       declareMigration(new Migration_13_0_11());
       declareMigration(new Migration_13_0_12());
     });
+  }
 
+  private registerDataModels(): void {
     // Register custom Actor document class
     CONFIG.Actor.documentClass = documents.SRA2Actor;
 
@@ -113,35 +121,27 @@ export class SRA2System {
       specialization: models.SpecializationDataModel,
       metatype: models.MetatypeDataModel,
     };
+  }
 
-    // Register character sheet (detailed view) - Hidden from selection
-    // DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheet, {
-    //   types: ["character"],
-    //   makeDefault: false,
-    //   label: "SRA2.SHEET.CHARACTER"
-    // });
-
-    // Register character sheet V2 (in-run view - default)
+  private registerActorSheets(): void {
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.CharacterSheetV2, {
       types: ["character"],
       makeDefault: true,
       label: "SRA2.SHEET.CHARACTER_V2"
     });
-
-    // Register vehicle sheet
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.VehicleSheet, {
       types: ["vehicle"],
       makeDefault: true,
       label: "SRA2.SHEET.VEHICLE"
     });
-
-    // Register ICE sheet
     DocumentSheetConfig.registerSheet(Actor, "sra2", applications.IceSheet, {
       types: ["ice"],
       makeDefault: true,
       label: "SRA2.SHEET.ICE"
     });
+  }
 
+  private setupVehicleHooks(): void {
     // Hook to ensure all vehicle actors are available in game.actors before cost calculations
     // This runs after all actors are loaded to ensure vehicles are accessible synchronously
     Hooks.on('ready', () => {
@@ -321,6 +321,9 @@ export class SRA2System {
       }
     });
 
+  }
+
+  private setupSkillCreationHooks(): void {
     // Hook to automatically add linked skill when a specialization is created
     Hooks.on('createItem', async (item: any, options: any, userId: string) => {
       // Only process specializations on character actors
@@ -391,8 +394,10 @@ export class SRA2System {
         SRA2System.skillsBeingCreated.delete(skillKey);
       }
     });
+  }
 
-    // Also handle when vehicle is deleted
+  private setupActorLifecycleHooks(): void {
+    // Handle when vehicle is deleted
     Hooks.on('deleteActor', (actor: any, options: any, userId: string) => {
       // Only process vehicle actors
       if (actor.type !== 'vehicle') return;
@@ -492,7 +497,9 @@ export class SRA2System {
         console.log(SYSTEM.LOG.HEAD + `Updated ${actor.name} with ${newVehicleUuids.length} duplicated vehicles`);
       }
     });
+  }
 
+  private setupTokenHooks(): void {
     // Hook to handle feat choice configuration when dropping a token
     // This displays a dialog for optional/choice feats before creating the token
     Hooks.on('preCreateToken', (tokenDoc: any, _data: any, options: any, userId: string) => {
@@ -594,8 +601,9 @@ export class SRA2System {
       // Cancel the original token creation - we'll create it manually after dialog
       return false;
     });
+  }
 
-    // Register feat sheet
+  private registerItemSheets(): void {
     DocumentSheetConfig.registerSheet(Item, "sra2", applications.FeatSheet, {
       types: ["feat"],
       makeDefault: true,
@@ -622,8 +630,9 @@ export class SRA2System {
       makeDefault: true,
       label: "SRA2.SHEET.METATYPE"
     });
+  }
 
-    // Register Handlebars helpers
+  private registerHandlebarsHelpers(): void {
     Handlebars.registerHelper('add', function (a: number, b: number) {
       return a + b;
     });
@@ -675,7 +684,9 @@ export class SRA2System {
     Handlebars.registerHelper('json', function (context: any) {
       return JSON.stringify(context);
     });
+  }
 
+  private setupChatHandlers(): void {
     // Register chat message hook for apply damage buttons
     Hooks.on('renderChatMessage', (message: any, html: any) => {
       // Remove existing handlers first to prevent duplicates
@@ -1761,8 +1772,6 @@ export class SRA2System {
         });
       }
     });
-
-    Hooks.once("ready", () => this.onReady());
   }
 
   /**

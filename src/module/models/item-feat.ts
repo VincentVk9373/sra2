@@ -810,58 +810,53 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
   }
 
   override prepareDerivedData(): void {
-    // Get common properties
-    const costType = (this as any).cost || 'free-equipment';
     const featType = (this as any).featType || 'equipment';
-    const rating = (this as any).rating || 0;
-    
+
     // If astral projection is enabled, automatically enable astral perception
-    if ((this as any).astralProjection) {
-      (this as any).astralPerception = true;
-    }
-    
-    // For spells, automatically set linkedAttackSkill and linkedAttackSpecialization
-    if (featType === 'spell') {
-      // Always set attack skill to Sorcellerie
-      (this as any).linkedAttackSkill = 'Sorcellerie';
-      
-      // Map spell specialization type to specialization name
-      const spellSpecType = (this as any).spellSpecializationType || 'combat';
-      const spellSpecMap: Record<string, string> = {
-        'combat': 'Spé: Sorts de combat',
-        'detection': 'Spé: Sorts de détection',
-        'health': 'Spé: Sorts de santé',
-        'illusion': 'Spé: Sorts d\'illusion',
-        'manipulation': 'Spé: Sorts de manipulation',
-        'counterspell': 'Spé: Contresort'
-      };
-      (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
-    }
-    
-    // For custom weapons, calculate damageValue from vdMode
+    if ((this as any).astralProjection) (this as any).astralPerception = true;
+
+    this._applySpellSkillLinks(featType);
+    this._applyCustomWeaponDamage(featType);
+    this._calculateCost(featType);
+    this._calculateRecommendedLevel(featType);
+  }
+
+  private _applySpellSkillLinks(featType: string): void {
+    if (featType !== 'spell') return;
+    (this as any).linkedAttackSkill = 'Sorcellerie';
+    const spellSpecMap: Record<string, string> = {
+      'combat': 'Spé: Sorts de combat',
+      'detection': 'Spé: Sorts de détection',
+      'health': 'Spé: Sorts de santé',
+      'illusion': 'Spé: Sorts d\'illusion',
+      'manipulation': 'Spé: Sorts de manipulation',
+      'counterspell': 'Spé: Contresort'
+    };
+    const spellSpecType = (this as any).spellSpecializationType || 'combat';
+    (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+  }
+
+  private _applyCustomWeaponDamage(featType: string): void {
     const weaponType = (this as any).weaponType || '';
-    if (weaponType === 'custom-weapon' && (featType === 'weapon' || featType === 'weapons-spells')) {
-      const vdMode = (this as any).vdMode || 'custom';
-      
-      if (vdMode === 'custom') {
-        const vdCustomValue = (this as any).vdCustomValue ?? 0;
-        (this as any).damageValue = vdCustomValue.toString();
+    if (weaponType !== 'custom-weapon' || (featType !== 'weapon' && featType !== 'weapons-spells')) return;
+    const vdMode = (this as any).vdMode || 'custom';
+    if (vdMode === 'custom') {
+      (this as any).damageValue = ((this as any).vdCustomValue ?? 0).toString();
+    } else {
+      const vdAttribute = (this as any).vdAttribute || 'strength';
+      const vdBonus = (this as any).vdBonus ?? 0;
+      if (vdAttribute === 'strength') {
+        (this as any).damageValue = vdBonus === 0 ? 'FOR' : `FOR+${vdBonus}`;
       } else {
-        const vdAttribute = (this as any).vdAttribute || 'strength';
-        const vdBonus = (this as any).vdBonus ?? 0;
-        
-        if (vdAttribute === 'strength') {
-          if (vdBonus === 0) {
-            (this as any).damageValue = 'FOR';
-          } else {
-            (this as any).damageValue = `FOR+${vdBonus}`;
-          }
-        } else {
-          (this as any).damageValue = `${vdAttribute}+${vdBonus}`;
-        }
+        (this as any).damageValue = `${vdAttribute}+${vdBonus}`;
       }
     }
-    
+  }
+
+  private _calculateCost(featType: string): void {
+    const costType = (this as any).cost || 'free-equipment';
+    const rating = (this as any).rating || 0;
+
     // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;
     
@@ -902,7 +897,9 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     calculatedCost += rating * 5000;
 
     (this as any).calculatedCost = calculatedCost;
+  }
 
+  private _calculateRecommendedLevel(featType: string): void {
     // Calculate recommended attribute level
     let recommendedLevel = 0;
     const recommendedLevelBreakdown: Array<{ labelKey: string; labelParams?: string; value: number }> = [];

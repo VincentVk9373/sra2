@@ -253,20 +253,23 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
   }
 
   override prepareDerivedData(): void {
-    // Get metatype to determine attribute maximums and anarchy bonus
     const parent = (this as any).parent;
-    let attributeMaxes = {
-      strength: 99,
-      agility: 99,
-      willpower: 99,
-      logic: 99,
-      charisma: 99
-    };
+
+    const { attributeMaxes, anarchyBonus } = this._collectMetatypeData(parent);
+    (this as any).attributeMaxes = attributeMaxes;
+
+    const featBonuses = this._collectFeatBonuses(parent, anarchyBonus);
+    this._applyDamageArrays(featBonuses, anarchyBonus, parent);
+    this._applyArmorAndThresholds(featBonuses, parent);
+    this._applyTotalCost(attributeMaxes, parent);
+  }
+
+  private _collectMetatypeData(parent: any): { attributeMaxes: { strength: number; agility: number; willpower: number; logic: number; charisma: number }; anarchyBonus: number } {
+    let attributeMaxes = { strength: 99, agility: 99, willpower: 99, logic: 99, charisma: 99 };
     let anarchyBonus = 0;
-    
-    if (parent && parent.items) {
+    if (parent?.items) {
       const metatype = parent.items.find((item: any) => item.type === 'metatype');
-      if (metatype && metatype.system) {
+      if (metatype?.system) {
         attributeMaxes = {
           strength: metatype.system.maxStrength || 99,
           agility: metatype.system.maxAgility || 99,
@@ -277,25 +280,24 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         anarchyBonus = metatype.system.anarchyBonus || 0;
       }
     }
-    
-    (this as any).attributeMaxes = attributeMaxes;
-    
-    // Calculate damage boxes, thresholds bonuses, essence cost, anarchy bonus, and narrations from active feats
-    let bonusLightDamage = 0;
-    let bonusSevereDamage = 0;
-    let bonusPhysicalThreshold = 0;
-    let bonusMentalThreshold = 0;
-    let bonusMatrixThreshold = 0;
-    let bonusAnarchy = 0;
-    let totalEssenceCost = 0;
+    return { attributeMaxes, anarchyBonus };
+  }
+
+  private _collectFeatBonuses(parent: any, anarchyBonus: number): {
+    bonusLightDamage: number; bonusSevereDamage: number;
+    bonusPhysicalThreshold: number; bonusMentalThreshold: number; bonusMatrixThreshold: number;
+    bonusAnarchy: number; totalEssenceCost: number;
+  } {
+    let bonusLightDamage = 0, bonusSevereDamage = 0;
+    let bonusPhysicalThreshold = 0, bonusMentalThreshold = 0, bonusMatrixThreshold = 0;
+    let bonusAnarchy = 0, totalEssenceCost = 0;
     let totalNarrations = 0;
     const narrationsDetails: Array<{ name: string; actions: number }> = [];
-    
-    if (parent && parent.items) {
-      const activeFeats = parent.items.filter((item: any) => 
+
+    if (parent?.items) {
+      const activeFeats = parent.items.filter((item: any) =>
         item.type === 'feat' && item.system.active === true
       );
-      
       activeFeats.forEach((feat: any) => {
         bonusLightDamage += feat.system.bonusLightDamage || 0;
         bonusSevereDamage += feat.system.bonusSevereDamage || 0;
@@ -304,140 +306,92 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         bonusMatrixThreshold += feat.system.bonusMatrixThreshold || 0;
         bonusAnarchy += feat.system.bonusAnarchy || 0;
         totalEssenceCost += feat.system.essenceCost || 0;
-        
-        // Count narrations
         if (feat.system.grantsNarration) {
           totalNarrations++;
-          narrationsDetails.push({
-            name: feat.name,
-            actions: feat.system.narrationActions || 1
-          });
+          narrationsDetails.push({ name: feat.name, actions: feat.system.narrationActions || 1 });
         }
       });
     }
-    
-    // Calculate total anarchy (base 3 + metatype bonus + feats bonus)
+
     (this as any).totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
     (this as any).anarchyBonus = anarchyBonus;
     (this as any).featsAnarchyBonus = bonusAnarchy;
-    
-    // Store narrations information (base 1 + feats bonus)
     (this as any).totalNarrations = 1 + totalNarrations;
     (this as any).bonusNarrations = totalNarrations;
     (this as any).narrationsDetails = narrationsDetails;
-    
-    // Base: DAMAGE_BOX_DEFAULTS.LIGHT light, DAMAGE_BOX_DEFAULTS.SEVERE severe, 1 incapacitating (applies to all damage types)
-    const totalLightBoxes = DAMAGE_BOX_DEFAULTS.LIGHT + bonusLightDamage;
-    const totalSevereBoxes = DAMAGE_BOX_DEFAULTS.SEVERE + bonusSevereDamage;
-    
-    // Helper function to ensure damage arrays match the required size (preserve existing values)
+
+    return { bonusLightDamage, bonusSevereDamage, bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, bonusAnarchy, totalEssenceCost };
+  }
+
+  private _applyDamageArrays(
+    featBonuses: { bonusLightDamage: number; bonusSevereDamage: number; bonusAnarchy: number },
+    anarchyBonus: number,
+    parent: any
+  ): void {
+    const totalLightBoxes = DAMAGE_BOX_DEFAULTS.LIGHT + featBonuses.bonusLightDamage;
+    const totalSevereBoxes = DAMAGE_BOX_DEFAULTS.SEVERE + featBonuses.bonusSevereDamage;
+
+    // Resize a damage object's light/severe arrays, preserving existing values
     const ensureDamageArraySize = (sourceDamage: any, defaultLight: boolean[], defaultSevere: boolean[]) => {
       const damage: any = {
         light: Array.isArray(sourceDamage?.light) ? [...sourceDamage.light] : [...defaultLight],
         severe: Array.isArray(sourceDamage?.severe) ? [...sourceDamage.severe] : [...defaultSevere],
         incapacitating: typeof sourceDamage?.incapacitating === 'boolean' ? sourceDamage.incapacitating : false
       };
-      
-      // Adjust light damage array size (preserve existing values, only pad or trim from end)
-      while (damage.light.length < totalLightBoxes) {
-        damage.light.push(false);
-      }
-      while (damage.light.length > totalLightBoxes) {
-        damage.light.pop();
-      }
-      
-      // Adjust severe damage array size (preserve existing values, only pad or trim from end)
-      while (damage.severe.length < totalSevereBoxes) {
-        damage.severe.push(false);
-      }
-      while (damage.severe.length > totalSevereBoxes) {
-        damage.severe.pop();
-      }
-      
+      while (damage.light.length < totalLightBoxes) damage.light.push(false);
+      while (damage.light.length > totalLightBoxes) damage.light.pop();
+      while (damage.severe.length < totalSevereBoxes) damage.severe.push(false);
+      while (damage.severe.length > totalSevereBoxes) damage.severe.pop();
       return damage;
     };
-    
-    // CRITICAL: Read from source data first to preserve persisted values
-    // In Foundry v13, when prepareDerivedData() is called, the damage objects
-    // should already contain the persisted values from _source, but we need to
-    // ensure we're working with a copy to avoid mutating the source
+
+    // Read from _source to preserve persisted values (Foundry v13)
     const sourceSystem = parent?._source?.system || {};
-    
-    // Ensure physical damage arrays match the required size (preserve existing values)
-    const sourceDamage = sourceSystem.damage || (this as any).damage || {};
-    const damage = ensureDamageArraySize(sourceDamage, [false, false], [false]);
-    (this as any).damage = damage;
-    
-    // Ensure magic damage arrays match the required size (preserve existing values)
-    const sourceMagicDamage = sourceSystem.magicDamage || (this as any).magicDamage || {};
-    const magicDamage = ensureDamageArraySize(sourceMagicDamage, [false, false], [false]);
-    (this as any).magicDamage = magicDamage;
-    
-    // Ensure matrix damage arrays match the required size (preserve existing values)
-    const sourceMatrixDamage = sourceSystem.matrixDamage || (this as any).matrixDamage || {};
-    const matrixDamage = ensureDamageArraySize(sourceMatrixDamage, [false, false], [false]);
-    (this as any).matrixDamage = matrixDamage;
-    
+    (this as any).damage = ensureDamageArraySize(sourceSystem.damage || (this as any).damage || {}, [false, false], [false]);
+    (this as any).magicDamage = ensureDamageArraySize(sourceSystem.magicDamage || (this as any).magicDamage || {}, [false, false], [false]);
+    (this as any).matrixDamage = ensureDamageArraySize(sourceSystem.matrixDamage || (this as any).matrixDamage || {}, [false, false], [false]);
     (this as any).totalLightBoxes = totalLightBoxes;
     (this as any).totalSevereBoxes = totalSevereBoxes;
-    
-    // Adjust anarchy spent array to match total anarchy
-    const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
-    const anarchySpent = (this as any).anarchySpent || [];
-    
-    if (!Array.isArray(anarchySpent)) {
-      (this as any).anarchySpent = [];
-    }
-    while ((this as any).anarchySpent.length < totalAnarchy) {
-      (this as any).anarchySpent.push(false);
-    }
-    while ((this as any).anarchySpent.length > totalAnarchy) {
-      (this as any).anarchySpent.pop();
-    }
-    
-    // Calculate armor level from active armor feats
-    // Armor feats stack (addition)
+
+    // Resize anarchySpent array to match total anarchy
+    const totalAnarchy = 3 + anarchyBonus + featBonuses.bonusAnarchy;
+    if (!Array.isArray((this as any).anarchySpent)) (this as any).anarchySpent = [];
+    while ((this as any).anarchySpent.length < totalAnarchy) (this as any).anarchySpent.push(false);
+    while ((this as any).anarchySpent.length > totalAnarchy) (this as any).anarchySpent.pop();
+  }
+
+  private _applyArmorAndThresholds(
+    featBonuses: { bonusPhysicalThreshold: number; bonusMentalThreshold: number; bonusMatrixThreshold: number; totalEssenceCost: number },
+    parent: any
+  ): void {
+    // Armor level: sum of active armor feats, capped at 5
     let totalArmorLevel = 0;
-    if (parent && parent.items) {
-      const activeArmorFeats = parent.items.filter((item: any) => 
-        item.type === 'feat' && 
-        item.system.featType === 'armor' && 
-        item.system.active === true &&
-        (item.system.armorValue || 0) > 0
+    if (parent?.items) {
+      const activeArmorFeats = parent.items.filter((item: any) =>
+        item.type === 'feat' && item.system.featType === 'armor' &&
+        item.system.active === true && (item.system.armorValue || 0) > 0
       );
-      
-      // Sum all active armor values
-      totalArmorLevel = activeArmorFeats.reduce((sum: number, item: any) => {
-        return sum + (item.system.armorValue || 0);
-      }, 0);
-      
-      // Cap at maximum of 5
-      totalArmorLevel = Math.min(totalArmorLevel, 5);
+      totalArmorLevel = Math.min(
+        activeArmorFeats.reduce((sum: number, item: any) => sum + (item.system.armorValue || 0), 0),
+        5
+      );
     }
-    
-    // Store calculated armor level (read-only, calculated from feats)
     (this as any).armorLevel = totalArmorLevel;
-    
-    // Calculate armor cost (2500 per level)
     (this as any).armorCost = totalArmorLevel * 2500;
-    
-    // Calculate damage thresholds (with bonuses from feats)
+
     const strength = (this as any).attributes?.strength || 1;
     const willpower = (this as any).attributes?.willpower || 1;
-    
-    // Find active cyberdeck to get firewall for matrix thresholds
+    const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
+
+    // Active cyberdeck firewall for matrix thresholds
     let firewall = 0;
-    if (parent && parent.items) {
-      const activeCyberdeck = parent.items.find((item: any) => 
-        item.type === 'feat' && 
-        item.system.featType === 'cyberdeck' && 
-        item.system.active === true
+    if (parent?.items) {
+      const activeCyberdeck = parent.items.find((item: any) =>
+        item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
       );
-      if (activeCyberdeck && activeCyberdeck.system) {
-        firewall = activeCyberdeck.system.firewall || 1;
-      }
+      if (activeCyberdeck?.system) firewall = activeCyberdeck.system.firewall || 1;
     }
-    
+
     (this as any).damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -460,92 +414,64 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         incapacitating: (firewall * 3) + bonusMatrixThreshold
       }
     };
-    
-    // Calculate current essence
+
     const maxEssence = (this as any).maxEssence || 6;
     (this as any).currentEssence = Math.max(0, maxEssence - totalEssenceCost);
-    
-    // Calculate costs for each attribute
+  }
+
+  private _applyTotalCost(attributeMaxes: { strength: number; agility: number; willpower: number; logic: number; charisma: number }, parent: any): void {
     const attributes = (this as any).attributes;
-    if (attributes) {
-      // Clamp attributes to their maximums
-      attributes.strength = Math.min(attributes.strength || 1, attributeMaxes.strength);
-      attributes.agility = Math.min(attributes.agility || 1, attributeMaxes.agility);
-      attributes.willpower = Math.min(attributes.willpower || 1, attributeMaxes.willpower);
-      attributes.logic = Math.min(attributes.logic || 1, attributeMaxes.logic);
-      attributes.charisma = Math.min(attributes.charisma || 1, attributeMaxes.charisma);
-      
-      (this as any).attributeCosts = {
-        strength: this.calculateAttributeCost(attributes.strength || 1, attributeMaxes.strength),
-        agility: this.calculateAttributeCost(attributes.agility || 1, attributeMaxes.agility),
-        willpower: this.calculateAttributeCost(attributes.willpower || 1, attributeMaxes.willpower),
-        logic: this.calculateAttributeCost(attributes.logic || 1, attributeMaxes.logic),
-        charisma: this.calculateAttributeCost(attributes.charisma || 1, attributeMaxes.charisma)
-      };
-      
-      // Calculate total cost of attributes
-      const attributeCosts = (this as any).attributeCosts;
-      let totalCost = Object.values(attributeCosts).reduce((sum: number, cost: any) => sum + cost, 0);
-      
-      // Add items cost (skills and feats)
-      // Only count active feats in the total cost
-      // Note: Armor cost is included via the calculatedCost of armor feats
-      if (parent && parent.items) {
-        parent.items.forEach((item: any) => {
-          if (item.system && item.system.calculatedCost !== undefined) {
-            // Skip inactive feats when calculating total cost
-            if (item.type === 'feat' && item.system.active === false) {
-              return;
-            }
-            totalCost += item.system.calculatedCost;
-          }
-        });
-      }
-      
-      // Add linked vehicles cost
-      const linkedVehicles = (this as any).linkedVehicles || [];
-      if (linkedVehicles.length > 0) {
-        for (const vehicleUuid of linkedVehicles) {
-          try {
-            // Try to load vehicle actor synchronously (for actors in world) or from game.actors
-            let vehicleActor: any = null;
-            
-            // First try fromUuidSync if available (Foundry VTT v13+)
-            if ((foundry.utils as any)?.fromUuidSync) {
-              try {
-                vehicleActor = (foundry.utils as any).fromUuidSync(vehicleUuid);
-              } catch (e) {
-                // fromUuidSync might fail for compendium items, try game.actors
-              }
-            }
-            
-            // Fallback: try to find in game.actors by UUID or ID
-            if (!vehicleActor && game.actors) {
-              // First try to find by full UUID match
-              vehicleActor = (game.actors as any).find((actor: any) => actor.uuid === vehicleUuid);
-              
-              // If not found, try by ID (last part of UUID)
-              if (!vehicleActor) {
-                const uuidParts = vehicleUuid.split('.');
-                if (uuidParts.length >= 3) {
-                  const actorId = uuidParts[uuidParts.length - 1];
-                  vehicleActor = (game.actors as any).get(actorId);
-                }
-              }
-            }
-            
-            if (vehicleActor && vehicleActor.type === 'vehicle') {
-              const vehicleCost = vehicleActor.system?.calculatedCost || 0;
-              totalCost += vehicleCost;
-            }
-          } catch (error) {
-            console.warn(`Failed to load linked vehicle ${vehicleUuid} for cost calculation:`, error);
+    if (!attributes) return;
+
+    // Clamp attributes to metatype maximums
+    attributes.strength = Math.min(attributes.strength || 1, attributeMaxes.strength);
+    attributes.agility = Math.min(attributes.agility || 1, attributeMaxes.agility);
+    attributes.willpower = Math.min(attributes.willpower || 1, attributeMaxes.willpower);
+    attributes.logic = Math.min(attributes.logic || 1, attributeMaxes.logic);
+    attributes.charisma = Math.min(attributes.charisma || 1, attributeMaxes.charisma);
+
+    (this as any).attributeCosts = {
+      strength: this.calculateAttributeCost(attributes.strength || 1, attributeMaxes.strength),
+      agility: this.calculateAttributeCost(attributes.agility || 1, attributeMaxes.agility),
+      willpower: this.calculateAttributeCost(attributes.willpower || 1, attributeMaxes.willpower),
+      logic: this.calculateAttributeCost(attributes.logic || 1, attributeMaxes.logic),
+      charisma: this.calculateAttributeCost(attributes.charisma || 1, attributeMaxes.charisma)
+    };
+
+    let totalCost = Object.values((this as any).attributeCosts).reduce((sum: number, cost: any) => sum + cost, 0);
+
+    // Add active items cost
+    if (parent?.items) {
+      parent.items.forEach((item: any) => {
+        if (item.system?.calculatedCost !== undefined) {
+          if (item.type === 'feat' && item.system.active === false) return;
+          totalCost += item.system.calculatedCost;
+        }
+      });
+    }
+
+    // Add linked vehicles cost
+    const linkedVehicles = (this as any).linkedVehicles || [];
+    for (const vehicleUuid of linkedVehicles) {
+      try {
+        let vehicleActor: any = null;
+        if ((foundry.utils as any)?.fromUuidSync) {
+          try { vehicleActor = (foundry.utils as any).fromUuidSync(vehicleUuid); } catch (_e) { /* fallback */ }
+        }
+        if (!vehicleActor && game.actors) {
+          vehicleActor = (game.actors as any).find((a: any) => a.uuid === vehicleUuid);
+          if (!vehicleActor) {
+            const parts = vehicleUuid.split('.');
+            if (parts.length >= 3) vehicleActor = (game.actors as any).get(parts[parts.length - 1]);
           }
         }
+        if (vehicleActor?.type === 'vehicle') totalCost += vehicleActor.system?.calculatedCost || 0;
+      } catch (error) {
+        console.warn(`Failed to load linked vehicle ${vehicleUuid} for cost calculation:`, error);
       }
-      
-      (this as any).totalCost = totalCost;
     }
+
+    (this as any).totalCost = totalCost;
   }
 }
 

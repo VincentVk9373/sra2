@@ -53,6 +53,37 @@ function setControlIcons() {
 function setCompendiumBanners() {
   console.log(SYSTEM$1.LOG.HEAD + "Configured compendium banners");
 }
+const DELAYS = {
+  /** Debounce delay for search inputs */
+  SEARCH_DEBOUNCE: 300,
+  /** Delay before hiding search results on blur, to allow clicking results */
+  SEARCH_HIDE: 200,
+  /** Longer blur delay to allow button clicks within results to register */
+  SEARCH_HIDE_LONG: 300,
+  /** Small delay to ensure derived data and sheets re-render in correct order */
+  SHEET_RENDER: 100,
+  /** Retry delay for UI elements that may not be rendered yet */
+  UI_RETRY: 500,
+  /** Delay before re-enabling a button after action */
+  BUTTON_REENABLE: 1e3
+};
+const RR_MAX = 3;
+const ACTOR_ATTRIBUTES = ["strength", "agility", "willpower", "logic", "charisma"];
+const SUCCESS_THRESHOLDS = {
+  advantage: 4,
+  // 4, 5, 6 = success
+  normal: 5,
+  // 5, 6 = success
+  disadvantage: 6
+  // only 6 = success
+};
+const DAMAGE_STEP = 3;
+const DAMAGE_BOX_DEFAULTS = {
+  LIGHT: 2,
+  SEVERE: 1
+};
+const RISK_DICE_SUCCESS_MULTIPLIER = 2;
+const NARRATIVE_SAVE_DEBOUNCE = 500;
 class CharacterDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -301,17 +332,19 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
   }
   prepareDerivedData() {
     const parent = this.parent;
-    let attributeMaxes = {
-      strength: 99,
-      agility: 99,
-      willpower: 99,
-      logic: 99,
-      charisma: 99
-    };
+    const { attributeMaxes, anarchyBonus } = this._collectMetatypeData(parent);
+    this.attributeMaxes = attributeMaxes;
+    const featBonuses = this._collectFeatBonuses(parent, anarchyBonus);
+    this._applyDamageArrays(featBonuses, anarchyBonus, parent);
+    this._applyArmorAndThresholds(featBonuses, parent);
+    this._applyTotalCost(attributeMaxes, parent);
+  }
+  _collectMetatypeData(parent) {
+    let attributeMaxes = { strength: 99, agility: 99, willpower: 99, logic: 99, charisma: 99 };
     let anarchyBonus = 0;
-    if (parent && parent.items) {
+    if (parent?.items) {
       const metatype = parent.items.find((item) => item.type === "metatype");
-      if (metatype && metatype.system) {
+      if (metatype?.system) {
         attributeMaxes = {
           strength: metatype.system.maxStrength || 99,
           agility: metatype.system.maxAgility || 99,
@@ -322,17 +355,15 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         anarchyBonus = metatype.system.anarchyBonus || 0;
       }
     }
-    this.attributeMaxes = attributeMaxes;
-    let bonusLightDamage = 0;
-    let bonusSevereDamage = 0;
-    let bonusPhysicalThreshold = 0;
-    let bonusMentalThreshold = 0;
-    let bonusMatrixThreshold = 0;
-    let bonusAnarchy = 0;
-    let totalEssenceCost = 0;
+    return { attributeMaxes, anarchyBonus };
+  }
+  _collectFeatBonuses(parent, anarchyBonus) {
+    let bonusLightDamage = 0, bonusSevereDamage = 0;
+    let bonusPhysicalThreshold = 0, bonusMentalThreshold = 0, bonusMatrixThreshold = 0;
+    let bonusAnarchy = 0, totalEssenceCost = 0;
     let totalNarrations = 0;
     const narrationsDetails = [];
-    if (parent && parent.items) {
+    if (parent?.items) {
       const activeFeats = parent.items.filter(
         (item) => item.type === "feat" && item.system.active === true
       );
@@ -346,10 +377,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         totalEssenceCost += feat.system.essenceCost || 0;
         if (feat.system.grantsNarration) {
           totalNarrations++;
-          narrationsDetails.push({
-            name: feat.name,
-            actions: feat.system.narrationActions || 1
-          });
+          narrationsDetails.push({ name: feat.name, actions: feat.system.narrationActions || 1 });
         }
       });
     }
@@ -359,89 +387,72 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.totalNarrations = 1 + totalNarrations;
     this.bonusNarrations = totalNarrations;
     this.narrationsDetails = narrationsDetails;
-    const totalLightBoxes = 2 + bonusLightDamage;
-    const totalSevereBoxes = 1 + bonusSevereDamage;
-    const ensureDamageArraySize = (sourceDamage2, defaultLight, defaultSevere) => {
-      const damage2 = {
-        light: Array.isArray(sourceDamage2?.light) ? [...sourceDamage2.light] : [...defaultLight],
-        severe: Array.isArray(sourceDamage2?.severe) ? [...sourceDamage2.severe] : [...defaultSevere],
-        incapacitating: typeof sourceDamage2?.incapacitating === "boolean" ? sourceDamage2.incapacitating : false
+    return { bonusLightDamage, bonusSevereDamage, bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, bonusAnarchy, totalEssenceCost };
+  }
+  _applyDamageArrays(featBonuses, anarchyBonus, parent) {
+    const totalLightBoxes = DAMAGE_BOX_DEFAULTS.LIGHT + featBonuses.bonusLightDamage;
+    const totalSevereBoxes = DAMAGE_BOX_DEFAULTS.SEVERE + featBonuses.bonusSevereDamage;
+    const ensureDamageArraySize = (sourceDamage, defaultLight, defaultSevere) => {
+      const damage = {
+        light: Array.isArray(sourceDamage?.light) ? [...sourceDamage.light] : [...defaultLight],
+        severe: Array.isArray(sourceDamage?.severe) ? [...sourceDamage.severe] : [...defaultSevere],
+        incapacitating: typeof sourceDamage?.incapacitating === "boolean" ? sourceDamage.incapacitating : false
       };
-      while (damage2.light.length < totalLightBoxes) {
-        damage2.light.push(false);
-      }
-      while (damage2.light.length > totalLightBoxes) {
-        damage2.light.pop();
-      }
-      while (damage2.severe.length < totalSevereBoxes) {
-        damage2.severe.push(false);
-      }
-      while (damage2.severe.length > totalSevereBoxes) {
-        damage2.severe.pop();
-      }
-      return damage2;
+      while (damage.light.length < totalLightBoxes) damage.light.push(false);
+      while (damage.light.length > totalLightBoxes) damage.light.pop();
+      while (damage.severe.length < totalSevereBoxes) damage.severe.push(false);
+      while (damage.severe.length > totalSevereBoxes) damage.severe.pop();
+      return damage;
     };
     const sourceSystem = parent?._source?.system || {};
-    const sourceDamage = sourceSystem.damage || this.damage || {};
-    const damage = ensureDamageArraySize(sourceDamage, [false, false], [false]);
-    this.damage = damage;
-    const sourceMagicDamage = sourceSystem.magicDamage || this.magicDamage || {};
-    const magicDamage = ensureDamageArraySize(sourceMagicDamage, [false, false], [false]);
-    this.magicDamage = magicDamage;
-    const sourceMatrixDamage = sourceSystem.matrixDamage || this.matrixDamage || {};
-    const matrixDamage = ensureDamageArraySize(sourceMatrixDamage, [false, false], [false]);
-    this.matrixDamage = matrixDamage;
+    this.damage = ensureDamageArraySize(sourceSystem.damage || this.damage || {}, [false, false], [false]);
+    this.magicDamage = ensureDamageArraySize(sourceSystem.magicDamage || this.magicDamage || {}, [false, false], [false]);
+    this.matrixDamage = ensureDamageArraySize(sourceSystem.matrixDamage || this.matrixDamage || {}, [false, false], [false]);
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
-    const totalAnarchy = 3 + anarchyBonus + bonusAnarchy;
-    const anarchySpent = this.anarchySpent || [];
-    if (!Array.isArray(anarchySpent)) {
-      this.anarchySpent = [];
-    }
-    while (this.anarchySpent.length < totalAnarchy) {
-      this.anarchySpent.push(false);
-    }
-    while (this.anarchySpent.length > totalAnarchy) {
-      this.anarchySpent.pop();
-    }
+    const totalAnarchy = 3 + anarchyBonus + featBonuses.bonusAnarchy;
+    if (!Array.isArray(this.anarchySpent)) this.anarchySpent = [];
+    while (this.anarchySpent.length < totalAnarchy) this.anarchySpent.push(false);
+    while (this.anarchySpent.length > totalAnarchy) this.anarchySpent.pop();
+  }
+  _applyArmorAndThresholds(featBonuses, parent) {
     let totalArmorLevel = 0;
-    if (parent && parent.items) {
+    if (parent?.items) {
       const activeArmorFeats = parent.items.filter(
         (item) => item.type === "feat" && item.system.featType === "armor" && item.system.active === true && (item.system.armorValue || 0) > 0
       );
-      totalArmorLevel = activeArmorFeats.reduce((sum, item) => {
-        return sum + (item.system.armorValue || 0);
-      }, 0);
-      totalArmorLevel = Math.min(totalArmorLevel, 5);
+      totalArmorLevel = Math.min(
+        activeArmorFeats.reduce((sum, item) => sum + (item.system.armorValue || 0), 0),
+        5
+      );
     }
     this.armorLevel = totalArmorLevel;
     this.armorCost = totalArmorLevel * 2500;
     const strength = this.attributes?.strength || 1;
     const willpower = this.attributes?.willpower || 1;
+    const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
     let firewall = 0;
-    if (parent && parent.items) {
+    if (parent?.items) {
       const activeCyberdeck = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
       );
-      if (activeCyberdeck && activeCyberdeck.system) {
-        firewall = activeCyberdeck.system.firewall || 1;
-      }
+      if (activeCyberdeck?.system) firewall = activeCyberdeck.system.firewall || 1;
     }
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
-        severe: strength + bonusPhysicalThreshold + 3,
-        incapacitating: strength + bonusPhysicalThreshold + 6
+        severe: strength + bonusPhysicalThreshold + DAMAGE_STEP,
+        incapacitating: strength + bonusPhysicalThreshold + DAMAGE_STEP * 2
       },
       withArmor: {
         light: strength + totalArmorLevel + bonusPhysicalThreshold,
-        severe: strength + totalArmorLevel + bonusPhysicalThreshold + 3,
-        incapacitating: strength + totalArmorLevel + bonusPhysicalThreshold + 6
+        severe: strength + totalArmorLevel + bonusPhysicalThreshold + DAMAGE_STEP,
+        incapacitating: strength + totalArmorLevel + bonusPhysicalThreshold + DAMAGE_STEP * 2
       },
       mental: {
         light: willpower + bonusMentalThreshold,
-        severe: willpower + bonusMentalThreshold + 3,
-        incapacitating: willpower + bonusMentalThreshold + 6
+        severe: willpower + bonusMentalThreshold + DAMAGE_STEP,
+        incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
         light: firewall + bonusMatrixThreshold,
@@ -451,64 +462,54 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     };
     const maxEssence = this.maxEssence || 6;
     this.currentEssence = Math.max(0, maxEssence - totalEssenceCost);
+  }
+  _applyTotalCost(attributeMaxes, parent) {
     const attributes = this.attributes;
-    if (attributes) {
-      attributes.strength = Math.min(attributes.strength || 1, attributeMaxes.strength);
-      attributes.agility = Math.min(attributes.agility || 1, attributeMaxes.agility);
-      attributes.willpower = Math.min(attributes.willpower || 1, attributeMaxes.willpower);
-      attributes.logic = Math.min(attributes.logic || 1, attributeMaxes.logic);
-      attributes.charisma = Math.min(attributes.charisma || 1, attributeMaxes.charisma);
-      this.attributeCosts = {
-        strength: this.calculateAttributeCost(attributes.strength || 1, attributeMaxes.strength),
-        agility: this.calculateAttributeCost(attributes.agility || 1, attributeMaxes.agility),
-        willpower: this.calculateAttributeCost(attributes.willpower || 1, attributeMaxes.willpower),
-        logic: this.calculateAttributeCost(attributes.logic || 1, attributeMaxes.logic),
-        charisma: this.calculateAttributeCost(attributes.charisma || 1, attributeMaxes.charisma)
-      };
-      const attributeCosts = this.attributeCosts;
-      let totalCost = Object.values(attributeCosts).reduce((sum, cost) => sum + cost, 0);
-      if (parent && parent.items) {
-        parent.items.forEach((item) => {
-          if (item.system && item.system.calculatedCost !== void 0) {
-            if (item.type === "feat" && item.system.active === false) {
-              return;
-            }
-            totalCost += item.system.calculatedCost;
-          }
-        });
-      }
-      const linkedVehicles = this.linkedVehicles || [];
-      if (linkedVehicles.length > 0) {
-        for (const vehicleUuid of linkedVehicles) {
+    if (!attributes) return;
+    attributes.strength = Math.min(attributes.strength || 1, attributeMaxes.strength);
+    attributes.agility = Math.min(attributes.agility || 1, attributeMaxes.agility);
+    attributes.willpower = Math.min(attributes.willpower || 1, attributeMaxes.willpower);
+    attributes.logic = Math.min(attributes.logic || 1, attributeMaxes.logic);
+    attributes.charisma = Math.min(attributes.charisma || 1, attributeMaxes.charisma);
+    this.attributeCosts = {
+      strength: this.calculateAttributeCost(attributes.strength || 1, attributeMaxes.strength),
+      agility: this.calculateAttributeCost(attributes.agility || 1, attributeMaxes.agility),
+      willpower: this.calculateAttributeCost(attributes.willpower || 1, attributeMaxes.willpower),
+      logic: this.calculateAttributeCost(attributes.logic || 1, attributeMaxes.logic),
+      charisma: this.calculateAttributeCost(attributes.charisma || 1, attributeMaxes.charisma)
+    };
+    let totalCost = Object.values(this.attributeCosts).reduce((sum, cost) => sum + cost, 0);
+    if (parent?.items) {
+      parent.items.forEach((item) => {
+        if (item.system?.calculatedCost !== void 0) {
+          if (item.type === "feat" && item.system.active === false) return;
+          totalCost += item.system.calculatedCost;
+        }
+      });
+    }
+    const linkedVehicles = this.linkedVehicles || [];
+    for (const vehicleUuid of linkedVehicles) {
+      try {
+        let vehicleActor = null;
+        if (foundry.utils?.fromUuidSync) {
           try {
-            let vehicleActor = null;
-            if (foundry.utils?.fromUuidSync) {
-              try {
-                vehicleActor = foundry.utils.fromUuidSync(vehicleUuid);
-              } catch (e) {
-              }
-            }
-            if (!vehicleActor && game.actors) {
-              vehicleActor = game.actors.find((actor) => actor.uuid === vehicleUuid);
-              if (!vehicleActor) {
-                const uuidParts = vehicleUuid.split(".");
-                if (uuidParts.length >= 3) {
-                  const actorId = uuidParts[uuidParts.length - 1];
-                  vehicleActor = game.actors.get(actorId);
-                }
-              }
-            }
-            if (vehicleActor && vehicleActor.type === "vehicle") {
-              const vehicleCost = vehicleActor.system?.calculatedCost || 0;
-              totalCost += vehicleCost;
-            }
-          } catch (error) {
-            console.warn(`Failed to load linked vehicle ${vehicleUuid} for cost calculation:`, error);
+            vehicleActor = foundry.utils.fromUuidSync(vehicleUuid);
+          } catch (_e) {
           }
         }
+        if (!vehicleActor && game.actors) {
+          vehicleActor = game.actors.find((a) => a.uuid === vehicleUuid);
+          if (!vehicleActor) {
+            const parts = vehicleUuid.split(".");
+            if (parts.length >= 3) vehicleActor = game.actors.get(parts[parts.length - 1]);
+          }
+        }
+        if (vehicleActor?.type === "vehicle") totalCost += vehicleActor.system?.calculatedCost || 0;
+      } catch (error) {
+        console.warn(`Failed to load linked vehicle ${vehicleUuid} for cost calculation:`, error);
       }
-      this.totalCost = totalCost;
     }
+    this.totalCost = totalCost;
   }
 }
 const microdrone = { "autopilot": 6, "structure": 0, "handling": 10, "speed": 0, "flyingSpeed": 1, "armor": 0, "weaponMount": "none" };
@@ -2530,642 +2531,6 @@ const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   searchItemsOnActor,
   toggleSearchResults
 }, Symbol.toStringTag, { value: "Module" }));
-const RISK_DICE_BY_RR = [2, 5, 8, 12];
-function getRiskDiceByRR(rr) {
-  return RISK_DICE_BY_RR[Math.min(3, Math.max(0, rr))] || 2;
-}
-function getSuccessThreshold(mode) {
-  switch (mode) {
-    case "advantage":
-      return 4;
-    // 4, 5, 6 = success
-    case "disadvantage":
-      return 6;
-    // only 6 = success
-    default:
-      return 5;
-  }
-}
-function handleRollRequest(data) {
-  console.log("=== ROLL REQUEST ===", {
-    itemType: data.itemType,
-    weaponType: data.weaponType,
-    linkedAttackSkill: data.linkedAttackSkill,
-    linkedAttackSpecialization: data.linkedAttackSpecialization,
-    linkedDefenseSkill: data.linkedDefenseSkill,
-    linkedDefenseSpecialization: data.linkedDefenseSpecialization,
-    linkedAttribute: data.linkedAttribute,
-    isWeaponFocus: data.isWeaponFocus,
-    damageValue: data.damageValue,
-    damageValueBonus: data.damageValueBonus,
-    meleeRange: data.meleeRange,
-    shortRange: data.shortRange,
-    mediumRange: data.mediumRange,
-    longRange: data.longRange,
-    skillName: data.skillName,
-    specName: data.specName,
-    itemName: data.itemName,
-    itemId: data.itemId,
-    threshold: data.threshold,
-    actorId: data.actorId,
-    actorUuid: data.actorUuid,
-    actorName: data.actorName,
-    specLevel: data.specLevel,
-    skillLevel: data.skillLevel,
-    itemRating: data.itemRating,
-    itemActive: data.itemActive,
-    rrList: data.rrList
-  });
-  Promise.resolve().then(() => rollDialog).then((module) => {
-    const dialog = new module.RollDialog(data);
-    dialog.render(true);
-  });
-}
-async function executeRoll(attacker, defender, attackerToken, defenderToken, rollData) {
-  if (!attacker) {
-    console.error("No attacker provided for roll");
-    return;
-  }
-  console.log("=== EXECUTE ROLL ===");
-  console.log("Attacker:", attacker?.name || "Unknown");
-  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
-  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
-  console.log("Attacker Token UUID:", attackerToken?.uuid || attackerToken?.document?.uuid || rollData.attackerTokenUuid || "Unknown");
-  if (attackerToken?.actor) {
-    console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
-  }
-  console.log("Defender:", defender?.name || "None");
-  console.log("Defender UUID:", defender?.uuid || "Unknown");
-  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
-  console.log("Defender Token UUID:", defenderToken?.uuid || defenderToken?.document?.uuid || rollData.defenderTokenUuid || "Unknown");
-  if (defenderToken?.actor) {
-    console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
-  }
-  console.log("===================");
-  const dicePool = rollData.dicePool || 0;
-  const riskDiceCount = rollData.riskDiceCount || 0;
-  const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
-  const rollMode = rollData.rollMode || "normal";
-  const finalRR = Math.min(3, rollData.finalRR || 0);
-  const threshold = rollData.threshold;
-  let rollResult;
-  if (threshold !== void 0) {
-    rollResult = {
-      normalDice: [],
-      riskDice: [],
-      normalSuccesses: threshold,
-      riskSuccesses: 0,
-      totalSuccesses: threshold,
-      criticalFailures: 0,
-      finalRR,
-      remainingFailures: 0,
-      complication: "none"
-    };
-  } else {
-    let normalRoll = null;
-    let riskRoll = null;
-    if (normalDiceCount > 0) {
-      normalRoll = new Roll(`${normalDiceCount}d6`);
-      await normalRoll.evaluate();
-      if (game.dice3d && normalRoll) {
-        game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
-      }
-    }
-    if (riskDiceCount > 0) {
-      riskRoll = new Roll(`${riskDiceCount}d6`);
-      await riskRoll.evaluate();
-      if (game.dice3d && riskRoll) {
-        const dice3dConfig = {
-          colorset: "purple",
-          theme: "default"
-        };
-        game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
-      }
-    }
-    const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
-    const riskResults = riskRoll ? riskRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
-    let normalSuccesses = 0;
-    for (const result of normalResults) {
-      if (rollMode === "advantage" && result >= 4) {
-        normalSuccesses++;
-      } else if (rollMode === "disadvantage" && result === 6) {
-        normalSuccesses++;
-      } else if (rollMode === "normal" && result >= 5) {
-        normalSuccesses++;
-      }
-    }
-    let riskSuccesses = 0;
-    let criticalFailures = 0;
-    for (const result of riskResults) {
-      if (result === 1) {
-        criticalFailures++;
-      } else if (rollMode === "advantage" && result >= 4) {
-        riskSuccesses++;
-      } else if (rollMode === "disadvantage" && result === 6) {
-        riskSuccesses++;
-      } else if (rollMode === "normal" && result >= 5) {
-        riskSuccesses++;
-      }
-    }
-    const totalRiskSuccesses = riskSuccesses * 2;
-    const totalSuccesses = normalSuccesses + totalRiskSuccesses;
-    const remainingFailures = Math.max(0, criticalFailures - finalRR);
-    let complication = "none";
-    if (remainingFailures === 1) {
-      complication = "minor";
-    } else if (remainingFailures === 2) {
-      complication = "critical";
-    } else if (remainingFailures >= 3) {
-      complication = "disaster";
-    }
-    rollResult = {
-      normalDice: normalResults,
-      riskDice: riskResults,
-      normalSuccesses,
-      riskSuccesses,
-      totalSuccesses,
-      criticalFailures,
-      finalRR,
-      remainingFailures,
-      complication
-    };
-  }
-  await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
-}
-async function createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult) {
-  const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
-  console.log("=== CREATE ROLL CHAT MESSAGE ===");
-  console.log("Attacker:", attacker?.name || "Unknown");
-  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
-  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
-  let attackerTokenUuid = void 0;
-  if (attackerToken) {
-    attackerTokenUuid = attackerToken.uuid || attackerToken.document?.uuid || void 0;
-    console.log("Attacker Token UUID:", attackerTokenUuid || "Unknown");
-    if (attackerToken.actor) {
-      console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
-    }
-  } else if (rollData.attackerTokenUuid) {
-    attackerTokenUuid = rollData.attackerTokenUuid;
-    console.log("Attacker Token UUID (from rollData):", attackerTokenUuid);
-  }
-  const finalAttackerUuid = attackerToken?.actor?.uuid || attacker?.uuid;
-  console.log("Final Attacker UUID (token actor or actor):", finalAttackerUuid || "Unknown");
-  console.log("Defender:", defender?.name || "None");
-  console.log("Defender UUID:", defender?.uuid || "Unknown");
-  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
-  let defenderTokenUuid = void 0;
-  if (defenderToken) {
-    defenderTokenUuid = defenderToken.uuid || defenderToken.document?.uuid || void 0;
-    console.log("Defender Token UUID:", defenderTokenUuid || "Unknown");
-    if (defenderToken.actor) {
-      console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
-    }
-  } else if (rollData.defenderTokenUuid) {
-    defenderTokenUuid = rollData.defenderTokenUuid;
-    console.log("Defender Token UUID (from rollData):", defenderTokenUuid);
-  }
-  const finalDefenderUuid = defenderToken?.actor?.uuid || defender?.uuid;
-  console.log("Final Defender UUID (token actor or actor):", finalDefenderUuid || "Unknown");
-  console.log("--- UUIDs to be stored in flags ---");
-  console.log("attackerUuid (final):", finalAttackerUuid || "Unknown");
-  console.log("attackerTokenUuid (final):", attackerTokenUuid || "Unknown");
-  console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
-  console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
-  console.log("================================");
-  let defenderData = null;
-  if (defender) {
-    let tokenImg = defender.img;
-    if (defenderToken) {
-      tokenImg = defenderToken.document?.texture?.src || defenderToken.document?.img || defenderToken.data?.img || defenderToken.texture?.src || defender.img;
-    }
-    defenderData = {
-      ...defender,
-      img: tokenImg
-    };
-  }
-  let defenseResult = null;
-  let calculatedDamage = null;
-  let attackFailed = false;
-  if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
-    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
-    const defenseSuccesses = rollResult.totalSuccesses;
-    const isIceAttack = rollData.attackRollData.itemType === "ice-attack" || rollData.attackRollData.iceType;
-    const iceType = rollData.attackRollData.iceType;
-    const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
-    const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
-    if (attackSuccesses >= defenseSuccesses) {
-      if (isIceAttack) {
-        let damageValue = 0;
-        const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
-        if (iceType === "blaster" || iceType === "black" || iceType === "killer") {
-          damageValue = iceDamageValue + attackSuccesses - defenseSuccesses;
-        }
-        calculatedDamage = damageValue;
-        attackFailed = false;
-      } else {
-        const damageValueStr = rollData.attackRollData.damageValue || "0";
-        let damageValue = parseInt(damageValueStr, 10);
-        if (isNaN(damageValue)) {
-          const attackerAttributes = defender?.system?.attributes || {};
-          try {
-            const parsed = SheetHelpers.parseDamageValue(damageValueStr, attackerAttributes, 0);
-            damageValue = parsed.numericValue;
-          } catch (error) {
-            console.error("SRA2 | Error parsing damage value:", damageValueStr, error);
-            damageValue = 0;
-          }
-        }
-        if (isNaN(damageValue) || damageValue === null || damageValue === void 0) {
-          console.error("SRA2 | Invalid damage value:", damageValueStr);
-          calculatedDamage = 0;
-        } else {
-          calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
-        }
-        attackFailed = false;
-      }
-    } else {
-      attackFailed = true;
-      calculatedDamage = 0;
-    }
-    const originalAttackerUuid = finalDefenderUuid;
-    const defenderUuid = finalAttackerUuid;
-    console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
-    console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
-    console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
-    const attackDamageType = rollData.attackRollData?.damageType || "physical";
-    defenseResult = {
-      attackSuccesses,
-      defenseSuccesses,
-      calculatedDamage,
-      attackFailed,
-      originalAttackerName,
-      defenderName,
-      // UUIDs for applying damage
-      originalAttackerUuid,
-      // Who inflicts damage if attack succeeds
-      defenderUuid,
-      // Who receives damage if attack succeeds
-      // ICE-specific fields
-      isIceAttack,
-      iceType,
-      // Damage type from weapon/attack
-      damageType: attackDamageType
-    };
-  } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
-    const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
-    const originalDefenderName = attackerToken?.document?.name || attackerToken?.name || attackerToken?.actor?.name || attacker?.name || "Inconnu";
-    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
-    const counterAttackSuccesses = rollResult.totalSuccesses;
-    let attackDamageValue = 0;
-    const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
-    attackDamageValue = parseInt(attackDamageValueStr, 10);
-    if (isNaN(attackDamageValue)) {
-      const attackerAttributes = defender?.system?.attributes || {};
-      try {
-        const attackParsed = SheetHelpers.parseDamageValue(attackDamageValueStr, attackerAttributes, 0);
-        attackDamageValue = attackParsed.numericValue;
-      } catch (error) {
-        console.error("SRA2 | Error parsing attack damage value:", attackDamageValueStr, error);
-        attackDamageValue = 0;
-      }
-    }
-    if (isNaN(attackDamageValue) || attackDamageValue === null || attackDamageValue === void 0) {
-      console.error("SRA2 | Invalid attack damage value:", attackDamageValueStr);
-      attackDamageValue = 0;
-    }
-    let counterAttackDamageValue = 0;
-    const damageValueStr = rollData.damageValue || "0";
-    counterAttackDamageValue = parseInt(damageValueStr, 10);
-    if (isNaN(counterAttackDamageValue)) {
-      const counterAttackerAttributes = attacker?.system?.attributes || {};
-      try {
-        const counterParsed = SheetHelpers.parseDamageValue(damageValueStr, counterAttackerAttributes, 0);
-        counterAttackDamageValue = counterParsed.numericValue;
-      } catch (error) {
-        console.error("SRA2 | Error parsing counter-attack damage value:", damageValueStr, error);
-        counterAttackDamageValue = 0;
-      }
-    }
-    if (isNaN(counterAttackDamageValue) || counterAttackDamageValue === null || counterAttackDamageValue === void 0) {
-      console.error("SRA2 | Invalid counter-attack damage value:", damageValueStr);
-      counterAttackDamageValue = 0;
-    }
-    if (!counterAttackDamageValue && attacker) {
-      const selectedWeaponId = rollData.selectedWeaponId;
-      if (selectedWeaponId) {
-        const weapon = attacker.items.find((item) => item.id === selectedWeaponId);
-        if (weapon) {
-          const weaponSystem = weapon.system;
-          const baseDamageValue = weaponSystem.damageValue || "0";
-          const damageValueBonus = weaponSystem.damageValueBonus || 0;
-          const counterAttackerAttributes = attacker?.system?.attributes || {};
-          try {
-            counterAttackDamageValue = SheetHelpers.calculateFinalNumericDamageValue(
-              baseDamageValue,
-              counterAttackerAttributes,
-              damageValueBonus
-            );
-          } catch (error) {
-            console.error("SRA2 | Error calculating weapon damage value:", baseDamageValue, error);
-            counterAttackDamageValue = 0;
-          }
-        }
-      }
-    }
-    let attackerDamage = 0;
-    let defenderDamage = 0;
-    let isTie = false;
-    let winner = "tie";
-    if (attackSuccesses > counterAttackSuccesses) {
-      winner = "attacker";
-      attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
-    } else if (counterAttackSuccesses > attackSuccesses) {
-      winner = "defender";
-      defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
-    } else {
-      isTie = true;
-      winner = "tie";
-    }
-    console.log("=== COUNTER-ATTACK RESULTS ===");
-    console.log("Attack Successes:", attackSuccesses);
-    console.log("Counter-Attack Successes:", counterAttackSuccesses);
-    console.log("Attack Damage Value:", attackDamageValue);
-    console.log("Counter-Attack Damage Value:", counterAttackDamageValue);
-    console.log("Winner:", winner);
-    console.log("Attacker Damage:", attackerDamage);
-    console.log("Defender Damage:", defenderDamage);
-    console.log("Original Attacker Name:", originalAttackerName);
-    console.log("Original Defender Name:", originalDefenderName);
-    console.log("--- Context ---");
-    console.log("Attacker param:", attacker?.name);
-    console.log("Defender param:", defender?.name);
-    console.log("AttackerToken object:", attackerToken ? "Found" : "Not found");
-    console.log("AttackerToken.name:", attackerToken?.name);
-    console.log("AttackerToken.document?.name:", attackerToken?.document?.name);
-    console.log("AttackerToken.actor?.name:", attackerToken?.actor?.name);
-    console.log("DefenderToken object:", defenderToken ? "Found" : "Not found");
-    console.log("DefenderToken.name:", defenderToken?.name);
-    console.log("DefenderToken.document?.name:", defenderToken?.document?.name);
-    console.log("DefenderToken.actor?.name:", defenderToken?.actor?.name);
-    console.log("--- UUIDs to be stored in flags ---");
-    console.log("attackerUuid (final):", finalAttackerUuid || "Unknown");
-    console.log("attackerTokenUuid (final):", attackerTokenUuid || "Unknown");
-    console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
-    console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
-    console.log("==============================");
-    const originalAttackerUuid = finalDefenderUuid;
-    const originalDefenderUuid = finalAttackerUuid;
-    let damageInflicterUuid = void 0;
-    let damageReceiverUuid = void 0;
-    let damageInflicterName = "";
-    let damageReceiverName = "";
-    if (winner === "attacker") {
-      damageInflicterUuid = originalAttackerUuid;
-      damageReceiverUuid = originalDefenderUuid;
-      damageInflicterName = originalAttackerName;
-      damageReceiverName = originalDefenderName;
-      console.log("Counter-attack: Original attacker wins - inflicts damage to counter-attacker");
-      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
-      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
-    } else if (winner === "defender") {
-      damageInflicterUuid = originalDefenderUuid;
-      damageReceiverUuid = originalAttackerUuid;
-      damageInflicterName = originalDefenderName;
-      damageReceiverName = originalAttackerName;
-      console.log("Counter-attack: Counter-attacker wins - inflicts damage to original attacker");
-      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
-      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
-    }
-    const attackerDamageType = rollData.attackRollData?.damageType || "physical";
-    const defenderDamageType = rollData.damageType || "physical";
-    defenseResult = {
-      attackSuccesses,
-      counterAttackSuccesses,
-      winner,
-      attackerDamage,
-      defenderDamage,
-      isTie,
-      originalAttackerName,
-      originalDefenderName,
-      // UUIDs for applying damage
-      originalAttackerUuid,
-      originalDefenderUuid,
-      damageInflicterUuid,
-      damageReceiverUuid,
-      damageInflicterName,
-      damageReceiverName,
-      // Damage types
-      attackerDamageType,
-      defenderDamageType
-    };
-  }
-  const attackerWithUuid = attacker ? {
-    ...attacker,
-    uuid: finalAttackerUuid || attacker.uuid
-    // Use calculated UUID (token actor UUID for NPCs)
-  } : null;
-  const defenderWithUuid = defenderData ? {
-    ...defenderData,
-    uuid: finalDefenderUuid || defenderData.uuid
-    // Use calculated UUID (token actor UUID for NPCs)
-  } : null;
-  const templateData = {
-    attacker: attackerWithUuid,
-    defender: defenderWithUuid,
-    rollData,
-    rollResult,
-    isAttack,
-    isDefend: rollData.isDefend || false,
-    isCounterAttack: rollData.isCounterAttack || false,
-    skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || "Unknown",
-    itemName: rollData.itemName,
-    damageValue: rollData.damageValue,
-    defenseResult,
-    // Also pass UUIDs directly for template convenience
-    attackerUuid: finalAttackerUuid,
-    defenderUuid: finalDefenderUuid,
-    attackerTokenUuid,
-    defenderTokenUuid,
-    // Spell-specific flags
-    isSpellDirect: rollData.isSpellDirect || false
-  };
-  const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
-  const messageData = {
-    user: game.user?.id,
-    speaker: {
-      actor: attacker?.id,
-      alias: attacker?.name
-    },
-    content: html,
-    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-    flags: {
-      sra2: {
-        rollType: isAttack ? "attack" : "skill",
-        attackerId: attacker?.id,
-        attackerUuid: finalAttackerUuid,
-        // Use token's actor UUID if token exists, otherwise actor UUID
-        attackerTokenUuid,
-        // Store token UUID
-        defenderId: defender?.id,
-        defenderUuid: finalDefenderUuid,
-        // Use token's actor UUID if token exists, otherwise actor UUID
-        defenderTokenUuid,
-        // Store token UUID
-        rollResult,
-        rollData
-      }
-    }
-  };
-  await ChatMessage.create(messageData);
-  await handleDrain(attacker, rollData, rollResult);
-}
-async function handleDrain(actor, rollData, rollResult) {
-  if (!actor || !rollData || !rollResult) {
-    return;
-  }
-  const isSpell = rollData.itemType === "spell" || rollData.itemType === "weapon-spell";
-  let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || "";
-  let normalizedSkillName = normalizeSearchText(skillName);
-  if (isSpell || normalizeSearchText(rollData.linkedAttackSkill || "") === "sorcellerie") {
-    normalizedSkillName = "sorcellerie";
-  } else if (rollData.itemType === "specialization") {
-    if (!normalizedSkillName || normalizedSkillName !== "sorcellerie" && normalizedSkillName !== "conjuration") {
-      if (rollData.itemId && actor) {
-        const specItem = actor.items.find((item) => item.id === rollData.itemId);
-        if (specItem && specItem.type === "specialization") {
-          const specSystem = specItem.system;
-          const linkedSkill = specSystem.linkedSkill || "";
-          if (linkedSkill) {
-            skillName = linkedSkill;
-            normalizedSkillName = normalizeSearchText(linkedSkill);
-          }
-        }
-      }
-    }
-  }
-  const isSorcery = normalizedSkillName === "sorcellerie";
-  const isConjuration = normalizedSkillName === "conjuration";
-  if (!isSorcery && !isConjuration) {
-    return;
-  }
-  if (rollResult.complication === "none") {
-    return;
-  }
-  const actorSystem = actor.system;
-  if (!actorSystem || actor.type !== "character") {
-    return;
-  }
-  if (rollResult.complication === "minor") {
-    const message = game.i18n.localize("SRA2.SKILLS.DRAIN_MINOR_COMPLICATION");
-    await ChatMessage.create({
-      user: game.user?.id,
-      speaker: {
-        actor: actor.id,
-        alias: actor.name
-      },
-      content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
-        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
-        <strong style="color: #ffc107;">Drain - ${game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION")}</strong>
-        <br/>
-        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-      </div>`,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER
-    });
-  } else if (rollResult.complication === "critical") {
-    const damage = actorSystem.damage || {};
-    const lightWounds = Array.isArray(damage.light) ? damage.light : [false, false];
-    let woundApplied = false;
-    for (let i = 0; i < lightWounds.length; i++) {
-      if (!lightWounds[i]) {
-        lightWounds[i] = true;
-        woundApplied = true;
-        break;
-      }
-    }
-    if (woundApplied) {
-      await actor.update({
-        "system.damage.light": lightWounds
-      });
-      const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
-      await ChatMessage.create({
-        user: game.user?.id,
-        speaker: {
-          actor: actor.id,
-          alias: actor.name
-        },
-        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
-          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
-          <br/>
-          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-        </div>`,
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER
-      });
-    } else {
-      const severeWounds = Array.isArray(damage.severe) ? damage.severe : [false];
-      let severeApplied = false;
-      for (let i = 0; i < severeWounds.length; i++) {
-        if (!severeWounds[i]) {
-          severeWounds[i] = true;
-          severeApplied = true;
-          break;
-        }
-      }
-      if (severeApplied) {
-        await actor.update({
-          "system.damage.severe": severeWounds
-        });
-      } else {
-        await actor.update({
-          "system.damage.incapacitating": true
-        });
-      }
-      const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
-      await ChatMessage.create({
-        user: game.user?.id,
-        speaker: {
-          actor: actor.id,
-          alias: actor.name
-        },
-        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
-          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
-          <br/>
-          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-        </div>`,
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER
-      });
-    }
-  } else if (rollResult.complication === "disaster") {
-    await actor.update({
-      "system.damage.incapacitating": true
-    });
-    const message = game.i18n.localize("SRA2.SKILLS.DRAIN_DISASTER");
-    await ChatMessage.create({
-      user: game.user?.id,
-      speaker: {
-        actor: actor.id,
-        alias: actor.name
-      },
-      content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-        <i class="fas fa-skull" style="color: #dc3545;"></i> 
-        <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.DISASTER")}</strong>
-        <br/>
-        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-      </div>`,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER
-    });
-  }
-}
-const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  RISK_DICE_BY_RR,
-  executeRoll,
-  getRiskDiceByRR,
-  getSuccessThreshold,
-  handleRollRequest
-}, Symbol.toStringTag, { value: "Module" }));
 function handleSheetUpdate(actor, formData) {
   console.log("handleSheetUpdate - DEBUG:", {
     "actor.id": actor?.id,
@@ -3474,7 +2839,7 @@ function getPhantomRRs(actor) {
     }
   }
   for (const phantom of phantomRRs) {
-    phantom.rr = Math.min(3, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
+    phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
     const skillAttributeMap = {
       "athlétisme": "strength",
       "athletisme": "strength",
@@ -4307,7 +3672,7 @@ function formatNarrativeEffectsTooltip(narrativeEffects, description, rrEntries,
   }
   return game.i18n?.localize("SRA2.SKILLS.NO_NARRATIVE_EFFECTS") || "";
 }
-const SheetHelpers$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   calculateAttackPool,
   calculateFinalDamageValue,
@@ -4342,6 +3707,634 @@ const SheetHelpers$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defi
   restoreActiveSection,
   toggleItemBookmark
 }, Symbol.toStringTag, { value: "Module" }));
+function resolveUuidSync(uuid, label) {
+  if (!uuid) return null;
+  try {
+    return foundry.utils?.fromUuidSync?.(uuid) ?? null;
+  } catch (e) {
+    console.warn(`SRA2 | Failed to resolve UUID${label ? ` (${label})` : ""}:`, uuid, e);
+    return null;
+  }
+}
+function resolveTokenUuid(token, fallback) {
+  if (token) return token.uuid ?? token.document?.uuid ?? void 0;
+  return fallback;
+}
+function resolveActorUuid(token, actor) {
+  return token?.actor?.uuid ?? actor?.uuid ?? void 0;
+}
+function loadCombatantFromFlags(flags, label) {
+  let actor = null;
+  let token = null;
+  if (flags.actorUuid) {
+    actor = resolveUuidSync(flags.actorUuid, `${label} actor`);
+    if (actor) {
+      console.log(`SRA2 | ${label} loaded from actorUuid:`, flags.actorUuid);
+    }
+  }
+  if (flags.tokenUuid) {
+    token = resolveUuidSync(flags.tokenUuid, `${label} token`);
+    if (token?.actor && !actor) {
+      actor = token.actor;
+      console.log(`SRA2 | ${label} actor derived from token:`, flags.tokenUuid);
+    }
+  }
+  if (!actor && flags.actorId) {
+    actor = game.actors?.get(flags.actorId) ?? null;
+  }
+  if (actor && !token) {
+    token = canvas?.tokens?.placeables?.find(
+      (t) => t.actor?.id === actor.id || t.actor?.uuid === actor.uuid
+    ) ?? null;
+  }
+  return { actor, token };
+}
+function parseDamageValueSafe(valueStr, attributes, context) {
+  let value = parseInt(valueStr, 10);
+  if (isNaN(value)) {
+    try {
+      const parsed = parseDamageValue(valueStr, attributes, 0);
+      value = parsed.numericValue;
+    } catch (error) {
+      console.error(`SRA2 | Error parsing ${context} damage value:`, valueStr, error);
+      return 0;
+    }
+  }
+  if (isNaN(value) || value == null) {
+    console.error(`SRA2 | Invalid ${context} damage value:`, valueStr);
+    return 0;
+  }
+  return value;
+}
+const RISK_DICE_BY_RR = [2, 5, 8, 12];
+function getRiskDiceByRR(rr) {
+  return RISK_DICE_BY_RR[Math.min(RR_MAX, Math.max(0, rr))] || 2;
+}
+function getSuccessThreshold(mode) {
+  return SUCCESS_THRESHOLDS[mode] ?? SUCCESS_THRESHOLDS.normal;
+}
+function handleRollRequest(data) {
+  console.log("=== ROLL REQUEST ===", {
+    itemType: data.itemType,
+    weaponType: data.weaponType,
+    linkedAttackSkill: data.linkedAttackSkill,
+    linkedAttackSpecialization: data.linkedAttackSpecialization,
+    linkedDefenseSkill: data.linkedDefenseSkill,
+    linkedDefenseSpecialization: data.linkedDefenseSpecialization,
+    linkedAttribute: data.linkedAttribute,
+    isWeaponFocus: data.isWeaponFocus,
+    damageValue: data.damageValue,
+    damageValueBonus: data.damageValueBonus,
+    meleeRange: data.meleeRange,
+    shortRange: data.shortRange,
+    mediumRange: data.mediumRange,
+    longRange: data.longRange,
+    skillName: data.skillName,
+    specName: data.specName,
+    itemName: data.itemName,
+    itemId: data.itemId,
+    threshold: data.threshold,
+    actorId: data.actorId,
+    actorUuid: data.actorUuid,
+    actorName: data.actorName,
+    specLevel: data.specLevel,
+    skillLevel: data.skillLevel,
+    itemRating: data.itemRating,
+    itemActive: data.itemActive,
+    rrList: data.rrList
+  });
+  Promise.resolve().then(() => rollDialog).then((module) => {
+    const dialog = new module.RollDialog(data);
+    dialog.render(true);
+  });
+}
+async function executeRoll(attacker, defender, attackerToken, defenderToken, rollData) {
+  if (!attacker) {
+    console.error("No attacker provided for roll");
+    return;
+  }
+  console.log("=== EXECUTE ROLL ===");
+  console.log("Attacker:", attacker?.name || "Unknown");
+  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
+  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
+  console.log("Attacker Token UUID:", attackerToken?.uuid || attackerToken?.document?.uuid || rollData.attackerTokenUuid || "Unknown");
+  if (attackerToken?.actor) {
+    console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
+  }
+  console.log("Defender:", defender?.name || "None");
+  console.log("Defender UUID:", defender?.uuid || "Unknown");
+  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
+  console.log("Defender Token UUID:", defenderToken?.uuid || defenderToken?.document?.uuid || rollData.defenderTokenUuid || "Unknown");
+  if (defenderToken?.actor) {
+    console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
+  }
+  console.log("===================");
+  const dicePool = rollData.dicePool || 0;
+  const riskDiceCount = rollData.riskDiceCount || 0;
+  const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
+  const rollMode = rollData.rollMode || "normal";
+  const finalRR = Math.min(RR_MAX, rollData.finalRR || 0);
+  const threshold = rollData.threshold;
+  let rollResult;
+  if (threshold !== void 0) {
+    rollResult = {
+      normalDice: [],
+      riskDice: [],
+      normalSuccesses: threshold,
+      riskSuccesses: 0,
+      totalSuccesses: threshold,
+      criticalFailures: 0,
+      finalRR,
+      remainingFailures: 0,
+      complication: "none"
+    };
+  } else {
+    let normalRoll = null;
+    let riskRoll = null;
+    if (normalDiceCount > 0) {
+      normalRoll = new Roll(`${normalDiceCount}d6`);
+      await normalRoll.evaluate();
+      if (game.dice3d && normalRoll) {
+        game.dice3d.showForRoll(normalRoll, game.user, true, null, false);
+      }
+    }
+    if (riskDiceCount > 0) {
+      riskRoll = new Roll(`${riskDiceCount}d6`);
+      await riskRoll.evaluate();
+      if (game.dice3d && riskRoll) {
+        const dice3dConfig = {
+          colorset: "purple",
+          theme: "default"
+        };
+        game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+      }
+    }
+    const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+    const riskResults = riskRoll ? riskRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
+    const successThreshold = getSuccessThreshold(rollMode);
+    let normalSuccesses = 0;
+    for (const result of normalResults) {
+      if (result >= successThreshold) normalSuccesses++;
+    }
+    let riskSuccesses = 0;
+    let criticalFailures = 0;
+    for (const result of riskResults) {
+      if (result === 1) {
+        criticalFailures++;
+      } else if (result >= successThreshold) {
+        riskSuccesses++;
+      }
+    }
+    const totalRiskSuccesses = riskSuccesses * RISK_DICE_SUCCESS_MULTIPLIER;
+    const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+    const remainingFailures = Math.max(0, criticalFailures - finalRR);
+    let complication = "none";
+    if (remainingFailures === 1) {
+      complication = "minor";
+    } else if (remainingFailures === 2) {
+      complication = "critical";
+    } else if (remainingFailures >= 3) {
+      complication = "disaster";
+    }
+    rollResult = {
+      normalDice: normalResults,
+      riskDice: riskResults,
+      normalSuccesses,
+      riskSuccesses,
+      totalSuccesses,
+      criticalFailures,
+      finalRR,
+      remainingFailures,
+      complication
+    };
+  }
+  await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
+}
+async function createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult) {
+  const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  console.log("=== CREATE ROLL CHAT MESSAGE ===");
+  console.log("Attacker:", attacker?.name || "Unknown");
+  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
+  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
+  const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
+  console.log("Attacker Token UUID:", attackerTokenUuid || "Unknown");
+  const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
+  console.log("Final Attacker UUID (token actor or actor):", finalAttackerUuid || "Unknown");
+  console.log("Defender:", defender?.name || "None");
+  console.log("Defender UUID:", defender?.uuid || "Unknown");
+  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
+  const defenderTokenUuid = resolveTokenUuid(defenderToken, rollData.defenderTokenUuid);
+  console.log("Defender Token UUID:", defenderTokenUuid || "Unknown");
+  const finalDefenderUuid = resolveActorUuid(defenderToken, defender);
+  console.log("Final Defender UUID (token actor or actor):", finalDefenderUuid || "Unknown");
+  console.log("--- UUIDs to be stored in flags ---");
+  console.log("attackerUuid (final):", finalAttackerUuid || "Unknown");
+  console.log("attackerTokenUuid (final):", attackerTokenUuid || "Unknown");
+  console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
+  console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
+  console.log("================================");
+  let defenderData = null;
+  if (defender) {
+    let tokenImg = defender.img;
+    if (defenderToken) {
+      tokenImg = defenderToken.document?.texture?.src || defenderToken.document?.img || defenderToken.data?.img || defenderToken.texture?.src || defender.img;
+    }
+    defenderData = {
+      ...defender,
+      img: tokenImg
+    };
+  }
+  let defenseResult = null;
+  let calculatedDamage = null;
+  let attackFailed = false;
+  if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
+    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+    const defenseSuccesses = rollResult.totalSuccesses;
+    const isIceAttack = rollData.attackRollData.itemType === "ice-attack" || rollData.attackRollData.iceType;
+    const iceType = rollData.attackRollData.iceType;
+    const originalAttackerName = defenderToken?.name || defender?.name || "Inconnu";
+    const defenderName = attackerToken?.name || attacker?.name || "Inconnu";
+    if (attackSuccesses >= defenseSuccesses) {
+      if (isIceAttack) {
+        let damageValue = 0;
+        const iceDamageValue = rollData.attackRollData.iceDamageValue || 0;
+        if (iceType === "blaster" || iceType === "black" || iceType === "killer") {
+          damageValue = iceDamageValue + attackSuccesses - defenseSuccesses;
+        }
+        calculatedDamage = damageValue;
+        attackFailed = false;
+      } else {
+        const damageValueStr = rollData.attackRollData.damageValue || "0";
+        const attackerAttributes = defender?.system?.attributes || {};
+        const damageValue = parseDamageValueSafe(damageValueStr, attackerAttributes, "defense");
+        calculatedDamage = damageValue + attackSuccesses - defenseSuccesses;
+        attackFailed = false;
+      }
+    } else {
+      attackFailed = true;
+      calculatedDamage = 0;
+    }
+    const originalAttackerUuid = finalDefenderUuid;
+    const defenderUuid = finalAttackerUuid;
+    console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
+    console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
+    console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
+    const attackDamageType = rollData.attackRollData?.damageType || "physical";
+    defenseResult = {
+      attackSuccesses,
+      defenseSuccesses,
+      calculatedDamage,
+      attackFailed,
+      originalAttackerName,
+      defenderName,
+      // UUIDs for applying damage
+      originalAttackerUuid,
+      // Who inflicts damage if attack succeeds
+      defenderUuid,
+      // Who receives damage if attack succeeds
+      // ICE-specific fields
+      isIceAttack,
+      iceType,
+      // Damage type from weapon/attack
+      damageType: attackDamageType
+    };
+  } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
+    const originalAttackerName = defenderToken?.document?.name || defenderToken?.name || defenderToken?.actor?.name || defender?.name || "Inconnu";
+    const originalDefenderName = attackerToken?.document?.name || attackerToken?.name || attackerToken?.actor?.name || attacker?.name || "Inconnu";
+    const attackSuccesses = rollData.attackRollResult.totalSuccesses;
+    const counterAttackSuccesses = rollResult.totalSuccesses;
+    let attackDamageValue = 0;
+    const attackDamageValueStr = rollData.attackRollData.damageValue || "0";
+    const originalAttackerAttributes = defender?.system?.attributes || {};
+    attackDamageValue = parseDamageValueSafe(attackDamageValueStr, originalAttackerAttributes, "counter-attack original");
+    let counterAttackDamageValue = 0;
+    const damageValueStr = rollData.damageValue || "0";
+    const counterAttackerAttributes = attacker?.system?.attributes || {};
+    counterAttackDamageValue = parseDamageValueSafe(damageValueStr, counterAttackerAttributes, "counter-attack");
+    if (!counterAttackDamageValue && attacker) {
+      const selectedWeaponId = rollData.selectedWeaponId;
+      if (selectedWeaponId) {
+        const weapon = attacker.items.find((item) => item.id === selectedWeaponId);
+        if (weapon) {
+          const weaponSystem = weapon.system;
+          const baseDamageValue = weaponSystem.damageValue || "0";
+          const damageValueBonus = weaponSystem.damageValueBonus || 0;
+          const counterAttackerAttributes2 = attacker?.system?.attributes || {};
+          try {
+            counterAttackDamageValue = calculateFinalNumericDamageValue(
+              baseDamageValue,
+              counterAttackerAttributes2,
+              damageValueBonus
+            );
+          } catch (error) {
+            console.error("SRA2 | Error calculating weapon damage value:", baseDamageValue, error);
+            counterAttackDamageValue = 0;
+          }
+        }
+      }
+    }
+    let attackerDamage = 0;
+    let defenderDamage = 0;
+    let isTie = false;
+    let winner = "tie";
+    if (attackSuccesses > counterAttackSuccesses) {
+      winner = "attacker";
+      attackerDamage = attackDamageValue + attackSuccesses - counterAttackSuccesses;
+    } else if (counterAttackSuccesses > attackSuccesses) {
+      winner = "defender";
+      defenderDamage = counterAttackDamageValue + counterAttackSuccesses - attackSuccesses;
+    } else {
+      isTie = true;
+      winner = "tie";
+    }
+    console.log("=== COUNTER-ATTACK RESULTS ===");
+    console.log("Attack Successes:", attackSuccesses);
+    console.log("Counter-Attack Successes:", counterAttackSuccesses);
+    console.log("Attack Damage Value:", attackDamageValue);
+    console.log("Counter-Attack Damage Value:", counterAttackDamageValue);
+    console.log("Winner:", winner);
+    console.log("Attacker Damage:", attackerDamage);
+    console.log("Defender Damage:", defenderDamage);
+    console.log("Original Attacker Name:", originalAttackerName);
+    console.log("Original Defender Name:", originalDefenderName);
+    console.log("--- Context ---");
+    console.log("Attacker param:", attacker?.name);
+    console.log("Defender param:", defender?.name);
+    console.log("AttackerToken object:", attackerToken ? "Found" : "Not found");
+    console.log("AttackerToken.name:", attackerToken?.name);
+    console.log("AttackerToken.document?.name:", attackerToken?.document?.name);
+    console.log("AttackerToken.actor?.name:", attackerToken?.actor?.name);
+    console.log("DefenderToken object:", defenderToken ? "Found" : "Not found");
+    console.log("DefenderToken.name:", defenderToken?.name);
+    console.log("DefenderToken.document?.name:", defenderToken?.document?.name);
+    console.log("DefenderToken.actor?.name:", defenderToken?.actor?.name);
+    console.log("--- UUIDs to be stored in flags ---");
+    console.log("attackerUuid (final):", finalAttackerUuid || "Unknown");
+    console.log("attackerTokenUuid (final):", attackerTokenUuid || "Unknown");
+    console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
+    console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
+    console.log("==============================");
+    const originalAttackerUuid = finalDefenderUuid;
+    const originalDefenderUuid = finalAttackerUuid;
+    let damageInflicterUuid = void 0;
+    let damageReceiverUuid = void 0;
+    let damageInflicterName = "";
+    let damageReceiverName = "";
+    if (winner === "attacker") {
+      damageInflicterUuid = originalAttackerUuid;
+      damageReceiverUuid = originalDefenderUuid;
+      damageInflicterName = originalAttackerName;
+      damageReceiverName = originalDefenderName;
+      console.log("Counter-attack: Original attacker wins - inflicts damage to counter-attacker");
+      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
+      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
+    } else if (winner === "defender") {
+      damageInflicterUuid = originalDefenderUuid;
+      damageReceiverUuid = originalAttackerUuid;
+      damageInflicterName = originalDefenderName;
+      damageReceiverName = originalAttackerName;
+      console.log("Counter-attack: Counter-attacker wins - inflicts damage to original attacker");
+      console.log("  Inflicter:", damageInflicterName, "(", damageInflicterUuid, ")");
+      console.log("  Receiver:", damageReceiverName, "(", damageReceiverUuid, ")");
+    }
+    const attackerDamageType = rollData.attackRollData?.damageType || "physical";
+    const defenderDamageType = rollData.damageType || "physical";
+    defenseResult = {
+      attackSuccesses,
+      counterAttackSuccesses,
+      winner,
+      attackerDamage,
+      defenderDamage,
+      isTie,
+      originalAttackerName,
+      originalDefenderName,
+      // UUIDs for applying damage
+      originalAttackerUuid,
+      originalDefenderUuid,
+      damageInflicterUuid,
+      damageReceiverUuid,
+      damageInflicterName,
+      damageReceiverName,
+      // Damage types
+      attackerDamageType,
+      defenderDamageType
+    };
+  }
+  const attackerWithUuid = attacker ? {
+    ...attacker,
+    uuid: finalAttackerUuid || attacker.uuid
+    // Use calculated UUID (token actor UUID for NPCs)
+  } : null;
+  const defenderWithUuid = defenderData ? {
+    ...defenderData,
+    uuid: finalDefenderUuid || defenderData.uuid
+    // Use calculated UUID (token actor UUID for NPCs)
+  } : null;
+  const templateData = {
+    attacker: attackerWithUuid,
+    defender: defenderWithUuid,
+    rollData,
+    rollResult,
+    isAttack,
+    isDefend: rollData.isDefend || false,
+    isCounterAttack: rollData.isCounterAttack || false,
+    skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || "Unknown",
+    itemName: rollData.itemName,
+    damageValue: rollData.damageValue,
+    defenseResult,
+    // Also pass UUIDs directly for template convenience
+    attackerUuid: finalAttackerUuid,
+    defenderUuid: finalDefenderUuid,
+    attackerTokenUuid,
+    defenderTokenUuid,
+    // Spell-specific flags
+    isSpellDirect: rollData.isSpellDirect || false
+  };
+  const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
+  const messageData = {
+    user: game.user?.id,
+    speaker: {
+      actor: attacker?.id,
+      alias: attacker?.name
+    },
+    content: html,
+    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    flags: {
+      sra2: {
+        rollType: isAttack ? "attack" : "skill",
+        attackerId: attacker?.id,
+        attackerUuid: finalAttackerUuid,
+        // Use token's actor UUID if token exists, otherwise actor UUID
+        attackerTokenUuid,
+        // Store token UUID
+        defenderId: defender?.id,
+        defenderUuid: finalDefenderUuid,
+        // Use token's actor UUID if token exists, otherwise actor UUID
+        defenderTokenUuid,
+        // Store token UUID
+        rollResult,
+        rollData
+      }
+    }
+  };
+  await ChatMessage.create(messageData);
+  await handleDrain(attacker, rollData, rollResult);
+}
+async function handleDrain(actor, rollData, rollResult) {
+  if (!actor || !rollData || !rollResult) {
+    return;
+  }
+  const isSpell = rollData.itemType === "spell" || rollData.itemType === "weapon-spell";
+  let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || "";
+  let normalizedSkillName = normalizeSearchText(skillName);
+  if (isSpell || normalizeSearchText(rollData.linkedAttackSkill || "") === "sorcellerie") {
+    normalizedSkillName = "sorcellerie";
+  } else if (rollData.itemType === "specialization") {
+    if (!normalizedSkillName || normalizedSkillName !== "sorcellerie" && normalizedSkillName !== "conjuration") {
+      if (rollData.itemId && actor) {
+        const specItem = actor.items.find((item) => item.id === rollData.itemId);
+        if (specItem && specItem.type === "specialization") {
+          const specSystem = specItem.system;
+          const linkedSkill = specSystem.linkedSkill || "";
+          if (linkedSkill) {
+            skillName = linkedSkill;
+            normalizedSkillName = normalizeSearchText(linkedSkill);
+          }
+        }
+      }
+    }
+  }
+  const isSorcery = normalizedSkillName === "sorcellerie";
+  const isConjuration = normalizedSkillName === "conjuration";
+  if (!isSorcery && !isConjuration) {
+    return;
+  }
+  if (rollResult.complication === "none") {
+    return;
+  }
+  const actorSystem = actor.system;
+  if (!actorSystem || actor.type !== "character") {
+    return;
+  }
+  if (rollResult.complication === "minor") {
+    const message = game.i18n.localize("SRA2.SKILLS.DRAIN_MINOR_COMPLICATION");
+    await ChatMessage.create({
+      user: game.user?.id,
+      speaker: {
+        actor: actor.id,
+        alias: actor.name
+      },
+      content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
+        <strong style="color: #ffc107;">Drain - ${game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION")}</strong>
+        <br/>
+        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+      </div>`,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  } else if (rollResult.complication === "critical") {
+    const damage = actorSystem.damage || {};
+    const lightWounds = Array.isArray(damage.light) ? damage.light : [false, false];
+    let woundApplied = false;
+    for (let i = 0; i < lightWounds.length; i++) {
+      if (!lightWounds[i]) {
+        lightWounds[i] = true;
+        woundApplied = true;
+        break;
+      }
+    }
+    if (woundApplied) {
+      await actor.update({
+        "system.damage.light": lightWounds
+      });
+      const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
+      await ChatMessage.create({
+        user: game.user?.id,
+        speaker: {
+          actor: actor.id,
+          alias: actor.name
+        },
+        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
+          <br/>
+          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+        </div>`,
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER
+      });
+    } else {
+      const severeWounds = Array.isArray(damage.severe) ? damage.severe : [false];
+      let severeApplied = false;
+      for (let i = 0; i < severeWounds.length; i++) {
+        if (!severeWounds[i]) {
+          severeWounds[i] = true;
+          severeApplied = true;
+          break;
+        }
+      }
+      if (severeApplied) {
+        await actor.update({
+          "system.damage.severe": severeWounds
+        });
+      } else {
+        await actor.update({
+          "system.damage.incapacitating": true
+        });
+      }
+      const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
+      await ChatMessage.create({
+        user: game.user?.id,
+        speaker: {
+          actor: actor.id,
+          alias: actor.name
+        },
+        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
+          <br/>
+          <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+        </div>`,
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER
+      });
+    }
+  } else if (rollResult.complication === "disaster") {
+    await actor.update({
+      "system.damage.incapacitating": true
+    });
+    const message = game.i18n.localize("SRA2.SKILLS.DRAIN_DISASTER");
+    await ChatMessage.create({
+      user: game.user?.id,
+      speaker: {
+        actor: actor.id,
+        alias: actor.name
+      },
+      content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+        <i class="fas fa-skull" style="color: #dc3545;"></i> 
+        <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.DISASTER")}</strong>
+        <br/>
+        <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
+      </div>`,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  }
+}
+const diceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  RISK_DICE_BY_RR,
+  executeRoll,
+  getRiskDiceByRR,
+  getSuccessThreshold,
+  handleRollRequest
+}, Symbol.toStringTag, { value: "Module" }));
+function fillFirstEmptyBox(boxes) {
+  for (let i = 0; i < boxes.length; i++) {
+    if (!boxes[i]) {
+      boxes[i] = true;
+      return true;
+    }
+  }
+  return false;
+}
 function getDamageThresholds(defenderActor, damageType = "physical") {
   const defenderSystem = defenderActor.system;
   const isVehicle = defenderActor.type === "vehicle";
@@ -4625,40 +4618,16 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
       damage.incapacitating = true;
     } else if (damageValue > (damageThresholds?.severe || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.severe)) {
         ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
         damage.incapacitating = true;
         overflow = true;
       }
     } else if (damageValue > damageThresholds.light) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.light)) {
         ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        if (!severeApplied) {
+        if (!fillFirstEmptyBox(damage.severe)) {
           ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
           damage.incapacitating = true;
         }
@@ -4677,40 +4646,16 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
       damage.incapacitating = true;
     } else if (damageValue > (damageThresholds.severe || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.severe)) {
         ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
         damage.incapacitating = true;
         overflow = true;
       }
     } else if (damageValue > damageThresholds.light) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.light)) {
         ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        if (!severeApplied) {
+        if (!fillFirstEmptyBox(damage.severe)) {
           ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
           damage.incapacitating = true;
         }
@@ -4729,40 +4674,16 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
       damage.incapacitating = true;
     } else if (damageThresholds.severe && damageValue > (damageThresholds.severe || 0)) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
-      let applied = false;
-      for (let i = 0; i < damage.severe.length; i++) {
-        if (!damage.severe[i]) {
-          damage.severe[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.severe)) {
         ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
         damage.incapacitating = true;
         overflow = true;
       }
     } else if (damageValue > damageThresholds.light) {
       woundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
-      let applied = false;
-      for (let i = 0; i < damage.light.length; i++) {
-        if (!damage.light[i]) {
-          damage.light[i] = true;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
+      if (!fillFirstEmptyBox(damage.light)) {
         ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_LIGHT"));
-        let severeApplied = false;
-        for (let i = 0; i < damage.severe.length; i++) {
-          if (!damage.severe[i]) {
-            damage.severe[i] = true;
-            severeApplied = true;
-            break;
-          }
-        }
-        if (!severeApplied) {
+        if (!fillFirstEmptyBox(damage.severe)) {
           ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.DAMAGE_OVERFLOW_SEVERE"));
           damage.incapacitating = true;
         }
@@ -5170,11 +5091,11 @@ class CharacterSheet extends ActorSheet {
     const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
     const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations } = organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
     const attributesRR = {
-      strength: Math.min(3, this.calculateRR("attribute", "strength")),
-      agility: Math.min(3, this.calculateRR("attribute", "agility")),
-      willpower: Math.min(3, this.calculateRR("attribute", "willpower")),
-      logic: Math.min(3, this.calculateRR("attribute", "logic")),
-      charisma: Math.min(3, this.calculateRR("attribute", "charisma"))
+      strength: Math.min(RR_MAX, this.calculateRR("attribute", "strength")),
+      agility: Math.min(RR_MAX, this.calculateRR("attribute", "agility")),
+      willpower: Math.min(RR_MAX, this.calculateRR("attribute", "willpower")),
+      logic: Math.min(RR_MAX, this.calculateRR("attribute", "logic")),
+      charisma: Math.min(RR_MAX, this.calculateRR("attribute", "charisma"))
     };
     context.skills = skills.map((skill) => {
       const linkedAttribute = skill.system?.linkedAttribute || "strength";
@@ -5725,7 +5646,7 @@ class CharacterSheet extends ActorSheet {
     }
     this.searchTimeout = setTimeout(async () => {
       await this._performSkillSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual skill search in compendiums and world items
@@ -5870,7 +5791,7 @@ class CharacterSheet extends ActorSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
   /**
@@ -5906,7 +5827,7 @@ class CharacterSheet extends ActorSheet {
       if (newSkill && newSkill.sheet) {
         setTimeout(() => {
           newSkill.sheet.render(true);
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
       ui.notifications?.info(game.i18n.format("SRA2.SKILLS.SKILL_CREATED", { name: formattedName }));
     }
@@ -5932,7 +5853,7 @@ class CharacterSheet extends ActorSheet {
     }
     this.featSearchTimeout = setTimeout(async () => {
       await this._performFeatSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual feat search in compendiums and world items
@@ -5994,7 +5915,6 @@ class CharacterSheet extends ActorSheet {
             <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
             <option value="cyberdeck">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERDECK")}</option>
             <option value="vehicle">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.VEHICLE")}</option>
-            <option value="weapons-spells">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS")}</option>
             <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
             <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
             <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.KNOWLEDGE")}</option>
@@ -6037,7 +5957,6 @@ class CharacterSheet extends ActorSheet {
               <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
               <option value="cyberdeck">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERDECK")}</option>
               <option value="vehicle">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.VEHICLE")}</option>
-              <option value="weapons-spells">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPONS_SPELLS")}</option>
               <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
               <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
             </select>
@@ -6127,7 +6046,7 @@ class CharacterSheet extends ActorSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
   /**
@@ -6912,7 +6831,7 @@ class CharacterSheet extends ActorSheet {
       if (newFeat && newFeat.sheet) {
         setTimeout(() => {
           newFeat.sheet.render(true);
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
       ui.notifications?.info(game.i18n.format("SRA2.FEATS.FEAT_CREATED", { name: formattedName }));
     }
@@ -6930,7 +6849,7 @@ class CharacterSheet extends ActorSheet {
     const newSheet = new targetSheetClass(actor);
     setTimeout(() => {
       newSheet.render(true);
-    }, 100);
+    }, DELAYS.SHEET_RENDER);
   }
 }
 class CharacterSheetV2 extends CharacterSheet {
@@ -6983,7 +6902,7 @@ class CharacterSheetV2 extends CharacterSheet {
       if (target.dataset.action === "toggle-bookmark") {
         setTimeout(() => {
           menu.removeClass("active");
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       } else {
         menu.removeClass("active");
       }
@@ -7157,7 +7076,7 @@ class CharacterSheetV2 extends CharacterSheet {
     }
     this._itemSearchTimeout = setTimeout(async () => {
       await this._performItemSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual item search
@@ -7336,7 +7255,7 @@ class CharacterSheetV2 extends CharacterSheet {
       if (newItem && newItem.sheet) {
         setTimeout(() => {
           newItem.sheet.render(true);
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
       ui.notifications?.info(game.i18n.format("SRA2.SEARCH.ITEM_CREATED", { name: formattedName }));
       this.render(false);
@@ -7372,7 +7291,7 @@ class CharacterSheetV2 extends CharacterSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
   }
 }
 const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -7694,7 +7613,7 @@ class VehicleSheet extends ActorSheet {
       narrativeEffectSaveTimeout = setTimeout(async () => {
         await saveNarrativeEffects();
         narrativeEffectSaveTimeout = null;
-      }, 500);
+      }, NARRATIVE_SAVE_DEBOUNCE);
     });
     html.find('textarea[name^="system.narrativeEffects."]').on("change blur", async (event) => {
       if (narrativeEffectSaveTimeout) {
@@ -8520,7 +8439,7 @@ class FeatSheet extends ItemSheet {
     }
     this.rrTargetSearchTimeout = setTimeout(async () => {
       await this._performRRTargetSearch(searchTerm, rrIndex, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual RR target search in actor items and compendiums
@@ -8668,7 +8587,7 @@ class FeatSheet extends ItemSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
   }
   /**
    * Handle power skill search input
@@ -8687,7 +8606,7 @@ class FeatSheet extends ItemSheet {
     }
     this.powerSearchTimeout = setTimeout(async () => {
       await this._performPowerSkillSearch(searchTerm, fieldName, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual power skill search
@@ -8838,7 +8757,7 @@ class FeatSheet extends ItemSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 300);
+    }, DELAYS.SEARCH_HIDE_LONG);
   }
   /**
    * Handle power spec search input
@@ -8857,7 +8776,7 @@ class FeatSheet extends ItemSheet {
     }
     this.powerSearchTimeout = setTimeout(async () => {
       await this._performPowerSpecSearch(searchTerm, fieldName, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual power spec search
@@ -9008,7 +8927,7 @@ class FeatSheet extends ItemSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 300);
+    }, DELAYS.SEARCH_HIDE_LONG);
   }
   /**
    * Handle VD mode change (for custom weapons)
@@ -9263,7 +9182,7 @@ class SpecializationSheet extends ItemSheet {
     }
     this.skillSearchTimeout = setTimeout(async () => {
       await this._performSkillSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
   /**
    * Perform the actual skill search in compendiums and world items
@@ -9423,7 +9342,7 @@ class SpecializationSheet extends ItemSheet {
         }
         resultsDiv.style.display = "none";
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
   /**
@@ -9461,7 +9380,7 @@ class SpecializationSheet extends ItemSheet {
         if (createdItems.sheet) {
           createdItems.sheet.render(true);
         }
-      }, 100);
+      }, DELAYS.SHEET_RENDER);
       ui.notifications?.info(game.i18n.format("SRA2.SPECIALIZATIONS.SKILL_CREATED_AND_LINKED", { name: formattedName }));
     }
   }
@@ -9879,7 +9798,7 @@ class RollDialog extends Application {
     context.hasThreshold = threshold !== void 0;
     context.skillDisplayName = this.rollData.specName || this.rollData.skillName || this.rollData.linkedAttackSkill || "Aucune";
     if (this.rollData.isDefend && this.actor) {
-      const { getRRSources: getRRSources2 } = SheetHelpers$1;
+      const { getRRSources: getRRSources2 } = SheetHelpers;
       let defenseRRList = [];
       if (this.rollData.specName) {
         const rrSources2 = getRRSources2(this.actor, "specialization", this.rollData.specName);
@@ -10180,7 +10099,7 @@ class RollDialog extends Application {
     if (this.actor) {
       const actorSystem = this.actor.system;
       const attributes = actorSystem?.attributes || {};
-      const attributeNames = ["strength", "agility", "willpower", "logic", "charisma"];
+      const attributeNames = ACTOR_ATTRIBUTES;
       const attributeLabels = {
         strength: game.i18n?.localize("SRA2.ATTRIBUTES.STRENGTH") || "Strength",
         agility: game.i18n?.localize("SRA2.ATTRIBUTES.AGILITY") || "Agility",
@@ -10313,7 +10232,7 @@ class RollDialog extends Application {
         const attributeValue = linkedAttribute ? this.actor.system?.attributes?.[linkedAttribute] || 0 : 0;
         skillLevel = attributeValue + skillRating;
       }
-      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers$1);
+      const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
       const weaponRRList = weaponSystem?.rrList || [];
       const itemRRList = weaponRRList.map((rrEntry) => ({
         ...rrEntry,
@@ -11128,7 +11047,7 @@ class AnarchyCounter extends Application {
     });
     const header = html.closest(".app").find(".window-header");
     header.on("mouseup", () => {
-      setTimeout(() => this.savePosition(), 100);
+      setTimeout(() => this.savePosition(), DELAYS.SHEET_RENDER);
     });
   }
   /**
@@ -11998,17 +11917,26 @@ class SRA2System {
   onInit() {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onInit");
     if (game.system) {
-      game.system.api = {
-        applications,
-        models,
-        documents
-      };
+      game.system.api = { applications, models, documents };
     }
     this.registerThemeSetting();
     this.registerGroupAnarchySetting();
     setSidebarIcons();
     setControlIcons();
     setCompendiumBanners();
+    this.registerMigrations();
+    this.registerDataModels();
+    this.registerActorSheets();
+    this.setupVehicleHooks();
+    this.setupSkillCreationHooks();
+    this.setupActorLifecycleHooks();
+    this.setupTokenHooks();
+    this.registerItemSheets();
+    this.registerHandlebarsHelpers();
+    this.setupChatHandlers();
+    Hooks.once("ready", () => this.onReady());
+  }
+  registerMigrations() {
     new Migrations();
     Hooks.on(HOOKS.MIGRATIONS, (declareMigration) => {
       declareMigration(new Migration_13_0_3());
@@ -12022,6 +11950,8 @@ class SRA2System {
       declareMigration(new Migration_13_0_11());
       declareMigration(new Migration_13_0_12());
     });
+  }
+  registerDataModels() {
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Actor.dataModels = {
       character: CharacterDataModel,
@@ -12034,6 +11964,8 @@ class SRA2System {
       specialization: SpecializationDataModel,
       metatype: MetatypeDataModel
     };
+  }
+  registerActorSheets() {
     DocumentSheetConfig.registerSheet(Actor, "sra2", CharacterSheetV2, {
       types: ["character"],
       makeDefault: true,
@@ -12049,6 +11981,8 @@ class SRA2System {
       makeDefault: true,
       label: "SRA2.SHEET.ICE"
     });
+  }
+  setupVehicleHooks() {
     Hooks.on("ready", () => {
       if (!game.actors) return;
       const characterActors = game.actors.filter((actor) => actor.type === "character");
@@ -12118,7 +12052,7 @@ class SRA2System {
               char.sheet.render(false);
             }
           });
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
     });
     Hooks.on("createItem", (item, options, userId) => {
@@ -12143,7 +12077,7 @@ class SRA2System {
           if (char.sheet && char.sheet.rendered) {
             setTimeout(() => {
               char.sheet.render(false);
-            }, 100);
+            }, DELAYS.SHEET_RENDER);
           }
         });
       }
@@ -12170,11 +12104,13 @@ class SRA2System {
           if (char.sheet && char.sheet.rendered) {
             setTimeout(() => {
               char.sheet.render(false);
-            }, 100);
+            }, DELAYS.SHEET_RENDER);
           }
         });
       }
     });
+  }
+  setupSkillCreationHooks() {
     Hooks.on("createItem", async (item, options, userId) => {
       if (item.type !== "specialization") return;
       const actor = item.parent;
@@ -12222,6 +12158,8 @@ class SRA2System {
         SRA2System.skillsBeingCreated.delete(skillKey);
       }
     });
+  }
+  setupActorLifecycleHooks() {
     Hooks.on("deleteActor", (actor, options, userId) => {
       if (actor.type !== "vehicle") return;
       if (game.actors) {
@@ -12288,6 +12226,8 @@ class SRA2System {
         console.log(SYSTEM$1.LOG.HEAD + `Updated ${actor.name} with ${newVehicleUuids.length} duplicated vehicles`);
       }
     });
+  }
+  setupTokenHooks() {
     Hooks.on("preCreateToken", (tokenDoc, _data, options, userId) => {
       if (game.user?.id !== userId) return true;
       if (options.sra2SkipFeatChoice) return true;
@@ -12351,6 +12291,8 @@ class SRA2System {
       })();
       return false;
     });
+  }
+  registerItemSheets() {
     DocumentSheetConfig.registerSheet(Item, "sra2", FeatSheet, {
       types: ["feat"],
       makeDefault: true,
@@ -12371,6 +12313,8 @@ class SRA2System {
       makeDefault: true,
       label: "SRA2.SHEET.METATYPE"
     });
+  }
+  registerHandlebarsHelpers() {
     Handlebars.registerHelper("add", function(a, b) {
       return a + b;
     });
@@ -12408,6 +12352,8 @@ class SRA2System {
     Handlebars.registerHelper("json", function(context) {
       return JSON.stringify(context);
     });
+  }
+  setupChatHandlers() {
     Hooks.on("renderChatMessage", (message, html) => {
       html.find(".apply-damage-button").off("click");
       html.find(".apply-damage-button").on("click", async (event) => {
@@ -12438,7 +12384,7 @@ class SRA2System {
           console.error("Error applying damage:", error);
           ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.DAMAGE_APPLY_ERROR"));
         } finally {
-          setTimeout(() => button.prop("disabled", false), 1e3);
+          setTimeout(() => button.prop("disabled", false), DELAYS.BUTTON_REENABLE);
         }
       });
       html.find(".defend-button").off("click");
@@ -12467,37 +12413,12 @@ class SRA2System {
         console.log("defenderTokenUuid flag:", messageFlags.defenderTokenUuid || "Not set");
         console.log("defenderId flag:", messageFlags.defenderId || "Not set");
         console.log("======================================");
-        if (messageFlags.attackerUuid) {
-          try {
-            attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
-            if (attacker) {
-              console.log("Defense button: Attacker loaded directly from attackerUuid flag:", messageFlags.attackerUuid);
-            }
-          } catch (e) {
-            console.warn("Defense button: Failed to load attacker from attackerUuid flag:", e);
-          }
-        }
-        if (messageFlags.attackerTokenUuid) {
-          try {
-            attackerToken = foundry.utils?.fromUuidSync?.(messageFlags.attackerTokenUuid) || null;
-            if (attackerToken?.actor && !attacker) {
-              attacker = attackerToken.actor;
-              console.log("Defense button: Attacker loaded from attackerTokenUuid flag, using token actor");
-            }
-          } catch (e) {
-            console.warn("Defense button: Failed to load attacker token from attackerTokenUuid flag:", e);
-          }
-        }
-        if (!attacker) {
-          if (messageFlags.attackerId) {
-            attacker = game.actors?.get(messageFlags.attackerId) || null;
-          }
-          if (attacker && !attackerToken) {
-            attackerToken = canvas?.tokens?.placeables?.find((token) => {
-              return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
-            }) || null;
-          }
-        }
+        const attackerResult = loadCombatantFromFlags(
+          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+          "Defense Attacker"
+        );
+        attacker = attackerResult.actor;
+        attackerToken = attackerResult.token;
         const isVehicleWeapon = rollData.isVehicleWeapon;
         const vehicleUuid = rollData.vehicleUuid;
         const selectedTargets = Array.from(game.user?.targets || []);
@@ -12757,7 +12678,7 @@ class SRA2System {
           console.error("Could not determine defense skill for non-vehicle defender");
           return;
         }
-        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers$1);
+        const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
         let defenseRRList = [];
         if (!isVehicleDefender) {
           if (finalDefenseSpec) {
@@ -12833,80 +12754,18 @@ class SRA2System {
           console.error("Missing roll data in message flags");
           return;
         }
-        let attackerToken = null;
-        let defenderToken = null;
-        let attacker = null;
-        let defender = null;
-        console.log("=== COUNTER-ATTACK BUTTON - MESSAGE FLAGS ===");
-        console.log("attackerUuid flag:", messageFlags.attackerUuid || "Not set");
-        console.log("attackerTokenUuid flag:", messageFlags.attackerTokenUuid || "Not set");
-        console.log("attackerId flag:", messageFlags.attackerId || "Not set");
-        console.log("defenderUuid flag:", messageFlags.defenderUuid || "Not set");
-        console.log("defenderTokenUuid flag:", messageFlags.defenderTokenUuid || "Not set");
-        console.log("defenderId flag:", messageFlags.defenderId || "Not set");
-        console.log("==============================================");
-        if (messageFlags.attackerUuid) {
-          try {
-            attacker = foundry.utils?.fromUuidSync?.(messageFlags.attackerUuid) || null;
-            if (attacker) {
-              console.log("Counter-attack button: Attacker loaded directly from attackerUuid flag");
-            }
-          } catch (e) {
-            console.warn("Counter-attack button: Failed to load attacker from attackerUuid flag:", e);
-          }
-        }
-        if (messageFlags.attackerTokenUuid) {
-          try {
-            attackerToken = foundry.utils?.fromUuidSync?.(messageFlags.attackerTokenUuid) || null;
-            if (attackerToken?.actor && !attacker) {
-              attacker = attackerToken.actor;
-              console.log("Counter-attack button: Attacker loaded from attackerTokenUuid flag, using token actor");
-            }
-          } catch (e) {
-            console.warn("Counter-attack button: Failed to load attacker token from attackerTokenUuid flag:", e);
-          }
-        }
-        if (!attacker) {
-          if (messageFlags.attackerId) {
-            attacker = game.actors?.get(messageFlags.attackerId) || null;
-          }
-          if (attacker && !attackerToken) {
-            attackerToken = canvas?.tokens?.placeables?.find((token) => {
-              return token.actor?.id === attacker.id || token.actor?.uuid === attacker.uuid;
-            }) || null;
-          }
-        }
-        if (messageFlags.defenderUuid) {
-          try {
-            defender = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-            if (defender) {
-              console.log("Counter-attack button: Defender loaded directly from defenderUuid flag");
-            }
-          } catch (e) {
-            console.warn("Counter-attack button: Failed to load defender from defenderUuid flag:", e);
-          }
-        }
-        if (messageFlags.defenderTokenUuid) {
-          try {
-            defenderToken = foundry.utils?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
-            if (defenderToken?.actor && !defender) {
-              defender = defenderToken.actor;
-              console.log("Counter-attack button: Defender loaded from defenderTokenUuid flag, using token actor");
-            }
-          } catch (e) {
-            console.warn("Counter-attack button: Failed to load defender token from defenderTokenUuid flag:", e);
-          }
-        }
-        if (!defender) {
-          if (messageFlags.defenderId) {
-            defender = game.actors?.get(messageFlags.defenderId) || null;
-          }
-          if (defender && !defenderToken) {
-            defenderToken = canvas?.tokens?.placeables?.find((token) => {
-              return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
-            }) || null;
-          }
-        }
+        const attackerResult = loadCombatantFromFlags(
+          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+          "Counter-attack Attacker"
+        );
+        const defenderResult = loadCombatantFromFlags(
+          { actorUuid: messageFlags.defenderUuid, tokenUuid: messageFlags.defenderTokenUuid, actorId: messageFlags.defenderId },
+          "Counter-attack Defender"
+        );
+        let attacker = attackerResult.actor;
+        let attackerToken = attackerResult.token;
+        let defender = defenderResult.actor;
+        let defenderToken = defenderResult.token;
         console.log("--- UUIDs being used from flags (counter-attack) ---");
         console.log("attackerUuid (from flag):", messageFlags.attackerUuid || "Not in flag, using:", attacker?.uuid || "Unknown");
         console.log("defenderUuid (from flag):", messageFlags.defenderUuid || "Not in flag, using:", defender?.uuid || "Unknown");
@@ -13278,14 +13137,14 @@ class SRA2System {
     Hooks.on("renderChatLog", (app, html, data) => {
       setTimeout(() => {
         if (!addRollDiceButton()) {
-          setTimeout(addRollDiceButton, 500);
+          setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
         }
-      }, 100);
+      }, DELAYS.SHEET_RENDER);
     });
     Hooks.on("renderChatPopout", (app, html, data) => {
       setTimeout(() => {
         if (!addRollDiceButton()) {
-          setTimeout(addRollDiceButton, 500);
+          setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
         }
       }, 100);
     });
@@ -13301,7 +13160,6 @@ class SRA2System {
         });
       }
     });
-    Hooks.once("ready", () => this.onReady());
   }
   /**
    * Show bookmarks/favorites dialog for quick actions
