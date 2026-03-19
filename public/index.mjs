@@ -5226,9 +5226,23 @@ function registerDiceSoNice(dice3d) {
     system: SYSTEM_NAME
   });
 }
-function buildAppearance(colorset) {
+function buildNormalAppearance() {
   return {
-    colorset,
+    foreground: "#faecd1",
+    background: "#2a0a3a",
+    edge: "#1a0628",
+    texture: "stars",
+    material: "metal",
+    labels: DICE_LABELS
+  };
+}
+function buildRiskAppearance() {
+  return {
+    foreground: "#faecd1",
+    background: "#040101",
+    edge: "#1a0000",
+    texture: "fire",
+    material: "metal",
     labels: DICE_LABELS
   };
 }
@@ -5365,7 +5379,7 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       normalRoll = new Roll(`${normalDiceCount}d6`);
       await normalRoll.evaluate();
       if (game.dice3d && normalRoll) {
-        normalRoll.dice[0].options.appearance = buildAppearance(SRA2_NORMAL_COLORSET);
+        normalRoll.dice[0].options.appearance = buildNormalAppearance();
         game.dice3d.showForRoll(normalRoll, game.user, true);
       }
     }
@@ -5373,7 +5387,7 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       riskRoll = new Roll(`${riskDiceCount}d6`);
       await riskRoll.evaluate();
       if (game.dice3d && riskRoll) {
-        riskRoll.dice[0].options.appearance = buildAppearance(SRA2_RISK_COLORSET);
+        riskRoll.dice[0].options.appearance = buildRiskAppearance();
         game.dice3d.showForRoll(riskRoll, game.user, true);
       }
     }
@@ -12831,7 +12845,7 @@ class SRA2System {
           normalRoll = new Roll(`${normalDiceCount}d6`);
           await normalRoll.evaluate();
           if (game.dice3d && normalRoll) {
-            normalRoll.dice[0].options.appearance = buildAppearance(SRA2_NORMAL_COLORSET);
+            normalRoll.dice[0].options.appearance = buildNormalAppearance();
             game.dice3d.showForRoll(normalRoll, game.user, true);
           }
         }
@@ -12839,7 +12853,7 @@ class SRA2System {
           riskRoll = new Roll(`${finalRiskDiceCount}d6`);
           await riskRoll.evaluate();
           if (game.dice3d && riskRoll) {
-            riskRoll.dice[0].options.appearance = buildAppearance(SRA2_RISK_COLORSET);
+            riskRoll.dice[0].options.appearance = buildRiskAppearance();
             game.dice3d.showForRoll(riskRoll, game.user, true);
           }
         }

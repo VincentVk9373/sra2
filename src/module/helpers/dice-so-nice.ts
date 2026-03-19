@@ -54,11 +54,26 @@ export function registerDiceSoNice(dice3d: any): void {
 
 /**
  * Build the appearance object to pass on dice[0].options.appearance.
- * Includes labels so DSN shows custom faces regardless of the user's DSN system setting.
+ * Sets colors and labels directly to bypass DSN settings cache.
  */
-export function buildAppearance(colorset: string): object {
+export function buildNormalAppearance(): object {
   return {
-    colorset,
+    foreground: '#faecd1',
+    background: '#2a0a3a',
+    edge: '#1a0628',
+    texture: 'stars',
+    material: 'metal',
+    labels: DICE_LABELS,
+  };
+}
+
+export function buildRiskAppearance(): object {
+  return {
+    foreground: '#faecd1',
+    background: '#040101',
+    edge: '#1a0000',
+    texture: 'fire',
+    material: 'metal',
     labels: DICE_LABELS,
   };
 }

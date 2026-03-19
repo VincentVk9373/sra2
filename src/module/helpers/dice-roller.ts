@@ -14,7 +14,7 @@ import * as SheetHelpers from './sheet-helpers.js';
 import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER } from '../config/constants.js';
 import { resolveTokenUuid, resolveActorUuid } from './actor-uuid-resolver.js';
 import { RollDialog } from '../applications/roll-dialog.js';
-import { SRA2_NORMAL_COLORSET, SRA2_RISK_COLORSET, buildAppearance } from './dice-so-nice.js';
+import { buildNormalAppearance, buildRiskAppearance } from './dice-so-nice.js';
 
 /**
  * Parse a damage value string to a safe numeric value.
@@ -366,7 +366,7 @@ export async function executeRoll(
     
     // Show DiceSoNice animation for normal dice
     if ((game as any).dice3d && normalRoll) {
-      normalRoll.dice[0].options.appearance = buildAppearance(SRA2_NORMAL_COLORSET);
+      normalRoll.dice[0].options.appearance = buildNormalAppearance();
       (game as any).dice3d.showForRoll(normalRoll, game.user, true);
     }
   }
@@ -377,7 +377,7 @@ export async function executeRoll(
     await riskRoll.evaluate();
 
     if ((game as any).dice3d && riskRoll) {
-      riskRoll.dice[0].options.appearance = buildAppearance(SRA2_RISK_COLORSET);
+      riskRoll.dice[0].options.appearance = buildRiskAppearance();
       (game as any).dice3d.showForRoll(riskRoll, game.user, true);
     }
   }
