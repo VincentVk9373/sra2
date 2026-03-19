@@ -9461,6 +9461,8 @@ class RollDialog extends Application {
   // Roll mode
   manualRRBonus = 0;
   // Manual RR bonus entered by user
+  coverBonus = 0;
+  // Cover bonus dice added to defense rolls
   constructor(rollData) {
     super();
     this.rollData = rollData;
@@ -9824,7 +9826,11 @@ class RollDialog extends Application {
       skillName: this.rollData.skillName,
       specName: this.rollData.specName
     });
+    if (this.rollData.isDefend) {
+      dicePool += this.coverBonus;
+    }
     context.dicePool = dicePool;
+    context.coverBonus = this.coverBonus;
     let threshold = this.rollData.threshold;
     context.threshold = threshold;
     context.hasThreshold = threshold !== void 0;
@@ -10518,6 +10524,10 @@ class RollDialog extends Application {
         this.rollMode = modeValue;
       }
     });
+    html.find(".cover-bonus-input").on("input", (event) => {
+      this.coverBonus = parseInt(event.currentTarget.value) || 0;
+      this.render();
+    });
     html.find(".manual-rr-bonus-input").on("input", (event) => {
       const input = event.currentTarget;
       const inputValue = input.value;
@@ -10598,6 +10608,9 @@ class RollDialog extends Application {
       } else if (this.rollData.linkedAttribute) {
         const attributeValue = this.actor?.system?.attributes?.[this.rollData.linkedAttribute] || 0;
         dicePool = attributeValue;
+      }
+      if (this.rollData.isDefend) {
+        dicePool += this.coverBonus;
       }
       if (this.rollData.isDefend && !this.rollData.threshold) {
         if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {

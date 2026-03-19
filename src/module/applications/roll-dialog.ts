@@ -22,6 +22,7 @@ export class RollDialog extends Application {
   private selectedRange: string | null = null; // Selected range: 'melee', 'short', 'medium', 'long'
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
   private manualRRBonus: number = 0; // Manual RR bonus entered by user
+  private coverBonus: number = 0; // Cover bonus dice added to defense rolls
 
   constructor(rollData: RollRequestData) {
     super();
@@ -526,7 +527,12 @@ export class RollDialog extends Application {
       specName: this.rollData.specName
     });
     
+    // Add cover bonus dice for defense rolls
+    if (this.rollData.isDefend) {
+      dicePool += this.coverBonus;
+    }
     context.dicePool = dicePool;
+    context.coverBonus = this.coverBonus;
 
     let threshold = this.rollData.threshold;
     context.threshold = threshold;
@@ -1513,6 +1519,12 @@ export class RollDialog extends Application {
       }
     });
 
+    // Cover bonus input (defense only)
+    html.find('.cover-bonus-input').on('input', (event) => {
+      this.coverBonus = parseInt((event.currentTarget as HTMLInputElement).value) || 0;
+      this.render();
+    });
+
     // Manual RR bonus input
     html.find('.manual-rr-bonus-input').on('input', (event) => {
       const input = event.currentTarget as HTMLInputElement;
@@ -1625,6 +1637,11 @@ export class RollDialog extends Application {
         dicePool = attributeValue;
       }
       
+      // Add cover bonus for defense rolls
+      if (this.rollData.isDefend) {
+        dicePool += this.coverBonus;
+      }
+
       // Block defense roll if no skill/spec is selected (unless using threshold for NPCs)
       if (this.rollData.isDefend && !this.rollData.threshold) {
         if (!this.rollData.skillName && !this.rollData.specName && dicePool === 0) {
