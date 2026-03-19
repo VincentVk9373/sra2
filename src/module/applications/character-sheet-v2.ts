@@ -134,6 +134,15 @@ export class CharacterSheetV2 extends CharacterSheet {
     html.find('.item-search-input').on('input', this._onItemSearchInput.bind(this));
     (html.find('.item-search-input') as any).on('focus', this._onItemSearchFocus.bind(this));
     (html.find('.item-search-input') as any).on('blur', this._onItemSearchBlur.bind(this));
+
+    // Bio tabs
+    html.find('.bio-tab').on('click', (event: JQuery.ClickEvent) => {
+      const tab = (event.currentTarget as HTMLElement).dataset.tab!;
+      html.find('.bio-tab').removeClass('active');
+      html.find('.bio-tab-content').removeClass('active');
+      html.find(`.bio-tab[data-tab="${tab}"]`).addClass('active');
+      html.find(`.bio-tab-content[data-tab="${tab}"]`).addClass('active');
+    });
   }
 
   /**

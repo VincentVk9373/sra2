@@ -1430,6 +1430,20 @@
                 </div>
             </div>
         </footer>
+        {{#if advancedMode}}
+        <div class="bio-section">
+            <div class="bio-tabs">
+                <button type="button" class="bio-tab active" data-tab="background">{{localize "SRA2.BIO"}}</button>
+                <button type="button" class="bio-tab" data-tab="notes">{{localize "SRA2.NOTES"}}</button>
+            </div>
+            <div class="bio-tab-content active" data-tab="background">
+                <div class="editor-content">{{editor system.bio.background target="system.bio.background" button=false engine="prosemirror" collaborate=false}}</div>
+            </div>
+            <div class="bio-tab-content" data-tab="notes">
+                <div class="editor-content">{{editor system.bio.notes target="system.bio.notes" button=false engine="prosemirror" collaborate=false}}</div>
+            </div>
+        </div>
+        {{/if}}
         {{#if (and isGM advancedMode)}}
         <div class="gm-description-section">
             <h3><i class="fas fa-eye-slash"></i> {{localize "SRA2.GM_DESCRIPTION"}}</h3>

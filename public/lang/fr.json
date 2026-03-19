@@ -1031,6 +1031,10 @@
             "MANUAL_RR_BONUS_TOOLTIP": "Ajouter un bonus RR manuel (0-3)"
         },
         "REFERENCE": "Référence",
+        "BIO": "Bio",
+        "BIO_PLACEHOLDER": "Biographie et historique du personnage...",
+        "NOTES": "Notes",
+        "NOTES_PLACEHOLDER": "Notes personnelles...",
         "GM_DESCRIPTION": "Notes MJ",
         "GM_DESCRIPTION_PLACEHOLDER": "Notes MJ (cachées aux joueurs)...",
         "SPELL": {

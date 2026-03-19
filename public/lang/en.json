@@ -1031,6 +1031,10 @@
             }
         },
         "REFERENCE": "Reference",
+        "BIO": "Bio",
+        "BIO_PLACEHOLDER": "Character biography and background...",
+        "NOTES": "Notes",
+        "NOTES_PLACEHOLDER": "Personal notes...",
         "GM_DESCRIPTION": "GM Notes",
         "GM_DESCRIPTION_PLACEHOLDER": "GM notes (hidden from players)...",
         "SPELL": {

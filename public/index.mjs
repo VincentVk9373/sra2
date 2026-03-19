@@ -8337,6 +8337,13 @@ class CharacterSheetV2 extends CharacterSheet {
     html.find(".item-search-input").on("input", this._onItemSearchInput.bind(this));
     html.find(".item-search-input").on("focus", this._onItemSearchFocus.bind(this));
     html.find(".item-search-input").on("blur", this._onItemSearchBlur.bind(this));
+    html.find(".bio-tab").on("click", (event) => {
+      const tab = event.currentTarget.dataset.tab;
+      html.find(".bio-tab").removeClass("active");
+      html.find(".bio-tab-content").removeClass("active");
+      html.find(`.bio-tab[data-tab="${tab}"]`).addClass("active");
+      html.find(`.bio-tab-content[data-tab="${tab}"]`).addClass("active");
+    });
   }
   /**
    * Edit metatype (V2 specific handler)
