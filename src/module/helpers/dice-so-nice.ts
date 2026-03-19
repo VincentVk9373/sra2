@@ -74,6 +74,5 @@ export function buildRiskAppearance(): object {
     edge: '#000000',
     texture: 'fire',
     material: 'metal',
-    labels: DICE_LABELS,
   };
 }

@@ -5242,8 +5242,7 @@ function buildRiskAppearance() {
     background: "#000000",
     edge: "#000000",
     texture: "fire",
-    material: "metal",
-    labels: DICE_LABELS
+    material: "metal"
   };
 }
 function parseDamageValueSafe(valueStr, attributes, context) {
