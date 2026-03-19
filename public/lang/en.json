@@ -712,9 +712,8 @@
                     "TYPE": "Illusion Type",
                     "ALTERATION": "Alteration",
                     "PSYCHOTROPIC": "Psychotropic",
-                    "ZONE_ALTERATION": "Zone",
+                    "ZONE": "Zone",
                     "ZONE_ALTERATION_HINT": "Indicates the size of the illusion",
-                    "ZONE_PSYCHOTROPIC": "Zone",
                     "ZONE_PSYCHOTROPIC_HINT": "Indicates the target affected by the illusion"
                 }
             },

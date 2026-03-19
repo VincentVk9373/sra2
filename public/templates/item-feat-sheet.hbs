@@ -846,13 +846,8 @@
               </select>
             </div>
             <div class="form-group">
-              {{#if (eq system.illusionType "alteration")}}
-              <label>{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_ALTERATION"}}</label>
-              <p class="notes">{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_ALTERATION_HINT"}}</p>
-              {{else}}
-              <label>{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_PSYCHOTROPIC"}}</label>
-              <p class="notes">{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_PSYCHOTROPIC_HINT"}}</p>
-              {{/if}}
+              <label>{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE"}}</label>
+              <p class="notes">{{#if (eq system.illusionType "alteration")}}{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_ALTERATION_HINT"}}{{else}}{{localize "SRA2.FEATS.SPELL.ILLUSION.ZONE_PSYCHOTROPIC_HINT"}}{{/if}}</p>
               <input type="text" name="system.illusionZone" value="{{system.illusionZone}}" />
             </div>
           </div>

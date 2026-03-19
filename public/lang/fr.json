@@ -708,9 +708,8 @@
                     "TYPE": "Type d'Illusion",
                     "ALTERATION": "Altération",
                     "PSYCHOTROPIC": "Psychotrope",
-                    "ZONE_ALTERATION": "Zone",
+                    "ZONE": "Zone",
                     "ZONE_ALTERATION_HINT": "Indique la taille de l'illusion",
-                    "ZONE_PSYCHOTROPIC": "Zone",
                     "ZONE_PSYCHOTROPIC_HINT": "Indique la cible affectée par l'illusion"
                 }
             }
