@@ -17,16 +17,16 @@ export const SRA2_RISK_COLORSET   = 'sra2-risk';
 export function registerDiceSoNice(dice3d: any): void {
   dice3d.addSystem({ id: SYSTEM_NAME, name: SYSTEM_DESCRIPTION }, 'preferred');
 
-  // Normal dice: dark teal/ice
+  // Normal dice: dark purple
   dice3d.addColorset({
     name: SRA2_NORMAL_COLORSET,
     description: 'SRA2 - Normal dice',
     category: SYSTEM_DESCRIPTION,
     foreground: '#faecd1',
-    background: '#0a2a2a',
+    background: '#2a0a3a',
     outline: 'none',
-    edge: 'none',
-    texture: 'ice',
+    edge: '#1a0628',
+    texture: 'stars',
     material: 'metal',
   });
 

@@ -5202,10 +5202,10 @@ function registerDiceSoNice(dice3d) {
     description: "SRA2 - Normal dice",
     category: SYSTEM_DESCRIPTION,
     foreground: "#faecd1",
-    background: "#0a2a2a",
+    background: "#2a0a3a",
     outline: "none",
-    edge: "none",
-    texture: "ice",
+    edge: "#1a0628",
+    texture: "stars",
     material: "metal"
   });
   dice3d.addColorset({
