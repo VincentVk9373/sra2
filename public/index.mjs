@@ -5229,8 +5229,8 @@ function registerDiceSoNice(dice3d) {
 function buildNormalAppearance() {
   return {
     foreground: "#faecd1",
-    background: "#6a1a8a",
-    edge: "#3d0d52",
+    background: "#9b30c0",
+    edge: "#6a1a8a",
     texture: "stars",
     material: "metal",
     labels: DICE_LABELS

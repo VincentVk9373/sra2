@@ -59,8 +59,8 @@ export function registerDiceSoNice(dice3d: any): void {
 export function buildNormalAppearance(): object {
   return {
     foreground: '#faecd1',
-    background: '#6a1a8a',
-    edge: '#3d0d52',
+    background: '#9b30c0',
+    edge: '#6a1a8a',
     texture: 'stars',
     material: 'metal',
     labels: DICE_LABELS,
