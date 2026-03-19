@@ -1673,48 +1673,42 @@ export class RollDialog extends Application {
         }
       }
       
-      // Get attacker and defender
+      // Get attacker
       const attacker = this.actor;
       const attackerToken = this.attackerToken || null;
-      const defender = this.targetToken?.actor || null;
-      const defenderToken = this.targetToken || null;
-      
-      // Get token UUIDs
-      const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
-      const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
-      
-      // Log token information
-      console.log('=== ROLL DICE BUTTON ===');
-      console.log('Attacker:', attacker?.name || 'Unknown');
-      console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
-      console.log('Attacker Token UUID:', attackerTokenUuid || 'Unknown');
-      if (attackerToken?.actor) {
-        console.log('Attacker Token Actor UUID:', attackerToken.actor.uuid || 'Unknown');
+      const attackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? undefined;
+
+      // For attack rolls collect ALL currently targeted canvas tokens.
+      // For defense/counter-attack there is exactly one known target (already stored in targetToken).
+      let targetTokens: any[];
+      if (!this.rollData.isDefend && !this.rollData.isCounterAttack) {
+        const allTargets = Array.from((game as any).user?.targets ?? []) as any[];
+        targetTokens = allTargets.length > 0 ? allTargets : (this.targetToken ? [this.targetToken] : []);
+      } else {
+        targetTokens = this.targetToken ? [this.targetToken] : [];
       }
-      console.log('Defender:', defender?.name || 'None');
-      console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
-      console.log('Defender Token UUID:', defenderTokenUuid || 'Unknown');
-      if (defenderToken?.actor) {
-        console.log('Defender Token Actor UUID:', defenderToken.actor.uuid || 'Unknown');
-      }
-      console.log('========================');
-      
+      const defenders = targetTokens.map((t: any) => ({ actor: t?.actor ?? null, token: t }));
+
+      // First defender's token UUID kept in rollData for backward-compat (defense context)
+      const firstDefenderToken = targetTokens[0] ?? null;
+      const defenderTokenUuid = firstDefenderToken?.uuid ?? firstDefenderToken?.document?.uuid ?? undefined;
+
       // Prepare roll data
       const updatedRollData = {
         ...this.rollData,
-        rrList: finalRRList,
-        riskDiceCount: this.riskDiceCount,  // Add risk dice count to roll data
-        selectedRange: this.selectedRange,  // Add selected range
-        rollMode: this.rollMode,  // Add roll mode (normal/disadvantage/advantage)
-        finalRR: Math.min(3, finalRR),  // Final RR (capped at 3)
-        dicePool: dicePool,
-        attackerTokenUuid: attackerTokenUuid,  // Add attacker token UUID
-        defenderTokenUuid: defenderTokenUuid   // Add defender token UUID
+        rrList:           finalRRList,
+        riskDiceCount:    this.riskDiceCount,
+        selectedRange:    this.selectedRange,
+        rollMode:         this.rollMode,
+        finalRR:          Math.min(3, finalRR),
+        dicePool:         dicePool,
+        attackerTokenUuid,
+        defenderTokenUuid,
       };
-      
+
       // Import and execute roll
       const { executeRoll } = await import('../helpers/dice-roller.js');
-      await executeRoll(attacker, defender, attackerToken, defenderToken, updatedRollData);
+      await executeRoll(attacker, defenders, attackerToken, updatedRollData);
       
       // Close the dialog
       this.close();

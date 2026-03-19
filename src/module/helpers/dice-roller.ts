@@ -316,35 +316,18 @@ export interface RollResult {
  * Execute a dice roll with DiceSoNice support
  * Steps 2-5: Roll dice, calculate results, complications, and create chat message
  */
+export interface DefenderEntry { actor: any; token: any; }
+
 export async function executeRoll(
   attacker: any,
-  defender: any,
+  defenders: DefenderEntry[],
   attackerToken: any,
-  defenderToken: any,
   rollData: RollRequestData
 ): Promise<void> {
   if (!attacker) {
     console.error('No attacker provided for roll');
     return;
   }
-
-  // Log token information
-  console.log('=== EXECUTE ROLL ===');
-  console.log('Attacker:', attacker?.name || 'Unknown');
-  console.log('Attacker UUID:', attacker?.uuid || 'Unknown');
-  console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
-  console.log('Attacker Token UUID:', attackerToken?.uuid || attackerToken?.document?.uuid || rollData.attackerTokenUuid || 'Unknown');
-  if (attackerToken?.actor) {
-    console.log('Attacker Token Actor UUID:', attackerToken.actor.uuid || 'Unknown');
-  }
-  console.log('Defender:', defender?.name || 'None');
-  console.log('Defender UUID:', defender?.uuid || 'Unknown');
-  console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
-  console.log('Defender Token UUID:', defenderToken?.uuid || defenderToken?.document?.uuid || rollData.defenderTokenUuid || 'Unknown');
-  if (defenderToken?.actor) {
-    console.log('Defender Token Actor UUID:', defenderToken.actor.uuid || 'Unknown');
-  }
-  console.log('===================');
 
   const dicePool = rollData.dicePool || 0;
   const riskDiceCount = rollData.riskDiceCount || 0;
@@ -450,8 +433,8 @@ export async function executeRoll(
   };
   }
 
-  // Step 5: Create chat message
-  await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
+  // Step 5: Create chat message(s) — one per defender (or one with no target for skill rolls)
+  await createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult);
 }
 
 /**
@@ -660,117 +643,95 @@ function buildCounterAttackResult(
  */
 async function createRollChatMessage(
   attacker: any,
-  defender: any,
+  defenders: DefenderEntry[],
   attackerToken: any,
-  defenderToken: any,
   rollData: RollRequestData,
   rollResult: RollResult
 ): Promise<void> {
-  // Determine if this is an attack
-  const isAttack = rollData.itemType === 'weapon' || 
+  const isAttack = rollData.itemType === 'weapon' ||
                    rollData.weaponType !== undefined ||
                    (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
 
-  // Log token information
-  console.log('=== CREATE ROLL CHAT MESSAGE ===');
-  console.log('Attacker:', attacker?.name || 'Unknown');
-  console.log('Attacker UUID:', attacker?.uuid || 'Unknown');
-  console.log('Attacker Token:', attackerToken ? 'Found' : 'Not found');
-  
-  // Get attacker token UUID (priority: token > rollData)
   const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
-  console.log('Attacker Token UUID:', attackerTokenUuid || 'Unknown');
-
-  // Determine final attacker UUID: if token exists, use token's actor UUID, otherwise use actor UUID
   const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
-  console.log('Final Attacker UUID (token actor or actor):', finalAttackerUuid || 'Unknown');
-  
-  console.log('Defender:', defender?.name || 'None');
-  console.log('Defender UUID:', defender?.uuid || 'Unknown');
-  console.log('Defender Token:', defenderToken ? 'Found' : 'Not found');
-  
-  // Get defender token UUID (priority: token > rollData)
+
+  // For defense/counter-attack there is exactly one defender
+  const firstEntry   = defenders[0] ?? { actor: null, token: null };
+  const defender     = firstEntry.actor;
+  const defenderToken = firstEntry.token;
   const defenderTokenUuid = resolveTokenUuid(defenderToken, rollData.defenderTokenUuid);
-  console.log('Defender Token UUID:', defenderTokenUuid || 'Unknown');
-
-  // Determine final defender UUID: if token exists, use token's actor UUID, otherwise use actor UUID
   const finalDefenderUuid = resolveActorUuid(defenderToken, defender);
-  console.log('Final Defender UUID (token actor or actor):', finalDefenderUuid || 'Unknown');
-  console.log('--- UUIDs to be stored in flags ---');
-  console.log('attackerUuid (final):', finalAttackerUuid || 'Unknown');
-  console.log('attackerTokenUuid (final):', attackerTokenUuid || 'Unknown');
-  console.log('defenderUuid (final):', finalDefenderUuid || 'Unknown');
-  console.log('defenderTokenUuid (final):', defenderTokenUuid || 'Unknown');
-  console.log('================================');
 
-  // Prepare defender data with token image if available
-  const defenderData = buildDefenderData(defender, defenderToken);
-
-  // Handle defense/counter-attack rolls
+  // Defense / counter-attack result (single-defender flows)
   let defenseResult: any = null;
-
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
     defenseResult = buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     defenseResult = buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   }
 
-  // Prepare template data
-  // Create attacker and defender objects with correct UUIDs (token actor UUID for NPCs)
+  // Build per-defender data for the template (one entry per canvas target)
+  const defendersData = defenders.map(({ actor: a, token: t }) => {
+    const tokenUuid  = resolveTokenUuid(t, undefined);
+    const actorUuid  = resolveActorUuid(t, a);
+    const defData    = buildDefenderData(a, t);
+    return defData ? {
+      ...defData,
+      uuid:      actorUuid ?? defData.uuid,
+      tokenUuid: tokenUuid,
+    } : null;
+  }).filter(Boolean);
+
   const attackerWithUuid = attacker ? {
     ...attacker,
-    uuid: finalAttackerUuid || attacker.uuid // Use calculated UUID (token actor UUID for NPCs)
+    uuid: finalAttackerUuid ?? attacker.uuid
   } : null;
-  
-  const defenderWithUuid = defenderData ? {
-    ...defenderData,
-    uuid: finalDefenderUuid || defenderData.uuid // Use calculated UUID (token actor UUID for NPCs)
+
+  // Keep a single `defender` in template data for defense/counter-attack result sections
+  const defenderWithUuid = buildDefenderData(defender, defenderToken) ? {
+    ...buildDefenderData(defender, defenderToken),
+    uuid: finalDefenderUuid ?? defender?.uuid
   } : null;
-  
+
   const templateData: any = {
-    attacker: attackerWithUuid,
-    defender: defenderWithUuid,
-    rollData: rollData,
-    rollResult: rollResult,
-    isAttack: isAttack,
-    isDefend: rollData.isDefend || false,
+    attacker:        attackerWithUuid,
+    defender:        defenderWithUuid,   // used only for defense/counter-attack result sections
+    defenders:       defendersData,      // used for multi-target attack-actions section
+    rollData:        rollData,
+    rollResult:      rollResult,
+    isAttack:        isAttack,
+    isDefend:        rollData.isDefend        || false,
     isCounterAttack: rollData.isCounterAttack || false,
-    skillName: rollData.specName || rollData.skillName || rollData.linkedAttackSkill || 'Unknown',
-    itemName: rollData.itemName,
-    damageValue: rollData.damageValue,
-    defenseResult: defenseResult,
-    // Also pass UUIDs directly for template convenience
-    attackerUuid: finalAttackerUuid,
-    defenderUuid: finalDefenderUuid,
-    attackerTokenUuid: attackerTokenUuid,
-    defenderTokenUuid: defenderTokenUuid,
-    // Spell-specific flags
-    isSpellDirect: rollData.isSpellDirect || false
+    skillName:       rollData.specName || rollData.skillName || rollData.linkedAttackSkill || 'Unknown',
+    itemName:        rollData.itemName,
+    damageValue:     rollData.damageValue,
+    defenseResult:   defenseResult,
+    attackerUuid:    finalAttackerUuid,
+    defenderUuid:    finalDefenderUuid,
+    attackerTokenUuid,
+    defenderTokenUuid,
+    isSpellDirect:   rollData.isSpellDirect || false,
   };
 
-  // Render template
   const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);
 
-  // Create chat message
   const messageData: any = {
-    user: game.user?.id,
-    speaker: {
-      actor: attacker?.id,
-      alias: attacker?.name
-    },
+    user:    game.user?.id,
+    speaker: { actor: attacker?.id, alias: attacker?.name },
     content: html,
-    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    type:    CONST.CHAT_MESSAGE_TYPES.OTHER,
     flags: {
       sra2: {
-        rollType: isAttack ? 'attack' : 'skill',
-        attackerId: attacker?.id,
-        attackerUuid: finalAttackerUuid, // Use token's actor UUID if token exists, otherwise actor UUID
-        attackerTokenUuid: attackerTokenUuid, // Store token UUID
-        defenderId: defender?.id,
-        defenderUuid: finalDefenderUuid, // Use token's actor UUID if token exists, otherwise actor UUID
-        defenderTokenUuid: defenderTokenUuid, // Store token UUID
-        rollResult: rollResult,
-        rollData: rollData
+        rollType:          isAttack ? 'attack' : 'skill',
+        attackerId:        attacker?.id,
+        attackerUuid:      finalAttackerUuid,
+        attackerTokenUuid: attackerTokenUuid,
+        // First defender kept for backward-compat with defend/counter-attack handlers
+        defenderId:        defender?.id,
+        defenderUuid:      finalDefenderUuid,
+        defenderTokenUuid: defenderTokenUuid,
+        rollResult:        rollResult,
+        rollData:          rollData,
       }
     }
   };

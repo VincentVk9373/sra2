@@ -3908,27 +3908,11 @@ function handleRollRequest(data) {
     dialog.render(true);
   });
 }
-async function executeRoll(attacker, defender, attackerToken, defenderToken, rollData) {
+async function executeRoll(attacker, defenders, attackerToken, rollData) {
   if (!attacker) {
     console.error("No attacker provided for roll");
     return;
   }
-  console.log("=== EXECUTE ROLL ===");
-  console.log("Attacker:", attacker?.name || "Unknown");
-  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
-  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
-  console.log("Attacker Token UUID:", attackerToken?.uuid || attackerToken?.document?.uuid || rollData.attackerTokenUuid || "Unknown");
-  if (attackerToken?.actor) {
-    console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
-  }
-  console.log("Defender:", defender?.name || "None");
-  console.log("Defender UUID:", defender?.uuid || "Unknown");
-  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
-  console.log("Defender Token UUID:", defenderToken?.uuid || defenderToken?.document?.uuid || rollData.defenderTokenUuid || "Unknown");
-  if (defenderToken?.actor) {
-    console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
-  }
-  console.log("===================");
   const dicePool = rollData.dicePool || 0;
   const riskDiceCount = rollData.riskDiceCount || 0;
   const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
@@ -4008,7 +3992,7 @@ async function executeRoll(attacker, defender, attackerToken, defenderToken, rol
       complication
     };
   }
-  await createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult);
+  await createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult);
 }
 function buildDefenderData(defender, defenderToken) {
   if (!defender) return null;
@@ -4148,49 +4132,45 @@ function buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, final
     defenderDamageType
   };
 }
-async function createRollChatMessage(attacker, defender, attackerToken, defenderToken, rollData, rollResult) {
+async function createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult) {
   const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
-  console.log("=== CREATE ROLL CHAT MESSAGE ===");
-  console.log("Attacker:", attacker?.name || "Unknown");
-  console.log("Attacker UUID:", attacker?.uuid || "Unknown");
-  console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
   const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
-  console.log("Attacker Token UUID:", attackerTokenUuid || "Unknown");
   const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
-  console.log("Final Attacker UUID (token actor or actor):", finalAttackerUuid || "Unknown");
-  console.log("Defender:", defender?.name || "None");
-  console.log("Defender UUID:", defender?.uuid || "Unknown");
-  console.log("Defender Token:", defenderToken ? "Found" : "Not found");
+  const firstEntry = defenders[0] ?? { actor: null, token: null };
+  const defender = firstEntry.actor;
+  const defenderToken = firstEntry.token;
   const defenderTokenUuid = resolveTokenUuid(defenderToken, rollData.defenderTokenUuid);
-  console.log("Defender Token UUID:", defenderTokenUuid || "Unknown");
   const finalDefenderUuid = resolveActorUuid(defenderToken, defender);
-  console.log("Final Defender UUID (token actor or actor):", finalDefenderUuid || "Unknown");
-  console.log("--- UUIDs to be stored in flags ---");
-  console.log("attackerUuid (final):", finalAttackerUuid || "Unknown");
-  console.log("attackerTokenUuid (final):", attackerTokenUuid || "Unknown");
-  console.log("defenderUuid (final):", finalDefenderUuid || "Unknown");
-  console.log("defenderTokenUuid (final):", defenderTokenUuid || "Unknown");
-  console.log("================================");
-  const defenderData = buildDefenderData(defender, defenderToken);
   let defenseResult = null;
   if (rollData.isDefend && rollData.attackRollResult && rollData.attackRollData) {
     defenseResult = buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     defenseResult = buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   }
+  const defendersData = defenders.map(({ actor: a, token: t }) => {
+    const tokenUuid = resolveTokenUuid(t, void 0);
+    const actorUuid = resolveActorUuid(t, a);
+    const defData = buildDefenderData(a, t);
+    return defData ? {
+      ...defData,
+      uuid: actorUuid ?? defData.uuid,
+      tokenUuid
+    } : null;
+  }).filter(Boolean);
   const attackerWithUuid = attacker ? {
     ...attacker,
-    uuid: finalAttackerUuid || attacker.uuid
-    // Use calculated UUID (token actor UUID for NPCs)
+    uuid: finalAttackerUuid ?? attacker.uuid
   } : null;
-  const defenderWithUuid = defenderData ? {
-    ...defenderData,
-    uuid: finalDefenderUuid || defenderData.uuid
-    // Use calculated UUID (token actor UUID for NPCs)
+  const defenderWithUuid = buildDefenderData(defender, defenderToken) ? {
+    ...buildDefenderData(defender, defenderToken),
+    uuid: finalDefenderUuid ?? defender?.uuid
   } : null;
   const templateData = {
     attacker: attackerWithUuid,
     defender: defenderWithUuid,
+    // used only for defense/counter-attack result sections
+    defenders: defendersData,
+    // used for multi-target attack-actions section
     rollData,
     rollResult,
     isAttack,
@@ -4200,21 +4180,16 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
     itemName: rollData.itemName,
     damageValue: rollData.damageValue,
     defenseResult,
-    // Also pass UUIDs directly for template convenience
     attackerUuid: finalAttackerUuid,
     defenderUuid: finalDefenderUuid,
     attackerTokenUuid,
     defenderTokenUuid,
-    // Spell-specific flags
     isSpellDirect: rollData.isSpellDirect || false
   };
   const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
   const messageData = {
     user: game.user?.id,
-    speaker: {
-      actor: attacker?.id,
-      alias: attacker?.name
-    },
+    speaker: { actor: attacker?.id, alias: attacker?.name },
     content: html,
     type: CONST.CHAT_MESSAGE_TYPES.OTHER,
     flags: {
@@ -4222,14 +4197,11 @@ async function createRollChatMessage(attacker, defender, attackerToken, defender
         rollType: isAttack ? "attack" : "skill",
         attackerId: attacker?.id,
         attackerUuid: finalAttackerUuid,
-        // Use token's actor UUID if token exists, otherwise actor UUID
         attackerTokenUuid,
-        // Store token UUID
+        // First defender kept for backward-compat with defend/counter-attack handlers
         defenderId: defender?.id,
         defenderUuid: finalDefenderUuid,
-        // Use token's actor UUID if token exists, otherwise actor UUID
         defenderTokenUuid,
-        // Store token UUID
         rollResult,
         rollData
       }
@@ -10627,43 +10599,30 @@ class RollDialog extends Application {
       }
       const attacker = this.actor;
       const attackerToken = this.attackerToken || null;
-      const defender = this.targetToken?.actor || null;
-      const defenderToken = this.targetToken || null;
-      const attackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
-      const defenderTokenUuid = defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
-      console.log("=== ROLL DICE BUTTON ===");
-      console.log("Attacker:", attacker?.name || "Unknown");
-      console.log("Attacker Token:", attackerToken ? "Found" : "Not found");
-      console.log("Attacker Token UUID:", attackerTokenUuid || "Unknown");
-      if (attackerToken?.actor) {
-        console.log("Attacker Token Actor UUID:", attackerToken.actor.uuid || "Unknown");
+      const attackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? void 0;
+      let targetTokens;
+      if (!this.rollData.isDefend && !this.rollData.isCounterAttack) {
+        const allTargets = Array.from(game.user?.targets ?? []);
+        targetTokens = allTargets.length > 0 ? allTargets : this.targetToken ? [this.targetToken] : [];
+      } else {
+        targetTokens = this.targetToken ? [this.targetToken] : [];
       }
-      console.log("Defender:", defender?.name || "None");
-      console.log("Defender Token:", defenderToken ? "Found" : "Not found");
-      console.log("Defender Token UUID:", defenderTokenUuid || "Unknown");
-      if (defenderToken?.actor) {
-        console.log("Defender Token Actor UUID:", defenderToken.actor.uuid || "Unknown");
-      }
-      console.log("========================");
+      const defenders = targetTokens.map((t) => ({ actor: t?.actor ?? null, token: t }));
+      const firstDefenderToken = targetTokens[0] ?? null;
+      const defenderTokenUuid = firstDefenderToken?.uuid ?? firstDefenderToken?.document?.uuid ?? void 0;
       const updatedRollData = {
         ...this.rollData,
         rrList: finalRRList,
         riskDiceCount: this.riskDiceCount,
-        // Add risk dice count to roll data
         selectedRange: this.selectedRange,
-        // Add selected range
         rollMode: this.rollMode,
-        // Add roll mode (normal/disadvantage/advantage)
         finalRR: Math.min(3, finalRR),
-        // Final RR (capped at 3)
         dicePool,
         attackerTokenUuid,
-        // Add attacker token UUID
         defenderTokenUuid
-        // Add defender token UUID
       };
       const { executeRoll: executeRoll2 } = await Promise.resolve().then(() => diceRoller);
-      await executeRoll2(attacker, defender, attackerToken, defenderToken, updatedRollData);
+      await executeRoll2(attacker, defenders, attackerToken, updatedRollData);
       this.close();
     });
   }
@@ -12451,6 +12410,17 @@ class SRA2System {
           setTimeout(() => button.prop("disabled", false), DELAYS.BUTTON_REENABLE);
         }
       });
+      html.off("mouseenter", ".defend-button, .counter-attack-button");
+      html.on("mouseenter", ".defend-button, .counter-attack-button", (event) => {
+        const tokenUuid = $(event.currentTarget).data("defender-token-uuid") ?? $(event.currentTarget).closest(".attack-actions").data("defender-token-uuid");
+        if (!tokenUuid) return;
+        try {
+          const token = foundry.utils?.fromUuidSync?.(tokenUuid);
+          const center = token?.center ?? token?.object?.center;
+          if (center) canvas.ping?.(center, { duration: 600 });
+        } catch (_e) {
+        }
+      });
       html.find(".defend-button").off("click");
       html.find(".defend-button").on("click", async (event) => {
         event.preventDefault();
@@ -12471,8 +12441,16 @@ class SRA2System {
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           "Defense Attacker"
         );
+        const actionsDiv = $(event.currentTarget).closest(".attack-actions");
+        const buttonDefenderUuid = actionsDiv.data("defender-uuid");
+        const buttonDefenderTokenUuid = actionsDiv.data("defender-token-uuid");
+        const buttonDefenderId = actionsDiv.data("defender-id");
         const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
-          messageFlags,
+          {
+            defenderUuid: buttonDefenderUuid ?? messageFlags.defenderUuid,
+            defenderTokenUuid: buttonDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
+            defenderId: buttonDefenderId ?? messageFlags.defenderId
+          },
           isVehicleWeapon,
           vehicleUuid
         );
@@ -12537,8 +12515,16 @@ class SRA2System {
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           "Counter-attack Attacker"
         );
+        const caActionsDiv = $(event.currentTarget).closest(".attack-actions");
+        const caDefenderUuid = caActionsDiv.data("defender-uuid");
+        const caDefenderTokenUuid = caActionsDiv.data("defender-token-uuid");
+        const caDefenderId = caActionsDiv.data("defender-id");
         const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
-          { actorUuid: messageFlags.defenderUuid, tokenUuid: messageFlags.defenderTokenUuid, actorId: messageFlags.defenderId },
+          {
+            actorUuid: caDefenderUuid ?? messageFlags.defenderUuid,
+            tokenUuid: caDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
+            actorId: caDefenderId ?? messageFlags.defenderId
+          },
           "Counter-attack Defender"
         );
         if (!defender) {

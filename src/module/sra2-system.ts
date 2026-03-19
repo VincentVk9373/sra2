@@ -806,6 +806,19 @@ export class SRA2System {
         }
       });
 
+      // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
+      html.off('mouseenter', '.defend-button, .counter-attack-button');
+      html.on('mouseenter', '.defend-button, .counter-attack-button', (event: any) => {
+        const tokenUuid = $(event.currentTarget).data('defender-token-uuid') as string | undefined
+          ?? $(event.currentTarget).closest('.attack-actions').data('defender-token-uuid') as string | undefined;
+        if (!tokenUuid) return;
+        try {
+          const token = (foundry.utils as any)?.fromUuidSync?.(tokenUuid);
+          const center = token?.center ?? token?.object?.center;
+          if (center) (canvas as any).ping?.(center, { duration: 600 });
+        } catch (_e) { /* canvas not ready */ }
+      });
+
       // Defense button handler
       html.find('.defend-button').off('click');
       html.find('.defend-button').on('click', async (event: any) => {
@@ -825,8 +838,21 @@ export class SRA2System {
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           'Defense Attacker'
         );
+
+        // Read defender info from the button's parent .attack-actions div (multi-target support).
+        // Falls back to global message flags for backward compat.
+        const actionsDiv = $(event.currentTarget).closest('.attack-actions');
+        const buttonDefenderUuid      = actionsDiv.data('defender-uuid')       as string | undefined;
+        const buttonDefenderTokenUuid = actionsDiv.data('defender-token-uuid') as string | undefined;
+        const buttonDefenderId        = actionsDiv.data('defender-id')         as string | undefined;
+
         const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
-          messageFlags, isVehicleWeapon, vehicleUuid
+          {
+            defenderUuid:      buttonDefenderUuid      ?? messageFlags.defenderUuid,
+            defenderTokenUuid: buttonDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
+            defenderId:        buttonDefenderId        ?? messageFlags.defenderId,
+          },
+          isVehicleWeapon, vehicleUuid
         );
 
         if (!defender) {
@@ -896,8 +922,19 @@ export class SRA2System {
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           'Counter-attack Attacker'
         );
+
+        // Read defender info from button's parent .attack-actions div (multi-target support)
+        const caActionsDiv = $(event.currentTarget).closest('.attack-actions');
+        const caDefenderUuid      = caActionsDiv.data('defender-uuid')       as string | undefined;
+        const caDefenderTokenUuid = caActionsDiv.data('defender-token-uuid') as string | undefined;
+        const caDefenderId        = caActionsDiv.data('defender-id')         as string | undefined;
+
         const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
-          { actorUuid: messageFlags.defenderUuid, tokenUuid: messageFlags.defenderTokenUuid, actorId: messageFlags.defenderId },
+          {
+            actorUuid: caDefenderUuid      ?? messageFlags.defenderUuid,
+            tokenUuid: caDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
+            actorId:   caDefenderId        ?? messageFlags.defenderId,
+          },
           'Counter-attack Defender'
         );
 
