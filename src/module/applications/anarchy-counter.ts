@@ -1,4 +1,5 @@
 import { SYSTEM } from "../config/system.ts";
+import { DELAYS } from "../config/constants.ts";
 
 /**
  * Floating popup for the Group Anarchy Counter
@@ -167,7 +168,7 @@ export class AnarchyCounter extends Application {
     // Make the window draggable and save position on drag end
     const header = html.closest(".app").find(".window-header");
     header.on("mouseup", () => {
-      setTimeout(() => this.savePosition(), 100);
+      setTimeout(() => this.savePosition(), DELAYS.SHEET_RENDER);
     });
   }
 

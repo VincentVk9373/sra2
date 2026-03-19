@@ -1,4 +1,5 @@
 import * as ItemSearch from '../../../item-search.js';
+import { DELAYS } from '../config/constants.js';
 
 /**
  * Specialization Sheet Application
@@ -151,7 +152,7 @@ export class SpecializationSheet extends ItemSheet {
     // Debounce search
     this.skillSearchTimeout = setTimeout(async () => {
       await this._performSkillSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -374,8 +375,8 @@ export class SpecializationSheet extends ItemSheet {
         
         resultsDiv.style.display = 'none';
       }
-    }, 200);
-    
+    }, DELAYS.SEARCH_HIDE);
+
     return Promise.resolve();
   }
 
@@ -433,7 +434,7 @@ export class SpecializationSheet extends ItemSheet {
         if (createdItems.sheet) {
           createdItems.sheet.render(true);
         }
-      }, 100);
+      }, DELAYS.SHEET_RENDER);
       
       ui.notifications?.info(game.i18n!.format('SRA2.SPECIALIZATIONS.SKILL_CREATED_AND_LINKED', { name: formattedName }));
     }

@@ -4,6 +4,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as ItemSearch from '../../../item-search.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import shadowAmpProbabilities from '../config/shadow-amp-probabilities.json';
+import { ACTOR_ATTRIBUTES } from '../config/constants.js';
 
 /**
  * Roll Dialog Application
@@ -947,7 +948,7 @@ export class RollDialog extends Application {
       const actorSystem = this.actor.system as any;
       const attributes = actorSystem?.attributes || {};
       
-      const attributeNames = ['strength', 'agility', 'willpower', 'logic', 'charisma'];
+      const attributeNames = ACTOR_ATTRIBUTES;
       const attributeLabels: Record<string, string> = {
         strength: game.i18n?.localize('SRA2.ATTRIBUTES.STRENGTH') || 'Strength',
         agility: game.i18n?.localize('SRA2.ATTRIBUTES.AGILITY') || 'Agility',

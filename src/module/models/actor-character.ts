@@ -1,3 +1,5 @@
+import { DAMAGE_STEP, DAMAGE_BOX_DEFAULTS } from '../config/constants.js';
+
 /**
  * Data model for Character actors
  */
@@ -324,9 +326,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).bonusNarrations = totalNarrations;
     (this as any).narrationsDetails = narrationsDetails;
     
-    // Base: 2 light, 1 severe, 1 incapacitating (applies to all damage types)
-    const totalLightBoxes = 2 + bonusLightDamage;
-    const totalSevereBoxes = 1 + bonusSevereDamage;
+    // Base: DAMAGE_BOX_DEFAULTS.LIGHT light, DAMAGE_BOX_DEFAULTS.SEVERE severe, 1 incapacitating (applies to all damage types)
+    const totalLightBoxes = DAMAGE_BOX_DEFAULTS.LIGHT + bonusLightDamage;
+    const totalSevereBoxes = DAMAGE_BOX_DEFAULTS.SEVERE + bonusSevereDamage;
     
     // Helper function to ensure damage arrays match the required size (preserve existing values)
     const ensureDamageArraySize = (sourceDamage: any, defaultLight: boolean[], defaultSevere: boolean[]) => {
@@ -439,18 +441,18 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     (this as any).damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
-        severe: strength + bonusPhysicalThreshold + 3,
-        incapacitating: strength + bonusPhysicalThreshold + 6
+        severe: strength + bonusPhysicalThreshold + DAMAGE_STEP,
+        incapacitating: strength + bonusPhysicalThreshold + DAMAGE_STEP * 2
       },
       withArmor: {
         light: strength + totalArmorLevel + bonusPhysicalThreshold,
-        severe: strength + totalArmorLevel + bonusPhysicalThreshold + 3,
-        incapacitating: strength + totalArmorLevel + bonusPhysicalThreshold + 6
+        severe: strength + totalArmorLevel + bonusPhysicalThreshold + DAMAGE_STEP,
+        incapacitating: strength + totalArmorLevel + bonusPhysicalThreshold + DAMAGE_STEP * 2
       },
       mental: {
         light: willpower + bonusMentalThreshold,
-        severe: willpower + bonusMentalThreshold + 3,
-        incapacitating: willpower + bonusMentalThreshold + 6
+        severe: willpower + bonusMentalThreshold + DAMAGE_STEP,
+        incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
         light: firewall + bonusMatrixThreshold,

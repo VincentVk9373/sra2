@@ -5,6 +5,7 @@
 
 import * as SheetHelpers from './sheet-helpers.js';
 import { VEHICLE_TYPES } from '../models/item-feat.js';
+import { DAMAGE_STEP, SPECIALIZATION_BONUS } from '../config/constants.js';
 
 /**
  * Calculate damage thresholds for a character actor
@@ -48,8 +49,8 @@ export function calculateDamageThresholds(
   
   return {
     light: basePhysical + physicalArmor,
-    severe: basePhysical + physicalArmor + 3,
-    incapacitating: basePhysical + physicalArmor + 6
+    severe: basePhysical + physicalArmor + DAMAGE_STEP,
+    incapacitating: basePhysical + physicalArmor + DAMAGE_STEP * 2
   };
 }
 
@@ -205,7 +206,7 @@ export function buildSkillOptionsHtml(params: BuildSkillOptionsParams): string {
     
     specs.forEach((spec: any) => {
       const specTotalDicePool = SheetHelpers.calculateSpecDicePool(defenderActor, spec, skill);
-      const effectiveRating = skillRating + 2;
+      const effectiveRating = skillRating + SPECIALIZATION_BONUS;
       
       let specOptionText = `  → ${spec.name} (${specTotalDicePool} dés)`;
       let specDataAttrs = `data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"`;
@@ -293,7 +294,7 @@ export function buildAttackSkillOptionsHtml(
     
     specs.forEach((spec: any) => {
       const specTotalDicePool = SheetHelpers.calculateSpecDicePool(actor, spec, skill);
-      const effectiveRating = skillRating + 2;
+      const effectiveRating = skillRating + SPECIALIZATION_BONUS;
       
       const specSelected = defaultSelection === `spec-${spec.id}` ? ' selected' : '';
       html += `<option value="spec-${spec.id}" data-dice-pool="${specTotalDicePool}" data-effective-rating="${effectiveRating}"${specSelected}>  → ${spec.name} (${specTotalDicePool} dés)</option>`;

@@ -10,6 +10,7 @@ declare const ChatMessage: any;
 
 // Import ItemSearch for text normalization
 import * as ItemSearch from '../../../item-search.js';
+import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER } from '../config/constants.js';
 
 /**
  * RR source information
@@ -35,7 +36,7 @@ export const RISK_THRESHOLDS = {
  * Get risk dice count based on RR level
  */
 export function getRiskDiceByRR(rr: number): number {
-  return RISK_DICE_BY_RR[Math.min(3, Math.max(0, rr))] || 2;
+  return RISK_DICE_BY_RR[Math.min(RR_MAX, Math.max(0, rr))] || 2;
 }
 
 /**
@@ -96,11 +97,7 @@ export function getRRSourcesForActor(
  * Get success threshold based on roll mode
  */
 export function getSuccessThreshold(mode: string): number {
-  switch (mode) {
-    case 'advantage': return 4;  // 4, 5, 6 = success
-    case 'disadvantage': return 6; // only 6 = success
-    default: return 5;  // 5, 6 = success
-  }
+  return SUCCESS_THRESHOLDS[mode as keyof typeof SUCCESS_THRESHOLDS] ?? SUCCESS_THRESHOLDS.normal;
 }
 
 /**
@@ -312,7 +309,7 @@ export async function executeRoll(
   const riskDiceCount = rollData.riskDiceCount || 0;
   const normalDiceCount = Math.max(0, dicePool - riskDiceCount);
   const rollMode = rollData.rollMode || 'normal';
-  const finalRR = Math.min(3, rollData.finalRR || 0);
+  const finalRR = Math.min(RR_MAX, rollData.finalRR || 0);
   const threshold = rollData.threshold;
 
   // If threshold is defined, use it instead of rolling dice
@@ -366,15 +363,10 @@ export async function executeRoll(
   const riskResults: number[] = riskRoll ? (riskRoll.dice[0]?.results?.map((r: any) => r.result) || []) : [];
   
   // Calculate successes for normal dice
+  const successThreshold = getSuccessThreshold(rollMode);
   let normalSuccesses = 0;
   for (const result of normalResults) {
-    if (rollMode === 'advantage' && result >= 4) {
-      normalSuccesses++;
-    } else if (rollMode === 'disadvantage' && result === 6) {
-      normalSuccesses++;
-    } else if (rollMode === 'normal' && result >= 5) {
-      normalSuccesses++;
-    }
+    if (result >= successThreshold) normalSuccesses++;
   }
 
   // Calculate successes and critical failures for risk dice
@@ -383,17 +375,13 @@ export async function executeRoll(
   for (const result of riskResults) {
     if (result === 1) {
       criticalFailures++;
-    } else if (rollMode === 'advantage' && result >= 4) {
-      riskSuccesses++;
-    } else if (rollMode === 'disadvantage' && result === 6) {
-      riskSuccesses++;
-    } else if (rollMode === 'normal' && result >= 5) {
+    } else if (result >= successThreshold) {
       riskSuccesses++;
     }
   }
 
-  // Risk dice successes count double
-  const totalRiskSuccesses = riskSuccesses * 2;
+  // Risk dice successes count as RISK_DICE_SUCCESS_MULTIPLIER normal successes each
+  const totalRiskSuccesses = riskSuccesses * RISK_DICE_SUCCESS_MULTIPLIER;
   const totalSuccesses = normalSuccesses + totalRiskSuccesses;
 
   // Step 4: Calculate complications

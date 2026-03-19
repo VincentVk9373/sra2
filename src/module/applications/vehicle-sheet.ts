@@ -2,6 +2,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import * as DiceRoller from '../helpers/dice-roller.js';
 import { VEHICLE_TYPES, WEAPON_TYPES } from '../models/item-feat.js';
+import { NARRATIVE_SAVE_DEBOUNCE } from '../config/constants.js';
 
 /**
  * Vehicle/Drone Sheet Application
@@ -440,11 +441,11 @@ export class VehicleSheet extends ActorSheet {
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
       }
-      // Debounce: save after 500ms of no typing
+      // Debounce: save after NARRATIVE_SAVE_DEBOUNCE ms of no typing
       narrativeEffectSaveTimeout = setTimeout(async () => {
         await saveNarrativeEffects();
         narrativeEffectSaveTimeout = null;
-      }, 500);
+      }, NARRATIVE_SAVE_DEBOUNCE);
     });
     
     html.find('textarea[name^="system.narrativeEffects."]').on('change blur', async (event) => {

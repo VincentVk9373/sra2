@@ -1,5 +1,6 @@
 import { SYSTEM } from "./config/system.ts";
 import { setSidebarIcons, setControlIcons, setCompendiumBanners } from "./config/ui-config.ts";
+import { DELAYS } from "./config/constants.ts";
 
 // Expose the SYSTEM object to the global scope
 globalThis.SYSTEM = SYSTEM;
@@ -239,7 +240,7 @@ export class SRA2System {
               char.sheet.render(false);
             }
           });
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
     });
 
@@ -276,7 +277,7 @@ export class SRA2System {
           if (char.sheet && char.sheet.rendered) {
             setTimeout(() => {
               char.sheet.render(false);
-            }, 100);
+            }, DELAYS.SHEET_RENDER);
           }
         });
       }
@@ -313,7 +314,7 @@ export class SRA2System {
           if (char.sheet && char.sheet.rendered) {
             setTimeout(() => {
               char.sheet.render(false);
-            }, 100);
+            }, DELAYS.SHEET_RENDER);
           }
         });
       }
@@ -721,7 +722,7 @@ export class SRA2System {
           ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.DAMAGE_APPLY_ERROR'));
         } finally {
           // Re-enable button after a short delay
-          setTimeout(() => button.prop('disabled', false), 1000);
+          setTimeout(() => button.prop('disabled', false), DELAYS.BUTTON_REENABLE);
         }
       });
 
@@ -1841,16 +1842,16 @@ export class SRA2System {
       setTimeout(() => {
         if (!addRollDiceButton()) {
           // If button wasn't added, try again after a longer delay
-          setTimeout(addRollDiceButton, 500);
+          setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
         }
-      }, 100);
+      }, DELAYS.SHEET_RENDER);
     });
 
     // Also register for chat popout
     Hooks.on('renderChatPopout' as any, (app: any, html: any, data: any) => {
       setTimeout(() => {
         if (!addRollDiceButton()) {
-          setTimeout(addRollDiceButton, 500);
+          setTimeout(addRollDiceButton, DELAYS.UI_RETRY);
         }
       }, 100);
     });

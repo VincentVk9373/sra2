@@ -3,6 +3,7 @@ import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
+import { DELAYS, RR_MAX } from '../config/constants.js';
 
 /**
  * Character Sheet Application
@@ -517,11 +518,11 @@ export class CharacterSheet extends ActorSheet {
     
     // Calculate RR for attributes first (needed for skills and specializations)
     const attributesRR = {
-      strength: Math.min(3, this.calculateRR('attribute', 'strength')),
-      agility: Math.min(3, this.calculateRR('attribute', 'agility')),
-      willpower: Math.min(3, this.calculateRR('attribute', 'willpower')),
-      logic: Math.min(3, this.calculateRR('attribute', 'logic')),
-      charisma: Math.min(3, this.calculateRR('attribute', 'charisma'))
+      strength: Math.min(RR_MAX, this.calculateRR('attribute', 'strength')),
+      agility: Math.min(RR_MAX, this.calculateRR('attribute', 'agility')),
+      willpower: Math.min(RR_MAX, this.calculateRR('attribute', 'willpower')),
+      logic: Math.min(RR_MAX, this.calculateRR('attribute', 'logic')),
+      charisma: Math.min(RR_MAX, this.calculateRR('attribute', 'charisma'))
     };
     
     // Add specializations to each skill and calculate RR
@@ -1291,7 +1292,7 @@ export class CharacterSheet extends ActorSheet {
     // Debounce search
     this.searchTimeout = setTimeout(async () => {
       await this._performSkillSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -1495,11 +1496,11 @@ export class CharacterSheet extends ActorSheet {
           // Don't hide if an element in results is active
           return;
         }
-        
+
         resultsDiv.style.display = 'none';
       }
-    }, 200);
-    
+    }, DELAYS.SEARCH_HIDE);
+
     return Promise.resolve();
   }
 
@@ -1553,7 +1554,7 @@ export class CharacterSheet extends ActorSheet {
       if (newSkill && newSkill.sheet) {
         setTimeout(() => {
           newSkill.sheet.render(true);
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
       
       ui.notifications?.info(game.i18n!.format('SRA2.SKILLS.SKILL_CREATED', { name: formattedName }));
@@ -1589,7 +1590,7 @@ export class CharacterSheet extends ActorSheet {
     // Debounce search
     this.featSearchTimeout = setTimeout(async () => {
       await this._performFeatSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -1844,11 +1845,11 @@ export class CharacterSheet extends ActorSheet {
           // Don't hide if a select or other element in results is active
           return;
         }
-        
+
         resultsDiv.style.display = 'none';
       }
-    }, 200);
-    
+    }, DELAYS.SEARCH_HIDE);
+
     return Promise.resolve();
   }
 
@@ -2896,7 +2897,7 @@ export class CharacterSheet extends ActorSheet {
       if (newFeat && newFeat.sheet) {
         setTimeout(() => {
           newFeat.sheet.render(true);
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
       
       ui.notifications?.info(game.i18n!.format('SRA2.FEATS.FEAT_CREATED', { name: formattedName }));
@@ -2927,7 +2928,7 @@ export class CharacterSheet extends ActorSheet {
     // Reopen the sheet with the new class
     setTimeout(() => {
       newSheet.render(true);
-    }, 100);
+    }, DELAYS.SHEET_RENDER);
   }
 }
 

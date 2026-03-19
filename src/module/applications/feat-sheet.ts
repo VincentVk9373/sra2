@@ -1,5 +1,6 @@
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import * as ItemSearch from '../../../item-search.js';
+import { DELAYS } from '../config/constants.js';
 
 /**
  * Feat Sheet Application
@@ -770,7 +771,7 @@ export class FeatSheet extends ItemSheet {
     // Debounce search
     this.rrTargetSearchTimeout = setTimeout(async () => {
       await this._performRRTargetSearch(searchTerm, rrIndex, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -968,7 +969,7 @@ export class FeatSheet extends ItemSheet {
         
         resultsDiv.style.display = 'none';
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
   }
 
   /**
@@ -994,7 +995,7 @@ export class FeatSheet extends ItemSheet {
     // Debounce search
     this.powerSearchTimeout = setTimeout(async () => {
       await this._performPowerSkillSearch(searchTerm, fieldName, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -1197,7 +1198,7 @@ export class FeatSheet extends ItemSheet {
         
         resultsDiv.style.display = 'none';
       }
-    }, 300); // Increased delay to allow button clicks to register
+    }, DELAYS.SEARCH_HIDE_LONG); // Longer delay to allow button clicks to register
   }
 
   /**
@@ -1223,7 +1224,7 @@ export class FeatSheet extends ItemSheet {
     // Debounce search
     this.powerSearchTimeout = setTimeout(async () => {
       await this._performPowerSpecSearch(searchTerm, fieldName, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -1426,7 +1427,7 @@ export class FeatSheet extends ItemSheet {
         
         resultsDiv.style.display = 'none';
       }
-    }, 300); // Increased delay to allow button clicks to register
+    }, DELAYS.SEARCH_HIDE_LONG); // Longer delay to allow button clicks to register
   }
 
   /**

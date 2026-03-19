@@ -1,6 +1,7 @@
 import { CharacterSheet } from './character-sheet.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as ItemSearch from '../../../item-search.js';
+import { DELAYS } from '../config/constants.js';
 
 /**
  * Character Sheet Application V2
@@ -78,7 +79,7 @@ export class CharacterSheetV2 extends CharacterSheet {
       if (target.dataset.action === 'toggle-bookmark') {
         setTimeout(() => {
           menu.removeClass('active');
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       } else {
         menu.removeClass('active');
       }
@@ -322,7 +323,7 @@ export class CharacterSheetV2 extends CharacterSheet {
     // Debounce search
     this._itemSearchTimeout = setTimeout(async () => {
       await this._performItemSearch(searchTerm, resultsDiv);
-    }, 300);
+    }, DELAYS.SEARCH_DEBOUNCE);
   }
 
   /**
@@ -566,7 +567,7 @@ export class CharacterSheetV2 extends CharacterSheet {
       if (newItem && newItem.sheet) {
         setTimeout(() => {
           newItem.sheet.render(true);
-        }, 100);
+        }, DELAYS.SHEET_RENDER);
       }
       
       ui.notifications?.info(game.i18n!.format('SRA2.SEARCH.ITEM_CREATED', { name: formattedName }));
@@ -614,7 +615,7 @@ export class CharacterSheetV2 extends CharacterSheet {
         
         resultsDiv.style.display = 'none';
       }
-    }, 200);
+    }, DELAYS.SEARCH_HIDE);
   }
 }
 

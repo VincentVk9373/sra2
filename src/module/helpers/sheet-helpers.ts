@@ -4,6 +4,7 @@
  */
 
 import * as ItemSearch from '../../../item-search.js';
+import { RR_MAX } from '../config/constants.js';
 
 /**
  * Handle form submission with proper damage checkbox handling
@@ -485,7 +486,7 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
 
   // Calculate final RR values and try to determine linked attribute from compendiums or default
   for (const phantom of phantomRRs) {
-    phantom.rr = Math.min(3, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
+    phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
 
     // Default to strength for skills, or try to guess from name
     // Common skill-attribute associations

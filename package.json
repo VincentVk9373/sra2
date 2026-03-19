@@ -6,6 +6,9 @@
     "dev": "npx vite build --outDir public --emptyOutDir false --watch",
     "dev:server": "npx vite serve",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "build:check": "npm run typecheck && npm run build",
     "pack:compendiums": "node ./tools/compendium/packCompendiumsToPublic.mjs",
     "unpack:compendiums": "node ./tools/compendium/extractCompendiumsFromPublic.mjs"
@@ -18,7 +21,8 @@
     "nodemon": "^3.1.10",
     "sass": "^1.91.0",
     "typescript": "^5.9.3",
-    "vite": "^7.1.4"
+    "vite": "^7.1.4",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "rollup-plugin-visualizer": "^5.12.0",
