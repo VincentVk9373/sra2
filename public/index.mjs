@@ -1454,45 +1454,46 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     };
   }
   prepareDerivedData() {
-    const costType = this.cost || "free-equipment";
     const featType = this.featType || "equipment";
-    const rating = this.rating || 0;
-    if (this.astralProjection) {
-      this.astralPerception = true;
-    }
-    if (featType === "spell") {
-      this.linkedAttackSkill = "Sorcellerie";
-      const spellSpecType = this.spellSpecializationType || "combat";
-      const spellSpecMap = {
-        "combat": "Spé: Sorts de combat",
-        "detection": "Spé: Sorts de détection",
-        "health": "Spé: Sorts de santé",
-        "illusion": "Spé: Sorts d'illusion",
-        "manipulation": "Spé: Sorts de manipulation",
-        "counterspell": "Spé: Contresort"
-      };
-      this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
-    }
+    if (this.astralProjection) this.astralPerception = true;
+    this._applySpellSkillLinks(featType);
+    this._applyCustomWeaponDamage(featType);
+    this._calculateCost(featType);
+    this._calculateRecommendedLevel(featType);
+  }
+  _applySpellSkillLinks(featType) {
+    if (featType !== "spell") return;
+    this.linkedAttackSkill = "Sorcellerie";
+    const spellSpecMap = {
+      "combat": "Spé: Sorts de combat",
+      "detection": "Spé: Sorts de détection",
+      "health": "Spé: Sorts de santé",
+      "illusion": "Spé: Sorts d'illusion",
+      "manipulation": "Spé: Sorts de manipulation",
+      "counterspell": "Spé: Contresort"
+    };
+    const spellSpecType = this.spellSpecializationType || "combat";
+    this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+  }
+  _applyCustomWeaponDamage(featType) {
     const weaponType = this.weaponType || "";
-    if (weaponType === "custom-weapon" && (featType === "weapon" || featType === "weapons-spells")) {
-      const vdMode = this.vdMode || "custom";
-      if (vdMode === "custom") {
-        const vdCustomValue = this.vdCustomValue ?? 0;
-        this.damageValue = vdCustomValue.toString();
+    if (weaponType !== "custom-weapon" || featType !== "weapon" && featType !== "weapons-spells") return;
+    const vdMode = this.vdMode || "custom";
+    if (vdMode === "custom") {
+      this.damageValue = (this.vdCustomValue ?? 0).toString();
+    } else {
+      const vdAttribute = this.vdAttribute || "strength";
+      const vdBonus = this.vdBonus ?? 0;
+      if (vdAttribute === "strength") {
+        this.damageValue = vdBonus === 0 ? "FOR" : `FOR+${vdBonus}`;
       } else {
-        const vdAttribute = this.vdAttribute || "strength";
-        const vdBonus = this.vdBonus ?? 0;
-        if (vdAttribute === "strength") {
-          if (vdBonus === 0) {
-            this.damageValue = "FOR";
-          } else {
-            this.damageValue = `FOR+${vdBonus}`;
-          }
-        } else {
-          this.damageValue = `${vdAttribute}+${vdBonus}`;
-        }
+        this.damageValue = `${vdAttribute}+${vdBonus}`;
       }
     }
+  }
+  _calculateCost(featType) {
+    const costType = this.cost || "free-equipment";
+    const rating = this.rating || 0;
     let calculatedCost = 0;
     if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
       switch (costType) {
@@ -1525,6 +1526,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     }
     calculatedCost += rating * 5e3;
     this.calculatedCost = calculatedCost;
+  }
+  _calculateRecommendedLevel(featType) {
     let recommendedLevel = 0;
     const recommendedLevelBreakdown = [];
     const bonusLightDamage = this.bonusLightDamage || 0;
@@ -4738,6 +4741,20 @@ class CharacterSheet extends ActorSheet {
     });
     context.system = this.actor.system;
     const systemData = context.system;
+    this._initializeDamageArrays(context, systemData);
+    this._loadAnarchyData(context, systemData);
+    const actorStrength = this.actor.system.attributes?.strength || 0;
+    const rawFeats = this.actor.items.filter((item) => item.type === "feat");
+    const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue, this.actor);
+    const linkedVehicles = await this._loadLinkedVehicles(actorStrength, allFeats);
+    this._enrichFeatsByType(context, allFeats, linkedVehicles);
+    this._loadSkillsAndSpecializations(context);
+    context.activeSection = this._activeSection;
+    const damage = systemData.damage || {};
+    context.hasSevereDamage = (Array.isArray(damage.severe) ? damage.severe : [false]).some((b) => b);
+    return context;
+  }
+  _initializeDamageArrays(context, systemData) {
     if (!systemData.damage) {
       systemData.damage = {
         light: [false, false],
@@ -4766,6 +4783,8 @@ class CharacterSheet extends ActorSheet {
         systemData.anarchySpent.push(false);
       }
     }
+  }
+  _loadAnarchyData(context, systemData) {
     const metatypes = this.actor.items.filter((item) => item.type === "metatype");
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
     const metatypeAnarchyBonus = context.metatype ? context.metatype.system.anarchyBonus || 0 : 0;
@@ -4794,9 +4813,8 @@ class CharacterSheet extends ActorSheet {
       value: tempAnarchySpent[index] || false,
       index
     }));
-    const actorStrength = this.actor.system.attributes?.strength || 0;
-    const rawFeats = this.actor.items.filter((item) => item.type === "feat");
-    const allFeats = enrichFeats(rawFeats, actorStrength, calculateFinalDamageValue, this.actor);
+  }
+  async _loadLinkedVehicles(actorStrength, allFeats) {
     const linkedVehicleUuids = this.actor.system.linkedVehicles || [];
     const linkedVehicles = [];
     for (const uuid of linkedVehicleUuids) {
@@ -4887,6 +4905,9 @@ class CharacterSheet extends ActorSheet {
         console.warn(`Failed to load vehicle actor ${uuid}:`, error);
       }
     }
+    return linkedVehicles;
+  }
+  _enrichFeatsByType(context, allFeats, linkedVehicles) {
     const vehicleFeats = allFeats.filter((feat) => feat.system.featType === "vehicle");
     const cyberdeckFeats = allFeats.filter((feat) => feat.system.featType === "cyberdeck");
     cyberdeckFeats.forEach((cyberdeck) => {
@@ -5087,6 +5108,8 @@ class CharacterSheet extends ActorSheet {
       (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true
     );
     context.bookmarkedItems = bookmarkedItems;
+  }
+  _loadSkillsAndSpecializations(context) {
     const skills = this.actor.items.filter((item) => item.type === "skill").sort((a, b) => a.name.localeCompare(b.name));
     const allSpecializations = this.actor.items.filter((item) => item.type === "specialization").sort((a, b) => a.name.localeCompare(b.name));
     const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations } = organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
@@ -5164,11 +5187,6 @@ class CharacterSheet extends ActorSheet {
       skill.phantomSpecializations = linkedPhantomSpecs;
     }
     context.phantomRRs = phantomRRsWithoutSkill;
-    context.activeSection = this._activeSection;
-    const damage = systemData.damage || {};
-    const severeDamage = Array.isArray(damage.severe) ? damage.severe : [false];
-    context.hasSevereDamage = severeDamage.some((box) => box === true);
-    return context;
   }
   async close(options) {
     $(document).off("click.skill-search");

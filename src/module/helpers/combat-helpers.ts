@@ -122,42 +122,23 @@ export function calculateNPCThreshold(
   itemType: 'skill' | 'specialization',
   parentSkill?: any
 ): { threshold: number; totalRR: number } {
-  let totalRR = 0;
-  
-  // Get all active feats
-  const activeFeats = actor.items.filter((i: any) => 
-    i.type === 'feat' && i.system.active === true
-  );
-  
-  // Get linked attribute for this item
   const linkedAttribute = item.system.linkedAttribute;
-  
-  // Check each feat for RR that applies
-  activeFeats.forEach((feat: any) => {
-    const rrList = feat.system.rrList || [];
-    rrList.forEach((rrEntry: any) => {
-      // Check if RR applies to this item
-      if (itemType === 'skill' && rrEntry.rrType === 'skill' && rrEntry.rrTarget === item.name) {
-        totalRR += rrEntry.rrValue || 0;
-      } else if (itemType === 'specialization') {
-        // For specializations, check spec RR and also inherit skill RR
-        if (rrEntry.rrType === 'specialization' && rrEntry.rrTarget === item.name) {
-          totalRR += rrEntry.rrValue || 0;
-        } else if (parentSkill && rrEntry.rrType === 'skill' && rrEntry.rrTarget === parentSkill.name) {
-          totalRR += rrEntry.rrValue || 0;
-        }
-      }
-      
-      // Also check for attribute RR
-      if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === linkedAttribute) {
-        totalRR += rrEntry.rrValue || 0;
-      }
-    });
-  });
-  
-  // Calculate NPC threshold: round(dice pool / 3) + RR + 1
+  const sum = (sources: Array<{ rrValue: number }>) => sources.reduce((s, r) => s + r.rrValue, 0);
+
+  let totalRR = 0;
+  if (itemType === 'skill') {
+    totalRR = sum(SheetHelpers.getRRSources(actor, 'skill', item.name));
+  } else {
+    totalRR = sum(SheetHelpers.getRRSources(actor, 'specialization', item.name));
+    if (parentSkill) {
+      totalRR += sum(SheetHelpers.getRRSources(actor, 'skill', parentSkill.name));
+    }
+  }
+  if (linkedAttribute) {
+    totalRR += sum(SheetHelpers.getRRSources(actor, 'attribute', linkedAttribute));
+  }
+
   const threshold = Math.round(dicePool / 3) + totalRR + 1;
-  
   return { threshold, totalRR };
 }
 

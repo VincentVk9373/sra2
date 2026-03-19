@@ -32,7 +32,6 @@ export class CharacterSheet extends ActorSheet {
   override async getData(): Promise<any> {
     const context = super.getData() as any;
 
-    // DEBUG: Log when character sheet getData is called
     console.log('CharacterSheet.getData - DEBUG:', {
       'this.actor.id': this.actor.id,
       'this.actor.name': this.actor.name,
@@ -40,11 +39,29 @@ export class CharacterSheet extends ActorSheet {
       'stack': new Error().stack?.split('\n').slice(1, 5).join('\n')
     });
 
-    // Ensure system data is available
     context.system = this.actor.system;
-    
-    // Ensure damage arrays are properly initialized
     const systemData = context.system as any;
+
+    this._initializeDamageArrays(context, systemData);
+    this._loadAnarchyData(context, systemData);
+
+    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
+    const rawFeats = this.actor.items.filter((item: any) => item.type === 'feat');
+    const allFeats = SheetHelpers.enrichFeats(rawFeats, actorStrength, SheetHelpers.calculateFinalDamageValue, this.actor);
+    const linkedVehicles = await this._loadLinkedVehicles(actorStrength, allFeats);
+
+    this._enrichFeatsByType(context, allFeats, linkedVehicles);
+    this._loadSkillsAndSpecializations(context);
+
+    context.activeSection = this._activeSection;
+    const damage = systemData.damage || {};
+    context.hasSevereDamage = (Array.isArray(damage.severe) ? damage.severe : [false]).some((b: boolean) => b);
+
+    return context;
+  }
+
+  private _initializeDamageArrays(context: any, systemData: any): void {
+    // Ensure damage arrays are properly initialized
     if (!systemData.damage) {
       systemData.damage = {
         light: [false, false],
@@ -60,16 +77,16 @@ export class CharacterSheet extends ActorSheet {
           systemData.damage.light.push(false);
         }
       }
-      
+
       if (!Array.isArray(systemData.damage.severe)) {
         systemData.damage.severe = [false];
       }
-      
+
       if (typeof systemData.damage.incapacitating !== 'boolean') {
         systemData.damage.incapacitating = false;
       }
     }
-    
+
     // Ensure anarchySpent array is properly initialized
     if (!Array.isArray(systemData.anarchySpent)) {
       systemData.anarchySpent = [false, false, false];
@@ -78,17 +95,19 @@ export class CharacterSheet extends ActorSheet {
         systemData.anarchySpent.push(false);
       }
     }
+  }
 
+  private _loadAnarchyData(context: any, systemData: any): void {
     // Get metatype (there should be only one)
     const metatypes = this.actor.items.filter((item: any) => item.type === 'metatype');
     context.metatype = metatypes.length > 0 ? metatypes[0] : null;
-    
+
     // Calculate base anarchy (3 + metatype bonus) and bonus anarchy (from feats) for display purposes
     const metatypeAnarchyBonus = context.metatype ? (context.metatype.system as any).anarchyBonus || 0 : 0;
     context.baseAnarchy = 3 + metatypeAnarchyBonus;
-    
+
     // Calculate bonus anarchy from active feats
-    const activeFeats = this.actor.items.filter((item: any) => 
+    const activeFeats = this.actor.items.filter((item: any) =>
       item.type === 'feat' && item.system.active === true
     );
     let bonusAnarchy = 0;
@@ -96,7 +115,7 @@ export class CharacterSheet extends ActorSheet {
       bonusAnarchy += feat.system.bonusAnarchy || 0;
     });
     context.bonusAnarchy = bonusAnarchy;
-    
+
     // Create separate arrays for base and bonus anarchy trackers with correct indices
     const anarchySpent = systemData.anarchySpent || [];
     context.baseAnarchySpent = anarchySpent.slice(0, context.baseAnarchy).map((value: boolean, index: number) => ({
@@ -116,14 +135,9 @@ export class CharacterSheet extends ActorSheet {
       value: tempAnarchySpent[index] || false,
       index: index
     }));
+  }
 
-    // Get actor's strength for damage value calculations
-    const actorStrength = (this.actor.system as any).attributes?.strength || 0;
-    
-    // Get feats and enrich with RR target labels and calculated damage values
-    const rawFeats = this.actor.items.filter((item: any) => item.type === 'feat');
-    const allFeats = SheetHelpers.enrichFeats(rawFeats, actorStrength, SheetHelpers.calculateFinalDamageValue, this.actor);
-    
+  private async _loadLinkedVehicles(actorStrength: number, allFeats: any[]): Promise<any[]> {
     // Get linked vehicle actors
     const linkedVehicleUuids = (this.actor.system as any).linkedVehicles || [];
     const linkedVehicles: any[] = [];
@@ -157,7 +171,7 @@ export class CharacterSheet extends ActorSheet {
               });
             }
           }
-          
+
           // Calculate vehicle level (base 1 + bonuses + options, excluding weapons)
           const vehicleSystem = vehicleActor.system as any;
           let vehicleLevel = 1; // Base level
@@ -183,7 +197,7 @@ export class CharacterSheet extends ActorSheet {
             return false;
           }).length;
           vehicleLevel += narrativeEffectsCount;
-          
+
           // Check vehicle damage status
           const vehicleDamage = vehicleActor.system?.damage || {};
           const vehicleSevereDamage = Array.isArray(vehicleDamage.severe) ? vehicleDamage.severe : [false];
@@ -219,10 +233,13 @@ export class CharacterSheet extends ActorSheet {
         console.warn(`Failed to load vehicle actor ${uuid}:`, error);
       }
     }
-    
+    return linkedVehicles;
+  }
+
+  private _enrichFeatsByType(context: any, allFeats: any[], linkedVehicles: any[]): void {
     // Group feats by type (vehicle feats + linked vehicle actors)
     const vehicleFeats = allFeats.filter((feat: any) => feat.system.featType === 'vehicle');
-    
+
     // Enrich cyberdecks with damage thresholds
     const cyberdeckFeats = allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck');
     cyberdeckFeats.forEach((cyberdeck: any) => {
@@ -234,7 +251,7 @@ export class CharacterSheet extends ActorSheet {
       };
       // Calculate base light damage boxes (2, or 3 if cyberdeckBonusLightDamage is checked)
       const baseLightBoxes = (cyberdeck.system.cyberdeckBonusLightDamage === true) ? 3 : 2;
-      
+
       // Ensure cyberdeckDamage exists
       if (!cyberdeck.system.cyberdeckDamage) {
         cyberdeck.system.cyberdeckDamage = {
@@ -269,13 +286,13 @@ export class CharacterSheet extends ActorSheet {
         }
       }
     });
-    
+
     context.featsByType = {
       trait: allFeats.filter((feat: any) => feat.system.featType === 'trait'),
       contact: allFeats.filter((feat: any) => feat.system.featType === 'contact'),
       awakened: allFeats.filter((feat: any) => feat.system.featType === 'awakened'),
-      adeptPower: allFeats.filter((feat: any) => 
-        feat.system.featType === 'adept-power' || 
+      adeptPower: allFeats.filter((feat: any) =>
+        feat.system.featType === 'adept-power' ||
         ((feat.system.featType === 'weapon' || feat.system.featType === 'weapons-spells') && feat.system.isAdeptPowerWeapon === true)
       ),
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
@@ -285,22 +302,22 @@ export class CharacterSheet extends ActorSheet {
       vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon' && !feat.system.isSpell),
-      spell: allFeats.filter((feat: any) => 
+      spell: allFeats.filter((feat: any) =>
         feat.system.featType === 'spell' || feat.system.isSpell === true
       ),
       connaissance: allFeats.filter((feat: any) => feat.system.featType === 'connaissance'),
       power: allFeats.filter((feat: any) => feat.system.featType === 'power')
     };
-    
+
     // Enrich weapons with dice pool and RR calculations (for V2 template)
     context.featsByType.weapon = context.featsByType.weapon.map((weapon: any) => {
       const weaponSystem = weapon.system as any;
       const weaponType = weaponSystem.weaponType;
-      
+
       // Get weapon type and linked skills
       let weaponLinkedSkill = '';
       let weaponLinkedSpecialization = '';
-      
+
       if (weaponType && weaponType !== 'custom-weapon') {
         const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
         if (weaponStats) {
@@ -308,18 +325,18 @@ export class CharacterSheet extends ActorSheet {
           weaponLinkedSpecialization = weaponStats.linkedSpecialization || '';
         }
       }
-      
+
       // Get final linked skills (from weapon type or custom)
       const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
       const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || '';
-      
+
       // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
       let defaultAttribute: string;
-      const skillExists = this.actor.items.some((i: any) => 
-        i.type === 'skill' && 
+      const skillExists = this.actor.items.some((i: any) =>
+        i.type === 'skill' &&
         ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
       );
-      
+
       if (!skillExists && finalAttackSkill) {
         // Skill not found: use agility, except for "Combat rapproché" which uses strength
         const normalizedSkillName = ItemSearch.normalizeSearchText(finalAttackSkill);
@@ -332,7 +349,7 @@ export class CharacterSheet extends ActorSheet {
         // Skill exists or no skill name: use strength (will be overridden by skill's linkedAttribute if skill found)
         defaultAttribute = 'strength';
       }
-      
+
       // Find skill/spec using unified helper
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
@@ -340,39 +357,39 @@ export class CharacterSheet extends ActorSheet {
         finalAttackSkill,
         { defaultAttribute }
       );
-      
+
       // Calculate dice pool and RR using unified helper
       // Pass item's own RR list - all RR in weaponSystem.rrList come directly from the weapon itself
       // (enrichFeats doesn't modify weaponSystem.rrList, it only creates feat.rrEntries)
       // So we keep ALL RR entries, including those that target skills/specs/attributes
       const itemRRList = (weaponSystem.rrList || []);
-      
+
       const poolResult = SheetHelpers.calculateAttackPool(
         this.actor,
         skillSpecResult,
         itemRRList,
         weapon.name
       );
-      
+
       // Add dice pool and RR to weapon
       weapon.totalDicePool = poolResult.totalDicePool;
       weapon.rr = poolResult.totalRR;
-      
+
       // Also store spec info for potential specialization display later
       if (skillSpecResult.specName) {
         weapon.attackSpecName = skillSpecResult.specName;
         weapon.attackSpecLevel = skillSpecResult.specLevel;
       }
-      
+
       return weapon;
     });
-    
+
     // Enrich vehicle weapons with dice pool and RR calculations (for V2 template)
     for (const vehicle of context.featsByType.vehicle) {
       if (vehicle.type === 'vehicle-actor' && vehicle.weapons) {
         vehicle.weapons = vehicle.weapons.map((weapon: any) => {
           const weaponSystem = weapon.system as any;
-          
+
           // For vehicle/drone weapons controlled by owner, use Ingénierie (Spé : Armes contrôlées à distance)
           const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
             this.actor,
@@ -380,7 +397,7 @@ export class CharacterSheet extends ActorSheet {
             'Ingénierie',
             { defaultAttribute: 'logic' }
           );
-          
+
           // Calculate dice pool and RR using unified helper
           const poolResult = SheetHelpers.calculateAttackPool(
             this.actor,
@@ -388,26 +405,26 @@ export class CharacterSheet extends ActorSheet {
             weaponSystem.rrList || [],
             weapon.name
           );
-          
+
           // Add dice pool and RR to weapon
           weapon.totalDicePool = poolResult.totalDicePool;
           weapon.rr = poolResult.totalRR;
-          
+
           // Store skill/spec info for roll dialog preselect
           weapon.linkedAttackSkill = 'Ingénierie';
           weapon.linkedAttackSpecialization = 'Spé : Armes contrôlées à distance';
           weapon.linkedDefenseSkill = 'Athlétisme';
           weapon.linkedDefenseSpecialization = 'Spé : Défense à distance';
-          
+
           return weapon;
         });
       }
     }
-    
+
     // Enrich spells with dice pool and RR calculations (for V2 template)
     context.featsByType.spell = context.featsByType.spell.map((spell: any) => {
       const spellSystem = spell.system as any;
-      
+
       // Get spell specialization type and map it to the specialization name
       // If isSpell is true but spellSpecializationType is not set, default to 'combat'
       const spellSpecType = spellSystem.spellSpecializationType || 'combat';
@@ -415,12 +432,12 @@ export class CharacterSheet extends ActorSheet {
         'combat': 'Spé: Sorts de combat',
         'detection': 'Spé: Sorts de détection',
         'health': 'Spé: Sorts de santé',
-        'illusion': 'Spé: Sorts d\'illusion',
+        'illusion': "Spé: Sorts d'illusion",
         'manipulation': 'Spé: Sorts de manipulation',
         'counterspell': 'Spé: Contresort'
       };
       const finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
-      
+
       // Find skill/spec using unified helper
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
@@ -428,7 +445,7 @@ export class CharacterSheet extends ActorSheet {
         'Sorcellerie',
         { isSpell: true, spellSpecType, defaultAttribute: 'willpower' }
       );
-      
+
       // Calculate dice pool and RR using unified helper
       const poolResult = SheetHelpers.calculateAttackPool(
         this.actor,
@@ -436,31 +453,31 @@ export class CharacterSheet extends ActorSheet {
         spellSystem.rrList || [],
         spell.name
       );
-      
+
       // Add dice pool and RR to spell
       spell.totalDicePool = poolResult.totalDicePool;
       spell.rr = poolResult.totalRR;
-      
+
       // Also store spec info for potential specialization display later
       if (skillSpecResult.specName) {
         spell.attackSpecName = skillSpecResult.specName;
         spell.attackSpecLevel = skillSpecResult.specLevel;
       }
-      
+
       return spell;
     });
-    
+
     // Enrich powers with dice pool and RR calculations (for V2 template)
     context.featsByType.power = context.featsByType.power.map((power: any) => {
       const powerSystem = power.system as any;
-      
+
       // Get linked attack skill and specialization (used for the dice roll)
       const linkedAttackSkill = powerSystem.linkedAttackSkill || '';
       const linkedAttackSpec = powerSystem.linkedAttackSpecialization || '';
-      
+
       // Determine default attribute: use strength as default
       const defaultAttribute = 'strength';
-      
+
       // Find skill/spec using unified helper
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
@@ -468,14 +485,14 @@ export class CharacterSheet extends ActorSheet {
         linkedAttackSkill,
         { defaultAttribute }
       );
-      
+
       // Get all RR sources for the power
       const rawPowerRRList = powerSystem.rrList || [];
       const powerRRList = rawPowerRRList.map((rrEntry: any) => ({
         ...rrEntry,
         featName: power.name
       }));
-      
+
       // Calculate dice pool with all RR sources using unified helper
       const poolResult = SheetHelpers.calculateAttackPool(
         this.actor,
@@ -483,39 +500,41 @@ export class CharacterSheet extends ActorSheet {
         powerRRList,
         power.name
       );
-      
+
       power.totalDicePool = poolResult.totalDicePool;
       power.rr = poolResult.totalRR;
       power.skillName = skillSpecResult.skillName;
       power.specName = skillSpecResult.specName;
-      
+
       return power;
     });
-    
+
     // Keep the feats array for backwards compatibility
     context.feats = allFeats;
-    
+
     // Get bookmarked items (skills, specializations, weapons, spells)
-    const bookmarkedItems = this.actor.items.filter((item: any) => 
-      (item.type === 'skill' || item.type === 'specialization' || item.type === 'feat') && 
+    const bookmarkedItems = this.actor.items.filter((item: any) =>
+      (item.type === 'skill' || item.type === 'specialization' || item.type === 'feat') &&
       item.system.bookmarked === true
     );
     context.bookmarkedItems = bookmarkedItems;
-    
+  }
+
+  private _loadSkillsAndSpecializations(context: any): void {
     // Get skills (sorted alphabetically)
     const skills = this.actor.items
       .filter((item: any) => item.type === 'skill')
       .sort((a: any, b: any) => a.name.localeCompare(b.name));
-    
+
     // Get all specializations (sorted alphabetically)
     const allSpecializations = this.actor.items
       .filter((item: any) => item.type === 'specialization')
       .sort((a: any, b: any) => a.name.localeCompare(b.name));
-    
+
     // Organize specializations by linked skill using helper
-    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations } = 
+    const { bySkill: specializationsBySkill, unlinked: unlinkedSpecializations, orphan: orphanSpecializations } =
       SheetHelpers.organizeSpecializationsBySkill(allSpecializations, this.actor.items.contents);
-    
+
     // Calculate RR for attributes first (needed for skills and specializations)
     const attributesRR = {
       strength: Math.min(RR_MAX, this.calculateRR('attribute', 'strength')),
@@ -524,23 +543,23 @@ export class CharacterSheet extends ActorSheet {
       logic: Math.min(RR_MAX, this.calculateRR('attribute', 'logic')),
       charisma: Math.min(RR_MAX, this.calculateRR('attribute', 'charisma'))
     };
-    
+
     // Add specializations to each skill and calculate RR
     context.skills = skills.map((skill: any) => {
       // Get linked attribute label for the skill
       const linkedAttribute = skill.system?.linkedAttribute || 'strength';
       skill.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-      
+
       // Calculate RR for this skill (skill RR + attribute RR, max 3)
       const skillRR = this.calculateRR('skill', skill.name);
       const attributeRR = (attributesRR as any)[linkedAttribute] || 0;
       skill.rr = Math.min(3, skillRR + attributeRR);
-      
+
       // Calculate total dice pool (attribute + skill rating)
       const attributeValue = (this.actor.system as any).attributes[linkedAttribute] || 0;
       const skillRating = skill.system?.rating || 0;
       skill.totalDicePool = attributeValue + skillRating;
-      
+
       // Get specializations for this skill and add calculated ratings (sorted alphabetically)
       const specs = (specializationsBySkill.get(skill.id) || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
       skill.specializations = specs.map((spec: any) => {
@@ -549,46 +568,46 @@ export class CharacterSheet extends ActorSheet {
         spec.parentRating = parentRating;
         spec.effectiveRating = parentRating + 2;  // Specialization adds +2 to skill rating
         spec.parentSkillName = skill.name;
-        
+
         // Get linked attribute label for the specialization
         const specLinkedAttribute = spec.system?.linkedAttribute || 'strength';
         spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${specLinkedAttribute.toUpperCase()}`);
-        
+
         // Calculate RR for this specialization (attribute RR + skill RR + spec RR, max 3)
         const specRR = this.calculateRR('specialization', spec.name);
         const specAttributeRR = (attributesRR as any)[specLinkedAttribute] || 0;
         const parentSkillRR = skillRR; // RR of the parent skill
         spec.rr = Math.min(3, specAttributeRR + parentSkillRR + specRR);
-        
+
         // Calculate total dice pool (attribute + effective rating)
         const specAttributeValue = (this.actor.system as any).attributes[specLinkedAttribute] || 0;
         spec.totalDicePool = specAttributeValue + spec.effectiveRating;
-        
+
         return spec;
       });
       return skill;
     });
-    
+
     // Add unlinked specializations with attribute labels and RR (sorted alphabetically)
     context.unlinkedSpecializations = unlinkedSpecializations
       .sort((a: any, b: any) => a.name.localeCompare(b.name))
       .map((spec: any) => {
       const linkedAttribute = spec.system?.linkedAttribute || 'strength';
       spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-      
+
       // Calculate RR for this specialization (spec RR + attribute RR, max 3)
       // Note: unlinked specializations don't have a parent skill, so only attribute + spec RR
       const specRR = this.calculateRR('specialization', spec.name);
       const attributeRR = (attributesRR as any)[linkedAttribute] || 0;
       spec.rr = Math.min(3, specRR + attributeRR);
-      
+
       // Calculate total dice pool (attribute only, since no skill linked)
       const attributeValue = (this.actor.system as any).attributes[linkedAttribute] || 0;
       spec.totalDicePool = attributeValue;
-      
+
       return spec;
     });
-    
+
     // Add orphan specializations (skill specified but not on actor) - sorted alphabetically
     // These are displayed in red/strikethrough to indicate they're unusable
     context.orphanSpecializations = orphanSpecializations
@@ -596,30 +615,30 @@ export class CharacterSheet extends ActorSheet {
       .map((spec: any) => {
         const linkedAttribute = spec.system?.linkedAttribute || 'strength';
         spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-        
+
         // Orphan specs are unusable, but we still show their theoretical values
         const specRR = this.calculateRR('specialization', spec.name);
         const attributeRR = (attributesRR as any)[linkedAttribute] || 0;
         spec.rr = Math.min(3, specRR + attributeRR);
-        
+
         // Calculate total dice pool (attribute only, since skill is missing)
         const attributeValue = (this.actor.system as any).attributes[linkedAttribute] || 0;
         spec.totalDicePool = attributeValue;
-        
+
         return spec;
       });
-    
+
     // Store attributesRR in context
     context.attributesRR = attributesRR;
-    
+
     // Get phantom RRs (RR on skills/specs not owned by the actor)
     const allPhantomRRs = SheetHelpers.getPhantomRRs(this.actor);
-    
+
     // Separate phantom specs that have their linked skill on the actor
     // These will be displayed under their related skill
     const phantomSpecsWithSkill: any[] = [];
     const phantomRRsWithoutSkill: any[] = [];
-    
+
     for (const phantom of allPhantomRRs) {
       if (phantom.type === 'specialization' && phantom.linkedSkillOnActor && phantom.linkedSkillName) {
         phantomSpecsWithSkill.push(phantom);
@@ -627,7 +646,7 @@ export class CharacterSheet extends ActorSheet {
         phantomRRsWithoutSkill.push(phantom);
       }
     }
-    
+
     // Attach phantom specs to their linked skills
     for (const skill of context.skills) {
       const linkedPhantomSpecs = phantomSpecsWithSkill.filter((phantom: any) => {
@@ -637,19 +656,9 @@ export class CharacterSheet extends ActorSheet {
       });
       skill.phantomSpecializations = linkedPhantomSpecs;
     }
-    
+
     // Store remaining phantom RRs (skills and specs without linked skill on actor)
     context.phantomRRs = phantomRRsWithoutSkill;
-
-    // Add active section for navigation
-    context.activeSection = this._activeSection;
-
-    // Check if actor has severe damage (at least one severe damage box checked)
-    const damage = systemData.damage || {};
-    const severeDamage = Array.isArray(damage.severe) ? damage.severe : [false];
-    context.hasSevereDamage = severeDamage.some((box: boolean) => box === true);
-
-    return context;
   }
 
   override async close(options?: Application.CloseOptions): Promise<void> {
