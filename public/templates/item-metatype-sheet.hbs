@@ -63,11 +63,12 @@
     </div>
     {{/if}}
 
-    <!-- Reference -->
-    <div class="form-group">
-      <label>{{localize "SRA2.REFERENCE"}}</label>
-      <input type="text" name="system.reference" value="{{system.reference}}" placeholder="{{localize 'SRA2.REFERENCE'}}" />
-    </div>
   </section>
+  <footer class="item-footer">
+    <div class="footer-reference">
+      <label class="reference-label">{{localize "SRA2.REFERENCE"}}:</label>
+      <input type="text" name="system.reference" value="{{system.reference}}" class="reference-input" placeholder="p.XX" />
+    </div>
+  </footer>
 </form>
 

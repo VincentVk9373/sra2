@@ -1999,3 +1999,40 @@
     }
   }
 }
+
+/* Item sheet footer reference */
+.sra2-item-sheet {
+  .item-footer {
+    padding: 4px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+
+    .footer-reference {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      .reference-label {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        color: var(--neutral-light, #ccc);
+      }
+
+      .reference-input {
+        width: 80px;
+        height: 18px;
+        padding: 0 4px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        color: var(--neutral-light, #ccc);
+        font-size: 0.8rem;
+
+        &:focus {
+          outline: none;
+          border-bottom-color: rgba(255, 255, 255, 0.8);
+        }
+      }
+    }
+  }
+}
