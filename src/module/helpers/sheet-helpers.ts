@@ -347,8 +347,8 @@ export async function handleVehicleActorDrop(
 /**
  * Get RR for a specific item type and name (wrapper for DiceRoller)
  */
-export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number }> {
-  const sources: Array<{ featName: string, rrValue: number }> = [];
+export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number, rrLabel?: string }> {
+  const sources: Array<{ featName: string, rrValue: number, rrLabel?: string }> = [];
 
   const feats = actor.items.filter((item: any) =>
     item.type === 'feat' &&
@@ -374,7 +374,8 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
       if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
         sources.push({
           featName: feat.name,
-          rrValue: rrValue
+          rrValue: rrValue,
+          rrLabel: rrEntry.rrLabel || undefined
         });
       }
     }
@@ -1093,6 +1094,7 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
         allRRList = [...allRRList, ...specRRSources.map(rr => ({
           rrType: 'specialization',
           rrValue: rr.rrValue,
+          rrLabel: rr.rrLabel,
           rrTarget: attackSpecName
         }))];
       }
@@ -1101,6 +1103,7 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
         allRRList = [...allRRList, ...skillRRSources.map(rr => ({
           rrType: 'skill',
           rrValue: rr.rrValue,
+          rrLabel: rr.rrLabel,
           rrTarget: attackSkillName
         }))];
       }
@@ -1109,6 +1112,7 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
         allRRList = [...allRRList, ...attributeRRSources.map(rr => ({
           rrType: 'attribute',
           rrValue: rr.rrValue,
+          rrLabel: rr.rrLabel,
           rrTarget: attackLinkedAttribute
         }))];
       }
@@ -1530,7 +1534,8 @@ export function calculateAttackPool(
   // Convert item RR list to same format as getRRSources (objects with rrValue)
   const itemRRSources = itemRRList.map((rrEntry: any) => ({
     featName: itemName,
-    rrValue: rrEntry.rrValue || 0
+    rrValue: rrEntry.rrValue || 0,
+    rrLabel: rrEntry.rrLabel || undefined
   }));
 
   // Merge all RR sources (item RR + skill/spec/attribute RR)

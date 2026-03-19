@@ -317,6 +317,9 @@
                                         <span class="rr-source-name">{{this.featName}}</span>
                                         <span class="rr-source-value">+{{this.rrValue}}</span>
                                     </label>
+                                    {{#if this.rrLabel}}
+                                    <span class="rr-source-condition">{{this.rrLabel}}</span>
+                                    {{/if}}
                                 </li>
                                 {{/each}}
                                 <li class="rr-source-item">

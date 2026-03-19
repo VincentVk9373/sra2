@@ -317,6 +317,8 @@
             },
             "RR_VALUE": "Valeur de RR",
             "RR_TARGET": "Cible du RR",
+            "RR_LABEL": "Condition d'application",
+            "RR_LABEL_PLACEHOLDER": "Ex: si face à face, si dans l'ombre...",
             "RR_EFFECT": "Effet de Réduction de Risque",
             "FEAT_TYPE": {
                 "LABEL": "Type d'Atout",

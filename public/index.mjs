@@ -855,6 +855,12 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           initial: "",
           nullable: false,
           label: "SRA2.FEATS.RR_TARGET"
+        }),
+        rrLabel: new fields.StringField({
+          required: false,
+          initial: "",
+          nullable: false,
+          label: "SRA2.FEATS.RR_LABEL"
         })
       }), {
         initial: [],
@@ -2769,7 +2775,8 @@ function getRRSources(actor, itemType, itemName) {
       if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
         sources.push({
           featName: feat.name,
-          rrValue
+          rrValue,
+          rrLabel: rrEntry.rrLabel || void 0
         });
       }
     }
@@ -3195,6 +3202,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
         allRRList = [...allRRList, ...specRRSources.map((rr) => ({
           rrType: "specialization",
           rrValue: rr.rrValue,
+          rrLabel: rr.rrLabel,
           rrTarget: attackSpecName
         }))];
       }
@@ -3203,6 +3211,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
         allRRList = [...allRRList, ...skillRRSources.map((rr) => ({
           rrType: "skill",
           rrValue: rr.rrValue,
+          rrLabel: rr.rrLabel,
           rrTarget: attackSkillName
         }))];
       }
@@ -3211,6 +3220,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
         allRRList = [...allRRList, ...attributeRRSources.map((rr) => ({
           rrType: "attribute",
           rrValue: rr.rrValue,
+          rrLabel: rr.rrLabel,
           rrTarget: attackLinkedAttribute
         }))];
       }
@@ -3444,7 +3454,8 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
   }
   const itemRRSources = itemRRList.map((rrEntry) => ({
     featName: itemName,
-    rrValue: rrEntry.rrValue || 0
+    rrValue: rrEntry.rrValue || 0,
+    rrLabel: rrEntry.rrLabel || void 0
   }));
   const allRRSources = [...itemRRSources, ...specRRSources, ...skillRRSources, ...attributeRRSources];
   const totalRR = Math.min(3, allRRSources.reduce((sum, source) => {
@@ -7941,7 +7952,8 @@ class FeatSheet extends ItemSheet {
         rrType,
         rrValue,
         rrTarget,
-        rrTargetName: rrTarget
+        rrTargetName: rrTarget,
+        rrLabel: rrEntry.rrLabel || ""
       };
       if (rrType === "skill" || rrType === "specialization") {
         entry.rrTargetType = rrType === "skill" ? game.i18n.localize("SRA2.FEATS.RR_TYPE.SKILL") : game.i18n.localize("SRA2.FEATS.RR_TYPE.SPECIALIZATION");
@@ -9848,6 +9860,7 @@ class RollDialog extends Application {
               id: rrId,
               featName,
               rrValue,
+              rrLabel: rrSource.rrLabel || "",
               enabled: isEnabled
             });
             if (isEnabled) {

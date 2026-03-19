@@ -210,6 +210,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           initial: "",
           nullable: false,
           label: "SRA2.FEATS.RR_TARGET"
+        }),
+        rrLabel: new fields.StringField({
+          required: false,
+          initial: "",
+          nullable: false,
+          label: "SRA2.FEATS.RR_LABEL"
         })
       }), {
         initial: [],

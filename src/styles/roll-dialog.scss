@@ -307,7 +307,7 @@
         border-radius: var(--sr-border-radius-sm);
         color: #ff6b6b;
         font-size: 0.85rem;
-        
+
         i {
             color: #ff6b6b;
         }
@@ -352,7 +352,7 @@
             &.forced {
                 border-color: #ff6b6b;
                 background: rgba(139, 0, 0, 0.2);
-                
+
                 &.disadvantage {
                     border-color: #ff6b6b;
                 }
@@ -360,7 +360,7 @@
 
             input[type="radio"] {
                 cursor: pointer;
-                
+
                 &:disabled {
                     cursor: not-allowed;
                 }
@@ -724,6 +724,15 @@
                     background: rgba(255, 255, 255, 0.05);
                     border-radius: var(--sr-border-radius-xs);
                     font-size: 0.7rem;
+
+                    .rr-source-condition {
+                        display: block;
+                        font-size: 0.8rem;
+                        color: var(--sr-text-color-grey);
+                        font-style: italic;
+                        margin-top: 0.1rem;
+                        padding-left: 1.6rem;
+                    }
 
                     .rr-checkbox-label {
                         display: flex;

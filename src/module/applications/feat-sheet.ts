@@ -57,7 +57,8 @@ export class FeatSheet extends ItemSheet {
         rrType,
         rrValue,
         rrTarget,
-        rrTargetName: rrTarget
+        rrTargetName: rrTarget,
+        rrLabel: rrEntry.rrLabel || ''
       };
       
       if (rrType === 'skill' || rrType === 'specialization') {

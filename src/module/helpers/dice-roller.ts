@@ -49,6 +49,7 @@ function parseDamageValueSafe(
 export interface RRSource {
   featName: string;
   rrValue: number;
+  rrLabel?: string;
 }
 
 /**
@@ -102,7 +103,8 @@ export function getRRSources(
       if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
         sources.push({
           featName: feat.name,
-          rrValue: rrValue
+          rrValue: rrValue,
+          rrLabel: rrEntry.rrLabel || undefined
         });
       }
     }

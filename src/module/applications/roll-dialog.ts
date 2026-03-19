@@ -598,6 +598,7 @@ export class RollDialog extends Application {
               id: rrId,
               featName: featName,
               rrValue: rrValue,
+              rrLabel: rrSource.rrLabel || '',
               enabled: isEnabled
             });
             

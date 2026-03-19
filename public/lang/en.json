@@ -419,6 +419,8 @@
             },
             "RR_VALUE": "RR Value",
             "RR_TARGET": "RR Target",
+            "RR_LABEL": "Application condition",
+            "RR_LABEL_PLACEHOLDER": "e.g. if face-to-face, if in shadow...",
             "RR_EFFECT": "Risk Reduction Effect",
             "FEAT_TYPE": {
                 "LABEL": "Feat Type",

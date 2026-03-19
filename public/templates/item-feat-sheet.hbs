@@ -1236,6 +1236,12 @@
               </div>
 
               <div class="form-group">
+                <label>{{localize "SRA2.FEATS.RR_LABEL"}}</label>
+                <input type="text" name="system.rrList.{{index}}.rrLabel" value="{{rrLabel}}"
+                  placeholder="{{localize 'SRA2.FEATS.RR_LABEL_PLACEHOLDER'}}" />
+              </div>
+
+              <div class="form-group">
                 <label>{{localize "SRA2.FEATS.RR_TYPE.LABEL"}}</label>
                 <select name="system.rrList.{{index}}.rrType">
                   <option value="skill" {{#if (eq rrType "skill" )}}selected{{/if}}>{{localize
