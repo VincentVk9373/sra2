@@ -3751,6 +3751,93 @@ function loadCombatantFromFlags(flags, label) {
   }
   return { actor, token };
 }
+function resolveDefenderForDefend(flags, isVehicleWeapon, vehicleUuid) {
+  if (isVehicleWeapon) {
+    const selected = Array.from(game.user?.targets ?? []);
+    if (selected.length > 0) {
+      const t = selected[0];
+      if (t?.actor) return { actor: t.actor, token: t };
+    }
+  }
+  const result = loadCombatantFromFlags(
+    { actorUuid: flags.defenderUuid, tokenUuid: flags.defenderTokenUuid, actorId: flags.defenderId },
+    "Defense Defender"
+  );
+  if (isVehicleWeapon && vehicleUuid && result.actor?.uuid === vehicleUuid) {
+    return { actor: null, token: null };
+  }
+  return result;
+}
+function resolveDefenseSkillData(defenderActor, rollData, isVehicle) {
+  if (isVehicle) {
+    return {
+      skill: "Autopilot",
+      spec: null,
+      skillLevel: defenderActor.system?.attributes?.autopilot ?? 0,
+      specLevel: void 0,
+      linkedAttribute: void 0
+    };
+  }
+  const isIceAttack = rollData.itemType === "ice-attack" || rollData.attackRollData?.itemType === "ice-attack";
+  const attackSpec = rollData.linkedAttackSpecialization || rollData.specName || null;
+  const defenseSpec = rollData.linkedDefenseSpecialization || null;
+  const defenseSkill = rollData.linkedDefenseSkill || null;
+  let finalSkill = null;
+  let finalSpec = null;
+  if (isIceAttack) {
+    finalSkill = "Piratage";
+    const cyberSpec = defenderActor.items.find(
+      (i) => i.type === "specialization" && i.name === "Cybercombat" && i.system.linkedSkill === "Piratage"
+    );
+    if (cyberSpec) finalSpec = "Cybercombat";
+  } else if (attackSpec) {
+    const spec = defenderActor.items.find(
+      (i) => i.type === "specialization" && i.name === attackSpec && i.system.linkedSkill === "Combat rapproché"
+    );
+    if (spec) {
+      finalSpec = spec.name;
+      finalSkill = spec.system.linkedSkill;
+    }
+  }
+  if (!finalSpec && defenseSpec) {
+    const spec = defenderActor.items.find((i) => i.type === "specialization" && i.name === defenseSpec);
+    if (spec) {
+      finalSpec = defenseSpec;
+      finalSkill = spec.system.linkedSkill;
+    }
+  }
+  if (!finalSpec && defenseSkill) {
+    const skill = defenderActor.items.find((i) => i.type === "skill" && i.name === defenseSkill);
+    if (skill) finalSkill = defenseSkill;
+  }
+  if (!finalSkill) {
+    const isMelee = rollData.meleeRange && rollData.meleeRange !== "none";
+    finalSkill = isMelee ? "Combat rapproché" : "Athlétisme";
+  }
+  let skillLevel;
+  let specLevel;
+  let linkedAttribute;
+  if (finalSpec) {
+    const spec = defenderActor.items.find((i) => i.type === "specialization" && i.name === finalSpec);
+    if (spec) {
+      const linkedSkill = defenderActor.items.find((i) => i.type === "skill" && i.name === spec.system.linkedSkill);
+      if (linkedSkill) {
+        linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
+        const attrVal = defenderActor.system?.attributes?.[linkedAttribute] ?? 0;
+        skillLevel = attrVal + (linkedSkill.system.rating ?? 0);
+        specLevel = skillLevel + (spec.system.rating ?? 0);
+      }
+    }
+  } else if (finalSkill) {
+    const skill = defenderActor.items.find((i) => i.type === "skill" && i.name === finalSkill);
+    if (skill) {
+      linkedAttribute = skill.system.linkedAttribute || "strength";
+      const attrVal = defenderActor.system?.attributes?.[linkedAttribute] ?? 0;
+      skillLevel = attrVal + (skill.system.rating ?? 0);
+    }
+  }
+  return { skill: finalSkill, spec: finalSpec, skillLevel, specLevel, linkedAttribute };
+}
 function parseDamageValueSafe(valueStr, attributes, context) {
   let value = parseInt(valueStr, 10);
   if (isNaN(value)) {
@@ -3947,9 +4034,11 @@ function buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefend
   }
   const originalAttackerUuid = finalDefenderUuid;
   const defenderUuid = finalAttackerUuid;
-  console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
-  console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
-  console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
+  if (!attackFailed) {
+    console.log("Defense: Attack succeeds - original attacker inflicts damage to defender");
+    console.log("  Original attacker (inflicter):", originalAttackerName, "(", originalAttackerUuid, ")");
+    console.log("  Defender (receiver):", defenderName, "(", defenderUuid, ")");
+  }
   const attackDamageType = rollData.attackRollData.damageType || "physical";
   return {
     attackSuccesses,
@@ -11814,6 +11903,56 @@ class Migration_13_0_12 extends Migration {
   }
 }
 globalThis.SYSTEM = SYSTEM$1;
+function getMeleeWeaponsForCounterAttack(actor, WEAPON_TYPES2) {
+  const combatSpecs = new Set(
+    actor.items.filter((i) => i.type === "specialization" && i.system.linkedSkill === "Combat rapproché").map((i) => i.name)
+  );
+  function getStats(sys) {
+    return sys.weaponType && sys.weaponType !== "custom-weapon" ? WEAPON_TYPES2[sys.weaponType] : null;
+  }
+  function hasMeleeCap(item) {
+    const sys = item.system;
+    if (sys.meleeRange === "ok" || sys.meleeRange === "disadvantage") return true;
+    const stats = getStats(sys);
+    return stats?.melee === "ok" || stats?.melee === "disadvantage";
+  }
+  function isMeleeLinked(item) {
+    const sys = item.system;
+    const stats = getStats(sys);
+    return sys.linkedAttackSkill === "Combat rapproché" || combatSpecs.has(sys.linkedAttackSkill) || combatSpecs.has(sys.linkedAttackSpecialization) || stats?.linkedSkill === "Combat rapproché" || combatSpecs.has(stats?.linkedSkill);
+  }
+  function resolvedLinkedSkill(item) {
+    const sys = item.system;
+    if (sys.linkedAttackSkill === "Combat rapproché" || combatSpecs.has(sys.linkedAttackSkill)) {
+      return sys.linkedAttackSkill || "Combat rapproché";
+    }
+    const stats = getStats(sys);
+    const fromType = stats?.linkedSkill;
+    if (fromType === "Combat rapproché" || combatSpecs.has(fromType)) return fromType;
+    return "Combat rapproché";
+  }
+  return actor.items.filter((item) => {
+    if (item.type !== "feat") return false;
+    const ft = item.system?.featType;
+    if (ft !== "weapon" && ft !== "weapons-spells") return false;
+    return hasMeleeCap(item) && isMeleeLinked(item);
+  }).map((weapon) => {
+    const sys = weapon.system;
+    const stats = getStats(sys);
+    return {
+      id: weapon.id,
+      name: weapon.name,
+      linkedAttackSkill: resolvedLinkedSkill(weapon),
+      damageValue: sys.damageValue || "0",
+      damageValueBonus: sys.damageValueBonus || 0,
+      weaponType: sys.weaponType,
+      meleeRange: sys.meleeRange || stats?.melee || "none",
+      shortRange: sys.shortRange || stats?.short || "none",
+      mediumRange: sys.mediumRange || stats?.medium || "none",
+      longRange: sys.longRange || stats?.long || "none"
+    };
+  });
+}
 class SRA2System {
   // Set to track skills being created to avoid duplicate creation
   static skillsBeingCreated = /* @__PURE__ */ new Set();
@@ -12304,352 +12443,67 @@ class SRA2System {
         event.preventDefault();
         const messageFlags = message.flags?.sra2;
         if (!messageFlags) {
-          console.error("Missing message flags");
+          console.error("SRA2 | Defend: missing message flags");
           return;
         }
         const rollResult = messageFlags.rollResult;
         const rollData = messageFlags.rollData;
         if (!rollResult || !rollData) {
-          console.error("Missing roll data in message flags");
+          console.error("SRA2 | Defend: missing roll data in flags");
           return;
         }
-        let attackerToken = null;
-        let defenderToken = null;
-        let attacker = null;
-        let defender = null;
-        console.log("=== DEFENSE BUTTON - MESSAGE FLAGS ===");
-        console.log("attackerUuid flag:", messageFlags.attackerUuid || "Not set");
-        console.log("attackerTokenUuid flag:", messageFlags.attackerTokenUuid || "Not set");
-        console.log("attackerId flag:", messageFlags.attackerId || "Not set");
-        console.log("defenderUuid flag:", messageFlags.defenderUuid || "Not set");
-        console.log("defenderTokenUuid flag:", messageFlags.defenderTokenUuid || "Not set");
-        console.log("defenderId flag:", messageFlags.defenderId || "Not set");
-        console.log("======================================");
-        const attackerResult = loadCombatantFromFlags(
+        const isVehicleWeapon = rollData.isVehicleWeapon;
+        const vehicleUuid = rollData.vehicleUuid;
+        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           "Defense Attacker"
         );
-        attacker = attackerResult.actor;
-        attackerToken = attackerResult.token;
-        const isVehicleWeapon = rollData.isVehicleWeapon;
-        const vehicleUuid = rollData.vehicleUuid;
-        const selectedTargets = Array.from(game.user?.targets || []);
-        if (isVehicleWeapon && selectedTargets.length > 0) {
-          defenderToken = selectedTargets[0];
-          if (defenderToken?.actor) {
-            defender = defenderToken.actor;
-            console.log("Defense button: For vehicle weapon, using selected target as defender:", defender?.name);
-          }
-        }
-        if (!defender && messageFlags.defenderUuid) {
-          try {
-            const defenderFromUuid = foundry.utils?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-            if (defenderFromUuid) {
-              if (isVehicleWeapon && vehicleUuid && defenderFromUuid.uuid === vehicleUuid) {
-                console.log("Defense button: Skipping vehicle as defender for vehicle weapon - need target instead");
-              } else {
-                defender = defenderFromUuid;
-                console.log("Defense button: Defender loaded directly from defenderUuid flag");
-              }
-            }
-          } catch (e) {
-            console.warn("Defense button: Failed to load defender from defenderUuid flag:", e);
-          }
-        }
-        if (!defenderToken && messageFlags.defenderTokenUuid) {
-          try {
-            const defenderTokenFromUuid = foundry.utils?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
-            if (defenderTokenFromUuid) {
-              if (isVehicleWeapon && vehicleUuid) {
-                const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || void 0;
-                if (tokenActorUuid === vehicleUuid) {
-                  console.log("Defense button: Skipping vehicle token as defender for vehicle weapon - need target instead");
-                } else {
-                  defenderToken = defenderTokenFromUuid;
-                  if (defenderToken?.actor && !defender) {
-                    defender = defenderToken.actor;
-                    console.log("Defense button: Defender loaded from defenderTokenUuid flag, using token actor");
-                  }
-                }
-              } else {
-                defenderToken = defenderTokenFromUuid;
-                if (defenderToken?.actor && !defender) {
-                  defender = defenderToken.actor;
-                  console.log("Defense button: Defender loaded from defenderTokenUuid flag, using token actor");
-                }
-              }
-            }
-          } catch (e) {
-            console.warn("Defense button: Failed to load defender token from defenderTokenUuid flag:", e);
-          }
-        }
+        const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
+          messageFlags,
+          isVehicleWeapon,
+          vehicleUuid
+        );
         if (!defender) {
-          if (messageFlags.defenderId) {
-            const defenderFromId = game.actors?.get(messageFlags.defenderId) || null;
-            if (defenderFromId) {
-              if (isVehicleWeapon && vehicleUuid && defenderFromId.uuid === vehicleUuid) {
-                console.log("Defense button: Skipping vehicle as defender for vehicle weapon - need target instead");
-              } else {
-                defender = defenderFromId;
-              }
-            }
-          }
-          if (defender && !defenderToken) {
-            defenderToken = canvas?.tokens?.placeables?.find((token) => {
-              return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
-            }) || null;
-          }
-        }
-        const success = rollResult.totalSuccesses || 0;
-        const damage = rollData.damageValue || 0;
-        const attackerName = attacker?.name || "Unknown";
-        const attackerId = attacker?.id || messageFlags.attackerId || "Unknown";
-        const attackerUuid = messageFlags.attackerUuid || attacker?.uuid || "Unknown";
-        const defenderName = defender?.name || "Unknown";
-        const defenderId = defender?.id || messageFlags.defenderId || "Unknown";
-        let defenderUuid = defender?.uuid || "Unknown";
-        if (!defender || isVehicleWeapon && vehicleUuid && defender.uuid === vehicleUuid) {
-          defenderUuid = messageFlags.defenderUuid || defender?.uuid || "Unknown";
-        }
-        console.log("--- UUIDs being used from flags ---");
-        console.log("attackerUuid (from flag):", messageFlags.attackerUuid || "Not in flag, using:", attacker?.uuid || "Unknown");
-        console.log("defenderUuid (from flag):", messageFlags.defenderUuid || "Not in flag, using:", defender?.uuid || "Unknown");
-        console.log("attackerTokenUuid (from flag):", messageFlags.attackerTokenUuid || "Not in flag");
-        console.log("defenderTokenUuid (from flag):", messageFlags.defenderTokenUuid || "Not in flag");
-        console.log("attacker loaded:", attacker ? `${attacker.name} (${attacker.uuid})` : "Not loaded");
-        console.log("defender loaded:", defender ? `${defender.name} (${defender.uuid})` : "Not loaded");
-        console.log("attackerToken loaded:", attackerToken ? `Found (${attackerToken.uuid || attackerToken.document?.uuid})` : "Not loaded");
-        console.log("defenderToken loaded:", defenderToken ? `Found (${defenderToken.uuid || defenderToken.document?.uuid})` : "Not loaded");
-        const defenseSkill = rollData.linkedDefenseSkill || null;
-        const defenseSpec = rollData.linkedDefenseSpecialization || null;
-        const attackSkill = rollData.linkedAttackSkill || rollData.skillName || null;
-        const attackSpec = rollData.linkedAttackSpecialization || rollData.specName || null;
-        console.log("=== DEFENSE CLICK ===");
-        console.log("Success:", success);
-        console.log("Damage:", damage);
-        console.log("Attacker:", attackerName);
-        console.log("Attacker ID:", attackerId);
-        console.log("Attacker UUID:", attackerUuid);
-        console.log("Attacker Token UUID:", attackerToken?.uuid || attackerToken?.document?.uuid || "Unknown");
-        console.log("Defender:", defenderName);
-        console.log("Defender ID:", defenderId);
-        console.log("Defender UUID:", defenderUuid);
-        console.log("Defender Token UUID:", defenderToken?.uuid || defenderToken?.document?.uuid || "Unknown");
-        console.log("Skill de defense:", defenseSkill);
-        console.log("Spe de defense:", defenseSpec);
-        console.log("Skill d'attaque:", attackSkill);
-        console.log("Spe d'attaque:", attackSpec);
-        console.log("===================");
-        const isVehicleDefender = defender?.type === "vehicle";
-        if (!defender) {
-          console.error("Missing defender");
+          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
           return;
         }
-        let defenderTokenForRoll = null;
-        let defenderActorForRoll = defender;
-        if (isVehicleWeapon && defenderToken) {
-          defenderTokenForRoll = defenderToken;
-          if (defenderToken?.actor) {
-            defenderActorForRoll = defenderToken.actor;
-          }
-        } else {
-          const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
-          if (defenderTokenUuidFromFlags) {
-            try {
-              const defenderTokenFromUuid = foundry.utils?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
-              if (defenderTokenFromUuid) {
-                if (isVehicleWeapon && vehicleUuid) {
-                  const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || void 0;
-                  if (tokenActorUuid === vehicleUuid) {
-                    console.log("Defense: Skipping vehicle token as defender for vehicle weapon - using target instead");
-                    defenderTokenForRoll = defenderToken;
-                    if (defenderToken?.actor) {
-                      defenderActorForRoll = defenderToken.actor;
-                    }
-                  } else {
-                    defenderTokenForRoll = defenderTokenFromUuid;
-                    if (defenderTokenForRoll?.actor) {
-                      defenderActorForRoll = defenderTokenForRoll.actor;
-                    }
-                  }
-                } else {
-                  defenderTokenForRoll = defenderTokenFromUuid;
-                  if (defenderTokenForRoll?.actor) {
-                    defenderActorForRoll = defenderTokenForRoll.actor;
-                  }
-                }
-              }
-            } catch (e) {
-              defenderTokenForRoll = defenderToken;
-              if (defenderToken?.actor) {
-                defenderActorForRoll = defenderToken.actor;
-              }
-            }
-          } else {
-            defenderTokenForRoll = defenderToken;
-            if (defenderToken?.actor) {
-              defenderActorForRoll = defenderToken.actor;
-            }
-          }
-        }
-        const isIceAttack = messageFlags.rollType === "ice-attack" || rollData.itemType === "ice-attack";
-        let finalDefenseSkill = null;
-        let finalDefenseSpec = null;
-        if (isIceAttack) {
-          finalDefenseSkill = "Piratage";
-          const cybercombatSpec = defenderActorForRoll.items.find((item) => {
-            if (item.type !== "specialization") return false;
-            const specSystem = item.system;
-            return item.name === "Cybercombat" && specSystem.linkedSkill === "Piratage";
-          });
-          if (cybercombatSpec) {
-            finalDefenseSpec = "Cybercombat";
-          }
-        }
-        if (!isIceAttack && attackSpec) {
-          const spec = defenderActorForRoll.items.find((item) => {
-            if (item.type !== "specialization") return false;
-            const specSystem = item.system;
-            return item.name === attackSpec && specSystem.linkedSkill === "Combat rapproché";
-          });
-          if (spec) {
-            finalDefenseSpec = spec.name;
-            const specSystem = spec.system;
-            finalDefenseSkill = specSystem.linkedSkill;
-          }
-        }
-        if (!finalDefenseSpec && defenseSpec) {
-          const spec = defenderActorForRoll.items.find(
-            (item) => item.type === "specialization" && item.name === defenseSpec
-          );
-          if (spec) {
-            finalDefenseSpec = defenseSpec;
-            const specSystem = spec.system;
-            const linkedSkillName = specSystem.linkedSkill;
-            finalDefenseSkill = linkedSkillName;
-          }
-        }
-        if (!finalDefenseSpec && defenseSkill) {
-          const skill = defenderActorForRoll.items.find(
-            (item) => item.type === "skill" && item.name === defenseSkill
-          );
-          if (skill) {
-            finalDefenseSkill = defenseSkill;
-          }
-        }
-        let defenseSkillLevel = void 0;
-        let defenseSpecLevel = void 0;
-        let defenseLinkedAttribute = void 0;
-        if (isVehicleDefender) {
-          const autopilot = defenderActorForRoll.system?.attributes?.autopilot || 0;
-          finalDefenseSkill = "Autopilot";
-          defenseSkillLevel = autopilot;
-          defenseLinkedAttribute = void 0;
-        } else {
-          if (!finalDefenseSkill) {
-            const isMeleeAttack = rollData.meleeRange && rollData.meleeRange !== "none";
-            if (isMeleeAttack) {
-              finalDefenseSkill = "Combat rapproché";
-            } else {
-              finalDefenseSkill = "Athlétisme";
-            }
-          }
-          if (finalDefenseSpec) {
-            const spec = defenderActorForRoll.items.find(
-              (item) => item.type === "specialization" && item.name === finalDefenseSpec
-            );
-            if (spec) {
-              const specSystem = spec.system;
-              const linkedSkillName = specSystem.linkedSkill;
-              const linkedSkill = defenderActorForRoll.items.find(
-                (item) => item.type === "skill" && item.name === linkedSkillName
-              );
-              if (linkedSkill) {
-                const skillRating = linkedSkill.system.rating || 0;
-                const specRating = specSystem.rating || 0;
-                defenseLinkedAttribute = specSystem.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
-                const attributeValue = defenseLinkedAttribute ? defenderActorForRoll.system?.attributes?.[defenseLinkedAttribute] || 0 : 0;
-                defenseSkillLevel = attributeValue + skillRating;
-                defenseSpecLevel = defenseSkillLevel + specRating;
-              }
-            }
-          } else if (finalDefenseSkill) {
-            const skill = defenderActorForRoll.items.find(
-              (item) => item.type === "skill" && item.name === finalDefenseSkill
-            );
-            if (skill) {
-              const skillSystem = skill.system;
-              const skillRating = skillSystem.rating || 0;
-              defenseLinkedAttribute = skillSystem.linkedAttribute || "strength";
-              const attributeValue = defenseLinkedAttribute ? defenderActorForRoll.system?.attributes?.[defenseLinkedAttribute] || 0 : 0;
-              defenseSkillLevel = attributeValue + skillRating;
-            }
-          }
-        }
-        if (!finalDefenseSkill && !isVehicleDefender) {
-          console.error("Could not determine defense skill for non-vehicle defender");
+        const defenderActorForRoll = defenderToken?.actor ?? defender;
+        const isVehicleDefender = defenderActorForRoll.type === "vehicle";
+        const skillData = resolveDefenseSkillData(defenderActorForRoll, rollData, isVehicleDefender);
+        if (!skillData.skill) {
+          console.error("SRA2 | Defend: could not determine defense skill");
           return;
         }
         const { getRRSources: getRRSources2 } = await Promise.resolve().then(() => SheetHelpers);
-        let defenseRRList = [];
+        let rrList = [];
         if (!isVehicleDefender) {
-          if (finalDefenseSpec) {
-            const rrSources = getRRSources2(defenderActorForRoll, "specialization", finalDefenseSpec);
-            defenseRRList = rrSources.map((rr) => ({
-              ...rr,
-              featName: rr.featName
-            }));
-          } else if (finalDefenseSkill) {
-            const rrSources = getRRSources2(defenderActorForRoll, "skill", finalDefenseSkill);
-            defenseRRList = rrSources.map((rr) => ({
-              ...rr,
-              featName: rr.featName
-            }));
-          }
+          const rrTarget = skillData.spec ?? skillData.skill;
+          const rrItemType = skillData.spec ? "specialization" : "skill";
+          rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
         }
-        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || messageFlags.attackerTokenUuid || void 0;
-        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || messageFlags.defenderTokenUuid || void 0;
+        const defenderTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
         const defenseRollData = {
-          // Use final defense skill/spec (with fallback)
-          skillName: finalDefenseSkill,
-          specName: finalDefenseSpec,
-          linkedAttribute: defenseLinkedAttribute,
-          skillLevel: defenseSkillLevel,
-          specLevel: defenseSpecLevel,
-          // Actor is the defender - for vehicle weapons, use the actual defender (target) UUID, not the vehicle
+          skillName: skillData.skill,
+          specName: skillData.spec,
+          linkedAttribute: skillData.linkedAttribute,
+          skillLevel: skillData.skillLevel,
+          specLevel: skillData.specLevel,
           actorId: defenderActorForRoll.id,
           actorUuid: defenderActorForRoll.uuid,
-          // Use the actual defender actor UUID (target, not drone)
-          // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
           attackerTokenUuid: defenderTokenUuid,
-          // Defender's token (one defending) - this is what will be attacker in RollDialog
+          // defender's token = the one rolling
           defenderTokenUuid: originalAttackerTokenUuid,
-          // Original attacker's token (target) - this is what will be target/defender in RollDialog
-          // RR List
-          rrList: defenseRRList,
-          // Defense flags
+          // original attacker = the "target"
+          rrList,
           isDefend: true,
           isCounterAttack: false,
-          // Store original attack roll data for comparison
           attackRollResult: rollResult,
           attackRollData: rollData
         };
         const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
         const dialog = new RollDialog2(defenseRollData);
-        if (attackerToken) {
-          dialog.targetToken = attackerToken;
-        }
-        if (isVehicleWeapon && vehicleUuid) {
-          if (dialog.targetToken?.actor?.uuid === vehicleUuid) {
-            console.log("Defense: Target token is the vehicle, should be the character instead");
-            const characterToken = canvas?.tokens?.placeables?.find((token) => {
-              return token.actor?.id === attacker?.id || token.actor?.uuid === attacker?.uuid;
-            }) || null;
-            if (characterToken) {
-              dialog.targetToken = characterToken;
-            }
-          }
-        }
+        if (attackerToken) dialog.targetToken = attackerToken;
         dialog.render(true);
       });
       html.find(".counter-attack-button").off("click");
@@ -12657,196 +12511,52 @@ class SRA2System {
         event.preventDefault();
         const messageFlags = message.flags?.sra2;
         if (!messageFlags) {
-          console.error("Missing message flags");
+          console.error("SRA2 | Counter-attack: missing message flags");
           return;
         }
         const rollResult = messageFlags.rollResult;
         const rollData = messageFlags.rollData;
         if (!rollResult || !rollData) {
-          console.error("Missing roll data in message flags");
+          console.error("SRA2 | Counter-attack: missing roll data in flags");
           return;
         }
-        const attackerResult = loadCombatantFromFlags(
+        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           "Counter-attack Attacker"
         );
-        const defenderResult = loadCombatantFromFlags(
+        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
           { actorUuid: messageFlags.defenderUuid, tokenUuid: messageFlags.defenderTokenUuid, actorId: messageFlags.defenderId },
           "Counter-attack Defender"
         );
-        let attacker = attackerResult.actor;
-        let attackerToken = attackerResult.token;
-        let defender = defenderResult.actor;
-        let defenderToken = defenderResult.token;
-        console.log("--- UUIDs being used from flags (counter-attack) ---");
-        console.log("attackerUuid (from flag):", messageFlags.attackerUuid || "Not in flag, using:", attacker?.uuid || "Unknown");
-        console.log("defenderUuid (from flag):", messageFlags.defenderUuid || "Not in flag, using:", defender?.uuid || "Unknown");
-        console.log("attackerTokenUuid (from flag):", messageFlags.attackerTokenUuid || "Not in flag");
-        console.log("defenderTokenUuid (from flag):", messageFlags.defenderTokenUuid || "Not in flag");
-        console.log("attacker loaded:", attacker ? `${attacker.name} (${attacker.uuid})` : "Not loaded");
-        console.log("defender loaded:", defender ? `${defender.name} (${defender.uuid})` : "Not loaded");
-        console.log("attackerToken loaded:", attackerToken ? `Found (${attackerToken.uuid || attackerToken.document?.uuid})` : "Not loaded");
-        console.log("defenderToken loaded:", defenderToken ? `Found (${defenderToken.uuid || defenderToken.document?.uuid})` : "Not loaded");
         if (!defender) {
-          console.error("Missing defender");
+          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
           return;
         }
-        let defenderTokenForRoll = null;
-        let defenderActorForRoll = defender;
-        const defenderTokenUuidForCounter = messageFlags.defenderTokenUuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
-        if (defenderTokenUuidForCounter) {
-          try {
-            defenderTokenForRoll = foundry.utils?.fromUuidSync?.(defenderTokenUuidForCounter) || null;
-            if (defenderTokenForRoll?.actor) {
-              defenderActorForRoll = defenderTokenForRoll.actor;
-            }
-          } catch (e) {
-            defenderTokenForRoll = defenderToken;
-            if (defenderToken?.actor) {
-              defenderActorForRoll = defenderToken.actor;
-            }
-          }
-        } else {
-          defenderTokenForRoll = defenderToken;
-          if (defenderToken?.actor) {
-            defenderActorForRoll = defenderToken.actor;
-          }
-        }
-        const allWeapons = defenderActorForRoll.items.filter((item) => {
-          const isFeat = item.type === "feat";
-          const isWeapon = item.system?.featType === "weapon" || item.system?.featType === "weapons-spells";
-          return isFeat && isWeapon;
-        });
+        const defenderActorForRoll = defenderToken?.actor ?? defender;
         const { WEAPON_TYPES: WEAPON_TYPES2 } = await Promise.resolve().then(() => itemFeat);
-        const defenderWeapons = allWeapons.filter((weapon) => {
-          const weaponSystem = weapon.system;
-          const weaponType = weaponSystem.weaponType;
-          const meleeRange = weaponSystem.meleeRange || "none";
-          const hasMeleeInSystem = meleeRange === "ok" || meleeRange === "disadvantage";
-          let hasMeleeInType = false;
-          if (weaponType && weaponType !== "custom-weapon") {
-            const weaponStats = WEAPON_TYPES2[weaponType];
-            if (weaponStats && weaponStats.melee) {
-              hasMeleeInType = weaponStats.melee === "ok" || weaponStats.melee === "disadvantage";
-            }
-          }
-          if (!hasMeleeInSystem && !hasMeleeInType) {
-            return false;
-          }
-          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
-          if (!linkedAttackSkill && weaponType && weaponType !== "custom-weapon") {
-            const weaponStats = WEAPON_TYPES2[weaponType];
-            if (weaponStats) {
-              linkedAttackSkill = weaponStats.linkedSkill;
-            }
-          }
-          if (linkedAttackSkill === "Combat rapproché") {
-            return true;
-          }
-          const combatRapprocheSpecs = defenderActorForRoll.items.filter(
-            (item) => item.type === "specialization" && item.system.linkedSkill === "Combat rapproché"
-          );
-          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
-            const hasCombatRapprocheSpec = combatRapprocheSpecs.some(
-              (spec) => spec.name === linkedAttackSkill
-            );
-            if (hasCombatRapprocheSpec) {
-              return true;
-            }
-          }
-          const linkedAttackSpecialization = weaponSystem.linkedAttackSpecialization;
-          if (linkedAttackSpecialization) {
-            const hasCombatRapprocheSpec = combatRapprocheSpecs.some(
-              (spec) => spec.name === linkedAttackSpecialization
-            );
-            if (hasCombatRapprocheSpec) {
-              return true;
-            }
-          }
-          return false;
-        });
-        console.log("Counter-attack: Filtered weapons with melee capability:", defenderWeapons.length, defenderWeapons.map((w) => ({
-          name: w.name,
-          meleeRange: w.system?.meleeRange,
-          weaponType: w.system?.weaponType,
-          meleeInType: w.system?.weaponType ? WEAPON_TYPES2[w.system.weaponType]?.melee : null
-        })));
-        if (defenderWeapons.length === 0) {
-          console.error("Counter-attack: No weapons with melee capability. All items:", defenderActorForRoll.items.map((i) => ({
-            name: i.name,
-            type: i.type,
-            featType: i.system?.featType,
-            meleeRange: i.system?.meleeRange,
-            weaponType: i.system?.weaponType
-          })));
-          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS") || "Aucune arme disponible pour la contre-attaque");
+        const availableWeapons = getMeleeWeaponsForCounterAttack(defenderActorForRoll, WEAPON_TYPES2);
+        if (availableWeapons.length === 0) {
+          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS"));
           return;
         }
-        const availableWeapons = defenderWeapons.map((weapon) => {
-          const weaponSystem = weapon.system;
-          const weaponType = weaponSystem.weaponType;
-          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
-          if (!linkedAttackSkill && weaponType && weaponType !== "custom-weapon") {
-            const weaponStats2 = WEAPON_TYPES2[weaponType];
-            if (weaponStats2) {
-              linkedAttackSkill = weaponStats2.linkedSkill;
-            }
-          }
-          const combatRapprocheSpecs = defenderActorForRoll.items.filter(
-            (item) => item.type === "specialization" && item.system.linkedSkill === "Combat rapproché"
-          );
-          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
-            const isCombatRapprocheSpec = combatRapprocheSpecs.some(
-              (spec) => spec.name === linkedAttackSkill
-            );
-            if (isCombatRapprocheSpec) ;
-            else if (linkedAttackSkill !== "Combat rapproché") {
-              linkedAttackSkill = "Combat rapproché";
-            }
-          } else {
-            linkedAttackSkill = "Combat rapproché";
-          }
-          const weaponStats = weaponType && weaponType !== "custom-weapon" ? WEAPON_TYPES2[weaponType] : void 0;
-          return {
-            id: weapon.id,
-            name: weapon.name,
-            linkedAttackSkill,
-            damageValue: weaponSystem.damageValue || "0",
-            damageValueBonus: weaponSystem.damageValueBonus || 0,
-            weaponType,
-            meleeRange: weaponSystem.meleeRange || weaponStats?.melee || "none",
-            shortRange: weaponSystem.shortRange || weaponStats?.short || "none",
-            mediumRange: weaponSystem.mediumRange || weaponStats?.medium || "none",
-            longRange: weaponSystem.longRange || weaponStats?.long || "none"
-          };
-        });
-        const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || void 0;
-        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || void 0;
+        const counterAttackerTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
         const counterAttackRollData = {
-          // Actor is the defender - use UUID directly from flags (already correctly calculated)
           actorId: defenderActorForRoll.id,
-          actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid,
-          // Use flag UUID first
-          // Token UUIDs - for counter-attack, the defender becomes the attacker
-          // Use UUIDs directly from flags (already correctly calculated)
-          attackerTokenUuid: messageFlags.defenderTokenUuid || counterAttackerTokenUuid,
-          // Token of the defender (who is counter-attacking)
-          defenderTokenUuid: messageFlags.attackerTokenUuid || originalAttackerTokenUuid,
-          // Token of the original attacker
-          // Available weapons for selection
+          actorUuid: messageFlags.defenderUuid ?? defenderActorForRoll.uuid,
+          attackerTokenUuid: messageFlags.defenderTokenUuid ?? counterAttackerTokenUuid,
+          // defender becomes the "attacker"
+          defenderTokenUuid: messageFlags.attackerTokenUuid ?? originalAttackerTokenUuid,
+          // original attacker = the "target"
           availableWeapons,
-          // Counter-attack flags
           isDefend: false,
           isCounterAttack: true,
-          // Store original attack roll data for comparison
           attackRollResult: rollResult,
           attackRollData: rollData
         };
         const { RollDialog: RollDialog2 } = await Promise.resolve().then(() => rollDialog);
         const dialog = new RollDialog2(counterAttackRollData);
-        if (attackerToken && !dialog.targetToken) {
-          dialog.targetToken = attackerToken;
-        }
+        if (attackerToken) dialog.targetToken = attackerToken;
         dialog.render(true);
       });
     });

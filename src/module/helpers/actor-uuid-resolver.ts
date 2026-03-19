@@ -93,3 +93,117 @@ export function loadCombatantFromFlags(
 
   return { actor, token };
 }
+
+export interface DefenseSkillData {
+  skill: string | null;
+  spec: string | null;
+  skillLevel: number | undefined;
+  specLevel: number | undefined;
+  linkedAttribute: string | undefined;
+}
+
+/**
+ * Resolve the defender actor and token for the defend-button handler.
+ * For vehicle weapons, prefer a canvas-selected target over the stored flags
+ * (so the real target—not the drone—is used as defender).
+ */
+export function resolveDefenderForDefend(
+  flags: { defenderUuid?: string; defenderTokenUuid?: string; defenderId?: string },
+  isVehicleWeapon: boolean,
+  vehicleUuid: string | undefined
+): CombatantResult {
+  if (isVehicleWeapon) {
+    const selected = Array.from((game as any).user?.targets ?? []) as any[];
+    if (selected.length > 0) {
+      const t = selected[0];
+      if (t?.actor) return { actor: t.actor, token: t };
+    }
+  }
+  const result = loadCombatantFromFlags(
+    { actorUuid: flags.defenderUuid, tokenUuid: flags.defenderTokenUuid, actorId: flags.defenderId },
+    'Defense Defender'
+  );
+  // Never let the vehicle itself be its own defender
+  if (isVehicleWeapon && vehicleUuid && result.actor?.uuid === vehicleUuid) {
+    return { actor: null, token: null };
+  }
+  return result;
+}
+
+/**
+ * Determine which defense skill/specialisation the defender should roll,
+ * and pre-calculate the dice pool levels.
+ */
+export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVehicle: boolean): DefenseSkillData {
+  if (isVehicle) {
+    return {
+      skill: 'Autopilot',
+      spec: null,
+      skillLevel: (defenderActor.system as any)?.attributes?.autopilot ?? 0,
+      specLevel: undefined,
+      linkedAttribute: undefined,
+    };
+  }
+
+  const isIceAttack   = rollData.itemType === 'ice-attack' || rollData.attackRollData?.itemType === 'ice-attack';
+  const attackSpec: string | null    = rollData.linkedAttackSpecialization || rollData.specName || null;
+  const defenseSpec: string | null   = rollData.linkedDefenseSpecialization || null;
+  const defenseSkill: string | null  = rollData.linkedDefenseSkill || null;
+
+  let finalSkill: string | null = null;
+  let finalSpec:  string | null = null;
+
+  if (isIceAttack) {
+    finalSkill = 'Piratage';
+    const cyberSpec = defenderActor.items.find((i: any) =>
+      i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
+    );
+    if (cyberSpec) finalSpec = 'Cybercombat';
+  } else if (attackSpec) {
+    const spec = defenderActor.items.find((i: any) =>
+      i.type === 'specialization' && i.name === attackSpec && i.system.linkedSkill === 'Combat rapproché'
+    );
+    if (spec) { finalSpec = spec.name; finalSkill = spec.system.linkedSkill; }
+  }
+
+  if (!finalSpec && defenseSpec) {
+    const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && i.name === defenseSpec);
+    if (spec) { finalSpec = defenseSpec; finalSkill = spec.system.linkedSkill; }
+  }
+
+  if (!finalSpec && defenseSkill) {
+    const skill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === defenseSkill);
+    if (skill) finalSkill = defenseSkill;
+  }
+
+  if (!finalSkill) {
+    const isMelee = rollData.meleeRange && rollData.meleeRange !== 'none';
+    finalSkill = isMelee ? 'Combat rapproché' : 'Athlétisme';
+  }
+
+  let skillLevel:      number | undefined;
+  let specLevel:       number | undefined;
+  let linkedAttribute: string | undefined;
+
+  if (finalSpec) {
+    const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && i.name === finalSpec);
+    if (spec) {
+      const linkedSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === spec.system.linkedSkill);
+      if (linkedSkill) {
+        linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || 'strength';
+        const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;
+        skillLevel = attrVal + ((linkedSkill.system as any).rating ?? 0);
+        specLevel  = skillLevel + ((spec.system as any).rating ?? 0);
+      }
+    }
+  } else if (finalSkill) {
+    const skill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === finalSkill);
+    if (skill) {
+      linkedAttribute = (skill.system as any).linkedAttribute || 'strength';
+      const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;
+      skillLevel = attrVal + ((skill.system as any).rating ?? 0);
+    }
+  }
+
+  return { skill: finalSkill, spec: finalSpec, skillLevel, specLevel, linkedAttribute };
+}

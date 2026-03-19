@@ -15,7 +15,7 @@ import * as documents from "./documents/_module.ts";
 import * as applications from "./applications/_module.ts";
 import * as CombatHelpers from "./helpers/combat-helpers.ts";
 import * as SheetHelpers from "./helpers/sheet-helpers.ts";
-import { loadCombatantFromFlags } from "./helpers/actor-uuid-resolver.ts";
+import { loadCombatantFromFlags, resolveDefenderForDefend, resolveDefenseSkillData } from "./helpers/actor-uuid-resolver.ts";
 // @ts-ignore - JavaScript module without type declarations
 import { Migrations } from "./migration/migration.mjs";
 // @ts-ignore - JavaScript module without type declarations
@@ -40,6 +40,74 @@ import { Migration_13_0_11 } from "./migration/migration-13.0.11.mjs";
 import { Migration_13_0_12 } from "./migration/migration-13.0.12.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
+
+/**
+ * Return the list of melee weapons from an actor that can be used for a counter-attack.
+ * A weapon qualifies if it has melee capability AND is linked to "Combat rapproché"
+ * (directly or via a specialisation).
+ */
+function getMeleeWeaponsForCounterAttack(actor: any, WEAPON_TYPES: Record<string, any>): any[] {
+  const combatSpecs = new Set<string>(
+    actor.items
+      .filter((i: any) => i.type === 'specialization' && i.system.linkedSkill === 'Combat rapproché')
+      .map((i: any) => i.name as string)
+  );
+
+  function getStats(sys: any) {
+    return sys.weaponType && sys.weaponType !== 'custom-weapon' ? WEAPON_TYPES[sys.weaponType] : null;
+  }
+  function hasMeleeCap(item: any): boolean {
+    const sys = item.system;
+    if (sys.meleeRange === 'ok' || sys.meleeRange === 'disadvantage') return true;
+    const stats = getStats(sys);
+    return stats?.melee === 'ok' || stats?.melee === 'disadvantage';
+  }
+  function isMeleeLinked(item: any): boolean {
+    const sys   = item.system;
+    const stats = getStats(sys);
+    return (
+      sys.linkedAttackSkill === 'Combat rapproché' ||
+      combatSpecs.has(sys.linkedAttackSkill) ||
+      combatSpecs.has(sys.linkedAttackSpecialization) ||
+      stats?.linkedSkill === 'Combat rapproché' ||
+      combatSpecs.has(stats?.linkedSkill)
+    );
+  }
+  function resolvedLinkedSkill(item: any): string {
+    const sys = item.system;
+    if (sys.linkedAttackSkill === 'Combat rapproché' || combatSpecs.has(sys.linkedAttackSkill)) {
+      return sys.linkedAttackSkill || 'Combat rapproché';
+    }
+    const stats = getStats(sys);
+    const fromType = stats?.linkedSkill;
+    if (fromType === 'Combat rapproché' || combatSpecs.has(fromType)) return fromType;
+    return 'Combat rapproché';
+  }
+
+  return actor.items
+    .filter((item: any) => {
+      if (item.type !== 'feat') return false;
+      const ft = item.system?.featType;
+      if (ft !== 'weapon' && ft !== 'weapons-spells') return false;
+      return hasMeleeCap(item) && isMeleeLinked(item);
+    })
+    .map((weapon: any) => {
+      const sys   = weapon.system;
+      const stats = getStats(sys);
+      return {
+        id:               weapon.id,
+        name:             weapon.name,
+        linkedAttackSkill: resolvedLinkedSkill(weapon),
+        damageValue:      sys.damageValue || '0',
+        damageValueBonus: sys.damageValueBonus || 0,
+        weaponType:       sys.weaponType,
+        meleeRange:  sys.meleeRange  || stats?.melee  || 'none',
+        shortRange:  sys.shortRange  || stats?.short  || 'none',
+        mediumRange: sys.mediumRange || stats?.medium || 'none',
+        longRange:   sys.longRange   || stats?.long   || 'none',
+      };
+    });
+}
 
 export class SRA2System {
   // Set to track skills being created to avoid duplicate creation
@@ -738,741 +806,134 @@ export class SRA2System {
         }
       });
 
-      // Defense button handler - remove existing handlers first to prevent duplicates
+      // Defense button handler
       html.find('.defend-button').off('click');
-
       html.find('.defend-button').on('click', async (event: any) => {
         event.preventDefault();
 
-        // Get data from message flags (more reliable)
         const messageFlags = message.flags?.sra2;
-        if (!messageFlags) {
-          console.error('Missing message flags');
-          return;
-        }
+        if (!messageFlags) { console.error('SRA2 | Defend: missing message flags'); return; }
 
         const rollResult = messageFlags.rollResult;
-        const rollData = messageFlags.rollData;
+        const rollData   = messageFlags.rollData;
+        if (!rollResult || !rollData) { console.error('SRA2 | Defend: missing roll data in flags'); return; }
 
-        if (!rollResult || !rollData) {
-          console.error('Missing roll data in message flags');
-          return;
-        }
+        const isVehicleWeapon = rollData.isVehicleWeapon as boolean;
+        const vehicleUuid     = rollData.vehicleUuid as string | undefined;
 
-        // Get tokens from flags (priority: token UUID > actor UUID > actor ID)
-        let attackerToken: any = null;
-        let defenderToken: any = null;
-        let attacker: any = null;
-        let defender: any = null;
-
-        // Log all flags for debugging
-        console.log('=== DEFENSE BUTTON - MESSAGE FLAGS ===');
-        console.log('attackerUuid flag:', messageFlags.attackerUuid || 'Not set');
-        console.log('attackerTokenUuid flag:', messageFlags.attackerTokenUuid || 'Not set');
-        console.log('attackerId flag:', messageFlags.attackerId || 'Not set');
-        console.log('defenderUuid flag:', messageFlags.defenderUuid || 'Not set');
-        console.log('defenderTokenUuid flag:', messageFlags.defenderTokenUuid || 'Not set');
-        console.log('defenderId flag:', messageFlags.defenderId || 'Not set');
-        console.log('======================================');
-
-        // Load attacker from message flags (UUID > ID > canvas fallback)
-        const attackerResult = loadCombatantFromFlags(
+        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           'Defense Attacker'
         );
-        attacker = attackerResult.actor;
-        attackerToken = attackerResult.token;
+        const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
+          messageFlags, isVehicleWeapon, vehicleUuid
+        );
 
-        // Check if this is a vehicle weapon attack
-        const isVehicleWeapon = rollData.isVehicleWeapon;
-        const vehicleUuid = rollData.vehicleUuid;
-
-        // For vehicle weapons, prioritize selected targets over flags to avoid using the drone as defender
-        // The defender should be the target, not the vehicle/drone itself
-        const selectedTargets = Array.from(game.user?.targets || []);
-        if (isVehicleWeapon && selectedTargets.length > 0) {
-          // Use the first selected target as defender (not the drone)
-          defenderToken = selectedTargets[0];
-          if (defenderToken?.actor) {
-            defender = defenderToken.actor;
-            console.log('Defense button: For vehicle weapon, using selected target as defender:', defender?.name);
-          }
-        }
-
-        // Use defender UUID directly from flags (already correctly calculated)
-        // Priority: 1) defenderUuid from flags (already calculated correctly), 2) defenderTokenUuid from flags
-        // Skip if we already have a defender from selected targets for vehicle weapons
-        if (!defender && messageFlags.defenderUuid) {
-          try {
-            const defenderFromUuid = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderUuid) || null;
-            // For vehicle weapons, skip if this is the vehicle itself
-            if (defenderFromUuid) {
-              if (isVehicleWeapon && vehicleUuid && defenderFromUuid.uuid === vehicleUuid) {
-                console.log('Defense button: Skipping vehicle as defender for vehicle weapon - need target instead');
-              } else {
-                defender = defenderFromUuid;
-                console.log('Defense button: Defender loaded directly from defenderUuid flag');
-              }
-            }
-          } catch (e) {
-            console.warn('Defense button: Failed to load defender from defenderUuid flag:', e);
-          }
-        }
-
-        // Get defender token from UUID if available (priority: flag > canvas search)
-        // Skip if we already have a defender from selected targets for vehicle weapons
-        if (!defenderToken && messageFlags.defenderTokenUuid) {
-          try {
-            const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(messageFlags.defenderTokenUuid) || null;
-            // For vehicle weapons, skip if this is the vehicle itself
-            if (defenderTokenFromUuid) {
-              if (isVehicleWeapon && vehicleUuid) {
-                const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || undefined;
-                if (tokenActorUuid === vehicleUuid) {
-                  console.log('Defense button: Skipping vehicle token as defender for vehicle weapon - need target instead');
-                } else {
-                  defenderToken = defenderTokenFromUuid;
-                  if (defenderToken?.actor && !defender) {
-                    defender = defenderToken.actor;
-                    console.log('Defense button: Defender loaded from defenderTokenUuid flag, using token actor');
-                  }
-                }
-              } else {
-                defenderToken = defenderTokenFromUuid;
-                if (defenderToken?.actor && !defender) {
-                  defender = defenderToken.actor;
-                  console.log('Defense button: Defender loaded from defenderTokenUuid flag, using token actor');
-                }
-              }
-            }
-          } catch (e) {
-            console.warn('Defense button: Failed to load defender token from defenderTokenUuid flag:', e);
-          }
-        }
-
-        // Fallback: try to get actor and find token on canvas (only if flags didn't work)
         if (!defender) {
-          if (messageFlags.defenderId) {
-            const defenderFromId = game.actors?.get(messageFlags.defenderId) || null;
-            // For vehicle weapons, skip if this is the vehicle itself
-            if (defenderFromId) {
-              if (isVehicleWeapon && vehicleUuid && (defenderFromId as any).uuid === vehicleUuid) {
-                console.log('Defense button: Skipping vehicle as defender for vehicle weapon - need target instead');
-              } else {
-                defender = defenderFromId;
-              }
-            }
-          }
-
-          if (defender && !defenderToken) {
-            defenderToken = canvas?.tokens?.placeables?.find((token: any) => {
-              return token.actor?.id === defender.id || token.actor?.uuid === defender.uuid;
-            }) || null;
-          }
-        }
-
-        // Extract information - use UUIDs directly from flags as they are already correctly calculated
-        const success = rollResult.totalSuccesses || 0;
-        const damage = rollData.damageValue || 0;
-        const attackerName = attacker?.name || 'Unknown';
-        const attackerId = attacker?.id || messageFlags.attackerId || 'Unknown';
-        const attackerUuid = messageFlags.attackerUuid || attacker?.uuid || 'Unknown'; // Use flag UUID first (already calculated correctly)
-        const defenderName = defender?.name || 'Unknown';
-        const defenderId = defender?.id || messageFlags.defenderId || 'Unknown';
-        // For vehicle weapons, use the actual defender (target), not the vehicle/drone
-        // If we have a defender from selected targets, use it; otherwise use flag UUID
-        let defenderUuid = defender?.uuid || 'Unknown';
-        if (!defender || (isVehicleWeapon && vehicleUuid && defender.uuid === vehicleUuid)) {
-          // Fallback to flag UUID only if we don't have a valid defender
-          defenderUuid = messageFlags.defenderUuid || defender?.uuid || 'Unknown';
-        }
-
-        // Log the UUIDs that will be used
-        console.log('--- UUIDs being used from flags ---');
-        console.log('attackerUuid (from flag):', messageFlags.attackerUuid || 'Not in flag, using:', attacker?.uuid || 'Unknown');
-        console.log('defenderUuid (from flag):', messageFlags.defenderUuid || 'Not in flag, using:', defender?.uuid || 'Unknown');
-        console.log('attackerTokenUuid (from flag):', messageFlags.attackerTokenUuid || 'Not in flag');
-        console.log('defenderTokenUuid (from flag):', messageFlags.defenderTokenUuid || 'Not in flag');
-        console.log('attacker loaded:', attacker ? `${attacker.name} (${attacker.uuid})` : 'Not loaded');
-        console.log('defender loaded:', defender ? `${defender.name} (${defender.uuid})` : 'Not loaded');
-        console.log('attackerToken loaded:', attackerToken ? `Found (${attackerToken.uuid || attackerToken.document?.uuid})` : 'Not loaded');
-        console.log('defenderToken loaded:', defenderToken ? `Found (${defenderToken.uuid || defenderToken.document?.uuid})` : 'Not loaded');
-        const defenseSkill = rollData.linkedDefenseSkill || null;
-        const defenseSpec = rollData.linkedDefenseSpecialization || null;
-        const attackSkill = rollData.linkedAttackSkill || rollData.skillName || null;
-        const attackSpec = rollData.linkedAttackSpecialization || rollData.specName || null;
-
-        // Console log all information
-        console.log('=== DEFENSE CLICK ===');
-        console.log('Success:', success);
-        console.log('Damage:', damage);
-        console.log('Attacker:', attackerName);
-        console.log('Attacker ID:', attackerId);
-        console.log('Attacker UUID:', attackerUuid);
-        console.log('Attacker Token UUID:', attackerToken?.uuid || attackerToken?.document?.uuid || 'Unknown');
-        console.log('Defender:', defenderName);
-        console.log('Defender ID:', defenderId);
-        console.log('Defender UUID:', defenderUuid);
-        console.log('Defender Token UUID:', defenderToken?.uuid || defenderToken?.document?.uuid || 'Unknown');
-        console.log('Skill de defense:', defenseSkill);
-        console.log('Spe de defense:', defenseSpec);
-        console.log('Skill d\'attaque:', attackSkill);
-        console.log('Spe d\'attaque:', attackSpec);
-        console.log('===================');
-
-        // Check if defender is a vehicle (vehicles use autopilot instead of defense skill)
-        const isVehicleDefender = defender?.type === 'vehicle';
-
-        // Open defense roll dialog
-        if (!defender) {
-          console.error('Missing defender');
+          ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET'));
           return;
         }
 
-        // Get defender token from UUID (for NPCs, we need the token instance)
-        // For NPCs, the actor is linked to the token, so we need to use the token's actor
-        let defenderTokenForRoll: any = null;
-        let defenderActorForRoll: any = defender; // Default to defender actor
+        const defenderActorForRoll = defenderToken?.actor ?? defender;
+        const isVehicleDefender    = defenderActorForRoll.type === 'vehicle';
 
-        // For vehicle weapons, use the defender we already found (which should be the target, not the drone)
-        if (isVehicleWeapon && defenderToken) {
-          defenderTokenForRoll = defenderToken;
-          if (defenderToken?.actor) {
-            defenderActorForRoll = defenderToken.actor;
-          }
-        } else {
-          const defenderTokenUuidFromFlags = messageFlags.defenderTokenUuid;
-          if (defenderTokenUuidFromFlags) {
-            try {
-              const defenderTokenFromUuid = (foundry.utils as any)?.fromUuidSync?.(defenderTokenUuidFromFlags) || null;
-              // For vehicle weapons, skip if this is the vehicle itself
-              if (defenderTokenFromUuid) {
-                if (isVehicleWeapon && vehicleUuid) {
-                  const tokenActorUuid = defenderTokenFromUuid?.actor?.uuid || undefined;
-                  if (tokenActorUuid === vehicleUuid) {
-                    console.log('Defense: Skipping vehicle token as defender for vehicle weapon - using target instead');
-                    defenderTokenForRoll = defenderToken;
-                    if (defenderToken?.actor) {
-                      defenderActorForRoll = defenderToken.actor;
-                    }
-                  } else {
-                    defenderTokenForRoll = defenderTokenFromUuid;
-                    if (defenderTokenForRoll?.actor) {
-                      defenderActorForRoll = defenderTokenForRoll.actor;
-                    }
-                  }
-                } else {
-                  defenderTokenForRoll = defenderTokenFromUuid;
-                  if (defenderTokenForRoll?.actor) {
-                    defenderActorForRoll = defenderTokenForRoll.actor;
-                  }
-                }
-              }
-            } catch (e) {
-              // Fallback to finding token on canvas
-              defenderTokenForRoll = defenderToken;
-              if (defenderToken?.actor) {
-                defenderActorForRoll = defenderToken.actor;
-              }
-            }
-          } else {
-            defenderTokenForRoll = defenderToken;
-            if (defenderToken?.actor) {
-              defenderActorForRoll = defenderToken.actor;
-            }
-          }
-        }
-
-        // Check if this is an ICE attack
-        const isIceAttack = messageFlags.rollType === 'ice-attack' || rollData.itemType === 'ice-attack';
-
-        // Determine which skill/spec to use for defense
-        // Priority: 1) attack spec from weapon (if using weapon for defense), 2) defenseSpec if found, 3) defenseSkill if found, 4) fallback based on attack type
-        let finalDefenseSkill: string | null = null;
-        let finalDefenseSpec: string | null = null;
-
-        // For ICE attacks, always use Piratage (cybercombat)
-        if (isIceAttack) {
-          finalDefenseSkill = 'Piratage';
-          // Try to find cybercombat specialization
-          const cybercombatSpec = defenderActorForRoll.items.find((item: any) => {
-            if (item.type !== 'specialization') return false;
-            const specSystem = item.system as any;
-            return item.name === 'Cybercombat' && specSystem.linkedSkill === 'Piratage';
-          });
-          if (cybercombatSpec) {
-            finalDefenseSpec = 'Cybercombat';
-          }
-        }
-
-        // First, try to use the attack specialization from the weapon (if defending with a weapon)
-        // This allows using "Lames" specialization when defending with a short weapon
-        // Priority: use attack spec over defense spec when defending with a weapon
-        if (!isIceAttack && attackSpec) {
-          // Check if this attack spec exists in the defender's items and is linked to "Combat rapproché"
-          const spec = defenderActorForRoll.items.find((item: any) => {
-            if (item.type !== 'specialization') return false;
-            const specSystem = item.system as any;
-            return item.name === attackSpec && specSystem.linkedSkill === 'Combat rapproché';
-          });
-          if (spec) {
-            finalDefenseSpec = spec.name;
-            const specSystem = spec.system as any;
-            finalDefenseSkill = specSystem.linkedSkill;
-          }
-        }
-
-        // Try to find the defense spec (from weapon's linkedDefenseSpecialization)
-        if (!finalDefenseSpec && defenseSpec) {
-          const spec = defenderActorForRoll.items.find((item: any) =>
-            item.type === 'specialization' && item.name === defenseSpec
-          );
-          if (spec) {
-            finalDefenseSpec = defenseSpec;
-            const specSystem = spec.system as any;
-            const linkedSkillName = specSystem.linkedSkill;
-            finalDefenseSkill = linkedSkillName;
-          }
-        }
-
-        // If spec not found, try to find the defense skill
-        if (!finalDefenseSpec && defenseSkill) {
-          const skill = defenderActorForRoll.items.find((item: any) =>
-            item.type === 'skill' && item.name === defenseSkill
-          );
-          if (skill) {
-            finalDefenseSkill = defenseSkill;
-          }
-        }
-
-        // Calculate skill/spec levels for defender (use token's actor for NPCs)
-        let defenseSkillLevel: number | undefined = undefined;
-        let defenseSpecLevel: number | undefined = undefined;
-        let defenseLinkedAttribute: string | undefined = undefined;
-
-        // For vehicles, use autopilot instead of defense skill
-        if (isVehicleDefender) {
-          // Vehicles use autopilot for defense
-          const autopilot = (defenderActorForRoll.system as any)?.attributes?.autopilot || 0;
-          finalDefenseSkill = 'Autopilot'; // Special skill name for vehicles
-          defenseSkillLevel = autopilot;
-          defenseLinkedAttribute = undefined; // Vehicles don't use attributes
-        } else {
-          // Fallback: determine based on attack type (melee or ranged)
-          if (!finalDefenseSkill) {
-            // Check if it's a melee attack (check meleeRange in rollData)
-            const isMeleeAttack = rollData.meleeRange && rollData.meleeRange !== 'none';
-            if (isMeleeAttack) {
-              finalDefenseSkill = 'Combat rapproché';
-            } else {
-              finalDefenseSkill = 'Athlétisme';
-            }
-          }
-
-          // Calculate skill/spec levels for defender
-          if (finalDefenseSpec) {
-            const spec = defenderActorForRoll.items.find((item: any) =>
-              item.type === 'specialization' && item.name === finalDefenseSpec
-            );
-            if (spec) {
-              const specSystem = spec.system as any;
-              const linkedSkillName = specSystem.linkedSkill;
-              const linkedSkill = defenderActorForRoll.items.find((item: any) =>
-                item.type === 'skill' && item.name === linkedSkillName
-              );
-              if (linkedSkill) {
-                const skillRating = (linkedSkill.system as any).rating || 0;
-                const specRating = specSystem.rating || 0;
-                defenseLinkedAttribute = specSystem.linkedAttribute || (linkedSkill.system as any).linkedAttribute || 'strength';
-                const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
-
-                defenseSkillLevel = attributeValue + skillRating;
-                defenseSpecLevel = defenseSkillLevel + specRating;
-              }
-            }
-          } else if (finalDefenseSkill) {
-            const skill = defenderActorForRoll.items.find((item: any) =>
-              item.type === 'skill' && item.name === finalDefenseSkill
-            );
-            if (skill) {
-              const skillSystem = skill.system as any;
-              const skillRating = skillSystem.rating || 0;
-              defenseLinkedAttribute = skillSystem.linkedAttribute || 'strength';
-              const attributeValue = defenseLinkedAttribute ? ((defenderActorForRoll.system as any)?.attributes?.[defenseLinkedAttribute] || 0) : 0;
-
-              defenseSkillLevel = attributeValue + skillRating;
-            }
-          }
-        }
-
-        // Final check: ensure we have a defense skill (or autopilot for vehicles)
-        if (!finalDefenseSkill && !isVehicleDefender) {
-          console.error('Could not determine defense skill for non-vehicle defender');
+        const skillData = resolveDefenseSkillData(defenderActorForRoll, rollData, isVehicleDefender);
+        if (!skillData.skill) {
+          console.error('SRA2 | Defend: could not determine defense skill');
           return;
         }
 
-        // Get RR sources for defense skill/spec (use token's actor for NPCs)
-        // Note: Vehicles don't have RR sources for autopilot
         const { getRRSources } = await import('./helpers/sheet-helpers.js');
-        let defenseRRList: any[] = [];
+        let rrList: any[] = [];
         if (!isVehicleDefender) {
-          // Only get RR sources for non-vehicles
-          if (finalDefenseSpec) {
-            const rrSources = getRRSources(defenderActorForRoll, 'specialization', finalDefenseSpec);
-            defenseRRList = rrSources.map((rr: any) => ({
-              ...rr,
-              featName: rr.featName
-            }));
-          } else if (finalDefenseSkill) {
-            const rrSources = getRRSources(defenderActorForRoll, 'skill', finalDefenseSkill);
-            defenseRRList = rrSources.map((rr: any) => ({
-              ...rr,
-              featName: rr.featName
-            }));
-          }
+          const rrTarget   = skillData.spec ?? skillData.skill!;
+          const rrItemType = skillData.spec ? 'specialization' : 'skill';
+          rrList = getRRSources(defenderActorForRoll, rrItemType, rrTarget);
         }
 
-        // Get token UUIDs
-        // For defense: attacker = defender (one defending), defender = original attacker
-        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || messageFlags.attackerTokenUuid || undefined;
-        const defenderTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || messageFlags.defenderTokenUuid || undefined;
+        // In defense context the rolling actor's token is the "attacker" slot,
+        // and the original attacker becomes the "target" slot.
+        const defenderTokenUuid         = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid  ?? messageFlags.attackerTokenUuid;
 
-        // Prepare defense roll data
-        // In defense context:
-        // - attacker = defender (one defending) -> attackerTokenUuid should be defender's token
-        // - defender = original attacker -> defenderTokenUuid should be original attacker's token
         const defenseRollData: any = {
-          // Use final defense skill/spec (with fallback)
-          skillName: finalDefenseSkill,
-          specName: finalDefenseSpec,
-          linkedAttribute: defenseLinkedAttribute,
-          skillLevel: defenseSkillLevel,
-          specLevel: defenseSpecLevel,
-
-          // Actor is the defender - for vehicle weapons, use the actual defender (target) UUID, not the vehicle
-          actorId: defenderActorForRoll.id,
-          actorUuid: defenderActorForRoll.uuid, // Use the actual defender actor UUID (target, not drone)
-
-          // Token UUIDs - for defense, attackerToken is the defender's token, defenderToken is the original attacker's token
-          attackerTokenUuid: defenderTokenUuid, // Defender's token (one defending) - this is what will be attacker in RollDialog
-          defenderTokenUuid: originalAttackerTokenUuid, // Original attacker's token (target) - this is what will be target/defender in RollDialog
-
-          // RR List
-          rrList: defenseRRList,
-
-          // Defense flags
-          isDefend: true,
+          skillName:       skillData.skill,
+          specName:        skillData.spec,
+          linkedAttribute: skillData.linkedAttribute,
+          skillLevel:      skillData.skillLevel,
+          specLevel:       skillData.specLevel,
+          actorId:         defenderActorForRoll.id,
+          actorUuid:       defenderActorForRoll.uuid,
+          attackerTokenUuid: defenderTokenUuid,          // defender's token = the one rolling
+          defenderTokenUuid: originalAttackerTokenUuid,  // original attacker = the "target"
+          rrList,
+          isDefend:        true,
           isCounterAttack: false,
-
-          // Store original attack roll data for comparison
           attackRollResult: rollResult,
-          attackRollData: rollData
+          attackRollData:   rollData,
         };
 
-        // Import and open RollDialog
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(defenseRollData);
-
-        // Set target token to original attacker's token (in defense context, target = original attacker)
-        // For vehicle weapons, this should be the character's token (the one who attacked), not the drone
-        if (attackerToken) {
-          (dialog as any).targetToken = attackerToken;
-        }
-
-        // For vehicle weapons, make sure we don't use the vehicle as target
-        // The target should be the character who attacked with the drone weapon
-        if (isVehicleWeapon && vehicleUuid) {
-          // Ensure targetToken is not the vehicle
-          if ((dialog as any).targetToken?.actor?.uuid === vehicleUuid) {
-            console.log('Defense: Target token is the vehicle, should be the character instead');
-            // Find the character's token (the original attacker)
-            const characterToken = canvas?.tokens?.placeables?.find((token: any) => {
-              return token.actor?.id === attacker?.id || token.actor?.uuid === attacker?.uuid;
-            }) || null;
-            if (characterToken) {
-              (dialog as any).targetToken = characterToken;
-            }
-          }
-        }
-
+        // Override any stale canvas target with the known original attacker token
+        if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
       });
 
-      // Counter-attack button handler - remove existing handlers first to prevent duplicates
+      // Counter-attack button handler
       html.find('.counter-attack-button').off('click');
-
       html.find('.counter-attack-button').on('click', async (event: any) => {
         event.preventDefault();
 
-        // Get data from message flags (more reliable)
         const messageFlags = message.flags?.sra2;
-        if (!messageFlags) {
-          console.error('Missing message flags');
-          return;
-        }
+        if (!messageFlags) { console.error('SRA2 | Counter-attack: missing message flags'); return; }
 
         const rollResult = messageFlags.rollResult;
-        const rollData = messageFlags.rollData;
+        const rollData   = messageFlags.rollData;
+        if (!rollResult || !rollData) { console.error('SRA2 | Counter-attack: missing roll data in flags'); return; }
 
-        if (!rollResult || !rollData) {
-          console.error('Missing roll data in message flags');
-          return;
-        }
-
-        // Load attacker and defender from message flags (UUID > ID > canvas fallback)
-        const attackerResult = loadCombatantFromFlags(
+        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
           { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
           'Counter-attack Attacker'
         );
-        const defenderResult = loadCombatantFromFlags(
+        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
           { actorUuid: messageFlags.defenderUuid, tokenUuid: messageFlags.defenderTokenUuid, actorId: messageFlags.defenderId },
           'Counter-attack Defender'
         );
-        let attacker: any = attackerResult.actor;
-        let attackerToken: any = attackerResult.token;
-        let defender: any = defenderResult.actor;
-        let defenderToken: any = defenderResult.token;
 
-        // Log the UUIDs that will be used
-        console.log('--- UUIDs being used from flags (counter-attack) ---');
-        console.log('attackerUuid (from flag):', messageFlags.attackerUuid || 'Not in flag, using:', attacker?.uuid || 'Unknown');
-        console.log('defenderUuid (from flag):', messageFlags.defenderUuid || 'Not in flag, using:', defender?.uuid || 'Unknown');
-        console.log('attackerTokenUuid (from flag):', messageFlags.attackerTokenUuid || 'Not in flag');
-        console.log('defenderTokenUuid (from flag):', messageFlags.defenderTokenUuid || 'Not in flag');
-        console.log('attacker loaded:', attacker ? `${attacker.name} (${attacker.uuid})` : 'Not loaded');
-        console.log('defender loaded:', defender ? `${defender.name} (${defender.uuid})` : 'Not loaded');
-        console.log('attackerToken loaded:', attackerToken ? `Found (${attackerToken.uuid || attackerToken.document?.uuid})` : 'Not loaded');
-        console.log('defenderToken loaded:', defenderToken ? `Found (${defenderToken.uuid || defenderToken.document?.uuid})` : 'Not loaded');
-
-        // Open counter-attack roll dialog
         if (!defender) {
-          console.error('Missing defender');
+          ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET'));
           return;
         }
 
-        // Get defender token from UUID (for NPCs, we need the token instance)
-        // For NPCs, the actor is linked to the token, so we need to use the token's actor
-        // Use defenderTokenUuid directly from flags (already correctly calculated)
-        let defenderTokenForRoll: any = null;
-        let defenderActorForRoll: any = defender; // Default to defender actor
+        const defenderActorForRoll = defenderToken?.actor ?? defender;
 
-        const defenderTokenUuidForCounter = messageFlags.defenderTokenUuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
-        if (defenderTokenUuidForCounter) {
-          try {
-            defenderTokenForRoll = (foundry.utils as any)?.fromUuidSync?.(defenderTokenUuidForCounter) || null;
-            // For NPCs, use the token's actor (which may be different from the base actor)
-            if (defenderTokenForRoll?.actor) {
-              defenderActorForRoll = defenderTokenForRoll.actor;
-            }
-          } catch (e) {
-            // Fallback to finding token on canvas
-            defenderTokenForRoll = defenderToken;
-            if (defenderToken?.actor) {
-              defenderActorForRoll = defenderToken.actor;
-            }
-          }
-        } else {
-          defenderTokenForRoll = defenderToken;
-          if (defenderToken?.actor) {
-            defenderActorForRoll = defenderToken.actor;
-          }
-        }
-
-        // Get all weapons from defender's items for counter-attack
-        // Get all items of type 'feat' with featType 'weapon' or 'weapons-spells'
-        const allWeapons = defenderActorForRoll.items.filter((item: any) => {
-          const isFeat = item.type === 'feat';
-          const isWeapon = item.system?.featType === 'weapon' || item.system?.featType === 'weapons-spells';
-          return isFeat && isWeapon;
-        });
-
-        // Import WEAPON_TYPES to check melee capability
         const { WEAPON_TYPES } = await import('./models/item-feat.js');
-
-        // Filter weapons that:
-        // 1. Have melee "ok" or "disadvantage"
-        // 2. Are linked to "Combat rapproché" skill or a specialization of "Combat rapproché"
-        const defenderWeapons = allWeapons.filter((weapon: any) => {
-          const weaponSystem = weapon.system as any;
-          const weaponType = weaponSystem.weaponType;
-
-          // Check meleeRange in weapon system
-          const meleeRange = weaponSystem.meleeRange || 'none';
-          const hasMeleeInSystem = meleeRange === 'ok' || meleeRange === 'disadvantage';
-
-          // Check melee in weapon type
-          let hasMeleeInType = false;
-          if (weaponType && weaponType !== 'custom-weapon') {
-            const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
-            if (weaponStats && weaponStats.melee) {
-              hasMeleeInType = weaponStats.melee === 'ok' || weaponStats.melee === 'disadvantage';
-            }
-          }
-
-          // Must have melee capability
-          if (!hasMeleeInSystem && !hasMeleeInType) {
-            return false;
-          }
-
-          // Get linked attack skill
-          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
-
-          // If no linkedAttackSkill, try to get it from weapon type
-          if (!linkedAttackSkill && weaponType && weaponType !== 'custom-weapon') {
-            const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
-            if (weaponStats) {
-              linkedAttackSkill = weaponStats.linkedSkill;
-            }
-          }
-
-          // Must be linked to "Combat rapproché" skill
-          if (linkedAttackSkill === 'Combat rapproché') {
-            return true;
-          }
-
-          // Check if weapon has a specialization linked to "Combat rapproché"
-          // Look for specializations linked to "Combat rapproché" in the actor's items
-          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) =>
-            item.type === 'specialization' &&
-            item.system.linkedSkill === 'Combat rapproché'
-          );
-
-          // Check if weapon's linkedAttackSkill matches any specialization name
-          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
-            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) =>
-              spec.name === linkedAttackSkill
-            );
-            if (hasCombatRapprocheSpec) {
-              return true;
-            }
-          }
-
-          // Also check weapon's linkedAttackSpecialization
-          const linkedAttackSpecialization = weaponSystem.linkedAttackSpecialization;
-          if (linkedAttackSpecialization) {
-            const hasCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) =>
-              spec.name === linkedAttackSpecialization
-            );
-            if (hasCombatRapprocheSpec) {
-              return true;
-            }
-          }
-
-          return false;
-        });
-
-        console.log('Counter-attack: Filtered weapons with melee capability:', defenderWeapons.length, defenderWeapons.map((w: any) => ({
-          name: w.name,
-          meleeRange: w.system?.meleeRange,
-          weaponType: w.system?.weaponType,
-          meleeInType: w.system?.weaponType ? WEAPON_TYPES[w.system.weaponType as keyof typeof WEAPON_TYPES]?.melee : null
-        })));
-
-        if (defenderWeapons.length === 0) {
-          console.error('Counter-attack: No weapons with melee capability. All items:', defenderActorForRoll.items.map((i: any) => ({
-            name: i.name,
-            type: i.type,
-            featType: i.system?.featType,
-            meleeRange: i.system?.meleeRange,
-            weaponType: i.system?.weaponType
-          })));
-          ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS') || 'Aucune arme disponible pour la contre-attaque');
+        const availableWeapons = getMeleeWeaponsForCounterAttack(defenderActorForRoll, WEAPON_TYPES);
+        if (availableWeapons.length === 0) {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS'));
           return;
         }
 
-        // Prepare available weapons data for RollDialog
-        const availableWeapons = defenderWeapons.map((weapon: any) => {
-          const weaponSystem = weapon.system as any;
-          const weaponType = weaponSystem.weaponType;
-          let linkedAttackSkill = weaponSystem.linkedAttackSkill;
+        const counterAttackerTokenUuid  = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid  ?? messageFlags.attackerTokenUuid;
 
-          // If no linkedAttackSkill, try to get it from weapon type
-          if (!linkedAttackSkill && weaponType && weaponType !== 'custom-weapon') {
-            const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
-            if (weaponStats) {
-              linkedAttackSkill = weaponStats.linkedSkill;
-            }
-          }
-
-          // Check if linkedAttackSkill is a specialization of "Combat rapproché"
-          const combatRapprocheSpecs = defenderActorForRoll.items.filter((item: any) =>
-            item.type === 'specialization' &&
-            item.system.linkedSkill === 'Combat rapproché'
-          );
-
-          if (linkedAttackSkill && combatRapprocheSpecs.length > 0) {
-            const isCombatRapprocheSpec = combatRapprocheSpecs.some((spec: any) =>
-              spec.name === linkedAttackSkill
-            );
-            if (isCombatRapprocheSpec) {
-              // Keep the specialization name, but the skill is "Combat rapproché"
-              // We'll use this in the weapon selection to show both
-            } else if (linkedAttackSkill !== 'Combat rapproché') {
-              // Not a specialization of Combat rapproché, use "Combat rapproché" as base skill
-              linkedAttackSkill = 'Combat rapproché';
-            }
-          } else {
-            // Default to "Combat rapproché" if still no skill
-            linkedAttackSkill = 'Combat rapproché';
-          }
-
-          // Get weapon stats from WEAPON_TYPES if weapon type exists
-          const weaponStats = weaponType && weaponType !== 'custom-weapon'
-            ? WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES]
-            : undefined;
-
-          return {
-            id: weapon.id,
-            name: weapon.name,
-            linkedAttackSkill: linkedAttackSkill,
-            damageValue: weaponSystem.damageValue || '0',
-            damageValueBonus: weaponSystem.damageValueBonus || 0,
-            weaponType: weaponType,
-            meleeRange: weaponSystem.meleeRange || weaponStats?.melee || 'none',
-            shortRange: weaponSystem.shortRange || weaponStats?.short || 'none',
-            mediumRange: weaponSystem.mediumRange || weaponStats?.medium || 'none',
-            longRange: weaponSystem.longRange || weaponStats?.long || 'none'
-          };
-        });
-
-        // Get token UUIDs
-        const counterAttackerTokenUuid = defenderTokenForRoll?.uuid || defenderTokenForRoll?.document?.uuid || defenderToken?.uuid || defenderToken?.document?.uuid || undefined;
-        const originalAttackerTokenUuid = attackerToken?.uuid || attackerToken?.document?.uuid || undefined;
-
-        // Prepare counter-attack roll data with available weapons
-        // Use UUIDs directly from flags (already correctly calculated)
         const counterAttackRollData: any = {
-          // Actor is the defender - use UUID directly from flags (already correctly calculated)
-          actorId: defenderActorForRoll.id,
-          actorUuid: messageFlags.defenderUuid || defenderActorForRoll.uuid, // Use flag UUID first
-
-          // Token UUIDs - for counter-attack, the defender becomes the attacker
-          // Use UUIDs directly from flags (already correctly calculated)
-          attackerTokenUuid: messageFlags.defenderTokenUuid || counterAttackerTokenUuid, // Token of the defender (who is counter-attacking)
-          defenderTokenUuid: messageFlags.attackerTokenUuid || originalAttackerTokenUuid, // Token of the original attacker
-
-          // Available weapons for selection
-          availableWeapons: availableWeapons,
-
-          // Counter-attack flags
-          isDefend: false,
+          actorId:   defenderActorForRoll.id,
+          actorUuid: messageFlags.defenderUuid ?? defenderActorForRoll.uuid,
+          attackerTokenUuid: messageFlags.defenderTokenUuid ?? counterAttackerTokenUuid,  // defender becomes the "attacker"
+          defenderTokenUuid: messageFlags.attackerTokenUuid ?? originalAttackerTokenUuid, // original attacker = the "target"
+          availableWeapons,
+          isDefend:        false,
           isCounterAttack: true,
-
-          // Store original attack roll data for comparison
           attackRollResult: rollResult,
-          attackRollData: rollData
+          attackRollData:   rollData,
         };
 
-        // Import and open RollDialog
         const { RollDialog } = await import('./applications/roll-dialog.js');
         const dialog = new RollDialog(counterAttackRollData);
-
-        // Note: targetToken should already be loaded from defenderTokenUuid in RollDialog constructor
-        // Only set it manually if it wasn't loaded from UUID (fallback)
-        if (attackerToken && !(dialog as any).targetToken) {
-          (dialog as any).targetToken = attackerToken;
-        }
-
+        // Always override with the known original attacker token (constructor may have captured stale targets)
+        if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
       });
     });

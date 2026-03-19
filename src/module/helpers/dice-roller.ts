@@ -512,9 +512,11 @@ function buildDefenseResult(
   const originalAttackerUuid = finalDefenderUuid;
   const defenderUuid = finalAttackerUuid;
 
-  console.log('Defense: Attack succeeds - original attacker inflicts damage to defender');
-  console.log('  Original attacker (inflicter):', originalAttackerName, '(', originalAttackerUuid, ')');
-  console.log('  Defender (receiver):', defenderName, '(', defenderUuid, ')');
+  if (!attackFailed) {
+    console.log('Defense: Attack succeeds - original attacker inflicts damage to defender');
+    console.log('  Original attacker (inflicter):', originalAttackerName, '(', originalAttackerUuid, ')');
+    console.log('  Defender (receiver):', defenderName, '(', defenderUuid, ')');
+  }
 
   const attackDamageType = (rollData.attackRollData!.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
 
