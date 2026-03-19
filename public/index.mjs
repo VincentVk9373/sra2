@@ -5328,11 +5328,12 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       riskRoll = new Roll(`${riskDiceCount}d6`);
       await riskRoll.evaluate();
       if (game.dice3d && riskRoll) {
-        const dice3dConfig = {
-          colorset: "purple",
-          theme: "default"
+        riskRoll.dice[0].options.appearance = {
+          background: "#800080",
+          foreground: "#ffffff",
+          edge: "#4b0082"
         };
-        game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+        game.dice3d.showForRoll(riskRoll, game.user, true);
       }
     }
     const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
@@ -12795,11 +12796,12 @@ class SRA2System {
           riskRoll = new Roll(`${finalRiskDiceCount}d6`);
           await riskRoll.evaluate();
           if (game.dice3d && riskRoll) {
-            const dice3dConfig = {
-              colorset: "purple",
-              theme: "default"
+            riskRoll.dice[0].options.appearance = {
+              background: "#800080",
+              foreground: "#ffffff",
+              edge: "#4b0082"
             };
-            game.dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+            game.dice3d.showForRoll(riskRoll, game.user, true);
           }
         }
         const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];

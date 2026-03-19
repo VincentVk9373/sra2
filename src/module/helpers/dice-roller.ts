@@ -374,13 +374,14 @@ export async function executeRoll(
     riskRoll = new Roll(`${riskDiceCount}d6`);
     await riskRoll.evaluate();
     
-    // Show DiceSoNice animation for risk dice with purple color
+    // Show DiceSoNice animation for risk dice with purple appearance
     if ((game as any).dice3d && riskRoll) {
-      const dice3dConfig = {
-        colorset: 'purple',
-        theme: 'default'
+      riskRoll.dice[0].options.appearance = {
+        background: "#800080",
+        foreground: "#ffffff",
+        edge: "#4b0082"
       };
-      (game as any).dice3d.showForRoll(riskRoll, game.user, true, dice3dConfig, false);
+      (game as any).dice3d.showForRoll(riskRoll, game.user, true);
     }
   }
 
