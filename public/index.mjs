@@ -5229,20 +5229,20 @@ function registerDiceSoNice(dice3d) {
 function buildNormalAppearance() {
   return {
     foreground: "#faecd1",
-    background: "#9b30c0",
-    edge: "#6a1a8a",
-    texture: "stars",
-    material: "metal",
-    labels: DICE_LABELS
+    background: "#000000",
+    edge: "#000000",
+    texture: "fire",
+    material: "metal"
   };
 }
 function buildRiskAppearance() {
   return {
     foreground: "#faecd1",
-    background: "#000000",
-    edge: "#000000",
-    texture: "fire",
-    material: "metal"
+    background: "#9b30c0",
+    edge: "#6a1a8a",
+    texture: "stars",
+    material: "metal",
+    labels: DICE_LABELS
   };
 }
 function parseDamageValueSafe(valueStr, attributes, context) {

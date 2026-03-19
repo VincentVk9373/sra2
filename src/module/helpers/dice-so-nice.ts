@@ -59,20 +59,20 @@ export function registerDiceSoNice(dice3d: any): void {
 export function buildNormalAppearance(): object {
   return {
     foreground: '#faecd1',
-    background: '#9b30c0',
-    edge: '#6a1a8a',
-    texture: 'stars',
+    background: '#000000',
+    edge: '#000000',
+    texture: 'fire',
     material: 'metal',
-    labels: DICE_LABELS,
   };
 }
 
 export function buildRiskAppearance(): object {
   return {
     foreground: '#faecd1',
-    background: '#000000',
-    edge: '#000000',
-    texture: 'fire',
+    background: '#9b30c0',
+    edge: '#6a1a8a',
+    texture: 'stars',
     material: 'metal',
+    labels: DICE_LABELS,
   };
 }
