@@ -1424,6 +1424,12 @@
                 </div>
             </div>
         </footer>
+        {{#if (and isGM advancedMode)}}
+        <div class="gm-description-section">
+            <h3><i class="fas fa-eye-slash"></i> {{localize "SRA2.GM_DESCRIPTION"}}</h3>
+            <div class="editor-content">{{editor system.bio.gmDescription target="system.bio.gmDescription" button=false engine="prosemirror" collaborate=false}}</div>
+        </div>
+        {{/if}}
     </div>
 </form>
 </form>
