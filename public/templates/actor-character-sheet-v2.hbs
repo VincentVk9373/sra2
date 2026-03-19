@@ -123,6 +123,9 @@
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="weapon"
                                         title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                        {{#if this.finalDamageValue}}
+                                        <span class="weapon-stats">VD: {{this.finalDamageValue}} ({{rangeLabel this.system.meleeRange}}/{{rangeLabel this.system.shortRange}}/{{rangeLabel this.system.mediumRange}}/{{rangeLabel this.system.longRange}})</span>
+                                        {{/if}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="weapon">
                                         <div class="context-menu-item" data-action="roll-weapon" data-item-id="{{this._id}}">

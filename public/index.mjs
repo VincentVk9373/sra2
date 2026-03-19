@@ -12414,6 +12414,10 @@ class SRA2System {
     Handlebars.registerHelper("json", function(context) {
       return JSON.stringify(context);
     });
+    Handlebars.registerHelper("rangeLabel", function(value) {
+      if (!value || value === "none") return "-";
+      return value;
+    });
   }
   setupChatHandlers() {
     Hooks.on("renderChatMessage", (message, html) => {

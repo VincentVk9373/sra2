@@ -752,6 +752,11 @@ export class SRA2System {
     Handlebars.registerHelper('json', function (context: any) {
       return JSON.stringify(context);
     });
+
+    Handlebars.registerHelper('rangeLabel', function (value: string) {
+      if (!value || value === 'none') return '-';
+      return value;
+    });
   }
 
   private setupChatHandlers(): void {
