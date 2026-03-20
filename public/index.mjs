@@ -12573,6 +12573,11 @@ class SRA2System {
     Handlebars.registerHelper("multiply", function(a, b) {
       return a * b;
     });
+    Handlebars.registerHelper("formatNumber", function(value) {
+      const num = Number(value);
+      if (isNaN(num)) return value;
+      return num.toLocaleString("fr-FR");
+    });
     Handlebars.registerHelper("ne", function(a, b) {
       return a !== b;
     });
