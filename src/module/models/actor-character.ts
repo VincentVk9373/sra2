@@ -390,12 +390,29 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
 
     // Active cyberdeck firewall for matrix thresholds
     let firewall = 0;
+    let isEmerged = false;
     if (parent?.items) {
       const activeCyberdeck = parent.items.find((item: any) =>
         item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
       );
       if (activeCyberdeck?.system) firewall = activeCyberdeck.system.firewall || 1;
+
+      // Check for active emerged feat (technomancer virtual persona)
+      const activeEmerged = parent.items.find((item: any) =>
+        item.type === 'feat' && item.system.featType === 'emerged' && item.system.active === true
+      );
+      if (activeEmerged) {
+        isEmerged = true;
+        const virtualFirewall = willpower;
+        const charisma = (this as any).attributes?.charisma || 1;
+        (this as any).virtualPersona = { firewall: virtualFirewall, attack: charisma };
+        // If no cyberdeck, use virtual persona firewall
+        if (!activeCyberdeck) {
+          firewall = virtualFirewall;
+        }
+      }
     }
+    (this as any).isEmerged = isEmerged;
 
     (this as any).damageThresholds = {
       withoutArmor: {

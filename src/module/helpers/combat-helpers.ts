@@ -629,7 +629,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
     if (damageType === 'mental') {
       damageFieldName = 'magicDamage';
     } else if (damageType === 'matrix') {
-      damageFieldName = 'matrixDamage';
+      // Emerged characters: matrix damage becomes biofeedback (physical)
+      const isEmerged = defenderSystem.isEmerged || false;
+      damageFieldName = isEmerged ? 'damage' : 'matrixDamage';
     }
   }
   

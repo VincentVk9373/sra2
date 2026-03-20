@@ -308,7 +308,9 @@ export class CharacterSheet extends ActorSheet {
         feat.system.featType === 'spell' || feat.system.isSpell === true
       ),
       connaissance: allFeats.filter((feat: any) => feat.system.featType === 'connaissance'),
-      power: allFeats.filter((feat: any) => feat.system.featType === 'power')
+      power: allFeats.filter((feat: any) => feat.system.featType === 'power'),
+      emerged: allFeats.filter((feat: any) => feat.system.featType === 'emerged'),
+      complexForm: allFeats.filter((feat: any) => feat.system.featType === 'complex-form'),
     };
 
     // Enrich weapons with dice pool and RR calculations (for V2 template)
@@ -756,6 +758,9 @@ export class CharacterSheet extends ActorSheet {
 
     // Roll power
     html.find('[data-action="roll-power"]').on('click', this._onRollPower.bind(this));
+
+    // Roll complex form
+    html.find('[data-action="roll-complex-form"]').on('click', this._onRollComplexForm.bind(this));
 
     // Roll weapon/spell (old type)
     html.find('[data-action="roll-weapon-spell"]').on('click', this._onRollWeaponSpell.bind(this));
@@ -2381,6 +2386,25 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
+   * Handle rolling a complex form
+   */
+  private async _onRollComplexForm(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+
+    if (!itemId) {
+      console.error("SRA2 | No complex form ID found");
+      return;
+    }
+
+    const complexForm = this.actor.items.get(itemId);
+    if (!complexForm || complexForm.type !== 'feat') return;
+
+    await this._rollWeaponOrSpell(complexForm, 'complex-form');
+  }
+
+  /**
    * Handle rolling a power
    */
   private async _onRollPower(event: Event): Promise<void> {
@@ -2422,11 +2446,12 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Handle rolling a weapon or spell
    */
-  private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell'): Promise<void> {
+  private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell' | 'complex-form'): Promise<void> {
     const itemSystem = item.system as any;
-    
-    // Check if this is a spell: either type is 'spell' or isSpell flag is true
-    const isSpell = type === 'spell' || itemSystem.isSpell === true;
+
+    // Check if this is a spell or complex form
+    const isComplexForm = type === 'complex-form';
+    const isSpell = type === 'spell' || itemSystem.isSpell === true || isComplexForm;
     const spellType = isSpell ? (itemSystem.spellType || 'indirect') : null;
     
     // Get weapon type and linked skills
@@ -2463,27 +2488,37 @@ export class CharacterSheet extends ActorSheet {
     let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || '';
     
     if (isSpell) {
-      // Force attack skill to Sorcellerie
-      finalAttackSkill = 'Sorcellerie';
-      
-      // Get spell specialization type and map it to the specialization name
-      const spellSpecType = itemSystem.spellSpecializationType || 'combat';
-      const spellSpecMap: Record<string, string> = {
-        'combat': 'Spé: Sorts de combat',
-        'detection': 'Spé: Sorts de détection',
-        'health': 'Spé: Sorts de santé',
-        'illusion': 'Spé: Sorts d\'illusion',
-        'manipulation': 'Spé: Sorts de manipulation',
-        'counterspell': 'Spé: Contresort'
-      };
-      finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
-      
+      if (isComplexForm) {
+        // Complex form: force skill to Technomancie
+        finalAttackSkill = 'Technomancie';
+        const cfSpecType = itemSystem.complexFormSpecializationType || 'formes-complexes';
+        const cfSpecMap: Record<string, string> = {
+          'formes-complexes': 'Spé: Formes complexes',
+          'compilation': 'Spé: Compilation',
+          'decompilation': 'Spé: Décompilation'
+        };
+        finalAttackSpec = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
+      } else {
+        // Spell: force attack skill to Sorcellerie
+        finalAttackSkill = 'Sorcellerie';
+        const spellSpecType = itemSystem.spellSpecializationType || 'combat';
+        const spellSpecMap: Record<string, string> = {
+          'combat': 'Spé: Sorts de combat',
+          'detection': 'Spé: Sorts de détection',
+          'health': 'Spé: Sorts de santé',
+          'illusion': 'Spé: Sorts d\'illusion',
+          'manipulation': 'Spé: Sorts de manipulation',
+          'counterspell': 'Spé: Contresort'
+        };
+        finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+      }
+
       if (spellType === 'direct') {
-        // Direct spell: no defense
+        // Direct spell / instantaneous form: no defense
         finalDefenseSkill = '';
         finalDefenseSpec = '';
       } else {
-        // Indirect spell: force defense to Athlétisme / Spé : Défense à distance
+        // Indirect spell / maintained form: force defense to Athlétisme / Spé : Défense à distance
         finalDefenseSkill = 'Athlétisme';
         finalDefenseSpec = 'Spé : Défense à distance';
       }
@@ -2494,7 +2529,9 @@ export class CharacterSheet extends ActorSheet {
     
     // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
     let defaultAttribute: string;
-    if (isSpell) {
+    if (isComplexForm) {
+      defaultAttribute = 'logic';
+    } else if (isSpell) {
       defaultAttribute = 'willpower';
     } else {
       // Check if the skill exists in the actor's items
@@ -2643,8 +2680,9 @@ export class CharacterSheet extends ActorSheet {
       isSpellDirect: isSpell && spellType === 'direct',  // Flag for direct spells (no defense)
 
       // Essence penalty flags
-      isMagicRoll: isSpell || (itemSystem.isMagic === true),
-      isHealingRoll: isSpell && (itemSystem.spellSpecializationType === 'health'),
+      isMagicRoll: !isComplexForm && (isSpell || (itemSystem.isMagic === true)),
+      isHealingRoll: !isComplexForm && isSpell && (itemSystem.spellSpecializationType === 'health'),
+      isTechnomancerRoll: isComplexForm,
     });
   }
 
