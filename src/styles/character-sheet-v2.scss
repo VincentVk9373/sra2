@@ -833,9 +833,8 @@
                     &.essence-row {
                         cursor: default;
 
-                        .essence-label,
                         .essence-value {
-                            color: #4a9eff;
+                            color: var(--sr-ui-color-active);
                         }
                     }
 
