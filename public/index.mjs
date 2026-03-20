@@ -1334,6 +1334,11 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: false,
         label: "SRA2.FEATS.IS_SPELL"
       }),
+      isMagic: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.IS_MAGIC"
+      }),
       // Narrative effects
       narrativeEffects: new fields.ArrayField(new fields.SchemaField({
         text: new fields.StringField({
@@ -1687,8 +1692,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     }
     const narrationActions = this.narrationActions || 0;
     if (narrationActions > 0) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", value: 3 });
+      const narrationCost = narrationActions * 3;
+      recommendedLevel += narrationCost;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", labelParams: ` (${narrationActions})`, value: narrationCost });
     }
     const positiveEffects = narrativeEffects.filter((effect) => {
       return effect?.text && effect.text.trim() !== "" && !effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== void 0;
@@ -5374,12 +5380,15 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
   } else {
     let normalRoll = null;
     let riskRoll = null;
+    const foundryRollMode2 = game.settings?.get("core", "rollMode") ?? "publicroll";
+    const dsnBlind = foundryRollMode2 === "blindroll";
+    const dsnWhisper = foundryRollMode2 === "selfroll" ? [game.user.id] : foundryRollMode2 === "gmroll" ? game.users?.filter((u) => u.isGM).map((u) => u.id) : null;
     if (normalDiceCount > 0) {
       normalRoll = new Roll(`${normalDiceCount}d6`);
       await normalRoll.evaluate();
       if (game.dice3d && normalRoll) {
         normalRoll.dice[0].options.appearance = buildNormalAppearance();
-        game.dice3d.showForRoll(normalRoll, game.user, true);
+        game.dice3d.showForRoll(normalRoll, game.user, true, dsnWhisper, dsnBlind);
       }
     }
     if (riskDiceCount > 0) {
@@ -5387,7 +5396,7 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       await riskRoll.evaluate();
       if (game.dice3d && riskRoll) {
         riskRoll.dice[0].options.appearance = buildRiskAppearance();
-        game.dice3d.showForRoll(riskRoll, game.user, true);
+        game.dice3d.showForRoll(riskRoll, game.user, true, dsnWhisper, dsnBlind);
       }
     }
     const normalResults = normalRoll ? normalRoll.dice[0]?.results?.map((r) => r.result) || [] : [];
@@ -5407,7 +5416,24 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       }
     }
     const totalRiskSuccesses = riskSuccesses * RISK_DICE_SUCCESS_MULTIPLIER;
-    const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+    let totalSuccesses = normalSuccesses + totalRiskSuccesses;
+    if (rollData.isMagicRoll || rollData.isHealingRoll) {
+      const actor = rollData.actorUuid ? await fromUuid(rollData.actorUuid) : null;
+      const essence = actor?.system?.currentEssence ?? 6;
+      let essencePenalty = 0;
+      if (rollData.isMagicRoll) {
+        if (essence <= 5) essencePenalty += 1;
+        if (essence <= 3) essencePenalty += 1;
+      }
+      if (rollData.isHealingRoll) {
+        if (essence <= 4) essencePenalty += 1;
+        if (essence <= 2) essencePenalty += 1;
+      }
+      if (essencePenalty > 0) {
+        console.log(`SRA2 | Essence penalty: -${essencePenalty} successes (essence=${essence})`);
+        totalSuccesses = Math.max(0, totalSuccesses - essencePenalty);
+      }
+    }
     const remainingFailures = Math.max(0, criticalFailures - finalRR);
     let complication = "none";
     if (remainingFailures === 1) {
@@ -5648,6 +5674,8 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
       }
     }
   };
+  const foundryRollMode = game.settings?.get("core", "rollMode") ?? "publicroll";
+  ChatMessage.applyRollMode(messageData, foundryRollMode);
   await ChatMessage.create(messageData);
   await handleDrain(attacker, rollData, rollResult);
 }
@@ -5687,22 +5715,25 @@ async function handleDrain(actor, rollData, rollResult) {
   if (!actorSystem || actor.type !== "character") {
     return;
   }
+  const drainRollMode = game.settings?.get("core", "rollMode") ?? "publicroll";
+  const createDrainMessage = async (content) => {
+    const data = {
+      user: game.user?.id,
+      speaker: { actor: actor.id, alias: actor.name },
+      content,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    };
+    ChatMessage.applyRollMode(data, drainRollMode);
+    await ChatMessage.create(data);
+  };
   if (rollResult.complication === "minor") {
     const message = game.i18n.localize("SRA2.SKILLS.DRAIN_MINOR_COMPLICATION");
-    await ChatMessage.create({
-      user: game.user?.id,
-      speaker: {
-        actor: actor.id,
-        alias: actor.name
-      },
-      content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
-        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
+    await createDrainMessage(`<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i>
         <strong style="color: #ffc107;">Drain - ${game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION")}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-      </div>`,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER
-    });
+      </div>`);
   } else if (rollResult.complication === "critical") {
     const damage = actorSystem.damage || {};
     const lightWounds = Array.isArray(damage.light) ? damage.light : [false, false];
@@ -5719,20 +5750,12 @@ async function handleDrain(actor, rollData, rollResult) {
         "system.damage.light": lightWounds
       });
       const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
-      await ChatMessage.create({
-        user: game.user?.id,
-        speaker: {
-          actor: actor.id,
-          alias: actor.name
-        },
-        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+      await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
           <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-        </div>`,
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER
-      });
+        </div>`);
     } else {
       const severeWounds = Array.isArray(damage.severe) ? damage.severe : [false];
       let severeApplied = false;
@@ -5753,40 +5776,24 @@ async function handleDrain(actor, rollData, rollResult) {
         });
       }
       const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
-      await ChatMessage.create({
-        user: game.user?.id,
-        speaker: {
-          actor: actor.id,
-          alias: actor.name
-        },
-        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+      await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
           <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-        </div>`,
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER
-      });
+        </div>`);
     }
   } else if (rollResult.complication === "disaster") {
     await actor.update({
       "system.damage.incapacitating": true
     });
     const message = game.i18n.localize("SRA2.SKILLS.DRAIN_DISASTER");
-    await ChatMessage.create({
-      user: game.user?.id,
-      speaker: {
-        actor: actor.id,
-        alias: actor.name
-      },
-      content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-        <i class="fas fa-skull" style="color: #dc3545;"></i> 
+    await createDrainMessage(`<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+        <i class="fas fa-skull" style="color: #dc3545;"></i>
         <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.DISASTER")}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-      </div>`,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER
-    });
+      </div>`);
   }
 }
 const DiceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -8168,8 +8175,11 @@ class CharacterSheet extends ActorSheet {
       // Spell-specific properties
       spellType: isSpell ? spellType : void 0,
       // 'direct' or 'indirect' for spells
-      isSpellDirect: isSpell && spellType === "direct"
+      isSpellDirect: isSpell && spellType === "direct",
       // Flag for direct spells (no defense)
+      // Essence penalty flags
+      isMagicRoll: isSpell || itemSystem.isMagic === true,
+      isHealingRoll: isSpell && itemSystem.spellSpecializationType === "health"
     });
   }
   /**
@@ -12015,6 +12025,57 @@ class Migration_13_0_12 extends Migration {
     }
   }
 }
+class Migration_13_0_28 extends Migration {
+  get code() {
+    return "migration-13.0.28";
+  }
+  get version() {
+    return "13.0.28";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.28: Resetting grantsNarration, compensating with +1 narrationActions");
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    await this.applyItemsUpdates((items) => {
+      const updates = [];
+      for (const item of items) {
+        if (item.type !== "feat") {
+          continue;
+        }
+        const sourceSystem = item._source?.system || item.system;
+        if (sourceSystem._grantsNarrationResetVersion === "13.0.28") {
+          totalSkipped++;
+          continue;
+        }
+        if (!sourceSystem.grantsNarration) {
+          totalSkipped++;
+          continue;
+        }
+        const currentActions = sourceSystem.narrationActions || 0;
+        const newActions = Math.min(currentActions + 1, 2);
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.28: Resetting grantsNarration for "${item.name}", narrationActions ${currentActions} → ${newActions} (ID: ${item.id})`);
+        updates.push({
+          _id: item.id,
+          "system.grantsNarration": false,
+          "system.narrationActions": newActions,
+          "system._grantsNarrationResetVersion": "13.0.28"
+        });
+        totalUpdated++;
+      }
+      return updates;
+    });
+    const summaryMessage = `Migration 13.0.28 completed - Items updated: ${totalUpdated}, Skipped: ${totalSkipped}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalUpdated > 0) {
+      ui.notifications?.info(
+        `Migration 13.0.28: Reset grantsNarration and added +1 narrationAction on ${totalUpdated} feat(s).`,
+        { permanent: false }
+      );
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No items to migrate - all items already up to date");
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 function getMeleeWeaponsForCounterAttack(actor, WEAPON_TYPES2) {
   const combatSpecs = new Set(
@@ -12114,6 +12175,7 @@ class SRA2System {
       declareMigration(new Migration_13_0_10());
       declareMigration(new Migration_13_0_11());
       declareMigration(new Migration_13_0_12());
+      declareMigration(new Migration_13_0_28());
     });
   }
   registerDataModels() {
