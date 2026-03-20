@@ -24,8 +24,12 @@ const translations = {
   'Piratage': 'Hacking',
   'Électronique': 'Electronics',
   'Sorcellerie': 'Sorcery',
-  
+  'Technomancie': 'Technomancy',
+
   // Specializations
+  'Spé: Formes complexes': 'Spec: Complex Forms',
+  'Spé: Compilation': 'Spec: Compilation',
+  'Spé: Décompilation': 'Spec: Decompilation',
   'Spé : De la rue': 'Spec: Street',
   'Spé : Escamotage': 'Spec: Stealth',
   'Spé : Appareils personnels': 'Spec: Personal Devices',

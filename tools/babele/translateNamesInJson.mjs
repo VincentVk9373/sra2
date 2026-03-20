@@ -24,7 +24,8 @@ const translations = {
   'Piratage': 'Hacking',
   'Électronique': 'Electronics',
   'Sorcellerie': 'Sorcery',
-  
+  'Technomancie': 'Technomancy',
+
   // Specializations
   'Spé : De la rue': 'Spec: Street',
   'Spé : Escamotage': 'Spec: Stealth',
@@ -517,6 +518,9 @@ const translations = {
   'Spé : Sang-froid': 'Spec: Cool Under Pressure',
   'Spé : Lance-Grenades': 'Spec: Grenade Launchers',
   'Spé : C&R appareils Electronicss': 'Spec: C&R Electronic Devices',
+  'Spé: Formes complexes': 'Spec: Complex Forms',
+  'Spé: Compilation': 'Spec: Compilation',
+  'Spé: Décompilation': 'Spec: Decompilation',
 };
 
 // Translate text
