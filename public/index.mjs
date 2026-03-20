@@ -437,12 +437,26 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     const willpower = this.attributes?.willpower || 1;
     const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
     let firewall = 0;
+    let isEmerged = false;
     if (parent?.items) {
       const activeCyberdeck = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
       );
       if (activeCyberdeck?.system) firewall = activeCyberdeck.system.firewall || 1;
+      const activeEmerged = parent.items.find(
+        (item) => item.type === "feat" && item.system.featType === "emerged" && item.system.active === true
+      );
+      if (activeEmerged) {
+        isEmerged = true;
+        const virtualFirewall = willpower;
+        const charisma = this.attributes?.charisma || 1;
+        this.virtualPersona = { firewall: virtualFirewall, attack: charisma };
+        if (!activeCyberdeck) {
+          firewall = virtualFirewall;
+        }
+      }
     }
+    this.isEmerged = isEmerged;
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -967,6 +981,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
+          "emerged": "SRA2.FEATS.FEAT_TYPE.EMERGED",
+          "complex-form": "SRA2.FEATS.FEAT_TYPE.COMPLEX_FORM",
           "connaissance": "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE",
           "power": "SRA2.FEATS.FEAT_TYPE.POWER"
         },
@@ -1367,8 +1383,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       }),
       narrationActions: new fields.NumberField({
         required: true,
-        initial: 1,
-        min: 1,
+        initial: 0,
+        min: 0,
         max: 2,
         integer: true,
         label: "SRA2.FEATS.NARRATION_ACTIONS"
@@ -1401,6 +1417,54 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.FEATS.AWAKENED.SHAMANIC_MASK"
+      }),
+      // Emerged (technomancer) specific fields
+      matrixAccess: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.MATRIX_ACCESS"
+      }),
+      complexFormWeaving: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.COMPLEX_FORM_WEAVING"
+      }),
+      spriteCompilation: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.SPRITE_COMPILATION"
+      }),
+      biofeedback: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.BIOFEEDBACK"
+      }),
+      compiledSpriteCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 1,
+        integer: true,
+        label: "SRA2.FEATS.EMERGED.COMPILED_SPRITE_COUNT"
+      }),
+      sustainedComplexFormCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.EMERGED.SUSTAINED_COMPLEX_FORM_COUNT"
+      }),
+      // Complex form specialization type
+      complexFormSpecializationType: new fields.StringField({
+        required: true,
+        initial: "formes-complexes",
+        choices: {
+          "formes-complexes": "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.COMPLEX_FORMS",
+          "compilation": "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.COMPILATION",
+          "decompilation": "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.DECOMPILATION"
+        },
+        label: "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.TYPE"
       }),
       // Spell type (direct or indirect)
       spellType: new fields.StringField({
@@ -1483,18 +1547,28 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     this._calculateRecommendedLevel(featType);
   }
   _applySpellSkillLinks(featType) {
-    if (featType !== "spell") return;
-    this.linkedAttackSkill = "Sorcellerie";
-    const spellSpecMap = {
-      "combat": "Spé: Sorts de combat",
-      "detection": "Spé: Sorts de détection",
-      "health": "Spé: Sorts de santé",
-      "illusion": "Spé: Sorts d'illusion",
-      "manipulation": "Spé: Sorts de manipulation",
-      "counterspell": "Spé: Contresort"
-    };
-    const spellSpecType = this.spellSpecializationType || "combat";
-    this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+    if (featType === "spell") {
+      this.linkedAttackSkill = "Sorcellerie";
+      const spellSpecMap = {
+        "combat": "Spé: Sorts de combat",
+        "detection": "Spé: Sorts de détection",
+        "health": "Spé: Sorts de santé",
+        "illusion": "Spé: Sorts d'illusion",
+        "manipulation": "Spé: Sorts de manipulation",
+        "counterspell": "Spé: Contresort"
+      };
+      const spellSpecType = this.spellSpecializationType || "combat";
+      this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+    } else if (featType === "complex-form") {
+      this.linkedAttackSkill = "Technomancie";
+      const cfSpecMap = {
+        "formes-complexes": "Spé: Formes complexes",
+        "compilation": "Spé: Compilation",
+        "decompilation": "Spé: Décompilation"
+      };
+      const cfSpecType = this.complexFormSpecializationType || "formes-complexes";
+      this.linkedAttackSpecialization = cfSpecMap[cfSpecType] || "Spé: Formes complexes";
+    }
   }
   _applyCustomWeaponDamage(featType) {
     const weaponType = this.weaponType || "";
@@ -1541,6 +1615,9 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "connaissance") {
       calculatedCost = 2500;
     }
+    if (featType === "complex-form") {
+      calculatedCost = 5e3;
+    }
     if (featType === "armor") {
       const armorValue = this.armorValue || 0;
       calculatedCost += armorValue * 2500;
@@ -1585,6 +1662,10 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "spell") {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPELL", value: 1 });
+    }
+    if (featType === "complex-form") {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM", value: 1 });
     }
     if (featType === "vehicle") {
       recommendedLevel += 1;
@@ -1748,6 +1829,38 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (adept) {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT", value: 1 });
+    }
+    const matrixAccess = this.matrixAccess || false;
+    const complexFormWeaving = this.complexFormWeaving || false;
+    const spriteCompilation = this.spriteCompilation || false;
+    const biofeedbackFlag = this.biofeedback || false;
+    if (matrixAccess) {
+      recommendedLevel += 7;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS", value: 7 });
+    }
+    if (complexFormWeaving) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM_WEAVING", value: 1 });
+    }
+    if (spriteCompilation) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPRITE_COMPILATION", value: 1 });
+    }
+    if (biofeedbackFlag) {
+      recommendedLevel -= 2;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BIOFEEDBACK", value: -2 });
+    }
+    const compiledSpriteCount = this.compiledSpriteCount || 0;
+    if (compiledSpriteCount > 0) {
+      const value = compiledSpriteCount * 3;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPILED_SPRITES", labelParams: ` (${compiledSpriteCount})`, value });
+    }
+    const sustainedComplexFormCount = this.sustainedComplexFormCount || 0;
+    if (sustainedComplexFormCount > 0) {
+      const value = sustainedComplexFormCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUSTAINED_COMPLEX_FORMS", labelParams: ` (${sustainedComplexFormCount})`, value });
     }
     const autopilotBonus = this.autopilotBonus || 0;
     const speedBonus = this.speedBonus || 0;
@@ -5417,11 +5530,11 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
     }
     const totalRiskSuccesses = riskSuccesses * RISK_DICE_SUCCESS_MULTIPLIER;
     let totalSuccesses = normalSuccesses + totalRiskSuccesses;
-    if (rollData.isMagicRoll || rollData.isHealingRoll) {
+    if (rollData.isMagicRoll || rollData.isHealingRoll || rollData.isTechnomancerRoll) {
       const actor = rollData.actorUuid ? await fromUuid(rollData.actorUuid) : null;
       const essence = actor?.system?.currentEssence ?? 6;
       let essencePenalty = 0;
-      if (rollData.isMagicRoll) {
+      if (rollData.isMagicRoll || rollData.isTechnomancerRoll) {
         if (essence <= 5) essencePenalty += 1;
         if (essence <= 3) essencePenalty += 1;
       }
@@ -5705,9 +5818,11 @@ async function handleDrain(actor, rollData, rollResult) {
   }
   const isSorcery = normalizedSkillName === "sorcellerie";
   const isConjuration = normalizedSkillName === "conjuration";
-  if (!isSorcery && !isConjuration) {
+  const isTechnomancie = normalizedSkillName === "technomancie";
+  if (!isSorcery && !isConjuration && !isTechnomancie) {
     return;
   }
+  const drainLabel = isTechnomancie ? "Technodrain" : "Drain";
   if (rollResult.complication === "none") {
     return;
   }
@@ -5730,7 +5845,7 @@ async function handleDrain(actor, rollData, rollResult) {
     const message = game.i18n.localize("SRA2.SKILLS.DRAIN_MINOR_COMPLICATION");
     await createDrainMessage(`<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
         <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i>
-        <strong style="color: #ffc107;">Drain - ${game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION")}</strong>
+        <strong style="color: #ffc107;">${drainLabel} - ${game.i18n.localize("SRA2.SKILLS.MINOR_COMPLICATION")}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`);
@@ -5752,7 +5867,7 @@ async function handleDrain(actor, rollData, rollResult) {
       const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
       await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
           <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
-          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
+          <strong style="color: #dc3545;">${drainLabel} - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
         </div>`);
@@ -5778,7 +5893,7 @@ async function handleDrain(actor, rollData, rollResult) {
       const message = game.i18n.localize("SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION");
       await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
           <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
-          <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
+          <strong style="color: #dc3545;">${drainLabel} - ${game.i18n.localize("SRA2.SKILLS.CRITICAL_COMPLICATION")}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
         </div>`);
@@ -5790,7 +5905,7 @@ async function handleDrain(actor, rollData, rollResult) {
     const message = game.i18n.localize("SRA2.SKILLS.DRAIN_DISASTER");
     await createDrainMessage(`<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
         <i class="fas fa-skull" style="color: #dc3545;"></i>
-        <strong style="color: #dc3545;">Drain - ${game.i18n.localize("SRA2.SKILLS.DISASTER")}</strong>
+        <strong style="color: #dc3545;">${drainLabel} - ${game.i18n.localize("SRA2.SKILLS.DISASTER")}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`);
@@ -6083,7 +6198,8 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
     if (damageType === "mental") {
       damageFieldName = "magicDamage";
     } else if (damageType === "matrix") {
-      damageFieldName = "matrixDamage";
+      const isEmerged = defenderSystem.isEmerged || false;
+      damageFieldName = isEmerged ? "damage" : "matrixDamage";
     }
   }
   const sourceDamage = defenderSystem[damageFieldName] || {};
@@ -6468,7 +6584,9 @@ class CharacterSheet extends ActorSheet {
         (feat) => feat.system.featType === "spell" || feat.system.isSpell === true
       ),
       connaissance: allFeats.filter((feat) => feat.system.featType === "connaissance"),
-      power: allFeats.filter((feat) => feat.system.featType === "power")
+      power: allFeats.filter((feat) => feat.system.featType === "power"),
+      emerged: allFeats.filter((feat) => feat.system.featType === "emerged"),
+      complexForm: allFeats.filter((feat) => feat.system.featType === "complex-form")
     };
     context.featsByType.weapon = context.featsByType.weapon.map((weapon) => {
       const weaponSystem = weapon.system;
@@ -6576,6 +6694,35 @@ class CharacterSheet extends ActorSheet {
         spell.attackSpecLevel = skillSpecResult.specLevel;
       }
       return spell;
+    });
+    context.featsByType.complexForm = context.featsByType.complexForm.map((cf) => {
+      const cfSystem = cf.system;
+      const cfSpecType = cfSystem.complexFormSpecializationType || "formes-complexes";
+      const cfSpecMap = {
+        "formes-complexes": "Spé: Formes complexes",
+        "compilation": "Spé: Compilation",
+        "decompilation": "Spé: Décompilation"
+      };
+      const finalAttackSpec = cfSpecMap[cfSpecType] || "Spé: Formes complexes";
+      const skillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        "Technomancie",
+        { isSpell: true, spellSpecType: cfSpecType, defaultAttribute: "logic" }
+      );
+      const poolResult = calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        cfSystem.rrList || [],
+        cf.name
+      );
+      cf.totalDicePool = poolResult.totalDicePool;
+      cf.rr = poolResult.totalRR;
+      if (skillSpecResult.specName) {
+        cf.attackSpecName = skillSpecResult.specName;
+        cf.attackSpecLevel = skillSpecResult.specLevel;
+      }
+      return cf;
     });
     context.featsByType.power = context.featsByType.power.map((power) => {
       const powerSystem = power.system;
@@ -6727,6 +6874,7 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-power"]').on("click", this._onRollPower.bind(this));
+    html.find('[data-action="roll-complex-form"]').on("click", this._onRollComplexForm.bind(this));
     html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
     html.find('[data-action="roll-vehicle-weapon"]').on("click", this._onRollVehicleWeaponFromSheet.bind(this));
     html.find('[data-action="roll-vehicle-weapon-autopilot"]').on("click", this._onRollVehicleWeaponAutopilot.bind(this));
@@ -7980,6 +8128,21 @@ class CharacterSheet extends ActorSheet {
     await this._rollWeaponOrSpell(spell, "spell");
   }
   /**
+   * Handle rolling a complex form
+   */
+  async _onRollComplexForm(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) {
+      console.error("SRA2 | No complex form ID found");
+      return;
+    }
+    const complexForm = this.actor.items.get(itemId);
+    if (!complexForm || complexForm.type !== "feat") return;
+    await this._rollWeaponOrSpell(complexForm, "complex-form");
+  }
+  /**
    * Handle rolling a power
    */
   async _onRollPower(event) {
@@ -8014,7 +8177,8 @@ class CharacterSheet extends ActorSheet {
    */
   async _rollWeaponOrSpell(item, type) {
     const itemSystem = item.system;
-    const isSpell = type === "spell" || itemSystem.isSpell === true;
+    const isComplexForm = type === "complex-form";
+    const isSpell = type === "spell" || itemSystem.isSpell === true || isComplexForm;
     const spellType = isSpell ? itemSystem.spellType || "indirect" : null;
     const weaponType = itemSystem.weaponType;
     let weaponLinkedSkill = "";
@@ -8040,17 +8204,28 @@ class CharacterSheet extends ActorSheet {
     let finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || "";
     let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
     if (isSpell) {
-      finalAttackSkill = "Sorcellerie";
-      const spellSpecType2 = itemSystem.spellSpecializationType || "combat";
-      const spellSpecMap = {
-        "combat": "Spé: Sorts de combat",
-        "detection": "Spé: Sorts de détection",
-        "health": "Spé: Sorts de santé",
-        "illusion": "Spé: Sorts d'illusion",
-        "manipulation": "Spé: Sorts de manipulation",
-        "counterspell": "Spé: Contresort"
-      };
-      finalAttackSpec = spellSpecMap[spellSpecType2] || "Spé: Sorts de combat";
+      if (isComplexForm) {
+        finalAttackSkill = "Technomancie";
+        const cfSpecType = itemSystem.complexFormSpecializationType || "formes-complexes";
+        const cfSpecMap = {
+          "formes-complexes": "Spé: Formes complexes",
+          "compilation": "Spé: Compilation",
+          "decompilation": "Spé: Décompilation"
+        };
+        finalAttackSpec = cfSpecMap[cfSpecType] || "Spé: Formes complexes";
+      } else {
+        finalAttackSkill = "Sorcellerie";
+        const spellSpecType2 = itemSystem.spellSpecializationType || "combat";
+        const spellSpecMap = {
+          "combat": "Spé: Sorts de combat",
+          "detection": "Spé: Sorts de détection",
+          "health": "Spé: Sorts de santé",
+          "illusion": "Spé: Sorts d'illusion",
+          "manipulation": "Spé: Sorts de manipulation",
+          "counterspell": "Spé: Contresort"
+        };
+        finalAttackSpec = spellSpecMap[spellSpecType2] || "Spé: Sorts de combat";
+      }
       if (spellType === "direct") {
         finalDefenseSkill = "";
         finalDefenseSpec = "";
@@ -8061,7 +8236,9 @@ class CharacterSheet extends ActorSheet {
     }
     const spellSpecType = isSpell ? itemSystem.spellSpecializationType || "combat" : void 0;
     let defaultAttribute;
-    if (isSpell) {
+    if (isComplexForm) {
+      defaultAttribute = "logic";
+    } else if (isSpell) {
       defaultAttribute = "willpower";
     } else {
       const skillExists = this.actor.items.some(
@@ -8178,8 +8355,9 @@ class CharacterSheet extends ActorSheet {
       isSpellDirect: isSpell && spellType === "direct",
       // Flag for direct spells (no defense)
       // Essence penalty flags
-      isMagicRoll: isSpell || itemSystem.isMagic === true,
-      isHealingRoll: isSpell && itemSystem.spellSpecializationType === "health"
+      isMagicRoll: !isComplexForm && (isSpell || itemSystem.isMagic === true),
+      isHealingRoll: !isComplexForm && isSpell && itemSystem.spellSpecializationType === "health",
+      isTechnomancerRoll: isComplexForm
     });
   }
   /**
