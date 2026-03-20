@@ -768,6 +768,8 @@ async function createRollChatMessage(
     }
   };
 
+  const foundryRollMode = (game.settings?.get('core', 'rollMode') ?? 'publicroll') as string;
+  ChatMessage.applyRollMode(messageData, foundryRollMode);
   await ChatMessage.create(messageData);
 
   // Handle drain for Sorcery and Conjuration tests
@@ -834,24 +836,28 @@ async function handleDrain(
     return; // Only apply to character actors
   }
 
+  const drainRollMode = (game.settings?.get('core', 'rollMode') ?? 'publicroll') as string;
+  const createDrainMessage = async (content: string) => {
+    const data: any = {
+      user: game.user?.id,
+      speaker: { actor: actor.id, alias: actor.name },
+      content,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    };
+    ChatMessage.applyRollMode(data, drainRollMode);
+    await ChatMessage.create(data);
+  };
+
   // Handle different complication levels
   if (rollResult.complication === 'minor') {
     // Minor complication: display message in chat about disadvantage until next narration
     const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_MINOR_COMPLICATION');
-    await ChatMessage.create({
-      user: game.user?.id,
-      speaker: {
-        actor: actor.id,
-        alias: actor.name
-      },
-      content: `<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
-        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> 
+    await createDrainMessage(`<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+        <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i>
         <strong style="color: #ffc107;">Drain - ${game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION')}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-      </div>`,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER
-    });
+      </div>`);
   } else if (rollResult.complication === 'critical') {
     // Critical complication: apply light wound
     const damage = actorSystem.damage || {};
@@ -873,20 +879,12 @@ async function handleDrain(
       });
       
       const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
-      await ChatMessage.create({
-        user: game.user?.id,
-        speaker: {
-          actor: actor.id,
-          alias: actor.name
-        },
-        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+      await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
           <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-        </div>`,
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER
-      });
+        </div>`);
     } else {
       // All light wound slots are full, upgrade to severe or incapacitating
       const severeWounds = Array.isArray(damage.severe) ? damage.severe : [false];
@@ -912,20 +910,12 @@ async function handleDrain(
       }
       
       const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
-      await ChatMessage.create({
-        user: game.user?.id,
-        speaker: {
-          actor: actor.id,
-          alias: actor.name
-        },
-        content: `<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 
+      await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+          <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
           <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-        </div>`,
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER
-      });
+        </div>`);
     }
   } else if (rollResult.complication === 'disaster') {
     // Disaster: apply incapacitating wound
@@ -934,20 +924,12 @@ async function handleDrain(
     });
     
     const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_DISASTER');
-    await ChatMessage.create({
-      user: game.user?.id,
-      speaker: {
-        actor: actor.id,
-        alias: actor.name
-      },
-      content: `<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
-        <i class="fas fa-skull" style="color: #dc3545;"></i> 
+    await createDrainMessage(`<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
+        <i class="fas fa-skull" style="color: #dc3545;"></i>
         <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.DISASTER')}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
-      </div>`,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER
-    });
+      </div>`);
   }
 }
 
