@@ -12812,15 +12812,7 @@ class SRA2System {
       rollDiceButton.on("click", async (event) => {
         event.preventDefault();
         event.stopPropagation();
-        let actor = null;
-        const controlledTokens = canvas?.tokens?.controlled || [];
-        if (controlledTokens.length > 0) {
-          actor = controlledTokens[0]?.actor;
-        } else if (game.user?.character) {
-          actor = game.user.character;
-        } else {
-          actor = { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
-        }
+        let actor = game.user?.character || { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
         if (!actor) {
           ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.NO_ACTOR") || "No controlled character");
           return;

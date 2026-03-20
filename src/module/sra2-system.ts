@@ -1111,19 +1111,9 @@ export class SRA2System {
         event.preventDefault();
         event.stopPropagation();
 
-        // Get controlled actor (first controlled token's actor, or player's assigned character, or fake actor from user name)
-        let actor: any = null;
-        const controlledTokens = canvas?.tokens?.controlled || [];
-
-        if (controlledTokens.length > 0) {
-          actor = controlledTokens[0]?.actor;
-        } else if ((game.user as any)?.character) {
-          // Use the character assigned to the player in user config
-          actor = (game.user as any).character;
-        } else {
-          // Last fallback: fake actor-like object with player name
-          actor = { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
-        }
+        // Get actor: player's assigned character, or fallback to player name
+        let actor: any = (game.user as any)?.character
+          || { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
 
         if (!actor) {
           ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.NO_ACTOR') || 'No controlled character');
