@@ -2640,7 +2640,11 @@ export class CharacterSheet extends ActorSheet {
       
       // Spell-specific properties
       spellType: isSpell ? spellType : undefined,  // 'direct' or 'indirect' for spells
-      isSpellDirect: isSpell && spellType === 'direct'  // Flag for direct spells (no defense)
+      isSpellDirect: isSpell && spellType === 'direct',  // Flag for direct spells (no defense)
+
+      // Essence penalty flags
+      isMagicRoll: isSpell || (itemSystem.isMagic === true),
+      isHealingRoll: isSpell && (itemSystem.spellSpecializationType === 'health'),
     });
   }
 

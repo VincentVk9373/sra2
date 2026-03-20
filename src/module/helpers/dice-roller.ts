@@ -229,6 +229,8 @@ export interface RollRequestData {
   // Spell-specific properties
   spellType?: 'direct' | 'indirect';  // For spells: 'direct' or 'indirect'
   isSpellDirect?: boolean;  // Flag for direct spells (no defense allowed)
+  isMagicRoll?: boolean;  // True if this roll counts as a magic test (spell or isMagic weapon)
+  isHealingRoll?: boolean;  // True if this roll is a healing spell (spellSpecializationType === 'health')
   damageSuccesses?: number;  // For indirect spells: how many successes were allocated to damage (rest goes to zone)
   
   // ICE-specific properties
@@ -406,7 +408,26 @@ export async function executeRoll(
 
   // Risk dice successes count as RISK_DICE_SUCCESS_MULTIPLIER normal successes each
   const totalRiskSuccesses = riskSuccesses * RISK_DICE_SUCCESS_MULTIPLIER;
-  const totalSuccesses = normalSuccesses + totalRiskSuccesses;
+  let totalSuccesses = normalSuccesses + totalRiskSuccesses;
+
+  // Step 3b: Apply essence penalty on magic/healing rolls
+  if (rollData.isMagicRoll || rollData.isHealingRoll) {
+    const actor = rollData.actorUuid ? await fromUuid(rollData.actorUuid as any) as any : null;
+    const essence = actor?.system?.currentEssence ?? 6;
+    let essencePenalty = 0;
+    if (rollData.isMagicRoll) {
+      if (essence <= 5) essencePenalty += 1;
+      if (essence <= 3) essencePenalty += 1;
+    }
+    if (rollData.isHealingRoll) {
+      if (essence <= 4) essencePenalty += 1;
+      if (essence <= 2) essencePenalty += 1;
+    }
+    if (essencePenalty > 0) {
+      console.log(`SRA2 | Essence penalty: -${essencePenalty} successes (essence=${essence})`);
+      totalSuccesses = Math.max(0, totalSuccesses - essencePenalty);
+    }
+  }
 
   // Step 4: Calculate complications
   const remainingFailures = Math.max(0, criticalFailures - finalRR);

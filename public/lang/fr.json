@@ -393,6 +393,8 @@
             "IS_ADEPT_POWER_WEAPON_HINT": "Cette arme est un pouvoir d'adepte (ajoute +1 au niveau recommandé)",
             "IS_SPELL": "Sort",
             "IS_SPELL_HINT": "Cet atout sera positionné dans la catégorie sorts de l'inventaire",
+            "IS_MAGIC": "Test magique",
+            "IS_MAGIC_HINT": "Cette arme compte comme un test magique (applique les pénalités d'essence au jet)",
             "IS_BIOWARE": "Bioware",
             "IS_BIOWARE_HINT": "Si coché, le coût de l'atout est de +1 niveau supplémentaire",
             "CHOICE_OPTIONS": "Options de création",
