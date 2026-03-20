@@ -833,19 +833,9 @@
                     &.essence-row {
                         cursor: default;
 
-                        .essence-label {
-                            color: #4a9eff;
-                            cursor: default;
-                        }
-
+                        .essence-label,
                         .essence-value {
                             color: #4a9eff;
-                            cursor: default;
-
-                            &:hover {
-                                transform: none;
-                                color: #4a9eff;
-                            }
                         }
                     }
 
