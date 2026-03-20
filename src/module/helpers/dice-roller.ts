@@ -361,15 +361,22 @@ export async function executeRoll(
   let normalRoll: any = null;
   let riskRoll: any = null;
 
+  // Compute DSN whisper/blind params from Foundry roll mode
+  const foundryRollMode2 = (game.settings?.get('core', 'rollMode') ?? 'publicroll') as string;
+  const dsnBlind  = foundryRollMode2 === 'blindroll';
+  const dsnWhisper: string[] | null =
+    foundryRollMode2 === 'selfroll' ? [game.user!.id] :
+    foundryRollMode2 === 'gmroll'   ? (game.users as any)?.filter((u: any) => u.isGM).map((u: any) => u.id) :
+    null;
+
   // Roll normal dice
   if (normalDiceCount > 0) {
     normalRoll = new Roll(`${normalDiceCount}d6`);
     await normalRoll.evaluate();
-    
-    // Show DiceSoNice animation for normal dice
+
     if ((game as any).dice3d && normalRoll) {
       normalRoll.dice[0].options.appearance = buildNormalAppearance();
-      (game as any).dice3d.showForRoll(normalRoll, game.user, true);
+      (game as any).dice3d.showForRoll(normalRoll, game.user, true, dsnWhisper, dsnBlind);
     }
   }
 
@@ -380,7 +387,7 @@ export async function executeRoll(
 
     if ((game as any).dice3d && riskRoll) {
       riskRoll.dice[0].options.appearance = buildRiskAppearance();
-      (game as any).dice3d.showForRoll(riskRoll, game.user, true);
+      (game as any).dice3d.showForRoll(riskRoll, game.user, true, dsnWhisper, dsnBlind);
     }
   }
 
