@@ -496,7 +496,7 @@
                 "ADDITIONAL_DRONES": "Drones supplémentaires",
                 "SHAMANIC_MASK": "Masque chamanique",
                 "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes",
-                "MATRIX_ACCESS": "Accès matriciel (RA + RV hot-sim)",
+                "MATRIX_ACCESS": "Accès matriciel + Persona virtuel",
                 "COMPLEX_FORM_WEAVING": "Tissage de formes complexes",
                 "SPRITE_COMPILATION": "Compilation de sprites",
                 "BIOFEEDBACK": "Biofeedback (dommages matriciels)",
@@ -699,7 +699,7 @@
             },
             "EMERGED": {
                 "SECTION_TITLE": "Capacités Émergées",
-                "MATRIX_ACCESS": "Accès matriciel (RA + RV hot-sim)",
+                "MATRIX_ACCESS": "Accès matriciel + Persona virtuel",
                 "MATRIX_ACCESS_HINT": "Se connecter à la Matrice comme avec une IND cybernétique",
                 "COMPLEX_FORM_WEAVING": "Tissage de formes complexes",
                 "COMPLEX_FORM_WEAVING_HINT": "Capacité à tisser des formes complexes",

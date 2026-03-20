@@ -719,8 +719,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       }),
       narrationActions: new fields.NumberField({
         required: true,
-        initial: 1,
-        min: 1,
+        initial: 0,
+        min: 0,
         max: 2,
         integer: true,
         label: "SRA2.FEATS.NARRATION_ACTIONS"
@@ -1268,9 +1268,10 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const spriteCompilation = (this as any).spriteCompilation || false;
     const biofeedbackFlag = (this as any).biofeedback || false;
 
+    // Emerged abilities (from design notes: RA=0, VR hot-sim=2, cyberdeck=5, biofeedback=-2, complex forms=1, sprites=1 → total=7)
     if (matrixAccess) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS', value: 2 });
+      recommendedLevel += 7;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS', value: 7 });
     }
     if (complexFormWeaving) {
       recommendedLevel += 1;
