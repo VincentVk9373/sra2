@@ -317,6 +317,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
+          "emerged": "SRA2.FEATS.FEAT_TYPE.EMERGED",
+          "complex-form": "SRA2.FEATS.FEAT_TYPE.COMPLEX_FORM",
           "connaissance": "SRA2.FEATS.FEAT_TYPE.KNOWLEDGE",
           "power": "SRA2.FEATS.FEAT_TYPE.POWER"
         },
@@ -752,6 +754,54 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: false,
         label: "SRA2.FEATS.AWAKENED.SHAMANIC_MASK"
       }),
+      // Emerged (technomancer) specific fields
+      matrixAccess: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.MATRIX_ACCESS"
+      }),
+      complexFormWeaving: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.COMPLEX_FORM_WEAVING"
+      }),
+      spriteCompilation: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.SPRITE_COMPILATION"
+      }),
+      biofeedback: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.EMERGED.BIOFEEDBACK"
+      }),
+      compiledSpriteCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 1,
+        integer: true,
+        label: "SRA2.FEATS.EMERGED.COMPILED_SPRITE_COUNT"
+      }),
+      sustainedComplexFormCount: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        max: 2,
+        integer: true,
+        label: "SRA2.FEATS.EMERGED.SUSTAINED_COMPLEX_FORM_COUNT"
+      }),
+      // Complex form specialization type
+      complexFormSpecializationType: new fields.StringField({
+        required: true,
+        initial: "formes-complexes",
+        choices: {
+          "formes-complexes": "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.COMPLEX_FORMS",
+          "compilation": "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.COMPILATION",
+          "decompilation": "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.DECOMPILATION"
+        },
+        label: "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.TYPE"
+      }),
       // Spell type (direct or indirect)
       spellType: new fields.StringField({
         required: true,
@@ -838,18 +888,28 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
   }
 
   private _applySpellSkillLinks(featType: string): void {
-    if (featType !== 'spell') return;
-    (this as any).linkedAttackSkill = 'Sorcellerie';
-    const spellSpecMap: Record<string, string> = {
-      'combat': 'Spé: Sorts de combat',
-      'detection': 'Spé: Sorts de détection',
-      'health': 'Spé: Sorts de santé',
-      'illusion': 'Spé: Sorts d\'illusion',
-      'manipulation': 'Spé: Sorts de manipulation',
-      'counterspell': 'Spé: Contresort'
-    };
-    const spellSpecType = (this as any).spellSpecializationType || 'combat';
-    (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+    if (featType === 'spell') {
+      (this as any).linkedAttackSkill = 'Sorcellerie';
+      const spellSpecMap: Record<string, string> = {
+        'combat': 'Spé: Sorts de combat',
+        'detection': 'Spé: Sorts de détection',
+        'health': 'Spé: Sorts de santé',
+        'illusion': 'Spé: Sorts d\'illusion',
+        'manipulation': 'Spé: Sorts de manipulation',
+        'counterspell': 'Spé: Contresort'
+      };
+      const spellSpecType = (this as any).spellSpecializationType || 'combat';
+      (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+    } else if (featType === 'complex-form') {
+      (this as any).linkedAttackSkill = 'Technomancie';
+      const cfSpecMap: Record<string, string> = {
+        'formes-complexes': 'Spé: Formes complexes',
+        'compilation': 'Spé: Compilation',
+        'decompilation': 'Spé: Décompilation'
+      };
+      const cfSpecType = (this as any).complexFormSpecializationType || 'formes-complexes';
+      (this as any).linkedAttackSpecialization = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
+    }
   }
 
   private _applyCustomWeaponDamage(featType: string): void {
@@ -903,6 +963,11 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     // Connaissance: base cost of 2500
     if (featType === 'connaissance') {
       calculatedCost = 2500;
+    }
+
+    // Complex form: fixed cost of 5000
+    if (featType === 'complex-form') {
+      calculatedCost = 5000;
     }
     
     // Armor: 2500 per armor value (not rating)
@@ -964,6 +1029,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (featType === 'spell') {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPELL', value: 1 });
+    }
+
+    // Complex form: 1 level (same as spell)
+    if (featType === 'complex-form') {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM', value: 1 });
     }
     
     // Vehicle/Drone: 1 level
@@ -1191,6 +1262,45 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT', value: 1 });
     }
     
+    // Emerged (technomancer) abilities
+    const matrixAccess = (this as any).matrixAccess || false;
+    const complexFormWeaving = (this as any).complexFormWeaving || false;
+    const spriteCompilation = (this as any).spriteCompilation || false;
+    const biofeedbackFlag = (this as any).biofeedback || false;
+
+    if (matrixAccess) {
+      recommendedLevel += 2;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS', value: 2 });
+    }
+    if (complexFormWeaving) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM_WEAVING', value: 1 });
+    }
+    if (spriteCompilation) {
+      recommendedLevel += 1;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPRITE_COMPILATION', value: 1 });
+    }
+    if (biofeedbackFlag) {
+      recommendedLevel -= 2;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BIOFEEDBACK', value: -2 });
+    }
+
+    // Compiled sprites: +3 per sprite
+    const compiledSpriteCount = (this as any).compiledSpriteCount || 0;
+    if (compiledSpriteCount > 0) {
+      const value = compiledSpriteCount * 3;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPILED_SPRITES', labelParams: ` (${compiledSpriteCount})`, value });
+    }
+
+    // Sustained complex forms: +2 per form
+    const sustainedComplexFormCount = (this as any).sustainedComplexFormCount || 0;
+    if (sustainedComplexFormCount > 0) {
+      const value = sustainedComplexFormCount * 2;
+      recommendedLevel += value;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUSTAINED_COMPLEX_FORMS', labelParams: ` (${sustainedComplexFormCount})`, value });
+    }
+
     // Vehicle/Drone bonuses
     const autopilotBonus = (this as any).autopilotBonus || 0;
     const speedBonus = (this as any).speedBonus || 0;

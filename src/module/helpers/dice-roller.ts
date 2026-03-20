@@ -231,6 +231,7 @@ export interface RollRequestData {
   isSpellDirect?: boolean;  // Flag for direct spells (no defense allowed)
   isMagicRoll?: boolean;  // True if this roll counts as a magic test (spell or isMagic weapon)
   isHealingRoll?: boolean;  // True if this roll is a healing spell (spellSpecializationType === 'health')
+  isTechnomancerRoll?: boolean;  // True if this roll counts as a technomancer test (complex form)
   damageSuccesses?: number;  // For indirect spells: how many successes were allocated to damage (rest goes to zone)
   
   // ICE-specific properties
@@ -418,11 +419,11 @@ export async function executeRoll(
   let totalSuccesses = normalSuccesses + totalRiskSuccesses;
 
   // Step 3b: Apply essence penalty on magic/healing rolls
-  if (rollData.isMagicRoll || rollData.isHealingRoll) {
+  if (rollData.isMagicRoll || rollData.isHealingRoll || rollData.isTechnomancerRoll) {
     const actor = rollData.actorUuid ? await fromUuid(rollData.actorUuid as any) as any : null;
     const essence = actor?.system?.currentEssence ?? 6;
     let essencePenalty = 0;
-    if (rollData.isMagicRoll) {
+    if (rollData.isMagicRoll || rollData.isTechnomancerRoll) {
       if (essence <= 5) essencePenalty += 1;
       if (essence <= 3) essencePenalty += 1;
     }
@@ -828,10 +829,13 @@ async function handleDrain(
   
   const isSorcery = normalizedSkillName === 'sorcellerie';
   const isConjuration = normalizedSkillName === 'conjuration';
-  
-  if (!isSorcery && !isConjuration) {
-    return; // Not a magic test, no drain
+  const isTechnomancie = normalizedSkillName === 'technomancie';
+
+  if (!isSorcery && !isConjuration && !isTechnomancie) {
+    return; // Not a magic/resonance test, no drain
   }
+
+  const drainLabel = isTechnomancie ? 'Technodrain' : 'Drain';
 
   // Only apply drain if there's a complication
   if (rollResult.complication === 'none') {
@@ -861,7 +865,7 @@ async function handleDrain(
     const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_MINOR_COMPLICATION');
     await createDrainMessage(`<div class="drain-message minor-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
         <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i>
-        <strong style="color: #ffc107;">Drain - ${game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION')}</strong>
+        <strong style="color: #ffc107;">${drainLabel} - ${game.i18n!.localize('SRA2.SKILLS.MINOR_COMPLICATION')}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`);
@@ -888,7 +892,7 @@ async function handleDrain(
       const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
       await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
           <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
-          <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
+          <strong style="color: #dc3545;">${drainLabel} - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
         </div>`);
@@ -919,7 +923,7 @@ async function handleDrain(
       const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_CRITICAL_COMPLICATION');
       await createDrainMessage(`<div class="drain-message critical-complication" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
           <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
-          <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
+          <strong style="color: #dc3545;">${drainLabel} - ${game.i18n!.localize('SRA2.SKILLS.CRITICAL_COMPLICATION')}</strong>
           <br/>
           <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
         </div>`);
@@ -933,7 +937,7 @@ async function handleDrain(
     const message = game.i18n!.localize('SRA2.SKILLS.DRAIN_DISASTER');
     await createDrainMessage(`<div class="drain-message disaster" style="padding: 8px; margin: 4px 0; background-color: rgba(220, 53, 69, 0.1); border-left: 3px solid #dc3545; border-radius: 4px;">
         <i class="fas fa-skull" style="color: #dc3545;"></i>
-        <strong style="color: #dc3545;">Drain - ${game.i18n!.localize('SRA2.SKILLS.DISASTER')}</strong>
+        <strong style="color: #dc3545;">${drainLabel} - ${game.i18n!.localize('SRA2.SKILLS.DISASTER')}</strong>
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`);

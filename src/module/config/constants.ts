@@ -41,6 +41,8 @@ export type RollMode = keyof typeof SUCCESS_THRESHOLDS;
 export const SKILL_NAMES = {
   SORCELLERIE: 'sorcellerie',
   CONJURATION: 'conjuration',
+  TECHNOMANCIE: 'technomancie',
+  PIRATAGE: 'piratage',
   CLOSE_COMBAT: 'Combat rapproché',
 } as const;
 
