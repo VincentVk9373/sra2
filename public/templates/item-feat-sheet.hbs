@@ -83,6 +83,18 @@
           <i class="fas fa-om"></i>
         </button>
         {{/if}}
+        {{#if (eq system.featType "emerged")}}
+        <button type="button" class="nav-item {{#if (eq activeSection 'emerged')}}active{{/if}}"
+          data-section="emerged" title="{{localize 'SRA2.FEATS.EMERGED.SECTION_TITLE'}}">
+          <i class="fas fa-microchip"></i>
+        </button>
+        {{/if}}
+        {{#if (eq system.featType "complex-form")}}
+        <button type="button" class="nav-item {{#if (eq activeSection 'complex-form')}}active{{/if}}"
+          data-section="complex-form" title="{{localize 'SRA2.FEATS.COMPLEX_FORM.SECTION_TITLE'}}">
+          <i class="fas fa-wave-square"></i>
+        </button>
+        {{/if}}
         <button type="button" class="nav-item {{#if (eq activeSection 'rr')}}active{{/if}}" data-section="rr"
           title="{{localize 'SRA2.FEATS.SECTION.RR'}}">
           <i class="fas fa-percentage"></i>
@@ -129,6 +141,10 @@
                 "SRA2.FEATS.FEAT_TYPE.WEAPON"}}</option>
               <option value="spell" {{#if (eq system.featType "spell" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.SPELL"}}</option>
+              <option value="emerged" {{#if (eq system.featType "emerged" )}}selected{{/if}}>{{localize
+                "SRA2.FEATS.FEAT_TYPE.EMERGED"}}</option>
+              <option value="complex-form" {{#if (eq system.featType "complex-form" )}}selected{{/if}}>{{localize
+                "SRA2.FEATS.FEAT_TYPE.COMPLEX_FORM"}}</option>
               <option value="power" {{#if (eq system.featType "power" )}}selected{{/if}}>{{localize
                 "SRA2.FEATS.FEAT_TYPE.POWER"}}</option>
               <option value="connaissance" {{#if (eq system.featType "connaissance" )}}selected{{/if}}>{{localize
@@ -1208,6 +1224,83 @@
               {{localize "SRA2.FEATS.AWAKENED.SHAMANIC_MASK"}}
             </label>
             <p class="notes">{{localize "SRA2.FEATS.AWAKENED.SHAMANIC_MASK_HINT"}}</p>
+          </div>
+        </section>
+        {{/if}}
+
+        <!-- Emerged Section -->
+        {{#if (eq system.featType "emerged")}}
+        <section class="content-section {{#if (eq activeSection 'emerged')}}active{{/if}}"
+          data-section-content="emerged">
+          <h2><i class="fas fa-microchip"></i> {{localize "SRA2.FEATS.EMERGED.SECTION_TITLE"}}</h2>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.matrixAccess" {{checked system.matrixAccess}} />
+              {{localize "SRA2.FEATS.EMERGED.MATRIX_ACCESS"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.EMERGED.MATRIX_ACCESS_HINT"}}</p>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.complexFormWeaving" {{checked system.complexFormWeaving}} />
+              {{localize "SRA2.FEATS.EMERGED.COMPLEX_FORM_WEAVING"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.EMERGED.COMPLEX_FORM_WEAVING_HINT"}}</p>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.spriteCompilation" {{checked system.spriteCompilation}} />
+              {{localize "SRA2.FEATS.EMERGED.SPRITE_COMPILATION"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.EMERGED.SPRITE_COMPILATION_HINT"}}</p>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.biofeedback" {{checked system.biofeedback}} />
+              {{localize "SRA2.FEATS.EMERGED.BIOFEEDBACK"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.EMERGED.BIOFEEDBACK_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.EMERGED.SUSTAINED_COMPLEX_FORM_COUNT"}}</label>
+            <input type="number" name="system.sustainedComplexFormCount" value="{{system.sustainedComplexFormCount}}" min="0" max="2" />
+          </div>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.EMERGED.COMPILED_SPRITE_COUNT"}}</label>
+            <input type="number" name="system.compiledSpriteCount" value="{{system.compiledSpriteCount}}" min="0" max="1" />
+          </div>
+        </section>
+        {{/if}}
+
+        <!-- Complex Form Section -->
+        {{#if (eq system.featType "complex-form")}}
+        <section class="content-section {{#if (eq activeSection 'complex-form')}}active{{/if}}"
+          data-section-content="complex-form">
+          <h2><i class="fas fa-wave-square"></i> {{localize "SRA2.FEATS.COMPLEX_FORM.SECTION_TITLE"}}</h2>
+          <p class="notes">{{localize "SRA2.FEATS.COMPLEX_FORM.SECTION_HINT"}}</p>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.SPELL.TYPE"}}</label>
+            <select name="system.spellType">
+              <option value="direct" {{#if (eq system.spellType "direct")}}selected{{/if}}>{{localize "SRA2.FEATS.COMPLEX_FORM.TYPE_INSTANTANEOUS"}}</option>
+              <option value="indirect" {{#if (eq system.spellType "indirect")}}selected{{/if}}>{{localize "SRA2.FEATS.COMPLEX_FORM.TYPE_MAINTAINED"}}</option>
+            </select>
+            <p class="notes">{{localize "SRA2.FEATS.COMPLEX_FORM.TYPE_HINT"}}</p>
+          </div>
+
+          <div class="form-group">
+            <label>{{localize "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.TYPE"}}</label>
+            <select name="system.complexFormSpecializationType">
+              <option value="formes-complexes" {{#if (eq system.complexFormSpecializationType "formes-complexes")}}selected{{/if}}>{{localize "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.COMPLEX_FORMS"}}</option>
+              <option value="compilation" {{#if (eq system.complexFormSpecializationType "compilation")}}selected{{/if}}>{{localize "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.COMPILATION"}}</option>
+              <option value="decompilation" {{#if (eq system.complexFormSpecializationType "decompilation")}}selected{{/if}}>{{localize "SRA2.FEATS.COMPLEX_FORM.SPECIALIZATION.DECOMPILATION"}}</option>
+            </select>
           </div>
         </section>
         {{/if}}

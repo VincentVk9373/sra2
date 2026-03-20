@@ -436,6 +436,8 @@
                 "VEHICLE": "Vehicle / Drone",
                 "WEAPON": "Weapon",
                 "SPELL": "Spell",
+                "EMERGED": "Emerged",
+                "COMPLEX_FORM": "Complex Form",
                 "KNOWLEDGE": "Knowledge",
                 "POWER": "Power"
             },
@@ -596,7 +598,14 @@
                 "AUTOPILOT_UNLOCKED": "Autopilot Overclocking",
                 "ADDITIONAL_DRONES": "Additional drones",
                 "SHAMANIC_MASK": "Shamanic Mask",
-                "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus"
+                "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus",
+                "MATRIX_ACCESS": "Matrix access (RA + VR hot-sim)",
+                "COMPLEX_FORM_WEAVING": "Complex form weaving",
+                "SPRITE_COMPILATION": "Sprite compilation",
+                "BIOFEEDBACK": "Biofeedback (all matrix damage)",
+                "COMPILED_SPRITES": "Additional compiled sprites",
+                "SUSTAINED_COMPLEX_FORMS": "Additional sustained complex forms",
+                "COMPLEX_FORM": "Complex form"
             },
             "WEAPON_DAMAGE_BONUS": "Weapon Damage Bonus",
             "WEAPON_DAMAGE_BONUS_HINT": "Damage Value bonus applied to weapons of the selected type",
@@ -812,6 +821,32 @@
                 "ADEPT": "Adept",
                 "SHAMANIC_MASK": "Shamanic Mask",
                 "SHAMANIC_MASK_HINT": "Reduces the feat level by 1 when activated"
+            },
+            "EMERGED": {
+                "SECTION_TITLE": "Emerged Abilities",
+                "MATRIX_ACCESS": "Matrix Access (RA + VR hot-sim)",
+                "MATRIX_ACCESS_HINT": "Connect to the Matrix as if equipped with a cybernetic IND",
+                "COMPLEX_FORM_WEAVING": "Complex Form Weaving",
+                "COMPLEX_FORM_WEAVING_HINT": "Ability to weave complex forms",
+                "SPRITE_COMPILATION": "Sprite Compilation",
+                "SPRITE_COMPILATION_HINT": "Ability to compile and decompile sprites",
+                "BIOFEEDBACK": "Biofeedback",
+                "BIOFEEDBACK_HINT": "All matrix damage applies as biofeedback to the character",
+                "COMPILED_SPRITE_COUNT": "Additional compiled sprites",
+                "SUSTAINED_COMPLEX_FORM_COUNT": "Additional sustained complex forms"
+            },
+            "COMPLEX_FORM": {
+                "SECTION_TITLE": "Complex Form Information",
+                "SECTION_HINT": "Complex forms follow the same rules as spells, using Technomancie + Logic.",
+                "TYPE_INSTANTANEOUS": "Instantaneous",
+                "TYPE_MAINTAINED": "Maintained",
+                "TYPE_HINT": "Instantaneous forms have an immediate effect, maintained forms require concentration",
+                "SPECIALIZATION": {
+                    "TYPE": "Specialization Type",
+                    "COMPLEX_FORMS": "Complex forms",
+                    "COMPILATION": "Compilation",
+                    "DECOMPILATION": "Decompilation"
+                }
             }
         },
         "SKILLS": {

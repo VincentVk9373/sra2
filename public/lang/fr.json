@@ -333,6 +333,8 @@
                 "VEHICLE": "Véhicule / Drone",
                 "WEAPON": "Arme",
                 "SPELL": "Sort",
+                "EMERGED": "Émergé",
+                "COMPLEX_FORM": "Forme complexe",
                 "KNOWLEDGE": "Connaissance",
                 "POWER": "Pouvoir"
             },
@@ -493,7 +495,14 @@
                 "AUTOPILOT_UNLOCKED": "Débridage de l'Autopilote",
                 "ADDITIONAL_DRONES": "Drones supplémentaires",
                 "SHAMANIC_MASK": "Masque chamanique",
-                "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes"
+                "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes",
+                "MATRIX_ACCESS": "Accès matriciel (RA + RV hot-sim)",
+                "COMPLEX_FORM_WEAVING": "Tissage de formes complexes",
+                "SPRITE_COMPILATION": "Compilation de sprites",
+                "BIOFEEDBACK": "Biofeedback (dommages matriciels)",
+                "COMPILED_SPRITES": "Sprites compilés supplémentaires",
+                "SUSTAINED_COMPLEX_FORMS": "Formes complexes maintenues supplémentaires",
+                "COMPLEX_FORM": "Forme complexe"
             },
             "WEAPON_DAMAGE_BONUS": "Bonus de VD aux armes",
             "WEAPON_DAMAGE_BONUS_HINT": "Bonus de Valeur de Dégâts appliqué aux armes du type sélectionné",
@@ -687,6 +696,32 @@
                 "ADEPT": "Adepte",
                 "SHAMANIC_MASK": "Masque chamanique",
                 "SHAMANIC_MASK_HINT": "Réduit le niveau de l'atout de 1 lorsqu'il est activé"
+            },
+            "EMERGED": {
+                "SECTION_TITLE": "Capacités Émergées",
+                "MATRIX_ACCESS": "Accès matriciel (RA + RV hot-sim)",
+                "MATRIX_ACCESS_HINT": "Se connecter à la Matrice comme avec une IND cybernétique",
+                "COMPLEX_FORM_WEAVING": "Tissage de formes complexes",
+                "COMPLEX_FORM_WEAVING_HINT": "Capacité à tisser des formes complexes",
+                "SPRITE_COMPILATION": "Compilation de sprites",
+                "SPRITE_COMPILATION_HINT": "Capacité à compiler et décompiler des sprites",
+                "BIOFEEDBACK": "Biofeedback",
+                "BIOFEEDBACK_HINT": "Tous les dommages matriciels s'appliquent au personnage en biofeedback",
+                "COMPILED_SPRITE_COUNT": "Sprites compilés supplémentaires",
+                "SUSTAINED_COMPLEX_FORM_COUNT": "Formes complexes maintenues supplémentaires"
+            },
+            "COMPLEX_FORM": {
+                "SECTION_TITLE": "Informations Forme Complexe",
+                "SECTION_HINT": "Les formes complexes suivent les mêmes règles que les sorts, en utilisant Technomancie + Logique.",
+                "TYPE_INSTANTANEOUS": "Instantané",
+                "TYPE_MAINTAINED": "Maintenu",
+                "TYPE_HINT": "Les formes instantanées ont un effet immédiat, les formes maintenues nécessitent une concentration",
+                "SPECIALIZATION": {
+                    "TYPE": "Type de Spécialisation",
+                    "COMPLEX_FORMS": "Formes complexes",
+                    "COMPILATION": "Compilation",
+                    "DECOMPILATION": "Décompilation"
+                }
             },
             "SPELL": {
                 "SECTION_TITLE": "Informations Sort",
