@@ -750,6 +750,13 @@ export class SRA2System {
       return a * b;
     });
 
+    // Format number with space as thousands separator (390000 → 390 000)
+    Handlebars.registerHelper('formatNumber', function (value: any) {
+      const num = Number(value);
+      if (isNaN(num)) return value;
+      return num.toLocaleString('fr-FR');
+    });
+
     // Helper to check if two values are not equal
     Handlebars.registerHelper('ne', function (a: any, b: any) {
       return a !== b;

@@ -161,7 +161,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{#if this.specializations}}
@@ -252,7 +252,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{#if this.specializations}}
@@ -343,7 +343,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -381,7 +381,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{#if this.system.astralPerception}}
@@ -459,7 +459,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -505,7 +505,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.level}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{#if this.weapons}}
@@ -566,7 +566,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -604,7 +604,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -642,7 +642,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -686,7 +686,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.FEATS.ARMOR_VALUE"}}: {{this.system.armorValue}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -724,7 +724,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -762,7 +762,7 @@
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -847,7 +847,7 @@
                                 <span class="advanced-level">
                                     <input type="number" class="skill-rating-input" name="items.{{this._id}}.system.rating" value="{{this.system.rating}}" min="0" max="12" data-item-id="{{this._id}}" /> + ({{this.linkedAttributeLabel}})
                                 </span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{#if this.specializations}}
@@ -886,7 +886,7 @@
                             {{#if ../../advancedMode}}
                             <div class="row advanced-info spe">
                                 <span class="advanced-level">({{this.linkedAttributeLabel}})</span>
-                                <span class="advanced-cost">{{this.system.calculatedCost}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
                             </div>
                             {{/if}}
                             {{/each}}
@@ -1020,7 +1020,7 @@
                             </div>
                             {{#if advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-cost">{{system.attributeCosts.strength}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber system.attributeCosts.strength}} ¥</span>
                             </div>
                             {{/if}}
                         </section>
@@ -1045,7 +1045,7 @@
                             </div>
                             {{#if advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-cost">{{system.attributeCosts.agility}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber system.attributeCosts.agility}} ¥</span>
                             </div>
                             {{/if}}
                         </section>
@@ -1070,7 +1070,7 @@
                             </div>
                             {{#if advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-cost">{{system.attributeCosts.willpower}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber system.attributeCosts.willpower}} ¥</span>
                             </div>
                             {{/if}}
                         </section>
@@ -1095,7 +1095,7 @@
                             </div>
                             {{#if advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-cost">{{system.attributeCosts.logic}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber system.attributeCosts.logic}} ¥</span>
                             </div>
                             {{/if}}
                         </section>
@@ -1120,7 +1120,7 @@
                             </div>
                             {{#if advancedMode}}
                             <div class="row advanced-info">
-                                <span class="advanced-cost">{{system.attributeCosts.charisma}} ¥</span>
+                                <span class="advanced-cost">{{formatNumber system.attributeCosts.charisma}} ¥</span>
                             </div>
                             {{/if}}
                         </section>
@@ -1436,7 +1436,7 @@
                         <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span>
                     </div>
                     <span class="cost-label">{{localize "SRA2.RESOURCES.COST"}} : </span>
-                    <span class="price-value">{{system.totalCost}} <span class="yen-symbol">{{localize
+                    <span class="price-value">{{formatNumber system.totalCost}} <span class="yen-symbol">{{localize
                             "SRA2.RESOURCES.YENS"}}</span></span>
                 </div>
             </div>
