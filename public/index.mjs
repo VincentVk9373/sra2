@@ -5712,7 +5712,7 @@ function buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, final
   };
 }
 async function createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult) {
-  const isAttack = rollData.itemType === "weapon" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  const isAttack = rollData.itemType === "weapon" || rollData.itemType === "spell" || rollData.itemType === "weapon-spell" || rollData.itemType === "complex-form" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
   const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
   const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
   const firstEntry = defenders[0] ?? { actor: null, token: null };
