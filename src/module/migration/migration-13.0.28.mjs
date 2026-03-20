@@ -4,6 +4,8 @@ import { Migration } from "./migration.mjs";
  * Migration 13.0.28: Reset grantsNarration to false on all feat items
  * The grantsNarration checkbox was removed from the UI; narration count
  * is now driven exclusively by narrationActions (0 = no narration).
+ * As compensation, feats that had grantsNarration=true get narrationActions
+ * bumped by 1 (unless already at max 2).
  */
 export class Migration_13_0_28 extends Migration {
   get code() {
@@ -15,7 +17,7 @@ export class Migration_13_0_28 extends Migration {
   }
 
   async migrate() {
-    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.28: Resetting grantsNarration to false");
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.0.28: Resetting grantsNarration, compensating with +1 narrationActions");
 
     let totalUpdated = 0;
     let totalSkipped = 0;
@@ -42,11 +44,16 @@ export class Migration_13_0_28 extends Migration {
           continue;
         }
 
-        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.28: Resetting grantsNarration for "${item.name}" (ID: ${item.id})`);
+        // Compensate: bump narrationActions by 1, capped at 2
+        const currentActions = sourceSystem.narrationActions || 0;
+        const newActions = Math.min(currentActions + 1, 2);
+
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.0.28: Resetting grantsNarration for "${item.name}", narrationActions ${currentActions} → ${newActions} (ID: ${item.id})`);
 
         updates.push({
           _id: item.id,
           'system.grantsNarration': false,
+          'system.narrationActions': newActions,
           'system._grantsNarrationResetVersion': '13.0.28',
         });
 
@@ -61,7 +68,7 @@ export class Migration_13_0_28 extends Migration {
 
     if (totalUpdated > 0) {
       ui.notifications?.info(
-        `Migration 13.0.28: Reset grantsNarration on ${totalUpdated} feat(s).`,
+        `Migration 13.0.28: Reset grantsNarration and added +1 narrationAction on ${totalUpdated} feat(s).`,
         { permanent: false }
       );
     } else {
