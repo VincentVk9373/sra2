@@ -1105,11 +1105,12 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS', labelParams: `(${bonusAnarchy})`, value });
     }
     
-    // Grants narration: +3 levels (based on narrationActions > 0)
+    // Grants narration: +3 levels per narration action (1 action = +3, 2 actions = +6)
     const narrationActions = (this as any).narrationActions || 0;
     if (narrationActions > 0) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: 3 });
+      const narrationCost = narrationActions * 3;
+      recommendedLevel += narrationCost;
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: narrationCost });
     }
     
     // Narrative effects: value per positive effect, value per negative effect (exclude effects with value 0)
