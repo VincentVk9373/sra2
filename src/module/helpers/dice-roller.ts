@@ -688,6 +688,9 @@ async function createRollChatMessage(
   rollResult: RollResult
 ): Promise<void> {
   const isAttack = rollData.itemType === 'weapon' ||
+                   rollData.itemType === 'spell' ||
+                   rollData.itemType === 'weapon-spell' ||
+                   rollData.itemType === 'complex-form' ||
                    rollData.weaponType !== undefined ||
                    (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
 
