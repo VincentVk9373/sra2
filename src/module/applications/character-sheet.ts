@@ -471,6 +471,43 @@ export class CharacterSheet extends ActorSheet {
       return spell;
     });
 
+    // Enrich complex forms with dice pool and RR calculations (for V2 template)
+    context.featsByType.complexForm = context.featsByType.complexForm.map((cf: any) => {
+      const cfSystem = cf.system as any;
+
+      const cfSpecType = cfSystem.complexFormSpecializationType || 'formes-complexes';
+      const cfSpecMap: Record<string, string> = {
+        'formes-complexes': 'Spé: Formes complexes',
+        'compilation': 'Spé: Compilation',
+        'decompilation': 'Spé: Décompilation'
+      };
+      const finalAttackSpec = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
+
+      const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        finalAttackSpec,
+        'Technomancie',
+        { isSpell: true, spellSpecType: cfSpecType, defaultAttribute: 'logic' }
+      );
+
+      const poolResult = SheetHelpers.calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        cfSystem.rrList || [],
+        cf.name
+      );
+
+      cf.totalDicePool = poolResult.totalDicePool;
+      cf.rr = poolResult.totalRR;
+
+      if (skillSpecResult.specName) {
+        cf.attackSpecName = skillSpecResult.specName;
+        cf.attackSpecLevel = skillSpecResult.specLevel;
+      }
+
+      return cf;
+    });
+
     // Enrich powers with dice pool and RR calculations (for V2 template)
     context.featsByType.power = context.featsByType.power.map((power: any) => {
       const powerSystem = power.system as any;
