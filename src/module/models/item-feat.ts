@@ -1110,7 +1110,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (narrationActions > 0) {
       const narrationCost = narrationActions * 3;
       recommendedLevel += narrationCost;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', value: narrationCost });
+      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', labelParams: ` (${narrationActions})`, value: narrationCost });
     }
     
     // Narrative effects: value per positive effect, value per negative effect (exclude effects with value 0)

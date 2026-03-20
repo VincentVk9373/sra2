@@ -42,6 +42,8 @@ import { Migration_13_0_11 } from "./migration/migration-13.0.11.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_0_12 } from "./migration/migration-13.0.12.mjs";
 // @ts-ignore - JavaScript module without type declarations
+import { Migration_13_0_28 } from "./migration/migration-13.0.28.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
 /**
@@ -172,6 +174,7 @@ export class SRA2System {
       declareMigration(new Migration_13_0_10());
       declareMigration(new Migration_13_0_11());
       declareMigration(new Migration_13_0_12());
+      declareMigration(new Migration_13_0_28());
     });
   }
 
