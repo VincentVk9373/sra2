@@ -314,7 +314,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
           "armor": "SRA2.FEATS.FEAT_TYPE.ARMOR",
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
-          "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
           "emerged": "SRA2.FEATS.FEAT_TYPE.EMERGED",
@@ -333,7 +332,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         initial: "",
         label: "SRA2.FEATS.VEHICLE.VEHICLE_TYPE"
-      }),
+      }), // Legacy: kept for migration compatibility
       // Weapon/Spell specific fields
       damageValue: new fields.StringField({
         required: true,
@@ -1035,12 +1034,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (featType === 'complex-form') {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM', value: 1 });
-    }
-    
-    // Vehicle/Drone: 1 level
-    if (featType === 'vehicle') {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.VEHICLE', value: 1 });
     }
     
     // Light wounds: +3 per wound

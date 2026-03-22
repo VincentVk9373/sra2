@@ -239,8 +239,7 @@ export class CharacterSheet extends ActorSheet {
   }
 
   private _enrichFeatsByType(context: any, allFeats: any[], linkedVehicles: any[]): void {
-    // Group feats by type (vehicle feats + linked vehicle actors)
-    const vehicleFeats = allFeats.filter((feat: any) => feat.system.featType === 'vehicle');
+    // Linked vehicle actors only (vehicle feat type has been retired)
 
     // Enrich cyberdecks with damage thresholds
     const cyberdeckFeats = allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck');
@@ -301,7 +300,7 @@ export class CharacterSheet extends ActorSheet {
       armor: allFeats.filter((feat: any) => feat.system.featType === 'armor'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: cyberdeckFeats,
-      vehicle: [...vehicleFeats, ...linkedVehicles], // Combine vehicle feats and linked vehicle actors
+      vehicle: [...linkedVehicles], // Only linked vehicle actors (vehicle feat type retired)
       weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon' && !feat.system.isSpell),
       spell: allFeats.filter((feat: any) =>
@@ -1282,20 +1281,6 @@ export class CharacterSheet extends ActorSheet {
     const item = this.actor.items.get(itemId);
     if (!item) return;
 
-    // Check if this is a vehicle feat that references a vehicle actor
-    if (item.type === 'feat' && (item.system as any).featType === 'vehicle') {
-      const vehicleActorUuid = (item.system as any).vehicleActorUuid;
-      if (vehicleActorUuid) {
-        // Allow dragging the vehicle actor to the map
-        const dragData = {
-          type: 'Actor',
-          uuid: vehicleActorUuid,
-        };
-        event.dataTransfer?.setData('text/plain', JSON.stringify(dragData));
-        return;
-      }
-    }
-
     // Default: drag the item itself
     const dragData = {
       type: 'Item',
@@ -1665,7 +1650,6 @@ export class CharacterSheet extends ActorSheet {
             <option value="adept-power">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.ADEPT_POWER')}</option>
             <option value="cyberware">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERWARE')}</option>
             <option value="cyberdeck">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERDECK')}</option>
-            <option value="vehicle">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.VEHICLE')}</option>
             <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
             <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
             <option value="connaissance">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.KNOWLEDGE')}</option>
@@ -1711,8 +1695,7 @@ export class CharacterSheet extends ActorSheet {
               <option value="adept-power">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.ADEPT_POWER')}</option>
               <option value="cyberware">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERWARE')}</option>
               <option value="cyberdeck">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.CYBERDECK')}</option>
-              <option value="vehicle">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.VEHICLE')}</option>
-              <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
+                <option value="weapon">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.WEAPON')}</option>
               <option value="spell">${game.i18n!.localize('SRA2.FEATS.FEAT_TYPE.SPELL')}</option>
             </select>
             <button class="create-feat-btn-inline" data-feat-name="${this.lastFeatSearchTerm}">
