@@ -181,6 +181,10 @@ Feats can provide RR bonuses to:
 - Positive and negative effects on feats
 - Value-based modifiers (+1 to +5 or -1 to -5)
 
+## Release Notes
+
+Release notes for each version are available in the [release/](release/) folder.
+
 # Legal mentions
 
 ## License
