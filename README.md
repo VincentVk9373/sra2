@@ -6,6 +6,8 @@ This system implements Shadowrun Anarchy 2 rules for Foundry VTT.
 
 To run a game, you will need the **Shadowrun Anarchy 2 rule book**.
 
+**[Release Notes](release/)**
+
 - [Catalyst game labs](https://www.catalystgamelabs.com/) -  [Catalyst game labs products](https://store.catalystgamelabs.com/products/) 
 - [Black Book Edition](https://www.black-book-editions.fr/) - [Black Book Edition products](https://black-book-editions.fr/catalogue.php?id=150)
 
@@ -180,10 +182,6 @@ Feats can provide RR bonuses to:
 ### Narrative Effects
 - Positive and negative effects on feats
 - Value-based modifiers (+1 to +5 or -1 to -5)
-
-## Release Notes
-
-Release notes for each version are available in the [release/](release/) folder.
 
 # Legal mentions
 
