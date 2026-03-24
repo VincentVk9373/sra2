@@ -1653,7 +1653,7 @@ export class RollDialog extends Application {
       }
       
       // Block roll if selected range is "none" (for weapon rolls, not defense)
-      if (this.rollData.itemType === 'weapon' || this.rollData.itemType === 'spell' || this.rollData.itemType === 'weapons-spells') {
+      if (this.rollData.itemType === 'weapon' || this.rollData.itemType === 'spell') {
         if (!this.rollData.isDefend && this.selectedRange) {
           // Get the current range value
           let selectedRangeValue: string | null = null;

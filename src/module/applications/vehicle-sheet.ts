@@ -184,7 +184,7 @@ export class VehicleSheet extends ActorSheet {
     
     // Filter and process weapons (only weapons allowed for vehicles)
     const rawWeapons = allFeats.filter((feat: any) => 
-      feat.system.featType === 'weapon' || feat.system.featType === 'weapons-spells'
+      feat.system.featType === 'weapon'
     );
     const weapons = rawWeapons.map((weapon: any) => calculateWeaponStats(weapon));
     
@@ -612,7 +612,7 @@ export class VehicleSheet extends ActorSheet {
     if (weaponsOnly) {
       items = items.filter((item: any) => {
         const featType = item.system?.featType;
-        return featType === 'weapon' || featType === 'weapons-spells';
+        return featType === 'weapon';
       });
     }
     
@@ -673,12 +673,12 @@ export class VehicleSheet extends ActorSheet {
       return super._onDrop(event);
     }
     
-    // Only allow weapons (feats of type weapon or weapons-spells)
+    // Only allow weapons (feats of type weapon)
     if (data.type === 'Item') {
       const item = await Item.fromDropData(data);
       if (item && item.type === 'feat') {
         const featType = (item.system as any).featType;
-        if (featType === 'weapon' || featType === 'weapons-spells') {
+        if (featType === 'weapon') {
           // Create the item on the actor
           // The sheet will auto-render, and activateListeners will restore the section
           await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);

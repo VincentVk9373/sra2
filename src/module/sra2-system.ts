@@ -45,6 +45,7 @@ import { Migration_13_0_12 } from "./migration/migration-13.0.12.mjs";
 import { Migration_13_0_28 } from "./migration/migration-13.0.28.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_1_1 } from "./migration/migration-13.1.1.mjs";
+import { Migration_13_1_3 } from "./migration/migration-13.1.3.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
@@ -95,7 +96,7 @@ function getMeleeWeaponsForCounterAttack(actor: any, WEAPON_TYPES: Record<string
     .filter((item: any) => {
       if (item.type !== 'feat') return false;
       const ft = item.system?.featType;
-      if (ft !== 'weapon' && ft !== 'weapons-spells') return false;
+      if (ft !== 'weapon') return false;
       return hasMeleeCap(item) && isMeleeLinked(item);
     })
     .map((weapon: any) => {
@@ -178,6 +179,7 @@ export class SRA2System {
       declareMigration(new Migration_13_0_12());
       declareMigration(new Migration_13_0_28());
       declareMigration(new Migration_13_1_1());
+      declareMigration(new Migration_13_1_3());
     });
   }
 
@@ -331,7 +333,7 @@ export class SRA2System {
 
       // Check if this is a weapon item
       const featType = item.system?.featType;
-      if (featType !== 'weapon' && featType !== 'weapons-spells') return;
+      if (featType !== 'weapon') return;
 
       // Force vehicle to recalculate its cost first
       if (actor.system) {
@@ -368,7 +370,7 @@ export class SRA2System {
 
       // Check if this was a weapon item
       const featType = item.system?.featType;
-      if (featType !== 'weapon' && featType !== 'weapons-spells') return;
+      if (featType !== 'weapon') return;
 
       // Force vehicle to recalculate its cost first
       if (actor.system) {

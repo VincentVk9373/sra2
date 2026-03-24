@@ -324,7 +324,7 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
     if (actor && actor.items) {
       const weapons = actor.items.filter((item: any) => {
         const featType = item.system?.featType;
-        return featType === 'weapon' || featType === 'weapons-spells';
+        return featType === 'weapon';
       });
       
       weapons.forEach((weapon: any) => {

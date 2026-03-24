@@ -913,7 +913,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
 
   private _applyCustomWeaponDamage(featType: string): void {
     const weaponType = (this as any).weaponType || '';
-    if (weaponType !== 'custom-weapon' || (featType !== 'weapon' && featType !== 'weapons-spells')) return;
+    if (weaponType !== 'custom-weapon' || featType !== 'weapon') return;
     const vdMode = (this as any).vdMode || 'custom';
     if (vdMode === 'custom') {
       (this as any).damageValue = ((this as any).vdCustomValue ?? 0).toString();
@@ -935,8 +935,8 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     // Calculate cost based on cost type (for equipment and weapons)
     let calculatedCost = 0;
     
-    // Apply cost calculations for equipment, weapon, and weapons-spells types
-    if (featType === 'equipment' || featType === 'weapon' || featType === 'weapons-spells') {
+    // Apply cost calculations for equipment and weapon types
+    if (featType === 'equipment' || featType === 'weapon') {
       switch (costType) {
         case 'free-equipment':
           calculatedCost = 0;

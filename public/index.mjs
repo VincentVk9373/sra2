@@ -978,7 +978,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
           "armor": "SRA2.FEATS.FEAT_TYPE.ARMOR",
           "cyberware": "SRA2.FEATS.FEAT_TYPE.CYBERWARE",
           "cyberdeck": "SRA2.FEATS.FEAT_TYPE.CYBERDECK",
-          "vehicle": "SRA2.FEATS.FEAT_TYPE.VEHICLE",
           "weapon": "SRA2.FEATS.FEAT_TYPE.WEAPON",
           "spell": "SRA2.FEATS.FEAT_TYPE.SPELL",
           "emerged": "SRA2.FEATS.FEAT_TYPE.EMERGED",
@@ -998,6 +997,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: "",
         label: "SRA2.FEATS.VEHICLE.VEHICLE_TYPE"
       }),
+      // Legacy: kept for migration compatibility
       // Weapon/Spell specific fields
       damageValue: new fields.StringField({
         required: true,
@@ -1572,7 +1572,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
   }
   _applyCustomWeaponDamage(featType) {
     const weaponType = this.weaponType || "";
-    if (weaponType !== "custom-weapon" || featType !== "weapon" && featType !== "weapons-spells") return;
+    if (weaponType !== "custom-weapon" || featType !== "weapon") return;
     const vdMode = this.vdMode || "custom";
     if (vdMode === "custom") {
       this.damageValue = (this.vdCustomValue ?? 0).toString();
@@ -1590,7 +1590,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     const costType = this.cost || "free-equipment";
     const rating = this.rating || 0;
     let calculatedCost = 0;
-    if (featType === "equipment" || featType === "weapon" || featType === "weapons-spells") {
+    if (featType === "equipment" || featType === "weapon") {
       switch (costType) {
         case "free-equipment":
           calculatedCost = 0;
@@ -1666,10 +1666,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "complex-form") {
       recommendedLevel += 1;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM", value: 1 });
-    }
-    if (featType === "vehicle") {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.VEHICLE", value: 1 });
     }
     if (bonusLightDamage > 0) {
       const value = bonusLightDamage * 3;
@@ -2174,7 +2170,7 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
     if (actor && actor.items) {
       const weapons = actor.items.filter((item) => {
         const featType = item.system?.featType;
-        return featType === "weapon" || featType === "weapons-spells";
+        return featType === "weapon";
       });
       weapons.forEach((weapon) => {
         const weaponCost = weapon.system?.calculatedCost || 0;
@@ -3305,7 +3301,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
     feat.rrEntries = [];
     const itemRRList = [];
     let allRRList = [...itemRRList];
-    if (actor && (feat.system.featType === "weapon" || feat.system.featType === "spell" || feat.system.featType === "weapons-spells")) {
+    if (actor && (feat.system.featType === "weapon" || feat.system.featType === "spell")) {
       const { normalizeSearchText: normalizeSearchText2 } = ItemSearch;
       const linkedAttackSkill = feat.system.linkedAttackSkill || "";
       const linkedAttackSpec = feat.system.linkedAttackSpecialization || "";
@@ -5175,7 +5171,7 @@ class RollDialog extends Application {
           return;
         }
       }
-      if (this.rollData.itemType === "weapon" || this.rollData.itemType === "spell" || this.rollData.itemType === "weapons-spells") {
+      if (this.rollData.itemType === "weapon" || this.rollData.itemType === "spell") {
         if (!this.rollData.isDefend && this.selectedRange) {
           let selectedRangeValue = null;
           const meleeRange = this.rollData.meleeRange || "none";
@@ -5712,7 +5708,7 @@ function buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, final
   };
 }
 async function createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult) {
-  const isAttack = rollData.itemType === "weapon" || rollData.itemType === "spell" || rollData.itemType === "weapon-spell" || rollData.itemType === "complex-form" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  const isAttack = rollData.itemType === "weapon" || rollData.itemType === "spell" || rollData.itemType === "complex-form" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
   const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
   const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
   const firstEntry = defenders[0] ?? { actor: null, token: null };
@@ -5796,7 +5792,7 @@ async function handleDrain(actor, rollData, rollResult) {
   if (!actor || !rollData || !rollResult) {
     return;
   }
-  const isSpell = rollData.itemType === "spell" || rollData.itemType === "weapon-spell";
+  const isSpell = rollData.itemType === "spell";
   let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || "";
   let normalizedSkillName = normalizeSearchText(skillName);
   if (isSpell || normalizeSearchText(rollData.linkedAttackSkill || "") === "sorcellerie") {
@@ -6443,7 +6439,7 @@ class CharacterSheet extends ActorSheet {
           const vehicleItems = vehicleActor.items || [];
           for (const item of vehicleItems) {
             const itemSystem = item.system;
-            if (item.type === "feat" && (itemSystem.featType === "weapon" || itemSystem.featType === "weapons-spells")) {
+            if (item.type === "feat" && itemSystem.featType === "weapon") {
               const enrichedWeapon = enrichFeats([item], actorStrength, calculateFinalDamageValue, this.actor)[0];
               vehicleWeapons.push({
                 _id: item.id,
@@ -6526,7 +6522,6 @@ class CharacterSheet extends ActorSheet {
     return linkedVehicles;
   }
   _enrichFeatsByType(context, allFeats, linkedVehicles) {
-    const vehicleFeats = allFeats.filter((feat) => feat.system.featType === "vehicle");
     const cyberdeckFeats = allFeats.filter((feat) => feat.system.featType === "cyberdeck");
     cyberdeckFeats.forEach((cyberdeck) => {
       const firewall = cyberdeck.system.firewall || 1;
@@ -6570,15 +6565,14 @@ class CharacterSheet extends ActorSheet {
       contact: allFeats.filter((feat) => feat.system.featType === "contact"),
       awakened: allFeats.filter((feat) => feat.system.featType === "awakened"),
       adeptPower: allFeats.filter(
-        (feat) => feat.system.featType === "adept-power" || (feat.system.featType === "weapon" || feat.system.featType === "weapons-spells") && feat.system.isAdeptPowerWeapon === true
+        (feat) => feat.system.featType === "adept-power" || feat.system.featType === "weapon" && feat.system.isAdeptPowerWeapon === true
       ),
       equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
       armor: allFeats.filter((feat) => feat.system.featType === "armor"),
       cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
       cyberdeck: cyberdeckFeats,
-      vehicle: [...vehicleFeats, ...linkedVehicles],
-      // Combine vehicle feats and linked vehicle actors
-      weaponsSpells: allFeats.filter((feat) => feat.system.featType === "weapons-spells"),
+      vehicle: [...linkedVehicles],
+      // Only linked vehicle actors (vehicle feat type retired)
       weapon: allFeats.filter((feat) => feat.system.featType === "weapon" && !feat.system.isSpell),
       spell: allFeats.filter(
         (feat) => feat.system.featType === "spell" || feat.system.isSpell === true
@@ -6875,7 +6869,6 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-power"]').on("click", this._onRollPower.bind(this));
     html.find('[data-action="roll-complex-form"]').on("click", this._onRollComplexForm.bind(this));
-    html.find('[data-action="roll-weapon-spell"]').on("click", this._onRollWeaponSpell.bind(this));
     html.find('[data-action="roll-vehicle-weapon"]').on("click", this._onRollVehicleWeaponFromSheet.bind(this));
     html.find('[data-action="roll-vehicle-weapon-autopilot"]').on("click", this._onRollVehicleWeaponAutopilot.bind(this));
     html.find('[data-action="roll-vehicle-autopilot"]').on("click", this._onRollVehicleAutopilot.bind(this));
@@ -7269,17 +7262,6 @@ class CharacterSheet extends ActorSheet {
     if (!itemId) return;
     const item = this.actor.items.get(itemId);
     if (!item) return;
-    if (item.type === "feat" && item.system.featType === "vehicle") {
-      const vehicleActorUuid = item.system.vehicleActorUuid;
-      if (vehicleActorUuid) {
-        const dragData2 = {
-          type: "Actor",
-          uuid: vehicleActorUuid
-        };
-        event.dataTransfer?.setData("text/plain", JSON.stringify(dragData2));
-        return;
-      }
-    }
     const dragData = {
       type: "Item",
       uuid: item.uuid
@@ -7557,7 +7539,6 @@ class CharacterSheet extends ActorSheet {
             <option value="adept-power">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.ADEPT_POWER")}</option>
             <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
             <option value="cyberdeck">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERDECK")}</option>
-            <option value="vehicle">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.VEHICLE")}</option>
             <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
             <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
             <option value="connaissance">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.KNOWLEDGE")}</option>
@@ -7599,8 +7580,7 @@ class CharacterSheet extends ActorSheet {
               <option value="adept-power">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.ADEPT_POWER")}</option>
               <option value="cyberware">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERWARE")}</option>
               <option value="cyberdeck">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.CYBERDECK")}</option>
-              <option value="vehicle">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.VEHICLE")}</option>
-              <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
+                <option value="weapon">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.WEAPON")}</option>
               <option value="spell">${game.i18n.localize("SRA2.FEATS.FEAT_TYPE.SPELL")}</option>
             </select>
             <button class="create-feat-btn-inline" data-feat-name="${this.lastFeatSearchTerm}">
@@ -7863,13 +7843,6 @@ class CharacterSheet extends ActorSheet {
           currentTarget: { dataset: { itemId } }
         };
         await this._onRollWeapon(fakeEvent);
-      } else if (featType === "weapons-spells") {
-        const fakeEvent = {
-          preventDefault: () => {
-          },
-          currentTarget: { dataset: { itemId } }
-        };
-        await this._onRollWeaponSpell(fakeEvent);
       }
     }
   }
@@ -8156,21 +8129,6 @@ class CharacterSheet extends ActorSheet {
     const power = this.actor.items.get(itemId);
     if (!power || power.type !== "feat") return;
     await this._rollPower(power);
-  }
-  /**
-   * Handle rolling a weapon/spell (old type)
-   */
-  async _onRollWeaponSpell(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
-    if (!itemId) {
-      console.error("SRA2 | No weapon/spell ID found");
-      return;
-    }
-    const item = this.actor.items.get(itemId);
-    if (!item || item.type !== "feat") return;
-    await this._rollWeaponOrSpell(item, "weapon-spell");
   }
   /**
    * Handle rolling a weapon or spell
@@ -9062,7 +9020,7 @@ class VehicleSheet extends ActorSheet {
       return itemData;
     };
     const rawWeapons = allFeats.filter(
-      (feat) => feat.system.featType === "weapon" || feat.system.featType === "weapons-spells"
+      (feat) => feat.system.featType === "weapon"
     );
     const weapons = rawWeapons.map((weapon) => calculateWeaponStats(weapon));
     context.weapons = weapons;
@@ -9364,7 +9322,7 @@ class VehicleSheet extends ActorSheet {
     if (weaponsOnly) {
       items = items.filter((item) => {
         const featType = item.system?.featType;
-        return featType === "weapon" || featType === "weapons-spells";
+        return featType === "weapon";
       });
     }
     const itemOptions = items.map((item) => {
@@ -9420,7 +9378,7 @@ class VehicleSheet extends ActorSheet {
       const item = await Item.fromDropData(data);
       if (item && item.type === "feat") {
         const featType = item.system.featType;
-        if (featType === "weapon" || featType === "weapons-spells") {
+        if (featType === "weapon") {
           await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
           return false;
         } else {
@@ -12254,6 +12212,82 @@ class Migration_13_0_28 extends Migration {
     }
   }
 }
+class Migration_13_1_1 extends Migration {
+  get code() {
+    return "migration-13.1.1";
+  }
+  get version() {
+    return "13.1.1";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.1.1: Removing vehicle feat type items");
+    let totalDeleted = 0;
+    for (const actor of game.actors) {
+      const vehicleFeats = actor.items.filter(
+        (item) => item.type === "feat" && item._source?.system?.featType === "vehicle"
+      );
+      if (vehicleFeats.length > 0) {
+        const ids = vehicleFeats.map((f) => f.id);
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.1.1: Deleting ${ids.length} vehicle feat(s) from actor "${actor.name}" (IDs: ${ids.join(", ")})`);
+        await actor.deleteEmbeddedDocuments("Item", ids);
+        totalDeleted += ids.length;
+      }
+    }
+    const worldVehicleFeats = game.items.filter(
+      (item) => item.type === "feat" && item._source?.system?.featType === "vehicle"
+    );
+    if (worldVehicleFeats.length > 0) {
+      const ids = worldVehicleFeats.map((f) => f.id);
+      console.log(SYSTEM.LOG.HEAD + `Migration 13.1.1: Deleting ${ids.length} unowned vehicle feat(s) from world items`);
+      await Item.deleteDocuments(ids);
+      totalDeleted += ids.length;
+    }
+    const summaryMessage = `Migration 13.1.1 completed - Vehicle feats deleted: ${totalDeleted}`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalDeleted > 0) {
+      ui.notifications?.info(
+        `Migration 13.1.1: Deleted ${totalDeleted} vehicle feat(s). Use vehicle/drone actors instead.`,
+        { permanent: false }
+      );
+    } else {
+      console.log(SYSTEM.LOG.HEAD + "No vehicle feats found to delete");
+    }
+  }
+}
+class Migration_13_1_3 extends Migration {
+  get code() {
+    return "migration-13.1.3";
+  }
+  get version() {
+    return "13.1.3";
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.1.3: Deleting all weapons-spells items");
+    let totalDeleted = 0;
+    for (const actor of game.actors) {
+      const toDelete = actor.items.filter((item) => item.type === "feat" && (item._source?.system?.featType === "weapons-spells" || item.system?.featType === "weapons-spells")).map((item) => item.id);
+      if (toDelete.length > 0) {
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.1.3: Deleting ${toDelete.length} weapons-spells item(s) from actor "${actor.name}"`);
+        await actor.deleteEmbeddedDocuments("Item", toDelete);
+        totalDeleted += toDelete.length;
+      }
+    }
+    const worldItemIds = game.items.filter((item) => item.type === "feat" && (item._source?.system?.featType === "weapons-spells" || item.system?.featType === "weapons-spells")).map((item) => item.id);
+    if (worldItemIds.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + `Migration 13.1.3: Deleting ${worldItemIds.length} weapons-spells item(s) from world items`);
+      await Item.deleteDocuments(worldItemIds);
+      totalDeleted += worldItemIds.length;
+    }
+    const summaryMessage = `Migration 13.1.3 completed - Deleted ${totalDeleted} weapons-spells item(s)`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    if (totalDeleted > 0) {
+      ui.notifications?.info(
+        `Migration 13.1.3: Deleted ${totalDeleted} obsolete "weapons-spells" item(s).`,
+        { permanent: false }
+      );
+    }
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
 function getMeleeWeaponsForCounterAttack(actor, WEAPON_TYPES2) {
   const combatSpecs = new Set(
@@ -12286,7 +12320,7 @@ function getMeleeWeaponsForCounterAttack(actor, WEAPON_TYPES2) {
   return actor.items.filter((item) => {
     if (item.type !== "feat") return false;
     const ft = item.system?.featType;
-    if (ft !== "weapon" && ft !== "weapons-spells") return false;
+    if (ft !== "weapon") return false;
     return hasMeleeCap(item) && isMeleeLinked(item);
   }).map((weapon) => {
     const sys = weapon.system;
@@ -12354,6 +12388,8 @@ class SRA2System {
       declareMigration(new Migration_13_0_11());
       declareMigration(new Migration_13_0_12());
       declareMigration(new Migration_13_0_28());
+      declareMigration(new Migration_13_1_1());
+      declareMigration(new Migration_13_1_3());
     });
   }
   registerDataModels() {
@@ -12464,7 +12500,7 @@ class SRA2System {
       const actor = item.parent;
       if (!actor || actor.type !== "vehicle") return;
       const featType = item.system?.featType;
-      if (featType !== "weapon" && featType !== "weapons-spells") return;
+      if (featType !== "weapon") return;
       if (actor.system) {
         actor.system.prepareDerivedData();
       }
@@ -12491,7 +12527,7 @@ class SRA2System {
       const actor = item.parent;
       if (!actor || actor.type !== "vehicle") return;
       const featType = item.system?.featType;
-      if (featType !== "weapon" && featType !== "weapons-spells") return;
+      if (featType !== "weapon") return;
       if (actor.system) {
         actor.system.prepareDerivedData();
       }

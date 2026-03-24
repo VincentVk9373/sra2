@@ -152,7 +152,7 @@ export class CharacterSheet extends ActorSheet {
           const vehicleItems = vehicleActor.items || [];
           for (const item of vehicleItems) {
             const itemSystem = item.system as any;
-            if (item.type === 'feat' && (itemSystem.featType === 'weapon' || itemSystem.featType === 'weapons-spells')) {
+            if (item.type === 'feat' && itemSystem.featType === 'weapon') {
               // Enrich weapon with character's stats for display
               const enrichedWeapon = SheetHelpers.enrichFeats([item], actorStrength, SheetHelpers.calculateFinalDamageValue, this.actor)[0];
               vehicleWeapons.push({
@@ -294,14 +294,13 @@ export class CharacterSheet extends ActorSheet {
       awakened: allFeats.filter((feat: any) => feat.system.featType === 'awakened'),
       adeptPower: allFeats.filter((feat: any) =>
         feat.system.featType === 'adept-power' ||
-        ((feat.system.featType === 'weapon' || feat.system.featType === 'weapons-spells') && feat.system.isAdeptPowerWeapon === true)
+        (feat.system.featType === 'weapon' && feat.system.isAdeptPowerWeapon === true)
       ),
       equipment: allFeats.filter((feat: any) => feat.system.featType === 'equipment'),
       armor: allFeats.filter((feat: any) => feat.system.featType === 'armor'),
       cyberware: allFeats.filter((feat: any) => feat.system.featType === 'cyberware'),
       cyberdeck: cyberdeckFeats,
       vehicle: [...linkedVehicles], // Only linked vehicle actors (vehicle feat type retired)
-      weaponsSpells: allFeats.filter((feat: any) => feat.system.featType === 'weapons-spells'),
       weapon: allFeats.filter((feat: any) => feat.system.featType === 'weapon' && !feat.system.isSpell),
       spell: allFeats.filter((feat: any) =>
         feat.system.featType === 'spell' || feat.system.isSpell === true
@@ -797,9 +796,6 @@ export class CharacterSheet extends ActorSheet {
 
     // Roll complex form
     html.find('[data-action="roll-complex-form"]').on('click', this._onRollComplexForm.bind(this));
-
-    // Roll weapon/spell (old type)
-    html.find('[data-action="roll-weapon-spell"]').on('click', this._onRollWeaponSpell.bind(this));
 
     // Roll vehicle weapon (mounted weapon using character skills)
     html.find('[data-action="roll-vehicle-weapon"]').on('click', this._onRollVehicleWeaponFromSheet.bind(this));
@@ -2067,12 +2063,6 @@ export class CharacterSheet extends ActorSheet {
           currentTarget: { dataset: { itemId: itemId } } 
         } as any;
         await this._onRollWeapon(fakeEvent);
-      } else if (featType === 'weapons-spells') {
-        const fakeEvent = { 
-          preventDefault: () => {}, 
-          currentTarget: { dataset: { itemId: itemId } } 
-        } as any;
-        await this._onRollWeaponSpell(fakeEvent);
       }
     }
   }
@@ -2444,29 +2434,9 @@ export class CharacterSheet extends ActorSheet {
   }
 
   /**
-   * Handle rolling a weapon/spell (old type)
-   */
-  private async _onRollWeaponSpell(event: Event): Promise<void> {
-    event.preventDefault();
-    const element = event.currentTarget as HTMLElement;
-    const itemId = element.dataset.itemId;
-    
-    if (!itemId) {
-      console.error("SRA2 | No weapon/spell ID found");
-      return;
-    }
-
-    const item = this.actor.items.get(itemId);
-    if (!item || item.type !== 'feat') return;
-
-    await this._rollWeaponOrSpell(item, 'weapon-spell');
-  }
-
-
-  /**
    * Handle rolling a weapon or spell
    */
-  private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'weapon-spell' | 'complex-form'): Promise<void> {
+  private async _rollWeaponOrSpell(item: any, type: 'weapon' | 'spell' | 'complex-form'): Promise<void> {
     const itemSystem = item.system as any;
 
     // Check if this is a spell or complex form

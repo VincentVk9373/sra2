@@ -1039,7 +1039,7 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
     // For weapons and spells, also include RR from linked skills/specs/attributes
     let allRRList = [...itemRRList];
 
-    if (actor && (feat.system.featType === 'weapon' || feat.system.featType === 'spell' || feat.system.featType === 'weapons-spells')) {
+    if (actor && (feat.system.featType === 'weapon' || feat.system.featType === 'spell')) {
       const { normalizeSearchText } = ItemSearch;
 
       // Get linked skill and specialization from weapon

@@ -689,7 +689,6 @@ async function createRollChatMessage(
 ): Promise<void> {
   const isAttack = rollData.itemType === 'weapon' ||
                    rollData.itemType === 'spell' ||
-                   rollData.itemType === 'weapon-spell' ||
                    rollData.itemType === 'complex-form' ||
                    rollData.weaponType !== undefined ||
                    (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
@@ -801,7 +800,7 @@ async function handleDrain(
   }
 
   // Check if this is a spell (spells always use Sorcery, even with specializations like "Spé: Sorts de combat")
-  const isSpell = rollData.itemType === 'spell' || rollData.itemType === 'weapon-spell';
+  const isSpell = rollData.itemType === 'spell';
   
   // Check if this is a Sorcery or Conjuration test
   // Priority: linkedAttackSkill (for spells/weapons) > skillName (for specializations) > specName (fallback)
