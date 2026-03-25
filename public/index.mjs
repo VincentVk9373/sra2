@@ -2845,6 +2845,22 @@ async function handleItemDrop(event, actor, allowedTypes = ["feat", "skill", "sp
   }
   return false;
 }
+async function createContactFromActor(sourceActor, targetActor) {
+  const contactData = {
+    name: sourceActor.name,
+    type: "feat",
+    img: sourceActor.img || "icons/svg/mystery-man.svg",
+    system: {
+      featType: "contact",
+      contactName: sourceActor.name,
+      description: ""
+    }
+  };
+  await targetActor.createEmbeddedDocuments("Item", [contactData]);
+  ui.notifications?.info(
+    game.i18n.format("SRA2.FEATS.CONTACT.CREATED_FROM_ACTOR", { name: sourceActor.name })
+  );
+}
 async function handleVehicleActorDrop(event, actor) {
   const data = TextEditor.getDragEventData(event);
   if (data && data.type === "Actor") {
@@ -2852,7 +2868,7 @@ async function handleVehicleActorDrop(event, actor) {
       const sourceActor = await fromUuid(data.uuid);
       if (!sourceActor) return false;
       if (sourceActor.type !== "vehicle") {
-        ui.notifications?.warn(game.i18n.localize("SRA2.VEHICLE.ONLY_VEHICLES_ALLOWED"));
+        await createContactFromActor(sourceActor, actor);
         return true;
       }
       const vehicleData = sourceActor.toObject();

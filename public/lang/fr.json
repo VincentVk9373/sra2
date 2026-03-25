@@ -685,7 +685,8 @@
             "CONTACT": {
                 "SECTION_TITLE": "Informations du Contact",
                 "NAME": "Nom du Contact",
-                "NAME_PLACEHOLDER": "Entrez le nom du contact"
+                "NAME_PLACEHOLDER": "Entrez le nom du contact",
+                "CREATED_FROM_ACTOR": "Contact \"{name}\" créé"
             },
             "AWAKENED": {
                 "SECTION_TITLE": "Capacités Éveillées",

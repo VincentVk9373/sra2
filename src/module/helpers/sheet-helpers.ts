@@ -258,8 +258,29 @@ export async function handleItemDrop(
 }
 
 /**
- * Handle vehicle actor drop on character sheet
- * Adds the vehicle actor UUID to the character's linkedVehicles array
+ * Create a contact feat from a dropped actor
+ */
+async function createContactFromActor(sourceActor: any, targetActor: any): Promise<void> {
+  const contactData = {
+    name: sourceActor.name,
+    type: 'feat',
+    img: sourceActor.img || 'icons/svg/mystery-man.svg',
+    system: {
+      featType: 'contact',
+      contactName: sourceActor.name,
+      description: '',
+    }
+  };
+
+  await targetActor.createEmbeddedDocuments('Item', [contactData]);
+  ui.notifications?.info(
+    game.i18n!.format('SRA2.FEATS.CONTACT.CREATED_FROM_ACTOR', { name: sourceActor.name })
+  );
+}
+
+/**
+ * Handle actor drop on character sheet
+ * Vehicles are linked, other actors create a contact feat
  */
 export async function handleVehicleActorDrop(
   event: DragEvent,
@@ -274,11 +295,11 @@ export async function handleVehicleActorDrop(
 
       if (!sourceActor) return false;
 
-      // Check if it's a vehicle actor
+      // Check if it's a vehicle actor or another actor type
       if (sourceActor.type !== 'vehicle') {
-        // Block non-vehicle actors from being dropped (prevent default Foundry dialog)
-        ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_VEHICLES_ALLOWED'));
-        return true; // Return true to prevent default behavior
+        // Non-vehicle actor: create a contact feat from this actor
+        await createContactFromActor(sourceActor, actor);
+        return true;
       }
 
       // Create a copy of the vehicle instead of linking to the original

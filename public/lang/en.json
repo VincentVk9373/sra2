@@ -810,7 +810,8 @@
             "CONTACT": {
                 "SECTION_TITLE": "Contact Information",
                 "NAME": "Contact Name",
-                "NAME_PLACEHOLDER": "Enter contact name"
+                "NAME_PLACEHOLDER": "Enter contact name",
+                "CREATED_FROM_ACTOR": "Contact \"{name}\" created"
             },
             "AWAKENED": {
                 "SECTION_TITLE": "Awakened Abilities",
