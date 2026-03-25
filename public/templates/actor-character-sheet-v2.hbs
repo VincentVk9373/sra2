@@ -863,7 +863,8 @@
                             <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
                                 <div class="name-wrapper">
                                     <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}
+                                        <span class="weapon-stats"><span><i class="fas {{connectionModeIcon this.system.connectionMode}}"></i> {{connectionModeLabel this.system.connectionMode}}</span></span></div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
                                         {{#if (ne this.system.active undefined)}}
                                         <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
@@ -873,6 +874,17 @@
                                         <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
                                         </div>
+                                        <hr/>
+                                        <div class="context-menu-item {{#if (eq this.system.connectionMode 'ar')}}active{{/if}}" data-action="set-connection-mode" data-item-id="{{this._id}}" data-connection-mode="ar">
+                                            <i class="fas fa-glasses"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.AR"}}
+                                        </div>
+                                        <div class="context-menu-item {{#if (eq this.system.connectionMode 'cold-sim')}}active{{/if}}" data-action="set-connection-mode" data-item-id="{{this._id}}" data-connection-mode="cold-sim">
+                                            <i class="fas fa-snowflake"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.COLD_SIM"}}
+                                        </div>
+                                        <div class="context-menu-item {{#if (eq this.system.connectionMode 'hot-sim')}}active{{/if}}" data-action="set-connection-mode" data-item-id="{{this._id}}" data-connection-mode="hot-sim">
+                                            <i class="fas fa-fire"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.HOT_SIM"}}
+                                        </div>
+                                        <hr/>
                                         <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
                                             <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
                                         </div>

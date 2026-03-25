@@ -619,6 +619,17 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: true,
         label: "SRA2.FEATS.CYBERDECK.DAMAGE"
       }),
+      // Cyberdeck connection mode (RA, cold-sim VR, hot-sim VR)
+      connectionMode: new fields.StringField({
+        required: true,
+        initial: "ar",
+        choices: {
+          "ar": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.AR",
+          "cold-sim": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.COLD_SIM",
+          "hot-sim": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.HOT_SIM"
+        },
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
+      }),
       // Cyberdeck bonus light damage (+1 light damage box for cyberdeck, +1 to recommended level)
       cyberdeckBonusLightDamage: new fields.BooleanField({
         required: true,

@@ -1284,6 +1284,17 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         label: "SRA2.FEATS.CYBERDECK.DAMAGE"
       }),
+      // Cyberdeck connection mode (RA, cold-sim VR, hot-sim VR)
+      connectionMode: new fields.StringField({
+        required: true,
+        initial: "ar",
+        choices: {
+          "ar": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.AR",
+          "cold-sim": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.COLD_SIM",
+          "hot-sim": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.HOT_SIM"
+        },
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
+      }),
       // Cyberdeck bonus light damage (+1 light damage box for cyberdeck, +1 to recommended level)
       cyberdeckBonusLightDamage: new fields.BooleanField({
         required: true,
@@ -6876,6 +6887,7 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="open-vehicle"]').on("click", this._onOpenVehicle.bind(this));
     html.find('[data-action="unlink-vehicle"]').on("click", this._onUnlinkVehicle.bind(this));
     html.find('[data-action="set-vehicle-control-mode"]').on("click", this._onSetVehicleControlMode.bind(this));
+    html.find('[data-action="set-connection-mode"]').on("click", this._onSetConnectionMode.bind(this));
     html.find('[data-action="edit-skill"]').on("click", this._onEditSkill.bind(this));
     html.find('[data-action="delete-skill"]').on("click", this._onDeleteSkill.bind(this));
     html.find('[data-action="edit-specialization"]').on("click", this._onEditSpecialization.bind(this));
@@ -7022,6 +7034,16 @@ class CharacterSheet extends ActorSheet {
       console.warn("Could not update vehicle token prototype:", error);
     }
     ui.notifications?.info(game.i18n.localize("SRA2.FEATS.VEHICLE_UNLINKED"));
+  }
+  async _onSetConnectionMode(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    const connectionMode = element.dataset.connectionMode;
+    if (!itemId || !connectionMode) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    await item.update({ "system.connectionMode": connectionMode });
   }
   async _onSetVehicleControlMode(event) {
     event.preventDefault();
@@ -12855,6 +12877,18 @@ class SRA2System {
         "captain": "fa-chair"
       };
       return icons[value || "autonomous"] || "fa-robot";
+    });
+    Handlebars.registerHelper("connectionModeLabel", function(value) {
+      const key = `SRA2.FEATS.CYBERDECK.CONNECTION_MODE.${(value || "ar").toUpperCase().replace("-", "_")}`;
+      return game.i18n?.localize(key) || value;
+    });
+    Handlebars.registerHelper("connectionModeIcon", function(value) {
+      const icons = {
+        "ar": "fa-glasses",
+        "cold-sim": "fa-snowflake",
+        "hot-sim": "fa-fire"
+      };
+      return icons[value || "ar"] || "fa-glasses";
     });
     Handlebars.registerHelper("rangeLabel", function(value) {
       if (!value || value === "none") return "-";

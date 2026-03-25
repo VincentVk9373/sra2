@@ -687,7 +687,13 @@
                 "DAMAGE_TRACK": "Piste de dégâts",
                 "DAMAGE": "Dégâts",
                 "BONUS_LIGHT_DAMAGE": "+1 blessure légère",
-                "BONUS_LIGHT_DAMAGE_HINT": "Ajoute +1 au nombre de blessures légères du cyberdeck (passe de 2 à 3) et augmente le coût recommandé de l'atout de +3"
+                "BONUS_LIGHT_DAMAGE_HINT": "Ajoute +1 au nombre de blessures légères du cyberdeck (passe de 2 à 3) et augmente le coût recommandé de l'atout de +3",
+                "CONNECTION_MODE": {
+                    "LABEL": "Mode de connexion",
+                    "AR": "RA",
+                    "COLD_SIM": "RV Cold-sim",
+                    "HOT_SIM": "RV Hot-sim"
+                }
             },
             "CONTACT": {
                 "SECTION_TITLE": "Informations du Contact",

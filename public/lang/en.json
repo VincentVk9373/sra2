@@ -812,7 +812,13 @@
                 "DAMAGE_TRACK": "Damage Track",
                 "DAMAGE": "Damage",
                 "BONUS_LIGHT_DAMAGE": "+1 light damage",
-                "BONUS_LIGHT_DAMAGE_HINT": "Adds +1 to the cyberdeck's number of light damage boxes (from 2 to 3) and increases the feat's recommended cost by +3"
+                "BONUS_LIGHT_DAMAGE_HINT": "Adds +1 to the cyberdeck's number of light damage boxes (from 2 to 3) and increases the feat's recommended cost by +3",
+                "CONNECTION_MODE": {
+                    "LABEL": "Connection Mode",
+                    "AR": "AR",
+                    "COLD_SIM": "VR Cold-sim",
+                    "HOT_SIM": "VR Hot-sim"
+                }
             },
             "CONTACT": {
                 "SECTION_TITLE": "Contact Information",

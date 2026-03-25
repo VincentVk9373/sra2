@@ -738,6 +738,9 @@ export class CharacterSheet extends ActorSheet {
     // Set vehicle control mode
     html.find('[data-action="set-vehicle-control-mode"]').on('click', this._onSetVehicleControlMode.bind(this));
 
+    // Set cyberdeck connection mode
+    html.find('[data-action="set-connection-mode"]').on('click', this._onSetConnectionMode.bind(this));
+
     // Edit skill
     html.find('[data-action="edit-skill"]').on('click', this._onEditSkill.bind(this));
 
@@ -948,6 +951,19 @@ export class CharacterSheet extends ActorSheet {
     }
     
     ui.notifications?.info(game.i18n!.localize('SRA2.FEATS.VEHICLE_UNLINKED'));
+  }
+
+  private async _onSetConnectionMode(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    const connectionMode = element.dataset.connectionMode;
+    if (!itemId || !connectionMode) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    await item.update({ 'system.connectionMode': connectionMode });
   }
 
   private async _onSetVehicleControlMode(event: Event): Promise<void> {

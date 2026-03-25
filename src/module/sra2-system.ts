@@ -787,6 +787,20 @@ export class SRA2System {
       return icons[value || 'autonomous'] || 'fa-robot';
     });
 
+    Handlebars.registerHelper('connectionModeLabel', function (value: string) {
+      const key = `SRA2.FEATS.CYBERDECK.CONNECTION_MODE.${(value || 'ar').toUpperCase().replace('-', '_')}`;
+      return game.i18n?.localize(key) || value;
+    });
+
+    Handlebars.registerHelper('connectionModeIcon', function (value: string) {
+      const icons: Record<string, string> = {
+        'ar': 'fa-glasses',
+        'cold-sim': 'fa-snowflake',
+        'hot-sim': 'fa-fire'
+      };
+      return icons[value || 'ar'] || 'fa-glasses';
+    });
+
     Handlebars.registerHelper('rangeLabel', function (value: string) {
       if (!value || value === 'none') return '-';
       if (value === 'advantage') return 'av';
