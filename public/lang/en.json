@@ -123,7 +123,10 @@
                 "COMBAT": "Combat",
                 "FEATS": "Feats"
             },
+            "WEAPON_MOUNT_NONE": "None",
+            "WEAPON_MOUNT_RIFLE": "Rifle",
             "TYPES": {
+                "custom-vehicle": "Custom Vehicle",
                 "microdrone": "Microdrone",
                 "minidrone": "Minidrone",
                 "small-drone": "Small Drone",
@@ -141,7 +144,8 @@
                 "jet-ski": "Jet-ski",
                 "civil-helicopter": "Civil Helicopter",
                 "vtol": "VTOL",
-                "t_bird": "T-Bird"
+                "t-bird": "T-Bird",
+                "glider-wing": "Glider Wing"
             },
             "WEAPONS": "Weapons",
             "MOUNTED_WEAPONS": "Mounted weapons",

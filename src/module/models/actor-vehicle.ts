@@ -32,6 +32,55 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
         },
         label: "SRA2.VEHICLE.CONTROL_MODE.LABEL"
       }),
+      // Custom vehicle base stats (only used when vehicleType is "custom-vehicle")
+      customAutopilot: new fields.NumberField({
+        required: true,
+        initial: 6,
+        min: 0,
+        max: 12,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT"
+      }),
+      customStructure: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.STRUCTURE"
+      }),
+      customHandling: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.HANDLING"
+      }),
+      customSpeed: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.SPEED"
+      }),
+      customFlyingSpeed: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.FLYING_SPEED"
+      }),
+      customArmor: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.ARMOR"
+      }),
+      customWeaponMount: new fields.StringField({
+        required: true,
+        initial: "none",
+        label: "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"
+      }),
       // Vehicle bonuses
       autopilotBonus: new fields.NumberField({
         required: true,
@@ -161,18 +210,33 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
 
   override prepareDerivedData(): void {
     const vehicleType = (this as any).vehicleType || "";
-    const vehicleStats = vehicleType && VEHICLE_TYPES[vehicleType as VehicleType] 
-      ? VEHICLE_TYPES[vehicleType as VehicleType] 
+    const isCustom = vehicleType === 'custom-vehicle';
+    const vehicleStats = vehicleType && !isCustom && VEHICLE_TYPES[vehicleType as VehicleType]
+      ? VEHICLE_TYPES[vehicleType as VehicleType]
       : null;
-    
-    // Get base stats from vehicle type or defaults
-    const baseAutopilot = vehicleStats?.autopilot || 0;
-    const baseStructure = vehicleStats?.structure || 0;
-    const baseHandling = vehicleStats?.handling || 0;
-    const baseSpeed = vehicleStats?.speed || 0;
-    const baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
-    const baseArmor = vehicleStats?.armor || 0;
-    const baseWeaponMount = vehicleStats?.weaponMount || "none";
+
+    // Get base stats from vehicle type or custom fields
+    let baseAutopilot: number, baseStructure: number, baseHandling: number;
+    let baseSpeed: number, baseFlyingSpeed: number, baseArmor: number;
+    let baseWeaponMount: string;
+
+    if (isCustom) {
+      baseAutopilot = (this as any).customAutopilot ?? 6;
+      baseStructure = (this as any).customStructure ?? 0;
+      baseHandling = (this as any).customHandling ?? 0;
+      baseSpeed = (this as any).customSpeed ?? 0;
+      baseFlyingSpeed = (this as any).customFlyingSpeed ?? 0;
+      baseArmor = (this as any).customArmor ?? 0;
+      baseWeaponMount = (this as any).customWeaponMount || "none";
+    } else {
+      baseAutopilot = vehicleStats?.autopilot || 0;
+      baseStructure = vehicleStats?.structure || 0;
+      baseHandling = vehicleStats?.handling || 0;
+      baseSpeed = vehicleStats?.speed || 0;
+      baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
+      baseArmor = vehicleStats?.armor || 0;
+      baseWeaponMount = vehicleStats?.weaponMount || "none";
+    }
     
     // Get bonuses
     const autopilotBonus = (this as any).autopilotBonus || 0;

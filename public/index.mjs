@@ -538,6 +538,7 @@ const sedan = { "autopilot": 6, "structure": 6, "handling": 2, "speed": 4, "flyi
 const van = { "autopilot": 6, "structure": 8, "handling": 1, "speed": 3, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const vtol = { "autopilot": 6, "structure": 10, "handling": 3, "speed": 6, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" };
 const vehicleTypesData = {
+  "custom-vehicle": { "autopilot": 6, "structure": 0, "handling": 0, "speed": 0, "flyingSpeed": 0, "armor": 0, "weaponMount": "none" },
   microdrone,
   minidrone,
   "small-drone": { "autopilot": 6, "structure": 1, "handling": 9, "speed": 2, "flyingSpeed": 4, "armor": 0, "weaponMount": "smg" },
@@ -1950,6 +1951,55 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
         },
         label: "SRA2.VEHICLE.CONTROL_MODE.LABEL"
       }),
+      // Custom vehicle base stats (only used when vehicleType is "custom-vehicle")
+      customAutopilot: new fields.NumberField({
+        required: true,
+        initial: 6,
+        min: 0,
+        max: 12,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT"
+      }),
+      customStructure: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.STRUCTURE"
+      }),
+      customHandling: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.HANDLING"
+      }),
+      customSpeed: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.SPEED"
+      }),
+      customFlyingSpeed: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.VEHICLE.FLYING_SPEED"
+      }),
+      customArmor: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.VEHICLE.ATTRIBUTES.ARMOR"
+      }),
+      customWeaponMount: new fields.StringField({
+        required: true,
+        initial: "none",
+        label: "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"
+      }),
       // Vehicle bonuses
       autopilotBonus: new fields.NumberField({
         required: true,
@@ -2078,14 +2128,28 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
   }
   prepareDerivedData() {
     const vehicleType = this.vehicleType || "";
-    const vehicleStats = vehicleType && VEHICLE_TYPES[vehicleType] ? VEHICLE_TYPES[vehicleType] : null;
-    const baseAutopilot = vehicleStats?.autopilot || 0;
-    const baseStructure = vehicleStats?.structure || 0;
-    const baseHandling = vehicleStats?.handling || 0;
-    const baseSpeed = vehicleStats?.speed || 0;
-    const baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
-    const baseArmor = vehicleStats?.armor || 0;
-    const baseWeaponMount = vehicleStats?.weaponMount || "none";
+    const isCustom = vehicleType === "custom-vehicle";
+    const vehicleStats = vehicleType && !isCustom && VEHICLE_TYPES[vehicleType] ? VEHICLE_TYPES[vehicleType] : null;
+    let baseAutopilot, baseStructure, baseHandling;
+    let baseSpeed, baseFlyingSpeed, baseArmor;
+    let baseWeaponMount;
+    if (isCustom) {
+      baseAutopilot = this.customAutopilot ?? 6;
+      baseStructure = this.customStructure ?? 0;
+      baseHandling = this.customHandling ?? 0;
+      baseSpeed = this.customSpeed ?? 0;
+      baseFlyingSpeed = this.customFlyingSpeed ?? 0;
+      baseArmor = this.customArmor ?? 0;
+      baseWeaponMount = this.customWeaponMount || "none";
+    } else {
+      baseAutopilot = vehicleStats?.autopilot || 0;
+      baseStructure = vehicleStats?.structure || 0;
+      baseHandling = vehicleStats?.handling || 0;
+      baseSpeed = vehicleStats?.speed || 0;
+      baseFlyingSpeed = vehicleStats?.flyingSpeed || 0;
+      baseArmor = vehicleStats?.armor || 0;
+      baseWeaponMount = vehicleStats?.weaponMount || "none";
+    }
     const autopilotBonus = this.autopilotBonus || 0;
     const speedBonus = this.speedBonus || 0;
     const handlingBonus = this.handlingBonus || 0;

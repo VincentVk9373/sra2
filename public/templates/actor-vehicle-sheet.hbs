@@ -104,7 +104,7 @@
             </select>
           </div>
 
-          <!-- Calculated Attributes (Read-only) -->
+          <!-- Calculated Attributes -->
           {{#if system.vehicleType}}
           <div class="attributes">
             <h2>{{localize "SRA2.VEHICLE.ATTRIBUTES.LABEL"}}</h2>
@@ -112,46 +112,71 @@
               <div class="attribute">
                 <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT"}}</label>
                 <div class="attribute-controls">
+                  {{#if (eq system.vehicleType "custom-vehicle")}}
+                  <input type="number" name="system.customAutopilot" value="{{system.customAutopilot}}" min="0" max="12" class="attribute-input" />
+                  {{else}}
                   <span class="attribute-value">{{system.attributes.autopilot}}</span>
                   {{#if (gt system.autopilotBonus 0)}}
                   <span class="attribute-bonus">+{{system.autopilotBonus}}</span>
                   {{/if}}
+                  {{/if}}
                 </div>
                 <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT_DESC"}}</span>
+                {{#unless (eq system.vehicleType "custom-vehicle")}}
                 <span class="attribute-base">Base: {{system.baseAttributes.autopilot}}</span>
+                {{/unless}}
               </div>
               <div class="attribute">
                 <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.STRUCTURE"}}</label>
                 <div class="attribute-controls">
+                  {{#if (eq system.vehicleType "custom-vehicle")}}
+                  <input type="number" name="system.customStructure" value="{{system.customStructure}}" min="0" class="attribute-input" />
+                  {{else}}
                   <span class="attribute-value">{{system.attributes.structure}}</span>
+                  {{/if}}
                 </div>
                 <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.STRUCTURE_DESC"}}</span>
               </div>
               <div class="attribute">
                 <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.ARMOR"}}</label>
                 <div class="attribute-controls">
+                  {{#if (eq system.vehicleType "custom-vehicle")}}
+                  <input type="number" name="system.customArmor" value="{{system.customArmor}}" min="0" class="attribute-input" />
+                  {{else}}
                   <span class="attribute-value">{{system.attributes.armor}}</span>
                   {{#if (gt system.armorBonus 0)}}
                   <span class="attribute-bonus">+{{system.armorBonus}}</span>
                   {{/if}}
+                  {{/if}}
                 </div>
                 <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.ARMOR_DESC"}}</span>
+                {{#unless (eq system.vehicleType "custom-vehicle")}}
                 <span class="attribute-base">Base: {{system.baseAttributes.armor}}</span>
+                {{/unless}}
               </div>
               <div class="attribute">
                 <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.HANDLING"}}</label>
                 <div class="attribute-controls">
+                  {{#if (eq system.vehicleType "custom-vehicle")}}
+                  <input type="number" name="system.customHandling" value="{{system.customHandling}}" min="0" class="attribute-input" />
+                  {{else}}
                   <span class="attribute-value">{{system.attributes.handling}}</span>
                   {{#if (gt system.handlingBonus 0)}}
                   <span class="attribute-bonus">+{{system.handlingBonus}}</span>
                   {{/if}}
+                  {{/if}}
                 </div>
                 <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.HANDLING_DESC"}}</span>
+                {{#unless (eq system.vehicleType "custom-vehicle")}}
                 <span class="attribute-base">Base: {{system.baseAttributes.handling}}</span>
+                {{/unless}}
               </div>
               <div class="attribute">
                 <label>{{localize "SRA2.VEHICLE.ATTRIBUTES.SPEED"}}</label>
                 <div class="attribute-controls">
+                  {{#if (eq system.vehicleType "custom-vehicle")}}
+                  <input type="number" name="system.customSpeed" value="{{system.customSpeed}}" min="0" class="attribute-input" />
+                  {{else}}
                   <span class="attribute-value">{{system.attributes.speed}}</span>
                   {{#if (gt system.speedBonus 0)}}
                   <span class="attribute-bonus">+{{system.speedBonus}}</span>
@@ -159,10 +184,32 @@
                   {{#if system.isFixed}}
                   <span class="attribute-status">({{localize "SRA2.FEATS.VEHICLE.IS_FIXED"}})</span>
                   {{/if}}
+                  {{/if}}
                 </div>
                 <span class="attribute-description">{{localize "SRA2.VEHICLE.ATTRIBUTES.SPEED_DESC"}}</span>
+                {{#unless (eq system.vehicleType "custom-vehicle")}}
                 <span class="attribute-base">Base: {{system.baseAttributes.speed}}</span>
+                {{/unless}}
               </div>
+              {{#if (eq system.vehicleType "custom-vehicle")}}
+              <div class="attribute">
+                <label>{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED"}}</label>
+                <div class="attribute-controls">
+                  <input type="number" name="system.customFlyingSpeed" value="{{system.customFlyingSpeed}}" min="0" class="attribute-input" />
+                </div>
+                <span class="attribute-description">{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED_DESC"}}</span>
+              </div>
+              <div class="attribute">
+                <label>{{localize "SRA2.FEATS.VEHICLE.WEAPON_MOUNT"}}</label>
+                <div class="attribute-controls">
+                  <select name="system.customWeaponMount" class="attribute-input">
+                    <option value="none" {{#if (eq system.customWeaponMount "none")}}selected{{/if}}>{{localize "SRA2.VEHICLE.WEAPON_MOUNT_NONE"}}</option>
+                    <option value="smg" {{#if (eq system.customWeaponMount "smg")}}selected{{/if}}>SMG</option>
+                    <option value="rifle" {{#if (eq system.customWeaponMount "rifle")}}selected{{/if}}>{{localize "SRA2.VEHICLE.WEAPON_MOUNT_RIFLE"}}</option>
+                  </select>
+                </div>
+              </div>
+              {{else}}
               {{#if (gt system.attributes.flyingSpeed 0)}}
               <div class="attribute">
                 <label>{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED"}}</label>
@@ -171,6 +218,7 @@
                 </div>
                 <span class="attribute-description">{{localize "SRA2.FEATS.VEHICLE.FLYING_SPEED_DESC"}}</span>
               </div>
+              {{/if}}
               {{/if}}
             </div>
           </div>

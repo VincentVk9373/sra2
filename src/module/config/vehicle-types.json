@@ -1,4 +1,13 @@
 {
+  "custom-vehicle": {
+    "autopilot": 6,
+    "structure": 0,
+    "handling": 0,
+    "speed": 0,
+    "flyingSpeed": 0,
+    "armor": 0,
+    "weaponMount": "none"
+  },
   "microdrone": {
     "autopilot": 6,
     "structure": 0,
