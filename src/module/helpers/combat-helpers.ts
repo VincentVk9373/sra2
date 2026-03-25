@@ -624,11 +624,9 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   
   // Map damage type to the correct damage field name
   // For characters, use the appropriate damage gauge based on type
-  let damageFieldName = 'damage'; // default to physical
+  let damageFieldName = 'damage'; // default to physical — mental damage also uses the same gauge
   if (!isVehicle && !isIce) {
-    if (damageType === 'mental') {
-      damageFieldName = 'magicDamage';
-    } else if (damageType === 'matrix') {
+    if (damageType === 'matrix') {
       // Emerged characters: matrix damage becomes biofeedback (physical)
       const isEmerged = defenderSystem.isEmerged || false;
       damageFieldName = isEmerged ? 'damage' : 'matrixDamage';

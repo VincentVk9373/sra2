@@ -6294,9 +6294,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   const damageThresholds = getDamageThresholds(defenderActor, damageType);
   let damageFieldName = "damage";
   if (!isVehicle && !isIce) {
-    if (damageType === "mental") {
-      damageFieldName = "magicDamage";
-    } else if (damageType === "matrix") {
+    if (damageType === "matrix") {
       const isEmerged = defenderSystem.isEmerged || false;
       damageFieldName = isEmerged ? "damage" : "matrixDamage";
     }
