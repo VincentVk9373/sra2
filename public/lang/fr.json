@@ -98,6 +98,13 @@
             "NO_NARRATIVE_EFFECTS": "Aucun effet narratif. Cliquez sur le bouton ci-dessus pour en ajouter un.",
             "RR_LIST": "Liste des Réductions de Risque",
             "RR_LIST_HINT": "Réduction de risque appliquée à tous les jets du drone",
+            "CONTROL_MODE": {
+                "LABEL": "Mode de contrôle",
+                "AUTONOMOUS": "Autonome",
+                "MANUAL": "Pilotage manuel",
+                "RIGGED": "En plongée",
+                "CAPTAIN": "Fauteuil du capitaine"
+            },
             "ATTRIBUTES": {
                 "LABEL": "Attributs",
                 "AUTOPILOT": "Autopilote",

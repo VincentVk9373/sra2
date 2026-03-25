@@ -98,6 +98,13 @@
             "NO_NARRATIVE_EFFECTS": "No narrative effects. Click the button above to add one.",
             "RR_LIST": "Risk Reduction List",
             "RR_LIST_HINT": "Risk reduction applied to all drone rolls",
+            "CONTROL_MODE": {
+                "LABEL": "Control Mode",
+                "AUTONOMOUS": "Autonomous",
+                "MANUAL": "Manual Piloting",
+                "RIGGED": "Rigged (Jumped In)",
+                "CAPTAIN": "Captain's Chair"
+            },
             "ATTRIBUTES": {
                 "LABEL": "Attributes",
                 "AUTOPILOT": "Autopilot",

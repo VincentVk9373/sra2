@@ -772,6 +772,21 @@ export class SRA2System {
       return JSON.stringify(context);
     });
 
+    Handlebars.registerHelper('controlModeLabel', function (value: string) {
+      const key = `SRA2.VEHICLE.CONTROL_MODE.${(value || 'autonomous').toUpperCase()}`;
+      return game.i18n?.localize(key) || value;
+    });
+
+    Handlebars.registerHelper('controlModeIcon', function (value: string) {
+      const icons: Record<string, string> = {
+        'autonomous': 'fa-robot',
+        'manual': 'fa-hand',
+        'rigged': 'fa-vr-cardboard',
+        'captain': 'fa-chair'
+      };
+      return icons[value || 'autonomous'] || 'fa-robot';
+    });
+
     Handlebars.registerHelper('rangeLabel', function (value: string) {
       if (!value || value === 'none') return '-';
       if (value === 'advantage') return 'av';

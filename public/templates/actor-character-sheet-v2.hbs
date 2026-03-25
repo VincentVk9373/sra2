@@ -589,14 +589,29 @@
                             <div class="row feat-item {{#if this.hasSevereDamage}}has-severe-damage{{/if}} {{#if this.isIncapacitating}}is-incapacitating{{/if}}" data-vehicle-uuid="{{this.uuid}}">
                                 <div class="name-wrapper">
                                     <div class="name" data-action="show-context-menu" data-vehicle-uuid="{{this.uuid}}"
-                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}{{/if}}"><span class="name">{{this.name}}</span></div>
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{localize 'SRA2.FEATS.VEHICLE.OPEN_SHEET'}}{{/if}}"><span class="name">{{this.name}}</span>
+                                        <span class="weapon-stats"><span><i class="fas {{controlModeIcon this.system.controlMode}}"></i> {{controlModeLabel this.system.controlMode}}</span></span></div>
                                     <div class="context-menu" data-vehicle-uuid="{{this.uuid}}">
-                                        <div class="context-menu-item" data-action="open-vehicle" data-vehicle-uuid="{{this.uuid}}">
-                                            <i class="fas fa-folder-open"></i> {{localize "SRA2.FEATS.VEHICLE.OPEN_SHEET"}}
-                                        </div>
                                         <div class="context-menu-item" data-action="roll-vehicle-autopilot" data-vehicle-uuid="{{this.uuid}}">
                                             <i class="fas fa-dice-d6"></i> {{localize "SRA2.FEATS.VEHICLE.ROLL_AUTOPILOT_SHORT"}}
                                         </div>
+                                        <div class="context-menu-item" data-action="open-vehicle" data-vehicle-uuid="{{this.uuid}}">
+                                            <i class="fas fa-folder-open"></i> {{localize "SRA2.FEATS.VEHICLE.OPEN_SHEET"}}
+                                        </div>
+                                        <hr/>
+                                        <div class="context-menu-item {{#if (eq this.system.controlMode 'autonomous')}}active{{/if}}" data-action="set-vehicle-control-mode" data-vehicle-uuid="{{this.uuid}}" data-control-mode="autonomous">
+                                            <i class="fas fa-robot"></i> {{localize "SRA2.VEHICLE.CONTROL_MODE.AUTONOMOUS"}}
+                                        </div>
+                                        <div class="context-menu-item {{#if (eq this.system.controlMode 'manual')}}active{{/if}}" data-action="set-vehicle-control-mode" data-vehicle-uuid="{{this.uuid}}" data-control-mode="manual">
+                                            <i class="fas fa-hand"></i> {{localize "SRA2.VEHICLE.CONTROL_MODE.MANUAL"}}
+                                        </div>
+                                        <div class="context-menu-item {{#if (eq this.system.controlMode 'rigged')}}active{{/if}}" data-action="set-vehicle-control-mode" data-vehicle-uuid="{{this.uuid}}" data-control-mode="rigged">
+                                            <i class="fas fa-vr-cardboard"></i> {{localize "SRA2.VEHICLE.CONTROL_MODE.RIGGED"}}
+                                        </div>
+                                        <div class="context-menu-item {{#if (eq this.system.controlMode 'captain')}}active{{/if}}" data-action="set-vehicle-control-mode" data-vehicle-uuid="{{this.uuid}}" data-control-mode="captain">
+                                            <i class="fas fa-chair"></i> {{localize "SRA2.VEHICLE.CONTROL_MODE.CAPTAIN"}}
+                                        </div>
+                                        <hr/>
                                         <div class="context-menu-item delete" data-action="unlink-vehicle" data-vehicle-uuid="{{this.uuid}}">
                                             <i class="fas fa-unlink"></i> {{localize "SRA2.FEATS.VEHICLE.UNLINK"}}
                                         </div>

@@ -20,6 +20,18 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
         choices: vehicleTypeChoices,
         label: "SRA2.VEHICLE.VEHICLE_TYPE"
       }),
+      // Control mode: how the vehicle/drone is currently being operated
+      controlMode: new fields.StringField({
+        required: true,
+        initial: "autonomous",
+        choices: {
+          "autonomous": "SRA2.VEHICLE.CONTROL_MODE.AUTONOMOUS",
+          "manual": "SRA2.VEHICLE.CONTROL_MODE.MANUAL",
+          "rigged": "SRA2.VEHICLE.CONTROL_MODE.RIGGED",
+          "captain": "SRA2.VEHICLE.CONTROL_MODE.CAPTAIN"
+        },
+        label: "SRA2.VEHICLE.CONTROL_MODE.LABEL"
+      }),
       // Vehicle bonuses
       autopilotBonus: new fields.NumberField({
         required: true,

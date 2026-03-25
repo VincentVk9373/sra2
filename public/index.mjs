@@ -1927,6 +1927,18 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
         choices: vehicleTypeChoices,
         label: "SRA2.VEHICLE.VEHICLE_TYPE"
       }),
+      // Control mode: how the vehicle/drone is currently being operated
+      controlMode: new fields.StringField({
+        required: true,
+        initial: "autonomous",
+        choices: {
+          "autonomous": "SRA2.VEHICLE.CONTROL_MODE.AUTONOMOUS",
+          "manual": "SRA2.VEHICLE.CONTROL_MODE.MANUAL",
+          "rigged": "SRA2.VEHICLE.CONTROL_MODE.RIGGED",
+          "captain": "SRA2.VEHICLE.CONTROL_MODE.CAPTAIN"
+        },
+        label: "SRA2.VEHICLE.CONTROL_MODE.LABEL"
+      }),
       // Vehicle bonuses
       autopilotBonus: new fields.NumberField({
         required: true,
@@ -6511,6 +6523,7 @@ class CharacterSheet extends ActorSheet {
             type: "vehicle-actor",
             system: {
               featType: "vehicle",
+              controlMode: vehicleSystem.controlMode || "autonomous",
               autopilot: vehicleActor.system?.attributes?.autopilot || 0,
               structure: vehicleActor.system?.attributes?.structure || 0,
               handling: vehicleActor.system?.attributes?.handling || 0,
@@ -6862,6 +6875,7 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="delete-feat"]').on("click", this._onDeleteFeat.bind(this));
     html.find('[data-action="open-vehicle"]').on("click", this._onOpenVehicle.bind(this));
     html.find('[data-action="unlink-vehicle"]').on("click", this._onUnlinkVehicle.bind(this));
+    html.find('[data-action="set-vehicle-control-mode"]').on("click", this._onSetVehicleControlMode.bind(this));
     html.find('[data-action="edit-skill"]').on("click", this._onEditSkill.bind(this));
     html.find('[data-action="delete-skill"]').on("click", this._onDeleteSkill.bind(this));
     html.find('[data-action="edit-specialization"]').on("click", this._onEditSpecialization.bind(this));
@@ -7008,6 +7022,21 @@ class CharacterSheet extends ActorSheet {
       console.warn("Could not update vehicle token prototype:", error);
     }
     ui.notifications?.info(game.i18n.localize("SRA2.FEATS.VEHICLE_UNLINKED"));
+  }
+  async _onSetVehicleControlMode(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    const controlMode = element.dataset.controlMode;
+    if (!vehicleUuid || !controlMode) return;
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid);
+      if (vehicleActor) {
+        await vehicleActor.update({ "system.controlMode": controlMode });
+      }
+    } catch (error) {
+      console.warn("Could not update vehicle control mode:", error);
+    }
   }
   /**
    * Get detailed RR sources for a given skill, specialization, or attribute
@@ -12813,6 +12842,19 @@ class SRA2System {
     });
     Handlebars.registerHelper("json", function(context) {
       return JSON.stringify(context);
+    });
+    Handlebars.registerHelper("controlModeLabel", function(value) {
+      const key = `SRA2.VEHICLE.CONTROL_MODE.${(value || "autonomous").toUpperCase()}`;
+      return game.i18n?.localize(key) || value;
+    });
+    Handlebars.registerHelper("controlModeIcon", function(value) {
+      const icons = {
+        "autonomous": "fa-robot",
+        "manual": "fa-hand",
+        "rigged": "fa-vr-cardboard",
+        "captain": "fa-chair"
+      };
+      return icons[value || "autonomous"] || "fa-robot";
     });
     Handlebars.registerHelper("rangeLabel", function(value) {
       if (!value || value === "none") return "-";

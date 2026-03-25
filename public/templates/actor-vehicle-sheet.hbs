@@ -93,6 +93,17 @@
             </select>
           </div>
 
+          <!-- Control Mode Selection -->
+          <div class="vehicle-type-section">
+            <h2><i class="fas {{controlModeIcon system.controlMode}}"></i> {{localize "SRA2.VEHICLE.CONTROL_MODE.LABEL"}}</h2>
+            <select name="system.controlMode" class="vehicle-type-select">
+              <option value="autonomous" {{#if (eq system.controlMode "autonomous")}}selected{{/if}}>&#xf544; {{localize "SRA2.VEHICLE.CONTROL_MODE.AUTONOMOUS"}}</option>
+              <option value="manual" {{#if (eq system.controlMode "manual")}}selected{{/if}}>&#xf256; {{localize "SRA2.VEHICLE.CONTROL_MODE.MANUAL"}}</option>
+              <option value="rigged" {{#if (eq system.controlMode "rigged")}}selected{{/if}}>&#xf729; {{localize "SRA2.VEHICLE.CONTROL_MODE.RIGGED"}}</option>
+              <option value="captain" {{#if (eq system.controlMode "captain")}}selected{{/if}}>&#xf6c0; {{localize "SRA2.VEHICLE.CONTROL_MODE.CAPTAIN"}}</option>
+            </select>
+          </div>
+
           <!-- Calculated Attributes (Read-only) -->
           {{#if system.vehicleType}}
           <div class="attributes">

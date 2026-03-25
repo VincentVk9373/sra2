@@ -215,6 +215,7 @@ export class CharacterSheet extends ActorSheet {
             type: 'vehicle-actor',
             system: {
               featType: 'vehicle',
+              controlMode: vehicleSystem.controlMode || 'autonomous',
               autopilot: vehicleActor.system?.attributes?.autopilot || 0,
               structure: vehicleActor.system?.attributes?.structure || 0,
               handling: vehicleActor.system?.attributes?.handling || 0,
@@ -734,6 +735,9 @@ export class CharacterSheet extends ActorSheet {
     // Unlink vehicle
     html.find('[data-action="unlink-vehicle"]').on('click', this._onUnlinkVehicle.bind(this));
 
+    // Set vehicle control mode
+    html.find('[data-action="set-vehicle-control-mode"]').on('click', this._onSetVehicleControlMode.bind(this));
+
     // Edit skill
     html.find('[data-action="edit-skill"]').on('click', this._onEditSkill.bind(this));
 
@@ -944,6 +948,23 @@ export class CharacterSheet extends ActorSheet {
     }
     
     ui.notifications?.info(game.i18n!.localize('SRA2.FEATS.VEHICLE_UNLINKED'));
+  }
+
+  private async _onSetVehicleControlMode(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const vehicleUuid = element.dataset.vehicleUuid;
+    const controlMode = element.dataset.controlMode;
+    if (!vehicleUuid || !controlMode) return;
+
+    try {
+      const vehicleActor = await fromUuid(vehicleUuid as any) as any;
+      if (vehicleActor) {
+        await vehicleActor.update({ 'system.controlMode': controlMode });
+      }
+    } catch (error) {
+      console.warn('Could not update vehicle control mode:', error);
+    }
   }
 
   /**
