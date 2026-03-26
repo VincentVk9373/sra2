@@ -4523,6 +4523,18 @@ class RollDialog extends Application {
     } else if (selectedRangeValue === "ok") {
       this.rollMode = "normal";
     }
+    let hasHotSimAdvantage = false;
+    if (this.actor && this.actor.type === "character") {
+      const connectionMode = this.actor.system?.connectionMode || "ar";
+      const skillName = (this.rollData.skillName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const specName = (this.rollData.specName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const isPiratage = skillName.includes("piratage") || skillName.includes("hacking");
+      const isCybercombat = specName.includes("cybercombat");
+      if (connectionMode === "hot-sim" && (isPiratage || isCybercombat)) {
+        this.rollMode = "advantage";
+        hasHotSimAdvantage = true;
+      }
+    }
     let hasSevereWound = false;
     if (this.actor) {
       const actorSystem = this.actor.system;
@@ -4540,6 +4552,7 @@ class RollDialog extends Application {
     context.selectedRangeValue = selectedRangeValue;
     context.rollMode = this.rollMode;
     context.hasSevereWound = hasSevereWound;
+    context.hasHotSimAdvantage = hasHotSimAdvantage;
     context.rangeOptions = {
       melee: { label: game.i18n.localize("SRA2.ROLL_DIALOG.RANGE_MELEE"), value: meleeRange },
       short: { label: game.i18n.localize("SRA2.ROLL_DIALOG.RANGE_SHORT"), value: shortRange },
@@ -6134,6 +6147,13 @@ function getDamageThresholds(defenderActor, damageType = "physical") {
       incapacitating: 7
     };
   }
+  if (damageType === "biofeedback") {
+    const connectionMode = defenderSystem.connectionMode || "ar";
+    if (connectionMode === "ar" || connectionMode === "offline") {
+      return defenderSystem.damageThresholds?.matrix || { light: 0, severe: 0, incapacitating: 0 };
+    }
+    return defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
+  }
   if (damageType === "mental") {
     return defenderSystem.damageThresholds?.mental || {
       light: 1,
@@ -6287,7 +6307,7 @@ async function createIceAttackMessage(iceActor, iceToken, defender, defenderToke
   };
   let iceDamageType = "matrix";
   if (iceType === "black") {
-    iceDamageType = "physical";
+    iceDamageType = "biofeedback";
   } else if (iceType === "blaster" || iceType === "killer") {
     iceDamageType = "matrix";
   }
@@ -6379,7 +6399,14 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   const damageThresholds = getDamageThresholds(defenderActor, damageType);
   let damageFieldName = "damage";
   if (!isVehicle && !isIce) {
-    if (damageType === "matrix") {
+    if (damageType === "biofeedback") {
+      const connectionMode = defenderSystem.connectionMode || "ar";
+      if (connectionMode === "ar" || connectionMode === "offline") {
+        damageFieldName = "matrixDamage";
+      } else {
+        damageFieldName = "damage";
+      }
+    } else if (damageType === "matrix") {
       const isEmerged = defenderSystem.isEmerged || false;
       damageFieldName = isEmerged ? "damage" : "matrixDamage";
     }
@@ -7035,9 +7062,11 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="unlink-vehicle"]').on("click", this._onUnlinkVehicle.bind(this));
     html.find('[data-action="set-vehicle-control-mode"]').on("click", this._onSetVehicleControlMode.bind(this));
     html.find('[data-action="set-character-connection-mode"]').on("click", this._onSetConnectionMode.bind(this));
-    html.find('[data-action="show-connection-mode-menu"]').on("click", (event) => {
+    html.find('[data-action="show-connection-mode-menu"], [data-action="show-connection-mode-menu-header"]').on("click", (event) => {
       event.preventDefault();
-      const menu = event.currentTarget.closest(".connection-mode-selector")?.querySelector(".connection-mode-menu");
+      event.stopPropagation();
+      const el = event.currentTarget;
+      const menu = el.closest(".connection-mode-selector")?.querySelector(".connection-mode-menu") || el.closest(".connection-mode-badge")?.querySelector(".connection-mode-menu");
       if (menu) menu.classList.toggle("visible");
     });
     html.find('[data-action="edit-skill"]').on("click", this._onEditSkill.bind(this));

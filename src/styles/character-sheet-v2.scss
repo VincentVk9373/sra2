@@ -34,6 +34,90 @@
         background-position: center;
         background-size: cover;
         z-index: 1;
+
+        position: relative;
+
+        .connection-mode-badge {
+            display: none;
+            position: absolute;
+            bottom: -16px;
+            right: 8px;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 8px;
+            align-items: center;
+            gap: 0.2rem;
+            white-space: nowrap;
+            color: var(--sr-ui-color-active);
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            z-index: 2;
+            cursor: pointer;
+
+            &:hover {
+                background: rgba(0, 212, 255, 0.25);
+            }
+
+            &.offline {
+                color: #666;
+                background: rgba(50, 50, 50, 0.6);
+                border-color: #444;
+
+                &:hover {
+                    background: rgba(50, 50, 50, 0.8);
+                }
+            }
+
+            &.hot-sim {
+                color: #ff6b7a;
+                background: rgba(255, 71, 87, 0.15);
+                border-color: rgba(255, 71, 87, 0.3);
+
+                &:hover {
+                    background: rgba(255, 71, 87, 0.25);
+                }
+            }
+
+            .connection-mode-menu {
+                display: none;
+                position: absolute;
+                bottom: 100%;
+                right: 0;
+                margin-bottom: 4px;
+                z-index: 100;
+                background: var(--sr-ui-bg-color-dark);
+                border: 1px solid var(--sr-ui-border-color);
+                border-radius: var(--sr-border-radius-md);
+                padding: 0.25rem;
+                min-width: 140px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+                &.visible {
+                    display: flex;
+                }
+
+                .context-menu-item {
+                    padding: 0.3rem 0.5rem;
+                    cursor: pointer;
+                    border-radius: var(--sr-border-radius-sm);
+                    font-size: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    color: var(--sr-text-color-light);
+
+                    &:hover {
+                        background: rgba(0, 212, 255, 0.15);
+                    }
+
+                    &.active {
+                        color: var(--sr-ui-color-active);
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+
         .avatar-section {
             position: relative;
             min-width: 64px;
@@ -914,7 +998,11 @@
             top: 0;
             right: 0;
             position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
             .connection-mode-current {
+                flex: 0;
                 cursor: pointer;
                 padding: 0.2rem 0.5rem;
                 border-radius: var(--sr-border-radius-md);
@@ -971,6 +1059,32 @@
                     &.active {
                         color: var(--sr-ui-color-active);
                         font-weight: 600;
+                    }
+                }
+            }
+
+            .connection-mode-effects {
+                /* display: flex; */
+                flex-wrap: wrap;
+                gap: 0.3rem;
+                margin-top: 0.3rem;
+                display: flex;
+                justify-content: flex-end;
+
+                .effect {
+                    font-size: 0.7rem;
+                    padding: 0.1rem 0.4rem;
+                    border-radius: 8px;
+                    background: var(--sr-ui-bg-color-dark);
+                    color: var(--sr-text-color-grey);
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.2rem;
+                    white-space: nowrap;
+
+                    &.hot-sim {
+                        background: var(--sr-ui-bg-color-dark);
+                        color: #ff6b7a;
                     }
                 }
             }
@@ -1587,6 +1701,10 @@
         display: none;
     }
 
+    .connection-mode-badge {
+        display: inline-flex !important;
+    }
+
     .avatar-large-section {
         display: none !important;
     }
@@ -1616,8 +1734,8 @@
     }
 }
 
-// Container query pour mode ultra compact (< 110px): cacher seuils, avatar et nom, remplacer par bookmarks dans le header
-@container character-sheet (max-height: 110px) {
+// Container query pour mode ultra compact (< 160px): cacher seuils, avatar et nom, remplacer par bookmarks dans le header
+@container character-sheet (max-height: 160px) {
     .sheet-header {
         .avatar-section {
             display: none !important;

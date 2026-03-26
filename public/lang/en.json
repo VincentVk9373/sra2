@@ -421,6 +421,14 @@
             "MENTAL": "Mental",
             "MATRIX": "Matrix"
         },
+        "CONNECTION_MODE": {
+            "FREE_CYBERCOMBAT_ACTION": "Free cybercombat action",
+            "ADVANTAGE_CYBERCOMBAT": "Cybercombat advantage",
+            "BIOFEEDBACK_STUN": "Biofeedback: stun",
+            "BIOFEEDBACK_PHYSICAL": "Biofeedback: physical",
+            "EJECTION_LIGHT": "Ejection shock: light wound",
+            "EJECTION_SEVERE": "Ejection shock: severe wound"
+        },
         "DAMAGE": {
             "LABEL": "Damage",
             "LIGHT": "Light",

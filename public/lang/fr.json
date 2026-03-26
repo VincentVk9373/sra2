@@ -318,6 +318,14 @@
             "MENTAL": "Mental",
             "MATRIX": "Matriciel"
         },
+        "CONNECTION_MODE": {
+            "FREE_CYBERCOMBAT_ACTION": "Action cybercombat gratuite",
+            "ADVANTAGE_CYBERCOMBAT": "Avantage cybercombat",
+            "BIOFEEDBACK_STUN": "Biofeedback : étourdissant",
+            "BIOFEEDBACK_PHYSICAL": "Biofeedback : physique",
+            "EJECTION_LIGHT": "Choc d'éjection : blessure légère",
+            "EJECTION_SEVERE": "Choc d'éjection : blessure grave"
+        },
         "DAMAGE": {
             "LABEL": "Dégâts",
             "LIGHT": "Légeres",

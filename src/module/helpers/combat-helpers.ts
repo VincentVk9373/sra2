@@ -63,7 +63,7 @@ export function calculateDamageThresholds(
  */
 export function getDamageThresholds(
   defenderActor: any,
-  damageType: 'physical' | 'mental' | 'matrix' = 'physical'
+  damageType: 'physical' | 'mental' | 'matrix' | 'biofeedback' = 'physical'
 ): { light: number; severe?: number; incapacitating: number } {
   const defenderSystem = defenderActor.system as any;
   const isVehicle = defenderActor.type === 'vehicle';
@@ -88,6 +88,16 @@ export function getDamageThresholds(
   }
   
   // For characters
+  if (damageType === 'biofeedback') {
+    // Biofeedback: in RA → device resists with Firewall (matrix thresholds)
+    // In VR → character resists with Willpower (mental thresholds)
+    const connectionMode = defenderSystem.connectionMode || 'ar';
+    if (connectionMode === 'ar' || connectionMode === 'offline') {
+      return defenderSystem.damageThresholds?.matrix || { light: 0, severe: 0, incapacitating: 0 };
+    }
+    return defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
+  }
+
   if (damageType === 'mental') {
     return defenderSystem.damageThresholds?.mental || {
       light: 1,
@@ -507,9 +517,9 @@ export async function createIceAttackMessage(
   };
   
   // Determine damage type for ICE attacks
-  let iceDamageType: 'physical' | 'mental' | 'matrix' = 'matrix';
+  let iceDamageType: 'physical' | 'mental' | 'matrix' | 'biofeedback' = 'matrix';
   if (iceType === 'black') {
-    iceDamageType = 'physical';  // Black ICE deals biofeedback (physical) damage
+    iceDamageType = 'biofeedback';  // Black ICE deals biofeedback damage
   } else if (iceType === 'blaster' || iceType === 'killer') {
     iceDamageType = 'matrix';  // Blaster and Killer ICE deal matrix damage
   }
@@ -603,7 +613,7 @@ export async function createIceAttackMessage(
   await ChatMessage.create(messageData);
 }
 
-export async function applyDamage(defenderUuid: string, damageValue: number, defenderName: string, damageType: 'physical' | 'mental' | 'matrix' = 'physical'): Promise<void> {
+export async function applyDamage(defenderUuid: string, damageValue: number, defenderName: string, damageType: 'physical' | 'mental' | 'matrix' | 'biofeedback' = 'physical'): Promise<void> {
   // Use fromUuid to get the token's actor if it's a token UUID, or the actor if it's an actor UUID
   const defender = await fromUuid(defenderUuid as any) as any;
   
@@ -626,7 +636,20 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   // For characters, use the appropriate damage gauge based on type
   let damageFieldName = 'damage'; // default to physical — mental damage also uses the same gauge
   if (!isVehicle && !isIce) {
-    if (damageType === 'matrix') {
+    if (damageType === 'biofeedback') {
+      // Biofeedback routing depends on connection mode:
+      // RA / cold-sim trodes → cyberdeck damage (treated as matrix damage on device)
+      // Cold-sim IND → character damage gauge (mental thresholds, stun)
+      // Hot-sim → character damage gauge (physical thresholds)
+      const connectionMode = defenderSystem.connectionMode || 'ar';
+      if (connectionMode === 'ar' || connectionMode === 'offline') {
+        // In RA: biofeedback applies to device → treat as matrix damage
+        damageFieldName = 'matrixDamage';
+      } else {
+        // In VR (cold-sim or hot-sim): biofeedback applies to character
+        damageFieldName = 'damage';
+      }
+    } else if (damageType === 'matrix') {
       // Emerged characters: matrix damage becomes biofeedback (physical)
       const isEmerged = defenderSystem.isEmerged || false;
       damageFieldName = isEmerged ? 'damage' : 'matrixDamage';

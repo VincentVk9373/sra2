@@ -84,6 +84,24 @@
 
             {{/if}}
         </div>
+        <div class="connection-mode-badge {{system.connectionMode}}" data-action="show-connection-mode-menu-header">
+            <i class="fas {{connectionModeIcon system.connectionMode}}"></i>
+            {{connectionModeLabel system.connectionMode}}
+            <div class="connection-mode-menu">
+                <div class="context-menu-item {{#if (eq system.connectionMode 'offline')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="offline">
+                    <i class="fas fa-power-off"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.OFFLINE"}}
+                </div>
+                <div class="context-menu-item {{#if (eq system.connectionMode 'ar')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="ar">
+                    <i class="fas fa-glasses"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.AR"}}
+                </div>
+                <div class="context-menu-item {{#if (eq system.connectionMode 'cold-sim')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="cold-sim">
+                    <i class="fas fa-snowflake"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.COLD_SIM"}}
+                </div>
+                <div class="context-menu-item {{#if (eq system.connectionMode 'hot-sim')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="hot-sim">
+                    <i class="fas fa-fire"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.HOT_SIM"}}
+                </div>
+            </div>
+        </div>
     </header>
     <div>
         <div class="bookmarks-list-compact">
@@ -1288,6 +1306,21 @@
                                 <i class="fas fa-fire"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.HOT_SIM"}}
                             </div>
                         </div>
+                        {{#if (eq system.connectionMode 'cold-sim')}}
+                        <div class="connection-mode-effects">
+                            <span class="effect"><i class="fas fa-bolt"></i> {{localize "SRA2.CONNECTION_MODE.FREE_CYBERCOMBAT_ACTION"}}</span>
+                            <span class="effect"><i class="fas fa-brain"></i> {{localize "SRA2.CONNECTION_MODE.BIOFEEDBACK_STUN"}}</span>
+                            <span class="effect"><i class="fas fa-heart-crack"></i> {{localize "SRA2.CONNECTION_MODE.EJECTION_LIGHT"}}</span>
+                        </div>
+                        {{/if}}
+                        {{#if (eq system.connectionMode 'hot-sim')}}
+                        <div class="connection-mode-effects">
+                            <span class="effect"><i class="fas fa-bolt"></i> {{localize "SRA2.CONNECTION_MODE.FREE_CYBERCOMBAT_ACTION"}}</span>
+                            <span class="effect hot-sim"><i class="fas fa-arrow-up"></i> {{localize "SRA2.CONNECTION_MODE.ADVANTAGE_CYBERCOMBAT"}}</span>
+                            <span class="effect hot-sim"><i class="fas fa-skull"></i> {{localize "SRA2.CONNECTION_MODE.BIOFEEDBACK_PHYSICAL"}}</span>
+                            <span class="effect hot-sim"><i class="fas fa-heart-crack"></i> {{localize "SRA2.CONNECTION_MODE.EJECTION_SEVERE"}}</span>
+                        </div>
+                        {{/if}}
                     </div>
                     <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
                 </section>

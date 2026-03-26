@@ -740,9 +740,12 @@ export class CharacterSheet extends ActorSheet {
 
     // Set cyberdeck connection mode
     html.find('[data-action="set-character-connection-mode"]').on('click', this._onSetConnectionMode.bind(this));
-    html.find('[data-action="show-connection-mode-menu"]').on('click', (event: Event) => {
+    html.find('[data-action="show-connection-mode-menu"], [data-action="show-connection-mode-menu-header"]').on('click', (event: Event) => {
       event.preventDefault();
-      const menu = (event.currentTarget as HTMLElement).closest('.connection-mode-selector')?.querySelector('.connection-mode-menu') as HTMLElement;
+      event.stopPropagation();
+      const el = event.currentTarget as HTMLElement;
+      const menu = el.closest('.connection-mode-selector')?.querySelector('.connection-mode-menu') as HTMLElement
+        || el.closest('.connection-mode-badge')?.querySelector('.connection-mode-menu') as HTMLElement;
       if (menu) menu.classList.toggle('visible');
     });
 

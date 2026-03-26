@@ -473,6 +473,20 @@ export class RollDialog extends Application {
     }
     // Allow selection even if range is 'none' - user can still roll
 
+    // Check hot-sim advantage for cybercombat (Piratage skill)
+    let hasHotSimAdvantage = false;
+    if (this.actor && this.actor.type === 'character') {
+      const connectionMode = (this.actor.system as any)?.connectionMode || 'ar';
+      const skillName = (this.rollData.skillName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const specName = (this.rollData.specName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const isPiratage = skillName.includes('piratage') || skillName.includes('hacking');
+      const isCybercombat = specName.includes('cybercombat');
+      if (connectionMode === 'hot-sim' && (isPiratage || isCybercombat)) {
+        this.rollMode = 'advantage';
+        hasHotSimAdvantage = true;
+      }
+    }
+
     // Check if actor has severe wound - force disadvantage mode
     let hasSevereWound = false;
     if (this.actor) {
@@ -498,6 +512,7 @@ export class RollDialog extends Application {
     context.selectedRangeValue = selectedRangeValue;
     context.rollMode = this.rollMode;
     context.hasSevereWound = hasSevereWound; // Pass to template to disable mode selection
+    context.hasHotSimAdvantage = hasHotSimAdvantage;
     context.rangeOptions = {
       melee: { label: game.i18n!.localize('SRA2.ROLL_DIALOG.RANGE_MELEE'), value: meleeRange },
       short: { label: game.i18n!.localize('SRA2.ROLL_DIALOG.RANGE_SHORT'), value: shortRange },
