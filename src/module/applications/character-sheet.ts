@@ -739,7 +739,12 @@ export class CharacterSheet extends ActorSheet {
     html.find('[data-action="set-vehicle-control-mode"]').on('click', this._onSetVehicleControlMode.bind(this));
 
     // Set cyberdeck connection mode
-    html.find('[data-action="set-connection-mode"]').on('click', this._onSetConnectionMode.bind(this));
+    html.find('[data-action="set-character-connection-mode"]').on('click', this._onSetConnectionMode.bind(this));
+    html.find('[data-action="show-connection-mode-menu"]').on('click', (event: Event) => {
+      event.preventDefault();
+      const menu = (event.currentTarget as HTMLElement).closest('.connection-mode-selector')?.querySelector('.connection-mode-menu') as HTMLElement;
+      if (menu) menu.classList.toggle('visible');
+    });
 
     // Edit skill
     html.find('[data-action="edit-skill"]').on('click', this._onEditSkill.bind(this));
@@ -956,14 +961,10 @@ export class CharacterSheet extends ActorSheet {
   private async _onSetConnectionMode(event: Event): Promise<void> {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
-    const itemId = element.dataset.itemId;
     const connectionMode = element.dataset.connectionMode;
-    if (!itemId || !connectionMode) return;
+    if (!connectionMode) return;
 
-    const item = this.actor.items.get(itemId);
-    if (!item) return;
-
-    await item.update({ 'system.connectionMode': connectionMode });
+    await this.actor.update({ 'system.connectionMode': connectionMode });
   }
 
   private async _onSetVehicleControlMode(event: Event): Promise<void> {

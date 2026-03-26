@@ -66,6 +66,12 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         max: 5,
         integer: true
       }),
+      connectionMode: new fields.StringField({
+        required: true,
+        initial: 'ar',
+        choices: ['offline', 'ar', 'cold-sim', 'hot-sim'],
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,

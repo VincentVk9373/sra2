@@ -146,6 +146,12 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         max: 5,
         integer: true
       }),
+      connectionMode: new fields.StringField({
+        required: true,
+        initial: "ar",
+        choices: ["offline", "ar", "cold-sim", "hot-sim"],
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -7028,7 +7034,12 @@ class CharacterSheet extends ActorSheet {
     html.find('[data-action="open-vehicle"]').on("click", this._onOpenVehicle.bind(this));
     html.find('[data-action="unlink-vehicle"]').on("click", this._onUnlinkVehicle.bind(this));
     html.find('[data-action="set-vehicle-control-mode"]').on("click", this._onSetVehicleControlMode.bind(this));
-    html.find('[data-action="set-connection-mode"]').on("click", this._onSetConnectionMode.bind(this));
+    html.find('[data-action="set-character-connection-mode"]').on("click", this._onSetConnectionMode.bind(this));
+    html.find('[data-action="show-connection-mode-menu"]').on("click", (event) => {
+      event.preventDefault();
+      const menu = event.currentTarget.closest(".connection-mode-selector")?.querySelector(".connection-mode-menu");
+      if (menu) menu.classList.toggle("visible");
+    });
     html.find('[data-action="edit-skill"]').on("click", this._onEditSkill.bind(this));
     html.find('[data-action="delete-skill"]').on("click", this._onDeleteSkill.bind(this));
     html.find('[data-action="edit-specialization"]').on("click", this._onEditSpecialization.bind(this));
@@ -7179,12 +7190,9 @@ class CharacterSheet extends ActorSheet {
   async _onSetConnectionMode(event) {
     event.preventDefault();
     const element = event.currentTarget;
-    const itemId = element.dataset.itemId;
     const connectionMode = element.dataset.connectionMode;
-    if (!itemId || !connectionMode) return;
-    const item = this.actor.items.get(itemId);
-    if (!item) return;
-    await item.update({ "system.connectionMode": connectionMode });
+    if (!connectionMode) return;
+    await this.actor.update({ "system.connectionMode": connectionMode });
   }
   async _onSetVehicleControlMode(event) {
     event.preventDefault();
@@ -13268,11 +13276,12 @@ class SRA2System {
     });
     Handlebars.registerHelper("connectionModeIcon", function(value) {
       const icons = {
+        "offline": "fa-power-off",
         "ar": "fa-glasses",
         "cold-sim": "fa-snowflake",
         "hot-sim": "fa-fire"
       };
-      return icons[value || "ar"] || "fa-glasses";
+      return icons[value || "offline"] || "fa-power-off";
     });
     Handlebars.registerHelper("rangeLabel", function(value) {
       if (!value || value === "none") return "-";

@@ -814,11 +814,12 @@ export class SRA2System {
 
     Handlebars.registerHelper('connectionModeIcon', function (value: string) {
       const icons: Record<string, string> = {
+        'offline': 'fa-power-off',
         'ar': 'fa-glasses',
         'cold-sim': 'fa-snowflake',
         'hot-sim': 'fa-fire'
       };
-      return icons[value || 'ar'] || 'fa-glasses';
+      return icons[value || 'offline'] || 'fa-power-off';
     });
 
     Handlebars.registerHelper('rangeLabel', function (value: string) {
