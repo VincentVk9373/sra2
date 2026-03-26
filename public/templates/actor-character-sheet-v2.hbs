@@ -891,6 +891,15 @@
                                     </div>
                                 </div>
                             </div>
+                            {{#if this.system.cyberdeckBiofeedback}}
+                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.BIOFEEDBACK'}}</div></div></div>
+                            {{/if}}
+                            {{#if this.system.cyberdeckBiofeedbackFilter}}
+                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.BIOFEEDBACK_FILTER'}}</div></div></div>
+                            {{/if}}
+                            {{#if this.system.cyberdeckConnectionLock}}
+                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.CONNECTION_LOCK'}}</div></div></div>
+                            {{/if}}
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>

@@ -515,6 +515,9 @@
                 "FIREWALL": "Pare-feu cyberdeck",
                 "ATTACK": "Attaque",
                 "CYBERDECK_BONUS_LIGHT_DAMAGE": "+1 blessure légère (cyberdeck)",
+                "CYBERDECK_BIOFEEDBACK": "Biofeedback",
+                "CYBERDECK_BIOFEEDBACK_FILTER": "Filtre de biofeedback",
+                "CYBERDECK_CONNECTION_LOCK": "Verrouillage de connexion",
                 "RIGGER_CONSOLE": "Console de rigger",
                 "VEHICLE_WIRING": "Câblage de contrôle véhicule",
                 "WEAPON_FOCUS": "Focus d'arme",
@@ -738,7 +741,14 @@
                     "AR": "RA",
                     "COLD_SIM": "RV Cold-sim",
                     "HOT_SIM": "RV Hot-sim"
-                }
+                },
+                "PROGRAMS": "Programmes",
+                "BIOFEEDBACK": "Biofeedback",
+                "BIOFEEDBACK_HINT": "Permet d'infliger des dommages de biofeedback au lieu de dommages matriciels (effet narratif, niveau +1)",
+                "BIOFEEDBACK_FILTER": "Filtre de biofeedback",
+                "BIOFEEDBACK_FILTER_HINT": "Procure un point d'Armure contre les dommages de biofeedback (armure +1, niveau +1)",
+                "CONNECTION_LOCK": "Verrouillage de connexion",
+                "CONNECTION_LOCK_HINT": "Empêche une cible en RV de se déconnecter pendant un tour (effet narratif, niveau +1)"
             },
             "CONTACT": {
                 "SECTION_TITLE": "Informations du Contact",

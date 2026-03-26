@@ -1302,6 +1302,22 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: false,
         label: "SRA2.FEATS.CYBERDECK.BONUS_LIGHT_DAMAGE"
       }),
+      // Cyberdeck programs
+      cyberdeckBiofeedback: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.BIOFEEDBACK"
+      }),
+      cyberdeckBiofeedbackFilter: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.BIOFEEDBACK_FILTER"
+      }),
+      cyberdeckConnectionLock: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_LOCK"
+      }),
       // Contact specific fields
       contactName: new fields.StringField({
         required: true,
@@ -1713,6 +1729,20 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "cyberdeck" && cyberdeckBonusLightDamage) {
       recommendedLevel += 3;
       recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE", value: 3 });
+    }
+    if (featType === "cyberdeck") {
+      if (this.cyberdeckBiofeedback) {
+        recommendedLevel += 1;
+        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK", value: 1 });
+      }
+      if (this.cyberdeckBiofeedbackFilter) {
+        recommendedLevel += 1;
+        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK_FILTER", value: 1 });
+      }
+      if (this.cyberdeckConnectionLock) {
+        recommendedLevel += 1;
+        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_CONNECTION_LOCK", value: 1 });
+      }
     }
     if (attack > 0) {
       recommendedLevel += attack;

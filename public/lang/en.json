@@ -618,6 +618,9 @@
                 "FIREWALL": "Cyberdeck firewall",
                 "ATTACK": "Attack",
                 "CYBERDECK_BONUS_LIGHT_DAMAGE": "+1 light damage (cyberdeck)",
+                "CYBERDECK_BIOFEEDBACK": "Biofeedback",
+                "CYBERDECK_BIOFEEDBACK_FILTER": "Biofeedback Filter",
+                "CYBERDECK_CONNECTION_LOCK": "Connection Lock",
                 "RIGGER_CONSOLE": "Rigger console",
                 "VEHICLE_WIRING": "Vehicle control wiring",
                 "WEAPON_FOCUS": "Weapon focus",
@@ -863,7 +866,14 @@
                     "AR": "AR",
                     "COLD_SIM": "VR Cold-sim",
                     "HOT_SIM": "VR Hot-sim"
-                }
+                },
+                "PROGRAMS": "Programs",
+                "BIOFEEDBACK": "Biofeedback",
+                "BIOFEEDBACK_HINT": "Allows inflicting biofeedback damage instead of matrix damage (narrative effect, level +1)",
+                "BIOFEEDBACK_FILTER": "Biofeedback Filter",
+                "BIOFEEDBACK_FILTER_HINT": "Provides 1 Armor point against biofeedback damage (armor +1, level +1)",
+                "CONNECTION_LOCK": "Connection Lock",
+                "CONNECTION_LOCK_HINT": "Prevents a VR target from disconnecting for one turn (narrative effect, level +1)"
             },
             "CONTACT": {
                 "SECTION_TITLE": "Contact Information",
