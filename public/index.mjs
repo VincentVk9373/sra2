@@ -9525,7 +9525,7 @@ class IceSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "ice"],
       template: "systems/sra2/templates/actor-ice-sheet.hbs",
       width: 600,
-      height: 500,
+      height: 840,
       tabs: [],
       dragDrop: [],
       submitOnChange: false
@@ -9557,22 +9557,13 @@ class IceSheet extends ActorSheet {
    */
   async _onIceTypeChange(event) {
     event.preventDefault();
-    const iceType = event.currentTarget.value;
-    await this.actor.update({
-      "system.iceType": iceType || null
-    });
-    this.render(false);
+    await this.submit();
   }
   /**
    * Handle server index change - update actor and re-render
    */
   async _onServerIndexChange(event) {
-    const input = event.currentTarget;
-    const value = parseInt(input.value) || 1;
-    await this.actor.update({
-      "system.serverIndex": Math.max(1, Math.min(12, value))
-    });
-    await this.render(false);
+    await this.submit();
   }
   /**
    * Get description for ICE type

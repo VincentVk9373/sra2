@@ -11,7 +11,7 @@ export class IceSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'ice'],
       template: 'systems/sra2/templates/actor-ice-sheet.hbs',
       width: 600,
-      height: 500,
+      height: 840,
       tabs: [],
       dragDrop: [],
       submitOnChange: false,
@@ -60,31 +60,17 @@ export class IceSheet extends ActorSheet {
    */
   private async _onIceTypeChange(event: Event): Promise<void> {
     event.preventDefault();
-    
-    const iceType = (event.currentTarget as HTMLSelectElement).value;
-    
-    // Update ICE type - the prepareDerivedData will calculate the attributes
-    await this.actor.update({
-      'system.iceType': iceType || null
-    } as any);
-    
-    this.render(false);
+
+    // Submit the full form first to preserve name/img changes
+    await this.submit();
   }
 
   /**
    * Handle server index change - update actor and re-render
    */
   private async _onServerIndexChange(event: Event): Promise<void> {
-    const input = event.currentTarget as HTMLInputElement;
-    const value = parseInt(input.value) || 1;
-    
-    // Update the actor - prepareDerivedData will recalculate threshold and damage
-    await this.actor.update({
-      'system.serverIndex': Math.max(1, Math.min(12, value))
-    } as any);
-    
-    // Re-render to show updated calculated attributes
-    await this.render(false);
+    // Submit the full form first to preserve name/img changes
+    await this.submit();
   }
 
   /**
