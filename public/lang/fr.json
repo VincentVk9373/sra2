@@ -3,7 +3,8 @@
         "Actor": {
             "character": "Personnage",
             "vehicle": "Véhicule / Drone",
-            "ice": "GLACE"
+            "ice": "GLACE",
+            "server": "Serveur"
         },
         "Item": {
             "skill": "Compétence",
@@ -22,6 +23,7 @@
             "NPC": "Feuille de PNJ SRA2",
             "VEHICLE": "Feuille de Véhicule/Drone SRA2",
             "ICE": "Feuille de GLACE SRA2",
+            "SERVER": "Feuille de Serveur SRA2",
             "FEAT": "Feuille d'Atout SRA2",
             "SKILL": "Feuille de Compétence SRA2",
             "SPECIALIZATION": "Feuille de Spécialisation SRA2",
@@ -190,6 +192,16 @@
                 "TRACKER": "Découvre la localisation physique de la cible (aucun dommage infligé).",
                 "KILLER": "Dommages matriciels, VD = Indice du serveur."
             },
+            "TYPES": {
+                "PATROL": "Patrouilleuse",
+                "ACID": "Acide",
+                "BLASTER": "Blaster",
+                "BLOCKER": "Bloqueuse",
+                "BLACK": "Noire",
+                "GLUE": "Pot de colle",
+                "TRACKER": "Traqueuse",
+                "KILLER": "Tueuse"
+            },
             "ATTACK": {
                 "LABEL": "Attaque",
                 "BUTTON": "Lancer une attaque",
@@ -197,6 +209,35 @@
                 "NO_TARGET": "Veuillez sélectionner un token cible sur la scène.",
                 "CANNOT_ATTACK": "Ce type de GLACE ne peut pas attaquer directement."
             }
+        },
+        "SERVER": {
+            "NAME": "Nom du serveur",
+            "INDEX": "Indice",
+            "EFFECTIVE_INDEX": "Indice effectif",
+            "FIREWALL": "Firewall",
+            "PHYSICAL_SECURITY": "Sécurité physique (+1)",
+            "DESCRIPTION": "Description",
+            "LEVEL": {
+                "BRICOLE": "Bricolé (2)",
+                "BAS_DE_GAMME": "Bas de gamme (3)",
+                "MOYEN": "Moyen (4)",
+                "SECURISE": "Sécurisé (5)",
+                "HAUTE_SECURITE": "Haute sécurité (6)",
+                "EXTREME": "Extrême (7)"
+            },
+            "ICE_ROSTER": "ICE hébergées",
+            "DEPLOYED": "Déployées",
+            "QUEUED": "En attente",
+            "DEPLOY_ICE": "Déployer une ICE",
+            "NO_PATROL_WARNING": "Aucune Patrouilleuse dans le roster !",
+            "DROP_ICE_HINT": "Glissez une ICE ici pour l'ajouter au serveur",
+            "OPEN_ICE": "Ouvrir la fiche",
+            "REMOVE_ICE": "Retirer",
+            "ICE_ADDED": "ICE ajoutée : {name}",
+            "ICE_REMOVED": "ICE retirée",
+            "NO_ICE_TO_DEPLOY": "Aucune ICE disponible à déployer",
+            "NO_SERVER_TOKEN": "Placez un token serveur sur la scène d'abord",
+            "ALL_SLOTS_TAKEN": "Tous les emplacements autour du serveur sont occupés"
         },
         "CONFIRM_DELETE": "Êtes-vous sûr de vouloir supprimer {name} ?",
         "ATTRIBUTES": {

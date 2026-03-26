@@ -53,7 +53,7 @@
         <select name="system.iceType" class="ice-type-select">
           <option value="">{{localize "SRA2.ICE.SELECT_TYPE"}}</option>
           {{#each iceTypes}}
-          <option value="{{@key}}" {{#if (eq @key ../system.iceType)}}selected{{/if}}>{{this}}</option>
+          <option value="{{@key}}" {{#if (eq @key ../system.iceType)}}selected{{/if}}>{{localize this}}</option>
           {{/each}}
         </select>
       </div>

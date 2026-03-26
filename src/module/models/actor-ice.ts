@@ -2,14 +2,14 @@
  * Data model for ICE actors
  */
 export const ICE_TYPES = {
-  patrol: 'Patrouilleuse',
-  acid: 'Acide',
-  blaster: 'Blaster',
-  blocker: 'Bloqueuse',
-  black: 'Noire',
-  glue: 'Pot de colle',
-  tracker: 'Traqueuse',
-  killer: 'Tueuse'
+  patrol: 'SRA2.ICE.TYPES.PATROL',
+  acid: 'SRA2.ICE.TYPES.ACID',
+  blaster: 'SRA2.ICE.TYPES.BLASTER',
+  blocker: 'SRA2.ICE.TYPES.BLOCKER',
+  black: 'SRA2.ICE.TYPES.BLACK',
+  glue: 'SRA2.ICE.TYPES.GLUE',
+  tracker: 'SRA2.ICE.TYPES.TRACKER',
+  killer: 'SRA2.ICE.TYPES.KILLER'
 } as const;
 
 export type IceType = keyof typeof ICE_TYPES;

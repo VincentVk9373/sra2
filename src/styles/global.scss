@@ -13,6 +13,9 @@
 /* Import ICE sheet styles */
 @use 'ice-sheet.scss';
 
+/* Import Server sheet styles */
+@use 'server-sheet.scss';
+
 
 select {
     height: 36px;

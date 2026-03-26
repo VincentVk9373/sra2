@@ -45,6 +45,9 @@ export class IceSheet extends ActorSheet {
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
+    // Submit on damage checkbox change so the visual state updates
+    html.find('.damage-track input[type="checkbox"]').on('change', () => this.submit());
+
     // Handle ICE type change
     html.find('.ice-type-select').on('change', this._onIceTypeChange.bind(this));
 

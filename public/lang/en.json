@@ -3,7 +3,8 @@
         "Actor": {
             "character": "Character",
             "vehicle": "Vehicle / Drone",
-            "ice": "ICE"
+            "ice": "ICE",
+            "server": "Server"
         },
         "Item": {
             "skill": "Skill",
@@ -22,6 +23,7 @@
             "NPC": "SRA2 NPC Sheet",
             "VEHICLE": "SRA2 Vehicle/Drone Sheet",
             "ICE": "SRA2 ICE Sheet",
+            "SERVER": "SRA2 Server Sheet",
             "FEAT": "SRA2 Feat Sheet",
             "SKILL": "SRA2 Skill Sheet",
             "SPECIALIZATION": "SRA2 Specialization Sheet",
@@ -190,6 +192,16 @@
                 "TRACKER": "Discovers the physical location of the target (no damage dealt).",
                 "KILLER": "Matrix damage, DV = Server Index."
             },
+            "TYPES": {
+                "PATROL": "Patrol",
+                "ACID": "Acid",
+                "BLASTER": "Blaster",
+                "BLOCKER": "Blocker",
+                "BLACK": "Black",
+                "GLUE": "Glue",
+                "TRACKER": "Tracker",
+                "KILLER": "Killer"
+            },
             "ATTACK": {
                 "LABEL": "Attack",
                 "BUTTON": "Launch Attack",
@@ -197,6 +209,35 @@
                 "NO_TARGET": "Please select a target token on the scene.",
                 "CANNOT_ATTACK": "This ICE type cannot attack directly."
             }
+        },
+        "SERVER": {
+            "NAME": "Server Name",
+            "INDEX": "Index",
+            "EFFECTIVE_INDEX": "Effective Index",
+            "FIREWALL": "Firewall",
+            "PHYSICAL_SECURITY": "Physical Security (+1)",
+            "DESCRIPTION": "Description",
+            "LEVEL": {
+                "BRICOLE": "DIY (2)",
+                "BAS_DE_GAMME": "Low-end (3)",
+                "MOYEN": "Standard (4)",
+                "SECURISE": "Secured (5)",
+                "HAUTE_SECURITE": "High Security (6)",
+                "EXTREME": "Extreme (7)"
+            },
+            "ICE_ROSTER": "Hosted ICE",
+            "DEPLOYED": "Deployed",
+            "QUEUED": "Queued",
+            "DEPLOY_ICE": "Deploy ICE",
+            "NO_PATROL_WARNING": "No Patrol ICE in roster!",
+            "DROP_ICE_HINT": "Drag an ICE here to add it to the server",
+            "OPEN_ICE": "Open Sheet",
+            "REMOVE_ICE": "Remove",
+            "ICE_ADDED": "ICE added: {name}",
+            "ICE_REMOVED": "ICE removed",
+            "NO_ICE_TO_DEPLOY": "No ICE available to deploy",
+            "NO_SERVER_TOKEN": "Place a server token on the scene first",
+            "ALL_SLOTS_TAKEN": "All slots around the server are taken"
         },
         "COMBAT": {
             "ATTACK": "Attack",

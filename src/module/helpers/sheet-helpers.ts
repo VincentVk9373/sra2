@@ -49,36 +49,47 @@ export function handleSheetUpdate(actor: any, formData: any): any {
   };
 
   // Helper function to process damage data for a specific damage type
+  // Handles the HTML checkbox bug: unchecked checkboxes are not sent in form data,
+  // so when all boxes are unchecked the damage field is missing entirely.
   const processDamageData = (damageType: 'damage' | 'magicDamage' | 'matrixDamage') => {
-    if (expandedData.system && expandedData.system[damageType] !== undefined) {
-      const currentDamage = (actor.system as any)[damageType] || {};
+    const currentDamage = (actor.system as any)[damageType];
+    if (!currentDamage) return; // Actor doesn't have this damage type
 
-      // Initialize damage object if not present
-      if (!expandedData.system[damageType] || typeof expandedData.system[damageType] !== 'object') {
-        expandedData.system[damageType] = {};
-      }
+    if (!expandedData.system) expandedData.system = {};
 
-      // Get expected lengths from current damage or defaults
-      const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
-      const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
+    // Get expected lengths from current damage or defaults
+    const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
+    const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
 
-      // Handle light damage checkboxes - process if present in formData
-      if (expandedData.system[damageType].light !== undefined) {
-        expandedData.system[damageType].light = convertToArray(expandedData.system[damageType].light, currentLightLength);
-      }
-
-      // Handle severe damage checkboxes - process if present in formData
-      if (expandedData.system[damageType].severe !== undefined) {
-        expandedData.system[damageType].severe = convertToArray(expandedData.system[damageType].severe, currentSevereLength);
-      }
-
-      // Handle incapacitating - convert to boolean if present
-      if (expandedData.system[damageType].incapacitating !== undefined) {
-        expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true ||
-          expandedData.system[damageType].incapacitating === 'true' ||
-          expandedData.system[damageType].incapacitating === 'on';
-      }
+    // If damage type is missing from form data (all checkboxes unchecked), set all to false
+    if (expandedData.system[damageType] === undefined) {
+      expandedData.system[damageType] = {
+        light: Array(currentLightLength).fill(false),
+        severe: Array(currentSevereLength).fill(false),
+        incapacitating: false
+      };
+      return;
     }
+
+    // Initialize damage object if not proper
+    if (!expandedData.system[damageType] || typeof expandedData.system[damageType] !== 'object') {
+      expandedData.system[damageType] = {};
+    }
+
+    // Handle light damage checkboxes
+    expandedData.system[damageType].light = convertToArray(
+      expandedData.system[damageType].light, currentLightLength
+    );
+
+    // Handle severe damage checkboxes
+    expandedData.system[damageType].severe = convertToArray(
+      expandedData.system[damageType].severe, currentSevereLength
+    );
+
+    // Handle incapacitating - convert to boolean, default false if missing
+    expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true ||
+      expandedData.system[damageType].incapacitating === 'true' ||
+      expandedData.system[damageType].incapacitating === 'on';
   };
 
   // Process all three damage types

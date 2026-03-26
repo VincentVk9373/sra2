@@ -192,6 +192,7 @@ export class SRA2System {
       character: models.CharacterDataModel,
       vehicle: models.VehicleDataModel,
       ice: models.IceDataModel,
+      server: models.ServerDataModel,
     };
 
     // Register Item data models
@@ -218,6 +219,11 @@ export class SRA2System {
       types: ["ice"],
       makeDefault: true,
       label: "SRA2.SHEET.ICE"
+    });
+    DocumentSheetConfig.registerSheet(Actor, "sra2", applications.ServerSheet, {
+      types: ["server"],
+      makeDefault: true,
+      label: "SRA2.SHEET.SERVER"
     });
   }
 
@@ -681,6 +687,20 @@ export class SRA2System {
       // Cancel the original token creation - we'll create it manually after dialog
       return false;
     });
+
+    // Re-render open server sheets when an ICE token is created or deleted
+    // Re-render all open server sheets when any ICE token is created or deleted
+    const refreshServerSheets = (tokenDoc: any) => {
+      const actorId = tokenDoc.actorId;
+      if (!actorId) return;
+      const actor = game.actors?.get(actorId);
+      if (!actor || actor.type !== 'ice') return;
+      for (const [, sheet] of applications.ServerSheet.openSheets) {
+        setTimeout(() => sheet.render(false), 100);
+      }
+    };
+    Hooks.on('createToken', refreshServerSheets);
+    Hooks.on('deleteToken', refreshServerSheets);
   }
 
   private registerItemSheets(): void {

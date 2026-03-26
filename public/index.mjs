@@ -2268,14 +2268,14 @@ class VehicleDataModel extends foundry.abstract.TypeDataModel {
   }
 }
 const ICE_TYPES = {
-  patrol: "Patrouilleuse",
-  acid: "Acide",
-  blaster: "Blaster",
-  blocker: "Bloqueuse",
-  black: "Noire",
-  glue: "Pot de colle",
-  tracker: "Traqueuse",
-  killer: "Tueuse"
+  patrol: "SRA2.ICE.TYPES.PATROL",
+  acid: "SRA2.ICE.TYPES.ACID",
+  blaster: "SRA2.ICE.TYPES.BLASTER",
+  blocker: "SRA2.ICE.TYPES.BLOCKER",
+  black: "SRA2.ICE.TYPES.BLACK",
+  glue: "SRA2.ICE.TYPES.GLUE",
+  tracker: "SRA2.ICE.TYPES.TRACKER",
+  killer: "SRA2.ICE.TYPES.KILLER"
 };
 class IceDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -2346,6 +2346,46 @@ class IceDataModel extends foundry.abstract.TypeDataModel {
       damageValue = serverIndex;
     }
     this.damageValue = damageValue;
+  }
+}
+class ServerDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    return {
+      serverIndex: new fields.NumberField({
+        required: true,
+        initial: 4,
+        min: 2,
+        max: 12,
+        integer: true,
+        label: "SRA2.SERVER.INDEX"
+      }),
+      physicalSecurity: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.SERVER.PHYSICAL_SECURITY"
+      }),
+      linkedICE: new fields.ArrayField(new fields.StringField({
+        required: true,
+        initial: ""
+      }), {
+        required: true,
+        initial: [],
+        label: "SRA2.SERVER.ICE_ROSTER"
+      }),
+      description: new fields.HTMLField({
+        required: false,
+        initial: "",
+        label: "SRA2.SERVER.DESCRIPTION"
+      })
+    };
+  }
+  prepareDerivedData() {
+    const serverIndex = this.serverIndex || 4;
+    const physicalSecurity = this.physicalSecurity || false;
+    const effectiveIndex = serverIndex + (physicalSecurity ? 1 : 0);
+    this.effectiveIndex = effectiveIndex;
+    this.firewall = effectiveIndex;
   }
 }
 class SkillDataModel extends foundry.abstract.TypeDataModel {
@@ -2527,6 +2567,7 @@ const models = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   FeatDataModel,
   IceDataModel,
   MetatypeDataModel,
+  ServerDataModel,
   SkillDataModel,
   SpecializationDataModel,
   VehicleDataModel
@@ -2797,23 +2838,31 @@ function handleSheetUpdate(actor, formData) {
     return Array(expectedLength).fill(false);
   };
   const processDamageData = (damageType) => {
-    if (expandedData.system && expandedData.system[damageType] !== void 0) {
-      const currentDamage = actor.system[damageType] || {};
-      if (!expandedData.system[damageType] || typeof expandedData.system[damageType] !== "object") {
-        expandedData.system[damageType] = {};
-      }
-      const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
-      const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
-      if (expandedData.system[damageType].light !== void 0) {
-        expandedData.system[damageType].light = convertToArray(expandedData.system[damageType].light, currentLightLength);
-      }
-      if (expandedData.system[damageType].severe !== void 0) {
-        expandedData.system[damageType].severe = convertToArray(expandedData.system[damageType].severe, currentSevereLength);
-      }
-      if (expandedData.system[damageType].incapacitating !== void 0) {
-        expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true || expandedData.system[damageType].incapacitating === "true" || expandedData.system[damageType].incapacitating === "on";
-      }
+    const currentDamage = actor.system[damageType];
+    if (!currentDamage) return;
+    if (!expandedData.system) expandedData.system = {};
+    const currentLightLength = Array.isArray(currentDamage.light) ? currentDamage.light.length : 2;
+    const currentSevereLength = Array.isArray(currentDamage.severe) ? currentDamage.severe.length : 1;
+    if (expandedData.system[damageType] === void 0) {
+      expandedData.system[damageType] = {
+        light: Array(currentLightLength).fill(false),
+        severe: Array(currentSevereLength).fill(false),
+        incapacitating: false
+      };
+      return;
     }
+    if (!expandedData.system[damageType] || typeof expandedData.system[damageType] !== "object") {
+      expandedData.system[damageType] = {};
+    }
+    expandedData.system[damageType].light = convertToArray(
+      expandedData.system[damageType].light,
+      currentLightLength
+    );
+    expandedData.system[damageType].severe = convertToArray(
+      expandedData.system[damageType].severe,
+      currentSevereLength
+    );
+    expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true || expandedData.system[damageType].incapacitating === "true" || expandedData.system[damageType].incapacitating === "on";
   };
   processDamageData("damage");
   processDamageData("magicDamage");
@@ -9548,6 +9597,7 @@ class IceSheet extends ActorSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
+    html.find('.damage-track input[type="checkbox"]').on("change", () => this.submit());
     html.find(".ice-type-select").on("change", this._onIceTypeChange.bind(this));
     html.find('input[name="system.serverIndex"]').on("change", this._onServerIndexChange.bind(this));
     html.find(".ice-attack-button").on("click", this._onIceAttack.bind(this));
@@ -9605,6 +9655,239 @@ class IceSheet extends ActorSheet {
       iceToken = tokens.find((token) => token.actor?.id === this.actor.id) || null;
     }
     await createIceAttackMessage(this.actor, iceToken, defender, defenderToken);
+  }
+}
+class ServerSheet extends ActorSheet {
+  /** Track open server sheets for token hooks */
+  static openSheets = /* @__PURE__ */ new Map();
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["sra2", "sheet", "actor", "server"],
+      template: "systems/sra2/templates/actor-server-sheet.hbs",
+      width: 700,
+      height: 800,
+      tabs: [],
+      dragDrop: [{ dragSelector: ".ice-row", dropSelector: ".sheet-content" }],
+      submitOnChange: false
+    });
+  }
+  async _renderOuter(...args) {
+    const html = await super._renderOuter(...args);
+    ServerSheet.openSheets.set(this.actor.id, this);
+    return html;
+  }
+  async close(options) {
+    ServerSheet.openSheets.delete(this.actor.id);
+    return super.close(options);
+  }
+  /**
+   * Handle form submission
+   */
+  async _updateObject(_event, formData) {
+    const expandedData = handleSheetUpdate(this.actor, formData);
+    await this.actor.update(expandedData);
+  }
+  async getData() {
+    const context = super.getData();
+    context.system = this.actor.system;
+    const linkedICEData = await this._loadLinkedICE();
+    context.linkedICEData = linkedICEData;
+    context.deployedICE = linkedICEData.filter((ice) => ice.isDeployed);
+    context.queuedICE = linkedICEData.filter((ice) => !ice.isDeployed);
+    const hasPatrol = linkedICEData.some((ice) => ice.iceType === "patrol");
+    context.hasNoPatrol = linkedICEData.length > 0 && !hasPatrol;
+    return context;
+  }
+  activateListeners(html) {
+    super.activateListeners(html);
+    html.find('input[name="system.serverIndex"]').on("change", () => this.submit());
+    html.find('input[name="system.physicalSecurity"]').on("change", () => this.submit());
+    html.find(".open-ice").on("click", this._onOpenICE.bind(this));
+    html.find(".remove-ice").on("click", this._onRemoveICE.bind(this));
+    html.find('[data-action="deploy-ice"]').on("click", this._onDeployICE.bind(this));
+    html.find('[data-action="refresh"]').on("click", () => this.render(false));
+  }
+  /**
+   * Load all linked ICE actors with deployment status
+   */
+  async _loadLinkedICE() {
+    const linkedICEUuids = this.actor.system.linkedICE || [];
+    const result = [];
+    for (const uuid of linkedICEUuids) {
+      try {
+        const iceActor = await fromUuid(uuid);
+        if (!iceActor || iceActor.type !== "ice") continue;
+        const token = this._findICEToken(iceActor);
+        const isDeployed = !!token;
+        const iceType = iceActor.system?.iceType || "";
+        const iceTypeKey = ICE_TYPES[iceType] || "";
+        const iceTypeName = iceTypeKey ? game.i18n.localize(iceTypeKey) : iceType;
+        result.push({
+          uuid: iceActor.uuid,
+          id: iceActor.id,
+          name: iceActor.name,
+          img: iceActor.img,
+          iceType,
+          iceTypeName,
+          isDeployed,
+          tokenId: token?.id || null,
+          damage: iceActor.system?.damage || {}
+        });
+      } catch (error) {
+        console.warn(`Failed to load ICE actor ${uuid}:`, error);
+      }
+    }
+    return result;
+  }
+  /**
+   * Find the token for an ICE actor on the active scene
+   */
+  _findICEToken(iceActor) {
+    const scene = canvas?.scene;
+    if (!scene) return null;
+    const tokens = scene.tokens?.contents || [];
+    return tokens.find((t) => t.actorId === iceActor.id) || null;
+  }
+  /**
+   * Handle drop of an ICE actor onto the server sheet — links the existing actor
+   */
+  async _onDrop(event) {
+    const data = TextEditor.getDragEventData(event);
+    if (!data || data.type !== "Actor") return super._onDrop(event);
+    try {
+      const sourceActor = await fromUuid(data.uuid);
+      if (!sourceActor || sourceActor.type !== "ice") return;
+      const serverSystem = this.actor.system;
+      const linkedICE = serverSystem.linkedICE || [];
+      if (linkedICE.includes(sourceActor.uuid)) return;
+      await this.actor.update({ "system.linkedICE": [...linkedICE, sourceActor.uuid] });
+      ui.notifications?.info(game.i18n.format("SRA2.SERVER.ICE_ADDED", { name: sourceActor.name }));
+    } catch (error) {
+      console.error("Error handling ICE drop on server:", error);
+    }
+  }
+  /**
+   * Open an ICE token's sheet (only works for deployed ICE)
+   */
+  async _onOpenICE(event) {
+    event.preventDefault();
+    const tokenId = event.currentTarget.dataset.tokenId;
+    if (!tokenId) return;
+    const scene = canvas?.scene;
+    if (!scene) return;
+    const tokenDoc = scene.tokens?.get(tokenId);
+    if (tokenDoc?.actor?.sheet) {
+      tokenDoc.actor.sheet.render(true);
+    }
+  }
+  /**
+   * Remove an ICE from the server's roster
+   */
+  async _onRemoveICE(event) {
+    event.preventDefault();
+    const uuid = event.currentTarget.dataset.iceUuid;
+    if (!uuid) return;
+    const linkedICE = this.actor.system.linkedICE || [];
+    const updatedLinkedICE = linkedICE.filter((u) => u !== uuid);
+    await this.actor.update({ "system.linkedICE": updatedLinkedICE });
+    ui.notifications?.info(game.i18n.localize("SRA2.SERVER.ICE_REMOVED"));
+  }
+  /**
+   * Deploy a random non-deployed ICE onto the scene next to the server token.
+   * Sets the token's serverIndex to the server's effective index.
+   */
+  async _onDeployICE(event) {
+    event.preventDefault();
+    const scene = canvas?.scene;
+    if (!scene) {
+      ui.notifications?.warn(game.i18n.localize("SRA2.SERVER.NO_SERVER_TOKEN"));
+      return;
+    }
+    const serverToken = scene.tokens?.contents?.find(
+      (t) => t.actorId === this.actor.id
+    );
+    if (!serverToken) {
+      ui.notifications?.warn(game.i18n.localize("SRA2.SERVER.NO_SERVER_TOKEN"));
+      return;
+    }
+    const linkedICEData = await this._loadLinkedICE();
+    const queuedICE = linkedICEData.filter((ice) => !ice.isDeployed);
+    if (queuedICE.length === 0) {
+      ui.notifications?.warn(game.i18n.localize("SRA2.SERVER.NO_ICE_TO_DEPLOY"));
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * queuedICE.length);
+    const iceToDeploy = queuedICE[randomIndex];
+    const gs = scene.grid?.size || 100;
+    const offsets = [
+      { x: 0, y: -gs },
+      // N
+      { x: gs, y: -gs },
+      // NE
+      { x: gs, y: 0 },
+      // E
+      { x: gs, y: gs },
+      // SE
+      { x: 0, y: gs },
+      // S
+      { x: -gs, y: gs },
+      // SW
+      { x: -gs, y: 0 },
+      // W
+      { x: -gs, y: -gs }
+      // NW
+    ];
+    const existingTokenPositions = scene.tokens?.contents?.map((t) => ({
+      x: t.x,
+      y: t.y
+    })) || [];
+    let targetPos = null;
+    for (const offset of offsets) {
+      const pos = {
+        x: serverToken.x + offset.x,
+        y: serverToken.y + offset.y
+      };
+      const occupied = existingTokenPositions.some(
+        (tp) => Math.abs(tp.x - pos.x) < gs * 0.5 && Math.abs(tp.y - pos.y) < gs * 0.5
+      );
+      if (!occupied) {
+        targetPos = pos;
+        break;
+      }
+    }
+    if (!targetPos) {
+      ui.notifications?.warn(game.i18n.localize("SRA2.SERVER.ALL_SLOTS_TAKEN"));
+      return;
+    }
+    try {
+      const iceActor = await fromUuid(iceToDeploy.uuid);
+      if (!iceActor) return;
+      const tokenData = await iceActor.getTokenDocument({
+        x: targetPos.x,
+        y: targetPos.y
+      });
+      const effectiveIndex = this.actor.system.effectiveIndex;
+      const tokenObj = tokenData.toObject();
+      if (!tokenObj.delta) tokenObj.delta = {};
+      if (!tokenObj.delta.system) tokenObj.delta.system = {};
+      tokenObj.delta.system.serverIndex = effectiveIndex;
+      await scene.createEmbeddedDocuments("Token", [tokenObj]);
+      this.render(false);
+    } catch (error) {
+      console.error("Error deploying ICE token:", error);
+    }
+  }
+  /**
+   * Handle drag start for ICE rows (to allow dragging to scene)
+   */
+  _onDragStart(event) {
+    const element = event.currentTarget;
+    const uuid = element?.dataset?.iceUuid;
+    if (!uuid) return super._onDragStart(event);
+    event.dataTransfer?.setData("text/plain", JSON.stringify({
+      type: "Actor",
+      uuid
+    }));
   }
 }
 class FeatSheet extends ItemSheet {
@@ -11486,6 +11769,7 @@ const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   IceSheet,
   MetatypeSheet,
   RollDialog,
+  ServerSheet,
   SkillSheet,
   SpecializationSheet,
   VehicleSheet
@@ -12517,7 +12801,8 @@ class SRA2System {
     CONFIG.Actor.dataModels = {
       character: CharacterDataModel,
       vehicle: VehicleDataModel,
-      ice: IceDataModel
+      ice: IceDataModel,
+      server: ServerDataModel
     };
     CONFIG.Item.dataModels = {
       skill: SkillDataModel,
@@ -12541,6 +12826,11 @@ class SRA2System {
       types: ["ice"],
       makeDefault: true,
       label: "SRA2.SHEET.ICE"
+    });
+    DocumentSheetConfig.registerSheet(Actor, "sra2", ServerSheet, {
+      types: ["server"],
+      makeDefault: true,
+      label: "SRA2.SHEET.SERVER"
     });
   }
   setupVehicleHooks() {
@@ -12852,6 +13142,17 @@ class SRA2System {
       })();
       return false;
     });
+    const refreshServerSheets = (tokenDoc) => {
+      const actorId = tokenDoc.actorId;
+      if (!actorId) return;
+      const actor = game.actors?.get(actorId);
+      if (!actor || actor.type !== "ice") return;
+      for (const [, sheet] of ServerSheet.openSheets) {
+        setTimeout(() => sheet.render(false), 100);
+      }
+    };
+    Hooks.on("createToken", refreshServerSheets);
+    Hooks.on("deleteToken", refreshServerSheets);
   }
   registerItemSheets() {
     DocumentSheetConfig.registerSheet(Item, "sra2", FeatSheet, {

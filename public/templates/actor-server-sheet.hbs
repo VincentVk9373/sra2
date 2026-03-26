@@ -1,0 +1,106 @@
+<form class="{{cssClass}} sra2-server-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+    <div class="header-fields">
+      <div class="charname">
+        <h1><input name="name" type="text" value="{{actor.name}}"
+            placeholder="{{localize 'SRA2.SERVER.NAME'}}" /></h1>
+      </div>
+      <div class="server-stats">
+        <div class="stat">
+          <label>{{localize "SRA2.SERVER.INDEX"}}</label>
+          <input type="number" name="system.serverIndex" value="{{system.serverIndex}}" min="2" max="12" />
+        </div>
+        <div class="stat">
+          <label>{{localize "SRA2.SERVER.EFFECTIVE_INDEX"}}</label>
+          <span class="stat-value">{{system.effectiveIndex}}</span>
+        </div>
+        <div class="stat">
+          <label>{{localize "SRA2.SERVER.FIREWALL"}}</label>
+          <span class="stat-value">{{system.firewall}}</span>
+        </div>
+        <div class="stat checkbox-stat">
+          <label>
+            <input type="checkbox" name="system.physicalSecurity" {{#if system.physicalSecurity}}checked{{/if}} />
+            {{localize "SRA2.SERVER.PHYSICAL_SECURITY"}}
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="sheet-content">
+    <section class="sheet-body">
+      <!-- ICE Roster -->
+      <div class="ice-roster-section">
+        <h2>{{localize "SRA2.SERVER.ICE_ROSTER"}}
+          <button type="button" class="refresh-btn" data-action="refresh" title="Refresh">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </h2>
+
+        {{#if hasNoPatrol}}
+        <div class="no-patrol-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          {{localize "SRA2.SERVER.NO_PATROL_WARNING"}}
+        </div>
+        {{/if}}
+
+        {{#if deployedICE.length}}
+        <div class="ice-group">
+          <h3>{{localize "SRA2.SERVER.DEPLOYED"}}</h3>
+          {{#each deployedICE}}
+          <div class="ice-row deployed" data-ice-uuid="{{this.uuid}}" draggable="true">
+            <span class="ice-status-icon deployed"><i class="fas fa-circle"></i></span>
+            <img class="ice-img" src="{{this.img}}" title="{{this.name}}" />
+            <span class="ice-name">{{this.name}}</span>
+            <span class="ice-type-badge">{{this.iceTypeName}}</span>
+            <div class="ice-actions">
+              <button type="button" class="ice-action-btn open-ice" data-token-id="{{this.tokenId}}" title="{{localize 'SRA2.SERVER.OPEN_ICE'}}">
+                <i class="fas fa-folder-open"></i>
+              </button>
+              <button type="button" class="ice-action-btn remove-ice" data-ice-uuid="{{this.uuid}}" title="{{localize 'SRA2.SERVER.REMOVE_ICE'}}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        <div class="deploy-controls">
+          <button type="button" class="deploy-ice-btn" data-action="deploy-ice">
+            <i class="fas fa-dice-d6"></i> {{localize "SRA2.SERVER.DEPLOY_ICE"}}
+          </button>
+        </div>
+
+        {{#if queuedICE.length}}
+        <div class="ice-group">
+          <h3>{{localize "SRA2.SERVER.QUEUED"}}</h3>
+          {{#each queuedICE}}
+          <div class="ice-row queued" data-ice-uuid="{{this.uuid}}" draggable="true">
+            <span class="ice-status-icon queued"><i class="far fa-circle"></i></span>
+            <img class="ice-img" src="{{this.img}}" title="{{this.name}}" />
+            <span class="ice-name">{{this.name}}</span>
+            <span class="ice-type-badge">{{this.iceTypeName}}</span>
+            <div class="ice-actions">
+              <button type="button" class="ice-action-btn remove-ice" data-ice-uuid="{{this.uuid}}" title="{{localize 'SRA2.SERVER.REMOVE_ICE'}}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#unless linkedICEData.length}}
+        <div class="ice-drop-hint">
+          <i class="fas fa-snowflake"></i>
+          <p>{{localize "SRA2.SERVER.DROP_ICE_HINT"}}</p>
+        </div>
+        {{/unless}}
+
+      </div>
+    </section>
+  </div>
+</form>
