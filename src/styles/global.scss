@@ -1,21 +1,20 @@
 /* Import character sheet styles */
-@use 'character-sheet.scss';
+@use "character-sheet.scss";
 
 /* Import character sheet V2 styles */
-@use 'character-sheet-v2.scss';
+@use "character-sheet-v2.scss";
 
 /* Import item sheet styles */
-@use 'item-sheet.scss';
+@use "item-sheet.scss";
 
 /* Import roll dialog styles */
-@use 'roll-dialog.scss';
+@use "roll-dialog.scss";
 
 /* Import ICE sheet styles */
-@use 'ice-sheet.scss';
+@use "ice-sheet.scss";
 
 /* Import Server sheet styles */
-@use 'server-sheet.scss';
-
+@use "server-sheet.scss";
 
 select {
     height: 36px;
@@ -27,10 +26,10 @@ select {
 }
 
 .chat-log {
-            background-image: url('../../public/images/backgrounds/character-sheet-background.png');
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: cover;
+    background-image: url("../../public/images/backgrounds/character-sheet-background.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
 /* Dice Roll Results in Chat */
 .sra2-skill-roll,
@@ -97,14 +96,18 @@ select {
                 border: 2px solid #4a148c;
 
                 &.success {
-                    background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+                    background: linear-gradient(
+                        135deg,
+                        #7b1fa2 0%,
+                        #4a148c 100%
+                    );
                     color: #fff;
                     box-shadow: 0 2px 4px rgba(74, 20, 140, 0.6);
                     position: relative;
 
                     // Add a small badge to indicate double success
                     &::after {
-                        content: '×2';
+                        content: "×2";
                         position: absolute;
                         top: -8px;
                         right: -8px;
@@ -119,9 +122,15 @@ select {
                 }
 
                 &.critical {
-                    background: linear-gradient(135deg, #1a0029 0%, #000000 100%);
+                    background: linear-gradient(
+                        135deg,
+                        #1a0029 0%,
+                        #000000 100%
+                    );
                     color: #fff;
-                    box-shadow: 0 2px 4px rgba(26, 0, 41, 0.8), 0 0 8px rgba(244, 67, 54, 0.4);
+                    box-shadow:
+                        0 2px 4px rgba(26, 0, 41, 0.8),
+                        0 0 8px rgba(244, 67, 54, 0.4);
                     animation: pulse-critical 0.5s ease-in-out;
                     border-color: #f44336;
                 }
@@ -210,7 +219,11 @@ select {
         }
 
         &.reduced-to-zero {
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.4) 0%, rgba(46, 125, 50, 0.4) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(76, 175, 80, 0.4) 0%,
+                rgba(46, 125, 50, 0.4) 100%
+            );
             border: 2px solid #4caf50;
 
             .complication-header {
@@ -236,29 +249,41 @@ select {
         }
 
         &.minor-complication {
-            background: linear-gradient(135deg, rgba(255, 152, 0, 0.4) 0%, rgba(245, 124, 0, 0.4) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(255, 152, 0, 0.4) 0%,
+                rgba(245, 124, 0, 0.4) 100%
+            );
             border: 6px solid #ff9800;
-            box-shadow: 0 8px 24px rgba(255, 152, 0, 0.6), inset 0 0 35px rgba(255, 152, 0, 0.1);
+            box-shadow:
+                0 8px 24px rgba(255, 152, 0, 0.6),
+                inset 0 0 35px rgba(255, 152, 0, 0.1);
 
             .complication-header {
                 .complication-icon {
-                    color: #895607
+                    color: #895607;
                 }
 
                 .complication-title {
-                    color: #895607
+                    color: #895607;
                 }
             }
 
             .complication-calculation {
-                color: #895607
+                color: #895607;
             }
         }
 
         &.critical-complication {
-            background: linear-gradient(135deg, rgba(244, 67, 54, 0.6) 0%, rgba(211, 47, 47, 0.6) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(244, 67, 54, 0.6) 0%,
+                rgba(211, 47, 47, 0.6) 100%
+            );
             border: 8px solid #f44336;
-            box-shadow: 0 12px 32px rgba(244, 67, 54, 0.8), inset 0 0 45px rgba(244, 67, 54, 0.15);
+            box-shadow:
+                0 12px 32px rgba(244, 67, 54, 0.8),
+                inset 0 0 45px rgba(244, 67, 54, 0.15);
 
             .complication-header {
                 .complication-icon {
@@ -280,9 +305,15 @@ select {
         }
 
         &.disaster {
-            background: linear-gradient(135deg, rgba(139, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.95) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(139, 0, 0, 0.85) 0%,
+                rgba(0, 0, 0, 0.95) 100%
+            );
             border: 12px solid #8b0000;
-            box-shadow: 0 0 50px rgba(139, 0, 0, 1), inset 0 0 70px rgba(255, 0, 0, 0.5);
+            box-shadow:
+                0 0 50px rgba(139, 0, 0, 1),
+                inset 0 0 70px rgba(255, 0, 0, 0.5);
             animation: pulse-disaster 1s ease-in-out infinite;
 
             .complication-header {
@@ -295,7 +326,9 @@ select {
                 .complication-title {
                     color: #ff6b6b;
                     font-weight: 900;
-                    text-shadow: 0 0 25px rgba(255, 0, 0, 1), 0 4px 10px rgba(0, 0, 0, 0.8);
+                    text-shadow:
+                        0 0 25px rgba(255, 0, 0, 1),
+                        0 4px 10px rgba(0, 0, 0, 0.8);
                 }
             }
 
@@ -339,7 +372,11 @@ select {
             padding: 1rem 0.5rem;
             border-radius: 12px;
             text-align: center;
-            background: linear-gradient(135deg, rgba(0, 174, 255, 0.5) 0%, rgba(76, 160, 228, 0.5) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(0, 174, 255, 0.5) 0%,
+                rgba(76, 160, 228, 0.5) 100%
+            );
             border: 2px solid #1f32e2;
             margin-top: 1rem;
 
@@ -386,7 +423,11 @@ select {
                 }
 
                 &:hover {
-                    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+                    background: linear-gradient(
+                        135deg,
+                        #c82333 0%,
+                        #bd2130 100%
+                    );
                     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6);
                     transform: translateY(-2px);
                 }
@@ -397,7 +438,6 @@ select {
                 }
             }
         }
-
     }
 
     .combat-outcome-header {
@@ -422,7 +462,11 @@ select {
         }
 
         &.attack-success {
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.25) 0%, rgba(46, 125, 50, 0.25) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(76, 175, 80, 0.25) 0%,
+                rgba(46, 125, 50, 0.25) 100%
+            );
             color: #2e7d32;
             border: 2px solid #4caf50;
             box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
@@ -433,7 +477,11 @@ select {
         }
 
         &.attack-failed {
-            background: linear-gradient(135deg, rgba(244, 67, 54, 0.25) 0%, rgba(183, 28, 28, 0.25) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(244, 67, 54, 0.25) 0%,
+                rgba(183, 28, 28, 0.25) 100%
+            );
             color: #b71c1c;
             border: 2px solid #f44336;
             box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
@@ -460,7 +508,6 @@ select {
 }
 
 @keyframes pulse-disaster {
-
     0%,
     100% {
         box-shadow: 0 0 12px rgba(139, 0, 0, 0.6);
@@ -472,7 +519,6 @@ select {
 }
 
 @keyframes shake {
-
     0%,
     100% {
         transform: translateX(0);
@@ -488,7 +534,6 @@ select {
 }
 
 @keyframes shake-intense {
-
     0%,
     100% {
         transform: rotate(0deg);
@@ -504,7 +549,6 @@ select {
 }
 
 @keyframes pulse-critical {
-
     0%,
     100% {
         transform: scale(1);
@@ -643,9 +687,7 @@ select {
                     }
                 }
             }
-
         }
-
     }
 
     .roll-results {
@@ -653,13 +695,21 @@ select {
             text-align: center;
             padding: 0.3rem 0.5rem;
             margin-bottom: 0.4rem;
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(46, 125, 50, 0.2) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(76, 175, 80, 0.2) 0%,
+                rgba(46, 125, 50, 0.2) 100%
+            );
             border-radius: 4px;
             border: 1px solid #4caf50;
 
             // Failed attack (0 successes) styling
             &.failed-attack {
-                background: linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(211, 47, 47, 0.2) 100%);
+                background: linear-gradient(
+                    135deg,
+                    rgba(244, 67, 54, 0.2) 0%,
+                    rgba(211, 47, 47, 0.2) 100%
+                );
                 border-color: #f44336;
 
                 .successes-label {
@@ -760,15 +810,25 @@ select {
                     border-color: #ba68c8;
 
                     &.success {
-                        background: linear-gradient(135deg, #ba68c8 0%, #9c27b0 100%);
+                        background: linear-gradient(
+                            135deg,
+                            #ba68c8 0%,
+                            #9c27b0 100%
+                        );
                         color: #fff;
                         box-shadow: 0 2px 4px rgba(156, 39, 176, 0.6);
                     }
 
                     &.critical-failure {
-                        background: linear-gradient(135deg, #1a0029 0%, #000000 100%);
+                        background: linear-gradient(
+                            135deg,
+                            #1a0029 0%,
+                            #000000 100%
+                        );
                         color: #fff;
-                        box-shadow: 0 2px 4px rgba(26, 0, 41, 0.8), 0 0 8px rgba(244, 67, 54, 0.4);
+                        box-shadow:
+                            0 2px 4px rgba(26, 0, 41, 0.8),
+                            0 0 8px rgba(244, 67, 54, 0.4);
                         border-color: #f44336;
                         animation: pulse-critical 0.5s ease-in-out;
                     }
@@ -805,20 +865,32 @@ select {
             }
 
             &.minor {
-                background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(245, 124, 0, 0.3) 100%);
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 152, 0, 0.3) 0%,
+                    rgba(245, 124, 0, 0.3) 100%
+                );
                 border: 3px solid #ff9800;
                 color: #995b00;
             }
 
             &.critical {
-                background: linear-gradient(135deg, rgba(244, 67, 54, 0.4) 0%, rgba(211, 47, 47, 0.4) 100%);
+                background: linear-gradient(
+                    135deg,
+                    rgba(244, 67, 54, 0.4) 0%,
+                    rgba(211, 47, 47, 0.4) 100%
+                );
                 border: 4px solid #a32e25;
                 color: #a32e25;
                 box-shadow: 0 4px 12px rgba(244, 67, 54, 0.5);
             }
 
             &.disaster {
-                background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
+                background: linear-gradient(
+                    135deg,
+                    rgba(139, 0, 0, 0.6) 0%,
+                    rgba(0, 0, 0, 0.8) 100%
+                );
                 border: 6px solid #8b0000;
                 color: #ff4444;
                 box-shadow: 0 0 20px rgba(139, 0, 0, 0.8);
@@ -833,7 +905,11 @@ select {
         border-top: 2px solid rgba(255, 255, 255, 0.2);
 
         .defense-comparison {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(25, 118, 210, 0.15) 100%);
+            background: linear-gradient(
+                135deg,
+                rgba(33, 150, 243, 0.15) 0%,
+                rgba(25, 118, 210, 0.15) 100%
+            );
             border-radius: 8px;
             border: 2px solid #2196f3;
             padding: 8px;
@@ -888,14 +964,22 @@ select {
                         text-align: center;
 
                         &.attack {
-                            background: linear-gradient(135deg, rgba(60, 244, 54, 0.3) 0%, rgba(61, 211, 47, 0.3) 100%);
+                            background: linear-gradient(
+                                135deg,
+                                rgba(60, 244, 54, 0.3) 0%,
+                                rgba(61, 211, 47, 0.3) 100%
+                            );
                             border: 2px solid #24a01f;
                             color: #ffebee;
                             box-shadow: 0 2px 6px rgba(54, 244, 54, 0.3);
                         }
 
                         &.defense {
-                            background: linear-gradient(135deg, rgba(33, 150, 243, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%);
+                            background: linear-gradient(
+                                135deg,
+                                rgba(33, 150, 243, 0.3) 0%,
+                                rgba(25, 118, 210, 0.3) 100%
+                            );
                             border: 2px solid #2196f3;
                             color: #e3f2fd;
                             box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
@@ -923,7 +1007,11 @@ select {
                 }
 
                 &.success {
-                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+                    background: linear-gradient(
+                        135deg,
+                        rgba(76, 175, 80, 0.3) 0%,
+                        rgba(46, 125, 50, 0.3) 100%
+                    );
                     border: 2px solid #4caf50;
                     color: #c8e6c9;
                     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
@@ -934,7 +1022,11 @@ select {
                 }
 
                 &.failed {
-                    background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(183, 28, 28, 0.3) 100%);
+                    background: linear-gradient(
+                        135deg,
+                        rgba(244, 67, 54, 0.3) 0%,
+                        rgba(183, 28, 28, 0.3) 100%
+                    );
                     border: 2px solid #f44336;
                     color: #ffcdd2;
                     box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
@@ -945,7 +1037,11 @@ select {
                 }
 
                 &.tie {
-                    background: linear-gradient(135deg, rgba(158, 158, 158, 0.3) 0%, rgba(97, 97, 97, 0.3) 100%);
+                    background: linear-gradient(
+                        135deg,
+                        rgba(158, 158, 158, 0.3) 0%,
+                        rgba(97, 97, 97, 0.3) 100%
+                    );
                     border: 2px solid #9e9e9e;
                     color: #e0e0e0;
                     box-shadow: 0 2px 8px rgba(158, 158, 158, 0.4);
@@ -956,7 +1052,11 @@ select {
                 }
 
                 &.counterattack-win {
-                    background: linear-gradient(135deg, rgba(33, 150, 243, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%);
+                    background: linear-gradient(
+                        135deg,
+                        rgba(33, 150, 243, 0.3) 0%,
+                        rgba(25, 118, 210, 0.3) 100%
+                    );
                     border: 2px solid #2196f3;
                     color: #e3f2fd;
                     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
@@ -996,7 +1096,11 @@ select {
                 }
 
                 &.counterattack-damage {
-                    background: linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(25, 118, 210, 0.2) 100%);
+                    background: linear-gradient(
+                        135deg,
+                        rgba(33, 150, 243, 0.2) 0%,
+                        rgba(25, 118, 210, 0.2) 100%
+                    );
                     border: 2px solid #2196f3;
                     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 
@@ -1010,12 +1114,15 @@ select {
                     }
                 }
             }
-
         }
 
         &.counterattack-result {
             .defense-comparison {
-                background: linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(44, 16, 16, 0.15) 100%);
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 0, 0, 0.15) 0%,
+                    rgba(44, 16, 16, 0.15) 100%
+                );
                 border: 2px solid #444;
                 box-shadow: 0 2px 8px rgba(26, 23, 51, 0.2);
 
@@ -1232,24 +1339,84 @@ select {
                 }
 
                 &.defend-button {
-                    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+                    background: linear-gradient(
+                        135deg,
+                        #2196f3 0%,
+                        #1976d2 100%
+                    );
                     color: #fff;
                     border-color: #1565c0;
 
                     &:hover {
-                        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+                        background: linear-gradient(
+                            135deg,
+                            #1976d2 0%,
+                            #1565c0 100%
+                        );
                         box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
                         transform: translateY(-2px);
                     }
                 }
 
                 &.counter-attack-button {
-                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+                    background: linear-gradient(
+                        135deg,
+                        #f44336 0%,
+                        #d32f2f 100%
+                    );
                     color: #fff;
                     border-color: #c62828;
 
                     &:hover {
-                        background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+                        background: linear-gradient(
+                            135deg,
+                            #d32f2f 0%,
+                            #c62828 100%
+                        );
+                        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+                        transform: translateY(-2px);
+                    }
+                }
+
+                &.cyber-defend-button {
+                    background: linear-gradient(
+                        135deg,
+                        #2196f3 0%,
+                        #1976d2 100%
+                    );
+                    color: #fff;
+                    border-color: #1565c0;
+                    height: auto;
+                    padding: 2px 8px;
+
+                    &:hover {
+                        background: linear-gradient(
+                            135deg,
+                            #1976d2 0%,
+                            #1565c0 100%
+                        );
+                        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+                        transform: translateY(-2px);
+                    }
+                }
+
+                &.cyber-counterattack-button {
+                    background: linear-gradient(
+                        135deg,
+                        #f44336 0%,
+                        #d32f2f 100%
+                    );
+                    color: #fff;
+                    border-color: #c62828;
+                    height: auto;
+                    padding: 2px 8px;
+
+                    &:hover {
+                        background: linear-gradient(
+                            135deg,
+                            #d32f2f 0%,
+                            #c62828 100%
+                        );
                         box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
                         transform: translateY(-2px);
                     }
@@ -1276,7 +1443,9 @@ select {
             text-transform: uppercase;
             margin-bottom: 6px;
 
-            i { margin-right: 4px; }
+            i {
+                margin-right: 4px;
+            }
         }
 
         .spell-distribution-controls {
@@ -1296,7 +1465,9 @@ select {
                 width: 70px;
                 flex-shrink: 0;
 
-                i { margin-right: 3px; }
+                i {
+                    margin-right: 3px;
+                }
             }
 
             .distribution-counter {
@@ -1356,14 +1527,17 @@ select {
         background: var(--sr-ui-bg-color-dark);
         border: 2px solid var(--sr-ui-color);
         border-radius: var(--sr-border-radius-xl);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.1);
-        
+        box-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.4),
+            0 0 40px rgba(0, 0, 0, 0.1);
+
         .window-header {
             background: var(--sr-ui-bg-color);
             border-bottom: 1px solid var(--sr-ui-border-color);
-            border-radius: var(--sr-border-radius-lg) var(--sr-border-radius-lg) 0 0;
+            border-radius: var(--sr-border-radius-lg) var(--sr-border-radius-lg)
+                0 0;
             padding: 4px 8px;
-            
+
             .window-title {
                 color: var(--sr-text-color-light);
                 font-family: var(--sr-font-title-alt);
@@ -1371,52 +1545,54 @@ select {
                 letter-spacing: 1px;
                 text-transform: uppercase;
             }
-            
+
             // Hide close button - counter should always be visible
             .close {
                 display: none;
             }
         }
-        
+
         .window-content {
             padding: 0;
             background: transparent;
         }
     }
-    
+
     .anarchy-counter-content {
         display: flex;
         flex-direction: column;
         align-items: center;
         padding: 8px;
     }
-    
+
     .anarchy-display {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        
+
         .anarchy-value {
             font-size: 2.5rem;
             font-weight: 900;
             color: var(--sr-text-color-flash);
-            text-shadow: 0 0 15px var(--sr-ui-color), 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-shadow:
+                0 0 15px var(--sr-ui-color),
+                0 2px 4px rgba(0, 0, 0, 0.5);
             font-family: var(--sr-font-title-alt);
             line-height: 1;
             min-width: 50px;
             text-align: center;
             transition: all 0.3s ease;
-            
+
             &.animate-increase {
                 animation: value-increase 0.5s ease-out;
             }
-            
+
             &.animate-decrease {
                 animation: value-decrease 0.5s ease-out;
             }
         }
-        
+
         button {
             width: 24px;
             height: 24px;
@@ -1431,13 +1607,13 @@ select {
             justify-content: center;
             transition: all 0.2s ease;
             padding: 0;
-            
+
             &:hover {
                 background: var(--sr-ui-bg-color-hover);
                 border-color: var(--sr-ui-border-color-active);
                 color: var(--sr-ui-color-active);
             }
-            
+
             &:active {
                 transform: scale(0.95);
             }

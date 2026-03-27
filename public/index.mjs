@@ -13978,6 +13978,145 @@ class SRA2System {
         if (attackerToken) dialog.targetToken = attackerToken;
         dialog.render(true);
       });
+      html.find(".cyber-defend-button").off("click");
+      html.find(".cyber-defend-button").on("click", async (event) => {
+        event.preventDefault();
+        const messageFlags = message.flags?.sra2;
+        if (!messageFlags) return;
+        const rollResult = messageFlags.rollResult;
+        const rollData = messageFlags.rollData;
+        if (!rollResult || !rollData) return;
+        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
+          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+          "Cyber-defend Attacker"
+        );
+        const actionsDiv = $(event.currentTarget).closest(".attack-actions");
+        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
+          {
+            actorUuid: actionsDiv.data("defender-uuid") ?? messageFlags.defenderUuid,
+            tokenUuid: actionsDiv.data("defender-token-uuid") ?? messageFlags.defenderTokenUuid,
+            actorId: actionsDiv.data("defender-id") ?? messageFlags.defenderId
+          },
+          "Cyber-defend Defender"
+        );
+        if (!defender) {
+          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+          return;
+        }
+        const defenderActorForRoll = defenderToken?.actor ?? defender;
+        const pirSkill = defenderActorForRoll.items.find((i) => i.type === "skill" && i.name === "Piratage");
+        const cyberSpec = defenderActorForRoll.items.find(
+          (i) => i.type === "specialization" && i.name === "Cybercombat" && i.system.linkedSkill === "Piratage"
+        );
+        const activeCyberdeck = defenderActorForRoll.items.find(
+          (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+        );
+        const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
+        const pirRating = pirSkill?.system?.rating ?? 0;
+        const skillLevel = pirRating + fw;
+        const specLevel = cyberSpec ? skillLevel + (cyberSpec.system?.rating ?? 0) : void 0;
+        const { getRRSources: getRRSources2 } = SheetHelpers;
+        const rrTarget = cyberSpec ? "Cybercombat" : "Piratage";
+        const rrItemType = cyberSpec ? "specialization" : "skill";
+        const rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
+        const defenderTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
+        const defenseRollData = {
+          skillName: "Piratage",
+          specName: cyberSpec ? "Cybercombat" : null,
+          linkedAttribute: "firewall",
+          skillLevel,
+          specLevel,
+          actorId: defenderActorForRoll.id,
+          actorUuid: defenderActorForRoll.uuid,
+          attackerTokenUuid: defenderTokenUuid,
+          defenderTokenUuid: originalAttackerTokenUuid,
+          rrList,
+          isDefend: true,
+          isCounterAttack: false,
+          attackRollResult: rollResult,
+          attackRollData: rollData
+        };
+        const { RollDialog: RollDialog2 } = applications;
+        const dialog = new RollDialog2(defenseRollData);
+        if (attackerToken) dialog.targetToken = attackerToken;
+        dialog.render(true);
+      });
+      html.find(".cyber-counterattack-button").off("click");
+      html.find(".cyber-counterattack-button").on("click", async (event) => {
+        event.preventDefault();
+        const messageFlags = message.flags?.sra2;
+        if (!messageFlags) return;
+        const rollResult = messageFlags.rollResult;
+        const rollData = messageFlags.rollData;
+        if (!rollResult || !rollData) return;
+        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
+          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+          "Cyber-counterattack Attacker"
+        );
+        const actionsDiv = $(event.currentTarget).closest(".attack-actions");
+        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
+          {
+            actorUuid: actionsDiv.data("defender-uuid") ?? messageFlags.defenderUuid,
+            tokenUuid: actionsDiv.data("defender-token-uuid") ?? messageFlags.defenderTokenUuid,
+            actorId: actionsDiv.data("defender-id") ?? messageFlags.defenderId
+          },
+          "Cyber-counterattack Defender"
+        );
+        if (!defender) {
+          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+          return;
+        }
+        const defenderActorForRoll = defenderToken?.actor ?? defender;
+        const pirSkill = defenderActorForRoll.items.find((i) => i.type === "skill" && i.name === "Piratage");
+        const cyberSpec = defenderActorForRoll.items.find(
+          (i) => i.type === "specialization" && i.name === "Cybercombat" && i.system.linkedSkill === "Piratage"
+        );
+        const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+        const pirRating = pirSkill?.system?.rating ?? 0;
+        const skillLevel = pirRating + volonte;
+        const specLevel = cyberSpec ? skillLevel + (cyberSpec.system?.rating ?? 0) : void 0;
+        const activeCyberdeck = defenderActorForRoll.items.find(
+          (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+        );
+        const attackValue = activeCyberdeck?.system?.attack ?? 1;
+        const { getRRSources: getRRSources2 } = SheetHelpers;
+        const rrTarget = cyberSpec ? "Cybercombat" : "Piratage";
+        const rrItemType = cyberSpec ? "specialization" : "skill";
+        const rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
+        const counterAttackerTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
+        const cyberCounterRollData = {
+          itemType: "cyberdeck-attack",
+          itemName: activeCyberdeck?.name ?? "",
+          itemId: activeCyberdeck?.id,
+          damageValue: attackValue.toString(),
+          damageType: "matrix",
+          skillName: "Piratage",
+          specName: cyberSpec ? "Cybercombat" : null,
+          linkedAttribute: "willpower",
+          skillLevel,
+          specLevel,
+          actorId: defenderActorForRoll.id,
+          actorUuid: defenderActorForRoll.uuid,
+          attackerTokenUuid: counterAttackerTokenUuid,
+          defenderTokenUuid: originalAttackerTokenUuid,
+          rrList,
+          isDefend: false,
+          isCounterAttack: true,
+          attackRollResult: rollResult,
+          attackRollData: rollData,
+          linkedAttackSkill: "Piratage",
+          linkedAttackSpecialization: cyberSpec ? "Cybercombat" : null,
+          linkedDefenseSkill: "Piratage",
+          linkedDefenseSpecialization: cyberSpec ? "Cybercombat" : null,
+          meleeRange: "ok"
+        };
+        const { RollDialog: RollDialog2 } = applications;
+        const dialog = new RollDialog2(cyberCounterRollData);
+        if (attackerToken) dialog.targetToken = attackerToken;
+        dialog.render(true);
+      });
     });
     Hooks.on("getTokenHUDOptions", (_hud, buttons, token) => {
       const actor = token.actor;

@@ -489,6 +489,19 @@
             <span class="defender-name">{{this.name}}</span>
         </div>
         <div class="attack-actions-buttons">
+            {{#if (eq ../rollData.itemType "cyberdeck-attack")}}
+            {{!-- Cybercombat decker vs decker: Défense (Piratage/Cybercombat + FW) ou Contre-attaque (Piratage/Cybercombat + Volonté) --}}
+            {{#if (gt ../rollResult.totalSuccesses 0)}}
+            <button type="button" class="cyber-defend-button"
+                    data-defender-token-uuid="{{this.tokenUuid}}">
+                <i class="fas fa-shield-alt"></i> {{localize "SRA2.COMBAT.CYBER_DEFEND"}}
+            </button>
+            {{/if}}
+            <button type="button" class="cyber-counterattack-button"
+                    data-defender-token-uuid="{{this.tokenUuid}}">
+                <i class="fas fa-laptop-code"></i> {{localize "SRA2.COMBAT.CYBER_COUNTERATTACK"}}
+            </button>
+            {{else}}
             {{#if (gt ../rollResult.totalSuccesses 0)}}
             <button type="button" class="defend-button"
                     data-defender-token-uuid="{{this.tokenUuid}}">
@@ -500,6 +513,7 @@
                     data-defender-token-uuid="{{this.tokenUuid}}">
                 <i class="fas fa-sword"></i> {{localize "SRA2.COMBAT.ATTACK"}}
             </button>
+            {{/if}}
             {{/if}}
         </div>
     </div>

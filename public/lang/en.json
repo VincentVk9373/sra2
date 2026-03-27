@@ -243,6 +243,8 @@
             "ATTACK": "Attack",
             "DEFENSE": "Defense",
             "DEFEND": "Defend",
+            "CYBER_DEFEND": "Cyber Defense",
+            "CYBER_COUNTERATTACK": "Cyber Counter-attack",
             "NO_DEFENSE": "No defense",
             "WAITING_FOR_DEFENSE": "{attacker} attacks {defender} with {successes} hits. Waiting for defense...",
             "DEFENSE_ROLL_TITLE": "{defender}'s Defense against {attacker}",
