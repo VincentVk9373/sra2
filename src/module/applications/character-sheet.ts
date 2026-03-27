@@ -224,7 +224,9 @@ export class CharacterSheet extends ActorSheet {
               weaponInfo: vehicleActor.system?.weaponInfo || '',
               calculatedCost: vehicleActor.system?.calculatedCost || 0,
               description: vehicleActor.system?.description || '',
-              level: vehicleLevel
+              level: vehicleLevel,
+              damage: vehicleActor.system?.damage || { light: [false, false], severe: [false], incapacitating: false },
+              damageThresholds: vehicleActor.system?.damageThresholds || { light: 0, severe: 0, incapacitating: 0 }
             },
             weapons: vehicleWeapons, // Add weapons array to vehicle
             hasSevereDamage: hasSevereDamage, // Add damage status for V2 template
@@ -245,11 +247,17 @@ export class CharacterSheet extends ActorSheet {
     // Enrich cyberdecks with damage thresholds
     const cyberdeckFeats = allFeats.filter((feat: any) => feat.system.featType === 'cyberdeck');
     cyberdeckFeats.forEach((cyberdeck: any) => {
-      const firewall = cyberdeck.system.firewall || 1;
+      const baseFirewall = cyberdeck.system.firewall || 1;
+      const firewallMalus = cyberdeck.system.firewallMalus || 0;
+      const effectiveFirewall = Math.max(0, baseFirewall - firewallMalus);
+      cyberdeck.effectiveFirewall = effectiveFirewall;
+      const baseAttack = cyberdeck.system.attack || 0;
+      const attackMalus = cyberdeck.system.attackMalus || 0;
+      cyberdeck.effectiveAttack = Math.max(0, baseAttack - attackMalus);
       cyberdeck.cyberdeckDamageThresholds = {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: effectiveFirewall,
+        severe: effectiveFirewall * 2,
+        incapacitating: effectiveFirewall * 3
       };
       // Calculate base light damage boxes (2, or 3 if cyberdeckBonusLightDamage is checked)
       const baseLightBoxes = (cyberdeck.system.cyberdeckBonusLightDamage === true) ? 3 : 2;
@@ -311,6 +319,38 @@ export class CharacterSheet extends ActorSheet {
       emerged: allFeats.filter((feat: any) => feat.system.featType === 'emerged'),
       complexForm: allFeats.filter((feat: any) => feat.system.featType === 'complex-form'),
     };
+
+    // Enrich cyberdecks with cyber attack dice pool (Piratage/Cybercombat + Volonté)
+    context.featsByType.cyberdeck = context.featsByType.cyberdeck.map((cyberdeck: any) => {
+      const cyberdeckSystem = cyberdeck.system as any;
+
+      // Find Piratage skill with Cybercombat specialization
+      const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+        this.actor,
+        'Spé : Cybercombat',
+        'Piratage',
+        { defaultAttribute: 'willpower' }
+      );
+
+      // Get cyberdeck's own RR list
+      const itemRRList = (cyberdeckSystem.rrList || []).map((rrEntry: any) => ({
+        ...rrEntry,
+        featName: cyberdeck.name
+      }));
+
+      // Calculate dice pool and RR
+      const poolResult = SheetHelpers.calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        itemRRList,
+        cyberdeck.name
+      );
+
+      cyberdeck.cyberAttackDicePool = poolResult.totalDicePool;
+      cyberdeck.cyberAttackRR = poolResult.totalRR;
+
+      return cyberdeck;
+    });
 
     // Enrich weapons with dice pool and RR calculations (for V2 template)
     context.featsByType.weapon = context.featsByType.weapon.map((weapon: any) => {
@@ -551,6 +591,12 @@ export class CharacterSheet extends ActorSheet {
 
     // Keep the feats array for backwards compatibility
     context.feats = allFeats;
+
+    // Flag for template: has matrix access (active cyberdeck or emerged/technomancer)
+    const hasActiveCyberdeck = context.featsByType.cyberdeck.some((cd: any) => cd.system.active === true);
+    const hasActiveEmerged = allFeats.some((f: any) => f.system.featType === 'emerged' && f.system.active === true);
+    context.hasActiveCyberdeck = hasActiveCyberdeck;
+    context.hasMatrixAccess = hasActiveCyberdeck || hasActiveEmerged;
 
     // Get bookmarked items (skills, specializations, weapons, spells)
     const bookmarkedItems = this.actor.items.filter((item: any) =>
@@ -797,8 +843,25 @@ export class CharacterSheet extends ActorSheet {
     html.find('input[name^="system.tempAnarchySpent"]').on('change', this._onTempAnarchyChange.bind(this));
     html.find('[data-action="add-temp-anarchy"]').on('click', this._onAddTempAnarchy.bind(this));
     
+    // Handle cyberdeck firewall malus buttons
+    html.find('[data-action="increase-fw-malus"]').on('click', this._onChangeFwMalus.bind(this, 1));
+    html.find('[data-action="decrease-fw-malus"]').on('click', this._onChangeFwMalus.bind(this, -1));
+
+    // Handle cyberdeck attack malus buttons
+    html.find('[data-action="increase-att-malus"]').on('click', this._onChangeAttMalus.bind(this, 1));
+    html.find('[data-action="decrease-att-malus"]').on('click', this._onChangeAttMalus.bind(this, -1));
+
+    // Handle cyberdeck connection lock toggle
+    html.find('[data-action="toggle-connection-lock"]').on('click', this._onToggleConnectionLock.bind(this));
+
     // Handle cyberdeck damage tracker checkboxes
     html.find('input[name*=".cyberdeckDamage."]').on('change', this._onCyberdeckDamageChange.bind(this));
+
+    // Handle vehicle damage tracker checkboxes
+    html.find('input[name^="vehicle-damage."]').on('change', this._onVehicleDamageChange.bind(this));
+
+    // Roll cyberdeck attack
+    html.find('[data-action="roll-cyberdeck-attack"]').on('click', this._onRollCyberdeckAttack.bind(this));
 
     // Roll weapon
     html.find('[data-action="roll-weapon"]').on('click', this._onRollWeapon.bind(this));
@@ -1890,6 +1953,64 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Handle cyberdeck damage tracker checkbox changes
    */
+  /**
+   * Handle firewall malus increase/decrease (from Acid ICE)
+   */
+  private async _onChangeFwMalus(delta: number, event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    const currentMalus = (item.system as any).firewallMalus || 0;
+    const baseFirewall = (item.system as any).firewall || 1;
+    const newMalus = Math.max(0, Math.min(baseFirewall, currentMalus + delta));
+
+    if (newMalus !== currentMalus) {
+      await item.update({ 'system.firewallMalus': newMalus } as any);
+    }
+  }
+
+  /**
+   * Handle cyberdeck attack malus change (from Blocker ICE)
+   */
+  private async _onChangeAttMalus(delta: number, event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    const currentMalus = (item.system as any).attackMalus || 0;
+    const baseAttack = (item.system as any).attack || 0;
+    const newMalus = Math.max(0, Math.min(baseAttack, currentMalus + delta));
+
+    if (newMalus !== currentMalus) {
+      await item.update({ 'system.attackMalus': newMalus } as any);
+    }
+  }
+
+  /**
+   * Handle toggling cyberdeck connection lock (Blaster/Glue ICE effect)
+   */
+  private async _onToggleConnectionLock(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    const current = (item.system as any).connectionLocked || false;
+    await item.update({ 'system.connectionLocked': !current } as any);
+  }
+
   private async _onCyberdeckDamageChange(event: Event): Promise<void> {
     event.stopPropagation(); // Prevent form auto-submit to avoid double update
     
@@ -1923,6 +2044,58 @@ export class CharacterSheet extends ActorSheet {
     } as any, { render: false });
     
     // Force re-render to update CSS classes in template
+    this.render(false);
+  }
+
+  /**
+   * Handle vehicle damage tracker checkbox changes
+   * Input name format: vehicle-damage.{uuid}.{light|severe|incapacitating}.{index?}
+   */
+  private async _onVehicleDamageChange(event: Event): Promise<void> {
+    event.stopPropagation();
+
+    const input = event.currentTarget as HTMLInputElement;
+    const name = input.name;
+    const checked = input.checked;
+
+    // Parse: vehicle-damage.{uuid}.{type}.{index?}
+    const match = name.match(/^vehicle-damage\.(.+)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+    if (!match) return;
+
+    const vehicleUuid = match[1];
+    const damageType = match[2] as 'light' | 'severe' | 'incapacitating';
+    const index = match[3] !== undefined ? parseInt(match[3], 10) : null;
+
+    // Load the vehicle actor
+    const vehicleActor = await fromUuid(vehicleUuid as any) as any;
+    if (!vehicleActor) return;
+
+    // Get current damage from source
+    const sourceDamage = vehicleActor._source?.system?.damage || vehicleActor.system?.damage || {
+      light: [false, false],
+      severe: [false],
+      incapacitating: false
+    };
+
+    const updatedDamage: any = {
+      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
+      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
+      incapacitating: typeof sourceDamage.incapacitating === 'boolean' ? sourceDamage.incapacitating : false
+    };
+
+    if (damageType === 'incapacitating') {
+      updatedDamage.incapacitating = checked;
+    } else if (index !== null) {
+      while (updatedDamage[damageType].length <= index) {
+        updatedDamage[damageType].push(false);
+      }
+      updatedDamage[damageType][index] = checked;
+    }
+
+    await vehicleActor.update({
+      'system.damage': updatedDamage
+    } as any);
+
     this.render(false);
   }
 
@@ -2099,11 +2272,17 @@ export class CharacterSheet extends ActorSheet {
         } as any;
         await this._onRollSpell(fakeEvent);
       } else if (featType === 'weapon') {
-        const fakeEvent = { 
-          preventDefault: () => {}, 
-          currentTarget: { dataset: { itemId: itemId } } 
+        const fakeEvent = {
+          preventDefault: () => {},
+          currentTarget: { dataset: { itemId: itemId } }
         } as any;
         await this._onRollWeapon(fakeEvent);
+      } else if (featType === 'cyberdeck') {
+        const fakeEvent = {
+          preventDefault: () => {},
+          currentTarget: { dataset: { itemId: itemId } }
+        } as any;
+        await this._onRollCyberdeckAttack(fakeEvent);
       }
     }
   }
@@ -2401,6 +2580,91 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Handle rolling a weapon
    */
+  /**
+   * Handle rolling a cyberdeck attack (Piratage/Cybercombat + Volonté)
+   */
+  private async _onRollCyberdeckAttack(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const itemId = element.dataset.itemId;
+
+    if (!itemId) {
+      console.error("SRA2 | No cyberdeck ID found");
+      return;
+    }
+
+    const cyberdeck = this.actor.items.get(itemId);
+    if (!cyberdeck || cyberdeck.type !== 'feat') return;
+
+    const cyberdeckSystem = cyberdeck.system as any;
+    const baseAttack = cyberdeckSystem.attack || 0;
+    const attackMalus = cyberdeckSystem.attackMalus || 0;
+    const attackValue = Math.max(0, baseAttack - attackMalus);
+
+    // Find Piratage skill with Cybercombat specialization
+    const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
+      this.actor,
+      'Spé : Cybercombat',
+      'Piratage',
+      { defaultAttribute: 'willpower' }
+    );
+
+    // Get cyberdeck's own RR list
+    const itemRRList = (cyberdeckSystem.rrList || []).map((rrEntry: any) => ({
+      ...rrEntry,
+      featName: cyberdeck.name
+    }));
+
+    const poolResult = SheetHelpers.calculateAttackPool(
+      this.actor,
+      skillSpecResult,
+      itemRRList,
+      cyberdeck.name || ''
+    );
+
+    DiceRoller.handleRollRequest({
+      itemType: 'cyberdeck-attack',
+      itemName: cyberdeck.name || '',
+      itemId: cyberdeck.id,
+      itemRating: cyberdeckSystem.rating || 0,
+      itemActive: cyberdeckSystem.active,
+
+      // Cybercombat uses Piratage (Cybercombat) + Volonté
+      linkedAttackSkill: 'Piratage',
+      linkedAttackSpecialization: 'Spé : Cybercombat',
+      linkedDefenseSkill: 'Piratage',
+      linkedDefenseSpecialization: 'Spé : Cybercombat',
+      linkedAttribute: skillSpecResult.linkedAttribute,
+
+      // Damage value = cyberdeck attack rating
+      damageValue: attackValue.toString(),
+      damageType: 'matrix',
+      meleeRange: 'ok',
+      shortRange: 'ok',
+      mediumRange: 'ok',
+      longRange: 'ok',
+
+      // Attack skill/spec
+      skillName: skillSpecResult.skillName,
+      skillLevel: skillSpecResult.skillLevel,
+      specName: skillSpecResult.specName,
+      specLevel: skillSpecResult.specLevel,
+
+      // Actor information
+      actorId: this.actor.id ?? undefined,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name || '',
+
+      // RR List
+      rrList: poolResult.allRRSources,
+
+      isSpellDirect: false,
+      isMagicRoll: false,
+      isHealingRoll: false,
+      isTechnomancerRoll: false,
+    });
+  }
+
   private async _onRollWeapon(event: Event): Promise<void> {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;

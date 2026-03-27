@@ -90,12 +90,22 @@ export function getDamageThresholds(
   // For characters
   if (damageType === 'biofeedback') {
     // Biofeedback: in RA → device resists with Firewall (matrix thresholds)
-    // In VR → character resists with Willpower (mental thresholds)
+    // In VR cold-sim/hot-sim → character resists with Willpower (mental thresholds)
+    // Biofeedback filter on active cyberdeck gives +1 to mental thresholds
     const connectionMode = defenderSystem.connectionMode || 'ar';
     if (connectionMode === 'ar' || connectionMode === 'offline') {
       return defenderSystem.damageThresholds?.matrix || { light: 0, severe: 0, incapacitating: 0 };
     }
-    return defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
+    const mentalThresholds = defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
+    const activeCyberdeck = defenderActor.items?.find((item: any) =>
+      item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
+    );
+    const biofeedbackFilterBonus = activeCyberdeck?.system?.cyberdeckBiofeedbackFilter ? 1 : 0;
+    return {
+      light: mentalThresholds.light + biofeedbackFilterBonus,
+      severe: (mentalThresholds.severe || 0) + biofeedbackFilterBonus,
+      incapacitating: mentalThresholds.incapacitating + biofeedbackFilterBonus
+    };
   }
 
   if (damageType === 'mental') {
@@ -638,24 +648,105 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
   if (!isVehicle && !isIce) {
     if (damageType === 'biofeedback') {
       // Biofeedback routing depends on connection mode:
-      // RA / cold-sim trodes → cyberdeck damage (treated as matrix damage on device)
-      // Cold-sim IND → character damage gauge (mental thresholds, stun)
-      // Hot-sim → character damage gauge (physical thresholds)
+      // Cold-sim / Hot-sim → character damage gauge, resisted with Willpower
+      // RA / offline → cyberdeck (device), resisted with Firewall
       const connectionMode = defenderSystem.connectionMode || 'ar';
-      if (connectionMode === 'ar' || connectionMode === 'offline') {
-        // In RA: biofeedback applies to device → treat as matrix damage
-        damageFieldName = 'matrixDamage';
-      } else {
-        // In VR (cold-sim or hot-sim): biofeedback applies to character
+      if (connectionMode === 'cold-sim' || connectionMode === 'hot-sim') {
+        // In VR with IND: biofeedback applies to character
         damageFieldName = 'damage';
+      } else {
+        // In RA/offline: biofeedback applies to cyberdeck (same as matrix damage)
+        // Route to active cyberdeck
+        const activeCyberdeck = defenderActor.items?.find((item: any) =>
+          item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
+        );
+        if (activeCyberdeck) {
+          // Reuse the matrix damage → cyberdeck routing below by changing damageType
+          damageType = 'matrix' as any;
+        } else {
+          damageFieldName = 'damage';
+        }
       }
-    } else if (damageType === 'matrix') {
+    }
+    if (damageType === 'matrix') {
       // Emerged characters: matrix damage becomes biofeedback (physical)
       const isEmerged = defenderSystem.isEmerged || false;
-      damageFieldName = isEmerged ? 'damage' : 'matrixDamage';
+      if (isEmerged) {
+        damageFieldName = 'damage';
+      } else {
+        // Matrix damage goes to active cyberdeck's cyberdeckDamage
+        const activeCyberdeck = defenderActor.items?.find((item: any) =>
+          item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
+        );
+        if (activeCyberdeck) {
+          // Apply damage directly to the cyberdeck item
+          const cyberdeckSystem = activeCyberdeck.system as any;
+          const baseFirewall = cyberdeckSystem.firewall || 1;
+          const firewallMalus = cyberdeckSystem.firewallMalus || 0;
+          const effectiveFirewall = Math.max(0, baseFirewall - firewallMalus);
+          const cyberdeckThresholds = {
+            light: effectiveFirewall,
+            severe: effectiveFirewall * 2,
+            incapacitating: effectiveFirewall * 3
+          };
+
+          const sourceCyberDamage = cyberdeckSystem.cyberdeckDamage || {
+            light: [false, false],
+            severe: [false],
+            incapacitating: false
+          };
+          const cyberDamage = {
+            light: Array.isArray(sourceCyberDamage.light) ? [...sourceCyberDamage.light] : [false, false],
+            severe: Array.isArray(sourceCyberDamage.severe) ? [...sourceCyberDamage.severe] : [false],
+            incapacitating: typeof sourceCyberDamage.incapacitating === 'boolean' ? sourceCyberDamage.incapacitating : false
+          };
+
+          let cyberWoundType = '';
+          let cyberOverflow = false;
+
+          if (damageValue > cyberdeckThresholds.incapacitating) {
+            cyberWoundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_INCAPACITATING');
+            cyberDamage.incapacitating = true;
+          } else if (damageValue > cyberdeckThresholds.severe) {
+            cyberWoundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_SEVERE');
+            if (!fillFirstEmptyBox(cyberDamage.severe)) {
+              cyberDamage.incapacitating = true;
+              cyberOverflow = true;
+            }
+          } else if (damageValue > cyberdeckThresholds.light) {
+            cyberWoundType = game.i18n!.localize('SRA2.COMBAT.DAMAGE_LIGHT');
+            if (!fillFirstEmptyBox(cyberDamage.light)) {
+              if (!fillFirstEmptyBox(cyberDamage.severe)) {
+                cyberDamage.incapacitating = true;
+              }
+              cyberOverflow = true;
+            }
+          } else {
+            ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', {
+              damage: `${damageValue} (en dessous du seuil)`,
+              target: defenderName
+            }));
+            return;
+          }
+
+          await activeCyberdeck.update({ 'system.cyberdeckDamage': cyberDamage } as any);
+
+          if (cyberDamage.incapacitating === true) {
+            ui.notifications?.error(game.i18n!.format('SRA2.COMBAT.NOW_INCAPACITATED', { target: `${defenderName} (Cyberdeck)` }));
+          } else {
+            ui.notifications?.info(game.i18n!.format('SRA2.COMBAT.DAMAGE_APPLIED', {
+              damage: cyberOverflow ? `${cyberWoundType} (débordement)` : cyberWoundType,
+              target: `${defenderName} (Cyberdeck)`
+            }));
+          }
+          return; // Damage applied to cyberdeck, don't continue to character gauge
+        }
+        // No active cyberdeck found, fall back to matrixDamage gauge
+        damageFieldName = 'matrixDamage';
+      }
     }
   }
-  
+
   // Deep copy of damage object with arrays from the appropriate gauge
   const sourceDamage = defenderSystem[damageFieldName] || {};
   let damage = {

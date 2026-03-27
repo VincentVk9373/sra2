@@ -596,6 +596,25 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         integer: true,
         label: "SRA2.FEATS.CYBERDECK.ATTACK"
       }),
+      firewallMalus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.CYBERDECK.FIREWALL_MALUS"
+      }),
+      attackMalus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.CYBERDECK.ATTACK_MALUS"
+      }),
+      connectionLocked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED"
+      }),
       cyberdeckDamage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -991,9 +1010,10 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
       calculatedCost = 2500;
     }
 
-    // Complex form: fixed cost of 5000
+    // Complex form: fixed cost of 5000 (no rating cost)
     if (featType === 'complex-form') {
-      calculatedCost = 5000;
+      (this as any).calculatedCost = 5000;
+      return;
     }
     
     // Armor: 2500 per armor value (not rating)

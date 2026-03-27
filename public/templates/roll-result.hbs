@@ -365,11 +365,113 @@
     </div>
     {{/if}}
 
+    <!-- Cyberdeck vs ICE auto-resolved result -->
+    {{#if isCyberdeckVsIce}}
+    {{#if defenseResult}}
+    <div class="defense-result">
+        <div class="defense-comparison">
+            <div class="comparison-header">
+                <i class="fas fa-balance-scale"></i> {{localize "SRA2.COMBAT.RESULT"}}
+            </div>
+            <div class="comparison-details">
+                <div class="comparison-item">
+                    <span class="comparison-label">{{localize "SRA2.COMBAT.ATTACK_SUCCESSES_LABEL"}}</span>
+                    <span class="comparison-value attack">{{defenseResult.attackSuccesses}}</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="comparison-label">{{localize "SRA2.COMBAT.ICE_THRESHOLD_LABEL"}}</span>
+                    <span class="comparison-value defense">{{defenseResult.defenseSuccesses}}</span>
+                </div>
+            </div>
+            {{#if defenseResult.isDraw}}
+            <div class="defense-outcome">
+                <i class="fas fa-equals"></i> {{localize "SRA2.COMBAT.DRAW"}}
+            </div>
+            {{else if defenseResult.attackFailed}}
+            <div class="defense-outcome failed">
+                <i class="fas fa-times-circle"></i> {{localize "SRA2.COMBAT.ATTACK_FAILED"}}
+            </div>
+            {{#if (gt defenseResult.iceCounterDamage 0)}}
+            <div class="calculated-damage">
+                <span class="damage-label">{{#if (eq defenseResult.iceDamageType "biofeedback")}}{{localize "SRA2.COMBAT.BIOFEEDBACK_DAMAGE_LABEL"}}{{else}}{{localize "SRA2.COMBAT.MATRIX_DAMAGE_LABEL"}}{{/if}}</span>
+                <span class="damage-value">{{defenseResult.iceCounterDamage}}</span>
+            </div>
+            <button type="button" class="apply-damage-button"
+                    data-damage="{{defenseResult.iceCounterDamage}}"
+                    data-target-name="{{defenseResult.originalAttackerName}}"
+                    data-target-uuid="{{defenseResult.originalAttackerUuid}}"
+                    data-attacker-uuid="{{defenseResult.defenderUuid}}"
+                    data-damage-type="{{defenseResult.iceDamageType}}">
+                <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.originalAttackerName}})
+            </button>
+            {{/if}}
+            {{#if (gt defenseResult.blockerAttackReduction 0)}}
+            <div class="ice-effect">
+                <i class="fas fa-shield-alt"></i> <strong>{{localize "SRA2.COMBAT.ATTACK_REDUCTION"}}</strong> : -{{defenseResult.blockerAttackReduction}}
+            </div>
+            <button type="button" class="apply-cyberdeck-malus-button"
+                    data-malus-type="attackMalus"
+                    data-malus-value="{{defenseResult.blockerAttackReduction}}"
+                    data-target-uuid="{{defenseResult.originalAttackerUuid}}"
+                    data-cyberdeck-item-id="{{defenseResult.cyberdeckItemId}}"
+                    data-target-name="{{defenseResult.originalAttackerName}}">
+                <i class="fas fa-minus-circle"></i> {{localize "SRA2.COMBAT.APPLY_ATTACK_REDUCTION"}} ({{defenseResult.originalAttackerName}})
+            </button>
+            {{/if}}
+            {{#if (gt defenseResult.acidFirewallReduction 0)}}
+            <div class="ice-effect">
+                <i class="fas fa-shield-alt"></i> <strong>{{localize "SRA2.COMBAT.FIREWALL_REDUCTION"}}</strong> : -{{defenseResult.acidFirewallReduction}}
+            </div>
+            <button type="button" class="apply-cyberdeck-malus-button"
+                    data-malus-type="firewallMalus"
+                    data-malus-value="{{defenseResult.acidFirewallReduction}}"
+                    data-target-uuid="{{defenseResult.originalAttackerUuid}}"
+                    data-cyberdeck-item-id="{{defenseResult.cyberdeckItemId}}"
+                    data-target-name="{{defenseResult.originalAttackerName}}">
+                <i class="fas fa-minus-circle"></i> {{localize "SRA2.COMBAT.APPLY_FIREWALL_REDUCTION"}} ({{defenseResult.originalAttackerName}})
+            </button>
+            {{/if}}
+            {{#if defenseResult.connectionLock}}
+            <div class="ice-effect">
+                <i class="fas fa-lock"></i> <strong>{{localize "SRA2.COMBAT.CONNECTION_LOCK"}}</strong>
+            </div>
+            <button type="button" class="apply-cyberdeck-malus-button"
+                    data-malus-type="connectionLocked"
+                    data-malus-value="1"
+                    data-target-uuid="{{defenseResult.originalAttackerUuid}}"
+                    data-cyberdeck-item-id="{{defenseResult.cyberdeckItemId}}"
+                    data-target-name="{{defenseResult.originalAttackerName}}">
+                <i class="fas fa-lock"></i> {{localize "SRA2.COMBAT.APPLY_CONNECTION_LOCK"}} ({{defenseResult.originalAttackerName}})
+            </button>
+            {{/if}}
+            {{else}}
+            <div class="defense-outcome success">
+                <i class="fas fa-check-circle"></i> {{localize "SRA2.COMBAT.ATTACK_SUCCESS"}}
+            </div>
+            <div class="calculated-damage">
+                <span class="damage-label">{{localize "SRA2.COMBAT.MATRIX_DAMAGE_LABEL"}}</span>
+                <span class="damage-value">{{defenseResult.calculatedDamage}}</span>
+            </div>
+            <button type="button" class="apply-damage-button"
+                    data-damage="{{defenseResult.calculatedDamage}}"
+                    data-target-name="{{defenseResult.defenderName}}"
+                    data-target-uuid="{{defenseResult.defenderUuid}}"
+                    data-attacker-uuid="{{defenseResult.originalAttackerUuid}}"
+                    data-damage-type="matrix">
+                <i class="fas fa-heart-broken"></i> {{localize "SRA2.COMBAT.APPLY_DAMAGE"}} ({{defenseResult.defenderName}})
+            </button>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
+    {{/if}}
+
     <!-- Attack Actions (for defender) — one section per targeted token -->
     {{#if isAttack}}
     {{#unless isDefend}}
     {{#unless isCounterAttack}}
     {{#unless isSpellDirect}}
+    {{#unless isCyberdeckVsIce}}
     {{#if defenders}}
     {{#each defenders}}
     <div class="attack-actions"
@@ -403,6 +505,7 @@
     </div>
     {{/each}}
     {{/if}}
+    {{/unless}}
     {{/unless}}
     {{/unless}}
     {{/unless}}

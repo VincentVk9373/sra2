@@ -546,8 +546,10 @@ export class FeatSheet extends ItemSheet {
    * Calculate cyberdeck damage thresholds based on firewall
    */
   private _calculateCyberdeckDamageThresholds(): any {
-    const firewall = (this.item.system as any).firewall || 1;
-    
+    const baseFirewall = (this.item.system as any).firewall || 1;
+    const firewallMalus = (this.item.system as any).firewallMalus || 0;
+    const firewall = Math.max(0, baseFirewall - firewallMalus);
+
     return {
       light: firewall,
       severe: firewall * 2,

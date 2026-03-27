@@ -223,6 +223,144 @@
                     </div>
                 </section>
                 {{/if}}
+                {{#if featsByType.cyberdeck}}
+                <section class="char-section">
+                    <header>
+                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</div>
+                        <div class="fa fa-dice-d6"></div>
+                        <div>RR</div>
+                    </header>
+                    <div class="char-section-row">
+                        <section>
+                            {{#each featsByType.cyberdeck}}
+                            <div class="cyberdeck-group {{#if this.system.cyberdeckDamage.incapacitating}}is-incapacitating{{/if}}">
+                            <div class="row feat-item cyberdeck {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
+                                <div class="name-wrapper">
+                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
+                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}</div>
+                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
+                                        <div class="context-menu-item" data-action="roll-cyberdeck-attack" data-item-id="{{this._id}}">
+                                            <i class="fas fa-dice-d6"></i> {{localize "SRA2.FEATS.CYBERDECK.CYBER_ATTACK"}}
+                                        </div>
+                                        <div class="context-menu-item" data-action="toggle-bookmark" data-item-id="{{this._id}}">
+                                            <i class="fas fa-star" style="{{#if this.system.bookmarked}}color: gold;{{/if}}"></i> {{#if this.system.bookmarked}}{{localize "SRA2.BOOKMARKS.REMOVE"}}{{else}}{{localize "SRA2.BOOKMARKS.ADD"}}{{/if}}
+                                        </div>
+                                        {{#if (ne this.system.active undefined)}}
+                                        <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
+                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
+                                        </div>
+                                        {{/if}}
+                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
+                                        </div>
+                                        <hr/>
+                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
+                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row skill-item" data-item-id="{{this._id}}">
+                                <div class="name-wrapper spe">
+                                    <div class="arrow fa fa-turn-up"></div>
+                                    <div class="name clickable" data-action="roll-cyberdeck-attack" data-item-id="{{this._id}}"
+                                        title="{{localize 'SRA2.FEATS.CYBERDECK.CYBER_ATTACK_HINT'}}">{{localize 'SRA2.FEATS.CYBERDECK.CYBER_ATTACK'}} | VD: {{this.effectiveAttack}}</div>
+                                </div>
+                                <div class="dice clickable" data-action="roll-cyberdeck-attack" data-item-id="{{this._id}}"
+                                    title="{{localize 'SRA2.SKILLS.ROLL'}}">
+                                    {{this.cyberAttackDicePool}} <div class="fa fa-dice-d6"></div>
+                                </div>
+                                <div class="rr">
+                                    {{this.cyberAttackRR}}
+                                </div>
+                            </div>
+                            {{#if this.system.cyberdeckBiofeedback}}
+                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.BIOFEEDBACK'}}</div></div></div>
+                            {{/if}}
+                            {{#if this.system.cyberdeckBiofeedbackFilter}}
+                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.BIOFEEDBACK_FILTER'}}</div></div></div>
+                            {{/if}}
+                            {{#if this.system.cyberdeckConnectionLock}}
+                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.CONNECTION_LOCK'}}</div></div></div>
+                            {{/if}}
+                            <div class="row feat-item cyberdeck-damage-row">
+                                <div class="damage-track cyberdeck-inline-damage">
+                                    <div class="damage-group light">
+                                        <span class="damage-letter">{{localize "SRA2.DAMAGE.LIGHT_SHORT"}}</span>
+                                        <div class="track-boxes">
+                                            {{#each this.system.cyberdeckDamage.light}}
+                                            <label class="track-box {{#if this}}checked{{/if}}">
+                                                <input type="checkbox" name="items.{{../_id}}.system.cyberdeckDamage.light.{{@index}}" {{#if this}}checked{{/if}} />
+                                                <span class="box-circle"></span>
+                                            </label>
+                                            {{/each}}
+                                        </div>
+                                    </div>
+                                    <div class="damage-group severe">
+                                        <span class="damage-letter">{{localize "SRA2.DAMAGE.SEVERE_SHORT"}}</span>
+                                        <div class="track-boxes">
+                                            {{#each this.system.cyberdeckDamage.severe}}
+                                            <label class="track-box {{#if this}}checked{{/if}}">
+                                                <input type="checkbox" name="items.{{../_id}}.system.cyberdeckDamage.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                                                <span class="box-circle"></span>
+                                            </label>
+                                            {{/each}}
+                                        </div>
+                                    </div>
+                                    <div class="damage-group incapacitating">
+                                        <span class="damage-letter">{{localize "SRA2.DAMAGE.INCAPACITATING_SHORT2"}}</span>
+                                        <div class="track-boxes">
+                                            <label class="track-box {{#if this.system.cyberdeckDamage.incapacitating}}checked{{/if}}">
+                                                <input type="checkbox" name="items.{{this._id}}.system.cyberdeckDamage.incapacitating" {{#if this.system.cyberdeckDamage.incapacitating}}checked{{/if}} />
+                                                <span class="box-circle"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row feat-item cyberdeck-fw-row">
+                                <div class="cyberdeck-stat-group" title="{{localize 'SRA2.FEATS.CYBERDECK.FIREWALL_MALUS_HINT'}}">
+                                    <span class="stat-label">FW</span>
+                                    <span class="stat-value {{#if (gt this.system.firewallMalus 0)}}has-malus{{/if}}">{{this.effectiveFirewall}}</span>
+                                    {{#if (gt this.system.firewallMalus 0)}}
+                                    <span class="stat-malus-indicator">(-{{this.system.firewallMalus}})</span>
+                                    {{/if}}
+                                    <button type="button" class="stat-btn" data-action="increase-fw-malus" data-item-id="{{this._id}}"><i class="fas fa-minus"></i></button>
+                                    <button type="button" class="stat-btn" data-action="decrease-fw-malus" data-item-id="{{this._id}}"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <div class="cyberdeck-stat-group" title="{{localize 'SRA2.FEATS.CYBERDECK.ATTACK_MALUS_HINT'}}">
+                                    <span class="stat-label att">{{localize "SRA2.FEATS.CYBERDECK.ATTACK_SHORT"}}</span>
+                                    <span class="stat-value {{#if (gt this.system.attackMalus 0)}}has-malus{{/if}}">{{this.effectiveAttack}}</span>
+                                    {{#if (gt this.system.attackMalus 0)}}
+                                    <span class="stat-malus-indicator">(-{{this.system.attackMalus}})</span>
+                                    {{/if}}
+                                    <button type="button" class="stat-btn" data-action="increase-att-malus" data-item-id="{{this._id}}"><i class="fas fa-minus"></i></button>
+                                    <button type="button" class="stat-btn" data-action="decrease-att-malus" data-item-id="{{this._id}}"><i class="fas fa-plus"></i></button>
+                                </div>
+                                {{#if (or (eq ../system.connectionMode "cold-sim") (eq ../system.connectionMode "hot-sim"))}}
+                                <div class="cyberdeck-lock-toggle clickable" data-action="toggle-connection-lock" data-item-id="{{this._id}}" title="{{localize 'SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED_HINT'}}">
+                                    {{#if this.system.connectionLocked}}
+                                    <span class="cyberdeck-lock-status cyberdeck-locked">{{localize "SRA2.FEATS.CYBERDECK.STATUS_LOCKED"}}</span>
+                                    <i class="fas fa-lock cyberdeck-locked"></i>
+                                    {{else}}
+                                    <span class="cyberdeck-lock-status cyberdeck-unlocked">{{localize "SRA2.FEATS.CYBERDECK.STATUS_UNLOCKED"}}</span>
+                                    <i class="fas fa-running cyberdeck-unlocked"></i>
+                                    {{/if}}
+                                </div>
+                                {{/if}}
+                            </div>
+                            </div>{{!-- close cyberdeck-group --}}
+                            {{#if ../advancedMode}}
+                            <div class="row advanced-info">
+                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
+                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
+                            </div>
+                            {{/if}}
+                            {{/each}}
+                        </section>
+                    </div>
+                </section>
+                {{/if}}
                 {{#if featsByType.spell}}
                 <section class="char-section">
                     <header>
@@ -668,6 +806,41 @@
                             </div>
                             {{/each}}
                             {{/if}}
+                            <div class="row feat-item cyberdeck-damage-row">
+                                <div class="damage-track cyberdeck-inline-damage">
+                                    <div class="damage-group light">
+                                        <span class="damage-letter">{{localize "SRA2.DAMAGE.LIGHT_SHORT"}}</span>
+                                        <div class="track-boxes">
+                                            {{#each this.system.damage.light}}
+                                            <label class="track-box {{#if this}}checked{{/if}}">
+                                                <input type="checkbox" name="vehicle-damage.{{../uuid}}.light.{{@index}}" {{#if this}}checked{{/if}} />
+                                                <span class="box-circle"></span>
+                                            </label>
+                                            {{/each}}
+                                        </div>
+                                    </div>
+                                    <div class="damage-group severe">
+                                        <span class="damage-letter">{{localize "SRA2.DAMAGE.SEVERE_SHORT"}}</span>
+                                        <div class="track-boxes">
+                                            {{#each this.system.damage.severe}}
+                                            <label class="track-box {{#if this}}checked{{/if}}">
+                                                <input type="checkbox" name="vehicle-damage.{{../uuid}}.severe.{{@index}}" {{#if this}}checked{{/if}} />
+                                                <span class="box-circle"></span>
+                                            </label>
+                                            {{/each}}
+                                        </div>
+                                    </div>
+                                    <div class="damage-group incapacitating">
+                                        <span class="damage-letter">{{localize "SRA2.DAMAGE.INCAPACITATING_SHORT2"}}</span>
+                                        <div class="track-boxes">
+                                            <label class="track-box {{#if this.system.damage.incapacitating}}checked{{/if}}">
+                                                <input type="checkbox" name="vehicle-damage.{{this.uuid}}.incapacitating" {{#if this.system.damage.incapacitating}}checked{{/if}} />
+                                                <span class="box-circle"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             {{/if}}
                             {{/each}}
                         </section>
@@ -859,54 +1032,6 @@
                                     </div>
                                 </div>
                             </div>
-                            {{#if ../advancedMode}}
-                            <div class="row advanced-info">
-                                <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
-                                <span class="advanced-cost">{{formatNumber this.system.calculatedCost}} ¥</span>
-                            </div>
-                            {{/if}}
-                            {{/each}}
-                        </section>
-                    </div>
-                </section>
-                {{/if}}
-                {{#if featsByType.cyberdeck}}
-                <section class="char-section">
-                    <header>
-                        <div>{{localize "SRA2.FEATS.FEAT_TYPE.CYBERDECK"}}</div>
-                    </header>
-                    <div class="char-section-row">
-                        <section>
-                            {{#each featsByType.cyberdeck}}
-                            <div class="row feat-item {{#unless this.system.active}}feat-inactive{{/unless}}" data-item-id="{{this._id}}">
-                                <div class="name-wrapper">
-                                    <div class="name {{#unless this.system.active}}feat-name-inactive{{/unless}}" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="feat"
-                                        title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">{{this.name}}</div>
-                                    <div class="context-menu" data-item-id="{{this._id}}" data-item-type="feat">
-                                        {{#if (ne this.system.active undefined)}}
-                                        <div class="context-menu-item" data-action="toggle-active" data-item-id="{{this._id}}">
-                                            <i class="fas {{#if this.system.active}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if this.system.active}}{{localize "SRA2.COMMON.DEACTIVATE"}}{{else}}{{localize "SRA2.COMMON.ACTIVATE"}}{{/if}}
-                                        </div>
-                                        {{/if}}
-                                        <div class="context-menu-item" data-action="edit-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-edit"></i> {{localize "SRA2.COMMON.EDIT"}}
-                                        </div>
-                                        <hr/>
-                                        <div class="context-menu-item delete" data-action="delete-skill" data-item-id="{{this._id}}">
-                                            <i class="fas fa-trash"></i> {{localize "SRA2.COMMON.DELETE"}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {{#if this.system.cyberdeckBiofeedback}}
-                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.BIOFEEDBACK'}}</div></div></div>
-                            {{/if}}
-                            {{#if this.system.cyberdeckBiofeedbackFilter}}
-                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.BIOFEEDBACK_FILTER'}}</div></div></div>
-                            {{/if}}
-                            {{#if this.system.cyberdeckConnectionLock}}
-                            <div class="row feat-item"><div class="name-wrapper spe"><div class="arrow fa fa-turn-up"></div><div class="name">{{localize 'SRA2.FEATS.CYBERDECK.CONNECTION_LOCK'}}</div></div></div>
-                            {{/if}}
                             {{#if ../advancedMode}}
                             <div class="row advanced-info">
                                 <span class="advanced-level">{{localize "SRA2.COMMON.LEVEL"}} {{this.system.rating}}</span>
@@ -1401,12 +1526,14 @@
                                         <td>{{system.damageThresholds.mental.severe}}</td>
                                         <td>{{system.damageThresholds.mental.incapacitating}}</td>
                                     </tr>
+                                    {{#if hasMatrixAccess}}
                                     <tr>
                                         <td class="threshold-label">{{localize "SRA2.ARMOR_THRESHOLDS.MATRIX"}}</td>
                                         <td>{{system.damageThresholds.matrix.light}}</td>
                                         <td>{{system.damageThresholds.matrix.severe}}</td>
                                         <td>{{system.damageThresholds.matrix.incapacitating}}</td>
                                     </tr>
+                                    {{/if}}
                                 </tbody>
                             </table>
                         </section>

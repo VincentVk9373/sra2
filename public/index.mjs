@@ -448,7 +448,11 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       const activeCyberdeck = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
       );
-      if (activeCyberdeck?.system) firewall = activeCyberdeck.system.firewall || 1;
+      if (activeCyberdeck?.system) {
+        const baseFirewall = activeCyberdeck.system.firewall || 1;
+        const firewallMalus = activeCyberdeck.system.firewallMalus || 0;
+        firewall = Math.max(0, baseFirewall - firewallMalus);
+      }
       const activeEmerged = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "emerged" && item.system.active === true
       );
@@ -480,9 +484,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
-        light: firewall + bonusMatrixThreshold,
-        severe: firewall * 2 + bonusMatrixThreshold,
-        incapacitating: firewall * 3 + bonusMatrixThreshold
+        light: firewall,
+        severe: firewall * 2,
+        incapacitating: firewall * 3
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -1268,6 +1272,25 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         integer: true,
         label: "SRA2.FEATS.CYBERDECK.ATTACK"
       }),
+      firewallMalus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.CYBERDECK.FIREWALL_MALUS"
+      }),
+      attackMalus: new fields.NumberField({
+        required: true,
+        initial: 0,
+        min: 0,
+        integer: true,
+        label: "SRA2.FEATS.CYBERDECK.ATTACK_MALUS"
+      }),
+      connectionLocked: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED"
+      }),
       cyberdeckDamage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -1650,7 +1673,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       calculatedCost = 2500;
     }
     if (featType === "complex-form") {
-      calculatedCost = 5e3;
+      this.calculatedCost = 5e3;
+      return;
     }
     if (featType === "armor") {
       const armorValue = this.armorValue || 0;
@@ -5909,7 +5933,7 @@ function buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, final
   };
 }
 async function createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult) {
-  const isAttack = rollData.itemType === "weapon" || rollData.itemType === "spell" || rollData.itemType === "complex-form" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
+  const isAttack = rollData.itemType === "weapon" || rollData.itemType === "spell" || rollData.itemType === "complex-form" || rollData.itemType === "cyberdeck-attack" || rollData.weaponType !== void 0 || (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
   const attackerTokenUuid = resolveTokenUuid(attackerToken, rollData.attackerTokenUuid);
   const finalAttackerUuid = resolveActorUuid(attackerToken, attacker);
   const firstEntry = defenders[0] ?? { actor: null, token: null };
@@ -5922,6 +5946,89 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
     defenseResult = buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     defenseResult = buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
+  }
+  let isCyberdeckVsIce = false;
+  if (rollData.itemType === "cyberdeck-attack" && !rollData.isDefend && !rollData.isCounterAttack) {
+    const defenderActor = defender?.actor || defender;
+    if (defenderActor?.type === "ice") {
+      isCyberdeckVsIce = true;
+      const iceSystem = defenderActor.system;
+      const iceThreshold = iceSystem.threshold || iceSystem.serverIndex || 1;
+      const attackSuccesses = rollResult.totalSuccesses;
+      const damageValueStr = rollData.damageValue || "0";
+      const damageValue = parseInt(damageValueStr) || 0;
+      const attackerName = attackerToken?.name || attacker?.name || "Decker";
+      const iceName = defenderToken?.name || defenderToken?.document?.name || defender?.name || "ICE";
+      const iceType = iceSystem.iceType || "";
+      const iceDamageValue = iceSystem.damageValue || 0;
+      const iceDamageType = iceType === "black" ? "biofeedback" : "matrix";
+      if (attackSuccesses > iceThreshold) {
+        const netSuccesses = attackSuccesses - iceThreshold;
+        defenseResult = {
+          attackSuccesses,
+          defenseSuccesses: iceThreshold,
+          calculatedDamage: damageValue + netSuccesses,
+          attackFailed: false,
+          isDraw: false,
+          originalAttackerName: attackerName,
+          defenderName: iceName,
+          originalAttackerUuid: finalAttackerUuid,
+          defenderUuid: finalDefenderUuid,
+          isIceAttack: false,
+          damageType: "matrix",
+          iceWins: false,
+          iceDamageValue: 0,
+          iceDamageType
+        };
+      } else if (attackSuccesses === iceThreshold) {
+        defenseResult = {
+          attackSuccesses,
+          defenseSuccesses: iceThreshold,
+          calculatedDamage: 0,
+          attackFailed: false,
+          isDraw: true,
+          originalAttackerName: attackerName,
+          defenderName: iceName,
+          originalAttackerUuid: finalAttackerUuid,
+          defenderUuid: finalDefenderUuid,
+          isIceAttack: false,
+          damageType: "matrix",
+          iceWins: false,
+          iceDamageValue: 0,
+          iceDamageType
+        };
+      } else {
+        const iceNetSuccesses = iceThreshold - attackSuccesses;
+        const iceCounterDamage = iceDamageValue > 0 ? iceDamageValue + iceNetSuccesses : 0;
+        const blockerAttackReduction = iceType === "blocker" ? iceNetSuccesses : 0;
+        const acidFirewallReduction = iceType === "acid" ? iceNetSuccesses : 0;
+        defenseResult = {
+          attackSuccesses,
+          defenseSuccesses: iceThreshold,
+          calculatedDamage: 0,
+          attackFailed: true,
+          isDraw: false,
+          originalAttackerName: attackerName,
+          defenderName: iceName,
+          originalAttackerUuid: finalAttackerUuid,
+          defenderUuid: finalDefenderUuid,
+          isIceAttack: false,
+          damageType: "matrix",
+          // ICE counter-damage: ICE inflicts damage to decker
+          iceWins: true,
+          iceCounterDamage,
+          iceDamageType,
+          iceType,
+          // Blocker/Acid effects
+          blockerAttackReduction,
+          acidFirewallReduction,
+          // Blaster/Glue: connection lock
+          connectionLock: iceType === "blaster" || iceType === "glue",
+          // Store cyberdeck item ID for applying malus/lock
+          cyberdeckItemId: rollData.itemId
+        };
+      }
+    }
   }
   const defendersData = defenders.map(({ actor: a, token: t }) => {
     const tokenUuid = resolveTokenUuid(t, void 0);
@@ -5961,7 +6068,8 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
     attackerTokenUuid,
     defenderTokenUuid,
     isSpellDirect: rollData.isSpellDirect || false,
-    isSpellIndirect: isAttack && rollData.spellType === "indirect" && !rollData.isSpellDirect
+    isSpellIndirect: isAttack && rollData.spellType === "indirect" && !rollData.isSpellDirect,
+    isCyberdeckVsIce
   };
   const html = await renderTemplate("systems/sra2/templates/roll-result.hbs", templateData);
   const messageData = {
@@ -6152,7 +6260,16 @@ function getDamageThresholds(defenderActor, damageType = "physical") {
     if (connectionMode === "ar" || connectionMode === "offline") {
       return defenderSystem.damageThresholds?.matrix || { light: 0, severe: 0, incapacitating: 0 };
     }
-    return defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
+    const mentalThresholds = defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
+    const activeCyberdeck = defenderActor.items?.find(
+      (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
+    );
+    const biofeedbackFilterBonus = activeCyberdeck?.system?.cyberdeckBiofeedbackFilter ? 1 : 0;
+    return {
+      light: mentalThresholds.light + biofeedbackFilterBonus,
+      severe: (mentalThresholds.severe || 0) + biofeedbackFilterBonus,
+      incapacitating: mentalThresholds.incapacitating + biofeedbackFilterBonus
+    };
   }
   if (damageType === "mental") {
     return defenderSystem.damageThresholds?.mental || {
@@ -6401,14 +6518,86 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
   if (!isVehicle && !isIce) {
     if (damageType === "biofeedback") {
       const connectionMode = defenderSystem.connectionMode || "ar";
-      if (connectionMode === "ar" || connectionMode === "offline") {
-        damageFieldName = "matrixDamage";
-      } else {
+      if (connectionMode === "cold-sim" || connectionMode === "hot-sim") {
         damageFieldName = "damage";
+      } else {
+        const activeCyberdeck = defenderActor.items?.find(
+          (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
+        );
+        if (activeCyberdeck) {
+          damageType = "matrix";
+        } else {
+          damageFieldName = "damage";
+        }
       }
-    } else if (damageType === "matrix") {
+    }
+    if (damageType === "matrix") {
       const isEmerged = defenderSystem.isEmerged || false;
-      damageFieldName = isEmerged ? "damage" : "matrixDamage";
+      if (isEmerged) {
+        damageFieldName = "damage";
+      } else {
+        const activeCyberdeck = defenderActor.items?.find(
+          (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
+        );
+        if (activeCyberdeck) {
+          const cyberdeckSystem = activeCyberdeck.system;
+          const baseFirewall = cyberdeckSystem.firewall || 1;
+          const firewallMalus = cyberdeckSystem.firewallMalus || 0;
+          const effectiveFirewall = Math.max(0, baseFirewall - firewallMalus);
+          const cyberdeckThresholds = {
+            light: effectiveFirewall,
+            severe: effectiveFirewall * 2,
+            incapacitating: effectiveFirewall * 3
+          };
+          const sourceCyberDamage = cyberdeckSystem.cyberdeckDamage || {
+            light: [false, false],
+            severe: [false],
+            incapacitating: false
+          };
+          const cyberDamage = {
+            light: Array.isArray(sourceCyberDamage.light) ? [...sourceCyberDamage.light] : [false, false],
+            severe: Array.isArray(sourceCyberDamage.severe) ? [...sourceCyberDamage.severe] : [false],
+            incapacitating: typeof sourceCyberDamage.incapacitating === "boolean" ? sourceCyberDamage.incapacitating : false
+          };
+          let cyberWoundType = "";
+          let cyberOverflow = false;
+          if (damageValue > cyberdeckThresholds.incapacitating) {
+            cyberWoundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_INCAPACITATING");
+            cyberDamage.incapacitating = true;
+          } else if (damageValue > cyberdeckThresholds.severe) {
+            cyberWoundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_SEVERE");
+            if (!fillFirstEmptyBox(cyberDamage.severe)) {
+              cyberDamage.incapacitating = true;
+              cyberOverflow = true;
+            }
+          } else if (damageValue > cyberdeckThresholds.light) {
+            cyberWoundType = game.i18n.localize("SRA2.COMBAT.DAMAGE_LIGHT");
+            if (!fillFirstEmptyBox(cyberDamage.light)) {
+              if (!fillFirstEmptyBox(cyberDamage.severe)) {
+                cyberDamage.incapacitating = true;
+              }
+              cyberOverflow = true;
+            }
+          } else {
+            ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
+              damage: `${damageValue} (en dessous du seuil)`,
+              target: defenderName
+            }));
+            return;
+          }
+          await activeCyberdeck.update({ "system.cyberdeckDamage": cyberDamage });
+          if (cyberDamage.incapacitating === true) {
+            ui.notifications?.error(game.i18n.format("SRA2.COMBAT.NOW_INCAPACITATED", { target: `${defenderName} (Cyberdeck)` }));
+          } else {
+            ui.notifications?.info(game.i18n.format("SRA2.COMBAT.DAMAGE_APPLIED", {
+              damage: cyberOverflow ? `${cyberWoundType} (débordement)` : cyberWoundType,
+              target: `${defenderName} (Cyberdeck)`
+            }));
+          }
+          return;
+        }
+        damageFieldName = "matrixDamage";
+      }
     }
   }
   const sourceDamage = defenderSystem[damageFieldName] || {};
@@ -6717,7 +6906,9 @@ class CharacterSheet extends ActorSheet {
               weaponInfo: vehicleActor.system?.weaponInfo || "",
               calculatedCost: vehicleActor.system?.calculatedCost || 0,
               description: vehicleActor.system?.description || "",
-              level: vehicleLevel
+              level: vehicleLevel,
+              damage: vehicleActor.system?.damage || { light: [false, false], severe: [false], incapacitating: false },
+              damageThresholds: vehicleActor.system?.damageThresholds || { light: 0, severe: 0, incapacitating: 0 }
             },
             weapons: vehicleWeapons,
             // Add weapons array to vehicle
@@ -6738,11 +6929,17 @@ class CharacterSheet extends ActorSheet {
   _enrichFeatsByType(context, allFeats, linkedVehicles) {
     const cyberdeckFeats = allFeats.filter((feat) => feat.system.featType === "cyberdeck");
     cyberdeckFeats.forEach((cyberdeck) => {
-      const firewall = cyberdeck.system.firewall || 1;
+      const baseFirewall = cyberdeck.system.firewall || 1;
+      const firewallMalus = cyberdeck.system.firewallMalus || 0;
+      const effectiveFirewall = Math.max(0, baseFirewall - firewallMalus);
+      cyberdeck.effectiveFirewall = effectiveFirewall;
+      const baseAttack = cyberdeck.system.attack || 0;
+      const attackMalus = cyberdeck.system.attackMalus || 0;
+      cyberdeck.effectiveAttack = Math.max(0, baseAttack - attackMalus);
       cyberdeck.cyberdeckDamageThresholds = {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: effectiveFirewall,
+        severe: effectiveFirewall * 2,
+        incapacitating: effectiveFirewall * 3
       };
       const baseLightBoxes = cyberdeck.system.cyberdeckBonusLightDamage === true ? 3 : 2;
       if (!cyberdeck.system.cyberdeckDamage) {
@@ -6796,6 +6993,28 @@ class CharacterSheet extends ActorSheet {
       emerged: allFeats.filter((feat) => feat.system.featType === "emerged"),
       complexForm: allFeats.filter((feat) => feat.system.featType === "complex-form")
     };
+    context.featsByType.cyberdeck = context.featsByType.cyberdeck.map((cyberdeck) => {
+      const cyberdeckSystem = cyberdeck.system;
+      const skillSpecResult = findAttackSkillAndSpec(
+        this.actor,
+        "Spé : Cybercombat",
+        "Piratage",
+        { defaultAttribute: "willpower" }
+      );
+      const itemRRList = (cyberdeckSystem.rrList || []).map((rrEntry) => ({
+        ...rrEntry,
+        featName: cyberdeck.name
+      }));
+      const poolResult = calculateAttackPool(
+        this.actor,
+        skillSpecResult,
+        itemRRList,
+        cyberdeck.name
+      );
+      cyberdeck.cyberAttackDicePool = poolResult.totalDicePool;
+      cyberdeck.cyberAttackRR = poolResult.totalRR;
+      return cyberdeck;
+    });
     context.featsByType.weapon = context.featsByType.weapon.map((weapon) => {
       const weaponSystem = weapon.system;
       const weaponType = weaponSystem.weaponType;
@@ -6961,6 +7180,10 @@ class CharacterSheet extends ActorSheet {
       return power;
     });
     context.feats = allFeats;
+    const hasActiveCyberdeck = context.featsByType.cyberdeck.some((cd) => cd.system.active === true);
+    const hasActiveEmerged = allFeats.some((f) => f.system.featType === "emerged" && f.system.active === true);
+    context.hasActiveCyberdeck = hasActiveCyberdeck;
+    context.hasMatrixAccess = hasActiveCyberdeck || hasActiveEmerged;
     const bookmarkedItems = this.actor.items.filter(
       (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true
     );
@@ -7087,7 +7310,14 @@ class CharacterSheet extends ActorSheet {
     html.find('input[name^="system.anarchySpent"]').on("change", this._onAnarchyChange.bind(this));
     html.find('input[name^="system.tempAnarchySpent"]').on("change", this._onTempAnarchyChange.bind(this));
     html.find('[data-action="add-temp-anarchy"]').on("click", this._onAddTempAnarchy.bind(this));
+    html.find('[data-action="increase-fw-malus"]').on("click", this._onChangeFwMalus.bind(this, 1));
+    html.find('[data-action="decrease-fw-malus"]').on("click", this._onChangeFwMalus.bind(this, -1));
+    html.find('[data-action="increase-att-malus"]').on("click", this._onChangeAttMalus.bind(this, 1));
+    html.find('[data-action="decrease-att-malus"]').on("click", this._onChangeAttMalus.bind(this, -1));
+    html.find('[data-action="toggle-connection-lock"]').on("click", this._onToggleConnectionLock.bind(this));
     html.find('input[name*=".cyberdeckDamage."]').on("change", this._onCyberdeckDamageChange.bind(this));
+    html.find('input[name^="vehicle-damage."]').on("change", this._onVehicleDamageChange.bind(this));
+    html.find('[data-action="roll-cyberdeck-attack"]').on("click", this._onRollCyberdeckAttack.bind(this));
     html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
     html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
     html.find('[data-action="roll-power"]').on("click", this._onRollPower.bind(this));
@@ -7937,6 +8167,53 @@ class CharacterSheet extends ActorSheet {
   /**
    * Handle cyberdeck damage tracker checkbox changes
    */
+  /**
+   * Handle firewall malus increase/decrease (from Acid ICE)
+   */
+  async _onChangeFwMalus(delta, event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    const currentMalus = item.system.firewallMalus || 0;
+    const baseFirewall = item.system.firewall || 1;
+    const newMalus = Math.max(0, Math.min(baseFirewall, currentMalus + delta));
+    if (newMalus !== currentMalus) {
+      await item.update({ "system.firewallMalus": newMalus });
+    }
+  }
+  /**
+   * Handle cyberdeck attack malus change (from Blocker ICE)
+   */
+  async _onChangeAttMalus(delta, event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    const currentMalus = item.system.attackMalus || 0;
+    const baseAttack = item.system.attack || 0;
+    const newMalus = Math.max(0, Math.min(baseAttack, currentMalus + delta));
+    if (newMalus !== currentMalus) {
+      await item.update({ "system.attackMalus": newMalus });
+    }
+  }
+  /**
+   * Handle toggling cyberdeck connection lock (Blaster/Glue ICE effect)
+   */
+  async _onToggleConnectionLock(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) return;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+    const current = item.system.connectionLocked || false;
+    await item.update({ "system.connectionLocked": !current });
+  }
   async _onCyberdeckDamageChange(event) {
     event.stopPropagation();
     const input = event.currentTarget;
@@ -7958,6 +8235,45 @@ class CharacterSheet extends ActorSheet {
     await item.update({
       "system.cyberdeckDamage": updatedDamage
     }, { render: false });
+    this.render(false);
+  }
+  /**
+   * Handle vehicle damage tracker checkbox changes
+   * Input name format: vehicle-damage.{uuid}.{light|severe|incapacitating}.{index?}
+   */
+  async _onVehicleDamageChange(event) {
+    event.stopPropagation();
+    const input = event.currentTarget;
+    const name = input.name;
+    const checked = input.checked;
+    const match = name.match(/^vehicle-damage\.(.+)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+    if (!match) return;
+    const vehicleUuid = match[1];
+    const damageType = match[2];
+    const index = match[3] !== void 0 ? parseInt(match[3], 10) : null;
+    const vehicleActor = await fromUuid(vehicleUuid);
+    if (!vehicleActor) return;
+    const sourceDamage = vehicleActor._source?.system?.damage || vehicleActor.system?.damage || {
+      light: [false, false],
+      severe: [false],
+      incapacitating: false
+    };
+    const updatedDamage = {
+      light: Array.isArray(sourceDamage.light) ? [...sourceDamage.light] : [false, false],
+      severe: Array.isArray(sourceDamage.severe) ? [...sourceDamage.severe] : [false],
+      incapacitating: typeof sourceDamage.incapacitating === "boolean" ? sourceDamage.incapacitating : false
+    };
+    if (damageType === "incapacitating") {
+      updatedDamage.incapacitating = checked;
+    } else if (index !== null) {
+      while (updatedDamage[damageType].length <= index) {
+        updatedDamage[damageType].push(false);
+      }
+      updatedDamage[damageType][index] = checked;
+    }
+    await vehicleActor.update({
+      "system.damage": updatedDamage
+    });
     this.render(false);
   }
   /**
@@ -8088,6 +8404,13 @@ class CharacterSheet extends ActorSheet {
           currentTarget: { dataset: { itemId } }
         };
         await this._onRollWeapon(fakeEvent);
+      } else if (featType === "cyberdeck") {
+        const fakeEvent = {
+          preventDefault: () => {
+          },
+          currentTarget: { dataset: { itemId } }
+        };
+        await this._onRollCyberdeckAttack(fakeEvent);
       }
     }
   }
@@ -8318,6 +8641,75 @@ class CharacterSheet extends ActorSheet {
   /**
    * Handle rolling a weapon
    */
+  /**
+   * Handle rolling a cyberdeck attack (Piratage/Cybercombat + Volonté)
+   */
+  async _onRollCyberdeckAttack(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+    if (!itemId) {
+      console.error("SRA2 | No cyberdeck ID found");
+      return;
+    }
+    const cyberdeck = this.actor.items.get(itemId);
+    if (!cyberdeck || cyberdeck.type !== "feat") return;
+    const cyberdeckSystem = cyberdeck.system;
+    const baseAttack = cyberdeckSystem.attack || 0;
+    const attackMalus = cyberdeckSystem.attackMalus || 0;
+    const attackValue = Math.max(0, baseAttack - attackMalus);
+    const skillSpecResult = findAttackSkillAndSpec(
+      this.actor,
+      "Spé : Cybercombat",
+      "Piratage",
+      { defaultAttribute: "willpower" }
+    );
+    const itemRRList = (cyberdeckSystem.rrList || []).map((rrEntry) => ({
+      ...rrEntry,
+      featName: cyberdeck.name
+    }));
+    const poolResult = calculateAttackPool(
+      this.actor,
+      skillSpecResult,
+      itemRRList,
+      cyberdeck.name || ""
+    );
+    handleRollRequest({
+      itemType: "cyberdeck-attack",
+      itemName: cyberdeck.name || "",
+      itemId: cyberdeck.id,
+      itemRating: cyberdeckSystem.rating || 0,
+      itemActive: cyberdeckSystem.active,
+      // Cybercombat uses Piratage (Cybercombat) + Volonté
+      linkedAttackSkill: "Piratage",
+      linkedAttackSpecialization: "Spé : Cybercombat",
+      linkedDefenseSkill: "Piratage",
+      linkedDefenseSpecialization: "Spé : Cybercombat",
+      linkedAttribute: skillSpecResult.linkedAttribute,
+      // Damage value = cyberdeck attack rating
+      damageValue: attackValue.toString(),
+      damageType: "matrix",
+      meleeRange: "ok",
+      shortRange: "ok",
+      mediumRange: "ok",
+      longRange: "ok",
+      // Attack skill/spec
+      skillName: skillSpecResult.skillName,
+      skillLevel: skillSpecResult.skillLevel,
+      specName: skillSpecResult.specName,
+      specLevel: skillSpecResult.specLevel,
+      // Actor information
+      actorId: this.actor.id ?? void 0,
+      actorUuid: this.actor.uuid,
+      actorName: this.actor.name || "",
+      // RR List
+      rrList: poolResult.allRRSources,
+      isSpellDirect: false,
+      isMagicRoll: false,
+      isHealingRoll: false,
+      isTechnomancerRoll: false
+    });
+  }
   async _onRollWeapon(event) {
     event.preventDefault();
     const element = event.currentTarget;
@@ -10332,7 +10724,9 @@ class FeatSheet extends ItemSheet {
    * Calculate cyberdeck damage thresholds based on firewall
    */
   _calculateCyberdeckDamageThresholds() {
-    const firewall = this.item.system.firewall || 1;
+    const baseFirewall = this.item.system.firewall || 1;
+    const firewallMalus = this.item.system.firewallMalus || 0;
+    const firewall = Math.max(0, baseFirewall - firewallMalus);
     return {
       light: firewall,
       severe: firewall * 2,
@@ -13354,6 +13748,41 @@ class SRA2System {
           ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.DAMAGE_APPLY_ERROR"));
         } finally {
           setTimeout(() => button.prop("disabled", false), DELAYS.BUTTON_REENABLE);
+        }
+      });
+      html.find(".apply-cyberdeck-malus-button").off("click");
+      html.find(".apply-cyberdeck-malus-button").on("click", async (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const button = $(event.currentTarget);
+        if (button.prop("disabled")) return;
+        const targetUuid = button.data("target-uuid");
+        const cyberdeckItemId = button.data("cyberdeck-item-id");
+        const malusType = button.data("malus-type");
+        const malusValue = parseInt(button.data("malus-value")) || 0;
+        const targetName = button.data("target-name");
+        if (!targetUuid || !cyberdeckItemId || malusValue <= 0) return;
+        button.prop("disabled", true);
+        try {
+          const actor = await fromUuid(targetUuid);
+          const actorObj = actor?.actor || actor;
+          if (!actorObj) return;
+          const cyberdeck = actorObj.items?.get(cyberdeckItemId);
+          if (!cyberdeck) return;
+          if (malusType === "connectionLocked") {
+            await cyberdeck.update({ "system.connectionLocked": true });
+            ui.notifications?.info(`${targetName}: ${game.i18n.localize("SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED")}`);
+          } else {
+            const currentMalus = cyberdeck.system[malusType] || 0;
+            const newMalus = currentMalus + malusValue;
+            await cyberdeck.update({ [`system.${malusType}`]: newMalus });
+            const malusLabel = malusType === "attackMalus" ? game.i18n.localize("SRA2.FEATS.CYBERDECK.ATTACK") : game.i18n.localize("SRA2.FEATS.CYBERDECK.FIREWALL");
+            ui.notifications?.info(`${targetName}: ${malusLabel} -${malusValue}`);
+          }
+        } catch (error) {
+          console.error("Error applying cyberdeck malus:", error);
+        } finally {
+          setTimeout(() => button.prop("disabled", false), 1e3);
         }
       });
       html.find(".spell-dist-btn").off("click");

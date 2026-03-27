@@ -885,6 +885,54 @@ export class SRA2System {
         }
       });
 
+      // Apply cyberdeck malus (blocker/acid ICE effects)
+      html.find('.apply-cyberdeck-malus-button').off('click');
+      html.find('.apply-cyberdeck-malus-button').on('click', async (event: any) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const button = $(event.currentTarget);
+        if (button.prop('disabled')) return;
+
+        const targetUuid = button.data('target-uuid');
+        const cyberdeckItemId = button.data('cyberdeck-item-id');
+        const malusType = button.data('malus-type'); // 'attackMalus' or 'firewallMalus'
+        const malusValue = parseInt(button.data('malus-value')) || 0;
+        const targetName = button.data('target-name');
+
+        if (!targetUuid || !cyberdeckItemId || malusValue <= 0) return;
+
+        button.prop('disabled', true);
+
+        try {
+          const actor = await fromUuid(targetUuid as any) as any;
+          const actorObj = actor?.actor || actor;
+          if (!actorObj) return;
+
+          const cyberdeck = actorObj.items?.get(cyberdeckItemId);
+          if (!cyberdeck) return;
+
+          if (malusType === 'connectionLocked') {
+            await cyberdeck.update({ 'system.connectionLocked': true } as any);
+            ui.notifications?.info(`${targetName}: ${game.i18n!.localize('SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED')}`);
+          } else {
+            const currentMalus = (cyberdeck.system as any)[malusType] || 0;
+            const newMalus = currentMalus + malusValue;
+
+            await cyberdeck.update({ [`system.${malusType}`]: newMalus } as any);
+
+            const malusLabel = malusType === 'attackMalus'
+              ? game.i18n!.localize('SRA2.FEATS.CYBERDECK.ATTACK')
+              : game.i18n!.localize('SRA2.FEATS.CYBERDECK.FIREWALL');
+            ui.notifications?.info(`${targetName}: ${malusLabel} -${malusValue}`);
+          }
+        } catch (error) {
+          console.error('Error applying cyberdeck malus:', error);
+        } finally {
+          setTimeout(() => button.prop('disabled', false), 1000);
+        }
+      });
+
       // Spell success distribution handlers
       html.find('.spell-dist-btn').off('click');
       html.find('.spell-dist-btn').on('click', (event: any) => {

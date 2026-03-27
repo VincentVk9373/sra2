@@ -401,7 +401,11 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       const activeCyberdeck = parent.items.find((item: any) =>
         item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
       );
-      if (activeCyberdeck?.system) firewall = activeCyberdeck.system.firewall || 1;
+      if (activeCyberdeck?.system) {
+        const baseFirewall = activeCyberdeck.system.firewall || 1;
+        const firewallMalus = activeCyberdeck.system.firewallMalus || 0;
+        firewall = Math.max(0, baseFirewall - firewallMalus);
+      }
 
       // Check for active emerged feat (technomancer virtual persona)
       const activeEmerged = parent.items.find((item: any) =>
@@ -437,9 +441,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
-        light: firewall + bonusMatrixThreshold,
-        severe: (firewall * 2) + bonusMatrixThreshold,
-        incapacitating: (firewall * 3) + bonusMatrixThreshold
+        light: firewall,
+        severe: firewall * 2,
+        incapacitating: firewall * 3
       }
     };
 

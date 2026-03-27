@@ -690,6 +690,7 @@ async function createRollChatMessage(
   const isAttack = rollData.itemType === 'weapon' ||
                    rollData.itemType === 'spell' ||
                    rollData.itemType === 'complex-form' ||
+                   rollData.itemType === 'cyberdeck-attack' ||
                    rollData.weaponType !== undefined ||
                    (rollData.meleeRange || rollData.shortRange || rollData.mediumRange || rollData.longRange);
 
@@ -709,6 +710,99 @@ async function createRollChatMessage(
     defenseResult = buildDefenseResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
   } else if (rollData.isCounterAttack && rollData.attackRollResult && rollData.attackRollData) {
     defenseResult = buildCounterAttackResult(rollData, rollResult, finalAttackerUuid, finalDefenderUuid, attacker, defender, attackerToken, defenderToken);
+  }
+
+  // Auto-resolve cyberdeck-attack vs ICE: ICE uses server index as fixed defense successes
+  let isCyberdeckVsIce = false;
+  if (rollData.itemType === 'cyberdeck-attack' && !rollData.isDefend && !rollData.isCounterAttack) {
+    const defenderActor = defender?.actor || defender;
+    if (defenderActor?.type === 'ice') {
+      isCyberdeckVsIce = true;
+      const iceSystem = defenderActor.system as any;
+      const iceThreshold = iceSystem.threshold || iceSystem.serverIndex || 1;
+      const attackSuccesses = rollResult.totalSuccesses;
+      const damageValueStr = rollData.damageValue || '0';
+      const damageValue = parseInt(damageValueStr) || 0;
+
+      const attackerName = attackerToken?.name || attacker?.name || 'Decker';
+      const iceName = defenderToken?.name || defenderToken?.document?.name || defender?.name || 'ICE';
+      const iceType = iceSystem.iceType || '';
+      const iceDamageValue = iceSystem.damageValue || 0;
+      // Black ICE deals biofeedback, others deal matrix damage
+      const iceDamageType = iceType === 'black' ? 'biofeedback' : 'matrix';
+
+      if (attackSuccesses > iceThreshold) {
+        // Decker wins: inflict damage to ICE
+        const netSuccesses = attackSuccesses - iceThreshold;
+        defenseResult = {
+          attackSuccesses,
+          defenseSuccesses: iceThreshold,
+          calculatedDamage: damageValue + netSuccesses,
+          attackFailed: false,
+          isDraw: false,
+          originalAttackerName: attackerName,
+          defenderName: iceName,
+          originalAttackerUuid: finalAttackerUuid,
+          defenderUuid: finalDefenderUuid,
+          isIceAttack: false,
+          damageType: 'matrix',
+          iceWins: false,
+          iceDamageValue: 0,
+          iceDamageType: iceDamageType
+        };
+      } else if (attackSuccesses === iceThreshold) {
+        // Draw: no damage either way
+        defenseResult = {
+          attackSuccesses,
+          defenseSuccesses: iceThreshold,
+          calculatedDamage: 0,
+          attackFailed: false,
+          isDraw: true,
+          originalAttackerName: attackerName,
+          defenderName: iceName,
+          originalAttackerUuid: finalAttackerUuid,
+          defenderUuid: finalDefenderUuid,
+          isIceAttack: false,
+          damageType: 'matrix',
+          iceWins: false,
+          iceDamageValue: 0,
+          iceDamageType: iceDamageType
+        };
+      } else {
+        // ICE wins: calculate net successes and effects based on ICE type
+        const iceNetSuccesses = iceThreshold - attackSuccesses;
+        const iceCounterDamage = iceDamageValue > 0 ? iceDamageValue + iceNetSuccesses : 0;
+        // Blocker: reduces attack by 1 per net success
+        const blockerAttackReduction = iceType === 'blocker' ? iceNetSuccesses : 0;
+        // Acid: reduces firewall by 1 per net success
+        const acidFirewallReduction = iceType === 'acid' ? iceNetSuccesses : 0;
+        defenseResult = {
+          attackSuccesses,
+          defenseSuccesses: iceThreshold,
+          calculatedDamage: 0,
+          attackFailed: true,
+          isDraw: false,
+          originalAttackerName: attackerName,
+          defenderName: iceName,
+          originalAttackerUuid: finalAttackerUuid,
+          defenderUuid: finalDefenderUuid,
+          isIceAttack: false,
+          damageType: 'matrix',
+          // ICE counter-damage: ICE inflicts damage to decker
+          iceWins: true,
+          iceCounterDamage: iceCounterDamage,
+          iceDamageType: iceDamageType,
+          iceType: iceType,
+          // Blocker/Acid effects
+          blockerAttackReduction: blockerAttackReduction,
+          acidFirewallReduction: acidFirewallReduction,
+          // Blaster/Glue: connection lock
+          connectionLock: iceType === 'blaster' || iceType === 'glue',
+          // Store cyberdeck item ID for applying malus/lock
+          cyberdeckItemId: rollData.itemId
+        };
+      }
+    }
   }
 
   // Build per-defender data for the template (one entry per canvas target)
@@ -753,6 +847,7 @@ async function createRollChatMessage(
     defenderTokenUuid,
     isSpellDirect:   rollData.isSpellDirect || false,
     isSpellIndirect: isAttack && rollData.spellType === 'indirect' && !rollData.isSpellDirect,
+    isCyberdeckVsIce: isCyberdeckVsIce,
   };
 
   const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);

@@ -728,6 +728,22 @@
             }
 
             .char-section-row {
+                /* Cyberdeck incapacitating - strikethrough all rows */
+                .cyberdeck-group.is-incapacitating {
+                    .name-wrapper .name,
+                    .name-wrapper.spe .name {
+                        text-decoration: line-through;
+                        font-style: italic;
+                        opacity: 0.6;
+                    }
+                }
+
+                .cyberdeck-group {
+                    .spe {
+                        height: 21px;
+                    }
+                }
+
                 .row {
                     font-weight: bold;
                     display: grid;
@@ -1066,6 +1082,7 @@
             .connection-mode-effects {
                 /* display: flex; */
                 flex-wrap: wrap;
+                flex-direction: column;
                 gap: 0.3rem;
                 margin-top: 0.3rem;
                 display: flex;
@@ -1878,5 +1895,279 @@
 
     &:hover {
         background: rgba(155, 89, 182, 0.2) !important;
+    }
+}
+
+/* Cyberdeck firewall / attack stats row */
+.cyberdeck-fw-row {
+    display: flex !important;
+    padding: 2px 0px !important;
+    gap: 1rem;
+
+    button {
+        i {
+            margin-top: 4px !important;
+            margin-right: 0px !important;
+        }
+    }
+
+    .cyberdeck-stat-group {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #00d4ff;
+
+            &.att {
+                color: #ff6b35;
+            }
+        }
+
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            min-width: 14px;
+            text-align: center;
+
+            &.has-malus {
+                color: #ff6b35;
+            }
+        }
+
+        .stat-malus-indicator {
+            font-size: 0.75rem;
+            color: #ff4757;
+            font-weight: 600;
+        }
+
+        .stat-btn {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            margin: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #00d4ff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+
+            &:hover {
+                background: rgba(0, 212, 255, 0.15);
+                border-color: #00d4ff;
+            }
+        }
+    }
+}
+
+/* Cyberdeck connection lock indicator */
+.cyberdeck-lock-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-left: 0.3rem;
+
+    .cyberdeck-locked {
+        color: #ff1744;
+        font-size: 1rem;
+        filter: drop-shadow(0 0 4px rgba(255, 23, 68, 0.8));
+        animation: lock-glow 1.5s ease-in-out infinite;
+    }
+
+    .cyberdeck-unlocked {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+
+    .cyberdeck-lock-status {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-right: 4px;
+    }
+
+    &:hover {
+        .cyberdeck-locked {
+            filter: drop-shadow(0 0 8px rgba(255, 23, 68, 1));
+        }
+
+        .cyberdeck-unlocked {
+            color: #69f0ae;
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes lock-glow {
+    0%,
+    100% {
+        filter: drop-shadow(0 0 3px rgba(255, 23, 68, 0.6));
+    }
+    50% {
+        filter: drop-shadow(0 0 8px rgba(255, 23, 68, 1));
+    }
+}
+
+/* Cyberdeck inline damage tracker on character sheet */
+.cyberdeck-damage-row {
+    display: flex !important;
+    padding: 2px 0px !important;
+
+    .cyberdeck-inline-damage {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+
+        .damage-group {
+            display: flex;
+            align-items: center;
+
+            .track-boxes {
+                display: flex;
+                align-items: center;
+                gap: 0;
+
+                .track-box {
+                    position: relative;
+                    width: 20px;
+                    height: 20px;
+                    margin: 0;
+                    padding: 0;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    input[type="checkbox"] {
+                        position: absolute;
+                        opacity: 0;
+                        width: 100%;
+                        height: 100%;
+                        margin: 0;
+                        cursor: pointer;
+                        z-index: 2;
+                    }
+
+                    .box-circle {
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: rgba(255, 255, 255, 0.05);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.2s;
+                        position: relative;
+                        z-index: 1;
+                    }
+                }
+            }
+
+            .damage-letter {
+                font-size: 0.75rem;
+                font-weight: 700;
+                margin-right: 2px;
+                white-space: nowrap;
+            }
+
+            &.light .damage-letter {
+                color: #ffd700;
+            }
+
+            &.severe .damage-letter {
+                color: #ff6b35;
+            }
+
+            &.incapacitating .damage-letter {
+                color: #c44569;
+            }
+
+            &.light .track-box {
+                .box-circle {
+                    border: 2px solid rgba(255, 215, 0, 0.5);
+                }
+
+                input:checked + .box-circle,
+                &.checked .box-circle {
+                    background: #ffd700;
+                    border-color: #ffd700;
+                    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+
+                    &::after {
+                        content: "";
+                        width: 8px;
+                        height: 8px;
+                        background: #fff;
+                        border-radius: 50%;
+                        position: absolute;
+                    }
+                }
+
+                &:hover .box-circle {
+                    border-color: #ffd700;
+                }
+            }
+
+            &.severe .track-box {
+                .box-circle {
+                    border: 2px solid rgba(255, 107, 53, 0.5);
+                }
+
+                input:checked + .box-circle,
+                &.checked .box-circle {
+                    background: #ff6b35;
+                    border-color: #ff6b35;
+                    box-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+
+                    &::after {
+                        content: "";
+                        width: 8px;
+                        height: 8px;
+                        background: #fff;
+                        border-radius: 50%;
+                        position: absolute;
+                    }
+                }
+
+                &:hover .box-circle {
+                    border-color: #ff6b35;
+                }
+            }
+
+            &.incapacitating .track-box {
+                .box-circle {
+                    border: 2px solid rgba(196, 69, 105, 0.5);
+                }
+
+                input:checked + .box-circle,
+                &.checked .box-circle {
+                    background: #c44569;
+                    border-color: #c44569;
+                    box-shadow: 0 0 8px rgba(196, 69, 105, 0.6);
+
+                    &::after {
+                        content: "";
+                        width: 8px;
+                        height: 8px;
+                        background: #fff;
+                        border-radius: 50%;
+                        position: absolute;
+                    }
+                }
+
+                &:hover .box-circle {
+                    border-color: #c44569;
+                }
+            }
+        }
     }
 }
