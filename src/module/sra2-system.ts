@@ -933,45 +933,6 @@ export class SRA2System {
         }
       });
 
-      // Spell success distribution handlers
-      html.find('.spell-dist-btn').off('click');
-      html.find('.spell-dist-btn').on('click', (event: any) => {
-        event.preventDefault();
-        const btn = $(event.currentTarget);
-        const target = btn.data('target') as 'damage' | 'zone';
-        const dist = btn.closest('.spell-distribution');
-        const total = parseInt(dist.data('total-successes') as string) || 0;
-        let dmg = parseInt(dist.data('damage-successes') as string) || 0;
-        let zone = parseInt(dist.data('zone-successes') as string) || 0;
-
-        if (btn.hasClass('spell-dist-plus')) {
-          if (target === 'damage' && dmg < total) { dmg++; zone--; }
-          else if (target === 'zone' && zone < total) { zone++; dmg--; }
-        } else {
-          if (target === 'damage' && dmg > 0) { dmg--; zone++; }
-          else if (target === 'zone' && zone > 0) { zone--; dmg++; }
-        }
-
-        dist.data('damage-successes', dmg);
-        dist.data('zone-successes', zone);
-        dist.find('.spell-damage-count').text(dmg);
-        dist.find('.spell-zone-count').text(zone);
-        dist.find('.spell-zone-meters').text(zone * 3);
-
-        // For direct spells: also update the displayed final damage and apply button
-        const directContainer = dist.closest('.spell-direct-damage');
-        if (directContainer.length) {
-          dist.find('.spell-damage-bonus').text(dmg);
-          directContainer.find('.spell-final-damage').text(dmg);
-          directContainer.find('.apply-damage-button').data('damage', dmg);
-          // Reflect on the damage attribute so the click handler reads the updated value
-          directContainer.find('.apply-damage-button').attr('data-damage', dmg.toString());
-        } else {
-          // Indirect spell: update damage successes display
-          dist.find('.spell-damage-bonus').text(dmg);
-        }
-      });
-
       // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
       html.off('mouseenter', '.defend-button, .counter-attack-button');
       html.on('mouseenter', '.defend-button, .counter-attack-button', (event: any) => {
@@ -1062,16 +1023,7 @@ export class SRA2System {
           isDefend:        true,
           isCounterAttack: false,
           attackRollResult: rollResult,
-          // For indirect spells: pass the player-allocated damage successes so buildDefenseResult uses them
-          attackRollData: (() => {
-            const spellDist = $(event.currentTarget).closest('.sra2-roll-result').find('.spell-distribution');
-            const allocatedDamage = spellDist.length
-              ? (parseInt(spellDist.data('damage-successes') as string) || undefined)
-              : undefined;
-            return allocatedDamage !== undefined
-              ? { ...rollData, damageSuccesses: allocatedDamage }
-              : rollData;
-          })(),
+          attackRollData:   rollData,
         };
 
         const { RollDialog } = applications;
@@ -1177,33 +1129,60 @@ export class SRA2System {
         if (!defender) { ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET')); return; }
         const defenderActorForRoll = defenderToken?.actor ?? defender;
 
-        // Build Piratage/Cybercombat + cyberdeck FW pool
-        const pirSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Piratage');
-        const cyberSpec = defenderActorForRoll.items.find((i: any) =>
-          i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
-        );
-        const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
-          i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
-        );
-        const fw = activeCyberdeck
-          ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0))
-          : 1;
-        const pirRating = (pirSkill?.system?.rating ?? 0);
-        const skillLevel = pirRating + fw;
-        const specLevel  = cyberSpec ? skillLevel + ((cyberSpec.system?.rating ?? 0)) : undefined;
+        // Build cybercombat defense pool: Skill + FW
+        // Technomancer: Technomancie/Formes complexes + Volonté (FW = Volonté)
+        // Decker: Piratage/Cybercombat + cyberdeck FW
+        const isTechno = defenderActorForRoll.items.some((i: any) => i.type === 'feat' && i.system.featType === 'emerged');
+        let skillName: string;
+        let specName: string | null;
+        let skillLevel: number;
+        let specLevel: number | undefined;
+        let rrTarget: string;
+        let rrItemType: string;
+
+        if (isTechno) {
+          const techSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Technomancie');
+          const cfSpec = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'specialization' && i.name === 'Formes complexes' && i.system.linkedSkill === 'Technomancie'
+          );
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const techRating = (techSkill?.system?.rating ?? 0);
+          skillName = 'Technomancie';
+          specName = cfSpec ? 'Formes complexes' : null;
+          skillLevel = techRating + volonte;
+          specLevel = cfSpec ? skillLevel + ((cfSpec.system?.rating ?? 0)) : undefined;
+          rrTarget = cfSpec ? 'Formes complexes' : 'Technomancie';
+          rrItemType = cfSpec ? 'specialization' : 'skill';
+        } else {
+          const pirSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Piratage');
+          const cyberSpec = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
+          );
+          const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
+          );
+          const fw = activeCyberdeck
+            ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0))
+            : 1;
+          const pirRating = (pirSkill?.system?.rating ?? 0);
+          skillName = 'Piratage';
+          specName = cyberSpec ? 'Cybercombat' : null;
+          skillLevel = pirRating + fw;
+          specLevel = cyberSpec ? skillLevel + ((cyberSpec.system?.rating ?? 0)) : undefined;
+          rrTarget = cyberSpec ? 'Cybercombat' : 'Piratage';
+          rrItemType = cyberSpec ? 'specialization' : 'skill';
+        }
 
         const { getRRSources } = SheetHelpers;
-        const rrTarget   = cyberSpec ? 'Cybercombat' : 'Piratage';
-        const rrItemType = cyberSpec ? 'specialization' : 'skill';
         const rrList     = getRRSources(defenderActorForRoll, rrItemType, rrTarget);
 
         const defenderTokenUuid         = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
         const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid  ?? messageFlags.attackerTokenUuid;
 
         const defenseRollData: any = {
-          skillName:       'Piratage',
-          specName:        cyberSpec ? 'Cybercombat' : null,
-          linkedAttribute: 'firewall',
+          skillName,
+          specName,
+          linkedAttribute: isTechno ? 'willpower' : 'firewall',
           skillLevel,
           specLevel,
           actorId:         defenderActorForRoll.id,
@@ -1252,38 +1231,70 @@ export class SRA2System {
         if (!defender) { ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET')); return; }
         const defenderActorForRoll = defenderToken?.actor ?? defender;
 
-        // Build Piratage/Cybercombat + Volonté pool (same formula as attack)
-        const pirSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Piratage');
-        const cyberSpec = defenderActorForRoll.items.find((i: any) =>
-          i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
-        );
-        const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
-        const pirRating = (pirSkill?.system?.rating ?? 0);
-        const skillLevel = pirRating + volonte;
-        const specLevel  = cyberSpec ? skillLevel + ((cyberSpec.system?.rating ?? 0)) : undefined;
+        // Build cybercombat counter-attack pool: Skill + Volonté
+        // Technomancer: Technomancie/Formes complexes + Résonance
+        // Decker: Piratage/Cybercombat + Volonté
+        const isTechno = defenderActorForRoll.items.some((i: any) => i.type === 'feat' && i.system.featType === 'emerged');
+        let caSkillName: string;
+        let caSpecName: string | null;
+        let skillLevel: number;
+        let specLevel: number | undefined;
+        let caRRTarget: string;
+        let caRRItemType: string;
+        let caItemType: string;
+        let attackValue: number;
 
-        // Active cyberdeck for damageValue
-        const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
-          i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
-        );
-        const attackValue = activeCyberdeck?.system?.attack ?? 1;
+        if (isTechno) {
+          const techSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Technomancie');
+          const cfSpec = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'specialization' && i.name === 'Formes complexes' && i.system.linkedSkill === 'Technomancie'
+          );
+          const resonance = (defenderActorForRoll.system as any)?.attributes?.resonance ?? (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const techRating = (techSkill?.system?.rating ?? 0);
+          caSkillName = 'Technomancie';
+          caSpecName = cfSpec ? 'Formes complexes' : null;
+          skillLevel = techRating + resonance;
+          specLevel = cfSpec ? skillLevel + ((cfSpec.system?.rating ?? 0)) : undefined;
+          caRRTarget = cfSpec ? 'Formes complexes' : 'Technomancie';
+          caRRItemType = cfSpec ? 'specialization' : 'skill';
+          caItemType = 'complex-form';
+          // Technomancer attack value: use Volonté as VD
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          attackValue = volonte;
+        } else {
+          const pirSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Piratage');
+          const cyberSpec = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
+          );
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const pirRating = (pirSkill?.system?.rating ?? 0);
+          caSkillName = 'Piratage';
+          caSpecName = cyberSpec ? 'Cybercombat' : null;
+          skillLevel = pirRating + volonte;
+          specLevel = cyberSpec ? skillLevel + ((cyberSpec.system?.rating ?? 0)) : undefined;
+          caRRTarget = cyberSpec ? 'Cybercombat' : 'Piratage';
+          caRRItemType = cyberSpec ? 'specialization' : 'skill';
+          caItemType = 'cyberdeck-attack';
+          const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
+          );
+          attackValue = activeCyberdeck?.system?.attack ?? 1;
+        }
 
         const { getRRSources } = SheetHelpers;
-        const rrTarget   = cyberSpec ? 'Cybercombat' : 'Piratage';
-        const rrItemType = cyberSpec ? 'specialization' : 'skill';
-        const rrList     = getRRSources(defenderActorForRoll, rrItemType, rrTarget);
+        const rrList     = getRRSources(defenderActorForRoll, caRRItemType, caRRTarget);
 
         const counterAttackerTokenUuid  = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
         const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid  ?? messageFlags.attackerTokenUuid;
 
         const cyberCounterRollData: any = {
-          itemType:        'cyberdeck-attack',
-          itemName:        activeCyberdeck?.name ?? '',
-          itemId:          activeCyberdeck?.id,
+          itemType:        caItemType,
+          itemName:        '',
+          itemId:          undefined,
           damageValue:     attackValue.toString(),
           damageType:      'matrix',
-          skillName:       'Piratage',
-          specName:        cyberSpec ? 'Cybercombat' : null,
+          skillName:       caSkillName,
+          specName:        caSpecName,
           linkedAttribute: 'willpower',
           skillLevel,
           specLevel,
@@ -1296,10 +1307,10 @@ export class SRA2System {
           isCounterAttack: true,
           attackRollResult: rollResult,
           attackRollData:   rollData,
-          linkedAttackSkill: 'Piratage',
-          linkedAttackSpecialization: cyberSpec ? 'Cybercombat' : null,
-          linkedDefenseSkill: 'Piratage',
-          linkedDefenseSpecialization: cyberSpec ? 'Cybercombat' : null,
+          linkedAttackSkill: caSkillName,
+          linkedAttackSpecialization: caSpecName,
+          linkedDefenseSkill: caSkillName,
+          linkedDefenseSpecialization: caSpecName,
           meleeRange: 'ok',
         };
 

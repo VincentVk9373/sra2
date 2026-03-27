@@ -1174,11 +1174,7 @@
         "NOTES_PLACEHOLDER": "Notes personnelles...",
         "GM_DESCRIPTION": "Notes MJ",
         "GM_DESCRIPTION_PLACEHOLDER": "Notes MJ (cachées aux joueurs)...",
-        "SPELL": {
-            "DISTRIBUTE_SUCCESSES": "Répartir les succès",
-            "DAMAGE_LABEL": "Dégâts",
-            "ZONE_LABEL": "Zone"
-        },
+        "SPELL": {},
         "CONFIRM": "Confirmer",
         "CANCEL": "Annuler",
         "COMMON": {

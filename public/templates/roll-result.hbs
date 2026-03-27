@@ -271,37 +271,9 @@
     {{/if}}
     {{/if}}
 
-    <!-- Direct Spell Damage (no defense) with success distribution — one per target -->
+    <!-- Direct Spell Damage (no defense) — one per target -->
     {{#if (and isAttack isSpellDirect (gt rollResult.totalSuccesses 0))}}
     {{#if defenders}}
-    <div class="spell-distribution"
-         data-total-successes="{{rollResult.totalSuccesses}}"
-         data-damage-successes="{{rollResult.totalSuccesses}}"
-         data-zone-successes="0">
-        <div class="spell-distribution-header">
-            <i class="fas fa-wand-magic-sparkles"></i> {{localize "SRA2.SPELL.DISTRIBUTE_SUCCESSES"}} ({{rollResult.totalSuccesses}})
-        </div>
-        <div class="spell-distribution-controls">
-            <div class="distribution-row">
-                <span class="distribution-label"><i class="fas fa-heart-broken"></i> {{localize "SRA2.SPELL.DAMAGE_LABEL"}}</span>
-                <div class="distribution-counter">
-                    <button type="button" class="spell-dist-btn spell-dist-minus" data-target="damage">−</button>
-                    <span class="spell-damage-count">{{rollResult.totalSuccesses}}</span>
-                    <button type="button" class="spell-dist-btn spell-dist-plus" data-target="damage">+</button>
-                </div>
-                <span class="distribution-result">+<span class="spell-damage-bonus">{{rollResult.totalSuccesses}}</span> VD</span>
-            </div>
-            <div class="distribution-row">
-                <span class="distribution-label"><i class="fas fa-circle-dot"></i> {{localize "SRA2.SPELL.ZONE_LABEL"}}</span>
-                <div class="distribution-counter">
-                    <button type="button" class="spell-dist-btn spell-dist-minus" data-target="zone">−</button>
-                    <span class="spell-zone-count">0</span>
-                    <button type="button" class="spell-dist-btn spell-dist-plus" data-target="zone">+</button>
-                </div>
-                <span class="distribution-result"><span class="spell-zone-meters">0</span>m</span>
-            </div>
-        </div>
-    </div>
     {{#each defenders}}
     <div class="spell-direct-damage"
          data-defender-uuid="{{this.uuid}}"
@@ -318,7 +290,7 @@
         </div>
         <div class="calculated-damage">
             <span class="damage-label">{{localize "SRA2.COMBAT.DAMAGE_MENTAL_LABEL"}}</span>
-            <span class="damage-value spell-final-damage">{{../rollResult.totalSuccesses}}</span>
+            <span class="damage-value">{{../rollResult.totalSuccesses}}</span>
         </div>
         <button type="button" class="apply-damage-button"
                 data-damage="{{../rollResult.totalSuccesses}}"
@@ -331,38 +303,6 @@
     </div>
     {{/each}}
     {{/if}}
-    {{/if}}
-
-    <!-- Indirect Spell success distribution (defense still possible) -->
-    {{#if (and isAttack isSpellIndirect (gt rollResult.totalSuccesses 0))}}
-    <div class="spell-distribution spell-indirect-distribution"
-         data-total-successes="{{rollResult.totalSuccesses}}"
-         data-damage-successes="{{rollResult.totalSuccesses}}"
-         data-zone-successes="0">
-        <div class="spell-distribution-header">
-            <i class="fas fa-wand-magic-sparkles"></i> {{localize "SRA2.SPELL.DISTRIBUTE_SUCCESSES"}} ({{rollResult.totalSuccesses}})
-        </div>
-        <div class="spell-distribution-controls">
-            <div class="distribution-row">
-                <span class="distribution-label"><i class="fas fa-heart-broken"></i> {{localize "SRA2.SPELL.DAMAGE_LABEL"}}</span>
-                <div class="distribution-counter">
-                    <button type="button" class="spell-dist-btn spell-dist-minus" data-target="damage">−</button>
-                    <span class="spell-damage-count">{{rollResult.totalSuccesses}}</span>
-                    <button type="button" class="spell-dist-btn spell-dist-plus" data-target="damage">+</button>
-                </div>
-                <span class="distribution-result">VD = {{rollData.damageValue}} + <span class="spell-damage-bonus">{{rollResult.totalSuccesses}}</span> net</span>
-            </div>
-            <div class="distribution-row">
-                <span class="distribution-label"><i class="fas fa-circle-dot"></i> {{localize "SRA2.SPELL.ZONE_LABEL"}}</span>
-                <div class="distribution-counter">
-                    <button type="button" class="spell-dist-btn spell-dist-minus" data-target="zone">−</button>
-                    <span class="spell-zone-count">0</span>
-                    <button type="button" class="spell-dist-btn spell-dist-plus" data-target="zone">+</button>
-                </div>
-                <span class="distribution-result"><span class="spell-zone-meters">0</span>m</span>
-            </div>
-        </div>
-    </div>
     {{/if}}
 
     <!-- Cyberdeck vs ICE auto-resolved result -->
@@ -489,8 +429,8 @@
             <span class="defender-name">{{this.name}}</span>
         </div>
         <div class="attack-actions-buttons">
-            {{#if (eq ../rollData.itemType "cyberdeck-attack")}}
-            {{!-- Cybercombat decker vs decker: Défense (Piratage/Cybercombat + FW) ou Contre-attaque (Piratage/Cybercombat + Volonté) --}}
+            {{#if (or (eq ../rollData.itemType "cyberdeck-attack") (eq ../rollData.itemType "complex-form"))}}
+            {{!-- Cybercombat decker/technomancer vs decker: Défense Cyber + Contre-attaque Cyber --}}
             {{#if (gt ../rollResult.totalSuccesses 0)}}
             <button type="button" class="cyber-defend-button"
                     data-defender-token-uuid="{{this.tokenUuid}}">

@@ -1174,11 +1174,7 @@
         "NOTES_PLACEHOLDER": "Personal notes...",
         "GM_DESCRIPTION": "GM Notes",
         "GM_DESCRIPTION_PLACEHOLDER": "GM notes (hidden from players)...",
-        "SPELL": {
-            "DISTRIBUTE_SUCCESSES": "Distribute successes",
-            "DAMAGE_LABEL": "Damage",
-            "ZONE_LABEL": "Zone"
-        },
+        "SPELL": {},
         "CONFIRM": "Confirm",
         "CANCEL": "Cancel",
         "COMMON": {

@@ -232,7 +232,6 @@ export interface RollRequestData {
   isMagicRoll?: boolean;  // True if this roll counts as a magic test (spell or isMagic weapon)
   isHealingRoll?: boolean;  // True if this roll is a healing spell (spellSpecializationType === 'health')
   isTechnomancerRoll?: boolean;  // True if this roll counts as a technomancer test (complex form)
-  damageSuccesses?: number;  // For indirect spells: how many successes were allocated to damage (rest goes to zone)
   
   // ICE-specific properties
   iceType?: string;  // Type of ICE (blaster, black, killer, etc.)
@@ -506,13 +505,7 @@ function buildDefenseResult(
   let calculatedDamage = 0;
   let attackFailed = false;
 
-  // For indirect spells with zone allocation: use player-allocated damage successes
-  // instead of total attack successes for both comparison and damage calculation
-  const isIndirectSpellWithAllocation = rollData.attackRollData!.spellType === 'indirect'
-    && rollData.attackRollData!.damageSuccesses !== undefined;
-  const effectiveAttackSuccesses = isIndirectSpellWithAllocation
-    ? rollData.attackRollData!.damageSuccesses!
-    : attackSuccesses;
+  const effectiveAttackSuccesses = attackSuccesses;
 
   const effectiveDefenseSuccesses = defenseSuccesses + (rollData.coverBonus || 0);
 
@@ -714,7 +707,8 @@ async function createRollChatMessage(
 
   // Auto-resolve cyberdeck-attack vs ICE: ICE uses server index as fixed defense successes
   let isCyberdeckVsIce = false;
-  if (rollData.itemType === 'cyberdeck-attack' && !rollData.isDefend && !rollData.isCounterAttack) {
+  const isCyberAttackType = rollData.itemType === 'cyberdeck-attack' || rollData.itemType === 'complex-form';
+  if (isCyberAttackType && !rollData.isDefend && !rollData.isCounterAttack) {
     const defenderActor = defender?.actor || defender;
     if (defenderActor?.type === 'ice') {
       isCyberdeckVsIce = true;
@@ -845,8 +839,8 @@ async function createRollChatMessage(
     defenderUuid:    finalDefenderUuid,
     attackerTokenUuid,
     defenderTokenUuid,
-    isSpellDirect:   rollData.isSpellDirect || false,
-    isSpellIndirect: isAttack && rollData.spellType === 'indirect' && !rollData.isSpellDirect,
+    isSpellDirect:   (rollData.isSpellDirect || false) && rollData.itemType !== 'complex-form',
+    isSpellIndirect: isAttack && rollData.spellType === 'indirect' && !rollData.isSpellDirect && rollData.itemType !== 'complex-form',
     isCyberdeckVsIce: isCyberdeckVsIce,
   };
 
