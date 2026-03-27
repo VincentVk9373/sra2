@@ -741,8 +741,8 @@ export async function applyDamage(defenderUuid: string, damageValue: number, def
           }
           return; // Damage applied to cyberdeck, don't continue to character gauge
         }
-        // No active cyberdeck found, fall back to matrixDamage gauge
-        damageFieldName = 'matrixDamage';
+        // No active cyberdeck found, fall back to character damage gauge
+        damageFieldName = 'damage';
       }
     }
   }

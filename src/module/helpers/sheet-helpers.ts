@@ -51,7 +51,7 @@ export function handleSheetUpdate(actor: any, formData: any): any {
   // Helper function to process damage data for a specific damage type
   // Handles the HTML checkbox bug: unchecked checkboxes are not sent in form data,
   // so when all boxes are unchecked the damage field is missing entirely.
-  const processDamageData = (damageType: 'damage' | 'magicDamage' | 'matrixDamage') => {
+  const processDamageData = (damageType: 'damage') => {
     const currentDamage = (actor.system as any)[damageType];
     if (!currentDamage) return; // Actor doesn't have this damage type
 
@@ -92,10 +92,7 @@ export function handleSheetUpdate(actor: any, formData: any): any {
       expandedData.system[damageType].incapacitating === 'on';
   };
 
-  // Process all three damage types
   processDamageData('damage');
-  processDamageData('magicDamage');
-  processDamageData('matrixDamage');
 
   return expandedData;
 }
@@ -907,12 +904,10 @@ export function parseDamageCheckboxChange(
 ): DamageUpdateResult | null {
   // Match patterns like:
   // - system.damage.light.0
-  // - system.magicDamage.light.0
-  // - system.matrixDamage.light.0
   // - system.damage.severe.0
   // - system.damage.incapacitating
   // - items.{itemId}.system.cyberdeckDamage.light.0
-  const match = inputName.match(/(?:damage|magicDamage|matrixDamage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+  const match = inputName.match(/(?:damage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
   if (!match) return null;
 
   const damageType = match[1] as 'light' | 'severe' | 'incapacitating';
@@ -943,20 +938,13 @@ export function parseDamageCheckboxChange(
 
 /**
  * Get the damage path prefix from an input name
- * Returns 'system.damage', 'system.magicDamage', 'system.matrixDamage' for character damage types,
+ * Returns 'system.damage' for character damage,
  * or 'system.cyberdeckDamage' for cyberdeck
  */
 export function getDamagePathFromInputName(inputName: string): string {
   if (inputName.includes('cyberdeckDamage')) {
-    // Extract the items.{itemId}.system.cyberdeckDamage part
     const match = inputName.match(/(items\.[^.]+\.system\.cyberdeckDamage)/);
     return match && match[1] ? match[1] : 'system.cyberdeckDamage';
-  }
-  if (inputName.includes('magicDamage')) {
-    return 'system.magicDamage';
-  }
-  if (inputName.includes('matrixDamage')) {
-    return 'system.matrixDamage';
   }
   return 'system.damage';
 }

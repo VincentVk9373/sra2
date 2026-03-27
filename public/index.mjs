@@ -172,46 +172,6 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
           initial: false
         })
       }),
-      magicDamage: new fields.SchemaField({
-        light: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false, false]
-        }),
-        severe: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false]
-        }),
-        incapacitating: new fields.BooleanField({
-          required: true,
-          initial: false
-        })
-      }),
-      matrixDamage: new fields.SchemaField({
-        light: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false, false]
-        }),
-        severe: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false]
-        }),
-        incapacitating: new fields.BooleanField({
-          required: true,
-          initial: false
-        })
-      }),
       anarchySpent: new fields.ArrayField(new fields.BooleanField({
         required: true,
         initial: false
@@ -417,8 +377,6 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     };
     const sourceSystem = parent?._source?.system || {};
     this.damage = ensureDamageArraySize(sourceSystem.damage || this.damage || {}, [false, false], [false]);
-    this.magicDamage = ensureDamageArraySize(sourceSystem.magicDamage || this.magicDamage || {}, [false, false], [false]);
-    this.matrixDamage = ensureDamageArraySize(sourceSystem.matrixDamage || this.matrixDamage || {}, [false, false], [false]);
     this.totalLightBoxes = totalLightBoxes;
     this.totalSevereBoxes = totalSevereBoxes;
     const totalAnarchy = 3 + anarchyBonus + featBonuses.bonusAnarchy;
@@ -2925,8 +2883,6 @@ function handleSheetUpdate(actor, formData) {
     expandedData.system[damageType].incapacitating = expandedData.system[damageType].incapacitating === true || expandedData.system[damageType].incapacitating === "true" || expandedData.system[damageType].incapacitating === "on";
   };
   processDamageData("damage");
-  processDamageData("magicDamage");
-  processDamageData("matrixDamage");
   return expandedData;
 }
 function calculateFinalDamageValue(damageValue, damageValueBonus, strength, allAttributes) {
@@ -3431,7 +3387,7 @@ function calculateFinalNumericDamageValue(damageValueStr, actorAttributes, damag
   return parsed.numericValue;
 }
 function parseDamageCheckboxChange(inputName, checked, currentDamage) {
-  const match = inputName.match(/(?:damage|magicDamage|matrixDamage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
+  const match = inputName.match(/(?:damage|cyberdeckDamage)\.(light|severe|incapacitating)(?:\.(\d+))?$/);
   if (!match) return null;
   const damageType = match[1];
   const index = match[2] ? parseInt(match[2], 10) : null;
@@ -3456,12 +3412,6 @@ function getDamagePathFromInputName(inputName) {
   if (inputName.includes("cyberdeckDamage")) {
     const match = inputName.match(/(items\.[^.]+\.system\.cyberdeckDamage)/);
     return match && match[1] ? match[1] : "system.cyberdeckDamage";
-  }
-  if (inputName.includes("magicDamage")) {
-    return "system.magicDamage";
-  }
-  if (inputName.includes("matrixDamage")) {
-    return "system.matrixDamage";
   }
   return "system.damage";
 }
@@ -6596,7 +6546,7 @@ async function applyDamage(defenderUuid, damageValue, defenderName, damageType =
           }
           return;
         }
-        damageFieldName = "matrixDamage";
+        damageFieldName = "damage";
       }
     }
   }
@@ -7367,6 +7317,9 @@ class CharacterSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   async _updateObject(_event, formData) {
+    if (typeof formData["system.resources.yens"] === "string") {
+      formData["system.resources.yens"] = parseInt(formData["system.resources.yens"].replace(/\s/g, "").replace(/,/g, "")) || 0;
+    }
     const expandedData = foundry.utils.expandObject(formData);
     if (expandedData.system?.damage !== void 0) {
       delete expandedData.system.damage;

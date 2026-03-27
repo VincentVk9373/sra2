@@ -92,46 +92,6 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
           initial: false
         })
       }),
-      magicDamage: new fields.SchemaField({
-        light: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false, false]
-        }),
-        severe: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false]
-        }),
-        incapacitating: new fields.BooleanField({
-          required: true,
-          initial: false
-        })
-      }),
-      matrixDamage: new fields.SchemaField({
-        light: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false, false]
-        }),
-        severe: new fields.ArrayField(new fields.BooleanField({
-          required: true,
-          initial: false
-        }), {
-          required: true,
-          initial: [false]
-        }),
-        incapacitating: new fields.BooleanField({
-          required: true,
-          initial: false
-        })
-      }),
       anarchySpent: new fields.ArrayField(new fields.BooleanField({
         required: true,
         initial: false
@@ -359,8 +319,6 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
     // Read from _source to preserve persisted values (Foundry v13)
     const sourceSystem = parent?._source?.system || {};
     (this as any).damage = ensureDamageArraySize(sourceSystem.damage || (this as any).damage || {}, [false, false], [false]);
-    (this as any).magicDamage = ensureDamageArraySize(sourceSystem.magicDamage || (this as any).magicDamage || {}, [false, false], [false]);
-    (this as any).matrixDamage = ensureDamageArraySize(sourceSystem.matrixDamage || (this as any).matrixDamage || {}, [false, false], [false]);
     (this as any).totalLightBoxes = totalLightBoxes;
     (this as any).totalSevereBoxes = totalSevereBoxes;
 

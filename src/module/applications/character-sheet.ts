@@ -944,6 +944,10 @@ export class CharacterSheet extends ActorSheet {
    * Handle form submission to update actor data
    */
   protected override async _updateObject(_event: Event, formData: any): Promise<any> {
+    // Parse formatted number fields (e.g. "12 500" → 12500)
+    if (typeof formData['system.resources.yens'] === 'string') {
+      formData['system.resources.yens'] = parseInt(formData['system.resources.yens'].replace(/\s/g, '').replace(/,/g, '')) || 0;
+    }
     // Expand form data (handles nested properties like "system.attribute.strength")
     const expandedData = foundry.utils.expandObject(formData) as any;
     // Don't process damage here - _onDamageChange handles it directly
