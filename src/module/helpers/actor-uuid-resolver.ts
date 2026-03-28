@@ -5,6 +5,8 @@
  * the repeated attacker/defender loading pattern used in the defense and
  * counter-attack chat-button handlers.
  */
+import { SKILL_SLUGS, SPEC_SLUGS } from '../config/constants.js';
+import * as SheetHelpers from './sheet-helpers.js';
 
 /**
  * Safely resolve a Foundry UUID string to a document (actor or token).
@@ -154,14 +156,19 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
   let finalSpec:  string | null = null;
 
   if (isIceAttack) {
-    finalSkill = 'Piratage';
-    const cyberSpec = defenderActor.items.find((i: any) =>
-      i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
-    );
-    if (cyberSpec) finalSpec = 'Cybercombat';
+    // ICE attack: defend with Hacking/Cybercombat (slug-based)
+    const pirSkill = SheetHelpers.findSkillBySlug(defenderActor, SKILL_SLUGS.HACKING);
+    finalSkill = pirSkill?.name || 'Piratage';
+    const cyberSpec = SheetHelpers.findSpecBySlug(defenderActor, SPEC_SLUGS.CYBERCOMBAT)
+      || defenderActor.items.find((i: any) =>
+        i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
+      );
+    if (cyberSpec) finalSpec = cyberSpec.name;
   } else if (attackSpec) {
+    // Melee counter: find spec linked to close combat
     const spec = defenderActor.items.find((i: any) =>
-      i.type === 'specialization' && i.name === attackSpec && i.system.linkedSkill === 'Combat rapproché'
+      i.type === 'specialization' && i.name === attackSpec &&
+      (i.system?.linkedSkillSlug === SKILL_SLUGS.CLOSE_COMBAT || i.system.linkedSkill === 'Combat rapproché')
     );
     if (spec) { finalSpec = spec.name; finalSkill = spec.system.linkedSkill; }
   }
@@ -178,7 +185,13 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
 
   if (!finalSkill) {
     const isMelee = rollData.meleeRange && rollData.meleeRange !== 'none';
-    finalSkill = isMelee ? 'Combat rapproché' : 'Athlétisme';
+    if (isMelee) {
+      const ccSkill = SheetHelpers.findSkillBySlug(defenderActor, SKILL_SLUGS.CLOSE_COMBAT);
+      finalSkill = ccSkill?.name || 'Combat rapproché';
+    } else {
+      const athSkill = SheetHelpers.findSkillBySlug(defenderActor, SKILL_SLUGS.ATHLETICS);
+      finalSkill = athSkill?.name || 'Athlétisme';
+    }
   }
 
   let skillLevel:      number | undefined;
@@ -188,11 +201,13 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
   if (finalSpec) {
     const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && i.name === finalSpec);
     if (spec) {
-      const linkedSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === spec.system.linkedSkill);
-      if (linkedSkill) {
-        linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || 'strength';
+      const parentSkill = spec.system?.linkedSkillSlug
+        ? SheetHelpers.findSkillBySlug(defenderActor, spec.system.linkedSkillSlug)
+        : defenderActor.items.find((i: any) => i.type === 'skill' && i.name === spec.system.linkedSkill);
+      if (parentSkill) {
+        linkedAttribute = spec.system.linkedAttribute || parentSkill.system.linkedAttribute || 'strength';
         const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;
-        skillLevel = attrVal + ((linkedSkill.system as any).rating ?? 0);
+        skillLevel = attrVal + ((parentSkill.system as any).rating ?? 0);
         specLevel  = skillLevel + ((spec.system as any).rating ?? 0);
       }
     }

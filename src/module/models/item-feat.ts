@@ -1,128 +1,127 @@
 /**
  * Weapon types configuration with their stats
- * Includes recommended skill and specialization for attack AND defense
- * Specializations are prefixed with "Spé : " to easily find them in game.items
+ * Uses slugs for skill/spec identification (language-independent)
  */
 export const WEAPON_TYPES = {
-  "custom-weapon": { 
+  "custom-weapon": {
     vd: "0", melee: "none", short: "none", medium: "none", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Combat rapproché - Mains nues
-  "bare-hands": { 
+  // Close combat - Bare hands
+  "bare-hands": {
     vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Mains nues",
-    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+    skillSlug: "close-combat", specSlug: "bare-hands",
+    defenseSkillSlug: "close-combat", defenseSpecSlug: "defense"
   },
-  // Combat rapproché - Lames
-  "short-weapons": { 
+  // Close combat - Blades
+  "short-weapons": {
     vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Lames",
-    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+    skillSlug: "close-combat", specSlug: "blades",
+    defenseSkillSlug: "close-combat", defenseSpecSlug: "defense"
   },
-  "long-weapons": { 
+  "long-weapons": {
     vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Lames",
-    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+    skillSlug: "close-combat", specSlug: "blades",
+    defenseSkillSlug: "close-combat", defenseSpecSlug: "defense"
   },
-  // Combat rapproché - Armes contondantes
-  "advanced-melee": { 
+  // Close combat - Blunt weapons
+  "advanced-melee": {
     vd: 5, melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Armes contondantes",
-    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+    skillSlug: "close-combat", specSlug: "blunt-weapons",
+    defenseSkillSlug: "close-combat", defenseSpecSlug: "defense"
   },
-  "tasers": { 
+  "tasers": {
     vd: 5, melee: "ok", short: "ok", medium: "none", long: "none",
-    linkedSkill: "Combat rapproché", linkedSpecialization: "Spé : Armes contondantes",
-    linkedDefenseSkill: "Combat rapproché", linkedDefenseSpecialization: "Spé : Défense"
+    skillSlug: "close-combat", specSlug: "blunt-weapons",
+    defenseSkillSlug: "close-combat", defenseSpecSlug: "defense"
   },
-  // Armes à distance - Armes de jet
-  "throwing": { 
+  // Ranged - Throwing weapons
+  "throwing": {
     vd: "FOR+1", melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "throwing",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "grenades": { 
+  "grenades": {
     vd: 7, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "throwing",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "gas-grenades": { 
+  "gas-grenades": {
     vd: "toxin", melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "throwing",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Armes à distance - Armes de trait
-  "bows": { 
+  // Ranged - Projectile weapons
+  "bows": {
     vd: "FOR+1", melee: "ok", short: "ok", medium: "ok", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de trait",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "projectile",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "crossbows": { 
+  "crossbows": {
     vd: 4, melee: "ok", short: "ok", medium: "ok", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes de trait",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "projectile",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Armes à distance - Pistolets
-  "pocket-pistols": { 
+  // Ranged - Pistols
+  "pocket-pistols": {
     vd: 3, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "pistols",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "light-pistols": { 
+  "light-pistols": {
     vd: 4, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "pistols",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "automatic-pistols": { 
+  "automatic-pistols": {
     vd: 4, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "pistols",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "heavy-pistols": { 
+  "heavy-pistols": {
     vd: 5, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "pistols",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Armes à distance - Mitraillettes
-  "smgs": { 
+  // Ranged - SMGs
+  "smgs": {
     vd: 5, melee: "disadvantage", short: "ok", medium: "ok", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Mitraillettes",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "smgs",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Armes à distance - Fusils
-  "assault-rifles": { 
+  // Ranged - Rifles
+  "assault-rifles": {
     vd: 7, melee: "disadvantage", short: "ok", medium: "ok", long: "disadvantage",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "rifles",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "shotguns": { 
+  "shotguns": {
     vd: 8, melee: "disadvantage", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "rifles",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "sniper-rifles": { 
+  "sniper-rifles": {
     vd: 10, melee: "none", short: "disadvantage", medium: "disadvantage", long: "ok",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "rifles",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Armes à distance - Lance-grenades
-  "grenade-launchers": { 
+  // Ranged - Grenade launchers
+  "grenade-launchers": {
     vd: 7, melee: "none", short: "disadvantage", medium: "ok", long: "disadvantage",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Lance-grenades",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "grenade-launchers",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  // Armes à distance - Armes lourdes
-  "machine-guns": { 
+  // Ranged - Heavy weapons
+  "machine-guns": {
     vd: 9, melee: "none", short: "ok", medium: "ok", long: "ok",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes lourdes",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "heavy-weapons",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   },
-  "rocket-launchers": { 
+  "rocket-launchers": {
     vd: 12, melee: "none", short: "none", medium: "disadvantage", long: "ok",
-    linkedSkill: "Armes à distance", linkedSpecialization: "Spé : Armes lourdes",
-    linkedDefenseSkill: "Athlétisme", linkedDefenseSpecialization: "Spé : Défense à distance"
+    skillSlug: "ranged-weapons", specSlug: "heavy-weapons",
+    defenseSkillSlug: "athletics", defenseSpecSlug: "ranged-defense"
   }
 } as const;
 
@@ -130,6 +129,7 @@ export const WEAPON_TYPES = {
  * Vehicle/Drone types configuration with their stats
  * Imported from JSON file
  */
+import { SKILL_SLUGS, SPEC_SLUGS } from '../config/constants.js';
 import vehicleTypesData from '../config/vehicle-types.json';
 
 export type VehicleType = keyof typeof vehicleTypesData;
@@ -935,6 +935,7 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
   private _applySpellSkillLinks(featType: string): void {
     if (featType === 'spell') {
       (this as any).linkedAttackSkill = 'Sorcellerie';
+      (this as any).linkedAttackSkillSlug = SKILL_SLUGS.SORCERY;
       const spellSpecMap: Record<string, string> = {
         'combat': 'Spé: Sorts de combat',
         'detection': 'Spé: Sorts de détection',
@@ -943,17 +944,33 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         'manipulation': 'Spé: Sorts de manipulation',
         'counterspell': 'Spé: Contresort'
       };
+      const spellSpecSlugMap: Record<string, string> = {
+        'combat': SPEC_SLUGS.COMBAT_SPELLS,
+        'detection': SPEC_SLUGS.DETECTION_SPELLS,
+        'health': SPEC_SLUGS.HEALTH_SPELLS,
+        'illusion': SPEC_SLUGS.ILLUSION_SPELLS,
+        'manipulation': SPEC_SLUGS.MANIPULATION_SPELLS,
+        'counterspell': SPEC_SLUGS.COUNTERSPELL
+      };
       const spellSpecType = (this as any).spellSpecializationType || 'combat';
       (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+      (this as any).linkedAttackSpecSlug = spellSpecSlugMap[spellSpecType] || SPEC_SLUGS.COMBAT_SPELLS;
     } else if (featType === 'complex-form') {
       (this as any).linkedAttackSkill = 'Technomancie';
+      (this as any).linkedAttackSkillSlug = SKILL_SLUGS.TECHNOMANCY;
       const cfSpecMap: Record<string, string> = {
         'formes-complexes': 'Spé: Formes complexes',
         'compilation': 'Spé: Compilation',
         'decompilation': 'Spé: Décompilation'
       };
+      const cfSpecSlugMap: Record<string, string> = {
+        'formes-complexes': SPEC_SLUGS.COMPLEX_FORMS,
+        'compilation': SPEC_SLUGS.COMPILATION,
+        'decompilation': SPEC_SLUGS.DECOMPILATION
+      };
       const cfSpecType = (this as any).complexFormSpecializationType || 'formes-complexes';
       (this as any).linkedAttackSpecialization = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
+      (this as any).linkedAttackSpecSlug = cfSpecSlugMap[cfSpecType] || SPEC_SLUGS.COMPLEX_FORMS;
     }
   }
 

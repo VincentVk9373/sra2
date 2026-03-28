@@ -1,5 +1,6 @@
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import * as ItemSearch from '../../../item-search.js';
+import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import { DELAYS } from '../config/constants.js';
 
 /**
@@ -520,20 +521,20 @@ export class FeatSheet extends ItemSheet {
       'system.longRange': weaponStats.long
     };
     
-    // For custom weapons, initialize linked skills/specializations with default values if not already set
+    // For custom weapons, initialize linked skills/specializations from slug-resolved names if not already set
     if (weaponType === 'custom-weapon') {
       const currentSystem = (this.item.system as any);
-      if (!currentSystem.linkedAttackSkill) {
-        updateData['system.linkedAttackSkill'] = weaponStats.linkedSkill;
+      if (!currentSystem.linkedAttackSkill && weaponStats.skillSlug) {
+        const skillItem = SheetHelpers.findItemInGameBySlug('skill', weaponStats.skillSlug);
+        if (skillItem) updateData['system.linkedAttackSkill'] = skillItem.name;
       }
-      if (!currentSystem.linkedAttackSpecialization) {
-        updateData['system.linkedAttackSpecialization'] = weaponStats.linkedSpecialization;
+      if (!currentSystem.linkedDefenseSkill && weaponStats.defenseSkillSlug) {
+        const defSkillItem = SheetHelpers.findItemInGameBySlug('skill', weaponStats.defenseSkillSlug);
+        if (defSkillItem) updateData['system.linkedDefenseSkill'] = defSkillItem.name;
       }
-      if (!currentSystem.linkedDefenseSkill) {
-        updateData['system.linkedDefenseSkill'] = weaponStats.linkedDefenseSkill;
-      }
-      if (!currentSystem.linkedDefenseSpecialization) {
-        updateData['system.linkedDefenseSpecialization'] = weaponStats.linkedDefenseSpecialization;
+      if (!currentSystem.linkedDefenseSpecialization && weaponStats.defenseSpecSlug) {
+        const defSpecItem = SheetHelpers.findItemInGameBySlug('specialization', weaponStats.defenseSpecSlug);
+        if (defSpecItem) updateData['system.linkedDefenseSpecialization'] = defSpecItem.name;
       }
     }
     

@@ -6,6 +6,11 @@ export class SkillDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     const fields = foundry.data.fields;
     
     return {
+      slug: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.SKILLS.SLUG"
+      }),
       rating: new fields.NumberField({
         required: true,
         initial: 1,

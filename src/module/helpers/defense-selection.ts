@@ -28,13 +28,15 @@ export interface DefenseSelection {
 export function findDefaultDefenseSelection(
   defenderActor: any,
   linkedDefenseSpecName: string,
-  linkedDefenseSkillName?: string
+  linkedDefenseSkillName?: string,
+  options?: { defenseSpecSlug?: string; defenseSkillSlug?: string }
 ): DefenseSelection {
-  // Use unified helper from SheetHelpers
+  // Use unified helper from SheetHelpers (with slug support)
   const result = SheetHelpers.findDefenseSelection(
     defenderActor,
     linkedDefenseSpecName,
-    linkedDefenseSkillName
+    linkedDefenseSkillName,
+    options
   );
   
   // Convert to expected format (null instead of undefined for backwards compatibility)
@@ -74,20 +76,26 @@ export function convertDefenseSpecIdToName(
 export function getDefenseInfoFromWeapon(
   attackingWeapon: any,
   allAvailableSpecializations: any[]
-): { defenseSkillName: string; defenseSpecName: string } {
+): { defenseSkillName: string; defenseSpecName: string; defenseSkillSlug?: string; defenseSpecSlug?: string } {
   if (!attackingWeapon) {
     return { defenseSkillName: '', defenseSpecName: '' };
   }
-  
+
   const weaponType = attackingWeapon.system?.weaponType;
-  
-  // For predefined weapons, get from WEAPON_TYPES
+
+  // For predefined weapons, get slugs from WEAPON_TYPES and resolve names from game items
   if (weaponType && weaponType !== 'custom-weapon') {
     const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
     if (weaponStats) {
+      const defSkill = weaponStats.defenseSkillSlug
+        ? SheetHelpers.findItemInGameBySlug('skill', weaponStats.defenseSkillSlug) : null;
+      const defSpec = weaponStats.defenseSpecSlug
+        ? SheetHelpers.findItemInGameBySlug('specialization', weaponStats.defenseSpecSlug) : null;
       return {
-        defenseSkillName: weaponStats.linkedDefenseSkill || '',
-        defenseSpecName: weaponStats.linkedDefenseSpecialization || ''
+        defenseSkillName: defSkill?.name || '',
+        defenseSpecName: defSpec?.name || '',
+        defenseSkillSlug: weaponStats.defenseSkillSlug || '',
+        defenseSpecSlug: weaponStats.defenseSpecSlug || ''
       };
     }
   }

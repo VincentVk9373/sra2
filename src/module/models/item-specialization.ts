@@ -7,10 +7,20 @@ export class SpecializationDataModel extends foundry.abstract.TypeDataModel<any,
     const fields = foundry.data.fields;
     
     return {
+      slug: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.SPECIALIZATIONS.SLUG"
+      }),
       linkedSkill: new fields.StringField({
         required: true,
         initial: "",
         label: "SRA2.SPECIALIZATIONS.LINKED_SKILL"
+      }),
+      linkedSkillSlug: new fields.StringField({
+        required: true,
+        initial: "",
+        label: "SRA2.SPECIALIZATIONS.LINKED_SKILL_SLUG"
       }),
       linkedAttribute: new fields.StringField({
         required: true,

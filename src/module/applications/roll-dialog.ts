@@ -4,7 +4,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as ItemSearch from '../../../item-search.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import shadowAmpProbabilities from '../config/shadow-amp-probabilities.json';
-import { ACTOR_ATTRIBUTES } from '../config/constants.js';
+import { ACTOR_ATTRIBUTES, SKILL_SLUGS } from '../config/constants.js';
 
 /**
  * Roll Dialog Application
@@ -168,9 +168,11 @@ export class RollDialog extends Application {
     const wepTypeName = weaponSystem?.weaponType;
     const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName as keyof typeof WEAPON_TYPES] : undefined;
     
-    // Get linkedAttackSkill and linkedAttackSpecialization
-    let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
-    const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
+    // Get skill slug from weapon type (preferred) or name-based fallback
+    const weaponSkillSlug = wepTypeData?.skillSlug || '';
+    const weaponSpecSlug = wepTypeData?.specSlug || '';
+    let baseSkillName = weaponSystem?.linkedAttackSkill || selectedWeapon.linkedAttackSkill;
+    const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization;
     
     // Calculate damage value with bonus from active feats (including adept powers)
     const baseDamageValue = selectedWeapon.damageValue || weaponSystem?.damageValue || '0';
@@ -203,27 +205,34 @@ export class RollDialog extends Application {
     );
     const damageValue = finalNumericDamage.toString();
     
-    // Default to "Combat rapproché" if no skill found
-    if (!baseSkillName) {
+    // Default to close combat if no skill found
+    if (!baseSkillName && !weaponSkillSlug) {
       baseSkillName = 'Combat rapproché';
     }
-    
-    // Find the linked skill in actor's items
-    const linkedSkillItem = this.actor.items.find((item: any) => 
-      item.type === 'skill' && item.name === baseSkillName
-    );
-    
-    // Find specializations for the linked skill
-    const linkedSpecs = this.actor.items.filter((item: any) => 
-      item.type === 'specialization' && 
-      item.system.linkedSkill === baseSkillName
-    );
-    
+
+    // Find the linked skill in actor's items (prefer slug)
+    const linkedSkillItem = weaponSkillSlug
+      ? SheetHelpers.findSkillBySlug(this.actor, weaponSkillSlug)
+        || this.actor.items.find((item: any) => item.type === 'skill' && item.name === baseSkillName)
+      : this.actor.items.find((item: any) => item.type === 'skill' && item.name === baseSkillName);
+
+    // Use the found skill's name for display
+    if (linkedSkillItem && !baseSkillName) {
+      baseSkillName = linkedSkillItem.name;
+    }
+
+    // Find specializations for the linked skill (prefer slug)
+    const linkedSpecs = this.actor.items.filter((item: any) => {
+      if (item.type !== 'specialization') return false;
+      if (weaponSkillSlug && item.system?.linkedSkillSlug) return item.system.linkedSkillSlug === weaponSkillSlug;
+      return item.system.linkedSkill === baseSkillName;
+    });
+
     // Check if weapon has a specialization and if actor has that specialization
     let preferredSpecName: string | undefined = undefined;
-    if (weaponLinkedSpecialization) {
-      const specExists = linkedSpecs.find((spec: any) => 
-        spec.name === weaponLinkedSpecialization
+    if (weaponSpecSlug || weaponLinkedSpecialization) {
+      const specExists = linkedSpecs.find((spec: any) =>
+        (weaponSpecSlug && spec.system?.slug === weaponSpecSlug) || spec.name === weaponLinkedSpecialization
       );
       if (specExists) {
         preferredSpecName = weaponLinkedSpecialization;
@@ -477,9 +486,15 @@ export class RollDialog extends Application {
     let hasHotSimAdvantage = false;
     if (this.actor && this.actor.type === 'character') {
       const connectionMode = (this.actor.system as any)?.connectionMode || 'ar';
+      // Check by slug (preferred) or by normalized name (fallback)
+      const rollSkillSlug = this.rollData.itemId ? (() => {
+        const item = this.actor.items.get(this.rollData.itemId);
+        return item?.system?.linkedSkillSlug || item?.system?.slug || '';
+      })() : '';
+      const isHackingBySlug = rollSkillSlug === SKILL_SLUGS.HACKING;
       const skillName = (this.rollData.skillName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       const specName = (this.rollData.specName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const isPiratage = skillName.includes('piratage') || skillName.includes('hacking');
+      const isPiratage = isHackingBySlug || skillName.includes('piratage') || skillName.includes('hacking');
       const isCybercombat = specName.includes('cybercombat');
       if (connectionMode === 'hot-sim' && (isPiratage || isCybercombat)) {
         this.rollMode = 'advantage';
@@ -1081,9 +1096,11 @@ export class RollDialog extends Application {
       const wepTypeName = weaponSystem?.weaponType;
       const wepTypeData = wepTypeName ? WEAPON_TYPES[wepTypeName as keyof typeof WEAPON_TYPES] : undefined;
       
-      // Get linkedAttackSkill and linkedAttackSpecialization from weapon, fallback to weapon type
-      let baseSkillName = weaponSystem?.linkedAttackSkill || wepTypeData?.linkedSkill || selectedWeapon.linkedAttackSkill;
-      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization || wepTypeData?.linkedSpecialization;
+      // Get skill slug from weapon type (preferred) or name-based fallback
+      const weaponSkillSlug2 = wepTypeData?.skillSlug || '';
+      const weaponSpecSlug2 = wepTypeData?.specSlug || '';
+      let baseSkillName = weaponSystem?.linkedAttackSkill || selectedWeapon.linkedAttackSkill;
+      const weaponLinkedSpecialization = weaponSystem?.linkedAttackSpecialization;
       
       // Calculate damage value with bonus from active feats (including adept powers)
       const baseDamageValue = selectedWeapon.damageValue || weaponSystem?.damageValue || '0';
@@ -1116,30 +1133,36 @@ export class RollDialog extends Application {
       );
       const damageValue = finalNumericDamage.toString();
 
-      // Default to "Combat rapproché" if no skill found
-      if (!baseSkillName) {
+      // Default to close combat if no skill found
+      if (!baseSkillName && !weaponSkillSlug2) {
         baseSkillName = 'Combat rapproché';
       }
 
-      // Find the linked skill in actor's items
-      const linkedSkillItem = this.actor.items.find((item: any) => 
-        item.type === 'skill' && item.name === baseSkillName
-      );
+      // Find the linked skill in actor's items (prefer slug)
+      const linkedSkillItem = weaponSkillSlug2
+        ? SheetHelpers.findSkillBySlug(this.actor, weaponSkillSlug2)
+          || this.actor.items.find((item: any) => item.type === 'skill' && item.name === baseSkillName)
+        : this.actor.items.find((item: any) => item.type === 'skill' && item.name === baseSkillName);
 
-      // Find specializations for the linked skill
-      const linkedSpecs = this.actor.items.filter((item: any) => 
-        item.type === 'specialization' && 
-        item.system.linkedSkill === baseSkillName
-      );
-      
+      if (linkedSkillItem && !baseSkillName) {
+        baseSkillName = linkedSkillItem.name;
+      }
+
+      // Find specializations for the linked skill (prefer slug)
+      const linkedSpecs = this.actor.items.filter((item: any) => {
+        if (item.type !== 'specialization') return false;
+        if (weaponSkillSlug2 && item.system?.linkedSkillSlug) return item.system.linkedSkillSlug === weaponSkillSlug2;
+        return item.system.linkedSkill === baseSkillName;
+      });
+
       // Check if weapon has a specialization and if actor has that specialization
       let preferredSpecName: string | undefined = undefined;
-      if (weaponLinkedSpecialization) {
-        const specExists = linkedSpecs.find((spec: any) => 
-          spec.name === weaponLinkedSpecialization
+      if (weaponSpecSlug2 || weaponLinkedSpecialization) {
+        const specExists = linkedSpecs.find((spec: any) =>
+          (weaponSpecSlug2 && spec.system?.slug === weaponSpecSlug2) || spec.name === weaponLinkedSpecialization
         );
         if (specExists) {
-          preferredSpecName = weaponLinkedSpecialization;
+          preferredSpecName = specExists.name;
         }
       }
 

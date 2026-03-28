@@ -37,13 +37,99 @@ export const SUCCESS_THRESHOLDS = {
 } as const;
 export type RollMode = keyof typeof SUCCESS_THRESHOLDS;
 
-/** Skill names used as identifiers across the system */
-export const SKILL_NAMES = {
-  SORCELLERIE: 'sorcellerie',
+/** Language-independent skill identifiers (slugs stored in item.system.slug) */
+export const SKILL_SLUGS = {
+  ATHLETICS: 'athletics',
+  CLOSE_COMBAT: 'close-combat',
+  RANGED_WEAPONS: 'ranged-weapons',
+  STEALTH: 'stealth',
+  HACKING: 'hacking',
+  ENGINEERING: 'engineering',
+  BIOTECH: 'biotech',
+  PILOTING: 'piloting',
+  PERCEPTION: 'perception',
+  SURVIVAL: 'survival',
+  SORCERY: 'sorcery',
   CONJURATION: 'conjuration',
-  TECHNOMANCIE: 'technomancie',
-  PIRATAGE: 'piratage',
-  CLOSE_COMBAT: 'Combat rapproché',
+  TECHNOMANCY: 'technomancy',
+  INFLUENCE: 'influence',
+  DECEPTION: 'deception',
+  INTIMIDATION: 'intimidation',
+} as const;
+export type SkillSlug = typeof SKILL_SLUGS[keyof typeof SKILL_SLUGS];
+
+/** Language-independent specialization identifiers (slugs stored in item.system.slug) */
+export const SPEC_SLUGS = {
+  // Close combat
+  BARE_HANDS: 'bare-hands',
+  BLADES: 'blades',
+  BLUNT_WEAPONS: 'blunt-weapons',
+  DEFENSE: 'defense',
+  // Ranged
+  THROWING: 'throwing',
+  PROJECTILE: 'projectile',
+  PISTOLS: 'pistols',
+  SMGS: 'smgs',
+  RIFLES: 'rifles',
+  GRENADE_LAUNCHERS: 'grenade-launchers',
+  HEAVY_WEAPONS: 'heavy-weapons',
+  RANGED_DEFENSE: 'ranged-defense',
+  // Hacking
+  CYBERCOMBAT: 'cybercombat',
+  BRUTE_FORCE: 'brute-force',
+  BACKDOOR: 'backdoor',
+  // Sorcery
+  COMBAT_SPELLS: 'combat-spells',
+  DETECTION_SPELLS: 'detection-spells',
+  HEALTH_SPELLS: 'health-spells',
+  ILLUSION_SPELLS: 'illusion-spells',
+  MANIPULATION_SPELLS: 'manipulation-spells',
+  COUNTERSPELL: 'counterspell',
+  // Technomancy
+  COMPLEX_FORMS: 'complex-forms',
+  COMPILATION: 'compilation',
+  DECOMPILATION: 'decompilation',
+  // Engineering
+  REMOTE_WEAPONS: 'remote-weapons',
+} as const;
+export type SpecSlug = typeof SPEC_SLUGS[keyof typeof SPEC_SLUGS];
+
+/** Default attribute for each skill, indexed by slug AND normalized French names (for fallback) */
+export const SKILL_DEFAULT_ATTRIBUTES: Record<string, string> = {
+  // By slug (preferred)
+  [SKILL_SLUGS.ATHLETICS]: 'strength',
+  [SKILL_SLUGS.CLOSE_COMBAT]: 'strength',
+  [SKILL_SLUGS.RANGED_WEAPONS]: 'agility',
+  [SKILL_SLUGS.STEALTH]: 'agility',
+  [SKILL_SLUGS.PILOTING]: 'agility',
+  [SKILL_SLUGS.HACKING]: 'logic',
+  [SKILL_SLUGS.ENGINEERING]: 'logic',
+  [SKILL_SLUGS.BIOTECH]: 'logic',
+  [SKILL_SLUGS.PERCEPTION]: 'willpower',
+  [SKILL_SLUGS.SURVIVAL]: 'willpower',
+  [SKILL_SLUGS.SORCERY]: 'willpower',
+  [SKILL_SLUGS.CONJURATION]: 'willpower',
+  [SKILL_SLUGS.TECHNOMANCY]: 'willpower',
+  [SKILL_SLUGS.INFLUENCE]: 'charisma',
+  [SKILL_SLUGS.DECEPTION]: 'charisma',
+  [SKILL_SLUGS.INTIMIDATION]: 'charisma',
+  // By normalized French name (fallback for items without slug)
+  'athletisme': 'strength',
+  'combat rapproche': 'strength',
+  'armes a distance': 'agility',
+  'furtivite': 'agility',
+  'pilotage': 'agility',
+  'piratage': 'logic',
+  'ingenierie': 'logic',
+  'biotech': 'logic',
+  'perception': 'willpower',
+  'survie': 'willpower',
+  'sorcellerie': 'willpower',
+  'conjuration': 'willpower',
+  'technomancie': 'willpower',
+  'influence': 'charisma',
+  'tromperie': 'charisma',
+  'intimidation': 'charisma',
 } as const;
 
 /**

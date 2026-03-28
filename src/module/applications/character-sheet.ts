@@ -3,7 +3,7 @@ import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
-import { DELAYS, RR_MAX } from '../config/constants.js';
+import { DELAYS, RR_MAX, SKILL_SLUGS, SPEC_SLUGS, SKILL_DEFAULT_ATTRIBUTES } from '../config/constants.js';
 import { debounceSearchInput, handleSearchFocus, handleSearchBlur } from '../helpers/search-utils.js';
 
 /**
@@ -358,47 +358,32 @@ export class CharacterSheet extends ActorSheet {
       const weaponType = weaponSystem.weaponType;
 
       // Get weapon type and linked skills
-      let weaponLinkedSkill = '';
-      let weaponLinkedSpecialization = '';
+      let weaponSkillSlug = '';
+      let weaponSpecSlug = '';
 
       if (weaponType && weaponType !== 'custom-weapon') {
         const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
         if (weaponStats) {
-          weaponLinkedSkill = weaponStats.linkedSkill || '';
-          weaponLinkedSpecialization = weaponStats.linkedSpecialization || '';
+          weaponSkillSlug = weaponStats.skillSlug || '';
+          weaponSpecSlug = weaponStats.specSlug || '';
         }
       }
 
-      // Get final linked skills (from weapon type or custom)
-      const finalAttackSkill = weaponLinkedSkill || weaponSystem.linkedAttackSkill || '';
-      const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || '';
+      // For custom weapons, fall back to name-based lookup
+      const finalAttackSkill = weaponSystem.linkedAttackSkill || '';
+      const finalAttackSpec = weaponSystem.linkedAttackSpecialization || '';
 
-      // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
-      let defaultAttribute: string;
-      const skillExists = this.actor.items.some((i: any) =>
-        i.type === 'skill' &&
-        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
-      );
+      // Determine default attribute from slug or name
+      const defaultAttribute = SKILL_DEFAULT_ATTRIBUTES[weaponSkillSlug]
+        || SKILL_DEFAULT_ATTRIBUTES[ItemSearch.normalizeSearchText(finalAttackSkill)]
+        || 'strength';
 
-      if (!skillExists && finalAttackSkill) {
-        // Skill not found: use agility, except for "Combat rapproché" which uses strength
-        const normalizedSkillName = ItemSearch.normalizeSearchText(finalAttackSkill);
-        if (normalizedSkillName === ItemSearch.normalizeSearchText('Combat rapproché')) {
-          defaultAttribute = 'strength';
-        } else {
-          defaultAttribute = 'agility';
-        }
-      } else {
-        // Skill exists or no skill name: use strength (will be overridden by skill's linkedAttribute if skill found)
-        defaultAttribute = 'strength';
-      }
-
-      // Find skill/spec using unified helper
+      // Find skill/spec using unified helper (prefer slug-based lookup)
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
         finalAttackSkill,
-        { defaultAttribute }
+        { defaultAttribute, targetSkillSlug: weaponSkillSlug, targetSpecSlug: weaponSpecSlug }
       );
 
       // Calculate dice pool and RR using unified helper
@@ -433,12 +418,12 @@ export class CharacterSheet extends ActorSheet {
         vehicle.weapons = vehicle.weapons.map((weapon: any) => {
           const weaponSystem = weapon.system as any;
 
-          // For vehicle/drone weapons controlled by owner, use Ingénierie (Spé : Armes contrôlées à distance)
+          // For vehicle/drone weapons controlled by owner, use Engineering (Remote weapons)
           const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
             this.actor,
             'Spé : Armes contrôlées à distance',
             'Ingénierie',
-            { defaultAttribute: 'logic' }
+            { defaultAttribute: 'logic', targetSkillSlug: SKILL_SLUGS.ENGINEERING, targetSpecSlug: SPEC_SLUGS.REMOTE_WEAPONS }
           );
 
           // Calculate dice pool and RR using unified helper
@@ -481,12 +466,12 @@ export class CharacterSheet extends ActorSheet {
       };
       const finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
 
-      // Find skill/spec using unified helper
+      // Find skill/spec using unified helper (slug-based)
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
         'Sorcellerie',
-        { isSpell: true, spellSpecType, defaultAttribute: 'willpower' }
+        { isSpell: true, spellSpecType, defaultAttribute: 'willpower', targetSkillSlug: SKILL_SLUGS.SORCERY }
       );
 
       // Calculate dice pool and RR using unified helper
@@ -515,18 +500,24 @@ export class CharacterSheet extends ActorSheet {
       const cfSystem = cf.system as any;
 
       const cfSpecType = cfSystem.complexFormSpecializationType || 'formes-complexes';
+      const cfSpecSlugMap: Record<string, string> = {
+        'formes-complexes': SPEC_SLUGS.COMPLEX_FORMS,
+        'compilation': SPEC_SLUGS.COMPILATION,
+        'decompilation': SPEC_SLUGS.DECOMPILATION
+      };
       const cfSpecMap: Record<string, string> = {
         'formes-complexes': 'Spé: Formes complexes',
         'compilation': 'Spé: Compilation',
         'decompilation': 'Spé: Décompilation'
       };
       const finalAttackSpec = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
+      const targetSpecSlug = cfSpecSlugMap[cfSpecType] || SPEC_SLUGS.COMPLEX_FORMS;
 
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
         'Technomancie',
-        { isSpell: true, spellSpecType: cfSpecType, defaultAttribute: 'logic' }
+        { isSpell: true, spellSpecType: cfSpecType, defaultAttribute: 'logic', targetSkillSlug: SKILL_SLUGS.TECHNOMANCY, targetSpecSlug }
       );
 
       const poolResult = SheetHelpers.calculateAttackPool(
@@ -2605,12 +2596,12 @@ export class CharacterSheet extends ActorSheet {
     const attackMalus = cyberdeckSystem.attackMalus || 0;
     const attackValue = Math.max(0, baseAttack - attackMalus);
 
-    // Find Piratage skill with Cybercombat specialization
+    // Find Piratage skill with Cybercombat specialization (slug-based)
     const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
       this.actor,
       'Spé : Cybercombat',
       'Piratage',
-      { defaultAttribute: 'willpower' }
+      { defaultAttribute: 'willpower', targetSkillSlug: SKILL_SLUGS.HACKING, targetSpecSlug: SPEC_SLUGS.CYBERCOMBAT }
     );
 
     // Get cyberdeck's own RR list
@@ -2753,52 +2744,55 @@ export class CharacterSheet extends ActorSheet {
     const isSpell = type === 'spell' || itemSystem.isSpell === true || isComplexForm;
     const spellType = isSpell ? (itemSystem.spellType || 'indirect') : null;
     
-    // Get weapon type and linked skills
+    // Get weapon type slugs and linked skills
     const weaponType = itemSystem.weaponType;
-    let weaponLinkedSkill = '';
-    let weaponLinkedSpecialization = '';
-    let weaponLinkedDefenseSkill = '';
-    let weaponLinkedDefenseSpecialization = '';
-    
+    let weaponSkillSlug = '';
+    let weaponSpecSlug = '';
+    let weaponDefenseSkillSlug = '';
+    let weaponDefenseSpecSlug = '';
+
     if (weaponType && weaponType !== 'custom-weapon') {
-      // Pre-defined weapon: get from WEAPON_TYPES
       const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
       if (weaponStats) {
-        weaponLinkedSkill = weaponStats.linkedSkill || '';
-        weaponLinkedSpecialization = weaponStats.linkedSpecialization || '';
-        weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || '';
-        weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || '';
+        weaponSkillSlug = weaponStats.skillSlug || '';
+        weaponSpecSlug = weaponStats.specSlug || '';
+        weaponDefenseSkillSlug = weaponStats.defenseSkillSlug || '';
+        weaponDefenseSpecSlug = weaponStats.defenseSpecSlug || '';
       }
     }
 
-    // Get all RR sources for the item and enrich with featName
-    // Pass item's own RR list - all RR in itemSystem.rrList come directly from the weapon/spell itself
-    // (enrichFeats doesn't modify itemSystem.rrList, it only creates feat.rrEntries)
-    // So we keep ALL RR entries, including those that target skills/specs/attributes
     const itemRRList = (itemSystem.rrList || []).map((rrEntry: any) => ({
       ...rrEntry,
-      featName: item.name  // Add featName (the item name itself)
+      featName: item.name
     }));
 
-    // For spells, force specific skills
-    let finalAttackSkill = weaponLinkedSkill || itemSystem.linkedAttackSkill || '';
-    let finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || '';
-    let finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || '';
-    let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || '';
-    
+    // For custom weapons, fall back to name-based lookup
+    let finalAttackSkill = itemSystem.linkedAttackSkill || '';
+    let finalAttackSpec = itemSystem.linkedAttackSpecialization || '';
+    let finalDefenseSkill = itemSystem.linkedDefenseSkill || '';
+    let finalDefenseSpec = itemSystem.linkedDefenseSpecialization || '';
+    let targetSkillSlug = weaponSkillSlug;
+    let targetSpecSlug = weaponSpecSlug;
+
     if (isSpell) {
       if (isComplexForm) {
-        // Complex form: force skill to Technomancie
+        targetSkillSlug = SKILL_SLUGS.TECHNOMANCY;
         finalAttackSkill = 'Technomancie';
         const cfSpecType = itemSystem.complexFormSpecializationType || 'formes-complexes';
+        const cfSpecSlugMap: Record<string, string> = {
+          'formes-complexes': SPEC_SLUGS.COMPLEX_FORMS,
+          'compilation': SPEC_SLUGS.COMPILATION,
+          'decompilation': SPEC_SLUGS.DECOMPILATION
+        };
         const cfSpecMap: Record<string, string> = {
           'formes-complexes': 'Spé: Formes complexes',
           'compilation': 'Spé: Compilation',
           'decompilation': 'Spé: Décompilation'
         };
+        targetSpecSlug = cfSpecSlugMap[cfSpecType] || SPEC_SLUGS.COMPLEX_FORMS;
         finalAttackSpec = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
       } else {
-        // Spell: force attack skill to Sorcellerie
+        targetSkillSlug = SKILL_SLUGS.SORCERY;
         finalAttackSkill = 'Sorcellerie';
         const spellSpecType = itemSystem.spellSpecializationType || 'combat';
         const spellSpecMap: Record<string, string> = {
@@ -2809,58 +2803,56 @@ export class CharacterSheet extends ActorSheet {
           'manipulation': 'Spé: Sorts de manipulation',
           'counterspell': 'Spé: Contresort'
         };
+        const spellSpecSlugMap: Record<string, string> = {
+          'combat': SPEC_SLUGS.COMBAT_SPELLS,
+          'detection': SPEC_SLUGS.DETECTION_SPELLS,
+          'health': SPEC_SLUGS.HEALTH_SPELLS,
+          'illusion': SPEC_SLUGS.ILLUSION_SPELLS,
+          'manipulation': SPEC_SLUGS.MANIPULATION_SPELLS,
+          'counterspell': SPEC_SLUGS.COUNTERSPELL
+        };
+        targetSpecSlug = spellSpecSlugMap[spellSpecType] || SPEC_SLUGS.COMBAT_SPELLS;
         finalAttackSpec = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
       }
 
       if (spellType === 'direct') {
-        // Direct spell / instantaneous form: no defense
         finalDefenseSkill = '';
         finalDefenseSpec = '';
+        weaponDefenseSkillSlug = '';
+        weaponDefenseSpecSlug = '';
       } else {
-        // Indirect spell / maintained form: force defense to Athlétisme / Spé : Défense à distance
         finalDefenseSkill = 'Athlétisme';
         finalDefenseSpec = 'Spé : Défense à distance';
+        weaponDefenseSkillSlug = SKILL_SLUGS.ATHLETICS;
+        weaponDefenseSpecSlug = SPEC_SLUGS.RANGED_DEFENSE;
       }
     }
 
     // Find actor's skill and specialization using unified helper
     const spellSpecType = isSpell ? (itemSystem.spellSpecializationType || 'combat') : undefined;
-    
-    // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
+
+    // Determine default attribute from slug
     let defaultAttribute: string;
     if (isComplexForm) {
       defaultAttribute = 'logic';
     } else if (isSpell) {
       defaultAttribute = 'willpower';
     } else {
-      // Check if the skill exists in the actor's items
-      const skillExists = this.actor.items.some((i: any) => 
-        i.type === 'skill' && 
-        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill)
-      );
-      
-      if (!skillExists && finalAttackSkill) {
-        // Skill not found: use agility, except for "Combat rapproché" which uses strength
-        const normalizedSkillName = ItemSearch.normalizeSearchText(finalAttackSkill);
-        if (normalizedSkillName === ItemSearch.normalizeSearchText('Combat rapproché')) {
-          defaultAttribute = 'strength';
-        } else {
-          defaultAttribute = 'agility';
-        }
-      } else {
-        // Skill exists or no skill name: use strength (will be overridden by skill's linkedAttribute if skill found)
-        defaultAttribute = 'strength';
-      }
+      defaultAttribute = SKILL_DEFAULT_ATTRIBUTES[targetSkillSlug]
+        || SKILL_DEFAULT_ATTRIBUTES[ItemSearch.normalizeSearchText(finalAttackSkill)]
+        || 'strength';
     }
-    
+
     const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
       this.actor,
       finalAttackSpec,
       finalAttackSkill,
-      { 
-        isSpell, 
+      {
+        isSpell,
         spellSpecType,
-        defaultAttribute
+        defaultAttribute,
+        targetSkillSlug,
+        targetSpecSlug
       }
     );
     

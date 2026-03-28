@@ -417,21 +417,21 @@ export function prepareVehicleWeaponRollRequest(
   // Get weapon attack data using existing helper
   const attackData = prepareVehicleWeaponAttack(vehicleActor, weapon);
   
-  // Get weapon type links for defense skills
-  let weaponLinkedDefenseSkill = '';
-  let weaponLinkedDefenseSpecialization = '';
-  
+  // Get weapon type slugs for defense skills
+  let defenseSkillSlug = '';
+  let defenseSpecSlug = '';
+
   if (weaponType && weaponType !== 'custom-weapon') {
     const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
     if (weaponStats) {
-      weaponLinkedDefenseSkill = weaponStats.linkedDefenseSkill || '';
-      weaponLinkedDefenseSpecialization = weaponStats.linkedDefenseSpecialization || '';
+      defenseSkillSlug = weaponStats.defenseSkillSlug || '';
+      defenseSpecSlug = weaponStats.defenseSpecSlug || '';
     }
   }
-  
-  // Merge with custom fields (weapon type has priority)
-  const finalDefenseSkill = weaponLinkedDefenseSkill || weaponSystem.linkedDefenseSkill || '';
-  const finalDefenseSpec = weaponLinkedDefenseSpecialization || weaponSystem.linkedDefenseSpecialization || '';
+
+  // For custom weapons, fall back to stored name fields
+  const finalDefenseSkill = weaponSystem.linkedDefenseSkill || '';
+  const finalDefenseSpec = weaponSystem.linkedDefenseSpecialization || '';
   
   // Return complete roll request data
   return {

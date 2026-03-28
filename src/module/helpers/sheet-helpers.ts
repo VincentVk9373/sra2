@@ -4,7 +4,7 @@
  */
 
 import * as ItemSearch from '../../../item-search.js';
-import { RR_MAX } from '../config/constants.js';
+import { RR_MAX, SKILL_SLUGS, SKILL_DEFAULT_ATTRIBUTES } from '../config/constants.js';
 
 /**
  * Handle form submission with proper damage checkbox handling
@@ -520,46 +520,32 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
 
     // Default to strength for skills, or try to guess from name
     // Common skill-attribute associations
-    const skillAttributeMap: Record<string, string> = {
-      'athlétisme': 'strength',
-      'athletisme': 'strength',
-      'combat rapproché': 'strength',
-      'combat rapproche': 'strength',
-      'armes à distance': 'agility',
-      'armes a distance': 'agility',
-      'furtivité': 'agility',
-      'furtivite': 'agility',
-      'piratage': 'logic',
-      'ingénierie': 'logic',
-      'ingenierie': 'logic',
-      'biotech': 'logic',
-      'pilotage': 'agility',
-      'perception': 'willpower',
-      'survie': 'willpower',
-      'sorcellerie': 'willpower',
-      'conjuration': 'willpower',
-      'influence': 'charisma',
-      'tromperie': 'charisma',
-      'intimidation': 'charisma',
-    };
-
+    // Resolve attribute from slug (preferred) or normalized name (fallback)
+    const phantomSlug = phantom.system?.slug || '';
     const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
-    phantom.linkedAttribute = skillAttributeMap[normalizedName] || 'strength';
+    phantom.linkedAttribute = SKILL_DEFAULT_ATTRIBUTES[phantomSlug]
+      || SKILL_DEFAULT_ATTRIBUTES[normalizedName]
+      || 'strength';
 
     // For phantom specs, try to find the linked skill from compendiums and check if actor has it
     if (phantom.type === 'specialization') {
-      const specTemplate = findItemInGame('specialization', phantom.name);
+      const specTemplate = phantom.system?.slug
+        ? findItemInGameBySlug('specialization', phantom.system.slug) || findItemInGame('specialization', phantom.name)
+        : findItemInGame('specialization', phantom.name);
       if (specTemplate) {
+        const linkedSkillSlug = (specTemplate.system as any).linkedSkillSlug;
         const linkedSkillName = (specTemplate.system as any).linkedSkill;
         const linkedAttribute = (specTemplate.system as any).linkedAttribute;
 
-        if (linkedSkillName) {
+        if (linkedSkillSlug || linkedSkillName) {
           phantom.linkedSkillName = linkedSkillName;
 
-          // Check if actor has this skill
-          const actorSkill = actor.items.find((i: any) =>
-            i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName)
-          );
+          // Check if actor has this skill (prefer slug-based lookup)
+          const actorSkill = linkedSkillSlug
+            ? findSkillBySlug(actor, linkedSkillSlug) || findSkillByName(actor, linkedSkillName)
+            : actor.items.find((i: any) =>
+                i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName)
+              );
 
           if (actorSkill) {
             phantom.linkedSkillOnActor = true;
@@ -1225,6 +1211,9 @@ export interface FindAttackSkillSpecOptions {
   isSpell?: boolean;
   spellSpecType?: string;
   defaultAttribute?: string;
+  /** Slug-based lookup (language-independent). When provided, prefers slug over name matching. */
+  targetSkillSlug?: string;
+  targetSpecSlug?: string;
 }
 
 /**
@@ -1258,16 +1247,17 @@ export function findAttackSkillAndSpec(
     linkedAttribute: undefined
   };
 
-  const { isSpell = false, spellSpecType = 'combat', defaultAttribute = 'strength' } = options;
+  const { isSpell = false, spellSpecType = 'combat', defaultAttribute = 'strength', targetSkillSlug, targetSpecSlug } = options;
 
   // Try to find the linked attack specialization first
-  if (targetSpec) {
-    const normalizedTargetSpec = normalizeForComparison(targetSpec);
-
+  if (targetSpecSlug || targetSpec) {
     const foundSpec = actor.items.find((i: any) => {
       if (i.type !== 'specialization') return false;
+      // Prefer slug-based lookup
+      if (targetSpecSlug && i.system?.slug) return i.system.slug === targetSpecSlug;
+      if (!targetSpec) return false;
       const normalizedItemName = normalizeForComparison(i.name);
-      return normalizedItemName === normalizedTargetSpec;
+      return normalizedItemName === normalizeForComparison(targetSpec);
     });
 
     if (foundSpec) {
@@ -1284,11 +1274,13 @@ export function findAttackSkillAndSpec(
   }
 
   // If no specialization found, try to find the linked attack skill
-  if (!result.specName && !result.skillLevel && targetSkill) {
-    const foundSkill = actor.items.find((i: any) =>
-      i.type === 'skill' &&
-      ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill)
-    );
+  if (!result.specName && !result.skillLevel && (targetSkillSlug || targetSkill)) {
+    const foundSkill = actor.items.find((i: any) => {
+      if (i.type !== 'skill') return false;
+      if (targetSkillSlug && i.system?.slug) return i.system.slug === targetSkillSlug;
+      if (!targetSkill) return false;
+      return ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill);
+    });
 
     if (foundSkill) {
       const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || defaultAttribute;
@@ -1325,12 +1317,15 @@ function _extractSpecAndSkillInfo(
   result.specName = foundSpec.name;
   result.linkedAttribute = specSystem.linkedAttribute || defaultAttribute;
 
-  // Get parent skill for specialization
+  // Get parent skill for specialization (prefer slug-based lookup)
+  const linkedSkillSlug = specSystem.linkedSkillSlug;
   const linkedSkillName = specSystem.linkedSkill;
-  if (linkedSkillName) {
-    const parentSkill = actor.items.find((i: any) =>
-      i.type === 'skill' && i.name === linkedSkillName
-    );
+  if (linkedSkillSlug || linkedSkillName) {
+    const parentSkill = actor.items.find((i: any) => {
+      if (i.type !== 'skill') return false;
+      if (linkedSkillSlug && i.system?.slug) return i.system.slug === linkedSkillSlug;
+      return i.name === linkedSkillName;
+    });
     if (parentSkill && result.linkedAttribute) {
       result.skillName = parentSkill.name;
       const skillRating = (parentSkill.system as any).rating || 0;
@@ -1365,8 +1360,9 @@ function _trySpellSpecKeywordSearch(
   const foundSpecByKeyword = actor.items.find((i: any) => {
     if (i.type !== 'specialization') return false;
     const normalizedName = ItemSearch.normalizeSearchText(i.name);
-    const linkedSkill = (i.system as any)?.linkedSkill;
-    if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+    const isSorcerySpec = i.system?.linkedSkillSlug === SKILL_SLUGS.SORCERY
+      || ItemSearch.normalizeSearchText((i.system as any)?.linkedSkill || '') === 'sorcellerie';
+    if (isSorcerySpec) {
       return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
     }
     return false;
@@ -1414,8 +1410,9 @@ function _searchGameItemsForSpellSpec(
     specToUse = (game.items as any).find((i: any) => {
       if (i.type !== 'specialization') return false;
       const normalizedName = ItemSearch.normalizeSearchText(i.name);
-      const linkedSkill = (i.system as any)?.linkedSkill;
-      if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+      const isSorcerySpec = i.system?.linkedSkillSlug === SKILL_SLUGS.SORCERY
+        || ItemSearch.normalizeSearchText((i.system as any)?.linkedSkill || '') === 'sorcellerie';
+      if (isSorcerySpec) {
         return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
       }
       return false;
@@ -1424,12 +1421,15 @@ function _searchGameItemsForSpellSpec(
 
   if (specToUse) {
     const specSystem = specToUse.system as any;
+    const linkedSkillSlug = specSystem.linkedSkillSlug;
     const linkedSkillName = specSystem.linkedSkill;
 
-    if (linkedSkillName) {
-      const parentSkill = actor.items.find((i: any) =>
-        i.type === 'skill' && i.name === linkedSkillName
-      );
+    if (linkedSkillSlug || linkedSkillName) {
+      const parentSkill = actor.items.find((i: any) => {
+        if (i.type !== 'skill') return false;
+        if (linkedSkillSlug && i.system?.slug) return i.system.slug === linkedSkillSlug;
+        return i.name === linkedSkillName;
+      });
       if (parentSkill) {
         const skillSystem = parentSkill.system as any;
         const linkedAttribute = skillSystem.linkedAttribute || 'willpower';
@@ -1449,15 +1449,14 @@ function _searchGameItemsForSpellSpec(
 function _searchGameItemsForSorcellerie(actor: any, result: AttackSkillSpecResult): void {
   const sorcerySkillInGame = (game.items as any).find((i: any) =>
     i.type === 'skill' &&
-    ItemSearch.normalizeSearchText(i.name) === 'sorcellerie'
+    (i.system?.slug === SKILL_SLUGS.SORCERY || ItemSearch.normalizeSearchText(i.name) === 'sorcellerie')
   );
 
   if (sorcerySkillInGame) {
-    // Use default willpower attribute for Sorcellerie if skill not in actor
-    result.skillName = 'Sorcellerie';
+    result.skillName = sorcerySkillInGame.name;
     result.linkedAttribute = 'willpower';
     const willpower = (actor.system as any).attributes?.willpower || 1;
-    result.skillLevel = willpower; // Skill rating would be 0 if not in actor
+    result.skillLevel = willpower;
   }
 }
 
@@ -1595,6 +1594,30 @@ export function findSkillByName(actor: any, skillName: string): any | undefined 
 }
 
 /**
+ * Find a skill by slug in an actor's items
+ */
+export function findSkillBySlug(actor: any, slug: string): any | undefined {
+  if (!actor || !slug) return undefined;
+  return actor.items.find((i: any) => i.type === 'skill' && i.system?.slug === slug);
+}
+
+/**
+ * Find a specialization by slug in an actor's items
+ */
+export function findSpecBySlug(actor: any, slug: string): any | undefined {
+  if (!actor || !slug) return undefined;
+  return actor.items.find((i: any) => i.type === 'specialization' && i.system?.slug === slug);
+}
+
+/**
+ * Find an item by type and slug in game.items
+ */
+export function findItemInGameBySlug(itemType: string, slug: string): any | undefined {
+  if (!game.items || !slug) return undefined;
+  return (game.items as any).find((i: any) => i.type === itemType && i.system?.slug === slug);
+}
+
+/**
  * Find a specialization by name in an actor's items (normalized comparison)
  * 
  * @param actor - The actor to search in
@@ -1716,32 +1739,39 @@ export interface DefenseSearchResult {
 export function findDefenseSelection(
   actor: any,
   linkedDefenseSpec: string,
-  linkedDefenseSkill?: string
+  linkedDefenseSkill?: string,
+  options?: { defenseSpecSlug?: string; defenseSkillSlug?: string }
 ): DefenseSearchResult {
   const result: DefenseSearchResult = {
     defaultSelection: '',
     linkedSpec: undefined,
     linkedSkill: undefined
   };
+  const { defenseSpecSlug, defenseSkillSlug } = options || {};
 
   const skills = actor.items.filter((i: any) => i.type === 'skill');
 
-  // 1. Try to find the linked defense specialization
-  if (linkedDefenseSpec) {
-    result.linkedSpec = findSpecByName(actor, linkedDefenseSpec);
+  // 1. Try to find the linked defense specialization (prefer slug)
+  if (defenseSpecSlug || linkedDefenseSpec) {
+    result.linkedSpec = defenseSpecSlug
+      ? findSpecBySlug(actor, defenseSpecSlug) || findSpecByName(actor, linkedDefenseSpec)
+      : findSpecByName(actor, linkedDefenseSpec);
 
     if (result.linkedSpec) {
       result.defaultSelection = `spec-${result.linkedSpec.id}`;
-      // Find the parent skill
-      const linkedSkillName = result.linkedSpec.system.linkedSkill;
-      result.linkedSkill = findSkillByName(actor, linkedSkillName);
+      const specSys = result.linkedSpec.system;
+      result.linkedSkill = specSys?.linkedSkillSlug
+        ? findSkillBySlug(actor, specSys.linkedSkillSlug) || findSkillByName(actor, specSys.linkedSkill)
+        : findSkillByName(actor, specSys.linkedSkill);
       return result;
     }
   }
 
-  // 2. Try to find the defense skill
-  if (linkedDefenseSkill) {
-    result.linkedSkill = findSkillByName(actor, linkedDefenseSkill);
+  // 2. Try to find the defense skill (prefer slug)
+  if (defenseSkillSlug || linkedDefenseSkill) {
+    result.linkedSkill = defenseSkillSlug
+      ? findSkillBySlug(actor, defenseSkillSlug) || findSkillByName(actor, linkedDefenseSkill || '')
+      : findSkillByName(actor, linkedDefenseSkill || '');
 
     if (result.linkedSkill) {
       result.defaultSelection = `skill-${result.linkedSkill.id}`;
@@ -1750,17 +1780,21 @@ export function findDefenseSelection(
   }
 
   // 3. Fallback: Search in game.items for the spec template
-  if (linkedDefenseSpec && game.items) {
-    const specTemplate = findItemInGame('specialization', linkedDefenseSpec);
+  if ((defenseSpecSlug || linkedDefenseSpec) && game.items) {
+    const specTemplate = defenseSpecSlug
+      ? findItemInGameBySlug('specialization', defenseSpecSlug) || findItemInGame('specialization', linkedDefenseSpec)
+      : findItemInGame('specialization', linkedDefenseSpec);
 
     if (specTemplate) {
-      const linkedSkillName = specTemplate.system.linkedSkill;
-      if (linkedSkillName) {
-        result.linkedSkill = findSkillByName(actor, linkedSkillName);
-        if (result.linkedSkill) {
-          result.defaultSelection = `skill-${result.linkedSkill.id}`;
-          return result;
-        }
+      const specSys = specTemplate.system;
+      const skillSlug = specSys?.linkedSkillSlug;
+      const skillName = specSys?.linkedSkill;
+      result.linkedSkill = skillSlug
+        ? findSkillBySlug(actor, skillSlug) || findSkillByName(actor, skillName)
+        : findSkillByName(actor, skillName);
+      if (result.linkedSkill) {
+        result.defaultSelection = `skill-${result.linkedSkill.id}`;
+        return result;
       }
     }
   }
@@ -1781,13 +1815,14 @@ export function findDefenseSelection(
  * @param skillName - The skill name to find specs for
  * @returns Array of specializations linked to this skill
  */
-export function getSpecializationsForSkill(actor: any, skillName: string): any[] {
-  if (!actor || !skillName) return [];
+export function getSpecializationsForSkill(actor: any, skillName: string, skillSlug?: string): any[] {
+  if (!actor || (!skillName && !skillSlug)) return [];
 
-  const normalizedSkillName = ItemSearch.normalizeSearchText(skillName);
+  const normalizedSkillName = skillName ? ItemSearch.normalizeSearchText(skillName) : '';
 
   return actor.items.filter((i: any) => {
     if (i.type !== 'specialization') return false;
+    if (skillSlug && i.system?.linkedSkillSlug) return i.system.linkedSkillSlug === skillSlug;
     const linkedSkill = (i.system as any)?.linkedSkill;
     return linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === normalizedSkillName;
   });
