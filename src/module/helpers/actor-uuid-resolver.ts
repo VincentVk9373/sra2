@@ -6,6 +6,7 @@
  * counter-attack chat-button handlers.
  */
 import { SKILL_SLUGS, SPEC_SLUGS } from '../config/constants.js';
+import { findSkillByName } from './sheet-helpers.js';
 
 /**
  * Safely resolve a Foundry UUID string to a document (actor or token).
@@ -163,26 +164,31 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
     if (cyberSpec) finalSpec = cyberSpec.name;
   } else if (attackSpec) {
     const spec = defenderActor.items.find((i: any) =>
-      i.type === 'specialization' && i.name === attackSpec && i.system.linkedSkill === SKILL_SLUGS.CLOSE_COMBAT
+      i.type === 'specialization' && (i.name === attackSpec || i.system?.slug === attackSpec) && i.system.linkedSkill === SKILL_SLUGS.CLOSE_COMBAT
     );
     if (spec) { finalSpec = spec.name; finalSkill = spec.system.linkedSkill; }
   }
 
   if (!finalSpec && defenseSpec) {
-    const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && i.name === defenseSpec);
-    if (spec) { finalSpec = defenseSpec; finalSkill = spec.system.linkedSkill; }
+    const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && (i.name === defenseSpec || i.system?.slug === defenseSpec));
+    if (spec) { finalSpec = spec.name; finalSkill = spec.system.linkedSkill; }
   }
 
   if (!finalSpec && defenseSkill) {
-    const skill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === defenseSkill);
-    if (skill) finalSkill = defenseSkill;
+    const skill = findSkillByName(defenderActor, defenseSkill);
+    if (skill) finalSkill = skill.name;
   }
 
   if (!finalSkill) {
-    const isMelee = rollData.meleeRange && rollData.meleeRange !== 'none';
+    // Ranged attacks (including spells) default to Athletics + Spé : Défense à distance
+    // Melee attacks default to Close Combat + Spé : Défense
+    const isSpellLike = rollData.isMagicRoll || rollData.isTechnomancerRoll || rollData.isPower ||
+                        rollData.itemType === 'spell' || rollData.itemType === 'complex-form';
+    const isMelee = !isSpellLike && rollData.meleeRange && rollData.meleeRange !== 'none';
     const fallbackSlug = isMelee ? SKILL_SLUGS.CLOSE_COMBAT : SKILL_SLUGS.ATHLETICS;
-    const fallbackSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.system.slug === fallbackSlug);
-    finalSkill = fallbackSkill?.name || fallbackSlug;
+    const fallbackSkill = findSkillByName(defenderActor, fallbackSlug);
+    const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
+    finalSkill = fallbackSkill?.name || slugCache[fallbackSlug] || fallbackSlug;
   }
 
   let skillLevel:      number | undefined;
@@ -190,19 +196,20 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
   let linkedAttribute: string | undefined;
 
   if (finalSpec) {
-    const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && i.name === finalSpec);
+    const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && (i.name === finalSpec || i.system?.slug === finalSpec));
     if (spec) {
       const linkedSkill = defenderActor.items.find((i: any) => i.type === 'skill' && (i.name === spec.system.linkedSkill || i.system?.slug === spec.system.linkedSkill));
       if (linkedSkill) {
         linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || 'strength';
         const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;
         skillLevel = attrVal + ((linkedSkill.system as any).rating ?? 0);
-        specLevel  = skillLevel + ((spec.system as any).rating ?? 0);
+        specLevel  = skillLevel + 2;
       }
     }
   } else if (finalSkill) {
-    const skill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === finalSkill);
+    const skill = findSkillByName(defenderActor, finalSkill);
     if (skill) {
+      finalSkill = skill.name;
       linkedAttribute = (skill.system as any).linkedAttribute || 'strength';
       const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;
       skillLevel = attrVal + ((skill.system as any).rating ?? 0);

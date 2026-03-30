@@ -498,6 +498,15 @@ export class CharacterSheet extends ActorSheet {
       spell.totalDicePool = poolResult.totalDicePool;
       spell.rr = poolResult.totalRR;
 
+      // Calculate VD for display under spell name
+      const spellType = spellSystem.spellType || 'indirect';
+      if (spellType !== 'direct') {
+        const willpower = (this.actor.system as any)?.attributes?.willpower || 0;
+        const damageBonus = spellSystem.damageValueBonus || 0;
+        const bonusStr = damageBonus >= 0 ? `+${damageBonus}` : `${damageBonus}`;
+        spell.displayVD = `VD: ${willpower + damageBonus} (${game.i18n!.localize('SRA2.ATTRIBUTES.WILLPOWER_SHORT')}${bonusStr})`;
+      }
+
       // Also store spec info for potential specialization display later
       if (skillSpecResult.specName) {
         spell.attackSpecName = skillSpecResult.specName;
@@ -1559,8 +1568,8 @@ export class CharacterSheet extends ActorSheet {
     }
     
     // Check if skill already exists
-    const existingSkill = this.actor.items.find((i: any) => 
-      i.type === 'skill' && i.name === skill.name
+    const existingSkill = this.actor.items.find((i: any) =>
+      i.type === 'skill' && (i.name === skill.name || (skill.system?.slug && i.system?.slug === skill.system.slug))
     );
     
     if (existingSkill) {

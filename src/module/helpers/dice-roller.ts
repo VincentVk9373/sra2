@@ -263,6 +263,9 @@ export interface RollRequestData {
 
   // Power/adept properties
   isPower?: boolean;
+
+  // Area of Effect: number of zones (each zone = 3m diameter), adds to each target's defense threshold
+  aoeZone?: number;
 }
 
 /**
@@ -509,7 +512,10 @@ function buildDefenseResult(
 
   const effectiveAttackSuccesses = attackSuccesses;
 
-  const effectiveDefenseSuccesses = defenseSuccesses + (rollData.coverBonus || 0);
+  // AoE zone bonus from the original attack adds to effective defense
+  const aoeBonus = rollData.attackRollData!.aoeZone || 0;
+  console.log('=== DEFENSE AoE ===', { aoeBonus, attackRollDataAoeZone: rollData.attackRollData!.aoeZone, coverBonus: rollData.coverBonus });
+  const effectiveDefenseSuccesses = defenseSuccesses + (rollData.coverBonus || 0) + aoeBonus;
 
   if (effectiveAttackSuccesses >= effectiveDefenseSuccesses) {
     if (isIceAttack) {
@@ -544,6 +550,7 @@ function buildDefenseResult(
     defenseSuccesses: effectiveDefenseSuccesses,
     calculatedDamage,
     attackFailed,
+    aoeBonus,
     originalAttackerName,
     defenderName,
     originalAttackerUuid,
@@ -844,6 +851,7 @@ async function createRollChatMessage(
     isSpellDirect:   (rollData.isSpellDirect || false) && rollData.itemType !== 'complex-form',
     isSpellIndirect: isAttack && rollData.spellType === 'indirect' && !rollData.isSpellDirect && rollData.itemType !== 'complex-form',
     isCyberdeckVsIce: isCyberdeckVsIce,
+    aoeZone:         rollData.aoeZone || 0,
   };
 
   const html = await renderTemplate('systems/sra2/templates/roll-result.hbs', templateData);

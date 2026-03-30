@@ -376,6 +376,11 @@
                                     <div class="name" data-action="show-context-menu" data-item-id="{{this._id}}" data-item-type="spell"
                                         title="{{#if this.narrativeEffectsTooltip}}{{this.narrativeEffectsTooltip}}{{else}}{{this.system.description}}{{/if}}">
                                         {{#if this.system.bookmarked}}<i class="fas fa-star" style="color: gold; margin-right: 4px;"></i>{{/if}}{{this.name}}
+                                        {{#if this.displayVD}}
+                                        <span class="weapon-stats">
+                                            <span>{{this.displayVD}}</span>
+                                        </span>
+                                        {{/if}}
                                     </div>
                                     <div class="context-menu" data-item-id="{{this._id}}" data-item-type="spell">
                                         <div class="context-menu-item" data-action="roll-spell" data-item-id="{{this._id}}">

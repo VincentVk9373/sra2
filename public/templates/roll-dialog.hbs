@@ -275,6 +275,25 @@
             </section>
             {{/if}}
 
+            <!-- Area of Effect (for spells, complex forms, adept powers) -->
+            {{#if showAoeField}}
+            <section class="roll-section range-section no-border-left">
+                <h3 class="section-title">
+                    <i class="fas fa-bullseye"></i> {{localize "SRA2.ROLL_DIALOG.AOE_ZONE"}}
+                </h3>
+                <div class="range-display" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="number" class="aoe-zone-input" value="{{aoeZone}}" min="0" max="10" style="width: 3rem; text-align: center;" />
+                    <span class="aoe-info">
+                        {{#if (gt aoeZone 0)}}
+                            <span class="aoe-diameter">{{aoeDiameter}}m</span> — +{{aoeZone}} {{localize "SRA2.ROLL_DIALOG.AOE_THRESHOLD_BONUS"}}
+                        {{else}}
+                            {{localize "SRA2.ROLL_DIALOG.AOE_NONE"}}
+                        {{/if}}
+                    </span>
+                </div>
+            </section>
+            {{/if}}
+
             <!-- Range Selection (for weapons only, not for defense or skill/spec/attribute rolls) -->
             {{#if (and isWeaponRoll (not rollData.isDefend))}}
             <section class="roll-section range-section no-border-left">

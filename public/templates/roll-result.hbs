@@ -97,6 +97,12 @@
             {{/if}}
         </div>
         {{/if}}
+
+        {{#if (gt aoeZone 0)}}
+        <div class="aoe-info" style="margin-top: 0.3rem; font-size: 0.85em; color: #f0a040;">
+            <i class="fas fa-bullseye"></i> {{localize "SRA2.ROLL_DIALOG.AOE_ZONE"}}: {{aoeZone}} (+{{aoeZone}} {{localize "SRA2.ROLL_DIALOG.AOE_THRESHOLD_BONUS"}})
+        </div>
+        {{/if}}
     </div>
 
     <!-- Defense Result -->

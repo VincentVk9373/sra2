@@ -23,6 +23,7 @@ export class RollDialog extends Application {
   private rollMode: 'normal' | 'disadvantage' | 'advantage' = 'normal'; // Roll mode
   private manualRRBonus: number = 0; // Manual RR bonus entered by user
   private coverBonus: number = 0; // Cover bonus dice added to defense rolls
+  private aoeZone: number = 0; // Area of effect zones (each zone = 3m diameter, adds +1 to each target's defense)
 
   constructor(rollData: RollRequestData) {
     super();
@@ -222,8 +223,8 @@ export class RollDialog extends Application {
     // Check if weapon has a specialization and if actor has that specialization
     let preferredSpecName: string | undefined = undefined;
     if (weaponLinkedSpecialization) {
-      const specExists = linkedSpecs.find((spec: any) => 
-        spec.name === weaponLinkedSpecialization
+      const specExists = linkedSpecs.find((spec: any) =>
+        spec.name === weaponLinkedSpecialization || spec.system?.slug === weaponLinkedSpecialization
       );
       if (specExists) {
         preferredSpecName = weaponLinkedSpecialization;
@@ -505,8 +506,13 @@ export class RollDialog extends Application {
     }
 
     context.isWeaponRoll = isWeaponRoll;
+    // Check if this is a magic/power roll that supports AoE
+    const isMagicOrPowerRoll = !!(this.rollData.isMagicRoll || this.rollData.isTechnomancerRoll || this.rollData.isPower);
+    context.showAoeField = isMagicOrPowerRoll && !this.rollData.isDefend && !this.rollData.isCounterAttack;
+    context.aoeZone = this.aoeZone;
+    context.aoeDiameter = this.aoeZone * 3;
     // Check if this is a skill/spec/attribute roll (not a weapon roll and not a defense roll)
-    context.isSkillSpecAttributeRoll = !isWeaponRoll && !this.rollData.isDefend && 
+    context.isSkillSpecAttributeRoll = !isWeaponRoll && !this.rollData.isDefend &&
                                        (this.rollData.skillName || this.rollData.specName || this.rollData.linkedAttribute);
     context.calculatedRange = calculatedRange;
     context.selectedRange = this.selectedRange;
@@ -819,6 +825,7 @@ export class RollDialog extends Application {
           return {
             id: spec.id,
             name: spec.name,
+            slug: spec.system?.slug || '',
             rating: effectiveRating,
             linkedAttribute: linkedAttribute,
             dicePool: attributeValue + effectiveRating,
@@ -852,15 +859,18 @@ export class RollDialog extends Application {
       for (const skill of skills) {
         // Add skill option
         // Use normalized comparison for linkedAttackSkill to handle case/space differences
-        const skillSelected = skill.name === this.rollData.skillName || 
-                             (this.rollData.linkedAttackSkill && 
-                              ItemSearch.normalizeSearchText(skill.name) === ItemSearch.normalizeSearchText(this.rollData.linkedAttackSkill));
+        const skillSelected = skill.name === this.rollData.skillName ||
+                             skill.slug === this.rollData.skillName ||
+                             (this.rollData.linkedAttackSkill &&
+                              (skill.slug === this.rollData.linkedAttackSkill ||
+                               ItemSearch.normalizeSearchText(skill.name) === ItemSearch.normalizeSearchText(this.rollData.linkedAttackSkill)));
         dropdownOptions.push({
           value: `skill:${skill.id}`,
           label: `${skill.name} (${skill.dicePool} ${game.i18n!.localize('SRA2.ROLL_DIALOG.DICE')})`,
           type: 'skill',
           id: skill.id,
           name: skill.name,
+          slug: skill.slug || '',
           dicePool: skill.dicePool,
           linkedAttribute: skill.linkedAttribute,
           rating: skill.rating,
@@ -871,14 +881,17 @@ export class RollDialog extends Application {
         for (const spec of skill.specializations) {
           // Use normalized comparison for linkedAttackSpecialization to handle case/space differences
           const specSelected = spec.name === this.rollData.specName ||
-                              (this.rollData.linkedAttackSpecialization && 
-                               ItemSearch.normalizeSearchText(spec.name) === ItemSearch.normalizeSearchText(this.rollData.linkedAttackSpecialization));
+                              spec.slug === this.rollData.specName ||
+                              (this.rollData.linkedAttackSpecialization &&
+                               (spec.slug === this.rollData.linkedAttackSpecialization ||
+                                ItemSearch.normalizeSearchText(spec.name) === ItemSearch.normalizeSearchText(this.rollData.linkedAttackSpecialization)));
           dropdownOptions.push({
             value: `spec:${spec.id}`,
             label: `  └ ${spec.name} (${spec.dicePool} ${game.i18n!.localize('SRA2.ROLL_DIALOG.DICE')})`,
             type: 'specialization',
             id: spec.id,
             name: spec.name,
+            slug: spec.slug || '',
             dicePool: spec.dicePool,
             linkedAttribute: spec.linkedAttribute,
             linkedSkillName: spec.linkedSkillName,
@@ -901,7 +914,8 @@ export class RollDialog extends Application {
         
         for (const phantom of phantomRRs) {
           const attributeValue = (this.actor?.system as any)?.attributes?.[phantom.linkedAttribute] || 0;
-          const phantomSelected = phantom.name === this.rollData.skillName || phantom.name === this.rollData.specName;
+          const phantomSelected = phantom.name === this.rollData.skillName || phantom.name === this.rollData.specName ||
+                                   phantom.slug === this.rollData.skillName || phantom.slug === this.rollData.specName;
           const phantomType = phantom.type === 'skill' ? 'phantom-skill' : 'phantom-spec';
           const typeIcon = phantom.type === 'skill' ? '👻' : '👻└';
           
@@ -928,18 +942,25 @@ export class RollDialog extends Application {
       // Priority: specName > skillName > linkedAttackSpecialization > linkedAttackSkill
       // This ensures that if skillName is set but spec is not found, we still select the skill
       if (this.rollData.specName) {
-        // Try to find in regular specs or phantom specs
-        let selectedSpec = dropdownOptions.find((opt: any) => opt.type === 'specialization' && opt.name === this.rollData.specName);
-        if (!selectedSpec) {
-          selectedSpec = dropdownOptions.find((opt: any) => opt.type === 'phantom-spec' && opt.name === this.rollData.specName);
+        // Try to find spec by name or slug
+        let selectedSpec = dropdownOptions.find((opt: any) =>
+          (opt.type === 'specialization' || opt.type === 'phantom-spec') &&
+          (opt.name === this.rollData.specName || opt.slug === this.rollData.specName)
+        );
+        // If spec not found, fallback to selecting the parent skill
+        if (!selectedSpec && this.rollData.skillName) {
+          selectedSpec = dropdownOptions.find((opt: any) =>
+            (opt.type === 'skill' || opt.type === 'phantom-skill') &&
+            (opt.name === this.rollData.skillName || opt.slug === this.rollData.skillName)
+          );
         }
         context.selectedValue = selectedSpec ? selectedSpec.value : '';
       } else if (this.rollData.skillName) {
-        // Try to find in regular skills or phantom skills
-        let selectedSkill = dropdownOptions.find((opt: any) => opt.type === 'skill' && opt.name === this.rollData.skillName);
-        if (!selectedSkill) {
-          selectedSkill = dropdownOptions.find((opt: any) => opt.type === 'phantom-skill' && opt.name === this.rollData.skillName);
-        }
+        // Try to find skill by name or slug
+        let selectedSkill = dropdownOptions.find((opt: any) =>
+          (opt.type === 'skill' || opt.type === 'phantom-skill') &&
+          (opt.name === this.rollData.skillName || opt.slug === this.rollData.skillName)
+        );
         context.selectedValue = selectedSkill ? selectedSkill.value : '';
       } else if (this.rollData.linkedAttackSpecialization) {
         // Fallback: try to find by linkedAttackSpecialization using normalized comparison
@@ -997,8 +1018,8 @@ export class RollDialog extends Application {
     if (!selectedAttribute && this.actor) {
       // Try to get from selected spec
       if (this.rollData.specName) {
-        const specItem = this.actor.items.find((i: any) => 
-          i.type === 'specialization' && i.name === this.rollData.specName
+        const specItem = this.actor.items.find((i: any) =>
+          i.type === 'specialization' && (i.name === this.rollData.specName || i.system?.slug === this.rollData.specName)
         );
         if (specItem) {
           selectedAttribute = (specItem.system as any)?.linkedAttribute;
@@ -1017,8 +1038,8 @@ export class RollDialog extends Application {
       }
       // Try to get from selected skill
       if (!selectedAttribute && this.rollData.skillName) {
-        const skillItem = this.actor.items.find((i: any) => 
-          i.type === 'skill' && i.name === this.rollData.skillName
+        const skillItem = this.actor.items.find((i: any) =>
+          i.type === 'skill' && (i.name === this.rollData.skillName || i.system?.slug === this.rollData.skillName)
         );
         if (skillItem) {
           selectedAttribute = (skillItem.system as any)?.linkedAttribute;
@@ -1304,7 +1325,7 @@ export class RollDialog extends Application {
         // Only attribute dice, but includes the RR
         const phantomName = id; // For phantom items, id is the name
         const phantomRRs = SheetHelpers.getPhantomRRs(this.actor);
-        const phantom = phantomRRs.find(p => p.name === phantomName);
+        const phantom = phantomRRs.find(p => p.name === phantomName || ItemSearch.normalizeSearchText(p.name) === ItemSearch.normalizeSearchText(phantomName));
         
         if (!phantom) return;
         
@@ -1361,8 +1382,8 @@ export class RollDialog extends Application {
       } else if (this.rollData.skillName) {
         // Update skill level with new attribute
         const attributeValue = (this.actor.system as any).attributes?.[selectedAttribute] || 0;
-        const skillItem = this.actor.items.find((i: any) => 
-          i.type === 'skill' && i.name === this.rollData.skillName
+        const skillItem = this.actor.items.find((i: any) =>
+          i.type === 'skill' && (i.name === this.rollData.skillName || i.system?.slug === this.rollData.skillName)
         );
         const skillRating = skillItem ? (skillItem.system as any).rating || 0 : 0;
         const dicePool = attributeValue + skillRating;
@@ -1535,6 +1556,14 @@ export class RollDialog extends Application {
     // Cover bonus input (defense only) — read on blur to avoid re-render while typing
     html.find('.cover-bonus-input').on('blur', (event) => {
       this.coverBonus = parseInt((event.currentTarget as HTMLInputElement).value) || 0;
+    });
+
+    // Area of Effect zone input
+    html.find('.aoe-zone-input').on('input', (event) => {
+      const val = parseInt((event.currentTarget as HTMLInputElement).value) || 0;
+      this.aoeZone = Math.max(0, val);
+      // Update diameter display
+      html.find('.aoe-diameter').text(`${this.aoeZone * 3}m`);
     });
 
     // Manual RR bonus input
@@ -1729,6 +1758,7 @@ export class RollDialog extends Application {
         attackerTokenUuid,
         defenderTokenUuid,
         coverBonus:       this.coverBonus,
+        aoeZone:          this.aoeZone > 0 ? this.aoeZone : undefined,
       };
 
       await DiceRoller.executeRoll(attacker, defenders, attackerToken, updatedRollData);

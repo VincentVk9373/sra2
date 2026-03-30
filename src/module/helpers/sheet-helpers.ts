@@ -238,7 +238,7 @@ export async function handleItemDrop(
     // Handle skill
     if (item.type === 'skill') {
       const existingSkill = actor.items.find((i: any) =>
-        i.type === 'skill' && i.name === item.name
+        i.type === 'skill' && (i.name === item.name || (item.system?.slug && i.system?.slug === item.system.slug))
       );
       if (existingSkill) {
         ui.notifications?.warn(game.i18n!.format('SRA2.SKILLS.ALREADY_EXISTS', { name: item.name }));
@@ -251,7 +251,7 @@ export async function handleItemDrop(
     // Handle specialization
     if (item.type === 'specialization') {
       const existingSpec = actor.items.find((i: any) =>
-        i.type === 'specialization' && i.name === item.name
+        i.type === 'specialization' && (i.name === item.name || (item.system?.slug && i.system?.slug === item.system.slug))
       );
       if (existingSpec) {
         ui.notifications?.warn(game.i18n!.format('SRA2.SPECIALIZATIONS.ALREADY_EXISTS', { name: item.name }));
