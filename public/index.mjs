@@ -1305,6 +1305,8 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: "ar",
         choices: {
+          "disconnected": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.DISCONNECTED",
+          "offline": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.OFFLINE",
           "ar": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.AR",
           "cold-sim": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.COLD_SIM",
           "hot-sim": "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.HOT_SIM"
