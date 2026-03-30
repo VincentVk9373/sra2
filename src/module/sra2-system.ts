@@ -851,6 +851,7 @@ export class SRA2System {
 
     Handlebars.registerHelper('connectionModeIcon', function (value: string) {
       const icons: Record<string, string> = {
+        'disconnected': 'fa-plug-circle-xmark',
         'offline': 'fa-power-off',
         'ar': 'fa-glasses',
         'cold-sim': 'fa-snowflake',

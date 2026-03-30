@@ -69,7 +69,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       connectionMode: new fields.StringField({
         required: true,
         initial: 'ar',
-        choices: ['offline', 'ar', 'cold-sim', 'hot-sim'],
+        choices: ['disconnected', 'offline', 'ar', 'cold-sim', 'hot-sim'],
         label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
       }),
       damage: new fields.SchemaField({

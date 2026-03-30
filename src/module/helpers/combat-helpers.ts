@@ -93,7 +93,7 @@ export function getDamageThresholds(
     // In VR cold-sim/hot-sim → character resists with Willpower (mental thresholds)
     // Biofeedback filter on active cyberdeck gives +1 to mental thresholds
     const connectionMode = defenderSystem.connectionMode || 'ar';
-    if (connectionMode === 'ar' || connectionMode === 'offline') {
+    if (connectionMode === 'disconnected' || connectionMode === 'ar' || connectionMode === 'offline') {
       return defenderSystem.damageThresholds?.matrix || { light: 0, severe: 0, incapacitating: 0 };
     }
     const mentalThresholds = defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };

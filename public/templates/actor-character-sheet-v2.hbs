@@ -88,6 +88,9 @@
             <i class="fas {{connectionModeIcon system.connectionMode}}"></i>
             {{connectionModeLabel system.connectionMode}}
             <div class="connection-mode-menu">
+                <div class="context-menu-item {{#if (eq system.connectionMode 'disconnected')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="disconnected">
+                    <i class="fas fa-plug-circle-xmark"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.DISCONNECTED"}}
+                </div>
                 <div class="context-menu-item {{#if (eq system.connectionMode 'offline')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="offline">
                     <i class="fas fa-power-off"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.OFFLINE"}}
                 </div>
@@ -1418,11 +1421,14 @@
             <div>
                 <section class="char-section avatar-large-section">
                     <div class="connection-mode-selector">
-                        <span class="connection-mode-current {{#if (eq system.connectionMode 'offline')}}offline{{/if}}" data-action="show-connection-mode-menu">
+                        <span class="connection-mode-current {{#if (or (eq system.connectionMode 'disconnected') (eq system.connectionMode 'offline'))}}offline{{/if}}" data-action="show-connection-mode-menu">
                             <i class="fas {{connectionModeIcon system.connectionMode}}"></i>
                             {{connectionModeLabel system.connectionMode}}
                         </span>
                         <div class="connection-mode-menu">
+                            <div class="context-menu-item {{#if (eq system.connectionMode 'disconnected')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="disconnected">
+                                <i class="fas fa-plug-circle-xmark"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.DISCONNECTED"}}
+                            </div>
                             <div class="context-menu-item {{#if (eq system.connectionMode 'offline')}}active{{/if}}" data-action="set-character-connection-mode" data-connection-mode="offline">
                                 <i class="fas fa-power-off"></i> {{localize "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.OFFLINE"}}
                             </div>
