@@ -171,7 +171,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       connectionMode: new fields.StringField({
         required: true,
         initial: "ar",
-        choices: ["offline", "ar", "cold-sim", "hot-sim"],
+        choices: ["disconnected", "offline", "ar", "cold-sim", "hot-sim"],
         label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
       }),
       damage: new fields.SchemaField({
@@ -6370,7 +6370,7 @@ function getDamageThresholds(defenderActor, damageType = "physical") {
   }
   if (damageType === "biofeedback") {
     const connectionMode = defenderSystem.connectionMode || "ar";
-    if (connectionMode === "ar" || connectionMode === "offline") {
+    if (connectionMode === "disconnected" || connectionMode === "ar" || connectionMode === "offline") {
       return defenderSystem.damageThresholds?.matrix || { light: 0, severe: 0, incapacitating: 0 };
     }
     const mentalThresholds = defenderSystem.damageThresholds?.mental || { light: 1, severe: 4, incapacitating: 7 };
@@ -14338,6 +14338,7 @@ class SRA2System {
     });
     Handlebars.registerHelper("connectionModeIcon", function(value) {
       const icons = {
+        "disconnected": "fa-plug-circle-xmark",
         "offline": "fa-power-off",
         "ar": "fa-glasses",
         "cold-sim": "fa-snowflake",
