@@ -320,6 +320,11 @@ export class CharacterSheet extends ActorSheet {
       complexForm: allFeats.filter((feat: any) => feat.system.featType === 'complex-form'),
     };
 
+    // Sort all feat categories alphabetically by name
+    for (const key of Object.keys(context.featsByType)) {
+      context.featsByType[key].sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
+    }
+
     // Enrich cyberdecks with cyber attack dice pool (Piratage/Cybercombat + Volonté)
     context.featsByType.cyberdeck = context.featsByType.cyberdeck.map((cyberdeck: any) => {
       const cyberdeckSystem = cyberdeck.system as any;

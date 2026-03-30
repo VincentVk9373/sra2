@@ -7070,6 +7070,9 @@ class CharacterSheet extends ActorSheet {
       emerged: allFeats.filter((feat) => feat.system.featType === "emerged"),
       complexForm: allFeats.filter((feat) => feat.system.featType === "complex-form")
     };
+    for (const key of Object.keys(context.featsByType)) {
+      context.featsByType[key].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    }
     context.featsByType.cyberdeck = context.featsByType.cyberdeck.map((cyberdeck) => {
       const cyberdeckSystem = cyberdeck.system;
       const skillSpecResult = findAttackSkillAndSpec(

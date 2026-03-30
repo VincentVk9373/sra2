@@ -1871,22 +1871,22 @@ export class SRA2System {
   private async buildSkillSlugCache(): Promise<void> {
     const cache: Record<string, string> = {};
 
-    // Load from world items first
+    // Load from world items first (skills and specializations)
     if (game.items) {
       for (const item of game.items as any) {
-        if (item.type === 'skill' && item.system?.slug) {
+        if ((item.type === 'skill' || item.type === 'specialization') && item.system?.slug) {
           cache[item.system.slug] = item.name;
         }
       }
     }
 
-    // Load from compendiums (full documents to get system.slug)
+    // Load from compendiums
     for (const pack of game.packs as any) {
       if (pack.documentName !== 'Item') continue;
       try {
         const index = await pack.getIndex({ fields: ['system.slug'] });
         for (const entry of index) {
-          if (entry.type === 'skill' && (entry as any).system?.slug) {
+          if ((entry.type === 'skill' || entry.type === 'specialization') && (entry as any).system?.slug) {
             const slug = (entry as any).system.slug;
             // Don't overwrite world item names (they take priority)
             if (!cache[slug]) {
@@ -1901,7 +1901,7 @@ export class SRA2System {
 
     // Store globally for synchronous access
     (globalThis as any).SRA2_SKILL_SLUG_CACHE = cache;
-    console.log(SYSTEM.LOG.HEAD + `Skill slug cache built: ${Object.keys(cache).length} entries`);
+    console.log(SYSTEM.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries (skills + specializations)`);
   }
 
   /**

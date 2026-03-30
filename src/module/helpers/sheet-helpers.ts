@@ -530,6 +530,20 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     }
   }
 
+  // Resolve slug names to display names from world items, compendium cache, or game items
+  const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
+  for (const phantom of phantomRRs) {
+    // Try cache first (covers compendiums), then world items
+    if (slugCache[phantom.name]) {
+      phantom.name = slugCache[phantom.name];
+    } else {
+      const resolved = findItemInGame(phantom.type, phantom.name);
+      if (resolved) {
+        phantom.name = resolved.name;
+      }
+    }
+  }
+
   // Calculate final RR values and try to determine linked attribute from compendiums or default
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
