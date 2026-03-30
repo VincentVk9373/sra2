@@ -5,11 +5,12 @@
   "_id": "Yt8UDv3iO9xrVR9v",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Piloting",
+    "linkedSkill": "piloting",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_flying-drones"
   },
   "effects": [],
   "flags": {},

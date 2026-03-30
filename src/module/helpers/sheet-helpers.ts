@@ -4,7 +4,7 @@
  */
 
 import * as ItemSearch from '../../../item-search.js';
-import { RR_MAX } from '../config/constants.js';
+import { RR_MAX, SKILL_SLUGS } from '../config/constants.js';
 
 /**
  * Handle form submission with proper damage checkbox handling
@@ -157,9 +157,9 @@ export function organizeSpecializationsBySkill(
   allSpecializations.forEach((spec: any) => {
     const linkedSkillName = spec.system.linkedSkill;
     if (linkedSkillName) {
-      // linkedSkill is stored as a name, find the skill by name
+      // linkedSkill may be stored as a name or a slug, find the skill by either
       const linkedSkill = actorItems.find((i: any) =>
-        i.type === 'skill' && i.name === linkedSkillName
+        i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
       );
 
       if (linkedSkill && linkedSkill.id) {
@@ -386,6 +386,15 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
 
   // Normalize the search name for comparison (case-insensitive, accent-insensitive)
   const normalizedItemName = ItemSearch.normalizeSearchText(itemName);
+  // Also find the item's slug for matching rrTargets stored as slugs
+  let itemSlug = '';
+  if (itemType === 'skill') {
+    const skillItem = actor.items.find((i: any) => i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === normalizedItemName);
+    itemSlug = skillItem?.system?.slug || '';
+  } else if (itemType === 'specialization') {
+    const specItem = actor.items.find((i: any) => i.type === 'specialization' && ItemSearch.normalizeSearchText(i.name) === normalizedItemName);
+    itemSlug = specItem?.system?.slug || '';
+  }
 
   for (const feat of feats) {
     const featSystem = feat.system as any;
@@ -396,11 +405,14 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || '';
 
-      // Normalize the RR target for comparison
-      const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
+      if (rrType !== itemType || rrValue <= 0) continue;
 
-      // Compare normalized names for better matching (handles custom skills/specs with variations)
-      if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
+      // Compare by normalized name or by slug
+      const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
+      const matchByName = normalizedRRTarget === normalizedItemName;
+      const matchBySlug = itemSlug && rrTarget === itemSlug;
+
+      if (matchByName || matchBySlug) {
         sources.push({
           featName: feat.name,
           rrValue: rrValue,
@@ -441,17 +453,17 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
   const phantomRRs: PhantomRR[] = [];
   const seenTargets = new Set<string>();
 
-  // Get all existing skills and specializations on the actor
-  const existingSkills = new Set(
-    actor.items
-      .filter((i: any) => i.type === 'skill')
-      .map((i: any) => ItemSearch.normalizeSearchText(i.name))
-  );
-  const existingSpecs = new Set(
-    actor.items
-      .filter((i: any) => i.type === 'specialization')
-      .map((i: any) => ItemSearch.normalizeSearchText(i.name))
-  );
+  // Get all existing skills and specializations on the actor (by normalized name AND slug)
+  const existingSkills = new Set<string>();
+  actor.items.filter((i: any) => i.type === 'skill').forEach((i: any) => {
+    existingSkills.add(ItemSearch.normalizeSearchText(i.name));
+    if (i.system?.slug) existingSkills.add(i.system.slug);
+  });
+  const existingSpecs = new Set<string>();
+  actor.items.filter((i: any) => i.type === 'specialization').forEach((i: any) => {
+    existingSpecs.add(ItemSearch.normalizeSearchText(i.name));
+    if (i.system?.slug) existingSpecs.add(i.system.slug);
+  });
 
   // Get all active feats with RR entries
   const feats = actor.items.filter((item: any) =>
@@ -471,10 +483,14 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
       if (rrValue <= 0 || !rrTarget) continue;
 
       const normalizedTarget = ItemSearch.normalizeSearchText(rrTarget);
-      const targetKey = `${rrType}:${normalizedTarget}`;
+      // Use rrTarget directly as key (it's a slug after migration)
+      const targetKey = `${rrType}:${rrTarget}`;
 
       // Check if this is a skill/spec RR targeting something not on the actor
-      if (rrType === 'skill' && !existingSkills.has(normalizedTarget)) {
+      // rrTarget is a slug after migration, but may still be a localized name on unmigrated data
+      const isExistingSkill = existingSkills.has(normalizedTarget) || existingSkills.has(rrTarget);
+      const isExistingSpec = existingSpecs.has(normalizedTarget) || existingSpecs.has(rrTarget);
+      if (rrType === 'skill' && !isExistingSkill) {
         if (!seenTargets.has(targetKey)) {
           seenTargets.add(targetKey);
           phantomRRs.push({
@@ -488,11 +504,11 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
           });
         }
         // Add source to existing phantom
-        const phantom = phantomRRs.find(p => p.type === 'skill' && ItemSearch.normalizeSearchText(p.name) === normalizedTarget);
+        const phantom = phantomRRs.find(p => p.type === 'skill' && (p.name === rrTarget || ItemSearch.normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
           phantom.sources.push({ featName: feat.name, rrValue });
         }
-      } else if (rrType === 'specialization' && !existingSpecs.has(normalizedTarget)) {
+      } else if (rrType === 'specialization' && !isExistingSpec) {
         if (!seenTargets.has(targetKey)) {
           seenTargets.add(targetKey);
           phantomRRs.push({
@@ -506,7 +522,7 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
           });
         }
         // Add source to existing phantom
-        const phantom = phantomRRs.find(p => p.type === 'specialization' && ItemSearch.normalizeSearchText(p.name) === normalizedTarget);
+        const phantom = phantomRRs.find(p => p.type === 'specialization' && (p.name === rrTarget || ItemSearch.normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
           phantom.sources.push({ featName: feat.name, rrValue });
         }
@@ -521,26 +537,36 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     // Default to strength for skills, or try to guess from name
     // Common skill-attribute associations
     const skillAttributeMap: Record<string, string> = {
-      'athlétisme': 'strength',
+      // Slugs (canonical)
+      [SKILL_SLUGS.CLOSE_COMBAT]: 'strength',
+      [SKILL_SLUGS.RANGED_WEAPONS]: 'agility',
+      [SKILL_SLUGS.ATHLETICS]: 'strength',
+      [SKILL_SLUGS.STEALTH]: 'agility',
+      [SKILL_SLUGS.CRACKING]: 'logic',
+      [SKILL_SLUGS.ENGINEERING]: 'logic',
+      [SKILL_SLUGS.ELECTRONICS]: 'logic',
+      [SKILL_SLUGS.PILOTING]: 'agility',
+      [SKILL_SLUGS.SORCERY]: 'willpower',
+      [SKILL_SLUGS.CONJURATION]: 'willpower',
+      [SKILL_SLUGS.TECHNOMANCER]: 'logic',
+      [SKILL_SLUGS.INFLUENCE]: 'charisma',
+      [SKILL_SLUGS.PERCEPTION]: 'willpower',
+      [SKILL_SLUGS.SURVIVAL]: 'willpower',
+      [SKILL_SLUGS.NETWORKING]: 'charisma',
+      [SKILL_SLUGS.ASTRAL_COMBAT]: 'willpower',
+      // FR names (normalized, for backward compat)
       'athletisme': 'strength',
-      'combat rapproché': 'strength',
       'combat rapproche': 'strength',
-      'armes à distance': 'agility',
       'armes a distance': 'agility',
-      'furtivité': 'agility',
       'furtivite': 'agility',
       'piratage': 'logic',
-      'ingénierie': 'logic',
       'ingenierie': 'logic',
-      'biotech': 'logic',
       'pilotage': 'agility',
-      'perception': 'willpower',
-      'survie': 'willpower',
       'sorcellerie': 'willpower',
-      'conjuration': 'willpower',
-      'influence': 'charisma',
-      'tromperie': 'charisma',
-      'intimidation': 'charisma',
+      'technomancie': 'logic',
+      'survie': 'willpower',
+      'reseau': 'charisma',
+      'combat astral': 'willpower',
     };
 
     const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
@@ -558,7 +584,7 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
 
           // Check if actor has this skill
           const actorSkill = actor.items.find((i: any) =>
-            i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName)
+            i.type === 'skill' && (ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
           );
 
           if (actorSkill) {
@@ -1086,7 +1112,7 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
           const linkedSkillName = specSystem.linkedSkill;
           if (linkedSkillName) {
             const parentSkill = actor.items.find((i: any) =>
-              i.type === 'skill' && i.name === linkedSkillName
+              i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
             );
             if (parentSkill) {
               attackSkillName = parentSkill.name;
@@ -1225,6 +1251,8 @@ export interface FindAttackSkillSpecOptions {
   isSpell?: boolean;
   spellSpecType?: string;
   defaultAttribute?: string;
+  /** When true, targetSkill is a slug (e.g. 'sorcery') and lookup uses system.slug */
+  lookupBySlug?: boolean;
 }
 
 /**
@@ -1258,7 +1286,7 @@ export function findAttackSkillAndSpec(
     linkedAttribute: undefined
   };
 
-  const { isSpell = false, spellSpecType = 'combat', defaultAttribute = 'strength' } = options;
+  const { isSpell = false, spellSpecType = 'combat', defaultAttribute = 'strength', lookupBySlug = false } = options;
 
   // Try to find the linked attack specialization first
   if (targetSpec) {
@@ -1285,10 +1313,12 @@ export function findAttackSkillAndSpec(
 
   // If no specialization found, try to find the linked attack skill
   if (!result.specName && !result.skillLevel && targetSkill) {
-    const foundSkill = actor.items.find((i: any) =>
-      i.type === 'skill' &&
-      ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill)
-    );
+    const foundSkill = lookupBySlug
+      ? actor.items.find((i: any) => i.type === 'skill' && i.system.slug === targetSkill)
+      : actor.items.find((i: any) =>
+          i.type === 'skill' &&
+          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill)
+        );
 
     if (foundSkill) {
       const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || defaultAttribute;
@@ -1302,7 +1332,8 @@ export function findAttackSkillAndSpec(
       _searchGameItemsForSorcellerie(actor, result);
     } else if (!isSpell) {
       // Skill not found: use default attribute with skill rating of 0
-      result.skillName = targetSkill;
+      // If lookupBySlug, resolve the slug to a localized name from world items/compendiums
+      result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkill) : targetSkill;
       result.linkedAttribute = result.linkedAttribute || defaultAttribute;
       const attributeValue = (actor.system as any).attributes?.[defaultAttribute] || 0;
       result.skillLevel = 0 + attributeValue; // Skill rating is 0 when skill doesn't exist
@@ -1310,6 +1341,26 @@ export function findAttackSkillAndSpec(
   }
 
   return result;
+}
+
+/**
+ * Resolve a skill slug to its localized name.
+ * Uses the global cache built at startup, falls back to world items search.
+ */
+function _resolveSkillNameFromSlug(slug: string): string {
+  // 1. Use global cache (built from compendiums + world items at startup)
+  const cache = (globalThis as any).SRA2_SKILL_SLUG_CACHE;
+  if (cache && cache[slug]) return cache[slug];
+
+  // 2. Fallback: search world items directly
+  if (game.items) {
+    const worldSkill = (game.items as any).find((i: any) =>
+      i.type === 'skill' && i.system.slug === slug
+    );
+    if (worldSkill) return worldSkill.name;
+  }
+
+  return slug;
 }
 
 /**
@@ -1325,19 +1376,23 @@ function _extractSpecAndSkillInfo(
   result.specName = foundSpec.name;
   result.linkedAttribute = specSystem.linkedAttribute || defaultAttribute;
 
-  // Get parent skill for specialization
+  // Get parent skill for specialization (linkedSkill is now a slug)
   const linkedSkillName = specSystem.linkedSkill;
   if (linkedSkillName) {
     const parentSkill = actor.items.find((i: any) =>
-      i.type === 'skill' && i.name === linkedSkillName
+      i.type === 'skill' && (i.system.slug === linkedSkillName || i.name === linkedSkillName)
     );
-    if (parentSkill && result.linkedAttribute) {
+    if (parentSkill) {
       result.skillName = parentSkill.name;
+      const foundAttr = result.linkedAttribute || defaultAttribute;
       const skillRating = (parentSkill.system as any).rating || 0;
-      const attributeValue = (actor.system as any).attributes?.[result.linkedAttribute] || 0;
+      const attributeValue = (actor.system as any).attributes?.[foundAttr] || 0;
       const skillLevel = skillRating + attributeValue;
       result.skillLevel = skillLevel;
       result.specLevel = skillLevel + 2; // Specialization adds +2
+    } else {
+      // Skill not on actor: resolve name from world items / compendiums for display
+      result.skillName = _resolveSkillNameFromSlug(linkedSkillName);
     }
   }
 }
@@ -1366,7 +1421,7 @@ function _trySpellSpecKeywordSearch(
     if (i.type !== 'specialization') return false;
     const normalizedName = ItemSearch.normalizeSearchText(i.name);
     const linkedSkill = (i.system as any)?.linkedSkill;
-    if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+    if (linkedSkill === SKILL_SLUGS.SORCERY || ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
       return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
     }
     return false;
@@ -1415,7 +1470,7 @@ function _searchGameItemsForSpellSpec(
       if (i.type !== 'specialization') return false;
       const normalizedName = ItemSearch.normalizeSearchText(i.name);
       const linkedSkill = (i.system as any)?.linkedSkill;
-      if (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+      if (linkedSkill === SKILL_SLUGS.SORCERY || (linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie')) {
         return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
       }
       return false;
@@ -1427,8 +1482,9 @@ function _searchGameItemsForSpellSpec(
     const linkedSkillName = specSystem.linkedSkill;
 
     if (linkedSkillName) {
+      // linkedSkill is now a slug, so look up by slug first, fallback to name
       const parentSkill = actor.items.find((i: any) =>
-        i.type === 'skill' && i.name === linkedSkillName
+        i.type === 'skill' && (i.system.slug === linkedSkillName || i.name === linkedSkillName)
       );
       if (parentSkill) {
         const skillSystem = parentSkill.system as any;
@@ -1444,17 +1500,15 @@ function _searchGameItemsForSpellSpec(
 }
 
 /**
- * Search in game.items for Sorcellerie skill
+ * Search in game.items for Sorcery skill (by slug)
  */
 function _searchGameItemsForSorcellerie(actor: any, result: AttackSkillSpecResult): void {
   const sorcerySkillInGame = (game.items as any).find((i: any) =>
-    i.type === 'skill' &&
-    ItemSearch.normalizeSearchText(i.name) === 'sorcellerie'
+    i.type === 'skill' && i.system.slug === SKILL_SLUGS.SORCERY
   );
 
   if (sorcerySkillInGame) {
-    // Use default willpower attribute for Sorcellerie if skill not in actor
-    result.skillName = 'Sorcellerie';
+    result.skillName = sorcerySkillInGame.name;
     result.linkedAttribute = 'willpower';
     const willpower = (actor.system as any).attributes?.willpower || 1;
     result.skillLevel = willpower; // Skill rating would be 0 if not in actor
@@ -1590,7 +1644,7 @@ export function findSkillByName(actor: any, skillName: string): any | undefined 
   const normalizedName = ItemSearch.normalizeSearchText(skillName);
   return actor.items.find((i: any) =>
     i.type === 'skill' &&
-    ItemSearch.normalizeSearchText(i.name) === normalizedName
+    (ItemSearch.normalizeSearchText(i.name) === normalizedName || i.system?.slug === skillName)
   );
 }
 
@@ -1624,7 +1678,7 @@ export function findItemInGame(itemType: string, itemName: string): any | undefi
   const normalizedName = normalizeForComparison(itemName);
   return (game.items as any).find((i: any) =>
     i.type === itemType &&
-    normalizeForComparison(i.name) === normalizedName
+    (normalizeForComparison(i.name) === normalizedName || i.system?.slug === itemName)
   );
 }
 
@@ -1786,10 +1840,16 @@ export function getSpecializationsForSkill(actor: any, skillName: string): any[]
 
   const normalizedSkillName = ItemSearch.normalizeSearchText(skillName);
 
+  // Also find the skill's slug for matching against linkedSkill (which is now stored as a slug)
+  const skillItem = actor.items.find((i: any) => i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === normalizedSkillName);
+  const skillSlug = skillItem?.system?.slug || '';
+
   return actor.items.filter((i: any) => {
     if (i.type !== 'specialization') return false;
     const linkedSkill = (i.system as any)?.linkedSkill;
-    return linkedSkill && ItemSearch.normalizeSearchText(linkedSkill) === normalizedSkillName;
+    if (!linkedSkill) return false;
+    return ItemSearch.normalizeSearchText(linkedSkill) === normalizedSkillName ||
+      (skillSlug && linkedSkill === skillSlug);
   });
 }
 

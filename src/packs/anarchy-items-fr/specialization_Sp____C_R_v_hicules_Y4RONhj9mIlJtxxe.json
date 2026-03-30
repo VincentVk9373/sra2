@@ -5,11 +5,12 @@
   "_id": "Y4RONhj9mIlJtxxe",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Ingénierie",
+    "linkedSkill": "engineering",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_cr-vehicles"
   },
   "effects": [],
   "flags": {},

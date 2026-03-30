@@ -5,11 +5,12 @@
   "_id": "AMiP5pLqtRhyxPZt",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Conjuration",
+    "linkedSkill": "conjuration",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_beast-spirits"
   },
   "effects": [],
   "flags": {},

@@ -5,11 +5,12 @@
   "_id": "cqy7qsNGR0K927xE",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Close Combat",
+    "linkedSkill": "close-combat",
     "linkedAttribute": "strength",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_fangs"
   },
   "effects": [],
   "flags": {},

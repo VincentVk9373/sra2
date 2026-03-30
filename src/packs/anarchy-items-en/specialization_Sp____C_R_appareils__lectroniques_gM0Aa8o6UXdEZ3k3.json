@@ -5,11 +5,12 @@
   "_id": "gM0Aa8o6UXdEZ3k3",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Engineering",
+    "linkedSkill": "engineering",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_personal-electronics"
   },
   "effects": [],
   "flags": {},

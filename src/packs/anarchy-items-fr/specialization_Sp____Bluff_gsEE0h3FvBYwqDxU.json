@@ -5,11 +5,12 @@
   "_id": "gsEE0h3FvBYwqDxU",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Influence",
+    "linkedSkill": "influence",
     "linkedAttribute": "charisma",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_bluff"
   },
   "effects": [],
   "flags": {},

@@ -5,11 +5,12 @@
   "_id": "dcRxdjr8lASrGaUi",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Combat rapproché",
+    "linkedSkill": "close-combat",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_unarmed"
   },
   "effects": [],
   "flags": {},

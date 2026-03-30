@@ -5,11 +5,12 @@
   "_id": "73ApOxYKOW96WBfk",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Arme à distance",
+    "linkedSkill": "ranged-weapons",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_mounted-weapons"
   },
   "effects": [],
   "flags": {},

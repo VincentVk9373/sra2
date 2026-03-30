@@ -5,11 +5,12 @@
   "_id": "wClMs39n9tzfFDlz",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Athlétisme",
+    "linkedSkill": "athletics",
     "linkedAttribute": "strength",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_swimming"
   },
   "effects": [],
   "flags": {},

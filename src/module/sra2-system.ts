@@ -1,6 +1,6 @@
 import { SYSTEM } from "./config/system.ts";
 import { setSidebarIcons, setControlIcons, setCompendiumBanners } from "./config/ui-config.ts";
-import { DELAYS } from "./config/constants.ts";
+import { DELAYS, SKILL_SLUGS, SPEC_SLUGS } from "./config/constants.ts";
 
 // Expose the SYSTEM object to the global scope
 globalThis.SYSTEM = SYSTEM;
@@ -47,17 +47,52 @@ import { Migration_13_0_28 } from "./migration/migration-13.0.28.mjs";
 import { Migration_13_1_1 } from "./migration/migration-13.1.1.mjs";
 import { Migration_13_1_3 } from "./migration/migration-13.1.3.mjs";
 // @ts-ignore - JavaScript module without type declarations
+import { Migration_13_2_4 } from "./migration/migration-13.2.4.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
 /**
+ * Find a skill on an actor by slug, falling back to normalized name match.
+ */
+function findSkillBySlug(actor: any, slug: string): any | undefined {
+  const bySlug = actor.items.find((i: any) => i.type === 'skill' && i.system?.slug === slug);
+  if (bySlug) return bySlug;
+  return SheetHelpers.findSkillByName(actor, slug);
+}
+
+/**
+ * Find a specialization on an actor by slug + linkedSkill slug, falling back to name-based matching.
+ */
+function findSpecBySlug(actor: any, specSlug: string, linkedSkillSlug: string): any | undefined {
+  const parentSkill = findSkillBySlug(actor, linkedSkillSlug);
+  const parentSkillName = parentSkill?.name;
+  // Strip "spec_" prefix and convert hyphens to spaces for name matching
+  const specKeyword = specSlug.replace(/^spec_/, '').replace(/-/g, ' ');
+
+  return actor.items.find((i: any) => {
+    if (i.type !== 'specialization') return false;
+    const specSlugMatch = i.system?.slug === specSlug;
+    const specNameNorm = (i.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const specNameMatch = specNameNorm.includes(specKeyword);
+    if (!specSlugMatch && !specNameMatch) return false;
+    const linkedSkill = i.system?.linkedSkill;
+    if (!linkedSkill) return false;
+    if (linkedSkill === linkedSkillSlug) return true;
+    if (parentSkillName && linkedSkill === parentSkillName) return true;
+    return false;
+  });
+}
+
+/**
  * Return the list of melee weapons from an actor that can be used for a counter-attack.
- * A weapon qualifies if it has melee capability AND is linked to "Combat rapproché"
+ * A weapon qualifies if it has melee capability AND is linked to "close-combat"
  * (directly or via a specialisation).
  */
 function getMeleeWeaponsForCounterAttack(actor: any, WEAPON_TYPES: Record<string, any>): any[] {
+  const CLOSE_COMBAT = SKILL_SLUGS.CLOSE_COMBAT;
   const combatSpecs = new Set<string>(
     actor.items
-      .filter((i: any) => i.type === 'specialization' && i.system.linkedSkill === 'Combat rapproché')
+      .filter((i: any) => i.type === 'specialization' && i.system.linkedSkill === CLOSE_COMBAT)
       .map((i: any) => i.name as string)
   );
 
@@ -74,22 +109,22 @@ function getMeleeWeaponsForCounterAttack(actor: any, WEAPON_TYPES: Record<string
     const sys   = item.system;
     const stats = getStats(sys);
     return (
-      sys.linkedAttackSkill === 'Combat rapproché' ||
+      sys.linkedAttackSkill === CLOSE_COMBAT ||
       combatSpecs.has(sys.linkedAttackSkill) ||
       combatSpecs.has(sys.linkedAttackSpecialization) ||
-      stats?.linkedSkill === 'Combat rapproché' ||
+      stats?.linkedSkill === CLOSE_COMBAT ||
       combatSpecs.has(stats?.linkedSkill)
     );
   }
   function resolvedLinkedSkill(item: any): string {
     const sys = item.system;
-    if (sys.linkedAttackSkill === 'Combat rapproché' || combatSpecs.has(sys.linkedAttackSkill)) {
-      return sys.linkedAttackSkill || 'Combat rapproché';
+    if (sys.linkedAttackSkill === CLOSE_COMBAT || combatSpecs.has(sys.linkedAttackSkill)) {
+      return sys.linkedAttackSkill || CLOSE_COMBAT;
     }
     const stats = getStats(sys);
     const fromType = stats?.linkedSkill;
-    if (fromType === 'Combat rapproché' || combatSpecs.has(fromType)) return fromType;
-    return 'Combat rapproché';
+    if (fromType === CLOSE_COMBAT || combatSpecs.has(fromType)) return fromType;
+    return CLOSE_COMBAT;
   }
 
   return actor.items
@@ -180,12 +215,14 @@ export class SRA2System {
       declareMigration(new Migration_13_0_28());
       declareMigration(new Migration_13_1_1());
       declareMigration(new Migration_13_1_3());
+      declareMigration(new Migration_13_2_4());
     });
   }
 
   private registerDataModels(): void {
-    // Register custom Actor document class
+    // Register custom document classes
     CONFIG.Actor.documentClass = documents.SRA2Actor;
+    CONFIG.Item.documentClass = documents.SRA2Item as any;
 
     // Register Actor data models
     CONFIG.Actor.dataModels = {
@@ -1129,48 +1166,78 @@ export class SRA2System {
         if (!defender) { ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET')); return; }
         const defenderActorForRoll = defenderToken?.actor ?? defender;
 
-        // Build cybercombat defense pool: Skill + FW
-        // Technomancer: Technomancie/Formes complexes + Volonté (FW = Volonté)
-        // Decker: Piratage/Cybercombat + cyberdeck FW
-        const isTechno = defenderActorForRoll.items.some((i: any) => i.type === 'feat' && i.system.featType === 'emerged');
+        // Build cybercombat defense pool with priority-based auto-selection:
+        // 1. Spé : Cybercombat (under Piratage/cracking) + cyberdeck FW
+        // 2. Spé : Formes complexes (under Technomancie/technomancer) + Volonté
+        // 3. Piratage (cracking) skill alone + cyberdeck FW
+        // 4. Technomancie (technomancer) skill alone + Volonté
+        const pirSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
+        const techSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
+        const cyberSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
+        const cfSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
+
         let skillName: string;
         let specName: string | null;
         let skillLevel: number;
         let specLevel: number | undefined;
         let rrTarget: string;
         let rrItemType: string;
+        let defLinkedAttribute: string;
 
-        if (isTechno) {
-          const techSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Technomancie');
-          const cfSpec = defenderActorForRoll.items.find((i: any) =>
-            i.type === 'specialization' && i.name === 'Formes complexes' && i.system.linkedSkill === 'Technomancie'
-          );
-          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
-          const techRating = (techSkill?.system?.rating ?? 0);
-          skillName = 'Technomancie';
-          specName = cfSpec ? 'Formes complexes' : null;
-          skillLevel = techRating + volonte;
-          specLevel = cfSpec ? skillLevel + ((cfSpec.system?.rating ?? 0)) : undefined;
-          rrTarget = cfSpec ? 'Formes complexes' : 'Technomancie';
-          rrItemType = cfSpec ? 'specialization' : 'skill';
-        } else {
-          const pirSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Piratage');
-          const cyberSpec = defenderActorForRoll.items.find((i: any) =>
-            i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
-          );
+        if (cyberSpecDef && pirSkillDef) {
+          // Priority 1: Spé Cybercombat + cyberdeck FW
           const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
             i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
           );
           const fw = activeCyberdeck
             ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0))
             : 1;
-          const pirRating = (pirSkill?.system?.rating ?? 0);
-          skillName = 'Piratage';
-          specName = cyberSpec ? 'Cybercombat' : null;
+          const pirRating = (pirSkillDef.system?.rating ?? 0);
+          skillName = pirSkillDef.name;
+          specName = cyberSpecDef.name;
           skillLevel = pirRating + fw;
-          specLevel = cyberSpec ? skillLevel + ((cyberSpec.system?.rating ?? 0)) : undefined;
-          rrTarget = cyberSpec ? 'Cybercombat' : 'Piratage';
-          rrItemType = cyberSpec ? 'specialization' : 'skill';
+          specLevel = skillLevel + 2;
+          rrTarget = cyberSpecDef.name;
+          rrItemType = 'specialization';
+          defLinkedAttribute = 'firewall';
+        } else if (cfSpecDef && techSkillDef) {
+          // Priority 2: Spé Formes complexes + Volonté
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const techRating = (techSkillDef.system?.rating ?? 0);
+          skillName = techSkillDef.name;
+          specName = cfSpecDef.name;
+          skillLevel = techRating + volonte;
+          specLevel = skillLevel + 2;
+          rrTarget = cfSpecDef.name;
+          rrItemType = 'specialization';
+          defLinkedAttribute = 'willpower';
+        } else if (pirSkillDef) {
+          // Priority 3: Piratage skill alone + cyberdeck FW
+          const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
+          );
+          const fw = activeCyberdeck
+            ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0))
+            : 1;
+          const pirRating = (pirSkillDef.system?.rating ?? 0);
+          skillName = pirSkillDef.name;
+          specName = null;
+          skillLevel = pirRating + fw;
+          specLevel = undefined;
+          rrTarget = skillName;
+          rrItemType = 'skill';
+          defLinkedAttribute = 'firewall';
+        } else {
+          // Priority 4: Technomancie skill alone + Volonté (fallback)
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const techRating = (techSkillDef?.system?.rating ?? 0);
+          skillName = techSkillDef?.name || 'Technomancie';
+          specName = null;
+          skillLevel = techRating + volonte;
+          specLevel = undefined;
+          rrTarget = skillName;
+          rrItemType = 'skill';
+          defLinkedAttribute = 'willpower';
         }
 
         const { getRRSources } = SheetHelpers;
@@ -1182,7 +1249,7 @@ export class SRA2System {
         const defenseRollData: any = {
           skillName,
           specName,
-          linkedAttribute: isTechno ? 'willpower' : 'firewall',
+          linkedAttribute: defLinkedAttribute,
           skillLevel,
           specLevel,
           actorId:         defenderActorForRoll.id,
@@ -1231,10 +1298,16 @@ export class SRA2System {
         if (!defender) { ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET')); return; }
         const defenderActorForRoll = defenderToken?.actor ?? defender;
 
-        // Build cybercombat counter-attack pool: Skill + Volonté
-        // Technomancer: Technomancie/Formes complexes + Résonance
-        // Decker: Piratage/Cybercombat + Volonté
-        const isTechno = defenderActorForRoll.items.some((i: any) => i.type === 'feat' && i.system.featType === 'emerged');
+        // Build cybercombat counter-attack pool with priority-based auto-selection:
+        // 1. Spé : Cybercombat (under Piratage/cracking)
+        // 2. Spé : Formes complexes (under Technomancie/technomancer)
+        // 3. Piratage (cracking) skill alone
+        // 4. Technomancie (technomancer) skill alone
+        const pirSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
+        const techSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
+        const cyberSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
+        const cfSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
+
         let caSkillName: string;
         let caSpecName: string | null;
         let skillLevel: number;
@@ -1243,42 +1316,68 @@ export class SRA2System {
         let caRRItemType: string;
         let caItemType: string;
         let attackValue: number;
+        let caLinkedAttribute: string;
 
-        if (isTechno) {
-          const techSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Technomancie');
-          const cfSpec = defenderActorForRoll.items.find((i: any) =>
-            i.type === 'specialization' && i.name === 'Formes complexes' && i.system.linkedSkill === 'Technomancie'
-          );
-          const resonance = (defenderActorForRoll.system as any)?.attributes?.resonance ?? (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
-          const techRating = (techSkill?.system?.rating ?? 0);
-          caSkillName = 'Technomancie';
-          caSpecName = cfSpec ? 'Formes complexes' : null;
-          skillLevel = techRating + resonance;
-          specLevel = cfSpec ? skillLevel + ((cfSpec.system?.rating ?? 0)) : undefined;
-          caRRTarget = cfSpec ? 'Formes complexes' : 'Technomancie';
-          caRRItemType = cfSpec ? 'specialization' : 'skill';
-          caItemType = 'complex-form';
-          // Technomancer attack value: use Volonté as VD
+        if (cyberSpec && pirSkill) {
+          // Priority 1: Spé Cybercombat
           const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
-          attackValue = volonte;
-        } else {
-          const pirSkill = defenderActorForRoll.items.find((i: any) => i.type === 'skill' && i.name === 'Piratage');
-          const cyberSpec = defenderActorForRoll.items.find((i: any) =>
-            i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
-          );
-          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
-          const pirRating = (pirSkill?.system?.rating ?? 0);
-          caSkillName = 'Piratage';
-          caSpecName = cyberSpec ? 'Cybercombat' : null;
+          const pirRating = (pirSkill.system?.rating ?? 0);
+          caSkillName = pirSkill.name;
+          caSpecName = cyberSpec.name;
           skillLevel = pirRating + volonte;
-          specLevel = cyberSpec ? skillLevel + ((cyberSpec.system?.rating ?? 0)) : undefined;
-          caRRTarget = cyberSpec ? 'Cybercombat' : 'Piratage';
-          caRRItemType = cyberSpec ? 'specialization' : 'skill';
+          specLevel = skillLevel + 2;
+          caRRTarget = cyberSpec.name;
+          caRRItemType = 'specialization';
           caItemType = 'cyberdeck-attack';
+          caLinkedAttribute = 'willpower';
           const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
             i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
           );
           attackValue = activeCyberdeck?.system?.attack ?? 1;
+        } else if (cfSpec && techSkill) {
+          // Priority 2: Spé Formes complexes
+          const resonance = (defenderActorForRoll.system as any)?.attributes?.resonance ?? (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const techRating = (techSkill.system?.rating ?? 0);
+          caSkillName = techSkill.name;
+          caSpecName = cfSpec.name;
+          skillLevel = techRating + resonance;
+          specLevel = skillLevel + 2;
+          caRRTarget = cfSpec.name;
+          caRRItemType = 'specialization';
+          caItemType = 'complex-form';
+          caLinkedAttribute = 'willpower';
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          attackValue = volonte;
+        } else if (pirSkill) {
+          // Priority 3: Piratage skill alone
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const pirRating = (pirSkill.system?.rating ?? 0);
+          caSkillName = pirSkill.name;
+          caSpecName = null;
+          skillLevel = pirRating + volonte;
+          specLevel = undefined;
+          caRRTarget = caSkillName;
+          caRRItemType = 'skill';
+          caItemType = 'cyberdeck-attack';
+          caLinkedAttribute = 'willpower';
+          const activeCyberdeck = defenderActorForRoll.items.find((i: any) =>
+            i.type === 'feat' && i.system.featType === 'cyberdeck' && i.system.active === true
+          );
+          attackValue = activeCyberdeck?.system?.attack ?? 1;
+        } else {
+          // Priority 4: Technomancie skill alone (fallback)
+          const resonance = (defenderActorForRoll.system as any)?.attributes?.resonance ?? (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          const techRating = (techSkill?.system?.rating ?? 0);
+          caSkillName = techSkill?.name || 'Technomancie';
+          caSpecName = null;
+          skillLevel = techRating + resonance;
+          specLevel = undefined;
+          caRRTarget = caSkillName;
+          caRRItemType = 'skill';
+          caItemType = 'complex-form';
+          caLinkedAttribute = 'willpower';
+          const volonte = (defenderActorForRoll.system as any)?.attributes?.willpower ?? 0;
+          attackValue = volonte;
         }
 
         const { getRRSources } = SheetHelpers;
@@ -1295,7 +1394,7 @@ export class SRA2System {
           damageType:      'matrix',
           skillName:       caSkillName,
           specName:        caSpecName,
-          linkedAttribute: 'willpower',
+          linkedAttribute: caLinkedAttribute,
           skillLevel,
           specLevel,
           actorId:         defenderActorForRoll.id,
@@ -1751,6 +1850,9 @@ export class SRA2System {
     // Initialize the Group Anarchy Counter (visible to all)
     applications.AnarchyCounter.instance.render(true);
 
+    // Build skill slug → name cache from compendiums (for resolving slugs to localized names)
+    await this.buildSkillSlugCache();
+
     // Run migrations
     const migrations = new Migrations();
     migrations.migrate();
@@ -1760,6 +1862,46 @@ export class SRA2System {
 
     // Migrate anarchyNimbus to anarchySpent
     await this.migrateAnarchyNimbusToSpent();
+  }
+
+  /**
+   * Build a global cache mapping skill slugs to localized names.
+   * Loaded from compendiums at startup so slug resolution is synchronous.
+   */
+  private async buildSkillSlugCache(): Promise<void> {
+    const cache: Record<string, string> = {};
+
+    // Load from world items first
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === 'skill' && item.system?.slug) {
+          cache[item.system.slug] = item.name;
+        }
+      }
+    }
+
+    // Load from compendiums (full documents to get system.slug)
+    for (const pack of game.packs as any) {
+      if (pack.documentName !== 'Item') continue;
+      try {
+        const index = await pack.getIndex({ fields: ['system.slug'] });
+        for (const entry of index) {
+          if (entry.type === 'skill' && (entry as any).system?.slug) {
+            const slug = (entry as any).system.slug;
+            // Don't overwrite world item names (they take priority)
+            if (!cache[slug]) {
+              cache[slug] = entry.name;
+            }
+          }
+        }
+      } catch (e) {
+        // Skip packs that fail to load
+      }
+    }
+
+    // Store globally for synchronous access
+    (globalThis as any).SRA2_SKILL_SLUG_CACHE = cache;
+    console.log(SYSTEM.LOG.HEAD + `Skill slug cache built: ${Object.keys(cache).length} entries`);
   }
 
   /**

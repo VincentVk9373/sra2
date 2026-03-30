@@ -2,7 +2,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import * as DiceRoller from '../helpers/dice-roller.js';
 import { VEHICLE_TYPES, WEAPON_TYPES } from '../models/item-feat.js';
-import { NARRATIVE_SAVE_DEBOUNCE } from '../config/constants.js';
+import { NARRATIVE_SAVE_DEBOUNCE, DELAYS } from '../config/constants.js';
 
 /**
  * Vehicle/Drone Sheet Application
@@ -389,9 +389,15 @@ export class VehicleSheet extends ActorSheet {
     let narrativeEffectSaveTimeout: NodeJS.Timeout | null = null;
     
     const saveNarrativeEffects = async () => {
+      // Remember which textarea had focus and cursor position before save
+      const activeElement = document.activeElement as HTMLTextAreaElement | null;
+      const activeFieldName = activeElement?.name || '';
+      const cursorPos = activeElement?.selectionStart ?? 0;
+      const cursorEnd = activeElement?.selectionEnd ?? cursorPos;
+
       // Read current narrative effects from form inputs to preserve unsaved changes
       const currentNarrativeEffects: any[] = [];
-      
+
       // Extract all narrative effect values from form (preserve order and unsaved changes)
       const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
       narrativeEffectTextareas.each((_inputIndex, textarea) => {
@@ -402,10 +408,10 @@ export class VehicleSheet extends ActorSheet {
           const text = textareaElement.value || '';
           const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
           const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
-          
+
           // Determine isNegative based on value (for backward compatibility)
           const isNegative = value < 0;
-          
+
           currentNarrativeEffects[effectIndex] = {
             text: text,
             isNegative: isNegative,
@@ -413,18 +419,29 @@ export class VehicleSheet extends ActorSheet {
           };
         }
       });
-      
+
       // Fill gaps in array
       for (let i = 0; i < currentNarrativeEffects.length; i++) {
         if (!currentNarrativeEffects[i]) {
           currentNarrativeEffects[i] = { text: '', isNegative: false, value: 0 };
         }
       }
-      
+
       // Update the actor - this will trigger the updateActor hook which re-renders character sheets
       await this.actor.update({
         'system.narrativeEffects': currentNarrativeEffects
       } as any);
+
+      // Restore focus after re-render if the user was typing in a narrative effect textarea
+      if (activeFieldName && activeFieldName.startsWith('system.narrativeEffects.')) {
+        setTimeout(() => {
+          const restored = this.element.find(`textarea[name="${activeFieldName}"]`)[0] as HTMLTextAreaElement | undefined;
+          if (restored) {
+            restored.focus();
+            restored.setSelectionRange(cursorPos, cursorEnd);
+          }
+        }, DELAYS.SHEET_RENDER);
+      }
     };
     
     // Handle select changes (immediate save)

@@ -20,7 +20,8 @@
     "rating": 2,
     "linkedAttribute": "strength",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "athletics"
   },
   "effects": [],
   "flags": {},

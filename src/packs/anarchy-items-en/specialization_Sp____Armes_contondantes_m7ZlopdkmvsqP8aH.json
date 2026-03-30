@@ -5,11 +5,12 @@
   "_id": "m7ZlopdkmvsqP8aH",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Close Combat",
+    "linkedSkill": "close-combat",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_blunt-weapons"
   },
   "effects": [],
   "flags": {},

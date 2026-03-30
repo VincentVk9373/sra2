@@ -5,11 +5,12 @@
   "_id": "QGnYHxbVGF9rsLEw",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Conjuration",
+    "linkedSkill": "conjuration",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_air-spirits"
   },
   "effects": [],
   "flags": {},

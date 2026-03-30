@@ -5,11 +5,12 @@
   "_id": "F4TjEFjge33f8cbV",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Armes à distance",
+    "linkedSkill": "ranged-weapons",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_shotguns"
   },
   "effects": [],
   "flags": {},

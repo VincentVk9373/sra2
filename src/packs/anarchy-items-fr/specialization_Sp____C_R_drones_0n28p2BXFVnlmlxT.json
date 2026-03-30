@@ -5,11 +5,12 @@
   "_id": "0n28p2BXFVnlmlxT",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Ingénierie",
+    "linkedSkill": "engineering",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_cr-drones"
   },
   "effects": [],
   "flags": {},

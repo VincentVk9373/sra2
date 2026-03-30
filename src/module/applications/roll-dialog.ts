@@ -4,7 +4,7 @@ import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as ItemSearch from '../../../item-search.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import shadowAmpProbabilities from '../config/shadow-amp-probabilities.json';
-import { ACTOR_ATTRIBUTES } from '../config/constants.js';
+import { ACTOR_ATTRIBUTES, SKILL_SLUGS, SPEC_SLUGS } from '../config/constants.js';
 
 /**
  * Roll Dialog Application
@@ -203,19 +203,19 @@ export class RollDialog extends Application {
     );
     const damageValue = finalNumericDamage.toString();
     
-    // Default to "Combat rapproché" if no skill found
+    // Default to close-combat slug if no skill found
     if (!baseSkillName) {
-      baseSkillName = 'Combat rapproché';
+      baseSkillName = SKILL_SLUGS.CLOSE_COMBAT;
     }
-    
-    // Find the linked skill in actor's items
-    const linkedSkillItem = this.actor.items.find((item: any) => 
-      item.type === 'skill' && item.name === baseSkillName
+
+    // Find the linked skill in actor's items (baseSkillName is now a slug)
+    const linkedSkillItem = this.actor.items.find((item: any) =>
+      item.type === 'skill' && (item.system.slug === baseSkillName || item.name === baseSkillName)
     );
-    
-    // Find specializations for the linked skill
-    const linkedSpecs = this.actor.items.filter((item: any) => 
-      item.type === 'specialization' && 
+
+    // Find specializations for the linked skill (linkedSkill is now a slug)
+    const linkedSpecs = this.actor.items.filter((item: any) =>
+      item.type === 'specialization' &&
       item.system.linkedSkill === baseSkillName
     );
     
@@ -316,8 +316,8 @@ export class RollDialog extends Application {
   private selectCombatRapprocheSkill(): void {
     if (!this.actor) return;
     
-    const combatRapprocheSkill = this.actor.items.find((item: any) => 
-      item.type === 'skill' && item.name === 'Combat rapproché'
+    const combatRapprocheSkill = this.actor.items.find((item: any) =>
+      item.type === 'skill' && item.system.slug === SKILL_SLUGS.CLOSE_COMBAT
     );
     
     if (!combatRapprocheSkill) return;
@@ -329,14 +329,15 @@ export class RollDialog extends Application {
     const skillLevel = attributeValue + skillRating;
     
     // Get RR sources
-    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', 'Combat rapproché');
+    const skillRRSources = SheetHelpers.getRRSources(this.actor, 'skill', combatRapprocheSkill.name);
     const attributeRRSources = SheetHelpers.getRRSources(this.actor, 'attribute', linkedAttribute);
     const rrList = [...skillRRSources, ...attributeRRSources];
-    
+
     // Update roll data
-    this.rollData.skillName = 'Combat rapproché';
+    this.rollData.skillName = combatRapprocheSkill.name;
+    this.rollData.skillSlug = SKILL_SLUGS.CLOSE_COMBAT;
     this.rollData.specName = undefined;
-    this.rollData.linkedAttackSkill = 'Combat rapproché';
+    this.rollData.linkedAttackSkill = SKILL_SLUGS.CLOSE_COMBAT;
     this.rollData.linkedAttribute = linkedAttribute;
     this.rollData.skillLevel = skillLevel;
     this.rollData.specLevel = undefined;
@@ -477,10 +478,10 @@ export class RollDialog extends Application {
     let hasHotSimAdvantage = false;
     if (this.actor && this.actor.type === 'character') {
       const connectionMode = (this.actor.system as any)?.connectionMode || 'ar';
-      const skillName = (this.rollData.skillName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const specName = (this.rollData.specName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const isPiratage = skillName.includes('piratage') || skillName.includes('hacking');
-      const isCybercombat = specName.includes('cybercombat');
+      const skillSlug = this.rollData.skillSlug || '';
+      const specSlug = this.rollData.specSlug || '';
+      const isPiratage = skillSlug === SKILL_SLUGS.CRACKING;
+      const isCybercombat = specSlug === SPEC_SLUGS.CYBERCOMBAT;
       if (connectionMode === 'hot-sim' && (isPiratage || isCybercombat)) {
         this.rollMode = 'advantage';
         hasHotSimAdvantage = true;
@@ -790,6 +791,7 @@ export class RollDialog extends Application {
           return {
             id: skill.id,
             name: skill.name,
+            slug: skill.system?.slug || '',
             rating: skillRating,
             linkedAttribute: linkedAttribute,
             dicePool: attributeValue + skillRating,
@@ -808,8 +810,8 @@ export class RollDialog extends Application {
           const attributeValue = (this.actor?.system as any)?.attributes?.[linkedAttribute] || 0;
           
           // Find parent skill
-          const parentSkill = this.actor!.items.find((i: any) => 
-            i.type === 'skill' && i.name === linkedSkillName
+          const parentSkill = this.actor!.items.find((i: any) =>
+            i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
           );
           const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
           const effectiveRating = skillRating + 2; // +2 from specialization
@@ -828,7 +830,7 @@ export class RollDialog extends Application {
       // Group specializations under their parent skills and track orphans
       const orphanSpecializations: any[] = [];
       for (const spec of allSpecializations) {
-        const parentSkill = skills.find((s: any) => s.name === spec.linkedSkillName);
+        const parentSkill = skills.find((s: any) => s.name === spec.linkedSkillName || s.slug === spec.linkedSkillName);
         if (parentSkill) {
           parentSkill.specializations.push(spec);
         } else {
@@ -1003,8 +1005,8 @@ export class RollDialog extends Application {
           // Check if spec has a rating > 0 (parent skill rating)
           const parentSkillName = (specItem.system as any)?.linkedSkill;
           if (parentSkillName) {
-            const parentSkillItem = this.actor.items.find((i: any) => 
-              i.type === 'skill' && i.name === parentSkillName
+            const parentSkillItem = this.actor.items.find((i: any) =>
+              i.type === 'skill' && (i.name === parentSkillName || i.system?.slug === parentSkillName)
             );
             if (parentSkillItem) {
               const skillRating = (parentSkillItem.system as any)?.rating || 0;
@@ -1037,9 +1039,9 @@ export class RollDialog extends Application {
         // Person doesn't have the skill - use default attribute based on skill type
         const linkedAttackSkill = this.rollData.linkedAttackSkill || this.rollData.skillName;
         
-        // If skill is "Combat rapproché", default to Strength
+        // If skill is close-combat, default to Strength
         // Otherwise default to Agility
-        if (linkedAttackSkill && ItemSearch.normalizeSearchText(linkedAttackSkill) === ItemSearch.normalizeSearchText('Combat rapproché')) {
+        if (linkedAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
           selectedAttribute = 'strength';
         } else {
           selectedAttribute = 'agility';
@@ -1116,19 +1118,19 @@ export class RollDialog extends Application {
       );
       const damageValue = finalNumericDamage.toString();
 
-      // Default to "Combat rapproché" if no skill found
+      // Default to close-combat slug if no skill found
       if (!baseSkillName) {
-        baseSkillName = 'Combat rapproché';
+        baseSkillName = SKILL_SLUGS.CLOSE_COMBAT;
       }
 
-      // Find the linked skill in actor's items
-      const linkedSkillItem = this.actor.items.find((item: any) => 
-        item.type === 'skill' && item.name === baseSkillName
+      // Find the linked skill in actor's items (baseSkillName is now a slug)
+      const linkedSkillItem = this.actor.items.find((item: any) =>
+        item.type === 'skill' && (item.system.slug === baseSkillName || item.name === baseSkillName)
       );
 
-      // Find specializations for the linked skill
-      const linkedSpecs = this.actor.items.filter((item: any) => 
-        item.type === 'specialization' && 
+      // Find specializations for the linked skill (linkedSkill is now a slug)
+      const linkedSpecs = this.actor.items.filter((item: any) =>
+        item.type === 'specialization' &&
         item.system.linkedSkill === baseSkillName
       );
       
@@ -1278,8 +1280,8 @@ export class RollDialog extends Application {
         const attributeValue = (this.actor.system as any).attributes?.[selectedAttribute] || 0;
         
         // Find parent skill
-        const parentSkill = this.actor.items.find((i: any) => 
-          i.type === 'skill' && i.name === linkedSkillName
+        const parentSkill = this.actor.items.find((i: any) =>
+          i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
         );
         const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
         const effectiveRating = skillRating + 2;
@@ -1344,8 +1346,8 @@ export class RollDialog extends Application {
         // Update spec level with new attribute
         const attributeValue = (this.actor.system as any).attributes?.[selectedAttribute] || 0;
         const linkedSkillName = this.rollData.skillName;
-        const parentSkill = this.actor.items.find((i: any) => 
-          i.type === 'skill' && i.name === linkedSkillName
+        const parentSkill = this.actor.items.find((i: any) =>
+          i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
         );
         const skillRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
         const effectiveRating = skillRating + 2;

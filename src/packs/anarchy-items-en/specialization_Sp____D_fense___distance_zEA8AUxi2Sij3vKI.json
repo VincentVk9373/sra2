@@ -5,11 +5,12 @@
   "_id": "zEA8AUxi2Sij3vKI",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Athletics",
+    "linkedSkill": "athletics",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_ranged-defense"
   },
   "effects": [],
   "flags": {},

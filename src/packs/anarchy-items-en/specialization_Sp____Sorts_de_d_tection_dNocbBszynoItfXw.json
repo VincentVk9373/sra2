@@ -5,11 +5,12 @@
   "_id": "dNocbBszynoItfXw",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Sorcery",
+    "linkedSkill": "sorcery",
     "linkedAttribute": "willpower",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_detection-spells"
   },
   "effects": [],
   "flags": {},

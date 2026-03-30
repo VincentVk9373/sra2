@@ -5,11 +5,12 @@
   "_id": "CjpzcgaIpNE1jGHh",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Réseau",
+    "linkedSkill": "networking",
     "linkedAttribute": "charisma",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_magic"
   },
   "effects": [],
   "flags": {},

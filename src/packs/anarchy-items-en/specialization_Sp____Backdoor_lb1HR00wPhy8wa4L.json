@@ -5,11 +5,12 @@
   "_id": "lb1HR00wPhy8wa4L",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Hacking",
+    "linkedSkill": "cracking",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_backdoor"
   },
   "effects": [],
   "flags": {},

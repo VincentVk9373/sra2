@@ -4,11 +4,12 @@
   "type": "specialization",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Ranged Weapons",
+    "linkedSkill": "ranged-weapons",
     "description": "",
     "linkedAttribute": "agility",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_pistols"
   },
   "effects": [],
   "flags": {},

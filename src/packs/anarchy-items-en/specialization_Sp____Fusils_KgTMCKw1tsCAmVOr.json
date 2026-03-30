@@ -5,11 +5,12 @@
   "_id": "KgTMCKw1tsCAmVOr",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Ranged Weapons",
+    "linkedSkill": "ranged-weapons",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_rifles"
   },
   "effects": [],
   "flags": {},

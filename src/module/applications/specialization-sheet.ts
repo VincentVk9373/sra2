@@ -24,35 +24,60 @@ export class SpecializationSheet extends ItemSheet {
     context.system = this.item.system;
     context.isGM = (game as any).user?.isGM ?? false;
 
-    // Get linked skill info if exists
+    // Get linked skill info if exists (linkedSkill is now a slug)
     if (context.system.linkedSkill) {
-      // linkedSkill is stored as a name, so we display it directly
-      context.linkedSkillName = context.system.linkedSkill;
-      
-      // If the specialization is on an actor, check if the skill exists
+      const linkedSkillSlug = context.system.linkedSkill;
+
       if (this.item.actor) {
-        const linkedSkill = this.item.actor.items.find((i: any) => 
-          i.type === 'skill' && i.name === context.system.linkedSkill
+        // On an actor: look in actor's items first
+        const linkedSkill = this.item.actor.items.find((i: any) =>
+          i.type === 'skill' && (i.system.slug === linkedSkillSlug || i.name === linkedSkillSlug)
         );
-        
-        if (!linkedSkill) {
-          // Mark as warning if skill doesn't exist on this actor
+        if (linkedSkill) {
+          context.linkedSkillName = linkedSkill.name;
+        } else {
+          // Not on actor → fallback to world items / compendiums
+          context.linkedSkillName = this._resolveSkillNameFromSlug(linkedSkillSlug);
           context.linkedSkillNotFound = true;
         }
+      } else {
+        // Not on an actor: resolve name from world items or compendiums
+        context.linkedSkillName = this._resolveSkillNameFromSlug(linkedSkillSlug);
       }
     }
-    
+
     // Get list of skills from the actor if this item is owned (for dropdown)
     if (this.item.actor) {
       const skills = this.item.actor.items.filter((i: any) => i.type === 'skill');
       context.skills = skills.map((s: any) => ({
-        name: s.name
+        name: s.name,
+        slug: s.system.slug || ''
       }));
     } else {
       context.skills = [];
     }
     
     return context;
+  }
+
+  /**
+   * Resolve a skill slug to its localized name.
+   * Uses the global cache built at startup, falls back to world items search.
+   */
+  private _resolveSkillNameFromSlug(slug: string): string {
+    // 1. Use global cache (built from compendiums + world items at startup)
+    const cache = (globalThis as any).SRA2_SKILL_SLUG_CACHE;
+    if (cache && cache[slug]) return cache[slug];
+
+    // 2. Fallback: search world items directly
+    if (game.items) {
+      const worldSkill = (game.items as any).find((i: any) =>
+        i.type === 'skill' && (i.system.slug === slug || i.name === slug)
+      );
+      if (worldSkill) return worldSkill.name;
+    }
+
+    return slug;
   }
 
   override activateListeners(html: JQuery): void {
@@ -105,8 +130,9 @@ export class SpecializationSheet extends ItemSheet {
       
       // Check if it's a skill
       if (item.type === 'skill') {
-        // Store the skill name (not ID) so the specialization can be prepared in advance
-        await this.item.update({ 'system.linkedSkill': item.name } as any);
+        // Store the skill slug (language-independent identifier)
+        const slug = item.system?.slug || item.name;
+        await this.item.update({ 'system.linkedSkill': slug } as any);
         this.render(false);
         ui.notifications?.info(game.i18n!.format('SRA2.SPECIALIZATIONS.LINKED_TO_SKILL', { name: item.name }));
         return;
@@ -171,6 +197,7 @@ export class SpecializationSheet extends ItemSheet {
         if (item.type === 'skill' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
+            slug: item.system?.slug || '',
             uuid: item.uuid,
             pack: game.i18n!.localize('SRA2.SPECIALIZATIONS.WORLD_ITEMS'),
             linkedAttribute: item.system.linkedAttribute,
@@ -179,20 +206,21 @@ export class SpecializationSheet extends ItemSheet {
         }
       }
     }
-    
+
     // Search in all compendiums
     for (const pack of game.packs as any) {
       // Only search in Item compendiums
       if (pack.documentName !== 'Item') continue;
-      
+
       // Get all documents from the pack
       const documents = await pack.getDocuments();
-      
+
       // Filter for skills that match the search term
       for (const doc of documents) {
         if (doc.type === 'skill' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
           results.push({
             name: doc.name,
+            slug: doc.system?.slug || '',
             uuid: doc.uuid,
             pack: pack.title,
             linkedAttribute: doc.system.linkedAttribute,
@@ -245,7 +273,7 @@ export class SpecializationSheet extends ItemSheet {
               <span class="result-name">${result.name}</span>
               <span class="result-pack">${result.pack} - ${attributeLabel}</span>
             </div>
-            <button class="link-skill-btn" data-skill-name="${result.name}">
+            <button class="link-skill-btn" data-skill-name="${result.name}" data-skill-slug="${result.slug}">
               ${game.i18n!.localize('SRA2.SPECIALIZATIONS.LINK_SKILL')}
             </button>
           </div>
@@ -308,14 +336,15 @@ export class SpecializationSheet extends ItemSheet {
   private async _onLinkSkillFromSearch(event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const button = event.currentTarget as HTMLButtonElement;
     const skillName = button.dataset.skillName;
-    
+    const skillSlug = button.dataset.skillSlug;
+
     if (!skillName) return;
-    
-    // Link the skill to the specialization
-    await this.item.update({ 'system.linkedSkill': skillName } as any);
+
+    // Store slug if available, otherwise fall back to name
+    await this.item.update({ 'system.linkedSkill': skillSlug || skillName } as any);
     
     // Clear the search input and hide results
     const searchInput = this.element.find('.skill-search-input')[0] as HTMLInputElement;
@@ -414,8 +443,9 @@ export class SpecializationSheet extends ItemSheet {
     const createdItems = await Item.create(skillData) as any;
     
     if (createdItems) {
-      // Link the skill to the specialization
-      await this.item.update({ 'system.linkedSkill': formattedName } as any);
+      // Link the skill to the specialization using slug if available
+      const createdSlug = createdItems.system?.slug || formattedName;
+      await this.item.update({ 'system.linkedSkill': createdSlug } as any);
       
       // Clear the search input and hide results
       const searchInput = this.element.find('.skill-search-input')[0] as HTMLInputElement;

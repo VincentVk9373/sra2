@@ -51,7 +51,7 @@
           <select name="system.linkedSkill">
             <option value="">{{localize "SRA2.SPECIALIZATIONS.SELECT_SKILL"}}</option>
             {{#each skills}}
-              <option value="{{this.name}}" {{#if (eq ../system.linkedSkill this.name)}}selected{{/if}}>{{this.name}}</option>
+              <option value="{{this.slug}}" {{#if (eq ../system.linkedSkill this.slug)}}selected{{/if}}>{{this.name}}</option>
             {{/each}}
           </select>
         </div>
@@ -68,6 +68,12 @@
         <option value="logic" {{#if (eq system.linkedAttribute "logic")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.LOGIC"}}</option>
         <option value="charisma" {{#if (eq system.linkedAttribute "charisma")}}selected{{/if}}>{{localize "SRA2.ATTRIBUTES.CHARISMA"}}</option>
       </select>
+    </div>
+
+    <!-- Slug -->
+    <div class="form-group">
+      <label>Slug</label>
+      <input type="text" name="system.slug" value="{{system.slug}}" placeholder="e.g. cybercombat" />
     </div>
 
     <!-- Cost Info -->

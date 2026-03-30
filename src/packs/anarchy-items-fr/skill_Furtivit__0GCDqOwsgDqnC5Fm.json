@@ -20,7 +20,8 @@
     "rating": 2,
     "linkedAttribute": "agility",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "stealth"
   },
   "effects": [],
   "flags": {},

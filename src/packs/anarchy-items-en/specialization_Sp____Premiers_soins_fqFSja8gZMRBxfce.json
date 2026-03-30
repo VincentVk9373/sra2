@@ -5,11 +5,12 @@
   "_id": "fqFSja8gZMRBxfce",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Survival",
+    "linkedSkill": "survival",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_first-aid"
   },
   "effects": [],
   "flags": {},

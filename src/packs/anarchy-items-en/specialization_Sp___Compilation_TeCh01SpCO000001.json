@@ -5,11 +5,12 @@
   "_id": "TeCh01SpCO000001",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Technomancie",
+    "linkedSkill": "technomancer",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_compilation"
   },
   "effects": [],
   "flags": {},

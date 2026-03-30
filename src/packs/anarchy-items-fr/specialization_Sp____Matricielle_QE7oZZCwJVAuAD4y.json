@@ -5,11 +5,12 @@
   "_id": "QE7oZZCwJVAuAD4y",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Perception",
+    "linkedSkill": "perception",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_matrix"
   },
   "effects": [],
   "flags": {},

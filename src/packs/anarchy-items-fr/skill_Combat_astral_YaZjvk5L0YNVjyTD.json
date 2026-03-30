@@ -19,7 +19,8 @@
     "rating": 5,
     "linkedAttribute": "willpower",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "astral-combat"
   },
   "effects": [],
   "flags": {},

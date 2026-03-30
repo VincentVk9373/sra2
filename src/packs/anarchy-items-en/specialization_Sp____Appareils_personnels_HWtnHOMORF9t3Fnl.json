@@ -5,11 +5,12 @@
   "_id": "HWtnHOMORF9t3Fnl",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Electronics",
+    "linkedSkill": "electronics",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_personal-devices"
   },
   "effects": [],
   "flags": {},

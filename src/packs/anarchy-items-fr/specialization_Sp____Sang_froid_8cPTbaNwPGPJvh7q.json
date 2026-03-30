@@ -5,11 +5,12 @@
   "_id": "8cPTbaNwPGPJvh7q",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Survie",
+    "linkedSkill": "survival",
     "linkedAttribute": "willpower",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_composure"
   },
   "effects": [],
   "flags": {},

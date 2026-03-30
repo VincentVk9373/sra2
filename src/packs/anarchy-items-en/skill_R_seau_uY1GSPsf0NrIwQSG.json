@@ -19,7 +19,8 @@
     "rating": 2,
     "linkedAttribute": "charisma",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "networking"
   },
   "effects": [],
   "flags": {},

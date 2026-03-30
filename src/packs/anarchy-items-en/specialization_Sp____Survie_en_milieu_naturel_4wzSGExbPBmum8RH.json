@@ -5,11 +5,12 @@
   "_id": "4wzSGExbPBmum8RH",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Survival",
+    "linkedSkill": "survival",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_wilderness-survival"
   },
   "effects": [],
   "flags": {},

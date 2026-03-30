@@ -5,11 +5,12 @@
   "_id": "YpfFwpJ23DeMOXcr",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Survie",
+    "linkedSkill": "survival",
     "linkedAttribute": "charisma",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_animal-training"
   },
   "effects": [],
   "flags": {},

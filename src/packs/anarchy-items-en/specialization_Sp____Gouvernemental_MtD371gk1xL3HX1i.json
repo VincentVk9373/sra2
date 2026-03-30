@@ -5,11 +5,12 @@
   "_id": "MtD371gk1xL3HX1i",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Networking",
+    "linkedSkill": "networking",
     "linkedAttribute": "charisma",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_government"
   },
   "effects": [],
   "flags": {},

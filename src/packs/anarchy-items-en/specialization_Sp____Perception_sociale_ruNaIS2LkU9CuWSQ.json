@@ -5,11 +5,12 @@
   "_id": "ruNaIS2LkU9CuWSQ",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Perception",
+    "linkedSkill": "perception",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_social-perception"
   },
   "effects": [],
   "flags": {},

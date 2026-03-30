@@ -44,6 +44,11 @@ export class SkillDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         required: false,
         initial: "",
         label: "SRA2.REFERENCE"
+      }),
+      slug: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.SKILLS.SLUG"
       })
     };
   }

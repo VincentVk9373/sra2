@@ -67,14 +67,17 @@ export class FeatSheet extends ItemSheet {
           ? game.i18n!.localize('SRA2.FEATS.RR_TYPE.SKILL')
           : game.i18n!.localize('SRA2.FEATS.RR_TYPE.SPECIALIZATION');
         
-        // If the feat is on an actor, check if the target exists
+        // If the feat is on an actor, check if the target exists (by name or slug)
         if (this.item.actor && rrTarget) {
-          const targetItem = this.item.actor.items.find((i: any) => 
-            i.type === rrType && i.name === rrTarget
+          const targetItem = this.item.actor.items.find((i: any) =>
+            i.type === rrType && (i.name === rrTarget || i.system?.slug === rrTarget)
           );
-          
+
           if (!targetItem) {
             entry.rrTargetNotFound = true;
+          } else {
+            // Resolve display name from slug
+            entry.rrTargetName = targetItem.name;
           }
         }
       }

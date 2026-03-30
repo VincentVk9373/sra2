@@ -20,7 +20,8 @@
     "rating": 2,
     "linkedAttribute": "willpower",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "sorcery"
   },
   "effects": [],
   "flags": {},

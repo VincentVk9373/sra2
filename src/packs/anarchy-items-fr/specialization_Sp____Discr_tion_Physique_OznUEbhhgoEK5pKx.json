@@ -5,11 +5,12 @@
   "_id": "OznUEbhhgoEK5pKx",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Furtivité",
+    "linkedSkill": "stealth",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_physical-stealth"
   },
   "effects": [],
   "flags": {},

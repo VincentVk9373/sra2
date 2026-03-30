@@ -5,6 +5,7 @@
  * the repeated attacker/defender loading pattern used in the defense and
  * counter-attack chat-button handlers.
  */
+import { SKILL_SLUGS, SPEC_SLUGS } from '../config/constants.js';
 
 /**
  * Safely resolve a Foundry UUID string to a document (actor or token).
@@ -154,14 +155,15 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
   let finalSpec:  string | null = null;
 
   if (isIceAttack) {
-    finalSkill = 'Piratage';
+    const pirSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.system.slug === SKILL_SLUGS.CRACKING);
+    finalSkill = pirSkill?.name || 'Piratage';
     const cyberSpec = defenderActor.items.find((i: any) =>
-      i.type === 'specialization' && i.name === 'Cybercombat' && i.system.linkedSkill === 'Piratage'
+      i.type === 'specialization' && i.system.slug === SPEC_SLUGS.CYBERCOMBAT && i.system.linkedSkill === SKILL_SLUGS.CRACKING
     );
-    if (cyberSpec) finalSpec = 'Cybercombat';
+    if (cyberSpec) finalSpec = cyberSpec.name;
   } else if (attackSpec) {
     const spec = defenderActor.items.find((i: any) =>
-      i.type === 'specialization' && i.name === attackSpec && i.system.linkedSkill === 'Combat rapproché'
+      i.type === 'specialization' && i.name === attackSpec && i.system.linkedSkill === SKILL_SLUGS.CLOSE_COMBAT
     );
     if (spec) { finalSpec = spec.name; finalSkill = spec.system.linkedSkill; }
   }
@@ -178,7 +180,9 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
 
   if (!finalSkill) {
     const isMelee = rollData.meleeRange && rollData.meleeRange !== 'none';
-    finalSkill = isMelee ? 'Combat rapproché' : 'Athlétisme';
+    const fallbackSlug = isMelee ? SKILL_SLUGS.CLOSE_COMBAT : SKILL_SLUGS.ATHLETICS;
+    const fallbackSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.system.slug === fallbackSlug);
+    finalSkill = fallbackSkill?.name || fallbackSlug;
   }
 
   let skillLevel:      number | undefined;
@@ -188,7 +192,7 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
   if (finalSpec) {
     const spec = defenderActor.items.find((i: any) => i.type === 'specialization' && i.name === finalSpec);
     if (spec) {
-      const linkedSkill = defenderActor.items.find((i: any) => i.type === 'skill' && i.name === spec.system.linkedSkill);
+      const linkedSkill = defenderActor.items.find((i: any) => i.type === 'skill' && (i.name === spec.system.linkedSkill || i.system?.slug === spec.system.linkedSkill));
       if (linkedSkill) {
         linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || 'strength';
         const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;

@@ -9,7 +9,7 @@ import {
   SPECIALIZATION_BONUS,
   RISK_DICE_SUCCESS_MULTIPLIER,
   NARRATIVE_SAVE_DEBOUNCE,
-  SKILL_NAMES,
+  SKILL_SLUGS,
 } from '../config/constants.js';
 
 describe('constants', () => {
@@ -112,17 +112,21 @@ describe('constants', () => {
     });
   });
 
-  describe('SKILL_NAMES', () => {
-    it('should have sorcellerie skill name', () => {
-      expect(SKILL_NAMES.SORCELLERIE).toBe('sorcellerie');
+  describe('SKILL_SLUGS', () => {
+    it('should have sorcery slug', () => {
+      expect(SKILL_SLUGS.SORCERY).toBe('sorcery');
     });
 
-    it('should have conjuration skill name', () => {
-      expect(SKILL_NAMES.CONJURATION).toBe('conjuration');
+    it('should have conjuration slug', () => {
+      expect(SKILL_SLUGS.CONJURATION).toBe('conjuration');
     });
 
-    it('should have close combat skill name', () => {
-      expect(SKILL_NAMES.CLOSE_COMBAT).toBe('Combat rapproché');
+    it('should have close combat slug', () => {
+      expect(SKILL_SLUGS.CLOSE_COMBAT).toBe('close-combat');
+    });
+
+    it('should have all 16 skill slugs', () => {
+      expect(Object.keys(SKILL_SLUGS)).toHaveLength(16);
     });
   });
 });

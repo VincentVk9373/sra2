@@ -5,11 +5,12 @@
   "_id": "P9aWF568NrcXJqgD",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Pilotage",
+    "linkedSkill": "piloting",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_flying-vehicles"
   },
   "effects": [],
   "flags": {},

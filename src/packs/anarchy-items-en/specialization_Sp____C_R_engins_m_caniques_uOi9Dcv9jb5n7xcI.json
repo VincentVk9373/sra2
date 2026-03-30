@@ -5,11 +5,12 @@
   "_id": "uOi9Dcv9jb5n7xcI",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Engineering",
+    "linkedSkill": "engineering",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_cr-mechanical-devices"
   },
   "effects": [],
   "flags": {},

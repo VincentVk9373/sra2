@@ -5,11 +5,12 @@
   "_id": "W2YzD0HKMXLbC654",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Networking",
+    "linkedSkill": "networking",
     "linkedAttribute": "charisma",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_la-rue"
   },
   "effects": [],
   "flags": {},

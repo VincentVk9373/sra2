@@ -42,6 +42,11 @@ export class SpecializationDataModel extends foundry.abstract.TypeDataModel<any,
         required: false,
         initial: "",
         label: "SRA2.REFERENCE"
+      }),
+      slug: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.SPECIALIZATIONS.SLUG"
       })
     };
   }

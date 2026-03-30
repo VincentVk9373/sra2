@@ -5,11 +5,12 @@
   "_id": "AYhYg9SonEbcAGs5",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Piratage",
+    "linkedSkill": "cracking",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_brute-force"
   },
   "effects": [],
   "flags": {},

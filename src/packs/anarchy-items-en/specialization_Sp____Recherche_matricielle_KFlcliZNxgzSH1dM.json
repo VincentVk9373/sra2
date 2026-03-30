@@ -5,11 +5,12 @@
   "_id": "KFlcliZNxgzSH1dM",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Electronics",
+    "linkedSkill": "electronics",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_matrix-search"
   },
   "effects": [],
   "flags": {},

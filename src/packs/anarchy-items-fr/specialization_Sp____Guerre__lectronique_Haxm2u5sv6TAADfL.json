@@ -5,11 +5,12 @@
   "_id": "Haxm2u5sv6TAADfL",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Ingénierie",
+    "linkedSkill": "engineering",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_electronic-warfare"
   },
   "effects": [],
   "flags": {},

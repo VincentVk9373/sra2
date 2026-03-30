@@ -5,11 +5,12 @@
   "_id": "b855JgyUXF54eCIB",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Conjuration",
+    "linkedSkill": "conjuration",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_earth-spirits"
   },
   "effects": [],
   "flags": {},

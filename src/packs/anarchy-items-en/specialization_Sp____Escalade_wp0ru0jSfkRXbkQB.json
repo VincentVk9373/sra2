@@ -5,11 +5,12 @@
   "_id": "wp0ru0jSfkRXbkQB",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Athletics",
+    "linkedSkill": "athletics",
     "linkedAttribute": "strength",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_climbing"
   },
   "effects": [],
   "flags": {},

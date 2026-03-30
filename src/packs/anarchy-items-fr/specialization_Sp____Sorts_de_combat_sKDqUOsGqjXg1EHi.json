@@ -5,11 +5,12 @@
   "_id": "sKDqUOsGqjXg1EHi",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Sorcellerie",
+    "linkedSkill": "sorcery",
     "linkedAttribute": "willpower",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_combat-spells"
   },
   "effects": [],
   "flags": {},

@@ -5,11 +5,12 @@
   "_id": "nYtpuqGknusuE6wY",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Conjuration",
+    "linkedSkill": "conjuration",
     "linkedAttribute": "willpower",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_banishing"
   },
   "effects": [],
   "flags": {},

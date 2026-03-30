@@ -5,11 +5,12 @@
   "_id": "NNKolwv239UpXFNi",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Engineering",
+    "linkedSkill": "engineering",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_explosives"
   },
   "effects": [],
   "flags": {},

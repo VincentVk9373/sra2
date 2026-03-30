@@ -5,11 +5,12 @@
   "_id": "L26JyovoRZ1zh8ta",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Athletics",
+    "linkedSkill": "athletics",
     "linkedAttribute": "strength",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_parkour"
   },
   "effects": [],
   "flags": {},

@@ -20,7 +20,8 @@
     "rating": 2,
     "linkedAttribute": "logic",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "cracking"
   },
   "effects": [],
   "flags": {},

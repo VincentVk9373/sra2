@@ -11,7 +11,7 @@ declare const ChatMessage: any;
 // Import ItemSearch for text normalization
 import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from './sheet-helpers.js';
-import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER } from '../config/constants.js';
+import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER, SKILL_SLUGS } from '../config/constants.js';
 import { resolveTokenUuid, resolveActorUuid } from './actor-uuid-resolver.js';
 import { RollDialog } from '../applications/roll-dialog.js';
 import { buildNormalAppearance, buildRiskAppearance } from './dice-so-nice.js';
@@ -186,7 +186,9 @@ export interface RollRequestData {
   
   // Skill/Spec information (undefined if not found)
   skillName?: string;
+  skillSlug?: string;
   specName?: string;
+  specSlug?: string;
   skillLevel?: number;
   specLevel?: number;
   
@@ -891,36 +893,48 @@ async function handleDrain(
   // Check if this is a spell (spells always use Sorcery, even with specializations like "Spé: Sorts de combat")
   const isSpell = rollData.itemType === 'spell';
   
-  // Check if this is a Sorcery or Conjuration test
-  // Priority: linkedAttackSkill (for spells/weapons) > skillName (for specializations) > specName (fallback)
-  let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || '';
-  let normalizedSkillName = ItemSearch.normalizeSearchText(skillName);
-  
-  // If it's a spell, it's always Sorcery (regardless of specialization like "Spé: Sorts de combat")
-  // Also check linkedAttackSkill in case it's explicitly set to Sorcery
-  if (isSpell || ItemSearch.normalizeSearchText(rollData.linkedAttackSkill || '') === 'sorcellerie') {
-    normalizedSkillName = 'sorcellerie';
-  } else if (rollData.itemType === 'specialization') {
-    // For specialization rolls, check skillName first (should be set from linkedSkill)
-    // If not found, try to find the linked skill from the specialization item
-    if (!normalizedSkillName || (normalizedSkillName !== 'sorcellerie' && normalizedSkillName !== 'conjuration')) {
-      if (rollData.itemId && actor) {
-        const specItem = actor.items.find((item: any) => item.id === rollData.itemId);
-        if (specItem && specItem.type === 'specialization') {
-          const specSystem = specItem.system as any;
-          const linkedSkill = specSystem.linkedSkill || '';
-          if (linkedSkill) {
-            skillName = linkedSkill;
-            normalizedSkillName = ItemSearch.normalizeSearchText(linkedSkill);
-          }
+  // Check if this is a Sorcery or Conjuration test using slugs
+  // Priority: skillSlug (if set) > linkedAttackSkill > specialization's linkedSkill
+  let skillSlug = rollData.skillSlug || '';
+
+  // If slug not set, try to resolve from linkedAttackSkill or skill name
+  if (!skillSlug) {
+    const attackSkill = rollData.linkedAttackSkill || rollData.skillName || '';
+    const MAGIC_SLUGS = [SKILL_SLUGS.SORCERY, SKILL_SLUGS.CONJURATION, SKILL_SLUGS.TECHNOMANCER] as string[];
+    // linkedAttackSkill may already be a slug or a localized name
+    if (MAGIC_SLUGS.includes(attackSkill)) {
+      skillSlug = attackSkill;
+    } else {
+      const normalized = ItemSearch.normalizeSearchText(attackSkill);
+      const SLUG_MAP: Record<string, string> = {
+        'sorcellerie': SKILL_SLUGS.SORCERY, 'sorcery': SKILL_SLUGS.SORCERY,
+        'conjuration': SKILL_SLUGS.CONJURATION,
+        'technomancie': SKILL_SLUGS.TECHNOMANCER, 'technomancer': SKILL_SLUGS.TECHNOMANCER,
+      };
+      skillSlug = SLUG_MAP[normalized] || '';
+    }
+  }
+
+  // If it's a spell, it's always Sorcery
+  if (isSpell && !skillSlug) {
+    skillSlug = SKILL_SLUGS.SORCERY;
+  } else if (!skillSlug && rollData.itemType === 'specialization') {
+    // For specialization rolls, check the linkedSkill (now a slug)
+    const MAGIC_SLUGS = [SKILL_SLUGS.SORCERY, SKILL_SLUGS.CONJURATION, SKILL_SLUGS.TECHNOMANCER] as string[];
+    if (rollData.itemId && actor) {
+      const specItem = actor.items.find((item: any) => item.id === rollData.itemId);
+      if (specItem && specItem.type === 'specialization') {
+        const linkedSkill = (specItem.system as any).linkedSkill || '';
+        if (MAGIC_SLUGS.includes(linkedSkill)) {
+          skillSlug = linkedSkill;
         }
       }
     }
   }
-  
-  const isSorcery = normalizedSkillName === 'sorcellerie';
-  const isConjuration = normalizedSkillName === 'conjuration';
-  const isTechnomancie = normalizedSkillName === 'technomancie';
+
+  const isSorcery = skillSlug === SKILL_SLUGS.SORCERY;
+  const isConjuration = skillSlug === SKILL_SLUGS.CONJURATION;
+  const isTechnomancie = skillSlug === SKILL_SLUGS.TECHNOMANCER;
 
   if (!isSorcery && !isConjuration && !isTechnomancie) {
     return; // Not a magic/resonance test, no drain

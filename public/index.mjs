@@ -77,6 +77,28 @@ const SUCCESS_THRESHOLDS = {
   disadvantage: 6
   // only 6 = success
 };
+const SKILL_SLUGS = {
+  CLOSE_COMBAT: "close-combat",
+  RANGED_WEAPONS: "ranged-weapons",
+  ATHLETICS: "athletics",
+  STEALTH: "stealth",
+  CRACKING: "cracking",
+  ENGINEERING: "engineering",
+  ELECTRONICS: "electronics",
+  PILOTING: "piloting",
+  SORCERY: "sorcery",
+  CONJURATION: "conjuration",
+  TECHNOMANCER: "technomancer",
+  INFLUENCE: "influence",
+  PERCEPTION: "perception",
+  SURVIVAL: "survival",
+  NETWORKING: "networking",
+  ASTRAL_COMBAT: "astral-combat"
+};
+const SPEC_SLUGS = {
+  COMPLEX_FORMS: "spec_complex-forms",
+  CYBERCOMBAT: "spec_cybercombat"
+};
 const DAMAGE_STEP = 3;
 const DAMAGE_BOX_DEFAULTS = {
   LIGHT: 2,
@@ -534,9 +556,9 @@ const WEAPON_TYPES = {
     short: "none",
     medium: "none",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Combat rapproché - Mains nues
@@ -546,9 +568,9 @@ const WEAPON_TYPES = {
     short: "none",
     medium: "none",
     long: "none",
-    linkedSkill: "Combat rapproché",
+    linkedSkill: "close-combat",
     linkedSpecialization: "Spé : Mains nues",
-    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSkill: "close-combat",
     linkedDefenseSpecialization: "Spé : Défense"
   },
   // Combat rapproché - Lames
@@ -558,9 +580,9 @@ const WEAPON_TYPES = {
     short: "none",
     medium: "none",
     long: "none",
-    linkedSkill: "Combat rapproché",
+    linkedSkill: "close-combat",
     linkedSpecialization: "Spé : Lames",
-    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSkill: "close-combat",
     linkedDefenseSpecialization: "Spé : Défense"
   },
   "long-weapons": {
@@ -569,9 +591,9 @@ const WEAPON_TYPES = {
     short: "none",
     medium: "none",
     long: "none",
-    linkedSkill: "Combat rapproché",
+    linkedSkill: "close-combat",
     linkedSpecialization: "Spé : Lames",
-    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSkill: "close-combat",
     linkedDefenseSpecialization: "Spé : Défense"
   },
   // Combat rapproché - Armes contondantes
@@ -581,9 +603,9 @@ const WEAPON_TYPES = {
     short: "none",
     medium: "none",
     long: "none",
-    linkedSkill: "Combat rapproché",
+    linkedSkill: "close-combat",
     linkedSpecialization: "Spé : Armes contondantes",
-    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSkill: "close-combat",
     linkedDefenseSpecialization: "Spé : Défense"
   },
   "tasers": {
@@ -592,9 +614,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "none",
     long: "none",
-    linkedSkill: "Combat rapproché",
+    linkedSkill: "close-combat",
     linkedSpecialization: "Spé : Armes contondantes",
-    linkedDefenseSkill: "Combat rapproché",
+    linkedDefenseSkill: "close-combat",
     linkedDefenseSpecialization: "Spé : Défense"
   },
   // Armes à distance - Armes de jet
@@ -604,9 +626,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "grenades": {
@@ -615,9 +637,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "gas-grenades": {
@@ -626,9 +648,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Armes de trait
@@ -638,9 +660,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "ok",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes de trait",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "crossbows": {
@@ -649,9 +671,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "ok",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes de trait",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Pistolets
@@ -661,9 +683,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "light-pistols": {
@@ -672,9 +694,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "automatic-pistols": {
@@ -683,9 +705,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "heavy-pistols": {
@@ -694,9 +716,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Mitraillettes
@@ -706,9 +728,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "ok",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Mitraillettes",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Fusils
@@ -718,9 +740,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "ok",
     long: "disadvantage",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "shotguns": {
@@ -729,9 +751,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "disadvantage",
     long: "none",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "sniper-rifles": {
@@ -740,9 +762,9 @@ const WEAPON_TYPES = {
     short: "disadvantage",
     medium: "disadvantage",
     long: "ok",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Lance-grenades
@@ -752,9 +774,9 @@ const WEAPON_TYPES = {
     short: "disadvantage",
     medium: "ok",
     long: "disadvantage",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Lance-grenades",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   // Armes à distance - Armes lourdes
@@ -764,9 +786,9 @@ const WEAPON_TYPES = {
     short: "ok",
     medium: "ok",
     long: "ok",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes lourdes",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   },
   "rocket-launchers": {
@@ -775,14 +797,20 @@ const WEAPON_TYPES = {
     short: "none",
     medium: "disadvantage",
     long: "ok",
-    linkedSkill: "Armes à distance",
+    linkedSkill: "ranged-weapons",
     linkedSpecialization: "Spé : Armes lourdes",
-    linkedDefenseSkill: "Athlétisme",
+    linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "Spé : Défense à distance"
   }
 };
 const VEHICLE_TYPES = vehicleTypesData;
 class FeatDataModel extends foundry.abstract.TypeDataModel {
+  static migrateData(source) {
+    if (source.featType === "vehicle") {
+      source.featType = "equipment";
+    }
+    return super.migrateData(source);
+  }
   static defineSchema() {
     const fields = foundry.data.fields;
     return {
@@ -1563,7 +1591,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
   }
   _applySpellSkillLinks(featType) {
     if (featType === "spell") {
-      this.linkedAttackSkill = "Sorcellerie";
+      this.linkedAttackSkill = SKILL_SLUGS.SORCERY;
       const spellSpecMap = {
         "combat": "Spé: Sorts de combat",
         "detection": "Spé: Sorts de détection",
@@ -1575,7 +1603,7 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
       const spellSpecType = this.spellSpecializationType || "combat";
       this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
     } else if (featType === "complex-form") {
-      this.linkedAttackSkill = "Technomancie";
+      this.linkedAttackSkill = SKILL_SLUGS.TECHNOMANCER;
       const cfSpecMap = {
         "formes-complexes": "Spé: Formes complexes",
         "compilation": "Spé: Compilation",
@@ -2448,6 +2476,11 @@ class SkillDataModel extends foundry.abstract.TypeDataModel {
         required: false,
         initial: "",
         label: "SRA2.REFERENCE"
+      }),
+      slug: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.SKILLS.SLUG"
       })
     };
   }
@@ -2501,6 +2534,11 @@ class SpecializationDataModel extends foundry.abstract.TypeDataModel {
         required: false,
         initial: "",
         label: "SRA2.REFERENCE"
+      }),
+      slug: new fields.StringField({
+        required: false,
+        initial: "",
+        label: "SRA2.SPECIALIZATIONS.SLUG"
       })
     };
   }
@@ -2591,13 +2629,40 @@ const models = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   VehicleDataModel
 }, Symbol.toStringTag, { value: "Module" }));
 class SRA2Actor extends Actor {
+  /**
+   * Migrate legacy embedded item types before validation.
+   * Runs before the document schema is validated, so invalid types can be fixed.
+   */
+  static migrateData(source) {
+    if (source.items?.length) {
+      for (const item of source.items) {
+        if (item.type === "race") {
+          item.type = "metatype";
+        }
+      }
+    }
+    return super.migrateData(source);
+  }
   get feats() {
     return this.items.filter((item) => item.type === "feat");
   }
 }
+class SRA2Item extends Item {
+  /**
+   * Migrate legacy item types before validation.
+   * Runs before the document schema is validated, so invalid types can be fixed.
+   */
+  static migrateData(source) {
+    if (source.type === "race") {
+      source.type = "metatype";
+    }
+    return super.migrateData(source);
+  }
+}
 const documents = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  SRA2Actor
+  SRA2Actor,
+  SRA2Item
 }, Symbol.toStringTag, { value: "Module" }));
 function normalizeSearchText(text) {
   if (!text) return "";
@@ -2923,7 +2988,7 @@ function organizeSpecializationsBySkill(allSpecializations, actorItems) {
     const linkedSkillName = spec.system.linkedSkill;
     if (linkedSkillName) {
       const linkedSkill = actorItems.find(
-        (i) => i.type === "skill" && i.name === linkedSkillName
+        (i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
       );
       if (linkedSkill && linkedSkill.id) {
         const skillId = linkedSkill.id;
@@ -3071,6 +3136,14 @@ function getRRSources$1(actor, itemType, itemName) {
     (item) => item.type === "feat" && item.system.active === true
   );
   const normalizedItemName = normalizeSearchText(itemName);
+  let itemSlug = "";
+  if (itemType === "skill") {
+    const skillItem = actor.items.find((i) => i.type === "skill" && normalizeSearchText(i.name) === normalizedItemName);
+    itemSlug = skillItem?.system?.slug || "";
+  } else if (itemType === "specialization") {
+    const specItem = actor.items.find((i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizedItemName);
+    itemSlug = specItem?.system?.slug || "";
+  }
   for (const feat of feats) {
     const featSystem = feat.system;
     const rrList = featSystem.rrList || [];
@@ -3078,8 +3151,11 @@ function getRRSources$1(actor, itemType, itemName) {
       const rrType = rrEntry.rrType;
       const rrValue = rrEntry.rrValue || 0;
       const rrTarget = rrEntry.rrTarget || "";
+      if (rrType !== itemType || rrValue <= 0) continue;
       const normalizedRRTarget = normalizeSearchText(rrTarget);
-      if (rrType === itemType && normalizedRRTarget === normalizedItemName && rrValue > 0) {
+      const matchByName = normalizedRRTarget === normalizedItemName;
+      const matchBySlug = itemSlug && rrTarget === itemSlug;
+      if (matchByName || matchBySlug) {
         sources.push({
           featName: feat.name,
           rrValue,
@@ -3097,12 +3173,16 @@ function calculateRR(actor, itemType, itemName) {
 function getPhantomRRs(actor) {
   const phantomRRs = [];
   const seenTargets = /* @__PURE__ */ new Set();
-  const existingSkills = new Set(
-    actor.items.filter((i) => i.type === "skill").map((i) => normalizeSearchText(i.name))
-  );
-  const existingSpecs = new Set(
-    actor.items.filter((i) => i.type === "specialization").map((i) => normalizeSearchText(i.name))
-  );
+  const existingSkills = /* @__PURE__ */ new Set();
+  actor.items.filter((i) => i.type === "skill").forEach((i) => {
+    existingSkills.add(normalizeSearchText(i.name));
+    if (i.system?.slug) existingSkills.add(i.system.slug);
+  });
+  const existingSpecs = /* @__PURE__ */ new Set();
+  actor.items.filter((i) => i.type === "specialization").forEach((i) => {
+    existingSpecs.add(normalizeSearchText(i.name));
+    if (i.system?.slug) existingSpecs.add(i.system.slug);
+  });
   const feats = actor.items.filter(
     (item) => item.type === "feat" && item.system.active === true
   );
@@ -3115,8 +3195,10 @@ function getPhantomRRs(actor) {
       const rrTarget = rrEntry.rrTarget || "";
       if (rrValue <= 0 || !rrTarget) continue;
       const normalizedTarget = normalizeSearchText(rrTarget);
-      const targetKey = `${rrType}:${normalizedTarget}`;
-      if (rrType === "skill" && !existingSkills.has(normalizedTarget)) {
+      const targetKey = `${rrType}:${rrTarget}`;
+      const isExistingSkill = existingSkills.has(normalizedTarget) || existingSkills.has(rrTarget);
+      const isExistingSpec = existingSpecs.has(normalizedTarget) || existingSpecs.has(rrTarget);
+      if (rrType === "skill" && !isExistingSkill) {
         if (!seenTargets.has(targetKey)) {
           seenTargets.add(targetKey);
           phantomRRs.push({
@@ -3130,11 +3212,11 @@ function getPhantomRRs(actor) {
             sources: []
           });
         }
-        const phantom = phantomRRs.find((p) => p.type === "skill" && normalizeSearchText(p.name) === normalizedTarget);
+        const phantom = phantomRRs.find((p) => p.type === "skill" && (p.name === rrTarget || normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
           phantom.sources.push({ featName: feat.name, rrValue });
         }
-      } else if (rrType === "specialization" && !existingSpecs.has(normalizedTarget)) {
+      } else if (rrType === "specialization" && !isExistingSpec) {
         if (!seenTargets.has(targetKey)) {
           seenTargets.add(targetKey);
           phantomRRs.push({
@@ -3148,7 +3230,7 @@ function getPhantomRRs(actor) {
             sources: []
           });
         }
-        const phantom = phantomRRs.find((p) => p.type === "specialization" && normalizeSearchText(p.name) === normalizedTarget);
+        const phantom = phantomRRs.find((p) => p.type === "specialization" && (p.name === rrTarget || normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
           phantom.sources.push({ featName: feat.name, rrValue });
         }
@@ -3158,26 +3240,36 @@ function getPhantomRRs(actor) {
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
     const skillAttributeMap = {
-      "athlétisme": "strength",
+      // Slugs (canonical)
+      [SKILL_SLUGS.CLOSE_COMBAT]: "strength",
+      [SKILL_SLUGS.RANGED_WEAPONS]: "agility",
+      [SKILL_SLUGS.ATHLETICS]: "strength",
+      [SKILL_SLUGS.STEALTH]: "agility",
+      [SKILL_SLUGS.CRACKING]: "logic",
+      [SKILL_SLUGS.ENGINEERING]: "logic",
+      [SKILL_SLUGS.ELECTRONICS]: "logic",
+      [SKILL_SLUGS.PILOTING]: "agility",
+      [SKILL_SLUGS.SORCERY]: "willpower",
+      [SKILL_SLUGS.CONJURATION]: "willpower",
+      [SKILL_SLUGS.TECHNOMANCER]: "logic",
+      [SKILL_SLUGS.INFLUENCE]: "charisma",
+      [SKILL_SLUGS.PERCEPTION]: "willpower",
+      [SKILL_SLUGS.SURVIVAL]: "willpower",
+      [SKILL_SLUGS.NETWORKING]: "charisma",
+      [SKILL_SLUGS.ASTRAL_COMBAT]: "willpower",
+      // FR names (normalized, for backward compat)
       "athletisme": "strength",
-      "combat rapproché": "strength",
       "combat rapproche": "strength",
-      "armes à distance": "agility",
       "armes a distance": "agility",
-      "furtivité": "agility",
       "furtivite": "agility",
       "piratage": "logic",
-      "ingénierie": "logic",
       "ingenierie": "logic",
-      "biotech": "logic",
       "pilotage": "agility",
-      "perception": "willpower",
-      "survie": "willpower",
       "sorcellerie": "willpower",
-      "conjuration": "willpower",
-      "influence": "charisma",
-      "tromperie": "charisma",
-      "intimidation": "charisma"
+      "technomancie": "logic",
+      "survie": "willpower",
+      "reseau": "charisma",
+      "combat astral": "willpower"
     };
     const normalizedName = normalizeSearchText(phantom.name);
     phantom.linkedAttribute = skillAttributeMap[normalizedName] || "strength";
@@ -3189,7 +3281,7 @@ function getPhantomRRs(actor) {
         if (linkedSkillName) {
           phantom.linkedSkillName = linkedSkillName;
           const actorSkill = actor.items.find(
-            (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(linkedSkillName)
+            (i) => i.type === "skill" && (normalizeSearchText(i.name) === normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
           );
           if (actorSkill) {
             phantom.linkedSkillOnActor = true;
@@ -3481,7 +3573,7 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
           const linkedSkillName = specSystem.linkedSkill;
           if (linkedSkillName) {
             const parentSkill = actor.items.find(
-              (i) => i.type === "skill" && i.name === linkedSkillName
+              (i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
             );
             if (parentSkill) {
               attackSkillName = parentSkill.name;
@@ -3582,7 +3674,7 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     specLevel: void 0,
     linkedAttribute: void 0
   };
-  const { isSpell = false, spellSpecType = "combat", defaultAttribute = "strength" } = options;
+  const { isSpell = false, spellSpecType = "combat", defaultAttribute = "strength", lookupBySlug = false } = options;
   if (targetSpec) {
     const normalizedTargetSpec = normalizeForComparison(targetSpec);
     const foundSpec = actor.items.find((i) => {
@@ -3600,7 +3692,7 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     }
   }
   if (!result.specName && !result.skillLevel && targetSkill) {
-    const foundSkill = actor.items.find(
+    const foundSkill = lookupBySlug ? actor.items.find((i) => i.type === "skill" && i.system.slug === targetSkill) : actor.items.find(
       (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(targetSkill)
     );
     if (foundSkill) {
@@ -3613,13 +3705,24 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     } else if (isSpell && game.items) {
       _searchGameItemsForSorcellerie(actor, result);
     } else if (!isSpell) {
-      result.skillName = targetSkill;
+      result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkill) : targetSkill;
       result.linkedAttribute = result.linkedAttribute || defaultAttribute;
       const attributeValue = actor.system.attributes?.[defaultAttribute] || 0;
       result.skillLevel = 0 + attributeValue;
     }
   }
   return result;
+}
+function _resolveSkillNameFromSlug(slug) {
+  const cache = globalThis.SRA2_SKILL_SLUG_CACHE;
+  if (cache && cache[slug]) return cache[slug];
+  if (game.items) {
+    const worldSkill = game.items.find(
+      (i) => i.type === "skill" && i.system.slug === slug
+    );
+    if (worldSkill) return worldSkill.name;
+  }
+  return slug;
 }
 function _extractSpecAndSkillInfo(actor, foundSpec, result, defaultAttribute) {
   const specSystem = foundSpec.system;
@@ -3628,15 +3731,18 @@ function _extractSpecAndSkillInfo(actor, foundSpec, result, defaultAttribute) {
   const linkedSkillName = specSystem.linkedSkill;
   if (linkedSkillName) {
     const parentSkill = actor.items.find(
-      (i) => i.type === "skill" && i.name === linkedSkillName
+      (i) => i.type === "skill" && (i.system.slug === linkedSkillName || i.name === linkedSkillName)
     );
-    if (parentSkill && result.linkedAttribute) {
+    if (parentSkill) {
       result.skillName = parentSkill.name;
+      const foundAttr = result.linkedAttribute || defaultAttribute;
       const skillRating = parentSkill.system.rating || 0;
-      const attributeValue = actor.system.attributes?.[result.linkedAttribute] || 0;
+      const attributeValue = actor.system.attributes?.[foundAttr] || 0;
       const skillLevel = skillRating + attributeValue;
       result.skillLevel = skillLevel;
       result.specLevel = skillLevel + 2;
+    } else {
+      result.skillName = _resolveSkillNameFromSlug(linkedSkillName);
     }
   }
 }
@@ -3655,7 +3761,7 @@ function _trySpellSpecKeywordSearch(actor, spellSpecType, result) {
     if (i.type !== "specialization") return false;
     const normalizedName = normalizeSearchText(i.name);
     const linkedSkill = i.system?.linkedSkill;
-    if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+    if (linkedSkill === SKILL_SLUGS.SORCERY || normalizeSearchText(linkedSkill) === "sorcellerie") {
       return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
     }
     return false;
@@ -3687,7 +3793,7 @@ function _searchGameItemsForSpellSpec(actor, targetSpec, spellSpecType, result) 
       if (i.type !== "specialization") return false;
       const normalizedName = normalizeSearchText(i.name);
       const linkedSkill = i.system?.linkedSkill;
-      if (linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
+      if (linkedSkill === SKILL_SLUGS.SORCERY || linkedSkill && normalizeSearchText(linkedSkill) === "sorcellerie") {
         return normalizedKeywords.some((normalizedKeyword) => normalizedName.includes(normalizedKeyword));
       }
       return false;
@@ -3698,7 +3804,7 @@ function _searchGameItemsForSpellSpec(actor, targetSpec, spellSpecType, result) 
     const linkedSkillName = specSystem.linkedSkill;
     if (linkedSkillName) {
       const parentSkill = actor.items.find(
-        (i) => i.type === "skill" && i.name === linkedSkillName
+        (i) => i.type === "skill" && (i.system.slug === linkedSkillName || i.name === linkedSkillName)
       );
       if (parentSkill) {
         const skillSystem = parentSkill.system;
@@ -3713,10 +3819,10 @@ function _searchGameItemsForSpellSpec(actor, targetSpec, spellSpecType, result) 
 }
 function _searchGameItemsForSorcellerie(actor, result) {
   const sorcerySkillInGame = game.items.find(
-    (i) => i.type === "skill" && normalizeSearchText(i.name) === "sorcellerie"
+    (i) => i.type === "skill" && i.system.slug === SKILL_SLUGS.SORCERY
   );
   if (sorcerySkillInGame) {
-    result.skillName = "Sorcellerie";
+    result.skillName = sorcerySkillInGame.name;
     result.linkedAttribute = "willpower";
     const willpower = actor.system.attributes?.willpower || 1;
     result.skillLevel = willpower;
@@ -3772,7 +3878,7 @@ function findSkillByName(actor, skillName) {
   if (!actor || !skillName) return void 0;
   const normalizedName = normalizeSearchText(skillName);
   return actor.items.find(
-    (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizedName
+    (i) => i.type === "skill" && (normalizeSearchText(i.name) === normalizedName || i.system?.slug === skillName)
   );
 }
 function findSpecByName(actor, specName) {
@@ -3786,7 +3892,7 @@ function findItemInGame(itemType, itemName) {
   if (!game.items || !itemName) return void 0;
   const normalizedName = normalizeForComparison(itemName);
   return game.items.find(
-    (i) => i.type === itemType && normalizeForComparison(i.name) === normalizedName
+    (i) => i.type === itemType && (normalizeForComparison(i.name) === normalizedName || i.system?.slug === itemName)
   );
 }
 function calculateSkillDicePool(actor, skill) {
@@ -3866,10 +3972,13 @@ function findDefenseSelection(actor, linkedDefenseSpec, linkedDefenseSkill) {
 function getSpecializationsForSkill(actor, skillName) {
   if (!actor || !skillName) return [];
   const normalizedSkillName = normalizeSearchText(skillName);
+  const skillItem = actor.items.find((i) => i.type === "skill" && normalizeSearchText(i.name) === normalizedSkillName);
+  const skillSlug = skillItem?.system?.slug || "";
   return actor.items.filter((i) => {
     if (i.type !== "specialization") return false;
     const linkedSkill = i.system?.linkedSkill;
-    return linkedSkill && normalizeSearchText(linkedSkill) === normalizedSkillName;
+    if (!linkedSkill) return false;
+    return normalizeSearchText(linkedSkill) === normalizedSkillName || skillSlug && linkedSkill === skillSlug;
   });
 }
 async function toggleItemBookmark(actor, itemId, sheet) {
@@ -4097,14 +4206,15 @@ function resolveDefenseSkillData(defenderActor, rollData, isVehicle) {
   let finalSkill = null;
   let finalSpec = null;
   if (isIceAttack) {
-    finalSkill = "Piratage";
+    const pirSkill = defenderActor.items.find((i) => i.type === "skill" && i.system.slug === SKILL_SLUGS.CRACKING);
+    finalSkill = pirSkill?.name || "Piratage";
     const cyberSpec = defenderActor.items.find(
-      (i) => i.type === "specialization" && i.name === "Cybercombat" && i.system.linkedSkill === "Piratage"
+      (i) => i.type === "specialization" && i.system.slug === SPEC_SLUGS.CYBERCOMBAT && i.system.linkedSkill === SKILL_SLUGS.CRACKING
     );
-    if (cyberSpec) finalSpec = "Cybercombat";
+    if (cyberSpec) finalSpec = cyberSpec.name;
   } else if (attackSpec) {
     const spec = defenderActor.items.find(
-      (i) => i.type === "specialization" && i.name === attackSpec && i.system.linkedSkill === "Combat rapproché"
+      (i) => i.type === "specialization" && i.name === attackSpec && i.system.linkedSkill === SKILL_SLUGS.CLOSE_COMBAT
     );
     if (spec) {
       finalSpec = spec.name;
@@ -4124,7 +4234,9 @@ function resolveDefenseSkillData(defenderActor, rollData, isVehicle) {
   }
   if (!finalSkill) {
     const isMelee = rollData.meleeRange && rollData.meleeRange !== "none";
-    finalSkill = isMelee ? "Combat rapproché" : "Athlétisme";
+    const fallbackSlug = isMelee ? SKILL_SLUGS.CLOSE_COMBAT : SKILL_SLUGS.ATHLETICS;
+    const fallbackSkill = defenderActor.items.find((i) => i.type === "skill" && i.system.slug === fallbackSlug);
+    finalSkill = fallbackSkill?.name || fallbackSlug;
   }
   let skillLevel;
   let specLevel;
@@ -4132,7 +4244,7 @@ function resolveDefenseSkillData(defenderActor, rollData, isVehicle) {
   if (finalSpec) {
     const spec = defenderActor.items.find((i) => i.type === "specialization" && i.name === finalSpec);
     if (spec) {
-      const linkedSkill = defenderActor.items.find((i) => i.type === "skill" && i.name === spec.system.linkedSkill);
+      const linkedSkill = defenderActor.items.find((i) => i.type === "skill" && (i.name === spec.system.linkedSkill || i.system?.slug === spec.system.linkedSkill));
       if (linkedSkill) {
         linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
         const attrVal = defenderActor.system?.attributes?.[linkedAttribute] ?? 0;
@@ -4300,10 +4412,10 @@ class RollDialog extends Application {
     );
     const damageValue = finalNumericDamage.toString();
     if (!baseSkillName) {
-      baseSkillName = "Combat rapproché";
+      baseSkillName = SKILL_SLUGS.CLOSE_COMBAT;
     }
     const linkedSkillItem = this.actor.items.find(
-      (item) => item.type === "skill" && item.name === baseSkillName
+      (item) => item.type === "skill" && (item.system.slug === baseSkillName || item.name === baseSkillName)
     );
     const linkedSpecs = this.actor.items.filter(
       (item) => item.type === "specialization" && item.system.linkedSkill === baseSkillName
@@ -4382,7 +4494,7 @@ class RollDialog extends Application {
   selectCombatRapprocheSkill() {
     if (!this.actor) return;
     const combatRapprocheSkill = this.actor.items.find(
-      (item) => item.type === "skill" && item.name === "Combat rapproché"
+      (item) => item.type === "skill" && item.system.slug === SKILL_SLUGS.CLOSE_COMBAT
     );
     if (!combatRapprocheSkill) return;
     const skillSystem = combatRapprocheSkill.system;
@@ -4390,12 +4502,13 @@ class RollDialog extends Application {
     const linkedAttribute = skillSystem.linkedAttribute || "strength";
     const attributeValue = this.actor.system?.attributes?.[linkedAttribute] || 0;
     const skillLevel = attributeValue + skillRating;
-    const skillRRSources = getRRSources$1(this.actor, "skill", "Combat rapproché");
+    const skillRRSources = getRRSources$1(this.actor, "skill", combatRapprocheSkill.name);
     const attributeRRSources = getRRSources$1(this.actor, "attribute", linkedAttribute);
     const rrList = [...skillRRSources, ...attributeRRSources];
-    this.rollData.skillName = "Combat rapproché";
+    this.rollData.skillName = combatRapprocheSkill.name;
+    this.rollData.skillSlug = SKILL_SLUGS.CLOSE_COMBAT;
     this.rollData.specName = void 0;
-    this.rollData.linkedAttackSkill = "Combat rapproché";
+    this.rollData.linkedAttackSkill = SKILL_SLUGS.CLOSE_COMBAT;
     this.rollData.linkedAttribute = linkedAttribute;
     this.rollData.skillLevel = skillLevel;
     this.rollData.specLevel = void 0;
@@ -4500,10 +4613,10 @@ class RollDialog extends Application {
     let hasHotSimAdvantage = false;
     if (this.actor && this.actor.type === "character") {
       const connectionMode = this.actor.system?.connectionMode || "ar";
-      const skillName = (this.rollData.skillName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const specName = (this.rollData.specName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const isPiratage = skillName.includes("piratage") || skillName.includes("hacking");
-      const isCybercombat = specName.includes("cybercombat");
+      const skillSlug = this.rollData.skillSlug || "";
+      const specSlug = this.rollData.specSlug || "";
+      const isPiratage = skillSlug === SKILL_SLUGS.CRACKING;
+      const isCybercombat = specSlug === SPEC_SLUGS.CYBERCOMBAT;
       if (connectionMode === "hot-sim" && (isPiratage || isCybercombat)) {
         this.rollMode = "advantage";
         hasHotSimAdvantage = true;
@@ -4728,6 +4841,7 @@ class RollDialog extends Application {
         return {
           id: skill.id,
           name: skill.name,
+          slug: skill.system?.slug || "",
           rating: skillRating,
           linkedAttribute,
           dicePool: attributeValue + skillRating,
@@ -4740,7 +4854,7 @@ class RollDialog extends Application {
         const linkedSkillName = spec.system?.linkedSkill;
         const attributeValue = this.actor?.system?.attributes?.[linkedAttribute] || 0;
         const parentSkill = this.actor.items.find(
-          (i) => i.type === "skill" && i.name === linkedSkillName
+          (i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
         );
         const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
         const effectiveRating = skillRating + 2;
@@ -4756,7 +4870,7 @@ class RollDialog extends Application {
       });
       const orphanSpecializations = [];
       for (const spec of allSpecializations) {
-        const parentSkill = skills.find((s) => s.name === spec.linkedSkillName);
+        const parentSkill = skills.find((s) => s.name === spec.linkedSkillName || s.slug === spec.linkedSkillName);
         if (parentSkill) {
           parentSkill.specializations.push(spec);
         } else {
@@ -4890,7 +5004,7 @@ class RollDialog extends Application {
           const parentSkillName = specItem.system?.linkedSkill;
           if (parentSkillName) {
             const parentSkillItem = this.actor.items.find(
-              (i) => i.type === "skill" && i.name === parentSkillName
+              (i) => i.type === "skill" && (i.name === parentSkillName || i.system?.slug === parentSkillName)
             );
             if (parentSkillItem) {
               const skillRating = parentSkillItem.system?.rating || 0;
@@ -4915,7 +5029,7 @@ class RollDialog extends Application {
       }
       if (!selectedAttribute && !hasSkillRating) {
         const linkedAttackSkill = this.rollData.linkedAttackSkill || this.rollData.skillName;
-        if (linkedAttackSkill && normalizeSearchText(linkedAttackSkill) === normalizeSearchText("Combat rapproché")) {
+        if (linkedAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
           selectedAttribute = "strength";
         } else {
           selectedAttribute = "agility";
@@ -4964,10 +5078,10 @@ class RollDialog extends Application {
       );
       const damageValue = finalNumericDamage.toString();
       if (!baseSkillName) {
-        baseSkillName = "Combat rapproché";
+        baseSkillName = SKILL_SLUGS.CLOSE_COMBAT;
       }
       const linkedSkillItem = this.actor.items.find(
-        (item) => item.type === "skill" && item.name === baseSkillName
+        (item) => item.type === "skill" && (item.system.slug === baseSkillName || item.name === baseSkillName)
       );
       const linkedSpecs = this.actor.items.filter(
         (item) => item.type === "specialization" && item.system.linkedSkill === baseSkillName
@@ -5071,7 +5185,7 @@ class RollDialog extends Application {
         const linkedSkillName = specSystem.linkedSkill;
         const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
         const parentSkill = this.actor.items.find(
-          (i) => i.type === "skill" && i.name === linkedSkillName
+          (i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
         );
         const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
         const effectiveRating = skillRating + 2;
@@ -5113,7 +5227,7 @@ class RollDialog extends Application {
         const attributeValue = this.actor.system.attributes?.[selectedAttribute] || 0;
         const linkedSkillName = this.rollData.skillName;
         const parentSkill = this.actor.items.find(
-          (i) => i.type === "skill" && i.name === linkedSkillName
+          (i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)
         );
         const skillRating = parentSkill ? parentSkill.system.rating || 0 : 0;
         const effectiveRating = skillRating + 2;
@@ -6052,28 +6166,41 @@ async function handleDrain(actor, rollData, rollResult) {
     return;
   }
   const isSpell = rollData.itemType === "spell";
-  let skillName = rollData.linkedAttackSkill || rollData.skillName || rollData.specName || "";
-  let normalizedSkillName = normalizeSearchText(skillName);
-  if (isSpell || normalizeSearchText(rollData.linkedAttackSkill || "") === "sorcellerie") {
-    normalizedSkillName = "sorcellerie";
-  } else if (rollData.itemType === "specialization") {
-    if (!normalizedSkillName || normalizedSkillName !== "sorcellerie" && normalizedSkillName !== "conjuration") {
-      if (rollData.itemId && actor) {
-        const specItem = actor.items.find((item) => item.id === rollData.itemId);
-        if (specItem && specItem.type === "specialization") {
-          const specSystem = specItem.system;
-          const linkedSkill = specSystem.linkedSkill || "";
-          if (linkedSkill) {
-            skillName = linkedSkill;
-            normalizedSkillName = normalizeSearchText(linkedSkill);
-          }
+  let skillSlug = rollData.skillSlug || "";
+  if (!skillSlug) {
+    const attackSkill = rollData.linkedAttackSkill || rollData.skillName || "";
+    const MAGIC_SLUGS = [SKILL_SLUGS.SORCERY, SKILL_SLUGS.CONJURATION, SKILL_SLUGS.TECHNOMANCER];
+    if (MAGIC_SLUGS.includes(attackSkill)) {
+      skillSlug = attackSkill;
+    } else {
+      const normalized = normalizeSearchText(attackSkill);
+      const SLUG_MAP = {
+        "sorcellerie": SKILL_SLUGS.SORCERY,
+        "sorcery": SKILL_SLUGS.SORCERY,
+        "conjuration": SKILL_SLUGS.CONJURATION,
+        "technomancie": SKILL_SLUGS.TECHNOMANCER,
+        "technomancer": SKILL_SLUGS.TECHNOMANCER
+      };
+      skillSlug = SLUG_MAP[normalized] || "";
+    }
+  }
+  if (isSpell && !skillSlug) {
+    skillSlug = SKILL_SLUGS.SORCERY;
+  } else if (!skillSlug && rollData.itemType === "specialization") {
+    const MAGIC_SLUGS = [SKILL_SLUGS.SORCERY, SKILL_SLUGS.CONJURATION, SKILL_SLUGS.TECHNOMANCER];
+    if (rollData.itemId && actor) {
+      const specItem = actor.items.find((item) => item.id === rollData.itemId);
+      if (specItem && specItem.type === "specialization") {
+        const linkedSkill = specItem.system.linkedSkill || "";
+        if (MAGIC_SLUGS.includes(linkedSkill)) {
+          skillSlug = linkedSkill;
         }
       }
     }
   }
-  const isSorcery = normalizedSkillName === "sorcellerie";
-  const isConjuration = normalizedSkillName === "conjuration";
-  const isTechnomancie = normalizedSkillName === "technomancie";
+  const isSorcery = skillSlug === SKILL_SLUGS.SORCERY;
+  const isConjuration = skillSlug === SKILL_SLUGS.CONJURATION;
+  const isTechnomancie = skillSlug === SKILL_SLUGS.TECHNOMANCER;
   if (!isSorcery && !isConjuration && !isTechnomancie) {
     return;
   }
@@ -6948,8 +7075,9 @@ class CharacterSheet extends ActorSheet {
       const skillSpecResult = findAttackSkillAndSpec(
         this.actor,
         "Spé : Cybercombat",
-        "Piratage",
-        { defaultAttribute: "willpower" }
+        // FR display name used for spec lookup
+        SKILL_SLUGS.CRACKING,
+        { defaultAttribute: "willpower", lookupBySlug: true }
       );
       const itemRRList = (cyberdeckSystem.rrList || []).map((rrEntry) => ({
         ...rrEntry,
@@ -6981,15 +7109,10 @@ class CharacterSheet extends ActorSheet {
       const finalAttackSpec = weaponLinkedSpecialization || weaponSystem.linkedAttackSpecialization || "";
       let defaultAttribute;
       const skillExists = this.actor.items.some(
-        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+        (i) => i.type === "skill" && (i.system.slug === finalAttackSkill || i.name === finalAttackSkill)
       );
       if (!skillExists && finalAttackSkill) {
-        const normalizedSkillName = normalizeSearchText(finalAttackSkill);
-        if (normalizedSkillName === normalizeSearchText("Combat rapproché")) {
-          defaultAttribute = "strength";
-        } else {
-          defaultAttribute = "agility";
-        }
+        defaultAttribute = finalAttackSkill === SKILL_SLUGS.CLOSE_COMBAT ? "strength" : "agility";
       } else {
         defaultAttribute = "strength";
       }
@@ -6997,7 +7120,7 @@ class CharacterSheet extends ActorSheet {
         this.actor,
         finalAttackSpec,
         finalAttackSkill,
-        { defaultAttribute }
+        { defaultAttribute, lookupBySlug: true }
       );
       const itemRRList = weaponSystem.rrList || [];
       const poolResult = calculateAttackPool(
@@ -7021,8 +7144,9 @@ class CharacterSheet extends ActorSheet {
           const skillSpecResult = findAttackSkillAndSpec(
             this.actor,
             "Spé : Armes contrôlées à distance",
-            "Ingénierie",
-            { defaultAttribute: "logic" }
+            // FR display name
+            SKILL_SLUGS.ENGINEERING,
+            { defaultAttribute: "logic", lookupBySlug: true }
           );
           const poolResult = calculateAttackPool(
             this.actor,
@@ -7032,9 +7156,9 @@ class CharacterSheet extends ActorSheet {
           );
           weapon.totalDicePool = poolResult.totalDicePool;
           weapon.rr = poolResult.totalRR;
-          weapon.linkedAttackSkill = "Ingénierie";
+          weapon.linkedAttackSkill = SKILL_SLUGS.ENGINEERING;
           weapon.linkedAttackSpecialization = "Spé : Armes contrôlées à distance";
-          weapon.linkedDefenseSkill = "Athlétisme";
+          weapon.linkedDefenseSkill = SKILL_SLUGS.ATHLETICS;
           weapon.linkedDefenseSpecialization = "Spé : Défense à distance";
           return weapon;
         });
@@ -7055,8 +7179,8 @@ class CharacterSheet extends ActorSheet {
       const skillSpecResult = findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
-        "Sorcellerie",
-        { isSpell: true, spellSpecType, defaultAttribute: "willpower" }
+        SKILL_SLUGS.SORCERY,
+        { isSpell: true, spellSpecType, defaultAttribute: "willpower", lookupBySlug: true }
       );
       const poolResult = calculateAttackPool(
         this.actor,
@@ -7084,8 +7208,8 @@ class CharacterSheet extends ActorSheet {
       const skillSpecResult = findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
-        "Technomancie",
-        { isSpell: true, spellSpecType: cfSpecType, defaultAttribute: "logic" }
+        SKILL_SLUGS.TECHNOMANCER,
+        { isSpell: true, spellSpecType: cfSpecType, defaultAttribute: "logic", lookupBySlug: true }
       );
       const poolResult = calculateAttackPool(
         this.actor,
@@ -7462,7 +7586,7 @@ class CharacterSheet extends ActorSheet {
     const linkedAttribute = specSystem.linkedAttribute || "strength";
     const linkedSkillName = specSystem.linkedSkill;
     const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
-    const linkedSkill = linkedSkillName ? this.actor.items.find((i) => i.type === "skill" && i.name === linkedSkillName) : null;
+    const linkedSkill = linkedSkillName ? this.actor.items.find((i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)) : null;
     const skillRating = linkedSkill ? linkedSkill.system.rating || 0 : 0;
     const specRRSources = this.getRRSources("specialization", specialization.name);
     const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
@@ -7540,7 +7664,7 @@ class CharacterSheet extends ActorSheet {
         const linkedSkillName = specTemplate.system.linkedSkill;
         if (linkedSkillName) {
           associatedSkill = this.actor.items.find(
-            (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(linkedSkillName)
+            (i) => i.type === "skill" && (normalizeSearchText(i.name) === normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
           );
         }
       }
@@ -8327,7 +8451,7 @@ class CharacterSheet extends ActorSheet {
     } else if (itemType === "specialization") {
       const specSystem = item.system;
       const linkedSkillName = specSystem.linkedSkill;
-      const parentSkill = this.actor.items.find((i) => i.type === "skill" && i.name === linkedSkillName);
+      const parentSkill = this.actor.items.find((i) => i.type === "skill" && (i.name === linkedSkillName || i.system?.slug === linkedSkillName));
       const effectiveRating = parentSkill ? parentSkill.system.rating || 0 : 0;
       const fakeEvent = {
         preventDefault: () => {
@@ -8483,15 +8607,15 @@ class CharacterSheet extends ActorSheet {
         ...rrEntry,
         featName: weapon.name
       }));
-      const finalAttackSkill = "Ingénierie";
+      const finalAttackSkill = SKILL_SLUGS.ENGINEERING;
       const finalAttackSpec = "Spé : Armes contrôlées à distance";
-      const finalDefenseSkill = "Athlétisme";
+      const finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
       const finalDefenseSpec = "Spé : Défense à distance";
       const attackSkillSpecResult = findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
         finalAttackSkill,
-        { defaultAttribute: "logic" }
+        { defaultAttribute: "logic", lookupBySlug: true }
       );
       const attackSkillName = attackSkillSpecResult.skillName;
       const attackSkillLevel = attackSkillSpecResult.skillLevel;
@@ -8502,7 +8626,7 @@ class CharacterSheet extends ActorSheet {
         this.actor,
         finalDefenseSpec,
         finalDefenseSkill,
-        { defaultAttribute: "agility" }
+        { defaultAttribute: "agility", lookupBySlug: true }
       );
       const defenseSkillName = defenseSkillSpecResult.skillName;
       const defenseSkillLevel = defenseSkillSpecResult.skillLevel;
@@ -8614,8 +8738,9 @@ class CharacterSheet extends ActorSheet {
     const skillSpecResult = findAttackSkillAndSpec(
       this.actor,
       "Spé : Cybercombat",
-      "Piratage",
-      { defaultAttribute: "willpower" }
+      // FR display name used for spec lookup
+      SKILL_SLUGS.CRACKING,
+      { defaultAttribute: "willpower", lookupBySlug: true }
     );
     const itemRRList = (cyberdeckSystem.rrList || []).map((rrEntry) => ({
       ...rrEntry,
@@ -8633,11 +8758,13 @@ class CharacterSheet extends ActorSheet {
       itemId: cyberdeck.id,
       itemRating: cyberdeckSystem.rating || 0,
       itemActive: cyberdeckSystem.active,
-      // Cybercombat uses Piratage (Cybercombat) + Volonté
-      linkedAttackSkill: "Piratage",
+      // Cybercombat uses Cracking (Cybercombat) + Volonté
+      linkedAttackSkill: SKILL_SLUGS.CRACKING,
       linkedAttackSpecialization: "Spé : Cybercombat",
-      linkedDefenseSkill: "Piratage",
+      // FR display name
+      linkedDefenseSkill: SKILL_SLUGS.CRACKING,
       linkedDefenseSpecialization: "Spé : Cybercombat",
+      // FR display name
       linkedAttribute: skillSpecResult.linkedAttribute,
       // Damage value = cyberdeck attack rating
       damageValue: attackValue.toString(),
@@ -8753,7 +8880,7 @@ class CharacterSheet extends ActorSheet {
     let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || "";
     if (isSpell) {
       if (isComplexForm) {
-        finalAttackSkill = "Technomancie";
+        finalAttackSkill = SKILL_SLUGS.TECHNOMANCER;
         const cfSpecType = itemSystem.complexFormSpecializationType || "formes-complexes";
         const cfSpecMap = {
           "formes-complexes": "Spé: Formes complexes",
@@ -8762,7 +8889,7 @@ class CharacterSheet extends ActorSheet {
         };
         finalAttackSpec = cfSpecMap[cfSpecType] || "Spé: Formes complexes";
       } else {
-        finalAttackSkill = "Sorcellerie";
+        finalAttackSkill = SKILL_SLUGS.SORCERY;
         const spellSpecType2 = itemSystem.spellSpecializationType || "combat";
         const spellSpecMap = {
           "combat": "Spé: Sorts de combat",
@@ -8778,7 +8905,7 @@ class CharacterSheet extends ActorSheet {
         finalDefenseSkill = "";
         finalDefenseSpec = "";
       } else {
-        finalDefenseSkill = "Athlétisme";
+        finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
         finalDefenseSpec = "Spé : Défense à distance";
       }
     }
@@ -8790,11 +8917,10 @@ class CharacterSheet extends ActorSheet {
       defaultAttribute = "willpower";
     } else {
       const skillExists = this.actor.items.some(
-        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill)
+        (i) => i.type === "skill" && (i.system.slug === finalAttackSkill || normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill))
       );
       if (!skillExists && finalAttackSkill) {
-        const normalizedSkillName = normalizeSearchText(finalAttackSkill);
-        if (normalizedSkillName === normalizeSearchText("Combat rapproché")) {
+        if (finalAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
           defaultAttribute = "strength";
         } else {
           defaultAttribute = "agility";
@@ -8810,7 +8936,8 @@ class CharacterSheet extends ActorSheet {
       {
         isSpell,
         spellSpecType,
-        defaultAttribute
+        defaultAttribute,
+        lookupBySlug: true
       }
     );
     const attackSkillName = skillSpecResult.skillName;
@@ -9752,6 +9879,10 @@ class VehicleSheet extends ActorSheet {
     });
     let narrativeEffectSaveTimeout = null;
     const saveNarrativeEffects = async () => {
+      const activeElement = document.activeElement;
+      const activeFieldName = activeElement?.name || "";
+      const cursorPos = activeElement?.selectionStart ?? 0;
+      const cursorEnd = activeElement?.selectionEnd ?? cursorPos;
       const currentNarrativeEffects = [];
       const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
       narrativeEffectTextareas.each((_inputIndex, textarea) => {
@@ -9778,6 +9909,15 @@ class VehicleSheet extends ActorSheet {
       await this.actor.update({
         "system.narrativeEffects": currentNarrativeEffects
       });
+      if (activeFieldName && activeFieldName.startsWith("system.narrativeEffects.")) {
+        setTimeout(() => {
+          const restored = this.element.find(`textarea[name="${activeFieldName}"]`)[0];
+          if (restored) {
+            restored.focus();
+            restored.setSelectionRange(cursorPos, cursorEnd);
+          }
+        }, DELAYS.SHEET_RENDER);
+      }
     };
     html.find('select[name^="system.narrativeEffects."]').on("change", async (event) => {
       event.preventDefault();
@@ -10347,10 +10487,12 @@ class FeatSheet extends ItemSheet {
         entry.rrTargetType = rrType === "skill" ? game.i18n.localize("SRA2.FEATS.RR_TYPE.SKILL") : game.i18n.localize("SRA2.FEATS.RR_TYPE.SPECIALIZATION");
         if (this.item.actor && rrTarget) {
           const targetItem = this.item.actor.items.find(
-            (i2) => i2.type === rrType && i2.name === rrTarget
+            (i2) => i2.type === rrType && (i2.name === rrTarget || i2.system?.slug === rrTarget)
           );
           if (!targetItem) {
             entry.rrTargetNotFound = true;
+          } else {
+            entry.rrTargetName = targetItem.name;
           }
         }
       }
@@ -11503,25 +11645,46 @@ class SpecializationSheet extends ItemSheet {
     context.system = this.item.system;
     context.isGM = game.user?.isGM ?? false;
     if (context.system.linkedSkill) {
-      context.linkedSkillName = context.system.linkedSkill;
+      const linkedSkillSlug = context.system.linkedSkill;
       if (this.item.actor) {
         const linkedSkill = this.item.actor.items.find(
-          (i) => i.type === "skill" && i.name === context.system.linkedSkill
+          (i) => i.type === "skill" && (i.system.slug === linkedSkillSlug || i.name === linkedSkillSlug)
         );
-        if (!linkedSkill) {
+        if (linkedSkill) {
+          context.linkedSkillName = linkedSkill.name;
+        } else {
+          context.linkedSkillName = this._resolveSkillNameFromSlug(linkedSkillSlug);
           context.linkedSkillNotFound = true;
         }
+      } else {
+        context.linkedSkillName = this._resolveSkillNameFromSlug(linkedSkillSlug);
       }
     }
     if (this.item.actor) {
       const skills = this.item.actor.items.filter((i) => i.type === "skill");
       context.skills = skills.map((s) => ({
-        name: s.name
+        name: s.name,
+        slug: s.system.slug || ""
       }));
     } else {
       context.skills = [];
     }
     return context;
+  }
+  /**
+   * Resolve a skill slug to its localized name.
+   * Uses the global cache built at startup, falls back to world items search.
+   */
+  _resolveSkillNameFromSlug(slug) {
+    const cache = globalThis.SRA2_SKILL_SLUG_CACHE;
+    if (cache && cache[slug]) return cache[slug];
+    if (game.items) {
+      const worldSkill = game.items.find(
+        (i) => i.type === "skill" && (i.system.slug === slug || i.name === slug)
+      );
+      if (worldSkill) return worldSkill.name;
+    }
+    return slug;
   }
   activateListeners(html) {
     super.activateListeners(html);
@@ -11558,7 +11721,8 @@ class SpecializationSheet extends ItemSheet {
       const item = await Item.implementation.fromDropData(data);
       if (!item) return super._onDrop(event);
       if (item.type === "skill") {
-        await this.item.update({ "system.linkedSkill": item.name });
+        const slug = item.system?.slug || item.name;
+        await this.item.update({ "system.linkedSkill": slug });
         this.render(false);
         ui.notifications?.info(game.i18n.format("SRA2.SPECIALIZATIONS.LINKED_TO_SKILL", { name: item.name }));
         return;
@@ -11607,6 +11771,7 @@ class SpecializationSheet extends ItemSheet {
         if (item.type === "skill" && normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
+            slug: item.system?.slug || "",
             uuid: item.uuid,
             pack: game.i18n.localize("SRA2.SPECIALIZATIONS.WORLD_ITEMS"),
             linkedAttribute: item.system.linkedAttribute,
@@ -11622,6 +11787,7 @@ class SpecializationSheet extends ItemSheet {
         if (doc.type === "skill" && normalizeSearchText(doc.name).includes(searchTerm)) {
           results.push({
             name: doc.name,
+            slug: doc.system?.slug || "",
             uuid: doc.uuid,
             pack: pack.title,
             linkedAttribute: doc.system.linkedAttribute,
@@ -11661,7 +11827,7 @@ class SpecializationSheet extends ItemSheet {
               <span class="result-name">${result.name}</span>
               <span class="result-pack">${result.pack} - ${attributeLabel}</span>
             </div>
-            <button class="link-skill-btn" data-skill-name="${result.name}">
+            <button class="link-skill-btn" data-skill-name="${result.name}" data-skill-slug="${result.slug}">
               ${game.i18n.localize("SRA2.SPECIALIZATIONS.LINK_SKILL")}
             </button>
           </div>
@@ -11709,8 +11875,9 @@ class SpecializationSheet extends ItemSheet {
     event.stopPropagation();
     const button = event.currentTarget;
     const skillName = button.dataset.skillName;
+    const skillSlug = button.dataset.skillSlug;
     if (!skillName) return;
-    await this.item.update({ "system.linkedSkill": skillName });
+    await this.item.update({ "system.linkedSkill": skillSlug || skillName });
     const searchInput = this.element.find(".skill-search-input")[0];
     if (searchInput) {
       searchInput.value = "";
@@ -11778,7 +11945,8 @@ class SpecializationSheet extends ItemSheet {
     };
     const createdItems = await Item.create(skillData);
     if (createdItems) {
-      await this.item.update({ "system.linkedSkill": formattedName });
+      const createdSlug = createdItems.system?.slug || formattedName;
+      await this.item.update({ "system.linkedSkill": createdSlug });
       const searchInput = this.element.find(".skill-search-input")[0];
       if (searchInput) {
         searchInput.value = "";
@@ -13106,10 +13274,480 @@ class Migration_13_1_3 extends Migration {
     }
   }
 }
+class Migration_13_2_4 extends Migration {
+  get code() {
+    return "migration-13.2.4";
+  }
+  get version() {
+    return "13.2.4";
+  }
+  /**
+   * Map of normalized specialization names (FR, EN) to canonical slugs (spec_xxx based on EN name)
+   */
+  get _specNameToSlug() {
+    return {
+      // EN
+      "spec: academic": "spec_academic",
+      "spec: air spirits": "spec_air-spirits",
+      "spec: animal training": "spec_animal-training",
+      "spec: aquatic drones": "spec_aquatic-drones",
+      "spec: aquatic vehicles": "spec_aquatic-vehicles",
+      "spec: astral combat": "spec_astral-combat",
+      "spec: astral perception": "spec_astral-perception",
+      "spec: astral stealth": "spec_astral-stealth",
+      "spec: backdoor": "spec_backdoor",
+      "spec: banishing": "spec_banishing",
+      "spec: beast spirits": "spec_beast-spirits",
+      "spec: bikes": "spec_bikes",
+      "spec: blades": "spec_blades",
+      "spec: bluff": "spec_bluff",
+      "spec: blunt weapons": "spec_blunt-weapons",
+      "spec: brute force": "spec_brute-force",
+      "spec: cars": "spec_cars",
+      "spec: climbing": "spec_climbing",
+      "spec: combat spells": "spec_combat-spells",
+      "spec: compilation": "spec_compilation",
+      "spec: complex forms": "spec_complex-forms",
+      "spec: composure": "spec_composure",
+      "spec: corporate": "spec_corporate",
+      "spec: counterspelling": "spec_counterspelling",
+      "spec: c&r drones": "spec_cr-drones",
+      "spec: criminal": "spec_criminal",
+      "spec: c&r mechanical devices": "spec_cr-mechanical-devices",
+      "spec: c&r vehicles": "spec_cr-vehicles",
+      "spec: cybercombat": "spec_cybercombat",
+      "spec: cybernetics": "spec_cybernetics",
+      "spec: decompilation": "spec_decompilation",
+      "spec: defense": "spec_defense",
+      "spec: detection spells": "spec_detection-spells",
+      "spec: earth spirits": "spec_earth-spirits",
+      "spec: electronic warfare": "spec_electronic-warfare",
+      "spec: engineering": "spec_engineering",
+      "spec: etiquette": "spec_etiquette",
+      "spec: explosives": "spec_explosives",
+      "spec: fangs": "spec_fangs",
+      "spec: fire spirits": "spec_fire-spirits",
+      "spec: first aid": "spec_first-aid",
+      "spec: flying drones": "spec_flying-drones",
+      "spec: flying vehicles": "spec_flying-vehicles",
+      "spec: government": "spec_government",
+      "spec: grenade launchers": "spec_grenade-launchers",
+      "spec: ground drones": "spec_ground-drones",
+      "spec: health spells": "spec_health-spells",
+      "spec: heavy weapons": "spec_heavy-weapons",
+      "spec: illusion spells": "spec_illusion-spells",
+      "spec: impersonation": "spec_impersonation",
+      "spec: intimidation": "spec_intimidation",
+      "spec: kin spirits": "spec_kin-spirits",
+      "spec: la rue": "spec_la-rue",
+      "spec: lockpicking": "spec_lockpicking",
+      "spec: magic": "spec_magic",
+      "spec: manipulation spells": "spec_manipulation-spells",
+      "spec: matrix": "spec_matrix",
+      "spec: matrix perception": "spec_matrix-perception",
+      "spec: matrix protection": "spec_matrix-protection",
+      "spec: matrix search": "spec_matrix-search",
+      "spec: matrix stealth": "spec_matrix-stealth",
+      "spec: media": "spec_media",
+      "spec: medical": "spec_medical",
+      "spec: monofilament": "spec_monofilament",
+      "spec: mounted weapons": "spec_mounted-weapons",
+      "spec: navigation": "spec_navigation",
+      "spec: negotiation": "spec_negotiation",
+      "spec: parkour": "spec_parkour",
+      "spec: personal devices": "spec_personal-devices",
+      "spec: personal electronics": "spec_personal-electronics",
+      "spec: physical": "spec_physical",
+      "spec: physical perception": "spec_physical-perception",
+      "spec: physical stealth": "spec_physical-stealth",
+      "spec: pistols": "spec_pistols",
+      "spec: plant spirits": "spec_plant-spirits",
+      "spec: ranged defense": "spec_ranged-defense",
+      "spec: remote controlled weapons": "spec_remote-controlled-weapons",
+      "spec: rifles": "spec_rifles",
+      "spec: running": "spec_running",
+      "spec: shotguns": "spec_shotguns",
+      "spec: smgs": "spec_smgs",
+      "spec: social perception": "spec_social-perception",
+      "spec: stealth": "spec_stealth",
+      "spec: swimming": "spec_swimming",
+      "spec: thrown weapons": "spec_thrown-weapons",
+      "spec: trucks": "spec_trucks",
+      "spec: unarmed": "spec_unarmed",
+      "spec: water spirits": "spec_water-spirits",
+      "spec: wilderness survival": "spec_wilderness-survival",
+      // FR
+      "spe : appareils personnels": "spec_personal-devices",
+      "spe : armes contondantes": "spec_blunt-weapons",
+      "spe : armes controlees a distance": "spec_remote-controlled-weapons",
+      "spe : armes de jet": "spec_thrown-weapons",
+      "spe : armes de trait": "spec_heavy-weapons",
+      "spe : armes lourdes": "spec_heavy-weapons",
+      "spe : armes montees": "spec_mounted-weapons",
+      "spe : backdoor": "spec_backdoor",
+      "spe : bannissement": "spec_banishing",
+      "spe : bluff": "spec_bluff",
+      "spe : camions": "spec_trucks",
+      "spe : combat astral": "spec_astral-combat",
+      "spe : compilation": "spec_compilation",
+      "spe : contresort": "spec_counterspelling",
+      "spe : corporatiste": "spec_corporate",
+      "spe : course": "spec_running",
+      "spe : c&r appareils electroniques": "spec_personal-electronics",
+      "spe : c&r drones": "spec_cr-drones",
+      "spe : c&r engins mecaniques": "spec_cr-mechanical-devices",
+      "spe : c&r implants cybernetiques": "spec_cybernetics",
+      "spe : c&r vehicules": "spec_cr-vehicles",
+      "spe : criminel": "spec_criminal",
+      "spe : crochetage": "spec_lockpicking",
+      "spe : crocs": "spec_fangs",
+      "spe : cybercombat": "spec_cybercombat",
+      "spe : decompilation": "spec_decompilation",
+      "spe : defense": "spec_defense",
+      "spe : defense a distance": "spec_ranged-defense",
+      "spe : discretion astrale": "spec_astral-stealth",
+      "spe : discretion matricielle": "spec_matrix-stealth",
+      "spe : discretion physique": "spec_physical-stealth",
+      "spe : dressage": "spec_animal-training",
+      "spe : drones aquatiques": "spec_aquatic-drones",
+      "spe : drones terrestres": "spec_ground-drones",
+      "spe : drones volants": "spec_flying-drones",
+      "spe : escalade": "spec_climbing",
+      "spe : escamotage": "spec_stealth",
+      "spe : esprit des aines": "spec_kin-spirits",
+      "spe : esprits de l'air": "spec_air-spirits",
+      "spe : esprits de la terre": "spec_earth-spirits",
+      "spe : esprits de l'eau": "spec_water-spirits",
+      "spe : esprits des betes": "spec_beast-spirits",
+      "spe : esprits des plantes": "spec_plant-spirits",
+      "spe : esprits du feu": "spec_fire-spirits",
+      "spe : etiquette": "spec_etiquette",
+      "spe : explosifs": "spec_explosives",
+      "spe : force brute": "spec_brute-force",
+      "spe : formes complexes": "spec_complex-forms",
+      "spe : fusils": "spec_rifles",
+      "spe : gouvernemental": "spec_government",
+      "spe : guerre electronique": "spec_electronic-warfare",
+      "spe : imposture": "spec_impersonation",
+      "spe : ingenierie": "spec_engineering",
+      "spe : intimidation": "spec_intimidation",
+      "spe : la rue": "spec_la-rue",
+      "spe : lames": "spec_blades",
+      "spe : lance-grenades": "spec_grenade-launchers",
+      "spe : magique": "spec_magic",
+      "spe : mains nues": "spec_unarmed",
+      "spe : matriciel": "spec_matrix",
+      "spe : matricielle": "spec_matrix",
+      "spe : mediatique": "spec_media",
+      "spe : medical": "spec_medical",
+      "spe : mitraillettes": "spec_smgs",
+      "spe : monofilament": "spec_monofilament",
+      "spe : motos": "spec_bikes",
+      "spe : natation": "spec_swimming",
+      "spe : negociation": "spec_negotiation",
+      "spe : orientation": "spec_navigation",
+      "spe : parkour": "spec_parkour",
+      "spe : perception astrale": "spec_astral-perception",
+      "spe : perception matricielle": "spec_matrix-perception",
+      "spe : perception physique": "spec_physical-perception",
+      "spe : perception sociale": "spec_social-perception",
+      "spe : physique": "spec_physical",
+      "spe : pistolets": "spec_pistols",
+      "spe : premiers soins": "spec_first-aid",
+      "spe : protection matricielle": "spec_matrix-protection",
+      "spe : recherche matricielle": "spec_matrix-search",
+      "spe : sang-froid": "spec_composure",
+      "spe : shotguns": "spec_shotguns",
+      "spe : sorts de combat": "spec_combat-spells",
+      "spe : sorts de detection": "spec_detection-spells",
+      "spe : sorts de manipulation": "spec_manipulation-spells",
+      "spe : sorts de sante": "spec_health-spells",
+      "spe : sorts d'illusion": "spec_illusion-spells",
+      "spe : survie en milieu naturel": "spec_wilderness-survival",
+      "spe : universitaire": "spec_academic",
+      "spe : vehicules aquatiques": "spec_aquatic-vehicles",
+      "spe : vehicules volants": "spec_flying-vehicles",
+      "spe : voitures": "spec_cars"
+    };
+  }
+  /**
+   * Normalize text: lowercase, remove accents
+   */
+  _normalize(text) {
+    if (!text) return "";
+    return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+  /**
+   * Map of normalized skill names (FR, EN, and old wrong names) to canonical slugs
+   */
+  get _nameToSlug() {
+    return {
+      // FR
+      "combat rapproche": "close-combat",
+      "armes a distance": "ranged-weapons",
+      "athletisme": "athletics",
+      "furtivite": "stealth",
+      "piratage": "cracking",
+      "ingenierie": "engineering",
+      "electronique": "electronics",
+      "pilotage": "piloting",
+      "sorcellerie": "sorcery",
+      "conjuration": "conjuration",
+      "technomancie": "technomancer",
+      "influence": "influence",
+      "perception": "perception",
+      "survie": "survival",
+      "reseau": "networking",
+      "combat astral": "astral-combat",
+      // EN
+      "close combat": "close-combat",
+      "ranged weapons": "ranged-weapons",
+      "athletics": "athletics",
+      "stealth": "stealth",
+      "cracking": "cracking",
+      "engineering": "engineering",
+      "electronics": "electronics",
+      "piloting": "piloting",
+      "sorcery": "sorcery",
+      "technomancer": "technomancer",
+      "survival": "survival",
+      "networking": "networking",
+      "astral combat": "astral-combat",
+      // Old wrong names
+      "corps a corps": "close-combat",
+      "arme a distance": "ranged-weapons",
+      "hacking": "cracking"
+    };
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.2.4: Add slugs to skills and convert linkedSkill to slugs");
+    const nameToSlug = this._nameToSlug;
+    let totalSkills = 0;
+    let totalSpecs = 0;
+    let totalNarrationFixes = 0;
+    for (const actor of game.actors) {
+      const updates = this._computeUpdates(actor.items, nameToSlug);
+      if (updates.length > 0) {
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Updating ${updates.length} item(s) on actor "${actor.name}"`);
+        await actor.updateEmbeddedDocuments("Item", updates);
+        for (const u of updates) {
+          if (u["system.slug"]) totalSkills++;
+          if (u["system.linkedSkill"]) totalSpecs++;
+        }
+      }
+    }
+    const worldUpdates = this._computeUpdates(game.items, nameToSlug);
+    if (worldUpdates.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Updating ${worldUpdates.length} item(s) in world items`);
+      await Item.updateDocuments(worldUpdates);
+      for (const u of worldUpdates) {
+        if (u["system.slug"]) totalSkills++;
+        if (u["system.linkedSkill"]) totalSpecs++;
+      }
+    }
+    for (const pack of game.packs) {
+      const wasLocked = pack.locked;
+      if (wasLocked) await pack.configure({ locked: false });
+      try {
+        if (pack.documentName === "Item") {
+          const documents2 = await pack.getDocuments();
+          const updates = this._computeUpdates(documents2, nameToSlug);
+          if (updates.length > 0) {
+            console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Updating ${updates.length} item(s) in pack "${pack.title}"`);
+            for (const u of updates) {
+              const doc = documents2.find((d) => d.id === u._id);
+              if (doc) await doc.update(u);
+              if (u["system.slug"]) totalSkills++;
+              if (u["system.linkedSkill"]) totalSpecs++;
+            }
+          }
+          const narrationUpdates = this._computeNarrationFixes(documents2);
+          if (narrationUpdates.length > 0) {
+            console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Fixing ${narrationUpdates.length} narrationActions in pack "${pack.title}"`);
+            for (const u of narrationUpdates) {
+              const doc = documents2.find((d) => d.id === u._id);
+              if (doc) await doc.update(u);
+            }
+            totalNarrationFixes += narrationUpdates.length;
+          }
+        } else if (pack.documentName === "Actor") {
+          const actors = await pack.getDocuments();
+          for (const actor of actors) {
+            const updates = this._computeUpdates(actor.items, nameToSlug);
+            if (updates.length > 0) {
+              console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Updating ${updates.length} item(s) on compendium actor "${actor.name}"`);
+              await actor.updateEmbeddedDocuments("Item", updates);
+              for (const u of updates) {
+                if (u["system.slug"]) totalSkills++;
+                if (u["system.linkedSkill"]) totalSpecs++;
+              }
+            }
+            const narrationUpdates = this._computeNarrationFixes(actor.items);
+            if (narrationUpdates.length > 0) {
+              console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Fixing ${narrationUpdates.length} narrationActions on compendium actor "${actor.name}"`);
+              await actor.updateEmbeddedDocuments("Item", narrationUpdates);
+              totalNarrationFixes += narrationUpdates.length;
+            }
+          }
+        }
+      } finally {
+        if (wasLocked) await pack.configure({ locked: true });
+      }
+    }
+    for (const actor of game.actors) {
+      const narrationUpdates = this._computeNarrationFixes(actor.items);
+      if (narrationUpdates.length > 0) {
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Fixing ${narrationUpdates.length} narrationActions on actor "${actor.name}"`);
+        await actor.updateEmbeddedDocuments("Item", narrationUpdates);
+        totalNarrationFixes += narrationUpdates.length;
+      }
+    }
+    const worldNarrationUpdates = this._computeNarrationFixes(game.items);
+    if (worldNarrationUpdates.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + `Migration 13.2.4: Fixing ${worldNarrationUpdates.length} narrationActions in world items`);
+      await Item.updateDocuments(worldNarrationUpdates);
+      totalNarrationFixes += worldNarrationUpdates.length;
+    }
+    const summaryMessage = `Migration 13.2.4 completed — ${totalSkills} slug(s), ${totalSpecs} linkedSkill(s), ${totalNarrationFixes} narrationActions fix(es)`;
+    console.log(SYSTEM.LOG.HEAD + summaryMessage);
+    ui.notifications?.info(summaryMessage, { permanent: false });
+  }
+  /**
+   * Fix feats that have narrationActions > 0 but grantsNarration is false.
+   * These inherited the old initial: 1 default and were never intentionally configured.
+   */
+  _computeNarrationFixes(items) {
+    const updates = [];
+    for (const item of items) {
+      if (item.type !== "feat") continue;
+      const src = item._source?.system ?? item.system;
+      const narrationActions = src?.narrationActions ?? 0;
+      const grantsNarration = src?.grantsNarration ?? false;
+      if (narrationActions > 0 && !grantsNarration) {
+        updates.push({
+          _id: item.id,
+          "system.narrationActions": 0
+        });
+        console.log(SYSTEM.LOG.HEAD + `  feat "${item.name}": narrationActions ${narrationActions} → 0 (grantsNarration was false)`);
+      }
+    }
+    return updates;
+  }
+  /**
+   * Compute updates for a collection of items
+   */
+  _computeUpdates(items, nameToSlug) {
+    const updates = [];
+    for (const item of items) {
+      const update = { _id: item.id };
+      let needsUpdate = false;
+      if (item.type === "skill") {
+        const currentSlug = item._source?.system?.slug ?? item.system?.slug;
+        if (!currentSlug) {
+          const normalized = this._normalize(item.name);
+          const slug = nameToSlug[normalized];
+          if (slug) {
+            update["system.slug"] = slug;
+            needsUpdate = true;
+            console.log(SYSTEM.LOG.HEAD + `  skill "${item.name}" → slug "${slug}"`);
+          } else {
+            console.log(SYSTEM.LOG.HEAD + `  WARNING: No slug mapping for skill "${item.name}"`);
+          }
+        }
+      }
+      if (item.type === "specialization") {
+        const currentLinkedSkill = item._source?.system?.linkedSkill ?? item.system?.linkedSkill;
+        if (currentLinkedSkill) {
+          const isAlreadySlug = Object.values(nameToSlug).includes(currentLinkedSkill);
+          if (!isAlreadySlug) {
+            const normalized = this._normalize(currentLinkedSkill);
+            const slug = nameToSlug[normalized];
+            if (slug) {
+              update["system.linkedSkill"] = slug;
+              needsUpdate = true;
+              console.log(SYSTEM.LOG.HEAD + `  spec "${item.name}": linkedSkill "${currentLinkedSkill}" → "${slug}"`);
+            } else {
+              console.log(SYSTEM.LOG.HEAD + `  WARNING: No slug mapping for linkedSkill "${currentLinkedSkill}" on "${item.name}"`);
+            }
+          }
+        }
+        const currentSpecSlug = item._source?.system?.slug ?? item.system?.slug;
+        if (!currentSpecSlug) {
+          const specNormalized = this._normalize(item.name);
+          const specSlug = this._specNameToSlug[specNormalized];
+          if (specSlug) {
+            update["system.slug"] = specSlug;
+            needsUpdate = true;
+            console.log(SYSTEM.LOG.HEAD + `  spec "${item.name}" → slug "${specSlug}"`);
+          } else {
+            console.log(SYSTEM.LOG.HEAD + `  WARNING: No slug mapping for spec "${item.name}"`);
+          }
+        }
+      }
+      if (item.type === "feat") {
+        const rrList = item._source?.system?.rrList ?? item.system?.rrList;
+        if (Array.isArray(rrList) && rrList.length > 0) {
+          let rrChanged = false;
+          const newRRList = rrList.map((rr) => {
+            const rrTarget = rr.rrTarget;
+            if (!rrTarget) return rr;
+            let targetSlug = null;
+            if (rr.rrType === "skill") {
+              if (Object.values(nameToSlug).includes(rrTarget)) return rr;
+              const normalized = this._normalize(rrTarget);
+              targetSlug = nameToSlug[normalized];
+            } else if (rr.rrType === "specialization") {
+              if (Object.values(this._specNameToSlug).includes(rrTarget)) return rr;
+              const normalized = this._normalize(rrTarget);
+              targetSlug = this._specNameToSlug[normalized];
+            }
+            if (targetSlug) {
+              rrChanged = true;
+              console.log(SYSTEM.LOG.HEAD + `  feat "${item.name}": rrTarget "${rrTarget}" → "${targetSlug}"`);
+              return { ...rr, rrTarget: targetSlug };
+            }
+            return rr;
+          });
+          if (rrChanged) {
+            update["system.rrList"] = newRRList;
+            needsUpdate = true;
+          }
+        }
+      }
+      if (needsUpdate) {
+        updates.push(update);
+      }
+    }
+    return updates;
+  }
+}
 globalThis.SYSTEM = SYSTEM$1;
+function findSkillBySlug(actor, slug) {
+  const bySlug = actor.items.find((i) => i.type === "skill" && i.system?.slug === slug);
+  if (bySlug) return bySlug;
+  return findSkillByName(actor, slug);
+}
+function findSpecBySlug(actor, specSlug, linkedSkillSlug) {
+  const parentSkill = findSkillBySlug(actor, linkedSkillSlug);
+  const parentSkillName = parentSkill?.name;
+  const specKeyword = specSlug.replace(/^spec_/, "").replace(/-/g, " ");
+  return actor.items.find((i) => {
+    if (i.type !== "specialization") return false;
+    const specSlugMatch = i.system?.slug === specSlug;
+    const specNameNorm = (i.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const specNameMatch = specNameNorm.includes(specKeyword);
+    if (!specSlugMatch && !specNameMatch) return false;
+    const linkedSkill = i.system?.linkedSkill;
+    if (!linkedSkill) return false;
+    if (linkedSkill === linkedSkillSlug) return true;
+    if (parentSkillName && linkedSkill === parentSkillName) return true;
+    return false;
+  });
+}
 function getMeleeWeaponsForCounterAttack(actor, WEAPON_TYPES2) {
+  const CLOSE_COMBAT = SKILL_SLUGS.CLOSE_COMBAT;
   const combatSpecs = new Set(
-    actor.items.filter((i) => i.type === "specialization" && i.system.linkedSkill === "Combat rapproché").map((i) => i.name)
+    actor.items.filter((i) => i.type === "specialization" && i.system.linkedSkill === CLOSE_COMBAT).map((i) => i.name)
   );
   function getStats(sys) {
     return sys.weaponType && sys.weaponType !== "custom-weapon" ? WEAPON_TYPES2[sys.weaponType] : null;
@@ -13123,17 +13761,17 @@ function getMeleeWeaponsForCounterAttack(actor, WEAPON_TYPES2) {
   function isMeleeLinked(item) {
     const sys = item.system;
     const stats = getStats(sys);
-    return sys.linkedAttackSkill === "Combat rapproché" || combatSpecs.has(sys.linkedAttackSkill) || combatSpecs.has(sys.linkedAttackSpecialization) || stats?.linkedSkill === "Combat rapproché" || combatSpecs.has(stats?.linkedSkill);
+    return sys.linkedAttackSkill === CLOSE_COMBAT || combatSpecs.has(sys.linkedAttackSkill) || combatSpecs.has(sys.linkedAttackSpecialization) || stats?.linkedSkill === CLOSE_COMBAT || combatSpecs.has(stats?.linkedSkill);
   }
   function resolvedLinkedSkill(item) {
     const sys = item.system;
-    if (sys.linkedAttackSkill === "Combat rapproché" || combatSpecs.has(sys.linkedAttackSkill)) {
-      return sys.linkedAttackSkill || "Combat rapproché";
+    if (sys.linkedAttackSkill === CLOSE_COMBAT || combatSpecs.has(sys.linkedAttackSkill)) {
+      return sys.linkedAttackSkill || CLOSE_COMBAT;
     }
     const stats = getStats(sys);
     const fromType = stats?.linkedSkill;
-    if (fromType === "Combat rapproché" || combatSpecs.has(fromType)) return fromType;
-    return "Combat rapproché";
+    if (fromType === CLOSE_COMBAT || combatSpecs.has(fromType)) return fromType;
+    return CLOSE_COMBAT;
   }
   return actor.items.filter((item) => {
     if (item.type !== "feat") return false;
@@ -13208,10 +13846,12 @@ class SRA2System {
       declareMigration(new Migration_13_0_28());
       declareMigration(new Migration_13_1_1());
       declareMigration(new Migration_13_1_3());
+      declareMigration(new Migration_13_2_4());
     });
   }
   registerDataModels() {
     CONFIG.Actor.documentClass = SRA2Actor;
+    CONFIG.Item.documentClass = SRA2Item;
     CONFIG.Actor.dataModels = {
       character: CharacterDataModel,
       vehicle: VehicleDataModel,
@@ -13911,42 +14551,63 @@ class SRA2System {
           return;
         }
         const defenderActorForRoll = defenderToken?.actor ?? defender;
-        const isTechno = defenderActorForRoll.items.some((i) => i.type === "feat" && i.system.featType === "emerged");
+        const pirSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
+        const techSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
+        const cyberSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
+        const cfSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
         let skillName;
         let specName;
         let skillLevel;
         let specLevel;
         let rrTarget;
         let rrItemType;
-        if (isTechno) {
-          const techSkill = defenderActorForRoll.items.find((i) => i.type === "skill" && i.name === "Technomancie");
-          const cfSpec = defenderActorForRoll.items.find(
-            (i) => i.type === "specialization" && i.name === "Formes complexes" && i.system.linkedSkill === "Technomancie"
-          );
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const techRating = techSkill?.system?.rating ?? 0;
-          skillName = "Technomancie";
-          specName = cfSpec ? "Formes complexes" : null;
-          skillLevel = techRating + volonte;
-          specLevel = cfSpec ? skillLevel + (cfSpec.system?.rating ?? 0) : void 0;
-          rrTarget = cfSpec ? "Formes complexes" : "Technomancie";
-          rrItemType = cfSpec ? "specialization" : "skill";
-        } else {
-          const pirSkill = defenderActorForRoll.items.find((i) => i.type === "skill" && i.name === "Piratage");
-          const cyberSpec = defenderActorForRoll.items.find(
-            (i) => i.type === "specialization" && i.name === "Cybercombat" && i.system.linkedSkill === "Piratage"
-          );
+        let defLinkedAttribute;
+        if (cyberSpecDef && pirSkillDef) {
           const activeCyberdeck = defenderActorForRoll.items.find(
             (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
           );
           const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
-          const pirRating = pirSkill?.system?.rating ?? 0;
-          skillName = "Piratage";
-          specName = cyberSpec ? "Cybercombat" : null;
+          const pirRating = pirSkillDef.system?.rating ?? 0;
+          skillName = pirSkillDef.name;
+          specName = cyberSpecDef.name;
           skillLevel = pirRating + fw;
-          specLevel = cyberSpec ? skillLevel + (cyberSpec.system?.rating ?? 0) : void 0;
-          rrTarget = cyberSpec ? "Cybercombat" : "Piratage";
-          rrItemType = cyberSpec ? "specialization" : "skill";
+          specLevel = skillLevel + 2;
+          rrTarget = cyberSpecDef.name;
+          rrItemType = "specialization";
+          defLinkedAttribute = "firewall";
+        } else if (cfSpecDef && techSkillDef) {
+          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          const techRating = techSkillDef.system?.rating ?? 0;
+          skillName = techSkillDef.name;
+          specName = cfSpecDef.name;
+          skillLevel = techRating + volonte;
+          specLevel = skillLevel + 2;
+          rrTarget = cfSpecDef.name;
+          rrItemType = "specialization";
+          defLinkedAttribute = "willpower";
+        } else if (pirSkillDef) {
+          const activeCyberdeck = defenderActorForRoll.items.find(
+            (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+          );
+          const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
+          const pirRating = pirSkillDef.system?.rating ?? 0;
+          skillName = pirSkillDef.name;
+          specName = null;
+          skillLevel = pirRating + fw;
+          specLevel = void 0;
+          rrTarget = skillName;
+          rrItemType = "skill";
+          defLinkedAttribute = "firewall";
+        } else {
+          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          const techRating = techSkillDef?.system?.rating ?? 0;
+          skillName = techSkillDef?.name || "Technomancie";
+          specName = null;
+          skillLevel = techRating + volonte;
+          specLevel = void 0;
+          rrTarget = skillName;
+          rrItemType = "skill";
+          defLinkedAttribute = "willpower";
         }
         const { getRRSources: getRRSources2 } = SheetHelpers;
         const rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
@@ -13955,7 +14616,7 @@ class SRA2System {
         const defenseRollData = {
           skillName,
           specName,
-          linkedAttribute: isTechno ? "willpower" : "firewall",
+          linkedAttribute: defLinkedAttribute,
           skillLevel,
           specLevel,
           actorId: defenderActorForRoll.id,
@@ -13999,7 +14660,10 @@ class SRA2System {
           return;
         }
         const defenderActorForRoll = defenderToken?.actor ?? defender;
-        const isTechno = defenderActorForRoll.items.some((i) => i.type === "feat" && i.system.featType === "emerged");
+        const pirSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
+        const techSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
+        const cyberSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
+        const cfSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
         let caSkillName;
         let caSpecName;
         let skillLevel;
@@ -14008,40 +14672,63 @@ class SRA2System {
         let caRRItemType;
         let caItemType;
         let attackValue;
-        if (isTechno) {
-          const techSkill = defenderActorForRoll.items.find((i) => i.type === "skill" && i.name === "Technomancie");
-          const cfSpec = defenderActorForRoll.items.find(
-            (i) => i.type === "specialization" && i.name === "Formes complexes" && i.system.linkedSkill === "Technomancie"
-          );
-          const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const techRating = techSkill?.system?.rating ?? 0;
-          caSkillName = "Technomancie";
-          caSpecName = cfSpec ? "Formes complexes" : null;
-          skillLevel = techRating + resonance;
-          specLevel = cfSpec ? skillLevel + (cfSpec.system?.rating ?? 0) : void 0;
-          caRRTarget = cfSpec ? "Formes complexes" : "Technomancie";
-          caRRItemType = cfSpec ? "specialization" : "skill";
-          caItemType = "complex-form";
+        let caLinkedAttribute;
+        if (cyberSpec && pirSkill) {
           const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          attackValue = volonte;
-        } else {
-          const pirSkill = defenderActorForRoll.items.find((i) => i.type === "skill" && i.name === "Piratage");
-          const cyberSpec = defenderActorForRoll.items.find(
-            (i) => i.type === "specialization" && i.name === "Cybercombat" && i.system.linkedSkill === "Piratage"
-          );
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const pirRating = pirSkill?.system?.rating ?? 0;
-          caSkillName = "Piratage";
-          caSpecName = cyberSpec ? "Cybercombat" : null;
+          const pirRating = pirSkill.system?.rating ?? 0;
+          caSkillName = pirSkill.name;
+          caSpecName = cyberSpec.name;
           skillLevel = pirRating + volonte;
-          specLevel = cyberSpec ? skillLevel + (cyberSpec.system?.rating ?? 0) : void 0;
-          caRRTarget = cyberSpec ? "Cybercombat" : "Piratage";
-          caRRItemType = cyberSpec ? "specialization" : "skill";
+          specLevel = skillLevel + 2;
+          caRRTarget = cyberSpec.name;
+          caRRItemType = "specialization";
           caItemType = "cyberdeck-attack";
+          caLinkedAttribute = "willpower";
           const activeCyberdeck = defenderActorForRoll.items.find(
             (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
           );
           attackValue = activeCyberdeck?.system?.attack ?? 1;
+        } else if (cfSpec && techSkill) {
+          const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          const techRating = techSkill.system?.rating ?? 0;
+          caSkillName = techSkill.name;
+          caSpecName = cfSpec.name;
+          skillLevel = techRating + resonance;
+          specLevel = skillLevel + 2;
+          caRRTarget = cfSpec.name;
+          caRRItemType = "specialization";
+          caItemType = "complex-form";
+          caLinkedAttribute = "willpower";
+          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          attackValue = volonte;
+        } else if (pirSkill) {
+          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          const pirRating = pirSkill.system?.rating ?? 0;
+          caSkillName = pirSkill.name;
+          caSpecName = null;
+          skillLevel = pirRating + volonte;
+          specLevel = void 0;
+          caRRTarget = caSkillName;
+          caRRItemType = "skill";
+          caItemType = "cyberdeck-attack";
+          caLinkedAttribute = "willpower";
+          const activeCyberdeck = defenderActorForRoll.items.find(
+            (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+          );
+          attackValue = activeCyberdeck?.system?.attack ?? 1;
+        } else {
+          const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          const techRating = techSkill?.system?.rating ?? 0;
+          caSkillName = techSkill?.name || "Technomancie";
+          caSpecName = null;
+          skillLevel = techRating + resonance;
+          specLevel = void 0;
+          caRRTarget = caSkillName;
+          caRRItemType = "skill";
+          caItemType = "complex-form";
+          caLinkedAttribute = "willpower";
+          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+          attackValue = volonte;
         }
         const { getRRSources: getRRSources2 } = SheetHelpers;
         const rrList = getRRSources2(defenderActorForRoll, caRRItemType, caRRTarget);
@@ -14055,7 +14742,7 @@ class SRA2System {
           damageType: "matrix",
           skillName: caSkillName,
           specName: caSpecName,
-          linkedAttribute: "willpower",
+          linkedAttribute: caLinkedAttribute,
           skillLevel,
           specLevel,
           actorId: defenderActorForRoll.id,
@@ -14406,10 +15093,42 @@ class SRA2System {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onReady");
     this.applyTheme();
     AnarchyCounter.instance.render(true);
+    await this.buildSkillSlugCache();
     const migrations = new Migrations();
     migrations.migrate();
     await this.migrateFeatsToArrayFormat();
     await this.migrateAnarchyNimbusToSpent();
+  }
+  /**
+   * Build a global cache mapping skill slugs to localized names.
+   * Loaded from compendiums at startup so slug resolution is synchronous.
+   */
+  async buildSkillSlugCache() {
+    const cache = {};
+    if (game.items) {
+      for (const item of game.items) {
+        if (item.type === "skill" && item.system?.slug) {
+          cache[item.system.slug] = item.name;
+        }
+      }
+    }
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      try {
+        const index = await pack.getIndex({ fields: ["system.slug"] });
+        for (const entry of index) {
+          if (entry.type === "skill" && entry.system?.slug) {
+            const slug = entry.system.slug;
+            if (!cache[slug]) {
+              cache[slug] = entry.name;
+            }
+          }
+        }
+      } catch (e) {
+      }
+    }
+    globalThis.SRA2_SKILL_SLUG_CACHE = cache;
+    console.log(SYSTEM$1.LOG.HEAD + `Skill slug cache built: ${Object.keys(cache).length} entries`);
   }
   /**
    * Migrate old feat data (single rrType/rrValue/rrTarget) to new array format

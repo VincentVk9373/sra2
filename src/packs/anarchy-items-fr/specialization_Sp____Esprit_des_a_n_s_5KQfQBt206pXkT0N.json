@@ -5,11 +5,12 @@
   "_id": "5KQfQBt206pXkT0N",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Conjuration",
+    "linkedSkill": "conjuration",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_kin-spirits"
   },
   "effects": [],
   "flags": {},

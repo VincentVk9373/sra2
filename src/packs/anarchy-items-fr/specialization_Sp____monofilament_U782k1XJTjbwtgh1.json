@@ -5,11 +5,12 @@
   "_id": "U782k1XJTjbwtgh1",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Corps à corps",
+    "linkedSkill": "close-combat",
     "linkedAttribute": "agility",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_monofilament"
   },
   "effects": [],
   "flags": {},

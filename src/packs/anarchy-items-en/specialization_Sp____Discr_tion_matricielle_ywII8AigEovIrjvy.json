@@ -5,11 +5,12 @@
   "_id": "ywII8AigEovIrjvy",
   "img": "icons/svg/item-bag.svg",
   "system": {
-    "linkedSkill": "Stealth",
+    "linkedSkill": "stealth",
     "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
-    "reference": ""
+    "reference": "",
+    "slug": "spec_matrix-stealth"
   },
   "effects": [],
   "flags": {},
