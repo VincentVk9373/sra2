@@ -332,7 +332,7 @@ export class CharacterSheet extends ActorSheet {
       // Find Cracking skill with Cybercombat specialization
       const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
-        'Spé : Cybercombat', // FR display name used for spec lookup
+        'spec_cybercombat',
         SKILL_SLUGS.CRACKING,
         { defaultAttribute: 'willpower', lookupBySlug: true }
       );
@@ -433,7 +433,7 @@ export class CharacterSheet extends ActorSheet {
           // For vehicle/drone weapons controlled by owner, use engineering (Spé : Armes contrôlées à distance)
           const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
             this.actor,
-            'Spé : Armes contrôlées à distance', // FR display name
+            'spec_remote-controlled-weapons',
             SKILL_SLUGS.ENGINEERING,
             { defaultAttribute: 'logic', lookupBySlug: true }
           );
@@ -452,9 +452,9 @@ export class CharacterSheet extends ActorSheet {
 
           // Store skill/spec info for roll dialog preselect
           weapon.linkedAttackSkill = SKILL_SLUGS.ENGINEERING;
-          weapon.linkedAttackSpecialization = 'Spé : Armes contrôlées à distance'; // FR display name
+          weapon.linkedAttackSpecialization = 'spec_remote-controlled-weapons';
           weapon.linkedDefenseSkill = SKILL_SLUGS.ATHLETICS;
-          weapon.linkedDefenseSpecialization = 'Spé : Défense à distance'; // FR display name
+          weapon.linkedDefenseSpecialization = 'spec_ranged-defense';
 
           return weapon;
         });
@@ -742,9 +742,11 @@ export class CharacterSheet extends ActorSheet {
     // Attach phantom specs to their linked skills
     for (const skill of context.skills) {
       const linkedPhantomSpecs = phantomSpecsWithSkill.filter((phantom: any) => {
-        const normalizedSkillName = (phantom.linkedSkillName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const normalizedActorSkillName = skill.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return normalizedSkillName === normalizedActorSkillName;
+        const phantomLinkedSkill = (phantom.linkedSkillName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const actorSkillSlug = (skill.system?.slug || '').toLowerCase();
+        const actorSkillName = skill.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        // Match by slug (canonical) or by normalized name (backward compat)
+        return phantomLinkedSkill === actorSkillSlug || phantomLinkedSkill === actorSkillName;
       });
       skill.phantomSpecializations = linkedPhantomSpecs;
     }
@@ -2451,11 +2453,11 @@ export class CharacterSheet extends ActorSheet {
       
       // For vehicle/drone weapons controlled by owner, use engineering slug
       const finalAttackSkill = SKILL_SLUGS.ENGINEERING;
-      const finalAttackSpec = 'Spé : Armes contrôlées à distance'; // FR display name
+      const finalAttackSpec = 'spec_remote-controlled-weapons';
 
       // Defense is always athletics slug for drone weapons
       const finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
-      const finalDefenseSpec = 'Spé : Défense à distance'; // FR display name
+      const finalDefenseSpec = 'spec_ranged-defense';
       
       // Find character's attack skill and specialization using unified helper
       const attackSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(
@@ -2542,9 +2544,9 @@ export class CharacterSheet extends ActorSheet {
         
         // Merged linked skills (for fallback selection in dialog)
         linkedAttackSkill: finalAttackSkill, // 'Ingénierie'
-        linkedAttackSpecialization: finalAttackSpec, // 'Spé : Armes contrôlées à distance'
-        linkedDefenseSkill: finalDefenseSkill, // 'Athlétisme'
-        linkedDefenseSpecialization: finalDefenseSpec, // 'Spé : Défense à distance'
+        linkedAttackSpecialization: finalAttackSpec,
+        linkedDefenseSkill: finalDefenseSkill,
+        linkedDefenseSpecialization: finalDefenseSpec,
         linkedAttribute: attackLinkedAttribute,
         
         // Weapon properties
@@ -2614,7 +2616,7 @@ export class CharacterSheet extends ActorSheet {
     // Find Cracking skill with Cybercombat specialization
     const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
       this.actor,
-      'Spé : Cybercombat', // FR display name used for spec lookup
+      'spec_cybercombat',
       SKILL_SLUGS.CRACKING,
       { defaultAttribute: 'willpower', lookupBySlug: true }
     );
@@ -2641,9 +2643,9 @@ export class CharacterSheet extends ActorSheet {
 
       // Cybercombat uses Cracking (Cybercombat) + Volonté
       linkedAttackSkill: SKILL_SLUGS.CRACKING,
-      linkedAttackSpecialization: 'Spé : Cybercombat', // FR display name
+      linkedAttackSpecialization: 'spec_cybercombat',
       linkedDefenseSkill: SKILL_SLUGS.CRACKING,
-      linkedDefenseSpecialization: 'Spé : Cybercombat', // FR display name
+      linkedDefenseSpecialization: 'spec_cybercombat',
       linkedAttribute: skillSpecResult.linkedAttribute,
 
       // Damage value = cyberdeck attack rating
@@ -2825,7 +2827,7 @@ export class CharacterSheet extends ActorSheet {
       } else {
         // Indirect spell / maintained form: force defense to athletics slug
         finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
-        finalDefenseSpec = 'Spé : Défense à distance'; // FR display name
+        finalDefenseSpec = 'spec_ranged-defense';
       }
     }
 

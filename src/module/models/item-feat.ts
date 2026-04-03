@@ -3,128 +3,128 @@ import { SKILL_SLUGS } from '../config/constants.js';
 /**
  * Weapon types configuration with their stats
  * Includes recommended skill and specialization for attack AND defense
- * Specializations are prefixed with "Spé : " to easily find them in game.items
+ * Specializations use canonical slugs (e.g. "spec_pistols") to match items by slug
  */
 export const WEAPON_TYPES = {
   "custom-weapon": { 
     vd: "0", melee: "none", short: "none", medium: "none", long: "none",
     linkedSkill: "ranged-weapons", linkedSpecialization: "",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Combat rapproché - Mains nues
   "bare-hands": { 
     vd: "FOR", melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "close-combat", linkedSpecialization: "Spé : Mains nues",
-    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "Spé : Défense"
+    linkedSkill: "close-combat", linkedSpecialization: "spec_unarmed",
+    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "spec_defense"
   },
   // Combat rapproché - Lames
   "short-weapons": { 
     vd: "FOR+1", melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "close-combat", linkedSpecialization: "Spé : Lames",
-    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "Spé : Défense"
+    linkedSkill: "close-combat", linkedSpecialization: "spec_blades",
+    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "spec_defense"
   },
   "long-weapons": { 
     vd: "FOR+2", melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "close-combat", linkedSpecialization: "Spé : Lames",
-    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "Spé : Défense"
+    linkedSkill: "close-combat", linkedSpecialization: "spec_blades",
+    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "spec_defense"
   },
   // Combat rapproché - Armes contondantes
   "advanced-melee": { 
     vd: 5, melee: "ok", short: "none", medium: "none", long: "none",
-    linkedSkill: "close-combat", linkedSpecialization: "Spé : Armes contondantes",
-    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "Spé : Défense"
+    linkedSkill: "close-combat", linkedSpecialization: "spec_blunt-weapons",
+    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "spec_defense"
   },
   "tasers": { 
     vd: 5, melee: "ok", short: "ok", medium: "none", long: "none",
-    linkedSkill: "close-combat", linkedSpecialization: "Spé : Armes contondantes",
-    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "Spé : Défense"
+    linkedSkill: "close-combat", linkedSpecialization: "spec_blunt-weapons",
+    linkedDefenseSkill: "close-combat", linkedDefenseSpecialization: "spec_defense"
   },
   // Armes à distance - Armes de jet
   "throwing": { 
     vd: "FOR+1", melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_thrown-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "grenades": { 
     vd: 7, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_thrown-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "gas-grenades": { 
     vd: "toxin", melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes de jet",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_thrown-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Armes de trait
   "bows": { 
     vd: "FOR+1", melee: "ok", short: "ok", medium: "ok", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes de trait",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_thrown-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "crossbows": { 
     vd: 4, melee: "ok", short: "ok", medium: "ok", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes de trait",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_thrown-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Pistolets
   "pocket-pistols": { 
     vd: 3, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_pistols",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "light-pistols": { 
     vd: 4, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_pistols",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "automatic-pistols": { 
     vd: 4, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_pistols",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "heavy-pistols": { 
     vd: 5, melee: "ok", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Pistolets",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_pistols",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Mitraillettes
   "smgs": { 
     vd: 5, melee: "disadvantage", short: "ok", medium: "ok", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Mitraillettes",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_smgs",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Fusils
   "assault-rifles": { 
     vd: 7, melee: "disadvantage", short: "ok", medium: "ok", long: "disadvantage",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_rifles",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "shotguns": { 
     vd: 8, melee: "disadvantage", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_rifles",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "sniper-rifles": { 
     vd: 10, melee: "none", short: "disadvantage", medium: "disadvantage", long: "ok",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Fusils",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_rifles",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Lance-grenades
   "grenade-launchers": { 
     vd: 7, melee: "none", short: "disadvantage", medium: "ok", long: "disadvantage",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Lance-grenades",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_grenade-launchers",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Armes lourdes
   "machine-guns": { 
     vd: 9, melee: "none", short: "ok", medium: "ok", long: "ok",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes lourdes",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_heavy-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "rocket-launchers": { 
     vd: 12, melee: "none", short: "none", medium: "disadvantage", long: "ok",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "Spé : Armes lourdes",
-    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_heavy-weapons",
+    linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   }
 } as const;
 
@@ -947,24 +947,24 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
     if (featType === 'spell') {
       (this as any).linkedAttackSkill = SKILL_SLUGS.SORCERY;
       const spellSpecMap: Record<string, string> = {
-        'combat': 'Spé: Sorts de combat',
-        'detection': 'Spé: Sorts de détection',
-        'health': 'Spé: Sorts de santé',
-        'illusion': 'Spé: Sorts d\'illusion',
-        'manipulation': 'Spé: Sorts de manipulation',
-        'counterspell': 'Spé: Contresort'
+        'combat': 'spec_combat-spells',
+        'detection': 'spec_detection-spells',
+        'health': 'spec_health-spells',
+        'illusion': 'spec_illusion-spells',
+        'manipulation': 'spec_manipulation-spells',
+        'counterspell': 'spec_counterspelling'
       };
       const spellSpecType = (this as any).spellSpecializationType || 'combat';
-      (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'Spé: Sorts de combat';
+      (this as any).linkedAttackSpecialization = spellSpecMap[spellSpecType] || 'spec_combat-spells';
     } else if (featType === 'complex-form') {
       (this as any).linkedAttackSkill = SKILL_SLUGS.TECHNOMANCER;
       const cfSpecMap: Record<string, string> = {
-        'formes-complexes': 'Spé: Formes complexes',
-        'compilation': 'Spé: Compilation',
-        'decompilation': 'Spé: Décompilation'
+        'formes-complexes': 'spec_complex-forms',
+        'compilation': 'spec_compilation',
+        'decompilation': 'spec_decompilation'
       };
       const cfSpecType = (this as any).complexFormSpecializationType || 'formes-complexes';
-      (this as any).linkedAttackSpecialization = cfSpecMap[cfSpecType] || 'Spé: Formes complexes';
+      (this as any).linkedAttackSpecialization = cfSpecMap[cfSpecType] || 'spec_complex-forms';
     }
   }
 
@@ -986,464 +986,335 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
   }
 
   private _calculateCost(featType: string): void {
-    const costType = (this as any).cost || 'free-equipment';
-    const rating = (this as any).rating || 0;
-
-    // Calculate cost based on cost type (for equipment and weapons)
-    let calculatedCost = 0;
-    
-    // Apply cost calculations for equipment and weapon types
-    if (featType === 'equipment' || featType === 'weapon') {
-      switch (costType) {
-        case 'free-equipment':
-          calculatedCost = 0;
-          break;
-        case 'equipment':
-          calculatedCost = 2500;
-          break;
-        case 'advanced-equipment':
-          calculatedCost = 5000;
-          break;
-        // Legacy values (kept for migration compatibility)
-        case 'specialized-equipment':
-          calculatedCost = 5000;
-          break;
-        case 'feat':
-          calculatedCost = 0;
-          break;
-        default:
-          calculatedCost = 0;
-      }
-    }
-
-    // Connaissance: base cost of 2500
-    if (featType === 'connaissance') {
-      calculatedCost = 2500;
-    }
-
-    // Complex form: fixed cost of 5000 (no rating cost)
-    if (featType === 'complex-form') {
-      (this as any).calculatedCost = 5000;
-      return;
-    }
-    
-    // Armor: 2500 per armor value (not rating)
-    if (featType === 'armor') {
-      const armorValue = (this as any).armorValue || 0;
-      calculatedCost += armorValue * 2500;
-    }
-    calculatedCost += rating * 5000;
-
-    (this as any).calculatedCost = calculatedCost;
+    (this as any).calculatedCost = computeFeatCost(featType, this as any);
   }
 
   private _calculateRecommendedLevel(featType: string): void {
-    // Calculate recommended attribute level
-    let recommendedLevel = 0;
-    const recommendedLevelBreakdown: Array<{ labelKey: string; labelParams?: string; value: number }> = [];
-    
-    const bonusLightDamage = (this as any).bonusLightDamage || 0;
-    const bonusSevereDamage = (this as any).bonusSevereDamage || 0;
-    const bonusPhysicalThreshold = (this as any).bonusPhysicalThreshold || 0;
-    const bonusMentalThreshold = (this as any).bonusMentalThreshold || 0;
-    const firewall = (this as any).firewall || 0;
-    const attack = (this as any).attack || 0;
-    const riggerConsoleCount = (this as any).riggerConsoleCount || 0;
-    const hasVehicleControlWiring = (this as any).hasVehicleControlWiring || false;
-    const isWeaponFocus = (this as any).isWeaponFocus || false;
-    const isAdeptPowerWeapon = (this as any).isAdeptPowerWeapon || false;
-    const isBioware = (this as any).isBioware || false;
-    const bonusAnarchy = (this as any).bonusAnarchy || 0;
-    const narrativeEffects = (this as any).narrativeEffects || [];
-    const rrList = (this as any).rrList || [];
-    const isFirstFeat = (this as any).isFirstFeat || false;
-    
-    // Base cost for trait (not first feat): +3 levels
-    if (featType === 'trait' && !isFirstFeat) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BASE_FEAT_COST', value: 3 });
-    }
-    
-    // Cyberware/bioware: 1 level (base), +1 additional if bioware
-    if (featType === 'cyberware') {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERWARE', value: 1 });
-      
-      // Bioware: +1 additional level
-      if (isBioware) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BIOWARE', value: 1 });
-      }
-    }
-    
-    // Adept power: 1 level
-    if (featType === 'adept-power') {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT_POWER', value: 1 });
-    }
-    
-    // Spell: 1 level
-    if (featType === 'spell') {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPELL', value: 1 });
-    }
-
-    // Complex form: 1 level (same as spell)
-    if (featType === 'complex-form') {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM', value: 1 });
-    }
-    
-    // Light wounds: +3 per wound
-    if (bonusLightDamage > 0) {
-      const value = bonusLightDamage * 3;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.LIGHT_WOUNDS', labelParams: `(${bonusLightDamage})`, value });
-    }
-    
-    // Heavy wounds: +6 per wound
-    if (bonusSevereDamage > 0) {
-      const value = bonusSevereDamage * 6;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SEVERE_WOUNDS', labelParams: `(${bonusSevereDamage})`, value });
-    }
-    
-    // Physical threshold bonus: +1 per point (positive or negative)
-    if (bonusPhysicalThreshold !== 0) {
-      const value = Math.abs(bonusPhysicalThreshold);
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.PHYSICAL_THRESHOLD', labelParams: `(${bonusPhysicalThreshold > 0 ? '+' : ''}${bonusPhysicalThreshold})`, value });
-    }
-    
-    // Mental threshold bonus: +1 per point (positive or negative)
-    if (bonusMentalThreshold !== 0) {
-      const value = Math.abs(bonusMentalThreshold);
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD', labelParams: `(${bonusMentalThreshold > 0 ? '+' : ''}${bonusMentalThreshold})`, value });
-    }
-    
-    // Matrix threshold bonus: +1 per point (positive or negative)
-    const bonusMatrixThreshold = (this as any).bonusMatrixThreshold || 0;
-    if (bonusMatrixThreshold !== 0) {
-      const value = Math.abs(bonusMatrixThreshold);
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_THRESHOLD', labelParams: `(${bonusMatrixThreshold > 0 ? '+' : ''}${bonusMatrixThreshold})`, value });
-    }
-    
-    // Cyberdeck firewall: starts at 1, each level is +1
-    if (featType === 'cyberdeck' && firewall > 0) {
-      recommendedLevel += firewall;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.FIREWALL', labelParams: `(${firewall})`, value: firewall });
-    }
-    
-    // Cyberdeck bonus light damage: +3 to recommended level
-    const cyberdeckBonusLightDamage = (this as any).cyberdeckBonusLightDamage || false;
-    if (featType === 'cyberdeck' && cyberdeckBonusLightDamage) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE', value: 3 });
-    }
-
-    // Cyberdeck programs: +1 each
-    if (featType === 'cyberdeck') {
-      if ((this as any).cyberdeckBiofeedback) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK', value: 1 });
-      }
-      if ((this as any).cyberdeckBiofeedbackFilter) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK_FILTER', value: 1 });
-      }
-      if ((this as any).cyberdeckConnectionLock) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_CONNECTION_LOCK', value: 1 });
-      }
-    }
-    
-    // Attack: starts at 0, each level is +1
-    if (attack > 0) {
-      recommendedLevel += attack;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ATTACK', labelParams: `(${attack})`, value: attack });
-    }
-    
-    // Rigger console: +1 per drone controller
-    if (riggerConsoleCount > 0) {
-      recommendedLevel += riggerConsoleCount;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RIGGER_CONSOLE', labelParams: `(${riggerConsoleCount})`, value: riggerConsoleCount });
-    }
-    
-    // Vehicle control wiring: +2
-    if (hasVehicleControlWiring) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING', value: 2 });
-    }
-    
-    // Weapon focus: +1
-    if (isWeaponFocus) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS', value: 1 });
-    }
-    
-    // Adept power weapon: +1
-    if (isAdeptPowerWeapon) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT_POWER_WEAPON', value: 1 });
-    }
-    
-    // Damage value bonus: +1 per bonus
-    const damageValueBonus = (this as any).damageValueBonus || 0;
-    if (damageValueBonus > 0) {
-      recommendedLevel += damageValueBonus;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS', labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
-    }
-    
-    // Weapon damage bonus by weapon type: +1 per bonus
-    const weaponDamageBonus = (this as any).weaponDamageBonus || 0;
-    if (weaponDamageBonus > 0) {
-      recommendedLevel += weaponDamageBonus;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_DAMAGE_BONUS', labelParams: `(+${weaponDamageBonus})`, value: weaponDamageBonus });
-    }
-    
-    // Range improvements: +2 per improved range
-    const rangeImprovements = (this as any).rangeImprovements || {};
-    let rangeImprovementCount = 0;
-    if (rangeImprovements.melee) rangeImprovementCount++;
-    if (rangeImprovements.short) rangeImprovementCount++;
-    if (rangeImprovements.medium) rangeImprovementCount++;
-    if (rangeImprovements.long) rangeImprovementCount++;
-    if (rangeImprovementCount > 0) {
-      const value = rangeImprovementCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RANGE_IMPROVEMENTS', labelParams: `(${rangeImprovementCount})`, value });
-    }
-    
-    // Resource Reduction (RR) entries
-    for (const rr of rrList) {
-      const rrType = rr.rrType;
-      const rrValue = rr.rrValue || 0;
-      
-      if (rrValue > 0) {
-        if (rrType === 'specialization') {
-          // RR specialization: +2 levels per value
-          const value = rrValue * 2;
-          recommendedLevel += value;
-          recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_SPECIALIZATION', labelParams: `(${rrValue})`, value });
-        } else if (rrType === 'skill') {
-          // RR skill: +5 levels per value
-          const value = rrValue * 5;
-          recommendedLevel += value;
-          recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_SKILL', labelParams: `(${rrValue})`, value });
-        } else if (rrType === 'attribute') {
-          // RR attribute: +10 levels per value
-          const value = rrValue * 10;
-          recommendedLevel += value;
-          recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_ATTRIBUTE', labelParams: `(${rrValue})`, value });
-        }
-      }
-    }
-    
-    // Anarchy bonus: +2 per anarchy point
-    if (bonusAnarchy > 0) {
-      const value = bonusAnarchy * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS', labelParams: `(${bonusAnarchy})`, value });
-    }
-    
-    // Grants narration: +3 levels per narration action (1 action = +3, 2 actions = +6)
-    const narrationActions = (this as any).narrationActions || 0;
-    if (narrationActions > 0) {
-      const narrationCost = narrationActions * 3;
-      recommendedLevel += narrationCost;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', labelParams: ` (${narrationActions})`, value: narrationCost });
-    }
-    
-    // Narrative effects: value per positive effect, value per negative effect (exclude effects with value 0)
-    const positiveEffects = narrativeEffects.filter((effect: any) => {
-      return effect?.text && effect.text.trim() !== '' && !effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== undefined;
-    });
-    const negativeEffects = narrativeEffects.filter((effect: any) => {
-      return effect?.text && effect.text.trim() !== '' && effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== undefined;
-    });
-    
-    if (positiveEffects.length > 0) {
-      const positiveEffectValue = positiveEffects.reduce((sum: number, effect: any) => sum + (effect.value || 1), 0);
-      recommendedLevel += positiveEffectValue;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE', labelParams: `(${positiveEffects.length})`, value: positiveEffectValue });
-    }
-    
-    if (negativeEffects.length > 0) {
-      const negativeEffectValue = negativeEffects.reduce((sum: number, effect: any) => sum + (effect.value || -1), 0);
-      recommendedLevel += negativeEffectValue; // Adding because value is already negative
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE', labelParams: `(${negativeEffects.length})`, value: negativeEffectValue });
-    }
-    
-    // Additional sustained spells: +2 per spell (max 2)
-    const sustainedSpellCount = (this as any).sustainedSpellCount || 0;
-    if (sustainedSpellCount > 0) {
-      const value = sustainedSpellCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUSTAINED_SPELLS', labelParams: `(${sustainedSpellCount})`, value });
-    }
-    
-    // Additional summoned spirit: +3 (max 1)
-    const summonedSpiritCount = (this as any).summonedSpiritCount || 0;
-    if (summonedSpiritCount > 0) {
-      const value = summonedSpiritCount * 3;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS', labelParams: `(${summonedSpiritCount})`, value });
-    }
-    
-    // Awakened abilities
-    const astralPerception = (this as any).astralPerception || false;
-    const astralProjection = (this as any).astralProjection || false;
-    const sorcery = (this as any).sorcery || false;
-    const conjuration = (this as any).conjuration || false;
-    const adept = (this as any).adept || false;
-
-    // Astral perception
-    if (astralPerception && !astralProjection) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION', value: 1 });
-    }
-    
-    // Astral perception AND projection: +2
-    if (astralPerception && astralProjection) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION', value: 2 });
-    }
-    
-    // Sorcery: +1
-    if (sorcery) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SORCERY', value: 1 });
-    }
-    
-    // Conjuration: +2
-    if (conjuration) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CONJURATION', value: 2 });
-    }
-    
-    // Adept: +1
-    if (adept) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT', value: 1 });
-    }
-    
-    // Emerged (technomancer) abilities
-    const matrixAccess = (this as any).matrixAccess || false;
-    const complexFormWeaving = (this as any).complexFormWeaving || false;
-    const spriteCompilation = (this as any).spriteCompilation || false;
-    const biofeedbackFlag = (this as any).biofeedback || false;
-
-    // Emerged abilities (from design notes: RA=0, VR hot-sim=2, cyberdeck=5, biofeedback=-2, complex forms=1, sprites=1 → total=7)
-    if (matrixAccess) {
-      recommendedLevel += 7;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS', value: 7 });
-    }
-    if (complexFormWeaving) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM_WEAVING', value: 1 });
-    }
-    if (spriteCompilation) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPRITE_COMPILATION', value: 1 });
-    }
-    if (biofeedbackFlag) {
-      recommendedLevel -= 2;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BIOFEEDBACK', value: -2 });
-    }
-
-    // Compiled sprites: +3 per sprite
-    const compiledSpriteCount = (this as any).compiledSpriteCount || 0;
-    if (compiledSpriteCount > 0) {
-      const value = compiledSpriteCount * 3;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPILED_SPRITES', labelParams: ` (${compiledSpriteCount})`, value });
-    }
-
-    // Sustained complex forms: +2 per form
-    const sustainedComplexFormCount = (this as any).sustainedComplexFormCount || 0;
-    if (sustainedComplexFormCount > 0) {
-      const value = sustainedComplexFormCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUSTAINED_COMPLEX_FORMS', labelParams: ` (${sustainedComplexFormCount})`, value });
-    }
-
-    // Vehicle/Drone bonuses
-    const autopilotBonus = (this as any).autopilotBonus || 0;
-    const speedBonus = (this as any).speedBonus || 0;
-    const handlingBonus = (this as any).handlingBonus || 0;
-    const armorBonus = (this as any).armorBonus || 0;
-    const isFixed = (this as any).isFixed || false;
-    const isFlying = (this as any).isFlying || false;
-    const weaponMountImprovement = (this as any).weaponMountImprovement || false;
-    const autopilotUnlocked = (this as any).autopilotUnlocked || false;
-    const additionalDroneCount = (this as any).additionalDroneCount || 0;
-    
-    // Autopilot bonus: +1 per level
-    if (autopilotBonus > 0) {
-      recommendedLevel += autopilotBonus;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.AUTOPILOT_BONUS', labelParams: `(+${autopilotBonus})`, value: autopilotBonus });
-    }
-    
-    // Speed bonus: +1 per level
-    if (speedBonus > 0) {
-      recommendedLevel += speedBonus;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPEED_BONUS', labelParams: `(+${speedBonus})`, value: speedBonus });
-    }
-    
-    // Handling bonus: +1 per level
-    if (handlingBonus > 0) {
-      recommendedLevel += handlingBonus;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.HANDLING_BONUS', labelParams: `(+${handlingBonus})`, value: handlingBonus });
-    }
-    
-    // Armor bonus: +1 per level
-    if (armorBonus > 0) {
-      recommendedLevel += armorBonus;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ARMOR_BONUS', labelParams: `(+${armorBonus})`, value: armorBonus });
-    }
-    
-    // Fixed (unable to move): -1
-    if (isFixed) {
-      recommendedLevel -= 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.IS_FIXED', value: -1 });
-    }
-    
-    // Flying: +1
-    if (isFlying) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.IS_FLYING', value: 1 });
-    }
-    
-    // Weapon mount improvement: +1
-    if (weaponMountImprovement) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_MOUNT_IMPROVEMENT', value: 1 });
-    }
-    
-    // Autopilot unlocked: +3
-    if (autopilotUnlocked) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.AUTOPILOT_UNLOCKED', value: 3 });
-    }
-    
-    // Additional drones: +2 per drone
-    if (additionalDroneCount > 0) {
-      const value = additionalDroneCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES', labelParams: `(${additionalDroneCount})`, value });
-    }
-    
-    // Shamanic mask: -1 level (for awakened feats only)
-    const shamanicMask = (this as any).shamanicMask || false;
-    if (shamanicMask && featType === 'awakened') {
-      recommendedLevel -= 1;
-      recommendedLevelBreakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SHAMANIC_MASK', value: -1 });
-    }
-    
-    (this as any).recommendedLevel = recommendedLevel;
-    (this as any).recommendedLevelBreakdown = recommendedLevelBreakdown;
+    const { level, breakdown } = computeFeatLevel(featType, this as any);
+    (this as any).recommendedLevel = level;
+    (this as any).recommendedLevelBreakdown = breakdown;
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Shared feat level computation — used by FeatDataModel and NPC generator
+// ═══════════════════════════════════════════════════════════════
+
+export interface FeatLevelBreakdownEntry {
+  labelKey: string;
+  labelParams?: string;
+  value: number;
+}
+
+/**
+ * Compute the recommended level of a feat based on its properties.
+ * Pure function: reads from `data`, writes nothing.
+ */
+export function computeFeatLevel(
+  featType: string,
+  data: Record<string, any>,
+): { level: number; breakdown: FeatLevelBreakdownEntry[] } {
+  let level = 0;
+  const breakdown: FeatLevelBreakdownEntry[] = [];
+
+  const bonusLightDamage = data.bonusLightDamage || 0;
+  const bonusSevereDamage = data.bonusSevereDamage || 0;
+  const bonusPhysicalThreshold = data.bonusPhysicalThreshold || 0;
+  const bonusMentalThreshold = data.bonusMentalThreshold || 0;
+  const bonusMatrixThreshold = data.bonusMatrixThreshold || 0;
+  const firewall = data.firewall || 0;
+  const attack = data.attack || 0;
+  const riggerConsoleCount = data.riggerConsoleCount || 0;
+  const hasVehicleControlWiring = data.hasVehicleControlWiring || false;
+  const isWeaponFocus = data.isWeaponFocus || false;
+  const isAdeptPowerWeapon = data.isAdeptPowerWeapon || false;
+  const isBioware = data.isBioware || false;
+  const bonusAnarchy = data.bonusAnarchy || 0;
+  const narrativeEffects = data.narrativeEffects || [];
+  const rrList = data.rrList || [];
+  const isFirstFeat = data.isFirstFeat || false;
+
+  // Base cost for trait (not first feat): +3 levels
+  if (featType === 'trait' && !isFirstFeat) {
+    level += 3;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BASE_FEAT_COST', value: 3 });
+  }
+
+  // Cyberware/bioware: 1 level (base), +1 additional if bioware
+  if (featType === 'cyberware') {
+    level += 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERWARE', value: 1 });
+    if (isBioware) {
+      level += 1;
+      breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BIOWARE', value: 1 });
+    }
+  }
+
+  if (featType === 'adept-power') {
+    level += 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT_POWER', value: 1 });
+  }
+
+  if (featType === 'spell') {
+    level += 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPELL', value: 1 });
+  }
+
+  if (featType === 'complex-form') {
+    level += 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM', value: 1 });
+  }
+
+  if (bonusLightDamage > 0) {
+    const v = bonusLightDamage * 3;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.LIGHT_WOUNDS', labelParams: `(${bonusLightDamage})`, value: v });
+  }
+
+  if (bonusSevereDamage > 0) {
+    const v = bonusSevereDamage * 6;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SEVERE_WOUNDS', labelParams: `(${bonusSevereDamage})`, value: v });
+  }
+
+  if (bonusPhysicalThreshold !== 0) {
+    const v = Math.abs(bonusPhysicalThreshold);
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.PHYSICAL_THRESHOLD', labelParams: `(${bonusPhysicalThreshold > 0 ? '+' : ''}${bonusPhysicalThreshold})`, value: v });
+  }
+
+  if (bonusMentalThreshold !== 0) {
+    const v = Math.abs(bonusMentalThreshold);
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD', labelParams: `(${bonusMentalThreshold > 0 ? '+' : ''}${bonusMentalThreshold})`, value: v });
+  }
+
+  if (bonusMatrixThreshold !== 0) {
+    const v = Math.abs(bonusMatrixThreshold);
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_THRESHOLD', labelParams: `(${bonusMatrixThreshold > 0 ? '+' : ''}${bonusMatrixThreshold})`, value: v });
+  }
+
+  if (featType === 'cyberdeck' && firewall > 0) {
+    level += firewall;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.FIREWALL', labelParams: `(${firewall})`, value: firewall });
+  }
+
+  const cyberdeckBonusLightDamage = data.cyberdeckBonusLightDamage || false;
+  if (featType === 'cyberdeck' && cyberdeckBonusLightDamage) {
+    level += 3;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE', value: 3 });
+  }
+
+  if (featType === 'cyberdeck') {
+    if (data.cyberdeckBiofeedback) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK', value: 1 }); }
+    if (data.cyberdeckBiofeedbackFilter) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK_FILTER', value: 1 }); }
+    if (data.cyberdeckConnectionLock) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CYBERDECK_CONNECTION_LOCK', value: 1 }); }
+  }
+
+  if (attack > 0) {
+    level += attack;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ATTACK', labelParams: `(${attack})`, value: attack });
+  }
+
+  if (riggerConsoleCount > 0) {
+    level += riggerConsoleCount;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RIGGER_CONSOLE', labelParams: `(${riggerConsoleCount})`, value: riggerConsoleCount });
+  }
+
+  if (hasVehicleControlWiring) {
+    level += 2;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING', value: 2 });
+  }
+
+  if (isWeaponFocus) {
+    level += 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS', value: 1 });
+  }
+
+  if (isAdeptPowerWeapon) {
+    level += 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT_POWER_WEAPON', value: 1 });
+  }
+
+  const damageValueBonus = data.damageValueBonus || 0;
+  if (damageValueBonus > 0) {
+    level += damageValueBonus;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS', labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+  }
+
+  const weaponDamageBonus = data.weaponDamageBonus || 0;
+  if (weaponDamageBonus > 0) {
+    level += weaponDamageBonus;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_DAMAGE_BONUS', labelParams: `(+${weaponDamageBonus})`, value: weaponDamageBonus });
+  }
+
+  const rangeImprovements = data.rangeImprovements || {};
+  let rangeImprovementCount = 0;
+  if (rangeImprovements.melee) rangeImprovementCount++;
+  if (rangeImprovements.short) rangeImprovementCount++;
+  if (rangeImprovements.medium) rangeImprovementCount++;
+  if (rangeImprovements.long) rangeImprovementCount++;
+  if (rangeImprovementCount > 0) {
+    const v = rangeImprovementCount * 2;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RANGE_IMPROVEMENTS', labelParams: `(${rangeImprovementCount})`, value: v });
+  }
+
+  for (const rr of rrList) {
+    const rrValue = rr.rrValue || 0;
+    if (rrValue > 0) {
+      if (rr.rrType === 'specialization') {
+        const v = rrValue * 2;
+        level += v;
+        breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_SPECIALIZATION', labelParams: `(${rrValue})`, value: v });
+      } else if (rr.rrType === 'skill') {
+        const v = rrValue * 5;
+        level += v;
+        breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_SKILL', labelParams: `(${rrValue})`, value: v });
+      } else if (rr.rrType === 'attribute') {
+        const v = rrValue * 10;
+        level += v;
+        breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.RR_ATTRIBUTE', labelParams: `(${rrValue})`, value: v });
+      }
+    }
+  }
+
+  if (bonusAnarchy > 0) {
+    const v = bonusAnarchy * 2;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS', labelParams: `(${bonusAnarchy})`, value: v });
+  }
+
+  const narrationActions = data.narrationActions || 0;
+  if (narrationActions > 0) {
+    const v = narrationActions * 3;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION', labelParams: ` (${narrationActions})`, value: v });
+  }
+
+  const positiveEffects = narrativeEffects.filter((e: any) => e?.text && e.text.trim() !== '' && !e.isNegative && e.value !== 0 && e.value !== null && e.value !== undefined);
+  const negativeEffects = narrativeEffects.filter((e: any) => e?.text && e.text.trim() !== '' && e.isNegative && e.value !== 0 && e.value !== null && e.value !== undefined);
+  if (positiveEffects.length > 0) {
+    const v = positiveEffects.reduce((s: number, e: any) => s + (e.value || 1), 0);
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE', labelParams: `(${positiveEffects.length})`, value: v });
+  }
+  if (negativeEffects.length > 0) {
+    const v = negativeEffects.reduce((s: number, e: any) => s + (e.value || -1), 0);
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE', labelParams: `(${negativeEffects.length})`, value: v });
+  }
+
+  const sustainedSpellCount = data.sustainedSpellCount || 0;
+  if (sustainedSpellCount > 0) {
+    const v = sustainedSpellCount * 2;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUSTAINED_SPELLS', labelParams: `(${sustainedSpellCount})`, value: v });
+  }
+
+  const summonedSpiritCount = data.summonedSpiritCount || 0;
+  if (summonedSpiritCount > 0) {
+    const v = summonedSpiritCount * 3;
+    level += v;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS', labelParams: `(${summonedSpiritCount})`, value: v });
+  }
+
+  // Awakened abilities
+  const astralPerception = data.astralPerception || false;
+  const astralProjection = data.astralProjection || false;
+  const sorcery = data.sorcery || false;
+  const conjuration = data.conjuration || false;
+  const adept = data.adept || false;
+
+  if (astralPerception && !astralProjection) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION', value: 1 }); }
+  if (astralPerception && astralProjection) { level += 2; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION', value: 2 }); }
+  if (sorcery) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SORCERY', value: 1 }); }
+  if (conjuration) { level += 2; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.CONJURATION', value: 2 }); }
+  if (adept) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADEPT', value: 1 }); }
+
+  // Emerged abilities
+  const matrixAccess = data.matrixAccess || false;
+  const complexFormWeaving = data.complexFormWeaving || false;
+  const spriteCompilation = data.spriteCompilation || false;
+  const biofeedbackFlag = data.biofeedback || false;
+
+  if (matrixAccess) { level += 7; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS', value: 7 }); }
+  if (complexFormWeaving) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPLEX_FORM_WEAVING', value: 1 }); }
+  if (spriteCompilation) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPRITE_COMPILATION', value: 1 }); }
+  if (biofeedbackFlag) { level -= 2; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.BIOFEEDBACK', value: -2 }); }
+
+  const compiledSpriteCount = data.compiledSpriteCount || 0;
+  if (compiledSpriteCount > 0) { const v = compiledSpriteCount * 3; level += v; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.COMPILED_SPRITES', labelParams: ` (${compiledSpriteCount})`, value: v }); }
+
+  const sustainedComplexFormCount = data.sustainedComplexFormCount || 0;
+  if (sustainedComplexFormCount > 0) { const v = sustainedComplexFormCount * 2; level += v; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SUSTAINED_COMPLEX_FORMS', labelParams: ` (${sustainedComplexFormCount})`, value: v }); }
+
+  // Vehicle/Drone bonuses
+  const autopilotBonus = data.autopilotBonus || 0;
+  const speedBonus = data.speedBonus || 0;
+  const handlingBonus = data.handlingBonus || 0;
+  const armorBonus = data.armorBonus || 0;
+  const isFixed = data.isFixed || false;
+  const isFlying = data.isFlying || false;
+  const weaponMountImprovement = data.weaponMountImprovement || false;
+  const autopilotUnlocked = data.autopilotUnlocked || false;
+  const additionalDroneCount = data.additionalDroneCount || 0;
+
+  if (autopilotBonus > 0) { level += autopilotBonus; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.AUTOPILOT_BONUS', labelParams: `(+${autopilotBonus})`, value: autopilotBonus }); }
+  if (speedBonus > 0) { level += speedBonus; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SPEED_BONUS', labelParams: `(+${speedBonus})`, value: speedBonus }); }
+  if (handlingBonus > 0) { level += handlingBonus; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.HANDLING_BONUS', labelParams: `(+${handlingBonus})`, value: handlingBonus }); }
+  if (armorBonus > 0) { level += armorBonus; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ARMOR_BONUS', labelParams: `(+${armorBonus})`, value: armorBonus }); }
+  if (isFixed) { level -= 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.IS_FIXED', value: -1 }); }
+  if (isFlying) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.IS_FLYING', value: 1 }); }
+  if (weaponMountImprovement) { level += 1; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.WEAPON_MOUNT_IMPROVEMENT', value: 1 }); }
+  if (autopilotUnlocked) { level += 3; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.AUTOPILOT_UNLOCKED', value: 3 }); }
+  if (additionalDroneCount > 0) { const v = additionalDroneCount * 2; level += v; breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES', labelParams: `(${additionalDroneCount})`, value: v }); }
+
+  const shamanicMask = data.shamanicMask || false;
+  if (shamanicMask && featType === 'awakened') {
+    level -= 1;
+    breakdown.push({ labelKey: 'SRA2.FEATS.BREAKDOWN.SHAMANIC_MASK', value: -1 });
+  }
+
+  return { level, breakdown };
+}
+
+/**
+ * Compute the nuyen cost of a feat based on its type, cost category, and rating.
+ * Pure function: mirrors FeatDataModel._calculateCost.
+ */
+export function computeFeatCost(featType: string, data: Record<string, any>): number {
+  const costType = data.cost || 'free-equipment';
+  const rating = data.rating || 0;
+
+  let calculatedCost = 0;
+
+  // Base cost for equipment and weapon types
+  if (featType === 'equipment' || featType === 'weapon') {
+    switch (costType) {
+      case 'equipment': calculatedCost = 2500; break;
+      case 'advanced-equipment': case 'specialized-equipment': calculatedCost = 5000; break;
+      case 'free-equipment': case 'feat': default: calculatedCost = 0; break;
+    }
+  }
+
+  // Connaissance: base cost of 2500
+  if (featType === 'connaissance') {
+    calculatedCost = 2500;
+  }
+
+  // Complex form: fixed cost of 5000 (no rating cost)
+  if (featType === 'complex-form') {
+    return 5000;
+  }
+
+  // Armor: 2500 per armor value (not rating)
+  if (featType === 'armor') {
+    calculatedCost += (data.armorValue || 0) * 2500;
+  }
+
+  calculatedCost += rating * 5000;
+  return calculatedCost;
 }
 

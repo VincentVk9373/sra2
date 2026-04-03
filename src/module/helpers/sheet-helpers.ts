@@ -531,8 +531,12 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
   }
 
   // Resolve slug names to display names from world items, compendium cache, or game items
+  // Also keep track of original slugs for metadata lookup
   const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
+  const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = (globalThis as any).SRA2_SLUG_METADATA_CACHE || {};
+  const phantomSlugs = new Map<PhantomRR, string>(); // Keep original slug for metadata lookup
   for (const phantom of phantomRRs) {
+    phantomSlugs.set(phantom, phantom.name); // Store original slug/name before resolution
     // Try cache first (covers compendiums), then world items
     if (slugCache[phantom.name]) {
       phantom.name = slugCache[phantom.name];
@@ -544,97 +548,106 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     }
   }
 
-  // Calculate final RR values and try to determine linked attribute from compendiums or default
+  // Skill slug -> attribute map for phantom skills
+  const skillAttributeMap: Record<string, string> = {
+    // Slugs (canonical)
+    [SKILL_SLUGS.CLOSE_COMBAT]: 'strength',
+    [SKILL_SLUGS.RANGED_WEAPONS]: 'agility',
+    [SKILL_SLUGS.ATHLETICS]: 'strength',
+    [SKILL_SLUGS.STEALTH]: 'agility',
+    [SKILL_SLUGS.CRACKING]: 'logic',
+    [SKILL_SLUGS.ENGINEERING]: 'logic',
+    [SKILL_SLUGS.ELECTRONICS]: 'logic',
+    [SKILL_SLUGS.PILOTING]: 'agility',
+    [SKILL_SLUGS.SORCERY]: 'willpower',
+    [SKILL_SLUGS.CONJURATION]: 'willpower',
+    [SKILL_SLUGS.TECHNOMANCER]: 'logic',
+    [SKILL_SLUGS.INFLUENCE]: 'charisma',
+    [SKILL_SLUGS.PERCEPTION]: 'willpower',
+    [SKILL_SLUGS.SURVIVAL]: 'willpower',
+    [SKILL_SLUGS.NETWORKING]: 'charisma',
+    [SKILL_SLUGS.ASTRAL_COMBAT]: 'willpower',
+    // FR names (normalized, for backward compat)
+    'athletisme': 'strength',
+    'combat rapproche': 'strength',
+    'armes a distance': 'agility',
+    'furtivite': 'agility',
+    'piratage': 'logic',
+    'ingenierie': 'logic',
+    'pilotage': 'agility',
+    'sorcellerie': 'willpower',
+    'technomancie': 'logic',
+    'survie': 'willpower',
+    'reseau': 'charisma',
+    'combat astral': 'willpower',
+  };
+
+  // Helper to resolve linked skill and attribute for a specialization
+  // Uses: 1) game.items template, 2) metadata cache (compendiums), 3) skillAttributeMap fallback
+  function resolveSpecMetadata(originalSlug: string, displayName: string): { linkedSkill?: string, linkedAttribute?: string } {
+    // 1. Try findItemInGame (world items)
+    const specTemplate = findItemInGame('specialization', displayName);
+    if (specTemplate) {
+      return {
+        linkedSkill: (specTemplate.system as any).linkedSkill,
+        linkedAttribute: (specTemplate.system as any).linkedAttribute,
+      };
+    }
+
+    // 2. Try metadata cache (built from compendiums at startup)
+    if (metadataCache[originalSlug]) {
+      return metadataCache[originalSlug];
+    }
+
+    return {};
+  }
+
+  // Calculate final RR values and determine linked attribute
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
+    const originalSlug = phantomSlugs.get(phantom) || phantom.name;
 
-    // Default to strength for skills, or try to guess from name
-    // Common skill-attribute associations
-    const skillAttributeMap: Record<string, string> = {
-      // Slugs (canonical)
-      [SKILL_SLUGS.CLOSE_COMBAT]: 'strength',
-      [SKILL_SLUGS.RANGED_WEAPONS]: 'agility',
-      [SKILL_SLUGS.ATHLETICS]: 'strength',
-      [SKILL_SLUGS.STEALTH]: 'agility',
-      [SKILL_SLUGS.CRACKING]: 'logic',
-      [SKILL_SLUGS.ENGINEERING]: 'logic',
-      [SKILL_SLUGS.ELECTRONICS]: 'logic',
-      [SKILL_SLUGS.PILOTING]: 'agility',
-      [SKILL_SLUGS.SORCERY]: 'willpower',
-      [SKILL_SLUGS.CONJURATION]: 'willpower',
-      [SKILL_SLUGS.TECHNOMANCER]: 'logic',
-      [SKILL_SLUGS.INFLUENCE]: 'charisma',
-      [SKILL_SLUGS.PERCEPTION]: 'willpower',
-      [SKILL_SLUGS.SURVIVAL]: 'willpower',
-      [SKILL_SLUGS.NETWORKING]: 'charisma',
-      [SKILL_SLUGS.ASTRAL_COMBAT]: 'willpower',
-      // FR names (normalized, for backward compat)
-      'athletisme': 'strength',
-      'combat rapproche': 'strength',
-      'armes a distance': 'agility',
-      'furtivite': 'agility',
-      'piratage': 'logic',
-      'ingenierie': 'logic',
-      'pilotage': 'agility',
-      'sorcellerie': 'willpower',
-      'technomancie': 'logic',
-      'survie': 'willpower',
-      'reseau': 'charisma',
-      'combat astral': 'willpower',
-    };
-
-    const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
-    phantom.linkedAttribute = skillAttributeMap[normalizedName] || 'strength';
-
-    // For phantom specs, try to find the linked skill from compendiums and check if actor has it
     if (phantom.type === 'specialization') {
-      const specTemplate = findItemInGame('specialization', phantom.name);
-      if (specTemplate) {
-        const linkedSkillName = (specTemplate.system as any).linkedSkill;
-        const linkedAttribute = (specTemplate.system as any).linkedAttribute;
+      // For phantom specs, resolve linked skill/attribute from templates or metadata cache
+      const specMeta = resolveSpecMetadata(originalSlug, phantom.name);
+      const linkedSkillSlug = specMeta.linkedSkill;
+      const specLinkedAttribute = specMeta.linkedAttribute;
 
-        if (linkedSkillName) {
-          phantom.linkedSkillName = linkedSkillName;
+      if (linkedSkillSlug) {
+        phantom.linkedSkillName = linkedSkillSlug;
 
-          // Check if actor has this skill
-          const actorSkill = actor.items.find((i: any) =>
-            i.type === 'skill' && (ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
-          );
+        // Check if actor has this skill
+        const actorSkill = actor.items.find((i: any) =>
+          i.type === 'skill' && (ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillSlug) || i.system?.slug === linkedSkillSlug)
+        );
 
-          if (actorSkill) {
-            phantom.linkedSkillOnActor = true;
-            // Use the skill's linked attribute
-            phantom.linkedAttribute = (actorSkill.system as any).linkedAttribute || linkedAttribute || phantom.linkedAttribute;
+        if (actorSkill) {
+          phantom.linkedSkillOnActor = true;
+          // Use the actor's skill linked attribute (takes priority)
+          phantom.linkedAttribute = (actorSkill.system as any).linkedAttribute || specLinkedAttribute || 'strength';
 
-            // Calculate dice pool: attribute + skill rating (no +2 since spec is phantom)
-            const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
-            const skillRating = (actorSkill.system as any).rating || 0;
-            phantom.totalDicePool = attributeValue + skillRating;
-          } else {
-            phantom.linkedSkillOnActor = false;
-            // Use spec's linked attribute from template
-            if (linkedAttribute) {
-              phantom.linkedAttribute = linkedAttribute;
-            }
-            // Just attribute dice
-            const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
-            phantom.totalDicePool = attributeValue;
-          }
+          // Calculate dice pool: attribute + skill rating (no +2 since spec is phantom)
+          const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
+          const skillRating = (actorSkill.system as any).rating || 0;
+          phantom.totalDicePool = attributeValue + skillRating;
         } else {
-          // No linked skill in template, just attribute
-          if ((specTemplate.system as any).linkedAttribute) {
-            phantom.linkedAttribute = (specTemplate.system as any).linkedAttribute;
-          }
+          phantom.linkedSkillOnActor = false;
+          // Use spec's linked attribute from template/cache, or resolve from skill slug map
+          phantom.linkedAttribute = specLinkedAttribute || skillAttributeMap[linkedSkillSlug] || 'strength';
           const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
           phantom.totalDicePool = attributeValue;
         }
       } else {
-        // No template found, use default
+        // No linked skill found, use spec's linked attribute or default
+        phantom.linkedAttribute = specLinkedAttribute || 'strength';
         const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
         phantom.totalDicePool = attributeValue;
       }
     } else {
-      // For phantom skills, just attribute value
+      // For phantom skills: use metadata cache, then skillAttributeMap, then default
+      const skillMeta = metadataCache[originalSlug];
+      const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
+      phantom.linkedAttribute = skillMeta?.linkedAttribute || skillAttributeMap[originalSlug] || skillAttributeMap[normalizedName] || 'strength';
       const attributeValue = (actor.system as any).attributes?.[phantom.linkedAttribute] || 0;
       phantom.totalDicePool = attributeValue;
     }
@@ -1110,11 +1123,11 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
       let attackSkillName: string | undefined = undefined;
       let attackLinkedAttribute: string | undefined = undefined;
 
-      // Try to find the linked attack specialization first
+      // Try to find the linked attack specialization first (match by slug or normalized name)
       if (linkedAttackSpec) {
         const foundSpec = actor.items.find((i: any) =>
           i.type === 'specialization' &&
-          normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSpec)
+          (i.system?.slug === linkedAttackSpec || normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSpec))
         );
 
         if (foundSpec) {
@@ -1308,6 +1321,8 @@ export function findAttackSkillAndSpec(
 
     const foundSpec = actor.items.find((i: any) => {
       if (i.type !== 'specialization') return false;
+      // Match by slug first, then by normalized name
+      if (i.system?.slug === targetSpec) return true;
       const normalizedItemName = normalizeForComparison(i.name);
       return normalizedItemName === normalizedTargetSpec;
     });
@@ -1671,6 +1686,12 @@ export function findSkillByName(actor: any, skillName: string): any | undefined 
  */
 export function findSpecByName(actor: any, specName: string): any | undefined {
   if (!actor || !specName) return undefined;
+
+  // Match by slug first, then by normalized name
+  const bySlug = actor.items.find((i: any) =>
+    i.type === 'specialization' && i.system?.slug === specName
+  );
+  if (bySlug) return bySlug;
 
   const normalizedName = normalizeForComparison(specName);
   return actor.items.find((i: any) =>

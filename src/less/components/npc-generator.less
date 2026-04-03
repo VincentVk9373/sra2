@@ -1,0 +1,78 @@
+@import "../commons/layout-mixin.less";
+@import "../commons/select-mixin.less";
+@import "../commons/input-mixin.less";
+
+/* Button in actors sidebar footer */
+#actors .npc-generator-btn {
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 6px 10px;
+  margin: 0;
+
+  i {
+    margin-right: 6px;
+  }
+}
+
+/* Gemini portrait button on character sheet */
+.gemini-generate-btn {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.8em;
+  text-align: center;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  i {
+    margin-right: 4px;
+  }
+}
+
+/* Generator dialog */
+.npc-generator-dialog {
+  .npc-gen-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 10px 4px !important;
+  }
+
+  .npc-gen-field {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+
+    > label {
+      display: block !important;
+      flex: 0 0 140px !important;
+      text-align: right !important;
+      font-weight: bold !important;
+      font-size: 0.85em !important;
+      color: var(--sr-ui-color, #ccc) !important;
+      white-space: nowrap !important;
+    }
+
+    > select {
+      flex: 1 !important;
+      .sr-select-base();
+      &:focus { .sr-select-focus(); }
+      option { .sr-select-options(); }
+    }
+
+    > input[type="number"] {
+      width: 70px !important;
+      flex: 0 0 70px !important;
+      .sr-input-base();
+      &:focus { .sr-input-focus(); }
+      text-align: center;
+    }
+  }
+}

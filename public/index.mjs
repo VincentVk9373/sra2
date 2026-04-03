@@ -360,17 +360,17 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       const activeFeats = parent.items.filter(
         (item) => item.type === "feat" && item.system.active === true
       );
-      activeFeats.forEach((feat) => {
-        bonusLightDamage += feat.system.bonusLightDamage || 0;
-        bonusSevereDamage += feat.system.bonusSevereDamage || 0;
-        bonusPhysicalThreshold += feat.system.bonusPhysicalThreshold || 0;
-        bonusMentalThreshold += feat.system.bonusMentalThreshold || 0;
-        bonusMatrixThreshold += feat.system.bonusMatrixThreshold || 0;
-        bonusAnarchy += feat.system.bonusAnarchy || 0;
-        totalEssenceCost += feat.system.essenceCost || 0;
-        if (feat.system.grantsNarration) {
+      activeFeats.forEach((feat2) => {
+        bonusLightDamage += feat2.system.bonusLightDamage || 0;
+        bonusSevereDamage += feat2.system.bonusSevereDamage || 0;
+        bonusPhysicalThreshold += feat2.system.bonusPhysicalThreshold || 0;
+        bonusMentalThreshold += feat2.system.bonusMentalThreshold || 0;
+        bonusMatrixThreshold += feat2.system.bonusMatrixThreshold || 0;
+        bonusAnarchy += feat2.system.bonusAnarchy || 0;
+        totalEssenceCost += feat2.system.essenceCost || 0;
+        if (feat2.system.grantsNarration) {
           totalNarrations++;
-          narrationsDetails.push({ name: feat.name, actions: feat.system.narrationActions || 1 });
+          narrationsDetails.push({ name: feat2.name, actions: feat2.system.narrationActions || 1 });
         }
       });
     }
@@ -559,7 +559,7 @@ const WEAPON_TYPES = {
     linkedSkill: "ranged-weapons",
     linkedSpecialization: "",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Combat rapproché - Mains nues
   "bare-hands": {
@@ -569,9 +569,9 @@ const WEAPON_TYPES = {
     medium: "none",
     long: "none",
     linkedSkill: "close-combat",
-    linkedSpecialization: "Spé : Mains nues",
+    linkedSpecialization: "spec_unarmed",
     linkedDefenseSkill: "close-combat",
-    linkedDefenseSpecialization: "Spé : Défense"
+    linkedDefenseSpecialization: "spec_defense"
   },
   // Combat rapproché - Lames
   "short-weapons": {
@@ -581,9 +581,9 @@ const WEAPON_TYPES = {
     medium: "none",
     long: "none",
     linkedSkill: "close-combat",
-    linkedSpecialization: "Spé : Lames",
+    linkedSpecialization: "spec_blades",
     linkedDefenseSkill: "close-combat",
-    linkedDefenseSpecialization: "Spé : Défense"
+    linkedDefenseSpecialization: "spec_defense"
   },
   "long-weapons": {
     vd: "FOR+2",
@@ -592,9 +592,9 @@ const WEAPON_TYPES = {
     medium: "none",
     long: "none",
     linkedSkill: "close-combat",
-    linkedSpecialization: "Spé : Lames",
+    linkedSpecialization: "spec_blades",
     linkedDefenseSkill: "close-combat",
-    linkedDefenseSpecialization: "Spé : Défense"
+    linkedDefenseSpecialization: "spec_defense"
   },
   // Combat rapproché - Armes contondantes
   "advanced-melee": {
@@ -604,9 +604,9 @@ const WEAPON_TYPES = {
     medium: "none",
     long: "none",
     linkedSkill: "close-combat",
-    linkedSpecialization: "Spé : Armes contondantes",
+    linkedSpecialization: "spec_blunt-weapons",
     linkedDefenseSkill: "close-combat",
-    linkedDefenseSpecialization: "Spé : Défense"
+    linkedDefenseSpecialization: "spec_defense"
   },
   "tasers": {
     vd: 5,
@@ -615,9 +615,9 @@ const WEAPON_TYPES = {
     medium: "none",
     long: "none",
     linkedSkill: "close-combat",
-    linkedSpecialization: "Spé : Armes contondantes",
+    linkedSpecialization: "spec_blunt-weapons",
     linkedDefenseSkill: "close-combat",
-    linkedDefenseSpecialization: "Spé : Défense"
+    linkedDefenseSpecialization: "spec_defense"
   },
   // Armes à distance - Armes de jet
   "throwing": {
@@ -627,9 +627,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes de jet",
+    linkedSpecialization: "spec_thrown-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "grenades": {
     vd: 7,
@@ -638,9 +638,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes de jet",
+    linkedSpecialization: "spec_thrown-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "gas-grenades": {
     vd: "toxin",
@@ -649,9 +649,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes de jet",
+    linkedSpecialization: "spec_thrown-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Armes de trait
   "bows": {
@@ -661,9 +661,9 @@ const WEAPON_TYPES = {
     medium: "ok",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes de trait",
+    linkedSpecialization: "spec_thrown-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "crossbows": {
     vd: 4,
@@ -672,9 +672,9 @@ const WEAPON_TYPES = {
     medium: "ok",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes de trait",
+    linkedSpecialization: "spec_thrown-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Pistolets
   "pocket-pistols": {
@@ -684,9 +684,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Pistolets",
+    linkedSpecialization: "spec_pistols",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "light-pistols": {
     vd: 4,
@@ -695,9 +695,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Pistolets",
+    linkedSpecialization: "spec_pistols",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "automatic-pistols": {
     vd: 4,
@@ -706,9 +706,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Pistolets",
+    linkedSpecialization: "spec_pistols",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "heavy-pistols": {
     vd: 5,
@@ -717,9 +717,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Pistolets",
+    linkedSpecialization: "spec_pistols",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Mitraillettes
   "smgs": {
@@ -729,9 +729,9 @@ const WEAPON_TYPES = {
     medium: "ok",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Mitraillettes",
+    linkedSpecialization: "spec_smgs",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Fusils
   "assault-rifles": {
@@ -741,9 +741,9 @@ const WEAPON_TYPES = {
     medium: "ok",
     long: "disadvantage",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Fusils",
+    linkedSpecialization: "spec_rifles",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "shotguns": {
     vd: 8,
@@ -752,9 +752,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Fusils",
+    linkedSpecialization: "spec_rifles",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "sniper-rifles": {
     vd: 10,
@@ -763,9 +763,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "ok",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Fusils",
+    linkedSpecialization: "spec_rifles",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Lance-grenades
   "grenade-launchers": {
@@ -775,9 +775,9 @@ const WEAPON_TYPES = {
     medium: "ok",
     long: "disadvantage",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Lance-grenades",
+    linkedSpecialization: "spec_grenade-launchers",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   // Armes à distance - Armes lourdes
   "machine-guns": {
@@ -787,9 +787,9 @@ const WEAPON_TYPES = {
     medium: "ok",
     long: "ok",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes lourdes",
+    linkedSpecialization: "spec_heavy-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "rocket-launchers": {
     vd: 12,
@@ -798,9 +798,9 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "ok",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "Spé : Armes lourdes",
+    linkedSpecialization: "spec_heavy-weapons",
     linkedDefenseSkill: "athletics",
-    linkedDefenseSpecialization: "Spé : Défense à distance"
+    linkedDefenseSpecialization: "spec_ranged-defense"
   }
 };
 const VEHICLE_TYPES = vehicleTypesData;
@@ -1595,24 +1595,24 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     if (featType === "spell") {
       this.linkedAttackSkill = SKILL_SLUGS.SORCERY;
       const spellSpecMap = {
-        "combat": "Spé: Sorts de combat",
-        "detection": "Spé: Sorts de détection",
-        "health": "Spé: Sorts de santé",
-        "illusion": "Spé: Sorts d'illusion",
-        "manipulation": "Spé: Sorts de manipulation",
-        "counterspell": "Spé: Contresort"
+        "combat": "spec_combat-spells",
+        "detection": "spec_detection-spells",
+        "health": "spec_health-spells",
+        "illusion": "spec_illusion-spells",
+        "manipulation": "spec_manipulation-spells",
+        "counterspell": "spec_counterspelling"
       };
       const spellSpecType = this.spellSpecializationType || "combat";
-      this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "Spé: Sorts de combat";
+      this.linkedAttackSpecialization = spellSpecMap[spellSpecType] || "spec_combat-spells";
     } else if (featType === "complex-form") {
       this.linkedAttackSkill = SKILL_SLUGS.TECHNOMANCER;
       const cfSpecMap = {
-        "formes-complexes": "Spé: Formes complexes",
-        "compilation": "Spé: Compilation",
-        "decompilation": "Spé: Décompilation"
+        "formes-complexes": "spec_complex-forms",
+        "compilation": "spec_compilation",
+        "decompilation": "spec_decompilation"
       };
       const cfSpecType = this.complexFormSpecializationType || "formes-complexes";
-      this.linkedAttackSpecialization = cfSpecMap[cfSpecType] || "Spé: Formes complexes";
+      this.linkedAttackSpecialization = cfSpecMap[cfSpecType] || "spec_complex-forms";
     }
   }
   _applyCustomWeaponDamage(featType) {
@@ -1632,346 +1632,340 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
     }
   }
   _calculateCost(featType) {
-    const costType = this.cost || "free-equipment";
-    const rating = this.rating || 0;
-    let calculatedCost = 0;
-    if (featType === "equipment" || featType === "weapon") {
-      switch (costType) {
-        case "free-equipment":
-          calculatedCost = 0;
-          break;
-        case "equipment":
-          calculatedCost = 2500;
-          break;
-        case "advanced-equipment":
-          calculatedCost = 5e3;
-          break;
-        // Legacy values (kept for migration compatibility)
-        case "specialized-equipment":
-          calculatedCost = 5e3;
-          break;
-        case "feat":
-          calculatedCost = 0;
-          break;
-        default:
-          calculatedCost = 0;
-      }
-    }
-    if (featType === "connaissance") {
-      calculatedCost = 2500;
-    }
-    if (featType === "complex-form") {
-      this.calculatedCost = 5e3;
-      return;
-    }
-    if (featType === "armor") {
-      const armorValue = this.armorValue || 0;
-      calculatedCost += armorValue * 2500;
-    }
-    calculatedCost += rating * 5e3;
-    this.calculatedCost = calculatedCost;
+    this.calculatedCost = computeFeatCost(featType, this);
   }
   _calculateRecommendedLevel(featType) {
-    let recommendedLevel = 0;
-    const recommendedLevelBreakdown = [];
-    const bonusLightDamage = this.bonusLightDamage || 0;
-    const bonusSevereDamage = this.bonusSevereDamage || 0;
-    const bonusPhysicalThreshold = this.bonusPhysicalThreshold || 0;
-    const bonusMentalThreshold = this.bonusMentalThreshold || 0;
-    const firewall = this.firewall || 0;
-    const attack = this.attack || 0;
-    const riggerConsoleCount = this.riggerConsoleCount || 0;
-    const hasVehicleControlWiring = this.hasVehicleControlWiring || false;
-    const isWeaponFocus = this.isWeaponFocus || false;
-    const isAdeptPowerWeapon = this.isAdeptPowerWeapon || false;
-    const isBioware = this.isBioware || false;
-    const bonusAnarchy = this.bonusAnarchy || 0;
-    const narrativeEffects = this.narrativeEffects || [];
-    const rrList = this.rrList || [];
-    const isFirstFeat = this.isFirstFeat || false;
-    if (featType === "trait" && !isFirstFeat) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BASE_FEAT_COST", value: 3 });
-    }
-    if (featType === "cyberware") {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
-      if (isBioware) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BIOWARE", value: 1 });
-      }
-    }
-    if (featType === "adept-power") {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT_POWER", value: 1 });
-    }
-    if (featType === "spell") {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPELL", value: 1 });
-    }
-    if (featType === "complex-form") {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM", value: 1 });
-    }
-    if (bonusLightDamage > 0) {
-      const value = bonusLightDamage * 3;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.LIGHT_WOUNDS", labelParams: `(${bonusLightDamage})`, value });
-    }
-    if (bonusSevereDamage > 0) {
-      const value = bonusSevereDamage * 6;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SEVERE_WOUNDS", labelParams: `(${bonusSevereDamage})`, value });
-    }
-    if (bonusPhysicalThreshold !== 0) {
-      const value = Math.abs(bonusPhysicalThreshold);
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.PHYSICAL_THRESHOLD", labelParams: `(${bonusPhysicalThreshold > 0 ? "+" : ""}${bonusPhysicalThreshold})`, value });
-    }
-    if (bonusMentalThreshold !== 0) {
-      const value = Math.abs(bonusMentalThreshold);
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD", labelParams: `(${bonusMentalThreshold > 0 ? "+" : ""}${bonusMentalThreshold})`, value });
-    }
-    const bonusMatrixThreshold = this.bonusMatrixThreshold || 0;
-    if (bonusMatrixThreshold !== 0) {
-      const value = Math.abs(bonusMatrixThreshold);
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MATRIX_THRESHOLD", labelParams: `(${bonusMatrixThreshold > 0 ? "+" : ""}${bonusMatrixThreshold})`, value });
-    }
-    if (featType === "cyberdeck" && firewall > 0) {
-      recommendedLevel += firewall;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.FIREWALL", labelParams: `(${firewall})`, value: firewall });
-    }
-    const cyberdeckBonusLightDamage = this.cyberdeckBonusLightDamage || false;
-    if (featType === "cyberdeck" && cyberdeckBonusLightDamage) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE", value: 3 });
-    }
-    if (featType === "cyberdeck") {
-      if (this.cyberdeckBiofeedback) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK", value: 1 });
-      }
-      if (this.cyberdeckBiofeedbackFilter) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK_FILTER", value: 1 });
-      }
-      if (this.cyberdeckConnectionLock) {
-        recommendedLevel += 1;
-        recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_CONNECTION_LOCK", value: 1 });
-      }
-    }
-    if (attack > 0) {
-      recommendedLevel += attack;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ATTACK", labelParams: `(${attack})`, value: attack });
-    }
-    if (riggerConsoleCount > 0) {
-      recommendedLevel += riggerConsoleCount;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RIGGER_CONSOLE", labelParams: `(${riggerConsoleCount})`, value: riggerConsoleCount });
-    }
-    if (hasVehicleControlWiring) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING", value: 2 });
-    }
-    if (isWeaponFocus) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS", value: 1 });
-    }
-    if (isAdeptPowerWeapon) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT_POWER_WEAPON", value: 1 });
-    }
-    const damageValueBonus = this.damageValueBonus || 0;
-    if (damageValueBonus > 0) {
-      recommendedLevel += damageValueBonus;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS", labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
-    }
-    const weaponDamageBonus = this.weaponDamageBonus || 0;
-    if (weaponDamageBonus > 0) {
-      recommendedLevel += weaponDamageBonus;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_DAMAGE_BONUS", labelParams: `(+${weaponDamageBonus})`, value: weaponDamageBonus });
-    }
-    const rangeImprovements = this.rangeImprovements || {};
-    let rangeImprovementCount = 0;
-    if (rangeImprovements.melee) rangeImprovementCount++;
-    if (rangeImprovements.short) rangeImprovementCount++;
-    if (rangeImprovements.medium) rangeImprovementCount++;
-    if (rangeImprovements.long) rangeImprovementCount++;
-    if (rangeImprovementCount > 0) {
-      const value = rangeImprovementCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RANGE_IMPROVEMENTS", labelParams: `(${rangeImprovementCount})`, value });
-    }
-    for (const rr of rrList) {
-      const rrType = rr.rrType;
-      const rrValue = rr.rrValue || 0;
-      if (rrValue > 0) {
-        if (rrType === "specialization") {
-          const value = rrValue * 2;
-          recommendedLevel += value;
-          recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_SPECIALIZATION", labelParams: `(${rrValue})`, value });
-        } else if (rrType === "skill") {
-          const value = rrValue * 5;
-          recommendedLevel += value;
-          recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_SKILL", labelParams: `(${rrValue})`, value });
-        } else if (rrType === "attribute") {
-          const value = rrValue * 10;
-          recommendedLevel += value;
-          recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_ATTRIBUTE", labelParams: `(${rrValue})`, value });
-        }
-      }
-    }
-    if (bonusAnarchy > 0) {
-      const value = bonusAnarchy * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS", labelParams: `(${bonusAnarchy})`, value });
-    }
-    const narrationActions = this.narrationActions || 0;
-    if (narrationActions > 0) {
-      const narrationCost = narrationActions * 3;
-      recommendedLevel += narrationCost;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", labelParams: ` (${narrationActions})`, value: narrationCost });
-    }
-    const positiveEffects = narrativeEffects.filter((effect) => {
-      return effect?.text && effect.text.trim() !== "" && !effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== void 0;
-    });
-    const negativeEffects = narrativeEffects.filter((effect) => {
-      return effect?.text && effect.text.trim() !== "" && effect.isNegative && effect.value !== 0 && effect.value !== null && effect.value !== void 0;
-    });
-    if (positiveEffects.length > 0) {
-      const positiveEffectValue = positiveEffects.reduce((sum, effect) => sum + (effect.value || 1), 0);
-      recommendedLevel += positiveEffectValue;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE", labelParams: `(${positiveEffects.length})`, value: positiveEffectValue });
-    }
-    if (negativeEffects.length > 0) {
-      const negativeEffectValue = negativeEffects.reduce((sum, effect) => sum + (effect.value || -1), 0);
-      recommendedLevel += negativeEffectValue;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE", labelParams: `(${negativeEffects.length})`, value: negativeEffectValue });
-    }
-    const sustainedSpellCount = this.sustainedSpellCount || 0;
-    if (sustainedSpellCount > 0) {
-      const value = sustainedSpellCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUSTAINED_SPELLS", labelParams: `(${sustainedSpellCount})`, value });
-    }
-    const summonedSpiritCount = this.summonedSpiritCount || 0;
-    if (summonedSpiritCount > 0) {
-      const value = summonedSpiritCount * 3;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS", labelParams: `(${summonedSpiritCount})`, value });
-    }
-    const astralPerception = this.astralPerception || false;
-    const astralProjection = this.astralProjection || false;
-    const sorcery = this.sorcery || false;
-    const conjuration = this.conjuration || false;
-    const adept = this.adept || false;
-    if (astralPerception && !astralProjection) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION", value: 1 });
-    }
-    if (astralPerception && astralProjection) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION", value: 2 });
-    }
-    if (sorcery) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SORCERY", value: 1 });
-    }
-    if (conjuration) {
-      recommendedLevel += 2;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CONJURATION", value: 2 });
-    }
-    if (adept) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT", value: 1 });
-    }
-    const matrixAccess = this.matrixAccess || false;
-    const complexFormWeaving = this.complexFormWeaving || false;
-    const spriteCompilation = this.spriteCompilation || false;
-    const biofeedbackFlag = this.biofeedback || false;
-    if (matrixAccess) {
-      recommendedLevel += 7;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS", value: 7 });
-    }
-    if (complexFormWeaving) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM_WEAVING", value: 1 });
-    }
-    if (spriteCompilation) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPRITE_COMPILATION", value: 1 });
-    }
-    if (biofeedbackFlag) {
-      recommendedLevel -= 2;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BIOFEEDBACK", value: -2 });
-    }
-    const compiledSpriteCount = this.compiledSpriteCount || 0;
-    if (compiledSpriteCount > 0) {
-      const value = compiledSpriteCount * 3;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPILED_SPRITES", labelParams: ` (${compiledSpriteCount})`, value });
-    }
-    const sustainedComplexFormCount = this.sustainedComplexFormCount || 0;
-    if (sustainedComplexFormCount > 0) {
-      const value = sustainedComplexFormCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUSTAINED_COMPLEX_FORMS", labelParams: ` (${sustainedComplexFormCount})`, value });
-    }
-    const autopilotBonus = this.autopilotBonus || 0;
-    const speedBonus = this.speedBonus || 0;
-    const handlingBonus = this.handlingBonus || 0;
-    const armorBonus = this.armorBonus || 0;
-    const isFixed = this.isFixed || false;
-    const isFlying = this.isFlying || false;
-    const weaponMountImprovement = this.weaponMountImprovement || false;
-    const autopilotUnlocked = this.autopilotUnlocked || false;
-    const additionalDroneCount = this.additionalDroneCount || 0;
-    if (autopilotBonus > 0) {
-      recommendedLevel += autopilotBonus;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.AUTOPILOT_BONUS", labelParams: `(+${autopilotBonus})`, value: autopilotBonus });
-    }
-    if (speedBonus > 0) {
-      recommendedLevel += speedBonus;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPEED_BONUS", labelParams: `(+${speedBonus})`, value: speedBonus });
-    }
-    if (handlingBonus > 0) {
-      recommendedLevel += handlingBonus;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.HANDLING_BONUS", labelParams: `(+${handlingBonus})`, value: handlingBonus });
-    }
-    if (armorBonus > 0) {
-      recommendedLevel += armorBonus;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ARMOR_BONUS", labelParams: `(+${armorBonus})`, value: armorBonus });
-    }
-    if (isFixed) {
-      recommendedLevel -= 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.IS_FIXED", value: -1 });
-    }
-    if (isFlying) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.IS_FLYING", value: 1 });
-    }
-    if (weaponMountImprovement) {
-      recommendedLevel += 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_MOUNT_IMPROVEMENT", value: 1 });
-    }
-    if (autopilotUnlocked) {
-      recommendedLevel += 3;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.AUTOPILOT_UNLOCKED", value: 3 });
-    }
-    if (additionalDroneCount > 0) {
-      const value = additionalDroneCount * 2;
-      recommendedLevel += value;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES", labelParams: `(${additionalDroneCount})`, value });
-    }
-    const shamanicMask = this.shamanicMask || false;
-    if (shamanicMask && featType === "awakened") {
-      recommendedLevel -= 1;
-      recommendedLevelBreakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SHAMANIC_MASK", value: -1 });
-    }
-    this.recommendedLevel = recommendedLevel;
-    this.recommendedLevelBreakdown = recommendedLevelBreakdown;
+    const { level, breakdown } = computeFeatLevel(featType, this);
+    this.recommendedLevel = level;
+    this.recommendedLevelBreakdown = breakdown;
   }
+}
+function computeFeatLevel(featType, data) {
+  let level = 0;
+  const breakdown = [];
+  const bonusLightDamage = data.bonusLightDamage || 0;
+  const bonusSevereDamage = data.bonusSevereDamage || 0;
+  const bonusPhysicalThreshold = data.bonusPhysicalThreshold || 0;
+  const bonusMentalThreshold = data.bonusMentalThreshold || 0;
+  const bonusMatrixThreshold = data.bonusMatrixThreshold || 0;
+  const firewall = data.firewall || 0;
+  const attack = data.attack || 0;
+  const riggerConsoleCount = data.riggerConsoleCount || 0;
+  const hasVehicleControlWiring = data.hasVehicleControlWiring || false;
+  const isWeaponFocus = data.isWeaponFocus || false;
+  const isAdeptPowerWeapon = data.isAdeptPowerWeapon || false;
+  const isBioware = data.isBioware || false;
+  const bonusAnarchy = data.bonusAnarchy || 0;
+  const narrativeEffects = data.narrativeEffects || [];
+  const rrList = data.rrList || [];
+  const isFirstFeat = data.isFirstFeat || false;
+  if (featType === "trait" && !isFirstFeat) {
+    level += 3;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BASE_FEAT_COST", value: 3 });
+  }
+  if (featType === "cyberware") {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERWARE", value: 1 });
+    if (isBioware) {
+      level += 1;
+      breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BIOWARE", value: 1 });
+    }
+  }
+  if (featType === "adept-power") {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT_POWER", value: 1 });
+  }
+  if (featType === "spell") {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPELL", value: 1 });
+  }
+  if (featType === "complex-form") {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM", value: 1 });
+  }
+  if (bonusLightDamage > 0) {
+    const v = bonusLightDamage * 3;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.LIGHT_WOUNDS", labelParams: `(${bonusLightDamage})`, value: v });
+  }
+  if (bonusSevereDamage > 0) {
+    const v = bonusSevereDamage * 6;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SEVERE_WOUNDS", labelParams: `(${bonusSevereDamage})`, value: v });
+  }
+  if (bonusPhysicalThreshold !== 0) {
+    const v = Math.abs(bonusPhysicalThreshold);
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.PHYSICAL_THRESHOLD", labelParams: `(${bonusPhysicalThreshold > 0 ? "+" : ""}${bonusPhysicalThreshold})`, value: v });
+  }
+  if (bonusMentalThreshold !== 0) {
+    const v = Math.abs(bonusMentalThreshold);
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MENTAL_THRESHOLD", labelParams: `(${bonusMentalThreshold > 0 ? "+" : ""}${bonusMentalThreshold})`, value: v });
+  }
+  if (bonusMatrixThreshold !== 0) {
+    const v = Math.abs(bonusMatrixThreshold);
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MATRIX_THRESHOLD", labelParams: `(${bonusMatrixThreshold > 0 ? "+" : ""}${bonusMatrixThreshold})`, value: v });
+  }
+  if (featType === "cyberdeck" && firewall > 0) {
+    level += firewall;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.FIREWALL", labelParams: `(${firewall})`, value: firewall });
+  }
+  const cyberdeckBonusLightDamage = data.cyberdeckBonusLightDamage || false;
+  if (featType === "cyberdeck" && cyberdeckBonusLightDamage) {
+    level += 3;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BONUS_LIGHT_DAMAGE", value: 3 });
+  }
+  if (featType === "cyberdeck") {
+    if (data.cyberdeckBiofeedback) {
+      level += 1;
+      breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK", value: 1 });
+    }
+    if (data.cyberdeckBiofeedbackFilter) {
+      level += 1;
+      breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_BIOFEEDBACK_FILTER", value: 1 });
+    }
+    if (data.cyberdeckConnectionLock) {
+      level += 1;
+      breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CYBERDECK_CONNECTION_LOCK", value: 1 });
+    }
+  }
+  if (attack > 0) {
+    level += attack;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ATTACK", labelParams: `(${attack})`, value: attack });
+  }
+  if (riggerConsoleCount > 0) {
+    level += riggerConsoleCount;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RIGGER_CONSOLE", labelParams: `(${riggerConsoleCount})`, value: riggerConsoleCount });
+  }
+  if (hasVehicleControlWiring) {
+    level += 2;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.VEHICLE_WIRING", value: 2 });
+  }
+  if (isWeaponFocus) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_FOCUS", value: 1 });
+  }
+  if (isAdeptPowerWeapon) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT_POWER_WEAPON", value: 1 });
+  }
+  const damageValueBonus = data.damageValueBonus || 0;
+  if (damageValueBonus > 0) {
+    level += damageValueBonus;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.DAMAGE_VALUE_BONUS", labelParams: `(+${damageValueBonus})`, value: damageValueBonus });
+  }
+  const weaponDamageBonus = data.weaponDamageBonus || 0;
+  if (weaponDamageBonus > 0) {
+    level += weaponDamageBonus;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_DAMAGE_BONUS", labelParams: `(+${weaponDamageBonus})`, value: weaponDamageBonus });
+  }
+  const rangeImprovements = data.rangeImprovements || {};
+  let rangeImprovementCount = 0;
+  if (rangeImprovements.melee) rangeImprovementCount++;
+  if (rangeImprovements.short) rangeImprovementCount++;
+  if (rangeImprovements.medium) rangeImprovementCount++;
+  if (rangeImprovements.long) rangeImprovementCount++;
+  if (rangeImprovementCount > 0) {
+    const v = rangeImprovementCount * 2;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RANGE_IMPROVEMENTS", labelParams: `(${rangeImprovementCount})`, value: v });
+  }
+  for (const rr of rrList) {
+    const rrValue = rr.rrValue || 0;
+    if (rrValue > 0) {
+      if (rr.rrType === "specialization") {
+        const v = rrValue * 2;
+        level += v;
+        breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_SPECIALIZATION", labelParams: `(${rrValue})`, value: v });
+      } else if (rr.rrType === "skill") {
+        const v = rrValue * 5;
+        level += v;
+        breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_SKILL", labelParams: `(${rrValue})`, value: v });
+      } else if (rr.rrType === "attribute") {
+        const v = rrValue * 10;
+        level += v;
+        breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.RR_ATTRIBUTE", labelParams: `(${rrValue})`, value: v });
+      }
+    }
+  }
+  if (bonusAnarchy > 0) {
+    const v = bonusAnarchy * 2;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ANARCHY_BONUS", labelParams: `(${bonusAnarchy})`, value: v });
+  }
+  const narrationActions = data.narrationActions || 0;
+  if (narrationActions > 0) {
+    const v = narrationActions * 3;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.GRANTS_NARRATION", labelParams: ` (${narrationActions})`, value: v });
+  }
+  const positiveEffects = narrativeEffects.filter((e) => e?.text && e.text.trim() !== "" && !e.isNegative && e.value !== 0 && e.value !== null && e.value !== void 0);
+  const negativeEffects = narrativeEffects.filter((e) => e?.text && e.text.trim() !== "" && e.isNegative && e.value !== 0 && e.value !== null && e.value !== void 0);
+  if (positiveEffects.length > 0) {
+    const v = positiveEffects.reduce((s, e) => s + (e.value || 1), 0);
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_POSITIVE", labelParams: `(${positiveEffects.length})`, value: v });
+  }
+  if (negativeEffects.length > 0) {
+    const v = negativeEffects.reduce((s, e) => s + (e.value || -1), 0);
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.NARRATIVE_EFFECTS_NEGATIVE", labelParams: `(${negativeEffects.length})`, value: v });
+  }
+  const sustainedSpellCount = data.sustainedSpellCount || 0;
+  if (sustainedSpellCount > 0) {
+    const v = sustainedSpellCount * 2;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUSTAINED_SPELLS", labelParams: `(${sustainedSpellCount})`, value: v });
+  }
+  const summonedSpiritCount = data.summonedSpiritCount || 0;
+  if (summonedSpiritCount > 0) {
+    const v = summonedSpiritCount * 3;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUMMONED_SPIRITS", labelParams: `(${summonedSpiritCount})`, value: v });
+  }
+  const astralPerception = data.astralPerception || false;
+  const astralProjection = data.astralProjection || false;
+  const sorcery = data.sorcery || false;
+  const conjuration = data.conjuration || false;
+  const adept = data.adept || false;
+  if (astralPerception && !astralProjection) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION", value: 1 });
+  }
+  if (astralPerception && astralProjection) {
+    level += 2;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ASTRAL_PERCEPTION_PROJECTION", value: 2 });
+  }
+  if (sorcery) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SORCERY", value: 1 });
+  }
+  if (conjuration) {
+    level += 2;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.CONJURATION", value: 2 });
+  }
+  if (adept) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADEPT", value: 1 });
+  }
+  const matrixAccess = data.matrixAccess || false;
+  const complexFormWeaving = data.complexFormWeaving || false;
+  const spriteCompilation = data.spriteCompilation || false;
+  const biofeedbackFlag = data.biofeedback || false;
+  if (matrixAccess) {
+    level += 7;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.MATRIX_ACCESS", value: 7 });
+  }
+  if (complexFormWeaving) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPLEX_FORM_WEAVING", value: 1 });
+  }
+  if (spriteCompilation) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPRITE_COMPILATION", value: 1 });
+  }
+  if (biofeedbackFlag) {
+    level -= 2;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.BIOFEEDBACK", value: -2 });
+  }
+  const compiledSpriteCount = data.compiledSpriteCount || 0;
+  if (compiledSpriteCount > 0) {
+    const v = compiledSpriteCount * 3;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.COMPILED_SPRITES", labelParams: ` (${compiledSpriteCount})`, value: v });
+  }
+  const sustainedComplexFormCount = data.sustainedComplexFormCount || 0;
+  if (sustainedComplexFormCount > 0) {
+    const v = sustainedComplexFormCount * 2;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SUSTAINED_COMPLEX_FORMS", labelParams: ` (${sustainedComplexFormCount})`, value: v });
+  }
+  const autopilotBonus = data.autopilotBonus || 0;
+  const speedBonus = data.speedBonus || 0;
+  const handlingBonus = data.handlingBonus || 0;
+  const armorBonus = data.armorBonus || 0;
+  const isFixed = data.isFixed || false;
+  const isFlying = data.isFlying || false;
+  const weaponMountImprovement = data.weaponMountImprovement || false;
+  const autopilotUnlocked = data.autopilotUnlocked || false;
+  const additionalDroneCount = data.additionalDroneCount || 0;
+  if (autopilotBonus > 0) {
+    level += autopilotBonus;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.AUTOPILOT_BONUS", labelParams: `(+${autopilotBonus})`, value: autopilotBonus });
+  }
+  if (speedBonus > 0) {
+    level += speedBonus;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SPEED_BONUS", labelParams: `(+${speedBonus})`, value: speedBonus });
+  }
+  if (handlingBonus > 0) {
+    level += handlingBonus;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.HANDLING_BONUS", labelParams: `(+${handlingBonus})`, value: handlingBonus });
+  }
+  if (armorBonus > 0) {
+    level += armorBonus;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ARMOR_BONUS", labelParams: `(+${armorBonus})`, value: armorBonus });
+  }
+  if (isFixed) {
+    level -= 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.IS_FIXED", value: -1 });
+  }
+  if (isFlying) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.IS_FLYING", value: 1 });
+  }
+  if (weaponMountImprovement) {
+    level += 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.WEAPON_MOUNT_IMPROVEMENT", value: 1 });
+  }
+  if (autopilotUnlocked) {
+    level += 3;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.AUTOPILOT_UNLOCKED", value: 3 });
+  }
+  if (additionalDroneCount > 0) {
+    const v = additionalDroneCount * 2;
+    level += v;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.ADDITIONAL_DRONES", labelParams: `(${additionalDroneCount})`, value: v });
+  }
+  const shamanicMask = data.shamanicMask || false;
+  if (shamanicMask && featType === "awakened") {
+    level -= 1;
+    breakdown.push({ labelKey: "SRA2.FEATS.BREAKDOWN.SHAMANIC_MASK", value: -1 });
+  }
+  return { level, breakdown };
+}
+function computeFeatCost(featType, data) {
+  const costType = data.cost || "free-equipment";
+  const rating = data.rating || 0;
+  let calculatedCost = 0;
+  if (featType === "equipment" || featType === "weapon") {
+    switch (costType) {
+      case "equipment":
+        calculatedCost = 2500;
+        break;
+      case "advanced-equipment":
+      case "specialized-equipment":
+        calculatedCost = 5e3;
+        break;
+      case "free-equipment":
+      case "feat":
+      default:
+        calculatedCost = 0;
+        break;
+    }
+  }
+  if (featType === "connaissance") {
+    calculatedCost = 2500;
+  }
+  if (featType === "complex-form") {
+    return 5e3;
+  }
+  if (featType === "armor") {
+    calculatedCost += (data.armorValue || 0) * 2500;
+  }
+  calculatedCost += rating * 5e3;
+  return calculatedCost;
 }
 class VehicleDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -3146,8 +3140,8 @@ function getRRSources$1(actor, itemType, itemName) {
     const specItem = actor.items.find((i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizedItemName);
     itemSlug = specItem?.system?.slug || "";
   }
-  for (const feat of feats) {
-    const featSystem = feat.system;
+  for (const feat2 of feats) {
+    const featSystem = feat2.system;
     const rrList = featSystem.rrList || [];
     for (const rrEntry of rrList) {
       const rrType = rrEntry.rrType;
@@ -3159,7 +3153,7 @@ function getRRSources$1(actor, itemType, itemName) {
       const matchBySlug = itemSlug && rrTarget === itemSlug;
       if (matchByName || matchBySlug) {
         sources.push({
-          featName: feat.name,
+          featName: feat2.name,
           rrValue,
           rrLabel: rrEntry.rrLabel || void 0
         });
@@ -3188,8 +3182,8 @@ function getPhantomRRs(actor) {
   const feats = actor.items.filter(
     (item) => item.type === "feat" && item.system.active === true
   );
-  for (const feat of feats) {
-    const featSystem = feat.system;
+  for (const feat2 of feats) {
+    const featSystem = feat2.system;
     const rrList = featSystem.rrList || [];
     for (const rrEntry of rrList) {
       const rrType = rrEntry.rrType;
@@ -3216,7 +3210,7 @@ function getPhantomRRs(actor) {
         }
         const phantom = phantomRRs.find((p) => p.type === "skill" && (p.name === rrTarget || normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
-          phantom.sources.push({ featName: feat.name, rrValue });
+          phantom.sources.push({ featName: feat2.name, rrValue });
         }
       } else if (rrType === "specialization" && !isExistingSpec) {
         if (!seenTargets.has(targetKey)) {
@@ -3234,13 +3228,16 @@ function getPhantomRRs(actor) {
         }
         const phantom = phantomRRs.find((p) => p.type === "specialization" && (p.name === rrTarget || normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
-          phantom.sources.push({ featName: feat.name, rrValue });
+          phantom.sources.push({ featName: feat2.name, rrValue });
         }
       }
     }
   }
   const slugCache = globalThis.SRA2_SKILL_SLUG_CACHE || {};
+  const metadataCache = globalThis.SRA2_SLUG_METADATA_CACHE || {};
+  const phantomSlugs = /* @__PURE__ */ new Map();
   for (const phantom of phantomRRs) {
+    phantomSlugs.set(phantom, phantom.name);
     if (slugCache[phantom.name]) {
       phantom.name = slugCache[phantom.name];
     } else {
@@ -3250,78 +3247,84 @@ function getPhantomRRs(actor) {
       }
     }
   }
+  const skillAttributeMap = {
+    // Slugs (canonical)
+    [SKILL_SLUGS.CLOSE_COMBAT]: "strength",
+    [SKILL_SLUGS.RANGED_WEAPONS]: "agility",
+    [SKILL_SLUGS.ATHLETICS]: "strength",
+    [SKILL_SLUGS.STEALTH]: "agility",
+    [SKILL_SLUGS.CRACKING]: "logic",
+    [SKILL_SLUGS.ENGINEERING]: "logic",
+    [SKILL_SLUGS.ELECTRONICS]: "logic",
+    [SKILL_SLUGS.PILOTING]: "agility",
+    [SKILL_SLUGS.SORCERY]: "willpower",
+    [SKILL_SLUGS.CONJURATION]: "willpower",
+    [SKILL_SLUGS.TECHNOMANCER]: "logic",
+    [SKILL_SLUGS.INFLUENCE]: "charisma",
+    [SKILL_SLUGS.PERCEPTION]: "willpower",
+    [SKILL_SLUGS.SURVIVAL]: "willpower",
+    [SKILL_SLUGS.NETWORKING]: "charisma",
+    [SKILL_SLUGS.ASTRAL_COMBAT]: "willpower",
+    // FR names (normalized, for backward compat)
+    "athletisme": "strength",
+    "combat rapproche": "strength",
+    "armes a distance": "agility",
+    "furtivite": "agility",
+    "piratage": "logic",
+    "ingenierie": "logic",
+    "pilotage": "agility",
+    "sorcellerie": "willpower",
+    "technomancie": "logic",
+    "survie": "willpower",
+    "reseau": "charisma",
+    "combat astral": "willpower"
+  };
+  function resolveSpecMetadata(originalSlug, displayName) {
+    const specTemplate = findItemInGame("specialization", displayName);
+    if (specTemplate) {
+      return {
+        linkedSkill: specTemplate.system.linkedSkill,
+        linkedAttribute: specTemplate.system.linkedAttribute
+      };
+    }
+    if (metadataCache[originalSlug]) {
+      return metadataCache[originalSlug];
+    }
+    return {};
+  }
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
-    const skillAttributeMap = {
-      // Slugs (canonical)
-      [SKILL_SLUGS.CLOSE_COMBAT]: "strength",
-      [SKILL_SLUGS.RANGED_WEAPONS]: "agility",
-      [SKILL_SLUGS.ATHLETICS]: "strength",
-      [SKILL_SLUGS.STEALTH]: "agility",
-      [SKILL_SLUGS.CRACKING]: "logic",
-      [SKILL_SLUGS.ENGINEERING]: "logic",
-      [SKILL_SLUGS.ELECTRONICS]: "logic",
-      [SKILL_SLUGS.PILOTING]: "agility",
-      [SKILL_SLUGS.SORCERY]: "willpower",
-      [SKILL_SLUGS.CONJURATION]: "willpower",
-      [SKILL_SLUGS.TECHNOMANCER]: "logic",
-      [SKILL_SLUGS.INFLUENCE]: "charisma",
-      [SKILL_SLUGS.PERCEPTION]: "willpower",
-      [SKILL_SLUGS.SURVIVAL]: "willpower",
-      [SKILL_SLUGS.NETWORKING]: "charisma",
-      [SKILL_SLUGS.ASTRAL_COMBAT]: "willpower",
-      // FR names (normalized, for backward compat)
-      "athletisme": "strength",
-      "combat rapproche": "strength",
-      "armes a distance": "agility",
-      "furtivite": "agility",
-      "piratage": "logic",
-      "ingenierie": "logic",
-      "pilotage": "agility",
-      "sorcellerie": "willpower",
-      "technomancie": "logic",
-      "survie": "willpower",
-      "reseau": "charisma",
-      "combat astral": "willpower"
-    };
-    const normalizedName = normalizeSearchText(phantom.name);
-    phantom.linkedAttribute = skillAttributeMap[normalizedName] || "strength";
+    const originalSlug = phantomSlugs.get(phantom) || phantom.name;
     if (phantom.type === "specialization") {
-      const specTemplate = findItemInGame("specialization", phantom.name);
-      if (specTemplate) {
-        const linkedSkillName = specTemplate.system.linkedSkill;
-        const linkedAttribute = specTemplate.system.linkedAttribute;
-        if (linkedSkillName) {
-          phantom.linkedSkillName = linkedSkillName;
-          const actorSkill = actor.items.find(
-            (i) => i.type === "skill" && (normalizeSearchText(i.name) === normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
-          );
-          if (actorSkill) {
-            phantom.linkedSkillOnActor = true;
-            phantom.linkedAttribute = actorSkill.system.linkedAttribute || linkedAttribute || phantom.linkedAttribute;
-            const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
-            const skillRating = actorSkill.system.rating || 0;
-            phantom.totalDicePool = attributeValue + skillRating;
-          } else {
-            phantom.linkedSkillOnActor = false;
-            if (linkedAttribute) {
-              phantom.linkedAttribute = linkedAttribute;
-            }
-            const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
-            phantom.totalDicePool = attributeValue;
-          }
+      const specMeta = resolveSpecMetadata(originalSlug, phantom.name);
+      const linkedSkillSlug = specMeta.linkedSkill;
+      const specLinkedAttribute = specMeta.linkedAttribute;
+      if (linkedSkillSlug) {
+        phantom.linkedSkillName = linkedSkillSlug;
+        const actorSkill = actor.items.find(
+          (i) => i.type === "skill" && (normalizeSearchText(i.name) === normalizeSearchText(linkedSkillSlug) || i.system?.slug === linkedSkillSlug)
+        );
+        if (actorSkill) {
+          phantom.linkedSkillOnActor = true;
+          phantom.linkedAttribute = actorSkill.system.linkedAttribute || specLinkedAttribute || "strength";
+          const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
+          const skillRating = actorSkill.system.rating || 0;
+          phantom.totalDicePool = attributeValue + skillRating;
         } else {
-          if (specTemplate.system.linkedAttribute) {
-            phantom.linkedAttribute = specTemplate.system.linkedAttribute;
-          }
+          phantom.linkedSkillOnActor = false;
+          phantom.linkedAttribute = specLinkedAttribute || skillAttributeMap[linkedSkillSlug] || "strength";
           const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
           phantom.totalDicePool = attributeValue;
         }
       } else {
+        phantom.linkedAttribute = specLinkedAttribute || "strength";
         const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
         phantom.totalDicePool = attributeValue;
       }
     } else {
+      const skillMeta = metadataCache[originalSlug];
+      const normalizedName = normalizeSearchText(phantom.name);
+      phantom.linkedAttribute = skillMeta?.linkedAttribute || skillAttributeMap[originalSlug] || skillAttributeMap[normalizedName] || "strength";
       const attributeValue = actor.system.attributes?.[phantom.linkedAttribute] || 0;
       phantom.totalDicePool = attributeValue;
     }
@@ -3564,20 +3567,20 @@ function getCurrentActiveSection(html) {
   return activeNavItem.length > 0 ? activeNavItem.data("section") : null;
 }
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
-  return feats.map((feat) => {
-    feat.rrEntries = [];
+  return feats.map((feat2) => {
+    feat2.rrEntries = [];
     const itemRRList = [];
     let allRRList = [...itemRRList];
-    if (actor && (feat.system.featType === "weapon" || feat.system.featType === "spell")) {
+    if (actor && (feat2.system.featType === "weapon" || feat2.system.featType === "spell")) {
       const { normalizeSearchText: normalizeSearchText2 } = ItemSearch;
-      const linkedAttackSkill = feat.system.linkedAttackSkill || "";
-      const linkedAttackSpec = feat.system.linkedAttackSpecialization || "";
+      const linkedAttackSkill = feat2.system.linkedAttackSkill || "";
+      const linkedAttackSpec = feat2.system.linkedAttackSpecialization || "";
       let attackSpecName = void 0;
       let attackSkillName = void 0;
       let attackLinkedAttribute = void 0;
       if (linkedAttackSpec) {
         const foundSpec = actor.items.find(
-          (i) => i.type === "specialization" && normalizeSearchText2(i.name) === normalizeSearchText2(linkedAttackSpec)
+          (i) => i.type === "specialization" && (i.system?.slug === linkedAttackSpec || normalizeSearchText2(i.name) === normalizeSearchText2(linkedAttackSpec))
         );
         if (foundSpec) {
           const specSystem = foundSpec.system;
@@ -3641,17 +3644,17 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
         if (rrType === "attribute" && rrTarget) {
           entry.rrTargetLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`);
         }
-        feat.rrEntries.push(entry);
+        feat2.rrEntries.push(entry);
       }
     }
-    const isWeapon = feat.system.featType === "weapon";
-    const isSpell = feat.system.featType === "spell";
-    const isAdeptPowerWeapon = feat.system.isAdeptPowerWeapon || false;
+    const isWeapon = feat2.system.featType === "weapon";
+    const isSpell = feat2.system.featType === "spell";
+    const isAdeptPowerWeapon = feat2.system.isAdeptPowerWeapon || false;
     if (isWeapon || isSpell || isAdeptPowerWeapon) {
-      const damageValue = feat.system.damageValue || "0";
-      let damageValueBonus = feat.system.damageValueBonus || 0;
+      const damageValue = feat2.system.damageValue || "0";
+      let damageValueBonus = feat2.system.damageValueBonus || 0;
       if (actor) {
-        const weaponType = feat.system.weaponType || "";
+        const weaponType = feat2.system.weaponType || "";
         const activeFeats = actor.items.filter(
           (item) => item.type === "feat" && item.system.active === true && item.system.weaponDamageBonus > 0 && item.system.weaponTypeBonus === weaponType
         );
@@ -3662,18 +3665,18 @@ function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
       damageValueBonus = Math.min(damageValueBonus, 2);
       const actorAttributes = actor ? actor.system?.attributes || {} : { strength: actorStrength };
       if (actor && actorAttributes) {
-        feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength, actorAttributes);
+        feat2.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength, actorAttributes);
       } else {
-        feat.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
+        feat2.finalDamageValue = calculateFinalDamageValueFn(damageValue, damageValueBonus, actorStrength);
       }
     }
-    feat.narrativeEffectsTooltip = formatNarrativeEffectsTooltip(
-      feat.system.narrativeEffects || [],
-      feat.system.description,
-      feat.rrEntries || [],
-      feat.system
+    feat2.narrativeEffectsTooltip = formatNarrativeEffectsTooltip(
+      feat2.system.narrativeEffects || [],
+      feat2.system.description,
+      feat2.rrEntries || [],
+      feat2.system
     );
-    return feat;
+    return feat2;
   });
 }
 function normalizeForComparison(text) {
@@ -3692,6 +3695,7 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     const normalizedTargetSpec = normalizeForComparison(targetSpec);
     const foundSpec = actor.items.find((i) => {
       if (i.type !== "specialization") return false;
+      if (i.system?.slug === targetSpec) return true;
       const normalizedItemName = normalizeForComparison(i.name);
       return normalizedItemName === normalizedTargetSpec;
     });
@@ -3896,6 +3900,10 @@ function findSkillByName(actor, skillName) {
 }
 function findSpecByName(actor, specName) {
   if (!actor || !specName) return void 0;
+  const bySlug = actor.items.find(
+    (i) => i.type === "specialization" && i.system?.slug === specName
+  );
+  if (bySlug) return bySlug;
   const normalizedName = normalizeForComparison(specName);
   return actor.items.find(
     (i) => i.type === "specialization" && normalizeForComparison(i.name) === normalizedName
@@ -4983,9 +4991,9 @@ class RollDialog extends Application {
         );
         context.selectedValue = selectedSkill ? selectedSkill.value : "";
       } else if (this.rollData.linkedAttackSpecialization) {
-        const normalizedLinkedSpec = normalizeSearchText(this.rollData.linkedAttackSpecialization);
+        const linkedSpec = this.rollData.linkedAttackSpecialization;
         const selectedSpec = dropdownOptions.find(
-          (opt) => (opt.type === "specialization" || opt.type === "phantom-spec") && normalizeSearchText(opt.name) === normalizedLinkedSpec
+          (opt) => (opt.type === "specialization" || opt.type === "phantom-spec") && (opt.slug === linkedSpec || normalizeSearchText(opt.name) === normalizeSearchText(linkedSpec))
         );
         context.selectedValue = selectedSpec ? selectedSpec.value : "";
       } else if (this.rollData.linkedAttackSkill) {
@@ -5117,7 +5125,7 @@ class RollDialog extends Application {
       let preferredSpecName = void 0;
       if (weaponLinkedSpecialization) {
         const specExists = linkedSpecs.find(
-          (spec) => spec.name === weaponLinkedSpecialization
+          (spec) => spec.name === weaponLinkedSpecialization || spec.system?.slug === weaponLinkedSpecialization
         );
         if (specExists) {
           preferredSpecName = weaponLinkedSpecialization;
@@ -5715,8 +5723,8 @@ function getRRSources(actor, itemType, itemName) {
   const feats = actor.items.filter(
     (item) => item.type === "feat" && item.system.active === true
   );
-  for (const feat of feats) {
-    const featSystem = feat.system;
+  for (const feat2 of feats) {
+    const featSystem = feat2.system;
     const rrList = featSystem.rrList || [];
     for (const rrEntry of rrList) {
       const rrType = rrEntry.rrType;
@@ -5724,7 +5732,7 @@ function getRRSources(actor, itemType, itemName) {
       const rrTarget = rrEntry.rrTarget || "";
       if (rrType === itemType && rrTarget === itemName && rrValue > 0) {
         sources.push({
-          featName: feat.name,
+          featName: feat2.name,
           rrValue,
           rrLabel: rrEntry.rrLabel || void 0
         });
@@ -6421,12 +6429,12 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
     (item) => item.type === "feat" && item.system.active === true
   );
   const rrList = [];
-  activeFeats.forEach((feat) => {
-    const featRRList = feat.system.rrList || [];
+  activeFeats.forEach((feat2) => {
+    const featRRList = feat2.system.rrList || [];
     featRRList.forEach((rrEntry) => {
       if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
         rrList.push({
-          featName: feat.name,
+          featName: feat2.name,
           rrValue: rrEntry.rrValue || 0
         });
       }
@@ -6924,8 +6932,8 @@ class CharacterSheet extends ActorSheet {
       (item) => item.type === "feat" && item.system.active === true
     );
     let bonusAnarchy = 0;
-    activeFeats.forEach((feat) => {
-      bonusAnarchy += feat.system.bonusAnarchy || 0;
+    activeFeats.forEach((feat2) => {
+      bonusAnarchy += feat2.system.bonusAnarchy || 0;
     });
     context.bonusAnarchy = bonusAnarchy;
     const anarchySpent = systemData.anarchySpent || [];
@@ -7042,7 +7050,7 @@ class CharacterSheet extends ActorSheet {
     return linkedVehicles;
   }
   _enrichFeatsByType(context, allFeats, linkedVehicles) {
-    const cyberdeckFeats = allFeats.filter((feat) => feat.system.featType === "cyberdeck");
+    const cyberdeckFeats = allFeats.filter((feat2) => feat2.system.featType === "cyberdeck");
     cyberdeckFeats.forEach((cyberdeck) => {
       const baseFirewall = cyberdeck.system.firewall || 1;
       const firewallMalus = cyberdeck.system.firewallMalus || 0;
@@ -7087,26 +7095,26 @@ class CharacterSheet extends ActorSheet {
       }
     });
     context.featsByType = {
-      trait: allFeats.filter((feat) => feat.system.featType === "trait"),
-      contact: allFeats.filter((feat) => feat.system.featType === "contact"),
-      awakened: allFeats.filter((feat) => feat.system.featType === "awakened"),
+      trait: allFeats.filter((feat2) => feat2.system.featType === "trait"),
+      contact: allFeats.filter((feat2) => feat2.system.featType === "contact"),
+      awakened: allFeats.filter((feat2) => feat2.system.featType === "awakened"),
       adeptPower: allFeats.filter(
-        (feat) => feat.system.featType === "adept-power" || feat.system.featType === "weapon" && feat.system.isAdeptPowerWeapon === true
+        (feat2) => feat2.system.featType === "adept-power" || feat2.system.featType === "weapon" && feat2.system.isAdeptPowerWeapon === true
       ),
-      equipment: allFeats.filter((feat) => feat.system.featType === "equipment"),
-      armor: allFeats.filter((feat) => feat.system.featType === "armor"),
-      cyberware: allFeats.filter((feat) => feat.system.featType === "cyberware"),
+      equipment: allFeats.filter((feat2) => feat2.system.featType === "equipment"),
+      armor: allFeats.filter((feat2) => feat2.system.featType === "armor"),
+      cyberware: allFeats.filter((feat2) => feat2.system.featType === "cyberware"),
       cyberdeck: cyberdeckFeats,
       vehicle: [...linkedVehicles],
       // Only linked vehicle actors (vehicle feat type retired)
-      weapon: allFeats.filter((feat) => feat.system.featType === "weapon" && !feat.system.isSpell),
+      weapon: allFeats.filter((feat2) => feat2.system.featType === "weapon" && !feat2.system.isSpell),
       spell: allFeats.filter(
-        (feat) => feat.system.featType === "spell" || feat.system.isSpell === true
+        (feat2) => feat2.system.featType === "spell" || feat2.system.isSpell === true
       ),
-      connaissance: allFeats.filter((feat) => feat.system.featType === "connaissance"),
-      power: allFeats.filter((feat) => feat.system.featType === "power"),
-      emerged: allFeats.filter((feat) => feat.system.featType === "emerged"),
-      complexForm: allFeats.filter((feat) => feat.system.featType === "complex-form")
+      connaissance: allFeats.filter((feat2) => feat2.system.featType === "connaissance"),
+      power: allFeats.filter((feat2) => feat2.system.featType === "power"),
+      emerged: allFeats.filter((feat2) => feat2.system.featType === "emerged"),
+      complexForm: allFeats.filter((feat2) => feat2.system.featType === "complex-form")
     };
     for (const key of Object.keys(context.featsByType)) {
       context.featsByType[key].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
@@ -7115,8 +7123,7 @@ class CharacterSheet extends ActorSheet {
       const cyberdeckSystem = cyberdeck.system;
       const skillSpecResult = findAttackSkillAndSpec(
         this.actor,
-        "Spé : Cybercombat",
-        // FR display name used for spec lookup
+        "spec_cybercombat",
         SKILL_SLUGS.CRACKING,
         { defaultAttribute: "willpower", lookupBySlug: true }
       );
@@ -7184,8 +7191,7 @@ class CharacterSheet extends ActorSheet {
           const weaponSystem = weapon.system;
           const skillSpecResult = findAttackSkillAndSpec(
             this.actor,
-            "Spé : Armes contrôlées à distance",
-            // FR display name
+            "spec_remote-controlled-weapons",
             SKILL_SLUGS.ENGINEERING,
             { defaultAttribute: "logic", lookupBySlug: true }
           );
@@ -7198,9 +7204,9 @@ class CharacterSheet extends ActorSheet {
           weapon.totalDicePool = poolResult.totalDicePool;
           weapon.rr = poolResult.totalRR;
           weapon.linkedAttackSkill = SKILL_SLUGS.ENGINEERING;
-          weapon.linkedAttackSpecialization = "Spé : Armes contrôlées à distance";
+          weapon.linkedAttackSpecialization = "spec_remote-controlled-weapons";
           weapon.linkedDefenseSkill = SKILL_SLUGS.ATHLETICS;
-          weapon.linkedDefenseSpecialization = "Spé : Défense à distance";
+          weapon.linkedDefenseSpecialization = "spec_ranged-defense";
           return weapon;
         });
       }
@@ -7382,9 +7388,10 @@ class CharacterSheet extends ActorSheet {
     }
     for (const skill of context.skills) {
       const linkedPhantomSpecs = phantomSpecsWithSkill.filter((phantom) => {
-        const normalizedSkillName = (phantom.linkedSkillName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const normalizedActorSkillName = skill.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        return normalizedSkillName === normalizedActorSkillName;
+        const phantomLinkedSkill = (phantom.linkedSkillName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const actorSkillSlug = (skill.system?.slug || "").toLowerCase();
+        const actorSkillName = skill.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return phantomLinkedSkill === actorSkillSlug || phantomLinkedSkill === actorSkillName;
       });
       skill.phantomSpecializations = linkedPhantomSpecs;
     }
@@ -8219,23 +8226,23 @@ class CharacterSheet extends ActorSheet {
     const button = event.currentTarget;
     const uuid = button.dataset.uuid;
     if (!uuid) return;
-    const feat = await fromUuid(uuid);
-    if (!feat) {
+    const feat2 = await fromUuid(uuid);
+    if (!feat2) {
       ui.notifications?.error(game.i18n.localize("SRA2.FEATS.NOT_FOUND"));
       return;
     }
     const existingFeat = this.actor.items.find(
-      (i) => i.type === "feat" && i.name === feat.name
+      (i) => i.type === "feat" && i.name === feat2.name
     );
     if (existingFeat) {
-      ui.notifications?.warn(game.i18n.format("SRA2.FEATS.ALREADY_EXISTS", { name: feat.name }));
+      ui.notifications?.warn(game.i18n.format("SRA2.FEATS.ALREADY_EXISTS", { name: feat2.name }));
       return;
     }
-    await this.actor.createEmbeddedDocuments("Item", [feat.toObject()]);
+    await this.actor.createEmbeddedDocuments("Item", [feat2.toObject()]);
     button.textContent = "✓";
     button.disabled = true;
     button.closest(".search-result-item")?.classList.add("disabled");
-    ui.notifications?.info(`${feat.name} ${game.i18n.localize("SRA2.FEATS.ADD_FEAT")}`);
+    ui.notifications?.info(`${feat2.name} ${game.i18n.localize("SRA2.FEATS.ADD_FEAT")}`);
   }
   /**
    * Handle feat search focus
@@ -8656,9 +8663,9 @@ class CharacterSheet extends ActorSheet {
         featName: weapon.name
       }));
       const finalAttackSkill = SKILL_SLUGS.ENGINEERING;
-      const finalAttackSpec = "Spé : Armes contrôlées à distance";
+      const finalAttackSpec = "spec_remote-controlled-weapons";
       const finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
-      const finalDefenseSpec = "Spé : Défense à distance";
+      const finalDefenseSpec = "spec_ranged-defense";
       const attackSkillSpecResult = findAttackSkillAndSpec(
         this.actor,
         finalAttackSpec,
@@ -8723,11 +8730,8 @@ class CharacterSheet extends ActorSheet {
         linkedAttackSkill: finalAttackSkill,
         // 'Ingénierie'
         linkedAttackSpecialization: finalAttackSpec,
-        // 'Spé : Armes contrôlées à distance'
         linkedDefenseSkill: finalDefenseSkill,
-        // 'Athlétisme'
         linkedDefenseSpecialization: finalDefenseSpec,
-        // 'Spé : Défense à distance'
         linkedAttribute: attackLinkedAttribute,
         // Weapon properties
         isWeaponFocus: itemSystem.isWeaponFocus || false,
@@ -8785,8 +8789,7 @@ class CharacterSheet extends ActorSheet {
     const attackValue = Math.max(0, baseAttack - attackMalus);
     const skillSpecResult = findAttackSkillAndSpec(
       this.actor,
-      "Spé : Cybercombat",
-      // FR display name used for spec lookup
+      "spec_cybercombat",
       SKILL_SLUGS.CRACKING,
       { defaultAttribute: "willpower", lookupBySlug: true }
     );
@@ -8808,11 +8811,9 @@ class CharacterSheet extends ActorSheet {
       itemActive: cyberdeckSystem.active,
       // Cybercombat uses Cracking (Cybercombat) + Volonté
       linkedAttackSkill: SKILL_SLUGS.CRACKING,
-      linkedAttackSpecialization: "Spé : Cybercombat",
-      // FR display name
+      linkedAttackSpecialization: "spec_cybercombat",
       linkedDefenseSkill: SKILL_SLUGS.CRACKING,
-      linkedDefenseSpecialization: "Spé : Cybercombat",
-      // FR display name
+      linkedDefenseSpecialization: "spec_cybercombat",
       linkedAttribute: skillSpecResult.linkedAttribute,
       // Damage value = cyberdeck attack rating
       damageValue: attackValue.toString(),
@@ -8954,7 +8955,7 @@ class CharacterSheet extends ActorSheet {
         finalDefenseSpec = "";
       } else {
         finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
-        finalDefenseSpec = "Spé : Défense à distance";
+        finalDefenseSpec = "spec_ranged-defense";
       }
     }
     const spellSpecType = isSpell ? itemSystem.spellSpecializationType || "combat" : void 0;
@@ -9239,9 +9240,19 @@ class CharacterSheetV2 extends CharacterSheet {
       // height: 800,
     });
   }
+  render(force, options) {
+    if (this._blockRender) return this;
+    return super.render(force, options);
+  }
   async getData() {
     const context = await super.getData();
     context.advancedMode = this._advancedMode;
+    try {
+      const { isGeminiConfigured: isGeminiConfigured2 } = await Promise.resolve().then(() => geminiImage);
+      context.geminiAvailable = isGeminiConfigured2();
+    } catch {
+      context.geminiAvailable = false;
+    }
     return context;
   }
   activateListeners(html) {
@@ -9254,6 +9265,24 @@ class CharacterSheetV2 extends CharacterSheet {
           event.preventDefault();
           this._onToggleAdvancedMode(event);
         }
+      }
+    });
+    html.find('[data-action="generate-gemini-portrait"]').on("click", async (ev) => {
+      ev.preventDefault();
+      const btn = $(ev.currentTarget);
+      const originalHtml = btn.html();
+      btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Generating portrait...');
+      this._blockRender = true;
+      try {
+        const { generateActorImage: generateActorImage2 } = await Promise.resolve().then(() => geminiImage);
+        await generateActorImage2(this.actor, (status) => {
+          btn.html(`<i class="fas fa-spinner fa-spin"></i> ${status}`);
+        });
+        this._blockRender = false;
+        this.render(false);
+      } catch {
+        this._blockRender = false;
+        btn.prop("disabled", false).html(originalHtml);
       }
     });
     html.find('[data-action="show-context-menu"]').on("click", this._onShowContextMenu.bind(this));
@@ -9758,7 +9787,7 @@ class VehicleSheet extends ActorSheet {
       return acc;
     }, {});
     const allFeats = this.actor.items.filter((item) => item.type === "feat");
-    const activeFeats = allFeats.filter((feat) => feat.system.active === true);
+    const activeFeats = allFeats.filter((feat2) => feat2.system.active === true);
     const vehicleStructure = this.actor.system.attributes?.structure || 0;
     const calculateWeaponStats = (item) => {
       const itemData = {
@@ -9769,8 +9798,8 @@ class VehicleSheet extends ActorSheet {
       const autopilot = this.actor.system.attributes?.autopilot || 0;
       let totalDicePool = autopilot;
       let totalRR = 0;
-      activeFeats.forEach((feat) => {
-        const rrList = feat.system.rrList || [];
+      activeFeats.forEach((feat2) => {
+        const rrList = feat2.system.rrList || [];
         rrList.forEach((rrEntry) => {
           if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
             totalRR += rrEntry.rrValue || 0;
@@ -9785,7 +9814,7 @@ class VehicleSheet extends ActorSheet {
       return itemData;
     };
     const rawWeapons = allFeats.filter(
-      (feat) => feat.system.featType === "weapon"
+      (feat2) => feat2.system.featType === "weapon"
     );
     const weapons = rawWeapons.map((weapon) => calculateWeaponStats(weapon));
     context.weapons = weapons;
@@ -12078,13 +12107,13 @@ class FeatChoiceDialog extends Dialog {
           <p class="section-hint">${game.i18n.localize("SRA2.FEATS.CHOICE_DIALOG_OPTIONAL_HINT")}</p>
           <div class="feat-list">
       `;
-      for (const feat of optionalFeats) {
-        const featTypeLabel = game.i18n.localize(`SRA2.FEATS.FEAT_TYPE.${feat.system.featType.toUpperCase().replace("-", "_")}`);
+      for (const feat2 of optionalFeats) {
+        const featTypeLabel = game.i18n.localize(`SRA2.FEATS.FEAT_TYPE.${feat2.system.featType.toUpperCase().replace("-", "_")}`);
         html += `
-          <div class="feat-choice-item" data-feat-id="${feat._id}">
+          <div class="feat-choice-item" data-feat-id="${feat2._id}">
             <label class="feat-toggle">
-              <input type="checkbox" name="optional-feat" value="${feat._id}" />
-              <span class="feat-name">${feat.name}</span>
+              <input type="checkbox" name="optional-feat" value="${feat2._id}" />
+              <span class="feat-name">${feat2.name}</span>
               <span class="feat-type">${featTypeLabel}</span>
             </label>
           </div>
@@ -12106,13 +12135,13 @@ class FeatChoiceDialog extends Dialog {
           </p>
           <div class="feat-list">
       `;
-      for (const feat of choiceFeats) {
-        const featTypeLabel = game.i18n.localize(`SRA2.FEATS.FEAT_TYPE.${feat.system.featType.toUpperCase().replace("-", "_")}`);
+      for (const feat2 of choiceFeats) {
+        const featTypeLabel = game.i18n.localize(`SRA2.FEATS.FEAT_TYPE.${feat2.system.featType.toUpperCase().replace("-", "_")}`);
         html += `
-          <div class="feat-choice-item" data-feat-id="${feat._id}">
+          <div class="feat-choice-item" data-feat-id="${feat2._id}">
             <label class="feat-toggle">
-              <input type="checkbox" name="choice-feat" value="${feat._id}" />
-              <span class="feat-name">${feat.name}</span>
+              <input type="checkbox" name="choice-feat" value="${feat2._id}" />
+              <span class="feat-name">${feat2.name}</span>
               <span class="feat-type">${featTypeLabel}</span>
             </label>
           </div>
@@ -12389,6 +12418,4781 @@ class AnarchyCounter extends Application {
     return super.close(options);
   }
 }
+const METATYPES = {
+  human: {
+    maxes: { strength: 4, agility: 4, willpower: 4, logic: 4, charisma: 4 },
+    anarchyBonus: 1,
+    nameFr: "Humain",
+    nameEn: "Human",
+    img: "systems/sra2/actors/generic_tokens/metatypes/Human.webp"
+  },
+  elf: {
+    maxes: { strength: 4, agility: 4, willpower: 4, logic: 4, charisma: 5 },
+    anarchyBonus: 0,
+    nameFr: "Elfe",
+    nameEn: "Elf",
+    img: "systems/sra2/actors/generic_tokens/metatypes/Elf.webp"
+  },
+  dwarf: {
+    maxes: { strength: 4, agility: 4, willpower: 5, logic: 4, charisma: 4 },
+    anarchyBonus: 0,
+    nameFr: "Nain",
+    nameEn: "Dwarf",
+    img: "systems/sra2/actors/generic_tokens/metatypes/Dwarf.webp"
+  },
+  ork: {
+    maxes: { strength: 5, agility: 4, willpower: 4, logic: 4, charisma: 4 },
+    anarchyBonus: 0,
+    nameFr: "Ork",
+    nameEn: "Ork",
+    img: "systems/sra2/actors/generic_tokens/metatypes/Ork.webp"
+  },
+  troll: {
+    maxes: { strength: 6, agility: 4, willpower: 4, logic: 4, charisma: 4 },
+    anarchyBonus: 0,
+    nameFr: "Troll",
+    nameEn: "Troll",
+    img: "systems/sra2/actors/generic_tokens/metatypes/Troll.webp"
+  }
+};
+const POWER_LEVELS = {
+  ganger: { budget: 3e5, maxedAttributes: 0, skillMax: 4, labelFr: "Ganger", labelEn: "Ganger" },
+  runner: { budget: 375e3, maxedAttributes: 1, skillMax: 5, labelFr: "Runner", labelEn: "Runner" },
+  elite: { budget: 45e4, maxedAttributes: 2, skillMax: 6, labelFr: "Runner d'élite", labelEn: "Elite Runner" }
+};
+const FIRST_NAMES = {
+  male: {
+    anglo: ["Jack", "Marcus", "Dante", "Zeke", "Raven", "Nate", "Colt", "Dean", "Wade", "Blake", "Troy", "Reed", "Knox", "Finn", "Axel"],
+    japanese: ["Goro", "Kenji", "Ryu", "Takeshi", "Daichi", "Shin", "Hiro", "Yuto", "Kaito", "Ren", "Sora", "Akira", "Koji", "Tetsu", "Masa"],
+    french: ["Lucas", "Antoine", "Yannick", "Bastien", "Romain", "Thierry", "Julien", "Maxime", "Loïc", "Rémi", "Gaël", "Hugo", "Enzo", "Léo", "Adrien"],
+    hispanic: ["Hector", "Miguel", "Carlos", "Diego", "Alejandro", "Rafael", "Mateo", "Javier", "Emilio", "Luis", "Pablo", "Tomás", "Félix", "Ramón", "Sergio"],
+    germanic: ["Gregor", "Klaus", "Erik", "Dieter", "Hans", "Konrad", "Lukas", "Werner", "Fritz", "Johann", "Markus", "Otto", "Ralf", "Stefan", "Viktor"],
+    slavic: ["Ivan", "Dmitri", "Nikolai", "Boris", "Aleksei", "Yuri", "Pavel", "Oleg", "Sergei", "Andrei", "Maxim", "Artem", "Viktor", "Roman", "Lev"],
+    mixed: ["Neo", "Kai", "Ash", "Phoenix", "Zion", "Lex", "Jax", "Blaze", "Storm", "Onyx", "Chrome", "Volt", "Cipher", "Zero", "Nova"]
+  },
+  female: {
+    anglo: ["Sarah", "Maya", "Jade", "Kira", "Raven", "Quinn", "Sloane", "Briar", "Harper", "Wren", "Sage", "Ember", "Thea", "Blair", "Nyx"],
+    japanese: ["Yuki", "Sakura", "Hana", "Mei", "Aiko", "Rin", "Suki", "Miko", "Nori", "Kana", "Yumi", "Rei", "Asuka", "Midori", "Chiyo"],
+    french: ["Solène", "Amélie", "Élodie", "Manon", "Léa", "Inès", "Camille", "Noémie", "Chloé", "Anaïs", "Lise", "Agathe", "Clara", "Zoé", "Margot"],
+    hispanic: ["Elena", "Carmen", "Lucia", "Rosa", "Valentina", "Marisol", "Alma", "Paloma", "Dolores", "Luz", "Ximena", "Pilar", "Beatriz", "Nuria", "Lola"],
+    germanic: ["Greta", "Ingrid", "Heidi", "Katrin", "Lena", "Hilde", "Frieda", "Elke", "Maren", "Anke", "Petra", "Brigitte", "Ilse", "Ute", "Sigrid"],
+    slavic: ["Nadia", "Tanya", "Irina", "Katya", "Mila", "Anya", "Daria", "Svetlana", "Olga", "Vera", "Lena", "Zoya", "Nika", "Polina", "Alina"],
+    mixed: ["Nyx", "Vex", "Pixel", "Flux", "Echo", "Sable", "Jinx", "Lyra", "Vesper", "Zara", "Aria", "Luna", "Io", "Pris", "Cass"]
+  },
+  neutral: {
+    anglo: ["Morgan", "Riley", "Jordan", "Casey", "Avery", "Dakota", "Skyler", "Taylor", "Quinn", "Drew", "Sage", "Rowan", "Ellis", "Reese", "Lane"],
+    japanese: ["Sora", "Ren", "Akira", "Kaoru", "Hikari", "Nao", "Haruka", "Yuu", "Makoto", "Izumi", "Shinobu", "Tsubasa", "Aoi", "Rui", "Kei"],
+    french: ["Camille", "Dominique", "Claude", "Sacha", "Maxime", "Alix", "Lou", "Eden", "Noa", "Eliott", "Charlie", "Louison", "Ange", "Maé", "Yael"],
+    hispanic: ["Cruz", "Rio", "Sol", "Mar", "Ari", "Paz", "Eden", "Lux", "Val", "Alex", "Dana", "Sky", "Jade", "Angel", "Kim"],
+    germanic: ["Kim", "Alex", "Robin", "Sam", "Toni", "Kai", "Nikola", "Sascha", "Jo", "Fran", "Mika", "Lorin", "Remi", "Val", "Noel"],
+    slavic: ["Sasha", "Zhenya", "Valya", "Slava", "Nikita", "Misha", "Yura", "Lyonya", "Vanya", "Dima", "Fedya", "Kolya", "Grisha", "Lyuba", "Borya"],
+    mixed: ["Null", "Glitch", "Circuit", "Pulse", "Neon", "Binary", "Vector", "Index", "Cache", "Rune", "Spark", "Drift", "Shade", "Hex", "Arc"]
+  }
+};
+const LAST_NAMES = {
+  anglo: ["Smith", "Voss", "Cross", "Kane", "Black", "Stone", "Drake", "Wolfe", "Steel", "Hart", "Price", "Frost", "Blake", "Ward", "Cole", "Marsh", "Thorn", "Rush"],
+  japanese: ["Tetsuhashi", "Nakamura", "Tanaka", "Ishikawa", "Watanabe", "Kurosawa", "Hasegawa", "Okamura", "Fujimoto", "Hayashi", "Kimura", "Mori", "Sakai", "Ito", "Ogawa", "Kato", "Ueda", "Nishida"],
+  french: ["Dupont", "Moreau", "Lefèvre", "Laurent", "Girard", "Mercier", "Deschamps", "Bertrand", "Rousseau", "Chevalier", "Gauthier", "Faure", "Leroy", "Perrin", "Blanc", "Renard", "Delacroix", "Marchand"],
+  hispanic: ["Bazaldua", "Reyes", "Torres", "Guerrero", "Santos", "Vega", "Rios", "Fuentes", "Aguilar", "Salazar", "Mendoza", "Herrera", "Castillo", "Vargas", "Morales", "Padilla", "Cortez", "Suárez"],
+  germanic: ["Kessler", "Müller", "Weber", "Brandt", "Richter", "Krüger", "Lehmann", "Schreiber", "Vogel", "Braun", "Hoffman", "Fischer", "Schwarz", "Koenig", "Bauer", "Zimmerman", "Beck", "Engel"],
+  slavic: ["Petrov", "Volkov", "Kozlov", "Sokolov", "Morozov", "Novak", "Ivanov", "Kuznetsov", "Orlov", "Popov", "Baranov", "Koval", "Belova", "Zima", "Kalinin", "Malek", "Reznik", "Dragunov"],
+  mixed: ["Chrome", "Null", "Vector", "Crash", "Static", "Synth", "Flux", "Grid", "Link", "Node", "Parse", "Shard", "Trace", "Wire", "Byte", "Forge", "Nexus", "Vex"]
+};
+const STREET_NAMES = {
+  combat: [
+    "Razor",
+    "Bullet",
+    "Shrapnel",
+    "Havoc",
+    "Frag",
+    "Slash",
+    "Trigger",
+    "Impact",
+    "Blitz",
+    "Carnage",
+    "Hammer",
+    "Brawl",
+    "Gash",
+    "Gore",
+    "Skull",
+    "Viper",
+    "Titan",
+    "Reaper",
+    "Fury",
+    "Cleaver",
+    "Overkill",
+    "Tank",
+    "Ironside",
+    "Caliber",
+    "Wrecker",
+    "Brutus",
+    "Splinter",
+    "Scalpel",
+    "Raptor",
+    "Guillotine"
+  ],
+  tech: [
+    "Glitch",
+    "Proxy",
+    "Cache",
+    "Daemon",
+    "Pixel",
+    "Static",
+    "Reboot",
+    "Compile",
+    "Backdoor",
+    "Firewall",
+    "Packet",
+    "Socket",
+    "Buffer",
+    "Kernel",
+    "Root",
+    "Exploit",
+    "Trojan",
+    "Worm",
+    "Cipher",
+    "Codec",
+    "Debug",
+    "Parse",
+    "Ping",
+    "Overflow",
+    "Virus",
+    "Botnet",
+    "Phreaker",
+    "Bit",
+    "Crash",
+    "Datajack"
+  ],
+  magic: [
+    "Nocturne",
+    "Eclipse",
+    "Rune",
+    "Hex",
+    "Ombre",
+    "Arcane",
+    "Cendres",
+    "Spectre",
+    "Shaman",
+    "Totem",
+    "Mana",
+    "Grimoire",
+    "Vortex",
+    "Phantasm",
+    "Oracle",
+    "Mystic",
+    "Wraith",
+    "Sigil",
+    "Incantation",
+    "Eldritch",
+    "Cairn",
+    "Nexus",
+    "Astral",
+    "Vesper",
+    "Ouija",
+    "Salem",
+    "Mirage",
+    "Requiem",
+    "Sorcier",
+    "Augure"
+  ],
+  social: [
+    "Silk",
+    "Velvet",
+    "Masque",
+    "Charme",
+    "Miroir",
+    "Diva",
+    "Poker",
+    "Riddle",
+    "Satin",
+    "Charade",
+    "Vogue",
+    "Ruse",
+    "Prestige",
+    "Facade",
+    "Eloquence",
+    "Panache",
+    "Bluff",
+    "Aura",
+    "Dazzle",
+    "Illusion",
+    "Mirage",
+    "Gala",
+    "Mystique",
+    "Narcisse",
+    "Verve",
+    "Finesse",
+    "Suave",
+    "Leurre",
+    "Caméléon",
+    "Joker"
+  ],
+  stealth: [
+    "Shadow",
+    "Ghost",
+    "Whisper",
+    "Fade",
+    "Smoke",
+    "Cipher",
+    "Blank",
+    "Mist",
+    "Silence",
+    "Phantom",
+    "Specter",
+    "Void",
+    "Haze",
+    "Mirage",
+    "Ninja",
+    "Wraith",
+    "Shade",
+    "Fog",
+    "Dusk",
+    "Twilight",
+    "Ether",
+    "Eclipse",
+    "Hollow",
+    "Nimble",
+    "Wisp",
+    "Vanish",
+    "Stealth",
+    "Unseen",
+    "Nightcrawler",
+    "Penumbra"
+  ],
+  vehicle: [
+    "Turbo",
+    "Nitro",
+    "Drift",
+    "Axle",
+    "Piston",
+    "Gearbox",
+    "Chrome",
+    "Throttle",
+    "Burnout",
+    "Rpm",
+    "Mach",
+    "Rally",
+    "Clutch",
+    "Torque",
+    "Cruise",
+    "Hotrod",
+    "Skid",
+    "Roadkill",
+    "Exhaust",
+    "Diesel",
+    "Octane",
+    "Chassis",
+    "Overdrive",
+    "Tarmac",
+    "Airbag",
+    "Ramjet",
+    "Propeller",
+    "Hubcap",
+    "Drifter",
+    "V8"
+  ],
+  general: [
+    "Barista",
+    "Cookie",
+    "Pinata",
+    "Domino",
+    "Boomer",
+    "Zippo",
+    "Lucky",
+    "Twitch",
+    "Patches",
+    "Bones",
+    "Spike",
+    "Gizmo",
+    "Rascal",
+    "Bandit",
+    "Ace",
+    "Flash",
+    "Nails",
+    "Sparky",
+    "Chaos",
+    "Maverick",
+    "Vendetta",
+    "Karma",
+    "Gambit",
+    "Jinx",
+    "Voodoo",
+    "Rascal",
+    "Rebel",
+    "Outlaw",
+    "Coyote",
+    "Scarecrow"
+  ]
+};
+const KEYWORDS_BY_CATEGORY = {
+  metatype_status: [
+    "Troll des rues",
+    "Corpo elfe déchu",
+    "Ouvrier ork",
+    "Nain de banlieue",
+    "Humain lambda",
+    "Elfe aristocrate en fuite",
+    "Ork du Barrens",
+    "Troll de cirque",
+    "Nain montagnard",
+    "Métahumain discriminé",
+    "Gamine des rues",
+    "Vétéran de gang",
+    "Ex-prisonnier",
+    "Orphelin des Ombres",
+    "Réfugié corporatiste",
+    "Exilé politique"
+  ],
+  origin: [
+    "Barrens de Seattle",
+    "Quartier corpo",
+    "Nomade",
+    "Plex de Hong Kong",
+    "Berlin libre",
+    "Favelas de São Paulo",
+    "Tour corpo de Neo-Tokyo",
+    "Tír na nÓg",
+    "Ork Underground",
+    "Caraïbes libres",
+    "Paris intra-muros",
+    "Moscou glaciale",
+    "Lagos surpeuplée",
+    "Plex de Chicago",
+    "Pueblo Corporate Council",
+    "Hambourg portuaire"
+  ],
+  role: [
+    "Samouraï chromé",
+    "Chaman urbain",
+    "Decker freelance",
+    "Mercenaire endurci",
+    "Infiltrateur discret",
+    "Face manipulateur",
+    "Rigger de drones",
+    "Adepte mystique",
+    "Rat de laboratoire",
+    "Pilleur de données",
+    "Garde du corps",
+    "Coursier des Ombres",
+    "Fixeur débutant",
+    "Médecin de rue",
+    "Ex-agent corpo",
+    "Contrebandier"
+  ],
+  lifestyle: [
+    "Squatter",
+    "Bas de gamme",
+    "Moyen",
+    "Confortable",
+    "Luxe",
+    "En cavale",
+    "Nomade",
+    "Colocataire",
+    "Planqué",
+    "SDF high-tech",
+    "Vit dans son van",
+    "Sous-locataire illégal",
+    "Hôtel miteux",
+    "Coffin motel",
+    "Entrepôt aménagé",
+    "Squat collectif"
+  ],
+  free: [
+    "Ancien militaire",
+    "Collectionneur obsessionnel",
+    "Paranoïaque chronique",
+    "Accro au soykaf",
+    "Cinéphile du XXe siècle",
+    "Fan de combat de drones",
+    "Artiste frustré",
+    "Joueur compulsif",
+    "Accro aux BTL",
+    "Cuisinier amateur",
+    "Mécanicien passionné",
+    "Lecteur de tarot",
+    "Sportif du dimanche",
+    "Hacker éthique",
+    "Conspiracy theorist",
+    "Amoureux des chats"
+  ]
+};
+const BEHAVIORS = [
+  // Strengths
+  "Protège les innocents même quand ça compromet la mission",
+  "Toujours loyal envers son équipe, ne laisse jamais quelqu'un derrière",
+  "Planifie méticuleusement chaque étape avant d'agir",
+  "Garde son sang-froid en toutes circonstances",
+  "Partage toujours la paye équitablement",
+  "Refuse de tuer des non-combattants",
+  "Respecte toujours sa parole, même envers un ennemi",
+  "Prend le temps d'analyser la situation avant de dégainer",
+  "Aide les autres runners en galère, même sans contrepartie",
+  "Vérifie toujours les sorties de secours en entrant quelque part",
+  "Se méfie des corpos mais reste professionnel avec les Johnsons",
+  "Fait confiance à son instinct, et il a rarement tort",
+  "Calme les tensions dans le groupe avec humour",
+  "Maintient son équipement en parfait état",
+  "Connaît tout le monde dans le quartier, et tout le monde le connaît",
+  // Weaknesses
+  "Refuse de se battre avant d'avoir bu son soykaf du matin",
+  "Ne peut pas résister à un pari, même stupide",
+  "Devient violent quand on l'insulte ou qu'on insulte son métatype",
+  "Parle trop et révèle parfois des infos sensibles",
+  "Dépense tout son fric en gadgets inutiles",
+  "A un faible pour les causes perdues",
+  "Refuse d'utiliser la technologie quand la magie peut faire l'affaire",
+  "Se vante de ses exploits au pire moment",
+  "Est incapable de mentir de façon convaincante",
+  "Panique quand le plan change en pleine action",
+  "Fait confiance trop facilement aux inconnus",
+  "Se dispute avec les esprits/IAs/drones qu'il contrôle",
+  "Kleptomane — pique des trucs sans s'en rendre compte",
+  "Obsédé par un rival qu'il veut surpasser",
+  "Dort très mal et compense avec des stimulants",
+  // Ambivalent
+  "Cite des proverbes obscurs en plein combat",
+  "Nomme toutes ses armes et leur parle",
+  "Collectionne les trophées de ses runs",
+  "Écoute de la musique classique pendant les fusillades",
+  "Dessine des croquis des gens qu'il rencontre",
+  "Tient un journal intime chiffré de tous ses runs",
+  "Médite 10 minutes avant chaque run, même si l'équipe s'impatiente",
+  "Surnomme tout le monde avec des noms ridicules",
+  "Porte bonheur : a un objet fétiche qu'il ne quitte jamais",
+  "Cuisine pour l'équipe avant chaque mission"
+];
+const CATCHPHRASES = [
+  "C'est pas personnel. Enfin, un peu quand même.",
+  "On m'a dit que c'était facile. On m'a menti.",
+  "Si tu peux pas les payer, tu peux pas les tuer.",
+  "J'ai un plan. Bon, c'est pas un bon plan, mais c'est un plan.",
+  "Pas de problème qu'un bon vieux flingue peut pas résoudre.",
+  "Chaque cicatrice a une histoire. Celle-là, c'est une longue histoire.",
+  "On va tous mourir un jour. Aujourd'hui c'est pas ton jour... enfin, normalement.",
+  "Bienvenue dans les Ombres, omae. Tâche de pas y rester.",
+  "Le plan était parfait. C'est la réalité qui a merdé.",
+  "J'ai jamais dit que c'était une bonne idée. J'ai dit que c'était MON idée.",
+  "Quand la magie te pète entre les doigts, y'a plus qu'à courir.",
+  "Deux règles : on ne touche pas aux enfants, et on me paye d'avance.",
+  "C'est quoi le pire qui puisse arriver ? Non, me réponds pas.",
+  "Je suis pas cher. Par contre, je suis pas fiable non plus.",
+  "Dans les Ombres, la paranoïa, c'est juste du bon sens.",
+  "Chummer, t'as une tête de quelqu'un qui va me causer des problèmes.",
+  "Tu veux du professionnel ou du pas cher ? Tu peux pas avoir les deux.",
+  "Si t'entends pas le bruit de mes pas, c'est que t'es déjà mort.",
+  "La Matrice, c'est comme la vraie vie. En plus dangereux.",
+  "Les esprits m'aiment bien. C'est les gens, le problème.",
+  "Omae, quand je dis que c'est réglé, c'est réglé. Ou presque.",
+  "Fait gaffe, la dernière personne qui m'a sous-estimé est... indisponible.",
+  "La magie c'est beau. Jusqu'à ce que ça te crâme les neurones.",
+  "On m'appelle pas comme ça pour rien. Enfin si, un peu pour rien.",
+  "Je suis un professionnel. Je rate mes cibles de façon très organisée.",
+  "La discrétion c'est mon truc. BOUM. Euh... oublie.",
+  "J'ai connu pire. Non, en fait, non, j'ai jamais connu pire.",
+  "Tu sens cette odeur ? C'est l'odeur des nuyens.",
+  "Un jour je prendrai ma retraite. Mais pas aujourd'hui.",
+  "Les rues de Seattle m'ont tout appris. Surtout à courir vite.",
+  "Hé, personne m'a prévenu qu'il y aurait un dragon.",
+  "Fais-moi confiance, je suis presque un professionnel.",
+  "Je travaille pas gratuitement. Sauf si c'est personnel.",
+  "On dit que le chrome rend froid. C'est faux, j'ai juste la clim intégrée.",
+  "Trois secondes. C'est tout ce dont j'ai besoin.",
+  "Le Sixième Monde est pourri. Mais c'est chez nous.",
+  "Si je te fais un prix, c'est que t'as un truc que je veux.",
+  "Les Johnsons mentent. C'est dans leur contrat.",
+  "Un jour sans fusillade, c'est un jour perdu.",
+  "Mes implants valent plus cher que ton appart. Et ils sont plus fiables."
+];
+const KEYWORDS_BY_CATEGORY_EN = {
+  metatype_status: [
+    "Street troll",
+    "Fallen corpo elf",
+    "Ork laborer",
+    "Suburban dwarf",
+    "Average human",
+    "Aristocrat elf on the run",
+    "Barrens ork",
+    "Circus troll",
+    "Mountain dwarf",
+    "Discriminated metahuman",
+    "Street kid",
+    "Gang veteran",
+    "Ex-convict",
+    "Shadow orphan",
+    "Corporate refugee",
+    "Political exile"
+  ],
+  origin: [
+    "Seattle Barrens",
+    "Corporate district",
+    "Nomad",
+    "Hong Kong Plex",
+    "Free Berlin",
+    "São Paulo Favelas",
+    "Neo-Tokyo corpo tower",
+    "Tír na nÓg",
+    "Ork Underground",
+    "Free Caribbean",
+    "Inner Paris",
+    "Frozen Moscow",
+    "Overcrowded Lagos",
+    "Chicago Plex",
+    "Pueblo Corporate Council",
+    "Hamburg docks"
+  ],
+  role: [
+    "Chromed samurai",
+    "Urban shaman",
+    "Freelance decker",
+    "Hardened mercenary",
+    "Discreet infiltrator",
+    "Manipulative face",
+    "Drone rigger",
+    "Mystic adept",
+    "Lab rat",
+    "Data thief",
+    "Bodyguard",
+    "Shadow courier",
+    "Junior fixer",
+    "Street doctor",
+    "Ex-corpo agent",
+    "Smuggler"
+  ],
+  lifestyle: [
+    "Squatter",
+    "Low",
+    "Medium",
+    "Comfortable",
+    "Luxury",
+    "On the run",
+    "Nomad",
+    "Roommate",
+    "In hiding",
+    "High-tech homeless",
+    "Lives in a van",
+    "Illegal subtenant",
+    "Seedy hotel",
+    "Coffin motel",
+    "Converted warehouse",
+    "Collective squat"
+  ],
+  free: [
+    "Former military",
+    "Obsessive collector",
+    "Chronic paranoid",
+    "Soykaf addict",
+    "20th century movie buff",
+    "Drone fighting fan",
+    "Frustrated artist",
+    "Compulsive gambler",
+    "BTL addict",
+    "Amateur cook",
+    "Passionate mechanic",
+    "Tarot reader",
+    "Weekend athlete",
+    "Ethical hacker",
+    "Conspiracy theorist",
+    "Cat lover"
+  ]
+};
+const BEHAVIORS_EN = [
+  "Protects innocents even when it compromises the mission",
+  "Always loyal to the team, never leaves anyone behind",
+  "Meticulously plans every step before acting",
+  "Keeps cool under all circumstances",
+  "Always splits the pay fairly",
+  "Refuses to kill non-combatants",
+  "Always keeps their word, even to an enemy",
+  "Takes time to analyze the situation before drawing",
+  "Helps other runners in trouble, even without compensation",
+  "Always checks emergency exits when entering a place",
+  "Distrusts corpos but stays professional with Johnsons",
+  "Trusts their gut, and they are rarely wrong",
+  "Defuses group tensions with humor",
+  "Keeps their gear in perfect condition",
+  "Knows everyone in the neighborhood, and everyone knows them",
+  "Refuses to fight before having their morning soykaf",
+  "Cannot resist a bet, even a stupid one",
+  "Becomes violent when insulted or when their metatype is insulted",
+  "Talks too much and sometimes reveals sensitive info",
+  "Spends all their money on useless gadgets",
+  "Has a soft spot for lost causes",
+  "Refuses to use technology when magic can do the job",
+  "Brags about exploits at the worst moment",
+  "Is incapable of lying convincingly",
+  "Panics when the plan changes mid-action",
+  "Trusts strangers too easily",
+  "Argues with the spirits/AIs/drones they control",
+  "Kleptomaniac — steals things without realizing it",
+  "Obsessed with a rival they want to surpass",
+  "Sleeps very badly and compensates with stimulants",
+  "Quotes obscure proverbs in the middle of combat",
+  "Names all their weapons and talks to them",
+  "Collects trophies from their runs",
+  "Listens to classical music during firefights",
+  "Draws sketches of people they meet",
+  "Keeps an encrypted diary of all their runs",
+  "Meditates 10 minutes before each run, even if the team gets impatient",
+  "Gives everyone ridiculous nicknames",
+  "Lucky charm: has a fetish object they never leave behind",
+  "Cooks for the team before every mission"
+];
+const CATCHPHRASES_EN = [
+  "It's not personal. Well, maybe a little.",
+  "They told me it would be easy. They lied.",
+  "If you can't pay 'em, you can't kill 'em.",
+  "I have a plan. It's not a good plan, but it's a plan.",
+  "No problem a good old gun can't solve.",
+  "Every scar has a story. That one's a long story.",
+  "We're all gonna die someday. Today's not your day... probably.",
+  "Welcome to the Shadows, omae. Try not to stay.",
+  "The plan was perfect. Reality screwed up.",
+  "I never said it was a good idea. I said it was MY idea.",
+  "When magic blows up in your face, all you can do is run.",
+  "Two rules: no kids, and I get paid upfront.",
+  "What's the worst that could happen? No, don't answer that.",
+  "I'm not expensive. Then again, I'm not reliable either.",
+  "In the Shadows, paranoia is just common sense.",
+  "Chummer, you look like someone who's gonna cause me trouble.",
+  "You want professional or cheap? You can't have both.",
+  "If you can't hear my footsteps, you're already dead.",
+  "The Matrix is like real life. Only more dangerous.",
+  "Spirits like me. People are the problem.",
+  "Omae, when I say it's handled, it's handled. Mostly.",
+  "Careful, the last person who underestimated me is... unavailable.",
+  "Magic is beautiful. Until it fries your brain.",
+  "They don't call me that for nothing. Well, kinda for nothing.",
+  "I'm a professional. I miss my targets in a very organized way.",
+  "Stealth is my thing. BOOM. Uh... forget that.",
+  "I've seen worse. No, actually, I haven't.",
+  "You smell that? That's the smell of nuyen.",
+  "One day I'll retire. But not today.",
+  "The streets of Seattle taught me everything. Especially how to run fast.",
+  "Hey, nobody told me there would be a dragon.",
+  "Trust me, I'm almost a professional.",
+  "I don't work for free. Unless it's personal.",
+  "They say chrome makes you cold. Not true, I just have built-in AC.",
+  "Three seconds. That's all I need.",
+  "The Sixth World is rotten. But it's home.",
+  "If I'm giving you a deal, it's because you have something I want.",
+  "Johnsons lie. It's in their contract.",
+  "A day without a shootout is a wasted day.",
+  "My implants are worth more than your apartment. And they're more reliable."
+];
+const SKILL_DEFINITIONS = {
+  "close-combat": { nameFr: "Combat rapproché", linkedAttribute: "agility" },
+  "ranged-weapons": { nameFr: "Armes à distance", linkedAttribute: "agility" },
+  "athletics": { nameFr: "Athlétisme", linkedAttribute: "strength" },
+  "stealth": { nameFr: "Furtivité", linkedAttribute: "agility" },
+  "cracking": { nameFr: "Piratage", linkedAttribute: "logic" },
+  "engineering": { nameFr: "Ingénierie", linkedAttribute: "logic" },
+  "electronics": { nameFr: "Électronique", linkedAttribute: "logic" },
+  "piloting": { nameFr: "Pilotage", linkedAttribute: "agility" },
+  "sorcery": { nameFr: "Sorcellerie", linkedAttribute: "willpower" },
+  "conjuration": { nameFr: "Conjuration", linkedAttribute: "willpower" },
+  "technomancer": { nameFr: "Technomancie", linkedAttribute: "logic" },
+  "influence": { nameFr: "Influence", linkedAttribute: "charisma" },
+  "perception": { nameFr: "Perception", linkedAttribute: "willpower" },
+  "survival": { nameFr: "Survie", linkedAttribute: "willpower" },
+  "networking": { nameFr: "Réseau", linkedAttribute: "charisma" },
+  "astral-combat": { nameFr: "Combat astral", linkedAttribute: "willpower" }
+};
+const SPEC_DEFINITIONS = {
+  "spec_blades": { nameFr: "Spé : Lames", linkedSkill: "close-combat", linkedAttribute: "agility" },
+  "spec_unarmed": { nameFr: "Spé : Mains nues", linkedSkill: "close-combat", linkedAttribute: "agility" },
+  "spec_blunt-weapons": { nameFr: "Spé : Armes contondantes", linkedSkill: "close-combat", linkedAttribute: "agility" },
+  "spec_monofilament": { nameFr: "Spé : monofilament", linkedSkill: "close-combat", linkedAttribute: "agility" },
+  "spec_defense": { nameFr: "Spé : Défense", linkedSkill: "close-combat", linkedAttribute: "agility" },
+  "spec_pistols": { nameFr: "Spé : Pistolets", linkedSkill: "ranged-weapons", linkedAttribute: "agility" },
+  "spec_rifles": { nameFr: "Spé : Fusils", linkedSkill: "ranged-weapons", linkedAttribute: "agility" },
+  "spec_shotguns": { nameFr: "Spé : Shotguns", linkedSkill: "ranged-weapons", linkedAttribute: "agility" },
+  "spec_smgs": { nameFr: "Spé : Mitraillettes", linkedSkill: "ranged-weapons", linkedAttribute: "agility" },
+  "spec_heavy-weapons": { nameFr: "Spé : Armes lourdes", linkedSkill: "ranged-weapons", linkedAttribute: "agility" },
+  "spec_thrown-weapons": { nameFr: "Spé : Armes de jet", linkedSkill: "ranged-weapons", linkedAttribute: "agility" },
+  "spec_ranged-defense": { nameFr: "Spé : Défense à distance", linkedSkill: "athletics", linkedAttribute: "strength" },
+  "spec_running": { nameFr: "Spé : Course", linkedSkill: "athletics", linkedAttribute: "strength" },
+  "spec_climbing": { nameFr: "Spé : Escalade", linkedSkill: "athletics", linkedAttribute: "strength" },
+  "spec_physical-stealth": { nameFr: "Spé : Discrétion Physique", linkedSkill: "stealth", linkedAttribute: "agility" },
+  "spec_matrix-stealth": { nameFr: "Spé : Discrétion matricielle", linkedSkill: "stealth", linkedAttribute: "agility" },
+  "spec_lockpicking": { nameFr: "Spé : Crochetage", linkedSkill: "stealth", linkedAttribute: "agility" },
+  "spec_backdoor": { nameFr: "Spé : Backdoor", linkedSkill: "cracking", linkedAttribute: "logic" },
+  "spec_brute-force": { nameFr: "Spé : Force brute", linkedSkill: "cracking", linkedAttribute: "logic" },
+  "spec_complex-forms": { nameFr: "Spé : Cybercombat", linkedSkill: "cracking", linkedAttribute: "logic" },
+  "spec_electronic-warfare": { nameFr: "Spé : Guerre électronique", linkedSkill: "cracking", linkedAttribute: "logic" },
+  "spec_cybernetics": { nameFr: "Spé : C/R implants cybernétiques", linkedSkill: "engineering", linkedAttribute: "logic" },
+  "spec_cr-drones": { nameFr: "Spé : C/R drones", linkedSkill: "engineering", linkedAttribute: "logic" },
+  "spec_cr-vehicles": { nameFr: "Spé : C/R véhicules", linkedSkill: "engineering", linkedAttribute: "logic" },
+  "spec_explosives": { nameFr: "Spé : Explosifs", linkedSkill: "engineering", linkedAttribute: "logic" },
+  "spec_personal-devices": { nameFr: "Spé : Appareils personnels", linkedSkill: "electronics", linkedAttribute: "logic" },
+  "spec_matrix-search": { nameFr: "Spé : Recherche matricielle", linkedSkill: "electronics", linkedAttribute: "logic" },
+  "spec_matrix-perception": { nameFr: "Spé : Perception matricielle", linkedSkill: "electronics", linkedAttribute: "logic" },
+  "spec_matrix-protection": { nameFr: "Spé : Protection matricielle", linkedSkill: "electronics", linkedAttribute: "logic" },
+  "spec_cars": { nameFr: "Spé : Voitures", linkedSkill: "piloting", linkedAttribute: "agility" },
+  "spec_bikes": { nameFr: "Spé : Motos", linkedSkill: "piloting", linkedAttribute: "agility" },
+  "spec_ground-drones": { nameFr: "Spé : Drones terrestres", linkedSkill: "piloting", linkedAttribute: "agility" },
+  "spec_flying-drones": { nameFr: "Spé : Drones volants", linkedSkill: "piloting", linkedAttribute: "agility" },
+  "spec_combat-spells": { nameFr: "Spé : Sorts de combat", linkedSkill: "sorcery", linkedAttribute: "willpower" },
+  "spec_detection-spells": { nameFr: "Spé : Sorts de détection", linkedSkill: "sorcery", linkedAttribute: "willpower" },
+  "spec_health-spells": { nameFr: "Spé : Sorts de santé", linkedSkill: "sorcery", linkedAttribute: "willpower" },
+  "spec_illusion-spells": { nameFr: "Spé : Sorts d'illusion", linkedSkill: "sorcery", linkedAttribute: "willpower" },
+  "spec_manipulation-spells": { nameFr: "Spé : Sorts de manipulation", linkedSkill: "sorcery", linkedAttribute: "willpower" },
+  "spec_counterspelling": { nameFr: "Spé : Contresort", linkedSkill: "sorcery", linkedAttribute: "willpower" },
+  "spec_banishing": { nameFr: "Spé : Bannissement", linkedSkill: "conjuration", linkedAttribute: "willpower" },
+  "spec_air-spirits": { nameFr: "Spé : Esprits de l'air", linkedSkill: "conjuration", linkedAttribute: "willpower" },
+  "spec_earth-spirits": { nameFr: "Spé : Esprits de la terre", linkedSkill: "conjuration", linkedAttribute: "willpower" },
+  "spec_fire-spirits": { nameFr: "Spé : Esprits du feu", linkedSkill: "conjuration", linkedAttribute: "willpower" },
+  "spec_water-spirits": { nameFr: "Spé : Esprits de l'eau", linkedSkill: "conjuration", linkedAttribute: "willpower" },
+  "spec_beast-spirits": { nameFr: "Spé : Esprits des bêtes", linkedSkill: "conjuration", linkedAttribute: "willpower" },
+  "spec_compilation": { nameFr: "Spé : Compilation", linkedSkill: "technomancer", linkedAttribute: "logic" },
+  "spec_decompilation": { nameFr: "Spé : Décompilation", linkedSkill: "technomancer", linkedAttribute: "logic" },
+  "spec_complex-forms": { nameFr: "Spé : Formes complexes", linkedSkill: "technomancer", linkedAttribute: "logic" },
+  "spec_bluff": { nameFr: "Spé : Bluff", linkedSkill: "influence", linkedAttribute: "charisma" },
+  "spec_intimidation": { nameFr: "Spé : Intimidation", linkedSkill: "influence", linkedAttribute: "charisma" },
+  "spec_negotiation": { nameFr: "Spé : Négociation", linkedSkill: "influence", linkedAttribute: "charisma" },
+  "spec_impersonation": { nameFr: "Spé : Imposture", linkedSkill: "influence", linkedAttribute: "charisma" },
+  "spec_etiquette": { nameFr: "Spé : Étiquette", linkedSkill: "influence", linkedAttribute: "charisma" },
+  "spec_physical-perception": { nameFr: "Spé : Perception physique", linkedSkill: "perception", linkedAttribute: "willpower" },
+  "spec_social-perception": { nameFr: "Spé : Perception sociale", linkedSkill: "perception", linkedAttribute: "willpower" },
+  "spec_astral-perception": { nameFr: "Spé : Perception astrale", linkedSkill: "perception", linkedAttribute: "willpower" },
+  "spec_composure": { nameFr: "Spé : Sang-froid", linkedSkill: "perception", linkedAttribute: "willpower" },
+  "spec_wilderness-survival": { nameFr: "Spé : Survie en milieu naturel", linkedSkill: "survival", linkedAttribute: "willpower" },
+  "spec_navigation": { nameFr: "Spé : Orientation", linkedSkill: "survival", linkedAttribute: "willpower" },
+  "spec_first-aid": { nameFr: "Spé : Premiers soins", linkedSkill: "survival", linkedAttribute: "willpower" },
+  "spec_corporate": { nameFr: "Spé : Corporatiste", linkedSkill: "networking", linkedAttribute: "charisma" },
+  "spec_criminal": { nameFr: "Spé : Criminel", linkedSkill: "networking", linkedAttribute: "charisma" },
+  "spec_la-rue": { nameFr: "Spé : La rue", linkedSkill: "networking", linkedAttribute: "charisma" },
+  "spec_government": { nameFr: "Spé : Gouvernemental", linkedSkill: "networking", linkedAttribute: "charisma" },
+  "spec_media": { nameFr: "Spé : Médiatique", linkedSkill: "networking", linkedAttribute: "charisma" },
+  "spec_astral-combat": { nameFr: "Spé : Combat astral", linkedSkill: "astral-combat", linkedAttribute: "willpower" }
+};
+const FEAT_DEFAULTS = {
+  rating: 0,
+  cost: "free-equipment",
+  essenceCost: 0,
+  isBioware: false,
+  armorValue: 0,
+  bonusLightDamage: 0,
+  bonusSevereDamage: 0,
+  bonusPhysicalThreshold: 0,
+  bonusMentalThreshold: 0,
+  bonusMatrixThreshold: 0,
+  bonusAnarchy: 0,
+  rrList: [],
+  bookmarked: false,
+  nuyenCost: 0
+};
+function feat(partial) {
+  return { ...FEAT_DEFAULTS, description: "", ...partial };
+}
+const CYBERWARE_TEMPLATES = [
+  // ── Cyberlimbs (15) ──
+  feat({ name: "Cyberbras Meridian Mk.III", nameEn: "Meridian Mk.III Cyberarms", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Bras cybernétiques haute performance, interface neurale directe.</p>", descriptionEn: "<p>High-performance cybernetic arms with direct neural interface.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Cyberbras TitanGrip Industriel", nameEn: "TitanGrip Industrial Cyberarms", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Bras cybernétiques lourds conçus pour les travaux de force.</p>", descriptionEn: "<p>Heavy-duty cybernetic arms designed for manual labor.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Cyberbras Solaris Elite", nameEn: "Solaris Elite Cyberarms", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Bras cybernétiques légers avec revêtement synthétique réaliste.</p>", descriptionEn: "<p>Lightweight cybernetic arms with realistic synthetic coating.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Cyberjambes Apex Strider", nameEn: "Apex Strider Cyberlegs", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Jambes cybernétiques avec amortisseurs et servomoteurs renforcés.</p>", descriptionEn: "<p>Cybernetic legs with shock absorbers and reinforced servomotors.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Cyberjambes Vantage Sprint", nameEn: "Vantage Sprint Cyberlegs", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Jambes cybernétiques optimisées pour la vitesse de pointe.</p>", descriptionEn: "<p>Cybernetic legs optimized for top speed.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Cyberjambes Ironclad Siege", nameEn: "Ironclad Siege Cyberlegs", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Jambes cybernétiques blindées avec stabilisateurs intégrés.</p>", descriptionEn: "<p>Armored cybernetic legs with built-in stabilizers.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_climbing", rrLabel: "Escalade" }] }),
+  feat({ name: "Cybermains Dextra Precision", nameEn: "Dextra Precision Cyberhands", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Mains cybernétiques à motricité fine pour travaux de précision.</p>", descriptionEn: "<p>Fine motor cybernetic hands for precision work.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_lockpicking", rrLabel: "Crochetage" }] }),
+  feat({ name: "Cybermains Ferox Combat", nameEn: "Ferox Combat Cyberhands", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Mains cybernétiques renforcées avec phalanges en carbure de tungstène.</p>", descriptionEn: "<p>Reinforced cybernetic hands with tungsten carbide knuckles.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Cyberpieds Gecko Tread", nameEn: "Gecko Tread Cyberfeet", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Pieds cybernétiques avec semelles adhérentes pour surfaces verticales.</p>", descriptionEn: "<p>Cybernetic feet with adhesive soles for vertical surfaces.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_climbing", rrLabel: "Escalade" }] }),
+  feat({ name: "Cyberpieds Silentrun", nameEn: "Silentrun Cyberfeet", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Pieds cybernétiques insonorisés pour une démarche furtive.</p>", descriptionEn: "<p>Sound-dampened cybernetic feet for stealthy movement.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Torse cybernétique Aegis Core", nameEn: "Aegis Core Cybertorso", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Torse cybernétique avec cage thoracique renforcée en alliage.</p>", descriptionEn: "<p>Cybernetic torso with alloy-reinforced rib cage.</p>", armorValue: 1 }),
+  feat({ name: "Torse cybernétique Nexagen Vital", nameEn: "Nexagen Vital Cybertorso", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Torse cybernétique avec monitoring vital et auto-diagnostic.</p>", descriptionEn: "<p>Cybernetic torso with vital monitoring and self-diagnostics.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Cyberbras Helix Tactical", nameEn: "Helix Tactical Cyberarms", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Bras cybernétiques avec rail de montage pour accessoires tactiques.</p>", descriptionEn: "<p>Cybernetic arms with tactical accessory mounting rail.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_pistols", rrLabel: "Pistolets" }] }),
+  feat({ name: "Cyberjambes Kraken Aqua", nameEn: "Kraken Aqua Cyberlegs", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Jambes cybernétiques avec propulsion aquatique intégrée.</p>", descriptionEn: "<p>Cybernetic legs with integrated aquatic propulsion.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Cybermains Artisan Mk.V", nameEn: "Artisan Mk.V Cyberhands", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Mains cybernétiques modulaires avec doigts interchangeables multi-outils.</p>", descriptionEn: "<p>Modular cybernetic hands with interchangeable multi-tool fingers.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_cybernetics", rrLabel: "C/R implants cybernétiques" }] }),
+  // ── Reflexes/Speed (10) ──
+  feat({ name: "Réflexes câblés Kurotech Série 9", nameEn: "Kurotech Series 9 Wired Reflexes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Boost des réflexes par câblage neuronal. Initiative améliorée.</p>", descriptionEn: "<p>Reflex boost via neural wiring. Improved initiative.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Réflexes câblés Pulsefire Alpha", nameEn: "Pulsefire Alpha Wired Reflexes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Système nerveux câblé avec réponse sub-milliseconde.</p>", descriptionEn: "<p>Wired nervous system with sub-millisecond response.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Boosteur de réflexes Veloce R3", nameEn: "Veloce R3 Boosted Reflexes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Amplificateur chimique des réflexes avec régulateur intégré.</p>", descriptionEn: "<p>Chemical reflex amplifier with integrated regulator.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Amplificateur de réaction Syntech", nameEn: "Syntech Reaction Enhancer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Microprocesseurs spinaux accélérant la transmission nerveuse.</p>", descriptionEn: "<p>Spinal microprocessors accelerating nerve transmission.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_ranged-defense", rrLabel: "Défense à distance" }] }),
+  feat({ name: "Accélérateur kinétique Bolt", nameEn: "Bolt Kinetic Accelerator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Servomoteurs intégrés aux articulations pour mouvements ultra-rapides.</p>", descriptionEn: "<p>Joint-integrated servomotors for ultra-fast movements.</p>", rrList: [{ rrType: "skill", rrValue: 1, rrTarget: "close-combat", rrLabel: "Combat rapproché" }] }),
+  feat({ name: "Module d'agilité Valkyr Flex", nameEn: "Valkyr Flex Agility Module", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Réseau de servomoteurs et tendons synthétiques pour une agilité surhumaine.</p>", descriptionEn: "<p>Network of servomotors and synthetic tendons for superhuman agility.</p>", rrList: [{ rrType: "skill", rrValue: 1, rrTarget: "close-combat", rrLabel: "Combat rapproché" }] }),
+  feat({ name: "Système de réaction Overclock", nameEn: "Overclock Reaction System", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Surcadençage du système nerveux pour des réflexes explosifs.</p>", descriptionEn: "<p>Nervous system overclocking for explosive reflexes.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Câblage rapide NeuroFlash", nameEn: "NeuroFlash Quick Wiring", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Fibres optiques neurales remplaçant les nerfs pour un signal instantané.</p>", descriptionEn: "<p>Neural optical fibers replacing nerves for instant signal.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Stabilisateur gyroscopique Axion", nameEn: "Axion Gyroscopic Stabilizer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Gyroscope interne maintenant l'équilibre en toutes circonstances.</p>", descriptionEn: "<p>Internal gyroscope maintaining balance in all circumstances.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Régulateur d'adrénaline Surge", nameEn: "Surge Adrenaline Regulator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Pompe cybernétique régulant la production d'adrénaline à la demande.</p>", descriptionEn: "<p>Cybernetic pump regulating adrenaline production on demand.</p>", bonusPhysicalThreshold: 1 }),
+  // ── Sensory (15) ──
+  feat({ name: "Yeux cyber Prismex Hawk-Eye", nameEn: "Prismex Hawk-Eye Cybereyes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Yeux cybernétiques avec vision thermographique et zoom 4x.</p>", descriptionEn: "<p>Cybernetic eyes with thermographic vision and 4x zoom.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Yeux cyber Oculon Nightseer", nameEn: "Oculon Nightseer Cybereyes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Yeux cybernétiques avec amplification de lumière et vision nocturne.</p>", descriptionEn: "<p>Cybernetic eyes with light amplification and night vision.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Yeux cyber Spectra Wideband", nameEn: "Spectra Wideband Cybereyes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Yeux cybernétiques multi-spectraux couvrant UV, IR et micro-ondes.</p>", descriptionEn: "<p>Multi-spectral cybernetic eyes covering UV, IR, and microwave.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Oreilles cyber Sonatek Clarity", nameEn: "Sonatek Clarity Cyberears", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Oreilles cybernétiques avec filtrage sonore et écoute directionnelle.</p>", descriptionEn: "<p>Cybernetic ears with sound filtering and directional listening.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Oreilles cyber Echoware Pro", nameEn: "Echoware Pro Cyberears", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Oreilles cybernétiques avec suppresseur de bruit et enregistrement intégré.</p>", descriptionEn: "<p>Cybernetic ears with noise suppression and built-in recording.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_social-perception", rrLabel: "Perception sociale" }] }),
+  feat({ name: "Oreilles cyber Audiomex Range", nameEn: "Audiomex Range Cyberears", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Oreilles cybernétiques longue portée avec amplification parabolique.</p>", descriptionEn: "<p>Long-range cybernetic ears with parabolic amplification.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Boosteur olfactif Scentex", nameEn: "Scentex Olfactory Booster", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Muqueuse nasale cybernétique avec analyse chimique instantanée.</p>", descriptionEn: "<p>Cybernetic nasal mucosa with instant chemical analysis.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Boosteur olfactif Nasalyze V2", nameEn: "Nasalyze V2 Olfactory Booster", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Capteurs olfactifs capables de détecter des traces chimiques à distance.</p>", descriptionEn: "<p>Olfactory sensors capable of detecting chemical traces at range.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Sonar ultrasonique Batwave", nameEn: "Batwave Ultrasound Sensor", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Émetteur-récepteur ultrasonique offrant une perception spatiale à 360°.</p>", descriptionEn: "<p>Ultrasonic transceiver providing 360-degree spatial perception.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Module de vision Targetex HUD", nameEn: "Targetex HUD Vision Module", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Affichage tête haute intégré aux yeux cyber avec télémètre laser.</p>", descriptionEn: "<p>Heads-up display integrated in cybereyes with laser rangefinder.</p>", rrList: [{ rrType: "skill", rrValue: 1, rrTarget: "ranged-weapons", rrLabel: "Armes à distance" }] }),
+  feat({ name: "Rétine cyber Photex Flash", nameEn: "Photex Flash Cyber-Retina", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Rétines cybernétiques anti-flash avec compensation automatique.</p>", descriptionEn: "<p>Anti-flash cybernetic retinas with automatic compensation.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Capteur tactile Dermasen", nameEn: "Dermasen Tactile Sensor", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Capteurs de pression sous-cutanés détectant vibrations et mouvements proches.</p>", descriptionEn: "<p>Subcutaneous pressure sensors detecting vibrations and nearby movement.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Radar interne Pulsewave", nameEn: "Pulsewave Internal Radar", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Micro-radar intégré détectant les objets en mouvement dans un rayon de 30m.</p>", descriptionEn: "<p>Micro-radar detecting moving objects within a 30m radius.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Yeux cyber Iridex Panoramic", nameEn: "Iridex Panoramic Cybereyes", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Yeux cybernétiques à champ de vision élargi à 270 degrés.</p>", descriptionEn: "<p>Cybernetic eyes with 270-degree expanded field of vision.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Analyseur vocal Phonex", nameEn: "Phonex Vocal Analyzer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Module auditif analysant les stress vocaux pour détecter les mensonges.</p>", descriptionEn: "<p>Auditory module analyzing vocal stress to detect lies.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_social-perception", rrLabel: "Perception sociale" }] }),
+  // ── Dermal (10) ──
+  feat({ name: "Plaque dermique Ironhide II", nameEn: "Ironhide II Dermal Plating", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Plaques sous-cutanées de céramique composite. Protection balistique discrète.</p>", descriptionEn: "<p>Subcutaneous composite ceramic plates. Discreet ballistic protection.</p>", armorValue: 1 }),
+  feat({ name: "Plaque dermique Coreguard Titan", nameEn: "Coreguard Titan Dermal Plating", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Plaques dermiques en nanocomposite à haute résistance aux impacts.</p>", descriptionEn: "<p>High-impact nanocomposite dermal plates.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Renforcement osseux TitanFrame", nameEn: "TitanFrame Bone Lacing", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Lacing osseux en alliage de titane. Résistance aux fractures accrue.</p>", descriptionEn: "<p>Titanium alloy bone lacing. Increased fracture resistance.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Renforcement osseux Ferrocast", nameEn: "Ferrocast Bone Lacing", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Lacing osseux en alliage ferreux injecté dans la structure osseuse.</p>", descriptionEn: "<p>Ferrous alloy bone lacing injected into the skeletal structure.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Renforcement osseux Carbide Mk.II", nameEn: "Carbide Mk.II Bone Lacing", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Lacing osseux en carbure de bore, ultra-résistant et léger.</p>", descriptionEn: "<p>Boron carbide bone lacing, ultra-resistant and lightweight.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Trame cutanée Silksteel", nameEn: "Silksteel Skin Weave", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Micro-fibres balistiques tissées dans le derme pour une protection invisible.</p>", descriptionEn: "<p>Ballistic micro-fibers woven into the dermis for invisible protection.</p>", armorValue: 1 }),
+  feat({ name: "Trame cutanée Nanoweave", nameEn: "Nanoweave Skin Weave", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Nano-fibres de carbone intégrées au derme, résistantes aux coupures.</p>", descriptionEn: "<p>Carbon nano-fibers integrated in the dermis, cut-resistant.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Blindage sous-cutané Shellweave", nameEn: "Shellweave Subdermal Armor", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Couche d'armure flexible implantée sous la peau.</p>", descriptionEn: "<p>Flexible armor layer implanted under the skin.</p>", armorValue: 1 }),
+  feat({ name: "Revêtement anti-impact Shockguard", nameEn: "Shockguard Anti-Impact Coating", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Gel thixotrope sous-cutané durcissant à l'impact.</p>", descriptionEn: "<p>Subcutaneous thixotropic gel that hardens on impact.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Plaque dermique Scaletech V3", nameEn: "Scaletech V3 Dermal Plating", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Plaques dermiques articulées imitant des écailles pour flexibilité et protection.</p>", descriptionEn: "<p>Articulated scale-like dermal plates for flexibility and protection.</p>", armorValue: 1 }),
+  // ── Neural (15) ──
+  feat({ name: "Datajack OmniDyne V2", nameEn: "OmniDyne V2 Datajack", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Port neural universel pour connexion directe aux appareils électroniques.</p>", descriptionEn: "<p>Universal neural port for direct connection to electronic devices.</p>" }),
+  feat({ name: "Datajack Cortex Link", nameEn: "Cortex Link Datajack", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Datajack miniaturisé avec transfert de données à haute bande passante.</p>", descriptionEn: "<p>Miniaturized datajack with high-bandwidth data transfer.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_personal-devices", rrLabel: "Appareils personnels" }] }),
+  feat({ name: "Datajack Neurogate Wireless", nameEn: "Neurogate Wireless Datajack", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Datajack sans fil avec antenne sous-cutanée et chiffrement intégré.</p>", descriptionEn: "<p>Wireless datajack with subcutaneous antenna and built-in encryption.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Skillwires Mnemotech Basic", nameEn: "Mnemotech Basic Skillwires", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Réseau de câblage musculaire permettant le chargement de compétences pré-enregistrées.</p>", descriptionEn: "<p>Muscle wiring network allowing loading of pre-recorded skills.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Skillwires Synapticore Plus", nameEn: "Synapticore Plus Skillwires", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Skillwires avancés avec adaptation musculaire automatique.</p>", descriptionEn: "<p>Advanced skillwires with automatic muscle adaptation.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_cr-vehicles", rrLabel: "C/R véhicules" }] }),
+  feat({ name: "Processeur tactique NovaMind", nameEn: "NovaMind Tactical Processor", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Coprocesseur cérébral dédié à l'analyse tactique en temps réel.</p>", descriptionEn: "<p>Cerebral coprocessor dedicated to real-time tactical analysis.</p>", rrList: [{ rrType: "skill", rrValue: 1, rrTarget: "ranged-weapons", rrLabel: "Armes à distance" }] }),
+  feat({ name: "Processeur tactique StratOS", nameEn: "StratOS Tactical Computer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Ordinateur tactique cranien calculant trajectoires et probabilités de combat.</p>", descriptionEn: "<p>Cranial tactical computer calculating trajectories and combat probabilities.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "SPU mathématique Calcyon", nameEn: "Calcyon Math SPU", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Unité de traitement spécialisée dans le calcul mathématique avancé.</p>", descriptionEn: "<p>Specialized processing unit for advanced mathematical calculation.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_explosives", rrLabel: "Explosifs" }] }),
+  feat({ name: "SPU mathématique Numera Pro", nameEn: "Numera Pro Math SPU", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Coprocesseur mathématique pour analyse de données en temps réel.</p>", descriptionEn: "<p>Math coprocessor for real-time data analysis.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-search", rrLabel: "Recherche matricielle" }] }),
+  feat({ name: "Amplificateur mémoriel Recallex", nameEn: "Recallex Memory Amplifier", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Implant neural augmentant la capacité de mémorisation et de rappel.</p>", descriptionEn: "<p>Neural implant enhancing memorization and recall capacity.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Encéphalographe Mindscape", nameEn: "Mindscape Encephalograph", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Moniteur cérébral interne permettant l'auto-diagnostic neurologique.</p>", descriptionEn: "<p>Internal brain monitor enabling neurological self-diagnostics.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Chipjack NeuroSlot", nameEn: "NeuroSlot Chipjack", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Port de chargement cranien pour puces de données et de compétences.</p>", descriptionEn: "<p>Cranial loading port for data and skill chips.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_personal-devices", rrLabel: "Appareils personnels" }] }),
+  feat({ name: "Interface neurale Bridgepoint", nameEn: "Bridgepoint Neural Interface", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Interface cerveau-machine à large bande pour le contrôle de drones.</p>", descriptionEn: "<p>Broadband brain-machine interface for drone control.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_ground-drones", rrLabel: "Drones terrestres" }] }),
+  feat({ name: "Processeur linguistique Babelware", nameEn: "Babelware Linguistic Processor", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Module de traduction automatique en temps réel pour 50 langues.</p>", descriptionEn: "<p>Real-time automatic translation module for 50 languages.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_negotiation", rrLabel: "Négociation" }] }),
+  feat({ name: "Co-processeur analytique Logix", nameEn: "Logix Analytical Co-Processor", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Implant cérébral d'assistance à la pensée logique et déductive.</p>", descriptionEn: "<p>Cerebral implant assisting logical and deductive thinking.</p>", bonusMentalThreshold: 1 }),
+  // ── Combat (10) ──
+  feat({ name: "Lien smartgun Aimlink", nameEn: "Aimlink Smartgun Link", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Interface neurale de visée connectée directement à l'arme à feu.</p>", descriptionEn: "<p>Neural aiming interface directly connected to the firearm.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_pistols", rrLabel: "Pistolets" }] }),
+  feat({ name: "Lien smartgun Bullseye Pro", nameEn: "Bullseye Pro Smartgun Link", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Système de visée assistée avec correction balistique en temps réel.</p>", descriptionEn: "<p>Assisted aiming system with real-time ballistic correction.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_rifles", rrLabel: "Fusils" }] }),
+  feat({ name: "Compensateur de recul Steadyarm", nameEn: "Steadyarm Recoil Compensator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Amortisseur de recul cybernétique intégré à l'avant-bras.</p>", descriptionEn: "<p>Cybernetic recoil dampener integrated into the forearm.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_smgs", rrLabel: "Mitraillettes" }] }),
+  feat({ name: "Compensateur de recul Ironfist", nameEn: "Ironfist Recoil Compensator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Système hydraulique de poignet absorbant le recul des armes lourdes.</p>", descriptionEn: "<p>Wrist hydraulic system absorbing heavy weapon recoil.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_heavy-weapons", rrLabel: "Armes lourdes" }] }),
+  feat({ name: "Support d'arme interne Concealer", nameEn: "Concealer Internal Weapon Mount", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Compartiment cybernétique dissimulant une arme légère dans l'avant-bras.</p>", descriptionEn: "<p>Cybernetic compartment concealing a light weapon in the forearm.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_pistols", rrLabel: "Pistolets" }] }),
+  feat({ name: "Lame rétractable Razorback", nameEn: "Razorback Retractable Blade", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Lame en alliage rétractable depuis l'avant-bras.</p>", descriptionEn: "<p>Retractable alloy blade extending from the forearm.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Griffes cybernétiques Predex", nameEn: "Predex Cyber Claws", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Griffes rétractables en carbure montées sous les ongles.</p>", descriptionEn: "<p>Retractable carbide claws mounted under the fingernails.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Éperonnage cybernétique Ramhorn", nameEn: "Ramhorn Cyber Spur", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Éperon osseux renforcé rétractable depuis le coude ou le genou.</p>", descriptionEn: "<p>Reinforced retractable bone spur from elbow or knee.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Système de visée intégré Vortex", nameEn: "Vortex Integrated Targeting System", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Calcul balistique assisté par IA intégré aux yeux cyber.</p>", descriptionEn: "<p>AI-assisted ballistic calculation integrated into cybereyes.</p>", rrList: [{ rrType: "skill", rrValue: 1, rrTarget: "ranged-weapons", rrLabel: "Armes à distance" }] }),
+  feat({ name: "Lanceur de projectiles Spikefist", nameEn: "Spikefist Projectile Launcher", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Lanceur miniature dissimulé dans le poignet tirant des fléchettes.</p>", descriptionEn: "<p>Miniature wrist-concealed launcher firing darts.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_thrown-weapons", rrLabel: "Armes de jet" }] }),
+  // ── Social (10) ──
+  feat({ name: "Modulateur vocal Echomask", nameEn: "Echomask Voice Modulator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Implant laryngé permettant d'imiter n'importe quelle voix.</p>", descriptionEn: "<p>Laryngeal implant allowing imitation of any voice.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_impersonation", rrLabel: "Imposture" }] }),
+  feat({ name: "Modulateur vocal Charismatek", nameEn: "Charismatek Voice Modulator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Module vocal ajustant automatiquement le ton pour maximiser la persuasion.</p>", descriptionEn: "<p>Vocal module automatically adjusting tone to maximize persuasion.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_negotiation", rrLabel: "Négociation" }] }),
+  feat({ name: "Émetteur phéromonal Allure", nameEn: "Allure Pheromone Emitter", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Glande synthétique diffusant des phéromones de confiance.</p>", descriptionEn: "<p>Synthetic gland emitting trust pheromones.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_bluff", rrLabel: "Bluff" }] }),
+  feat({ name: "Émetteur phéromonal Apex Dominance", nameEn: "Apex Dominance Pheromone Emitter", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Diffuseur de phéromones de dominance pour imposer le respect.</p>", descriptionEn: "<p>Dominance pheromone diffuser to command respect.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_intimidation", rrLabel: "Intimidation" }] }),
+  feat({ name: "Phéromones ajustées Velvetscent", nameEn: "Velvetscent Tailored Pheromones", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Cocktail phéromonal personnalisé pour un charisme subliminal.</p>", descriptionEn: "<p>Custom pheromone cocktail for subliminal charisma.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_etiquette", rrLabel: "Étiquette" }] }),
+  feat({ name: "Phéromones ajustées Serenex", nameEn: "Serenex Tailored Pheromones", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Phéromones apaisantes réduisant l'agressivité des interlocuteurs.</p>", descriptionEn: "<p>Calming pheromones reducing aggression in conversation partners.</p>", rrList: [{ rrType: "skill", rrValue: 1, rrTarget: "influence", rrLabel: "Influence" }] }),
+  feat({ name: "Implant facial Morphex", nameEn: "Morphex Facial Implant", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Implants faciaux modulaires permettant de modifier son apparence.</p>", descriptionEn: "<p>Modular facial implants allowing appearance modification.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_impersonation", rrLabel: "Imposture" }] }),
+  feat({ name: "Synthétiseur émotionnel Empathex", nameEn: "Empathex Emotional Synthesizer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Processeur analysant et simulant des réponses émotionnelles appropriées.</p>", descriptionEn: "<p>Processor analyzing and simulating appropriate emotional responses.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_social-perception", rrLabel: "Perception sociale" }] }),
+  feat({ name: "Régulateur hormonal Calmex", nameEn: "Calmex Hormonal Regulator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Régulateur chimique éliminant les micro-expressions de stress.</p>", descriptionEn: "<p>Chemical regulator eliminating stress micro-expressions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Module de projection vocale SonicCharm", nameEn: "SonicCharm Vocal Projection Module", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Amplificateur vocal avec sous-harmoniques subliminales persuasives.</p>", descriptionEn: "<p>Vocal amplifier with persuasive subliminal sub-harmonics.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_negotiation", rrLabel: "Négociation" }] }),
+  // ── Utility (15) ──
+  feat({ name: "Réserve d'air interne Breathguard", nameEn: "Breathguard Internal Air Tank", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Réservoir d'air comprimé interne offrant 30 minutes d'autonomie.</p>", descriptionEn: "<p>Internal compressed air tank providing 30 minutes of autonomy.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Réserve d'air interne DeepLung", nameEn: "DeepLung Internal Air Tank", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Poumons cybernétiques avec recycleur d'oxygène intégré.</p>", descriptionEn: "<p>Cybernetic lungs with integrated oxygen recycler.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Filtre toxique Zenith", nameEn: "Zenith Toxin Filter", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Système de filtration intégré contre les gaz et toxines.</p>", descriptionEn: "<p>Integrated filtration system against gases and toxins.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Filtre toxique PureLine", nameEn: "PureLine Toxin Filter", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Filtration hépatique cybernétique neutralisant les poisons et drogues.</p>", descriptionEn: "<p>Cybernetic hepatic filtration neutralizing poisons and drugs.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Analyseur chimique Chemex", nameEn: "Chemex Chemical Analyzer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Micro-laboratoire intégré identifiant les substances chimiques au contact.</p>", descriptionEn: "<p>Integrated micro-lab identifying chemical substances on contact.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Analyseur chimique Reagex", nameEn: "Reagex Chemical Analyzer", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Analyseur chimique buccal détectant les toxines dans la nourriture.</p>", descriptionEn: "<p>Oral chemical analyzer detecting toxins in food.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Commlink cybernétique Nexlink", nameEn: "Nexlink Cybernetic Commlink", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Commlink intégré au crâne avec radio sub-vocale.</p>", descriptionEn: "<p>Skull-integrated commlink with subvocal radio.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_personal-devices", rrLabel: "Appareils personnels" }] }),
+  feat({ name: "Système de localisation Pathfinder", nameEn: "Pathfinder Location System", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>GPS inertiel cranien avec cartographie AR intégrée.</p>", descriptionEn: "<p>Cranial inertial GPS with integrated AR mapping.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_navigation", rrLabel: "Orientation" }] }),
+  feat({ name: "Enregistreur sensoriel Blackbox", nameEn: "Blackbox Sensory Recorder", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Enregistre en continu les données sensorielles pour relecture ultérieure.</p>", descriptionEn: "<p>Continuously records sensory data for later playback.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Compartiment interne Stashware", nameEn: "Stashware Internal Compartment", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Cavité cybernétique dissimulée dans la cuisse ou le torse.</p>", descriptionEn: "<p>Concealed cybernetic cavity in the thigh or torso.</p>" }),
+  feat({ name: "Régulateur thermique Thermocore", nameEn: "Thermocore Thermal Regulator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Système de régulation thermique corporelle pour environnements extrêmes.</p>", descriptionEn: "<p>Body thermal regulation system for extreme environments.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Stimulateur médical AutoDoc", nameEn: "AutoDoc Medical Stimulator", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Module interne injectant automatiquement des stimulants médicaux en cas de blessure.</p>", descriptionEn: "<p>Internal module automatically injecting medical stimulants upon injury.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_first-aid", rrLabel: "Premiers soins" }] }),
+  feat({ name: "Balise de détresse Beacon", nameEn: "Beacon Distress Signal", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Émetteur d'urgence sous-cutané activé par perte de conscience.</p>", descriptionEn: "<p>Subcutaneous emergency transmitter activated by loss of consciousness.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Pompe à médicaments Pharmaflow", nameEn: "Pharmaflow Drug Pump", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Réservoir interne distribuant des doses de médicaments ou stimulants programmées.</p>", descriptionEn: "<p>Internal reservoir dispensing programmed doses of medication or stimulants.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Interface véhiculaire Drivelink", nameEn: "Drivelink Vehicle Interface", featType: "cyberware", cost: "equipment", essenceCost: 1, nuyenCost: 2500, description: "<p>Connexion neurale directe au système de contrôle d'un véhicule.</p>", descriptionEn: "<p>Direct neural connection to a vehicle control system.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_cars", rrLabel: "Voitures" }] })
+];
+const BIOWARE_TEMPLATES = [
+  // ── Muscular (15) ──
+  feat({ name: "Muscles augmentés BioGen Alpha", nameEn: "BioGen Alpha Enhanced Muscles", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Fibres musculaires cultivées en cuve, greffées sur la structure existante.</p>", descriptionEn: "<p>Vat-grown muscle fibers grafted onto the existing structure.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Muscles augmentés VitaForce Pro", nameEn: "VitaForce Pro Enhanced Muscles", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Augmentation musculaire bio-cultivée avec densité de fibre accrue.</p>", descriptionEn: "<p>Bio-cultivated muscle augmentation with increased fiber density.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Muscles augmentés Titanex Bulk", nameEn: "Titanex Bulk Enhanced Muscles", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Fibres musculaires lourdes pour force brute maximale.</p>", descriptionEn: "<p>Heavy muscle fibers for maximum brute strength.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blunt-weapons", rrLabel: "Armes contondantes" }] }),
+  feat({ name: "Tonifiant musculaire Flexigen", nameEn: "Flexigen Muscle Toner", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Traitement bio-génique optimisant la coordination musculaire fine.</p>", descriptionEn: "<p>Bio-genic treatment optimizing fine muscular coordination.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Tonifiant musculaire Agilyx", nameEn: "Agilyx Muscle Toner", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Fibres musculaires réactives améliorant les mouvements rapides et précis.</p>", descriptionEn: "<p>Reactive muscle fibers enhancing fast and precise movements.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Tonifiant musculaire Litheform", nameEn: "Litheform Muscle Toner", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Optimisation de l'élasticité musculaire pour une souplesse extrême.</p>", descriptionEn: "<p>Muscle elasticity optimization for extreme flexibility.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Augmentation musculaire Myocore", nameEn: "Myocore Muscle Augmentation", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Remplacement partiel des fibres musculaires par du tissu bio-amélioré.</p>", descriptionEn: "<p>Partial replacement of muscle fibers with bio-enhanced tissue.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Augmentation musculaire Dynacell", nameEn: "Dynacell Muscle Augmentation", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Cellules musculaires à contraction rapide cultivées et implantées.</p>", descriptionEn: "<p>Fast-twitch muscle cells cultivated and implanted.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Tendons bio-renforcés Elastex", nameEn: "Elastex Bio-Reinforced Tendons", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Tendons cultivés en cuve avec résistance à la rupture quintuplée.</p>", descriptionEn: "<p>Vat-grown tendons with five times normal breaking resistance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_climbing", rrLabel: "Escalade" }] }),
+  feat({ name: "Ligaments bio-améliorés Springtex", nameEn: "Springtex Bio-Enhanced Ligaments", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Ligaments bio-synthétiques stockant et libérant l'énergie cinétique.</p>", descriptionEn: "<p>Bio-synthetic ligaments storing and releasing kinetic energy.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Fibres de puissance Goliath", nameEn: "Goliath Power Fibers", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Fibres musculaires bio-cultivées à contraction décuplée.</p>", descriptionEn: "<p>Bio-cultivated muscle fibers with tenfold contraction strength.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Diaphragme renforcé Oxacore", nameEn: "Oxacore Reinforced Diaphragm", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Diaphragme bio-amélioré augmentant la capacité pulmonaire et l'endurance.</p>", descriptionEn: "<p>Bio-enhanced diaphragm increasing lung capacity and endurance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Fascia réactif Shieldex", nameEn: "Shieldex Reactive Fascia", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Fascia musculaire bio-renforcé se contractant à l'impact pour amortir les coups.</p>", descriptionEn: "<p>Bio-reinforced muscle fascia contracting on impact to cushion blows.</p>", armorValue: 1 }),
+  feat({ name: "Muscle cardiaque renforcé Endurex", nameEn: "Endurex Reinforced Cardiac Muscle", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Muscle cardiaque bio-amélioré pour un débit sanguin accru sous effort.</p>", descriptionEn: "<p>Bio-enhanced cardiac muscle for increased blood flow under exertion.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Muscles dorsaux Ironback", nameEn: "Ironback Dorsal Muscles", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Renforcement bio-cultivé de la musculature dorsale et lombaire.</p>", descriptionEn: "<p>Bio-cultivated reinforcement of dorsal and lumbar musculature.</p>", bonusLightDamage: 1 }),
+  // ── Skeletal (10) ──
+  feat({ name: "Densité osseuse Marrowtech", nameEn: "Marrowtech Bone Density", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Traitement biologique augmentant la densité minérale osseuse de 300%.</p>", descriptionEn: "<p>Biological treatment increasing bone mineral density by 300%.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Densité osseuse Calcitex Ultra", nameEn: "Calcitex Ultra Bone Density", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Injection de cristaux de calcium bio-synthétiques dans la matrice osseuse.</p>", descriptionEn: "<p>Injection of bio-synthetic calcium crystals into the bone matrix.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Orthopeau Dermatex Basic", nameEn: "Dermatex Basic Orthoskin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Couche dermique bio-cultivée offrant une protection naturelle renforcée.</p>", descriptionEn: "<p>Bio-cultivated dermal layer offering enhanced natural protection.</p>", armorValue: 1 }),
+  feat({ name: "Orthopeau NanoSkin Plus", nameEn: "NanoSkin Plus Orthoskin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Peau bio-améliorée avec nano-fibres de kératine renforcées.</p>", descriptionEn: "<p>Bio-enhanced skin with reinforced keratin nano-fibers.</p>", armorValue: 1 }),
+  feat({ name: "Renforcement cartilagineux Flexbone", nameEn: "Flexbone Cartilage Enhancement", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Cartilage bio-amélioré absorbant les chocs et prévenant les luxations.</p>", descriptionEn: "<p>Bio-enhanced cartilage absorbing shocks and preventing dislocations.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_ranged-defense", rrLabel: "Défense à distance" }] }),
+  feat({ name: "Renforcement cartilagineux JointFlex", nameEn: "JointFlex Cartilage Enhancement", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Articulations bio-améliorées pour une amplitude de mouvement accrue.</p>", descriptionEn: "<p>Bio-enhanced joints for increased range of motion.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Moelle osseuse améliorée Hemagen", nameEn: "Hemagen Enhanced Bone Marrow", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Moelle osseuse bio-optimisée produisant plus de globules rouges.</p>", descriptionEn: "<p>Bio-optimized bone marrow producing more red blood cells.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Squelette flexible Rubberbone", nameEn: "Rubberbone Flexible Skeleton", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Traitement osseux bio-élastique permettant de se glisser dans des espaces réduits.</p>", descriptionEn: "<p>Bio-elastic bone treatment allowing squeezing through tight spaces.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Cage thoracique renforcée Ribguard", nameEn: "Ribguard Reinforced Rib Cage", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Côtes bio-renforcées protégeant les organes vitaux des impacts.</p>", descriptionEn: "<p>Bio-reinforced ribs protecting vital organs from impacts.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Colonne vertébrale élastique Spineflex", nameEn: "Spineflex Elastic Spine", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Disques intervertébraux bio-améliorés pour flexibilité et résistance aux chocs.</p>", descriptionEn: "<p>Bio-enhanced intervertebral discs for flexibility and shock resistance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_climbing", rrLabel: "Escalade" }] }),
+  // ── Neural (15) ──
+  feat({ name: "Réflexes synaptiques NeuroCorp", nameEn: "NeuroCorp Synaptic Boosters", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Booster synaptique biologique améliorant les temps de réaction.</p>", descriptionEn: "<p>Biological synaptic booster improving reaction times.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Booster synaptique Reflexa", nameEn: "Reflexa Synaptic Booster", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Neurotransmetteurs bio-améliorés accélérant le temps de réponse neural.</p>", descriptionEn: "<p>Bio-enhanced neurotransmitters accelerating neural response time.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Booster synaptique Velocine", nameEn: "Velocine Synaptic Booster", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Gaines de myéline bio-améliorées pour conduction nerveuse ultrarapide.</p>", descriptionEn: "<p>Bio-enhanced myelin sheaths for ultra-fast nerve conduction.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Booster cérébral Cognivex", nameEn: "Cognivex Cerebral Booster", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Neurones supplémentaires bio-cultivés augmentant la capacité de calcul mental.</p>", descriptionEn: "<p>Bio-cultivated supplementary neurons increasing mental processing capacity.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Booster cérébral Intellex Pro", nameEn: "Intellex Pro Cerebral Booster", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Réseau neural bio-amélioré optimisant la pensée analytique.</p>", descriptionEn: "<p>Bio-enhanced neural network optimizing analytical thinking.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-search", rrLabel: "Recherche matricielle" }] }),
+  feat({ name: "Booster cérébral Neuramax", nameEn: "Neuramax Cerebral Booster", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Optimisation bio-génique du cortex préfrontal pour la prise de décision.</p>", descriptionEn: "<p>Bio-genic optimization of the prefrontal cortex for decision-making.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Amplificateur mnémonique Memovault", nameEn: "Memovault Mnemonic Enhancer", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Hippocampe bio-amélioré pour mémoire eidétique quasi parfaite.</p>", descriptionEn: "<p>Bio-enhanced hippocampus for near-perfect eidetic memory.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Amplificateur mnémonique Recollex", nameEn: "Recollex Mnemonic Enhancer", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Bio-traitement de l'hippocampe pour rappel instantané des souvenirs.</p>", descriptionEn: "<p>Hippocampus bio-treatment for instant memory recall.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_personal-devices", rrLabel: "Appareils personnels" }] }),
+  feat({ name: "Réseau neural optimisé ThinkFast", nameEn: "ThinkFast Optimized Neural Network", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Optimisation biologique des connexions synaptiques pour pensée accélérée.</p>", descriptionEn: "<p>Biological optimization of synaptic connections for accelerated thinking.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Cortex émotionnel stabilisé Equanix", nameEn: "Equanix Stabilized Emotional Cortex", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Régulation bio-améliorée du système limbique pour un contrôle émotionnel accru.</p>", descriptionEn: "<p>Bio-enhanced limbic system regulation for increased emotional control.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Noyau intuitif Hunchware", nameEn: "Hunchware Intuitive Core", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Bio-amélioration du cortex cingulaire amplifiant les intuitions.</p>", descriptionEn: "<p>Bio-enhancement of the cingulate cortex amplifying intuitions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_social-perception", rrLabel: "Perception sociale" }] }),
+  feat({ name: "Centre du langage amélioré Linguex", nameEn: "Linguex Enhanced Language Center", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Aire de Broca bio-améliorée pour acquisition linguistique accélérée.</p>", descriptionEn: "<p>Bio-enhanced Broca area for accelerated language acquisition.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_negotiation", rrLabel: "Négociation" }] }),
+  feat({ name: "Suppresseur de douleur Paingate", nameEn: "Paingate Pain Suppressor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Bio-régulateur filtrant les signaux de douleur sans affecter le toucher.</p>", descriptionEn: "<p>Bio-regulator filtering pain signals without affecting touch.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Concentrateur cortical Focusyn", nameEn: "Focusyn Cortical Concentrator", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Bio-amélioration du cortex pariétal pour concentration prolongée.</p>", descriptionEn: "<p>Bio-enhancement of the parietal cortex for prolonged concentration.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Réseau nerveux étendu NervNet", nameEn: "NervNet Extended Nervous Network", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Ramifications nerveuses bio-cultivées pour perception tactile étendue.</p>", descriptionEn: "<p>Bio-cultivated nerve branches for extended tactile perception.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  // ── Sensory (10) ──
+  feat({ name: "Oreille interne augmentée SonicBio", nameEn: "SonicBio Enhanced Inner Ear", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Cochlée améliorée avec équilibre renforcé et ouïe directionnelle.</p>", descriptionEn: "<p>Enhanced cochlea with improved balance and directional hearing.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Ouïe augmentée Audiograft", nameEn: "Audiograft Enhanced Hearing", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Organe auditif bio-cultivé avec sensibilité fréquentielle élargie.</p>", descriptionEn: "<p>Bio-cultivated auditory organ with expanded frequency sensitivity.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Ouïe augmentée Echolocalis", nameEn: "Echolocalis Enhanced Hearing", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Capacité d'écholocalisation bio-greffée inspirée des chauves-souris.</p>", descriptionEn: "<p>Bat-inspired bio-grafted echolocation capability.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Odorat augmenté Nasalex", nameEn: "Nasalex Enhanced Smell", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Épithélium olfactif bio-amélioré avec sensibilité canine.</p>", descriptionEn: "<p>Bio-enhanced olfactory epithelium with canine-level sensitivity.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Odorat augmenté Tracker Bio", nameEn: "Tracker Bio Enhanced Smell", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Récepteurs olfactifs bio-cultivés permettant le pistage par odeur.</p>", descriptionEn: "<p>Bio-cultivated olfactory receptors enabling scent tracking.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Yeux de chat NightGraft", nameEn: "NightGraft Cat's Eyes", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Rétine bio-modifiée avec tapetum lucidum pour vision nocturne naturelle.</p>", descriptionEn: "<p>Bio-modified retina with tapetum lucidum for natural night vision.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Yeux de chat Felinex", nameEn: "Felinex Cat's Eyes", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Modification bio-rétinienne offrant une vision crépusculaire excellente.</p>", descriptionEn: "<p>Bio-retinal modification offering excellent twilight vision.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Langue sensorielle Gustex", nameEn: "Gustex Sensory Tongue", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Langue bio-améliorée détectant les composés chimiques dans les aliments.</p>", descriptionEn: "<p>Bio-enhanced tongue detecting chemical compounds in food.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Vibrisses bio-greffées Whiskertech", nameEn: "Whiskertech Bio-Grafted Vibrissae", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Poils sensoriels bio-greffés détectant les courants d'air et vibrations.</p>", descriptionEn: "<p>Bio-grafted sensory hairs detecting air currents and vibrations.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Peau photosensible Solarsense", nameEn: "Solarsense Photosensitive Skin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Derme bio-modifié détectant les variations de lumière et de chaleur.</p>", descriptionEn: "<p>Bio-modified dermis detecting light and heat variations.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  // ── Glandular (15) ──
+  feat({ name: "Glandes surrénales boost OrganTech", nameEn: "OrganTech Adrenal Boost", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Surrénales modifiées produisant un surplus d'adrénaline contrôlé.</p>", descriptionEn: "<p>Modified adrenal glands producing a controlled adrenaline surge.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Pompe adrénaline Surgetex", nameEn: "Surgetex Adrenal Pump", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Pompe adrénaline bio-cultivée activée par le stress de combat.</p>", descriptionEn: "<p>Bio-cultivated adrenal pump activated by combat stress.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Pompe adrénaline Combatex", nameEn: "Combatex Adrenal Pump", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande adrénaline bio-optimisée pour réponse combat-ou-fuite instantanée.</p>", descriptionEn: "<p>Bio-optimized adrenal gland for instant fight-or-flight response.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Glande suprathyroïdienne Metabolex", nameEn: "Metabolex Suprathyroid Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande bio-cultivée accélérant le métabolisme général.</p>", descriptionEn: "<p>Bio-cultivated gland accelerating overall metabolism.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Glande suprathyroïdienne Thyromax", nameEn: "Thyromax Suprathyroid Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Thyroïde bio-augmentée boostant énergie et récupération.</p>", descriptionEn: "<p>Bio-augmented thyroid boosting energy and recovery.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Expansion digestive Gutworks", nameEn: "Gutworks Digestive Expansion", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Système digestif bio-amélioré extrayant plus de nutriments et éliminant les toxines.</p>", descriptionEn: "<p>Bio-enhanced digestive system extracting more nutrients and eliminating toxins.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Expansion digestive Omnivex", nameEn: "Omnivex Digestive Expansion", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Estomac bio-modifié capable de digérer des matières normalement incomestibles.</p>", descriptionEn: "<p>Bio-modified stomach capable of digesting normally inedible materials.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Glande endorphinique Blisswave", nameEn: "Blisswave Endorphin Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande bio-cultivée libérant des endorphines pour résistance à la douleur.</p>", descriptionEn: "<p>Bio-cultivated gland releasing endorphins for pain resistance.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Glande de croissance Growthex", nameEn: "Growthex Growth Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande hypophysaire bio-améliorée accélérant la régénération tissulaire.</p>", descriptionEn: "<p>Bio-enhanced pituitary gland accelerating tissue regeneration.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Sécréteur de cortisol Stressbane", nameEn: "Stressbane Cortisol Secretor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Régulateur de cortisol bio-cultivé maintenant le calme sous pression.</p>", descriptionEn: "<p>Bio-cultivated cortisol regulator maintaining calm under pressure.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Glande phéromonale Trustex", nameEn: "Trustex Pheromone Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande bio-cultivée émettant des phéromones de confiance naturelles.</p>", descriptionEn: "<p>Bio-cultivated gland emitting natural trust pheromones.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_bluff", rrLabel: "Bluff" }] }),
+  feat({ name: "Régulateur hormonal Homeostex", nameEn: "Homeostex Hormonal Regulator", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Système glandulaire bio-amélioré maintenant un équilibre hormonal optimal.</p>", descriptionEn: "<p>Bio-enhanced glandular system maintaining optimal hormonal balance.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Sécréteur de mélatonine Sleepguard", nameEn: "Sleepguard Melatonin Secretor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Régulateur de sommeil bio-cultivé permettant un repos réparateur en 4 heures.</p>", descriptionEn: "<p>Bio-cultivated sleep regulator enabling restorative rest in 4 hours.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Glande oxytocique Bondex", nameEn: "Bondex Oxytocin Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande bio-cultivée libérant de l'ocytocine pour créer un lien de confiance rapide.</p>", descriptionEn: "<p>Bio-cultivated gland releasing oxytocin to create rapid trust bonds.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_etiquette", rrLabel: "Étiquette" }] }),
+  feat({ name: "Sécréteur de dopamine Motivex", nameEn: "Motivex Dopamine Secretor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Régulateur de dopamine bio-cultivé pour motivation et concentration soutenues.</p>", descriptionEn: "<p>Bio-cultivated dopamine regulator for sustained motivation and focus.</p>", bonusAnarchy: 1 }),
+  // ── Cardiovascular (10) ──
+  feat({ name: "Coeur augmenté Cardiomax", nameEn: "Cardiomax Enhanced Heart", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Coeur bio-amélioré avec ventricules renforcés et débit accru.</p>", descriptionEn: "<p>Bio-enhanced heart with reinforced ventricles and increased output.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Coeur augmenté Pulsedrive", nameEn: "Pulsedrive Enhanced Heart", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Muscle cardiaque bio-cultivé avec endurance sportive de pointe.</p>", descriptionEn: "<p>Bio-cultivated cardiac muscle with peak athletic endurance.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Usine plaquettaire Plateletex", nameEn: "Plateletex Platelet Factory", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Organe bio-cultivé produisant des plaquettes coagulantes accélérées.</p>", descriptionEn: "<p>Bio-cultivated organ producing accelerated clotting platelets.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Usine plaquettaire Hemoguard", nameEn: "Hemoguard Platelet Factory", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Production plaquettaire bio-améliorée pour cicatrisation rapide.</p>", descriptionEn: "<p>Bio-enhanced platelet production for rapid wound healing.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Symbiotes cellulaires VitaCell", nameEn: "VitaCell Cellular Symbiotes", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Micro-organismes bio-cultivés accélérant la régénération cellulaire.</p>", descriptionEn: "<p>Bio-cultivated micro-organisms accelerating cellular regeneration.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Symbiotes cellulaires Regenerex", nameEn: "Regenerex Cellular Symbiotes", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Symbiotes bio-ingéniérés réparant les tissus endommagés en continu.</p>", descriptionEn: "<p>Bio-engineered symbiotes continuously repairing damaged tissue.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Vaisseaux renforcés Vasculex", nameEn: "Vasculex Reinforced Vessels", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Parois vasculaires bio-renforcées résistant aux déchirures et hémorragies.</p>", descriptionEn: "<p>Bio-reinforced vascular walls resistant to tears and hemorrhaging.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Sang oxygéné Oxycyte", nameEn: "Oxycyte Oxygenated Blood", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Hémoglobine bio-améliorée transportant 200% plus d'oxygène.</p>", descriptionEn: "<p>Bio-enhanced hemoglobin carrying 200% more oxygen.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Rate augmentée Splenex", nameEn: "Splenex Augmented Spleen", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Rate bio-améliorée stockant du sang oxygéné pour les urgences.</p>", descriptionEn: "<p>Bio-enhanced spleen storing oxygenated blood for emergencies.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Système lymphatique amélioré Lymphoguard", nameEn: "Lymphoguard Enhanced Lymphatic System", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Réseau lymphatique bio-amélioré accélérant la récupération et la détoxification.</p>", descriptionEn: "<p>Bio-enhanced lymphatic network accelerating recovery and detoxification.</p>", bonusLightDamage: 1 }),
+  // ── Dermal (10) ──
+  feat({ name: "Peau symbiotique Veil", nameEn: "Veil Symbiotic Skin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Couche dermique organique renforcée par des fibres de soie d'araignée.</p>", descriptionEn: "<p>Organic dermal layer reinforced with spider silk fibers.</p>", armorValue: 1 }),
+  feat({ name: "Orthopeau Armorex Bio", nameEn: "Armorex Bio Orthoskin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Peau bio-blindée avec matrice de collagène renforcé.</p>", descriptionEn: "<p>Bio-armored skin with reinforced collagen matrix.</p>", armorValue: 1 }),
+  feat({ name: "Peau caméléon Chromaskin", nameEn: "Chromaskin Chameleon Skin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Chromatophores bio-cultivés permettant un camouflage adaptatif.</p>", descriptionEn: "<p>Bio-cultivated chromatophores enabling adaptive camouflage.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Peau caméléon Mimicrex", nameEn: "Mimicrex Chameleon Skin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Épiderme bio-modifié reproduisant couleurs et textures environnantes.</p>", descriptionEn: "<p>Bio-modified epidermis reproducing surrounding colors and textures.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Atténuation thermique Heatveil", nameEn: "Heatveil Thermal Dampening", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Peau bio-modifiée masquant la signature thermique du corps.</p>", descriptionEn: "<p>Bio-modified skin masking the body's thermal signature.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Atténuation thermique Coolskin", nameEn: "Coolskin Thermal Dampening", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Régulation thermique dermique empêchant la détection infrarouge.</p>", descriptionEn: "<p>Dermal thermal regulation preventing infrared detection.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Épiderme cicatrisant Healex", nameEn: "Healex Healing Epidermis", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Peau bio-améliorée avec régénération accélérée des lésions cutanées.</p>", descriptionEn: "<p>Bio-enhanced skin with accelerated healing of skin lesions.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Peau anti-friction Slickskin", nameEn: "Slickskin Anti-Friction Skin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Sécrétion bio-cutanée rendant la peau glissante et difficile à agripper.</p>", descriptionEn: "<p>Bio-cutaneous secretion making the skin slippery and hard to grip.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Peau électrifiée Sparkderm", nameEn: "Sparkderm Electrified Skin", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Cellules électrocytes bio-greffées déchargeant au contact hostile.</p>", descriptionEn: "<p>Bio-grafted electrocyte cells discharging on hostile contact.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Derme durci Toughskin", nameEn: "Toughskin Hardened Dermis", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Épaississement bio-contrôlé du derme pour résistance aux abrasions.</p>", descriptionEn: "<p>Bio-controlled dermis thickening for abrasion resistance.</p>", armorValue: 1 }),
+  // ── Immune (15) ──
+  feat({ name: "Défense pathogène Immunex", nameEn: "Immunex Pathogen Defense", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Système immunitaire bio-amélioré avec lymphocytes à réponse rapide.</p>", descriptionEn: "<p>Bio-enhanced immune system with rapid-response lymphocytes.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Défense pathogène Viriguard", nameEn: "Viriguard Pathogen Defense", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Anti-corps bio-ingéniérés ciblant un large spectre de pathogènes.</p>", descriptionEn: "<p>Bio-engineered antibodies targeting a broad spectrum of pathogens.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Défense pathogène Biowall", nameEn: "Biowall Pathogen Defense", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Barrière muqueuse bio-renforcée empêchant la pénétration des agents infectieux.</p>", descriptionEn: "<p>Bio-reinforced mucosal barrier preventing infectious agent penetration.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Extracteur de toxines Purifax", nameEn: "Purifax Toxin Extractor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Organe bio-cultivé filtrant les toxines du flux sanguin en continu.</p>", descriptionEn: "<p>Bio-cultivated organ continuously filtering toxins from the bloodstream.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Extracteur de toxines Detoxgland", nameEn: "Detoxgland Toxin Extractor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Rein bio-amélioré éliminant les substances toxiques trois fois plus vite.</p>", descriptionEn: "<p>Bio-enhanced kidney eliminating toxic substances three times faster.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Extracteur de toxines Clearblood", nameEn: "Clearblood Toxin Extractor", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Foie bio-augmenté avec capacité de détoxification décuplée.</p>", descriptionEn: "<p>Bio-augmented liver with tenfold detoxification capacity.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_first-aid", rrLabel: "Premiers soins" }] }),
+  feat({ name: "Amortisseur de trauma Shockbio", nameEn: "Shockbio Trauma Dampener", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Système nerveux bio-modifié atténuant les chocs traumatiques.</p>", descriptionEn: "<p>Bio-modified nervous system attenuating traumatic shocks.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Amortisseur de trauma Resilex", nameEn: "Resilex Trauma Dampener", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Bio-régulateur amortissant les réponses de choc systémique.</p>", descriptionEn: "<p>Bio-regulator dampening systemic shock responses.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Amortisseur de trauma Nerveblock", nameEn: "Nerveblock Trauma Dampener", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Blocage nerveux bio-sélectif empêchant la cascade de choc traumatique.</p>", descriptionEn: "<p>Bio-selective nerve blocking preventing traumatic shock cascade.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Globules blancs améliorés Leucomax", nameEn: "Leucomax Enhanced White Blood Cells", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Leucocytes bio-ingéniérés avec capacité phagocytaire quadruplée.</p>", descriptionEn: "<p>Bio-engineered leukocytes with quadrupled phagocytic capacity.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Bouclier allergénique Histaguard", nameEn: "Histaguard Allergen Shield", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Régulateur d'histamine bio-cultivé éliminant les réactions allergiques.</p>", descriptionEn: "<p>Bio-cultivated histamine regulator eliminating allergic reactions.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Coagulation rapide Sealex", nameEn: "Sealex Rapid Coagulation", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Facteurs de coagulation bio-améliorés stoppant les hémorragies en secondes.</p>", descriptionEn: "<p>Bio-enhanced coagulation factors stopping hemorrhages in seconds.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Glande anti-venin Serpentex", nameEn: "Serpentex Anti-Venom Gland", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Glande bio-cultivée produisant des anti-venins universels à la demande.</p>", descriptionEn: "<p>Bio-cultivated gland producing universal anti-venoms on demand.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Nanites réparateurs Fixocyte", nameEn: "Fixocyte Repair Nanites", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Nanites bio-organiques circulant dans le sang et réparant les micro-lésions.</p>", descriptionEn: "<p>Bio-organic nanites circulating in the blood and repairing micro-lesions.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Thymus régénéré Thymex", nameEn: "Thymex Regenerated Thymus", featType: "cyberware", cost: "equipment", essenceCost: 0.5, isBioware: true, nuyenCost: 2500, description: "<p>Thymus bio-régénéré produisant des lymphocytes T matures en continu.</p>", descriptionEn: "<p>Bio-regenerated thymus continuously producing mature T lymphocytes.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_first-aid", rrLabel: "Premiers soins" }] })
+];
+const WEAPON_TEMPLATES = {
+  melee: [
+    // --- Knives / short blades (short-weapons, VD FOR+1) — 10 ---
+    feat({ name: "Couteau de combat Valkyr KS-3", nameEn: "Valkyr KS-3 Combat Knife", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Lame courte renforcée au carbure.</p>", descriptionEn: "<p>Carbide-reinforced short blade.</p>" }),
+    feat({ name: "Dague Neon Arms Fang", nameEn: "Neon Arms Fang Dagger", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Dague à double tranchant en céramique composite.</p>", descriptionEn: "<p>Double-edged composite ceramic dagger.</p>" }),
+    feat({ name: "Couteau de survie Meridian Claw", nameEn: "Meridian Claw Survival Knife", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Couteau de survie robuste avec lame dentelée.</p>", descriptionEn: "<p>Rugged survival knife with serrated blade.</p>" }),
+    feat({ name: "Couteau papillon OmniDyne Flicker", nameEn: "OmniDyne Flicker Butterfly Knife", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Couteau papillon ultra-rapide à déploiement magnétique.</p>", descriptionEn: "<p>Ultra-fast butterfly knife with magnetic deployment.</p>" }),
+    feat({ name: "Stiletto Apex Venom", nameEn: "Apex Venom Stiletto", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Lame fine et perforante, conçue pour les zones non blindées.</p>", descriptionEn: "<p>Thin piercing blade designed for unarmored gaps.</p>" }),
+    feat({ name: "Lame rétractable Kurotech Razor", nameEn: "Kurotech Razor Retractable Blade", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Lame à cran d'arrêt rétractable en titane noir.</p>", descriptionEn: "<p>Black titanium retractable switchblade.</p>" }),
+    feat({ name: "Machette Prismex Bushmaster", nameEn: "Prismex Bushmaster Machete", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Machette courte polyvalente à lame épaisse.</p>", descriptionEn: "<p>Versatile short machete with thick blade.</p>" }),
+    feat({ name: "Couteau de lancer NovaPulse Dart", nameEn: "NovaPulse Dart Throwing Knife", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Couteau équilibré pour le lancer ou le corps à corps.</p>", descriptionEn: "<p>Balanced knife for throwing or close combat.</p>" }),
+    feat({ name: "Tanto Kurogane Ghost", nameEn: "Kurogane Ghost Tanto", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Tanto japonais en acier traité au carbone.</p>", descriptionEn: "<p>Japanese tanto in carbon-treated steel.</p>" }),
+    feat({ name: "Kriss Titan Arms Serpent", nameEn: "Titan Arms Serpent Kris", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Lame ondulée traditionnelle, modernisée avec un alliage tranchant.</p>", descriptionEn: "<p>Traditional wavy blade modernized with a cutting alloy.</p>" }),
+    // --- Swords / long blades (long-weapons, VD FOR+2) — 8 ---
+    feat({ name: "Katana Kurogane Type-4", nameEn: "Kurogane Type-4 Katana", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Katana en acier moléculaire, tranchant comme un rasoir.</p>", descriptionEn: "<p>Molecular steel katana, razor-sharp.</p>" }),
+    feat({ name: "Épée large Titan Arms Claymore", nameEn: "Titan Arms Claymore Broadsword", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, description: "<p>Épée à deux mains en alliage renforcé, dévastatrice en mêlée.</p>", descriptionEn: "<p>Two-handed reinforced alloy sword, devastating in melee.</p>" }),
+    feat({ name: "Sabre Meridian Hussar", nameEn: "Meridian Hussar Saber", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, description: "<p>Sabre de cavalerie modernisé, léger et tranchant.</p>", descriptionEn: "<p>Modernized cavalry saber, light and sharp.</p>" }),
+    feat({ name: "Rapière NovaPulse Estoc", nameEn: "NovaPulse Estoc Rapier", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, description: "<p>Rapière d'escrime en fibre de carbone ultra-légère.</p>", descriptionEn: "<p>Ultra-light carbon fiber fencing rapier.</p>" }),
+    feat({ name: "Nodachi Kaze Tempest", nameEn: "Kaze Tempest Nodachi", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, description: "<p>Longue lame japonaise à deux mains, portée supérieure.</p>", descriptionEn: "<p>Long two-handed Japanese blade with superior reach.</p>" }),
+    feat({ name: "Cimeterre Apex Crescent", nameEn: "Apex Crescent Scimitar", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, description: "<p>Cimeterre incurvé optimisé pour les frappes tranchantes.</p>", descriptionEn: "<p>Curved scimitar optimized for slashing strikes.</p>" }),
+    feat({ name: "Épée vibrante Prismex Resonance", nameEn: "Prismex Resonance Vibroblade", featType: "weapon", cost: "advanced-equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 5e3, bookmarked: true, description: "<p>Lame longue à vibration ultrasonique, tranche les blindages légers.</p>", descriptionEn: "<p>Ultrasonic vibrating long blade that cuts through light armor.</p>" }),
+    feat({ name: "Machette longue Valkyr Jungle King", nameEn: "Valkyr Jungle King Long Machete", featType: "weapon", cost: "equipment", weaponType: "long-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 2, damageType: "physical", nuyenCost: 2500, description: "<p>Machette longue à lame épaisse pour environnements hostiles.</p>", descriptionEn: "<p>Long thick-blade machete for hostile environments.</p>" }),
+    // --- Clubs / bats (advanced-melee, VD 5) — 8 ---
+    feat({ name: "Batte renforcée Ironside", nameEn: "Ironside Reinforced Bat", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Batte en alliage composite avec noyau de plomb.</p>", descriptionEn: "<p>Composite alloy bat with lead core.</p>" }),
+    feat({ name: "Massue Titan Arms Ogre", nameEn: "Titan Arms Ogre Mace", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Massue lourde en acier trempé avec tête à ailettes.</p>", descriptionEn: "<p>Heavy tempered steel mace with flanged head.</p>" }),
+    feat({ name: "Marteau NovaPulse Sledge", nameEn: "NovaPulse Sledge Hammer", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Marteau de guerre compact à tête renforcée.</p>", descriptionEn: "<p>Compact war hammer with reinforced head.</p>" }),
+    feat({ name: "Nunchaku Kaze Whirlwind", nameEn: "Kaze Whirlwind Nunchaku", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Nunchaku en polymère durci avec chaîne rétractable.</p>", descriptionEn: "<p>Hardened polymer nunchaku with retractable chain.</p>" }),
+    feat({ name: "Matraque télescopique Apex Enforcer", nameEn: "Apex Enforcer Telescopic Baton", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Matraque télescopique en trois sections, déploiement rapide.</p>", descriptionEn: "<p>Three-section telescopic baton, quick deployment.</p>" }),
+    feat({ name: "Tonfas Meridian Guardian", nameEn: "Meridian Guardian Tonfas", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Paire de tonfas en fibre de carbone, polyvalents défense/attaque.</p>", descriptionEn: "<p>Carbon fiber tonfa pair, versatile defense and attack.</p>" }),
+    feat({ name: "Bâton bo Kurotech Sensei", nameEn: "Kurotech Sensei Bo Staff", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Bâton bo rétractable en alliage de titane.</p>", descriptionEn: "<p>Retractable titanium alloy bo staff.</p>" }),
+    feat({ name: "Morgenstern Valkyr Brute", nameEn: "Valkyr Brute Morningstar", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Fléau à boule cloutée, brutal et imparable.</p>", descriptionEn: "<p>Spiked ball flail, brutal and unstoppable.</p>" }),
+    // --- Tasers / shock weapons (tasers, VD 5) — 5 ---
+    feat({ name: "Matraque shock Zapper", nameEn: "Zapper Shock Baton", featType: "weapon", cost: "equipment", weaponType: "tasers", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Matraque électrique à haute tension.</p>", descriptionEn: "<p>High-voltage electric baton.</p>" }),
+    feat({ name: "Taser Neon Arms Volt", nameEn: "Neon Arms Volt Taser", featType: "weapon", cost: "equipment", weaponType: "tasers", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Taser à impulsion courte portée, efficace contre les blindages légers.</p>", descriptionEn: "<p>Short-range pulse taser, effective against light armor.</p>" }),
+    feat({ name: "Gants shock OmniDyne Thunder", nameEn: "OmniDyne Thunder Shock Gloves", featType: "weapon", cost: "equipment", weaponType: "tasers", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Gants renforcés avec décharge électrique au contact.</p>", descriptionEn: "<p>Reinforced gloves with electric discharge on contact.</p>" }),
+    feat({ name: "Fouet électrique Prismex Arc", nameEn: "Prismex Arc Electric Whip", featType: "weapon", cost: "advanced-equipment", weaponType: "tasers", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 5e3, description: "<p>Fouet conducteur qui délivre une décharge à chaque frappe.</p>", descriptionEn: "<p>Conductive whip that delivers a shock with every strike.</p>" }),
+    feat({ name: "Lance shock Kaze Storm", nameEn: "Kaze Storm Shock Lance", featType: "weapon", cost: "equipment", weaponType: "tasers", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Lance isolée avec pointe électrifiée à haute tension.</p>", descriptionEn: "<p>Insulated lance with high-voltage electrified tip.</p>" }),
+    // --- Exotic / monofilament (advanced-melee, VD 5) — 5 ---
+    feat({ name: "Lame monofilament Whisper", nameEn: "Whisper Monofilament Whip", featType: "weapon", cost: "advanced-equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 5e3, bookmarked: true, description: "<p>Fouet monofilament rétractable, tranche à peu près tout.</p>", descriptionEn: "<p>Retractable monofilament whip, cuts through nearly anything.</p>" }),
+    feat({ name: "Chaîne monofilament Kurotech Reaper", nameEn: "Kurotech Reaper Monofilament Chain", featType: "weapon", cost: "advanced-equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 5e3, description: "<p>Chaîne à maillons monofilament, arme de spécialiste.</p>", descriptionEn: "<p>Monofilament link chain, specialist weapon.</p>" }),
+    feat({ name: "Gantelet à griffes Apex Predator", nameEn: "Apex Predator Claw Gauntlet", featType: "weapon", cost: "advanced-equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 5e3, description: "<p>Gantelet à griffes rétractables en alliage monomoléculaire.</p>", descriptionEn: "<p>Retractable monomolecular alloy claw gauntlet.</p>" }),
+    feat({ name: "Éventail de combat Kaze Mantis", nameEn: "Kaze Mantis War Fan", featType: "weapon", cost: "advanced-equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 5e3, description: "<p>Éventail de combat aux lames cachées, élégant et mortel.</p>", descriptionEn: "<p>War fan with hidden blades, elegant and lethal.</p>" }),
+    feat({ name: "Kusarigama NovaPulse Shadow", nameEn: "NovaPulse Shadow Kusarigama", featType: "weapon", cost: "advanced-equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 5e3, description: "<p>Faucille à chaîne lestée, arme traditionnelle modernisée.</p>", descriptionEn: "<p>Weighted chain sickle, a modernized traditional weapon.</p>" }),
+    // --- Bare hands / martial arts (bare-hands, VD FOR) — 5 ---
+    feat({ name: "Arts martiaux : Karaté Kurotech", nameEn: "Kurotech Karate Training", featType: "weapon", cost: "equipment", weaponType: "bare-hands", vdMode: "attribute", vdAttribute: "strength", vdBonus: 0, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Entraînement karaté axé sur les frappes percutantes.</p>", descriptionEn: "<p>Karate training focused on powerful strikes.</p>" }),
+    feat({ name: "Arts martiaux : Muay Thaï Kaze", nameEn: "Kaze Muay Thai Training", featType: "weapon", cost: "equipment", weaponType: "bare-hands", vdMode: "attribute", vdAttribute: "strength", vdBonus: 0, damageType: "physical", nuyenCost: 2500, description: "<p>Techniques de coudes et genoux dévastateurs.</p>", descriptionEn: "<p>Devastating elbow and knee techniques.</p>" }),
+    feat({ name: "Arts martiaux : Krav Maga Valkyr", nameEn: "Valkyr Krav Maga Training", featType: "weapon", cost: "equipment", weaponType: "bare-hands", vdMode: "attribute", vdAttribute: "strength", vdBonus: 0, damageType: "physical", nuyenCost: 2500, description: "<p>Self-défense brutale et efficace, sans fioritures.</p>", descriptionEn: "<p>Brutal and efficient self-defense, no frills.</p>" }),
+    feat({ name: "Poings d'acier Titan Arms", nameEn: "Titan Arms Steel Fists", featType: "weapon", cost: "equipment", weaponType: "bare-hands", vdMode: "attribute", vdAttribute: "strength", vdBonus: 0, damageType: "physical", nuyenCost: 2500, description: "<p>Poing américain lourd en acier trempé.</p>", descriptionEn: "<p>Heavy tempered steel brass knuckles.</p>" }),
+    feat({ name: "Arts martiaux : Jiu-Jitsu NovaPulse", nameEn: "NovaPulse Jiu-Jitsu Training", featType: "weapon", cost: "equipment", weaponType: "bare-hands", vdMode: "attribute", vdAttribute: "strength", vdBonus: 0, damageType: "physical", nuyenCost: 2500, description: "<p>Techniques de soumission et de projection au sol.</p>", descriptionEn: "<p>Submission and ground takedown techniques.</p>" }),
+    // --- Improvised weapons (advanced-melee, VD 5) — 5 ---
+    feat({ name: "Pied-de-biche Meridian Leverage", nameEn: "Meridian Leverage Crowbar", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Pied-de-biche renforcé, outil et arme de fortune.</p>", descriptionEn: "<p>Reinforced crowbar, tool and improvised weapon.</p>" }),
+    feat({ name: "Chaîne lourde Titan Arms Anchor", nameEn: "Titan Arms Anchor Heavy Chain", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Section de chaîne lourde utilisée comme fléau improvisé.</p>", descriptionEn: "<p>Heavy chain section used as an improvised flail.</p>" }),
+    feat({ name: "Tuyau en acier Apex Sewer King", nameEn: "Apex Sewer King Steel Pipe", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Tuyau d'acier récupéré, arme de rue par excellence.</p>", descriptionEn: "<p>Salvaged steel pipe, the quintessential street weapon.</p>" }),
+    feat({ name: "Clé à molette Prismex Wrecker", nameEn: "Prismex Wrecker Pipe Wrench", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Clé à molette surdimensionnée, lourde et redoutable.</p>", descriptionEn: "<p>Oversized pipe wrench, heavy and fearsome.</p>" }),
+    feat({ name: "Bouteille cassée Neon Arms Last Call", nameEn: "Neon Arms Last Call Broken Bottle", featType: "weapon", cost: "equipment", weaponType: "advanced-melee", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Bouteille brisée en verre renforcé, arme de bar classique.</p>", descriptionEn: "<p>Reinforced glass broken bottle, classic bar weapon.</p>" }),
+    // --- Cyber-implant weapons (short-weapons, VD FOR+1) — 4 ---
+    feat({ name: "Lames de poignet Kurotech Mantis", nameEn: "Kurotech Mantis Wrist Blades", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Lames rétractables implantées dans les avant-bras.</p>", descriptionEn: "<p>Retractable blades implanted in the forearms.</p>" }),
+    feat({ name: "Griffes cyber Apex Lynx", nameEn: "Apex Lynx Cyber Claws", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Griffes cybernétiques sous les ongles, toujours dissimulées.</p>", descriptionEn: "<p>Cybernetic claws under the fingernails, always concealed.</p>" }),
+    feat({ name: "Éperon cybernétique OmniDyne Spike", nameEn: "OmniDyne Spike Cyberspur", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Éperon rétractable au niveau du coude, frappe surprise.</p>", descriptionEn: "<p>Retractable elbow spur for surprise strikes.</p>" }),
+    feat({ name: "Main-lame Valkyr Edge", nameEn: "Valkyr Edge Hand Blade", featType: "weapon", cost: "equipment", weaponType: "short-weapons", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Lame intégrée dans la paume, déploiement instantané.</p>", descriptionEn: "<p>Palm-integrated blade with instant deployment.</p>" })
+  ],
+  pistol: [
+    // --- Pocket pistols (VD 3) — 5 ---
+    feat({ name: "Neon Arms Stiletto .22", nameEn: "Neon Arms Stiletto .22", featType: "weapon", cost: "equipment", weaponType: "pocket-pistols", vdMode: "custom", vdCustomValue: 3, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet de poche compact, facile à dissimuler.</p>", descriptionEn: "<p>Compact pocket pistol, easy to conceal.</p>" }),
+    feat({ name: "Prismex Whisper .25", nameEn: "Prismex Whisper .25", featType: "weapon", cost: "equipment", weaponType: "pocket-pistols", vdMode: "custom", vdCustomValue: 3, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet silencieux intégré, idéal pour les infiltrations.</p>", descriptionEn: "<p>Built-in silenced pistol, ideal for infiltration.</p>" }),
+    feat({ name: "OmniDyne Minnow .22LR", nameEn: "OmniDyne Minnow .22LR", featType: "weapon", cost: "equipment", weaponType: "pocket-pistols", vdMode: "custom", vdCustomValue: 3, damageType: "physical", nuyenCost: 2500, description: "<p>Derringer à deux coups, tient dans la paume de la main.</p>", descriptionEn: "<p>Two-shot derringer, fits in the palm of your hand.</p>" }),
+    feat({ name: "Kaze Petal .22", nameEn: "Kaze Petal .22", featType: "weapon", cost: "equipment", weaponType: "pocket-pistols", vdMode: "custom", vdCustomValue: 3, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet ultra-plat en céramique, indétectable aux scanners.</p>", descriptionEn: "<p>Ultra-flat ceramic pistol, undetectable by scanners.</p>" }),
+    feat({ name: "Meridian Cricket .25", nameEn: "Meridian Cricket .25", featType: "weapon", cost: "equipment", weaponType: "pocket-pistols", vdMode: "custom", vdCustomValue: 3, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Micro-pistolet de secours avec chargeur cinq coups.</p>", descriptionEn: "<p>Backup micro-pistol with five-round magazine.</p>" }),
+    // --- Light pistols (VD 4) — 8 ---
+    feat({ name: "Apex Sentinel 9mm", nameEn: "Apex Sentinel 9mm", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Pistolet léger fiable, le choix du runner sensé.</p>", descriptionEn: "<p>Reliable light pistol, the sensible runner's choice.</p>" }),
+    feat({ name: "Valkyr P9 Compact", nameEn: "Valkyr P9 Compact", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet compact 9mm à recul réduit, facile à manier.</p>", descriptionEn: "<p>Compact 9mm with reduced recoil, easy to handle.</p>" }),
+    feat({ name: "Kurogane Sparrow 9mm", nameEn: "Kurogane Sparrow 9mm", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet léger avec viseur holographique intégré.</p>", descriptionEn: "<p>Light pistol with integrated holographic sight.</p>" }),
+    feat({ name: "NovaPulse Guardian 9mm", nameEn: "NovaPulse Guardian 9mm", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet de service standard des forces de sécurité privées.</p>", descriptionEn: "<p>Standard service pistol for private security forces.</p>" }),
+    feat({ name: "Titan Arms Deputy .38", nameEn: "Titan Arms Deputy .38", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Revolver léger classique, fiable et abordable.</p>", descriptionEn: "<p>Classic light revolver, reliable and affordable.</p>" }),
+    feat({ name: "Meridian Civic 9mm", nameEn: "Meridian Civic 9mm", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet civil populaire, produit en masse à bas coût.</p>", descriptionEn: "<p>Popular civilian pistol, mass-produced at low cost.</p>" }),
+    feat({ name: "Neon Arms Lynx 9mm", nameEn: "Neon Arms Lynx 9mm", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet léger avec rail tactique et compensateur.</p>", descriptionEn: "<p>Light pistol with tactical rail and compensator.</p>" }),
+    feat({ name: "Prismex Halo 9mm", nameEn: "Prismex Halo 9mm", featType: "weapon", cost: "equipment", weaponType: "light-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet design avec finition chromée et chargeur étendu.</p>", descriptionEn: "<p>Designer pistol with chrome finish and extended magazine.</p>" }),
+    // --- Automatic pistols (VD 4) — 5 ---
+    feat({ name: "Valkyr HK-7", nameEn: "Valkyr HK-7", featType: "weapon", cost: "equipment", weaponType: "automatic-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Pistolet automatique compact avec sélecteur de tir.</p>", descriptionEn: "<p>Compact automatic pistol with fire selector.</p>" }),
+    feat({ name: "Kurogane Rapid 10mm", nameEn: "Kurogane Rapid 10mm", featType: "weapon", cost: "equipment", weaponType: "automatic-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet automatique à haute cadence avec chargeur allongé.</p>", descriptionEn: "<p>High rate-of-fire automatic pistol with extended magazine.</p>" }),
+    feat({ name: "Apex Staccato Auto", nameEn: "Apex Staccato Auto", featType: "weapon", cost: "equipment", weaponType: "automatic-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet-mitrailleur de poche avec crosse pliante.</p>", descriptionEn: "<p>Pocket machine pistol with folding stock.</p>" }),
+    feat({ name: "Meridian Tempest Auto", nameEn: "Meridian Tempest Auto", featType: "weapon", cost: "equipment", weaponType: "automatic-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet automatique avec compensateur de recul intégré.</p>", descriptionEn: "<p>Automatic pistol with integrated recoil compensator.</p>" }),
+    feat({ name: "NovaPulse Burst-9", nameEn: "NovaPulse Burst-9", featType: "weapon", cost: "equipment", weaponType: "automatic-pistols", vdMode: "custom", vdCustomValue: 4, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet rafale trois coups, précis et contrôlable.</p>", descriptionEn: "<p>Three-round burst pistol, precise and controllable.</p>" }),
+    // --- Heavy pistols (VD 5) — 7 ---
+    feat({ name: "Apex Ironside .44", nameEn: "Apex Ironside .44", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Revolver lourd, fait du bruit et fait mal.</p>", descriptionEn: "<p>Heavy revolver, loud and painful.</p>" }),
+    feat({ name: "Titan Arms Rhino .45", nameEn: "Titan Arms Rhino .45", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet lourd semi-auto avec canon renforcé.</p>", descriptionEn: "<p>Heavy semi-auto pistol with reinforced barrel.</p>" }),
+    feat({ name: "Valkyr Warhawk .44 Magnum", nameEn: "Valkyr Warhawk .44 Magnum", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Revolver magnum massif, puissance brute à l'état pur.</p>", descriptionEn: "<p>Massive magnum revolver, raw stopping power.</p>" }),
+    feat({ name: "Kurogane Enforcer 10mm", nameEn: "Kurogane Enforcer 10mm", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet lourd 10mm avec chargeur double pile.</p>", descriptionEn: "<p>Heavy 10mm pistol with double-stack magazine.</p>" }),
+    feat({ name: "Neon Arms Nomad .50", nameEn: "Neon Arms Nomad .50", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet calibre .50, recul brutal mais dégâts massifs.</p>", descriptionEn: "<p>Caliber .50 pistol, brutal recoil but massive damage.</p>" }),
+    feat({ name: "Meridian Judge .357", nameEn: "Meridian Judge .357", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Revolver lourd polyvalent en acier brossé.</p>", descriptionEn: "<p>Versatile heavy revolver in brushed steel.</p>" }),
+    feat({ name: "Prismex Dominator .45 ACP", nameEn: "Prismex Dominator .45 ACP", featType: "weapon", cost: "equipment", weaponType: "heavy-pistols", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Pistolet lourd de compétition, précision et puissance.</p>", descriptionEn: "<p>Competition heavy pistol, precision and power.</p>" })
+  ],
+  rifle: [
+    // --- Assault rifles (VD 7) — 5 ---
+    feat({ name: "Kurogane AR-77", nameEn: "Kurogane AR-77", featType: "weapon", cost: "equipment", weaponType: "assault-rifles", vdMode: "custom", vdCustomValue: 7, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Fusil d'assaut standard, polyvalent et fiable.</p>", descriptionEn: "<p>Standard assault rifle, versatile and reliable.</p>" }),
+    feat({ name: "Valkyr Commando 5.56", nameEn: "Valkyr Commando 5.56", featType: "weapon", cost: "equipment", weaponType: "assault-rifles", vdMode: "custom", vdCustomValue: 7, damageType: "physical", nuyenCost: 2500, description: "<p>Fusil d'assaut compact pour opérations rapprochées.</p>", descriptionEn: "<p>Compact assault rifle for close-quarters operations.</p>" }),
+    feat({ name: "Titan Arms Warrior 7.62", nameEn: "Titan Arms Warrior 7.62", featType: "weapon", cost: "equipment", weaponType: "assault-rifles", vdMode: "custom", vdCustomValue: 7, damageType: "physical", nuyenCost: 2500, description: "<p>Fusil de combat lourd, calibre 7.62, puissance de feu supérieure.</p>", descriptionEn: "<p>Heavy battle rifle, 7.62 caliber, superior firepower.</p>" }),
+    feat({ name: "Neon Arms Spectre 5.56", nameEn: "Neon Arms Spectre 5.56", featType: "weapon", cost: "equipment", weaponType: "assault-rifles", vdMode: "custom", vdCustomValue: 7, damageType: "physical", nuyenCost: 2500, description: "<p>Fusil d'assaut bullpup compact avec silencieux intégré.</p>", descriptionEn: "<p>Compact bullpup assault rifle with integrated suppressor.</p>" }),
+    feat({ name: "Meridian Patriot 6.8", nameEn: "Meridian Patriot 6.8", featType: "weapon", cost: "equipment", weaponType: "assault-rifles", vdMode: "custom", vdCustomValue: 7, damageType: "physical", nuyenCost: 2500, description: "<p>Fusil d'assaut modulaire avec système de rails universel.</p>", descriptionEn: "<p>Modular assault rifle with universal rail system.</p>" }),
+    // --- Shotguns (VD 8) — 4 ---
+    feat({ name: "Meridian Scorpio", nameEn: "Meridian Scorpio", featType: "weapon", cost: "equipment", weaponType: "shotguns", vdMode: "custom", vdCustomValue: 8, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Shotgun à pompe dévastateur à courte portée.</p>", descriptionEn: "<p>Pump-action shotgun, devastating at close range.</p>" }),
+    feat({ name: "Titan Arms Boomstick", nameEn: "Titan Arms Boomstick", featType: "weapon", cost: "equipment", weaponType: "shotguns", vdMode: "custom", vdCustomValue: 8, damageType: "physical", nuyenCost: 2500, description: "<p>Shotgun à canon scié, compact et dévastateur.</p>", descriptionEn: "<p>Sawed-off shotgun, compact and devastating.</p>" }),
+    feat({ name: "Valkyr Breacher Auto-12", nameEn: "Valkyr Breacher Auto-12", featType: "weapon", cost: "equipment", weaponType: "shotguns", vdMode: "custom", vdCustomValue: 8, damageType: "physical", nuyenCost: 2500, description: "<p>Shotgun semi-automatique calibre 12 avec chargeur tambour.</p>", descriptionEn: "<p>Semi-auto 12-gauge shotgun with drum magazine.</p>" }),
+    feat({ name: "Kurogane Street Sweeper", nameEn: "Kurogane Street Sweeper", featType: "weapon", cost: "equipment", weaponType: "shotguns", vdMode: "custom", vdCustomValue: 8, damageType: "physical", nuyenCost: 2500, description: "<p>Shotgun rotatif à haute cadence, nettoyage de zone garanti.</p>", descriptionEn: "<p>Rotary high-rate shotgun, guaranteed area clearance.</p>" }),
+    // --- Sniper rifles (VD 10, advanced-equipment) — 4 ---
+    feat({ name: "NovaPulse Marksman X", nameEn: "NovaPulse Marksman X", featType: "weapon", cost: "advanced-equipment", weaponType: "sniper-rifles", vdMode: "custom", vdCustomValue: 10, damageType: "physical", nuyenCost: 5e3, bookmarked: true, description: "<p>Fusil de précision haute performance avec stabilisateur gyroscopique.</p>", descriptionEn: "<p>High-performance sniper rifle with gyroscopic stabilizer.</p>" }),
+    feat({ name: "Apex Longbow .338", nameEn: "Apex Longbow .338", featType: "weapon", cost: "advanced-equipment", weaponType: "sniper-rifles", vdMode: "custom", vdCustomValue: 10, damageType: "physical", nuyenCost: 5e3, description: "<p>Fusil de précision longue portée avec bipied intégré.</p>", descriptionEn: "<p>Long-range precision rifle with integrated bipod.</p>" }),
+    feat({ name: "Kurotech Phantom .50 BMG", nameEn: "Kurotech Phantom .50 BMG", featType: "weapon", cost: "advanced-equipment", weaponType: "sniper-rifles", vdMode: "custom", vdCustomValue: 10, damageType: "physical", nuyenCost: 5e3, description: "<p>Fusil anti-matériel lourd, perce les blindages légers.</p>", descriptionEn: "<p>Heavy anti-materiel rifle, pierces light armor.</p>" }),
+    feat({ name: "Valkyr Wraith SR", nameEn: "Valkyr Wraith SR", featType: "weapon", cost: "advanced-equipment", weaponType: "sniper-rifles", vdMode: "custom", vdCustomValue: 10, damageType: "physical", nuyenCost: 5e3, description: "<p>Fusil de sniper modulaire avec silencieux et visée intelligente.</p>", descriptionEn: "<p>Modular sniper rifle with suppressor and smart scope.</p>" })
+  ],
+  smg: [
+    // --- SMGs (VD 5) — 5 ---
+    feat({ name: "Kurogane Viper SMG", nameEn: "Kurogane Viper SMG", featType: "weapon", cost: "equipment", weaponType: "smgs", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Mitraillette compacte, idéale pour le combat urbain.</p>", descriptionEn: "<p>Compact submachine gun, ideal for urban combat.</p>" }),
+    feat({ name: "Neon Arms Hornet SMG", nameEn: "Neon Arms Hornet SMG", featType: "weapon", cost: "equipment", weaponType: "smgs", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>SMG ultra-léger avec cadence de tir élevée.</p>", descriptionEn: "<p>Ultra-light SMG with high rate of fire.</p>" }),
+    feat({ name: "Apex Sidewinder PDW", nameEn: "Apex Sidewinder PDW", featType: "weapon", cost: "equipment", weaponType: "smgs", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Arme de défense personnelle compacte avec crosse rétractable.</p>", descriptionEn: "<p>Compact personal defense weapon with retractable stock.</p>" }),
+    feat({ name: "Meridian Cyclone 10mm", nameEn: "Meridian Cyclone 10mm", featType: "weapon", cost: "equipment", weaponType: "smgs", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>SMG robuste en calibre 10mm, bon pouvoir d'arrêt.</p>", descriptionEn: "<p>Robust 10mm SMG with good stopping power.</p>" }),
+    feat({ name: "Prismex Vector 9mm", nameEn: "Prismex Vector 9mm", featType: "weapon", cost: "equipment", weaponType: "smgs", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>SMG à recul super-réduit grâce à un système de contrepoids.</p>", descriptionEn: "<p>Super-reduced recoil SMG with counterweight system.</p>" })
+  ],
+  heavy: [
+    // --- Machine guns (VD 9, advanced-equipment) — 1 ---
+    feat({ name: "Titan Arms Devastator", nameEn: "Titan Arms Devastator", featType: "weapon", cost: "advanced-equipment", weaponType: "machine-guns", vdMode: "custom", vdCustomValue: 9, damageType: "physical", nuyenCost: 5e3, bookmarked: true, description: "<p>Mitrailleuse lourde, suppression garantie.</p>", descriptionEn: "<p>Heavy machine gun, guaranteed suppression.</p>" }),
+    // --- Grenade launchers (VD 10, advanced-equipment) — 1 ---
+    feat({ name: "Apex Thunder Lance", nameEn: "Apex Thunder Lance", featType: "weapon", cost: "advanced-equipment", weaponType: "grenade-launchers", vdMode: "custom", vdCustomValue: 10, damageType: "physical", nuyenCost: 5e3, description: "<p>Lance-grenades semi-automatique à 6 coups.</p>", descriptionEn: "<p>Semi-automatic 6-shot grenade launcher.</p>" }),
+    // --- Rocket launcher (VD 12, advanced-equipment) — 1 ---
+    feat({ name: "NovaPulse Hellfire ATRL", nameEn: "NovaPulse Hellfire ATRL", featType: "weapon", cost: "advanced-equipment", weaponType: "rocket-launchers", vdMode: "custom", vdCustomValue: 12, damageType: "physical", nuyenCost: 5e3, description: "<p>Lance-roquettes antichar à guidage laser, un tir suffit.</p>", descriptionEn: "<p>Laser-guided anti-tank rocket launcher, one shot is enough.</p>" })
+  ],
+  throwing: [
+    // --- Throwing weapons & grenades — 4 ---
+    feat({ name: "Couteaux de lancer Kaze", nameEn: "Kaze Throwing Knives", featType: "weapon", cost: "equipment", weaponType: "throwing", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Set de couteaux de lancer équilibrés.</p>", descriptionEn: "<p>Set of balanced throwing knives.</p>" }),
+    feat({ name: "Shurikens Kaze Eclipse", nameEn: "Kaze Eclipse Shuriken", featType: "weapon", cost: "equipment", weaponType: "throwing", vdMode: "attribute", vdAttribute: "strength", vdBonus: 1, damageType: "physical", nuyenCost: 2500, description: "<p>Étoiles de lancer aérodynamiques en acier trempé.</p>", descriptionEn: "<p>Aerodynamic tempered steel throwing stars.</p>" }),
+    feat({ name: "Grenades frag Apex", nameEn: "Apex Frag Grenades", featType: "weapon", cost: "equipment", weaponType: "grenades", vdMode: "custom", vdCustomValue: 7, damageType: "physical", nuyenCost: 2500, bookmarked: true, description: "<p>Grenades à fragmentation standard.</p>", descriptionEn: "<p>Standard fragmentation grenades.</p>" }),
+    feat({ name: "Grenades fumigènes Meridian Haze", nameEn: "Meridian Haze Gas Grenades", featType: "weapon", cost: "equipment", weaponType: "gas-grenades", vdMode: "custom", vdCustomValue: 5, damageType: "physical", nuyenCost: 2500, description: "<p>Grenades lacrymogènes à dispersion rapide.</p>", descriptionEn: "<p>Fast-dispersal tear gas grenades.</p>" })
+  ]
+};
+const SPELL_TEMPLATES = [
+  // ── Combat Spells (20) ──
+  feat({ name: "Boulon de mana", nameEn: "Mana Bolt", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Projectile de mana brut qui frappe l'esprit de la cible.</p>", descriptionEn: "<p>Raw mana projectile that strikes the target's mind.</p>" }),
+  feat({ name: "Boule de feu", nameEn: "Fireball", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Explosion de flammes magiques dans une zone.</p>", descriptionEn: "<p>Explosion of magical flames in an area.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "Sorts de combat" }] }),
+  feat({ name: "Éclair", nameEn: "Lightning Bolt", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Arc électrique dévastateur canalisé par la volonté.</p>", descriptionEn: "<p>Devastating electrical arc channeled through willpower.</p>" }),
+  feat({ name: "Flèche de givre", nameEn: "Frost Arrow", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Projectile de glace perforant formé de mana condensé.</p>", descriptionEn: "<p>Piercing ice projectile formed from condensed mana.</p>" }),
+  feat({ name: "Vague de choc", nameEn: "Shockwave", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Onde de force concentrique qui repousse tout sur son passage.</p>", descriptionEn: "<p>Concentric force wave that pushes everything in its path.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "Sorts de combat" }] }),
+  feat({ name: "Lance acide", nameEn: "Acid Lance", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Jet d'acide corrosif projeté depuis la paume du lanceur.</p>", descriptionEn: "<p>Corrosive acid jet projected from the caster's palm.</p>" }),
+  feat({ name: "Étouffement", nameEn: "Suffocation", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Comprime l'air autour de la cible pour l'asphyxier.</p>", descriptionEn: "<p>Compresses air around the target to asphyxiate them.</p>" }),
+  feat({ name: "Souffle du dragon", nameEn: "Dragon's Breath", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Cône de flammes magiques crachées devant le lanceur.</p>", descriptionEn: "<p>Cone of magical flames breathed forth by the caster.</p>" }),
+  feat({ name: "Décharge de mana", nameEn: "Mana Discharge", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Libération brutale d'énergie magique contre une cible unique.</p>", descriptionEn: "<p>Brutal release of magical energy against a single target.</p>" }),
+  feat({ name: "Rayon désintégrateur", nameEn: "Disintegration Ray", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Rayon d'énergie pure qui désagrège la matière au niveau moléculaire.</p>", descriptionEn: "<p>Pure energy ray that disintegrates matter at the molecular level.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "Sorts de combat" }] }),
+  feat({ name: "Tempête de grêle", nameEn: "Hailstorm", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Invoque une pluie de grêlons magiques sur une zone.</p>", descriptionEn: "<p>Summons a rain of magical hailstones over an area.</p>" }),
+  feat({ name: "Frappe spectrale", nameEn: "Spectral Strike", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Coup astral qui traverse les barrières physiques.</p>", descriptionEn: "<p>Astral strike that passes through physical barriers.</p>" }),
+  feat({ name: "Griffes d'ombre", nameEn: "Shadow Claws", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Projette des lames d'ombre qui lacèrent la cible.</p>", descriptionEn: "<p>Projects shadow blades that lacerate the target.</p>" }),
+  feat({ name: "Nova de mana", nameEn: "Mana Nova", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Explosion sphérique de mana brut centrée sur le lanceur.</p>", descriptionEn: "<p>Spherical explosion of raw mana centered on the caster.</p>" }),
+  feat({ name: "Chaîne d'éclairs", nameEn: "Chain Lightning", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Arc électrique qui rebondit entre plusieurs cibles.</p>", descriptionEn: "<p>Electrical arc that bounces between multiple targets.</p>" }),
+  feat({ name: "Poing de terre", nameEn: "Earth Fist", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Soulève un poing de roche du sol pour frapper la cible.</p>", descriptionEn: "<p>Raises a rock fist from the ground to strike the target.</p>" }),
+  feat({ name: "Torrent de force", nameEn: "Force Torrent", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Vague télékinétique qui balaie tout devant le lanceur.</p>", descriptionEn: "<p>Telekinetic wave that sweeps everything in front of the caster.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "Sorts de combat" }] }),
+  feat({ name: "Pluie de cendres", nameEn: "Ash Rain", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Pluie brûlante de cendres incandescentes sur la zone ciblée.</p>", descriptionEn: "<p>Burning rain of incandescent ash on the targeted area.</p>" }),
+  feat({ name: "Dard venimeux", nameEn: "Venom Dart", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Fléchette de mana imprégnée de toxine astrale.</p>", descriptionEn: "<p>Mana dart imbued with astral toxin.</p>" }),
+  feat({ name: "Rupture sonique", nameEn: "Sonic Rupture", featType: "spell", cost: "equipment", damageType: "physical", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Onde sonore concentrée qui fait éclater la matière.</p>", descriptionEn: "<p>Focused sonic wave that shatters matter.</p>" }),
+  // ── Detection Spells (15) ──
+  feat({ name: "Détection de la vie", nameEn: "Detect Life", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Perçoit les auras vivantes dans un rayon étendu.</p>", descriptionEn: "<p>Perceives living auras within an extended radius.</p>" }),
+  feat({ name: "Clairvoyance", nameEn: "Clairvoyance", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Permet de percevoir à distance à travers un point fixe.</p>", descriptionEn: "<p>Allows remote perception through a fixed point.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "Sorts de détection" }] }),
+  feat({ name: "Détection des ennemis", nameEn: "Detect Enemies", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Révèle la présence et la position d'individus hostiles.</p>", descriptionEn: "<p>Reveals the presence and position of hostile individuals.</p>" }),
+  feat({ name: "Vision astrale", nameEn: "Astral Sight", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Confère la capacité de percevoir le plan astral.</p>", descriptionEn: "<p>Grants the ability to perceive the astral plane.</p>" }),
+  feat({ name: "Sens du danger", nameEn: "Sense Danger", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Alerte le lanceur en cas de menace imminente.</p>", descriptionEn: "<p>Alerts the caster to imminent threats.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "Sorts de détection" }] }),
+  feat({ name: "Détection de la magie", nameEn: "Detect Magic", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Révèle les sources de magie active et les enchantements.</p>", descriptionEn: "<p>Reveals sources of active magic and enchantments.</p>" }),
+  feat({ name: "Traque astrale", nameEn: "Astral Tracking", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Suit la trace astrale laissée par une créature ou un sort.</p>", descriptionEn: "<p>Follows the astral trail left by a creature or spell.</p>" }),
+  feat({ name: "Cartographie mentale", nameEn: "Mind Map", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée une carte mentale de l'environnement proche.</p>", descriptionEn: "<p>Creates a mental map of the immediate surroundings.</p>" }),
+  feat({ name: "Analyse d'aura", nameEn: "Aura Reading", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Lit l'aura d'une cible pour déterminer son état émotionnel et magique.</p>", descriptionEn: "<p>Reads a target's aura to determine emotional and magical state.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "Sorts de détection" }] }),
+  feat({ name: "Écoute à distance", nameEn: "Remote Listening", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Permet d'entendre les sons autour d'un point distant.</p>", descriptionEn: "<p>Allows hearing sounds around a distant point.</p>" }),
+  feat({ name: "Psychométrie", nameEn: "Psychometry", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Lit les impressions psychiques laissées sur un objet.</p>", descriptionEn: "<p>Reads psychic impressions left on an object.</p>" }),
+  feat({ name: "Vision thermique", nameEn: "Thermal Vision", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Confère la capacité de voir les signatures thermiques.</p>", descriptionEn: "<p>Grants the ability to see thermal signatures.</p>" }),
+  feat({ name: "Détection des esprits", nameEn: "Detect Spirits", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Révèle la présence d'esprits invoqués ou errants.</p>", descriptionEn: "<p>Reveals the presence of summoned or wandering spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "Sorts de détection" }] }),
+  feat({ name: "Sonde mentale", nameEn: "Mind Probe", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Sonde l'esprit de la cible pour extraire des informations.</p>", descriptionEn: "<p>Probes the target's mind to extract information.</p>" }),
+  feat({ name: "Révélation des passages", nameEn: "Reveal Passages", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Détecte les portes secrètes et passages cachés à proximité.</p>", descriptionEn: "<p>Detects secret doors and hidden passages nearby.</p>" }),
+  // ── Health Spells (15) ──
+  feat({ name: "Guérison", nameEn: "Heal", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Canalise le mana pour accélérer la guérison des blessures.</p>", descriptionEn: "<p>Channels mana to accelerate wound healing.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_health-spells", rrLabel: "Sorts de santé" }] }),
+  feat({ name: "Antidote", nameEn: "Antidote", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Neutralise les toxines et poisons dans le corps de la cible.</p>", descriptionEn: "<p>Neutralizes toxins and poisons in the target's body.</p>" }),
+  feat({ name: "Régénération", nameEn: "Regeneration", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Accélère la régénération cellulaire pour refermer les plaies.</p>", descriptionEn: "<p>Accelerates cellular regeneration to close wounds.</p>" }),
+  feat({ name: "Purification", nameEn: "Purification", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Élimine les maladies et infections du corps de la cible.</p>", descriptionEn: "<p>Eliminates diseases and infections from the target's body.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_health-spells", rrLabel: "Sorts de santé" }] }),
+  feat({ name: "Augmentation de réflexes", nameEn: "Reflex Boost", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Accélère les réflexes de la cible par magie.</p>", descriptionEn: "<p>Magically accelerates the target's reflexes.</p>" }),
+  feat({ name: "Résistance à la douleur", nameEn: "Pain Relief", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Supprime la sensation de douleur chez la cible.</p>", descriptionEn: "<p>Suppresses the sensation of pain in the target.</p>" }),
+  feat({ name: "Stabilisation", nameEn: "Stabilize", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Stabilise un patient mourant pour empêcher la dégradation.</p>", descriptionEn: "<p>Stabilizes a dying patient to prevent deterioration.</p>" }),
+  feat({ name: "Augmentation de force", nameEn: "Strength Boost", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Augmente temporairement la force physique de la cible.</p>", descriptionEn: "<p>Temporarily increases the target's physical strength.</p>" }),
+  feat({ name: "Augmentation d'agilité", nameEn: "Agility Boost", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Augmente temporairement l'agilité de la cible.</p>", descriptionEn: "<p>Temporarily increases the target's agility.</p>" }),
+  feat({ name: "Vision de l'aigle", nameEn: "Eagle Eye", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Améliore la vision de la cible au-delà des limites naturelles.</p>", descriptionEn: "<p>Enhances the target's vision beyond natural limits.</p>" }),
+  feat({ name: "Second souffle", nameEn: "Second Wind", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Restaure l'endurance et la vitalité de la cible épuisée.</p>", descriptionEn: "<p>Restores endurance and vitality to an exhausted target.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_health-spells", rrLabel: "Sorts de santé" }] }),
+  feat({ name: "Protection contre les toxines", nameEn: "Toxin Ward", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée une barrière magique qui filtre les substances toxiques.</p>", descriptionEn: "<p>Creates a magical barrier that filters toxic substances.</p>" }),
+  feat({ name: "Restauration cellulaire", nameEn: "Cellular Restoration", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Répare les tissus endommagés au niveau cellulaire.</p>", descriptionEn: "<p>Repairs damaged tissue at the cellular level.</p>" }),
+  feat({ name: "Endurance du troll", nameEn: "Troll Endurance", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Confère une résistance surnaturelle aux dommages physiques.</p>", descriptionEn: "<p>Grants supernatural resistance to physical damage.</p>" }),
+  feat({ name: "Transfert vital", nameEn: "Vital Transfer", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Transfère la vitalité du lanceur vers une cible blessée.</p>", descriptionEn: "<p>Transfers the caster's vitality to a wounded target.</p>" }),
+  // ── Illusion Spells (20) ──
+  feat({ name: "Invisibilité", nameEn: "Invisibility", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Rend la cible invisible à l'œil nu.</p>", descriptionEn: "<p>Renders the target invisible to the naked eye.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "Sorts d'illusion" }] }),
+  feat({ name: "Chaos", nameEn: "Chaos", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée des illusions chaotiques dans l'esprit des cibles.</p>", descriptionEn: "<p>Creates chaotic illusions in the targets' minds.</p>" }),
+  feat({ name: "Confusion", nameEn: "Confusion", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Brouille les perceptions et les pensées de la cible.</p>", descriptionEn: "<p>Scrambles the target's perceptions and thoughts.</p>" }),
+  feat({ name: "Double illusoire", nameEn: "Phantom Double", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée un double illusoire du lanceur pour tromper les ennemis.</p>", descriptionEn: "<p>Creates an illusory double of the caster to deceive enemies.</p>" }),
+  feat({ name: "Masque", nameEn: "Mask", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Modifie l'apparence physique de la cible.</p>", descriptionEn: "<p>Alters the target's physical appearance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "Sorts d'illusion" }] }),
+  feat({ name: "Silence", nameEn: "Silence", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée une zone de silence total autour de la cible.</p>", descriptionEn: "<p>Creates a zone of total silence around the target.</p>" }),
+  feat({ name: "Mirage", nameEn: "Mirage", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Projette une illusion réaliste d'un lieu ou objet.</p>", descriptionEn: "<p>Projects a realistic illusion of a place or object.</p>" }),
+  feat({ name: "Terreur", nameEn: "Terror", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Projette des visions cauchemardesques dans l'esprit de la cible.</p>", descriptionEn: "<p>Projects nightmarish visions into the target's mind.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "Sorts d'illusion" }] }),
+  feat({ name: "Camouflage", nameEn: "Camouflage", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Adapte les couleurs de la cible à son environnement.</p>", descriptionEn: "<p>Adapts the target's colors to the surrounding environment.</p>" }),
+  feat({ name: "Hallucination de masse", nameEn: "Mass Hallucination", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Provoque des hallucinations partagées chez plusieurs cibles.</p>", descriptionEn: "<p>Causes shared hallucinations in multiple targets.</p>" }),
+  feat({ name: "Éblouissement", nameEn: "Dazzle", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Flash lumineux aveuglant qui désoriente les cibles.</p>", descriptionEn: "<p>Blinding flash of light that disorients targets.</p>" }),
+  feat({ name: "Voix fantôme", nameEn: "Phantom Voice", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Projette une voix illusoire à un endroit choisi.</p>", descriptionEn: "<p>Projects an illusory voice at a chosen location.</p>" }),
+  feat({ name: "Mur illusoire", nameEn: "Illusory Wall", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée l'illusion d'un mur ou d'un obstacle solide.</p>", descriptionEn: "<p>Creates the illusion of a solid wall or obstacle.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "Sorts d'illusion" }] }),
+  feat({ name: "Cauchemar éveillé", nameEn: "Waking Nightmare", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Plonge la cible dans un cauchemar éveillé paralysant.</p>", descriptionEn: "<p>Plunges the target into a paralysing waking nightmare.</p>" }),
+  feat({ name: "Distorsion sensorielle", nameEn: "Sensory Distortion", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Altère les sens de la cible de façon imprévisible.</p>", descriptionEn: "<p>Alters the target's senses in unpredictable ways.</p>" }),
+  feat({ name: "Brouillard d'ombre", nameEn: "Shadow Fog", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Invoque un brouillard surnaturel qui obscurcit la zone.</p>", descriptionEn: "<p>Summons a supernatural fog that obscures the area.</p>" }),
+  feat({ name: "Faux mort", nameEn: "Feign Death", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Fait paraître la cible morte de façon convaincante.</p>", descriptionEn: "<p>Makes the target appear convincingly dead.</p>" }),
+  feat({ name: "Déplacement illusoire", nameEn: "Illusory Displacement", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>La cible semble être à quelques mètres de sa position réelle.</p>", descriptionEn: "<p>The target appears to be a few meters from their actual position.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "Sorts d'illusion" }] }),
+  feat({ name: "Folie passagère", nameEn: "Fleeting Madness", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Provoque un bref épisode de démence chez la cible.</p>", descriptionEn: "<p>Causes a brief episode of madness in the target.</p>" }),
+  feat({ name: "Reflet trompeur", nameEn: "Deceptive Reflection", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Les miroirs et surfaces réfléchissantes montrent de fausses images.</p>", descriptionEn: "<p>Mirrors and reflective surfaces show false images.</p>" }),
+  // ── Manipulation Spells (20) ──
+  feat({ name: "Lévitation", nameEn: "Levitation", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Soulève et déplace un objet ou une personne par la volonté.</p>", descriptionEn: "<p>Lifts and moves an object or person through willpower.</p>" }),
+  feat({ name: "Armure magique", nameEn: "Mana Armor", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Enveloppe la cible d'un bouclier de mana protecteur.</p>", descriptionEn: "<p>Wraps the target in a protective mana shield.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "Sorts de manipulation" }] }),
+  feat({ name: "Contrôle des émotions", nameEn: "Control Emotions", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Manipule les émotions d'une cible.</p>", descriptionEn: "<p>Manipulates a target's emotions.</p>" }),
+  feat({ name: "Télékinésie", nameEn: "Telekinesis", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Déplace des objets à distance par la force mentale.</p>", descriptionEn: "<p>Moves objects at a distance through mental force.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "Sorts de manipulation" }] }),
+  feat({ name: "Verrou magique", nameEn: "Magic Lock", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Scelle magiquement une porte ou un conteneur.</p>", descriptionEn: "<p>Magically seals a door or container.</p>" }),
+  feat({ name: "Contrôle de l'eau", nameEn: "Water Control", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Manipule les mouvements et la forme de l'eau à proximité.</p>", descriptionEn: "<p>Manipulates the movement and shape of nearby water.</p>" }),
+  feat({ name: "Pétrification", nameEn: "Petrify", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Rigidifie temporairement les muscles de la cible.</p>", descriptionEn: "<p>Temporarily rigidifies the target's muscles.</p>" }),
+  feat({ name: "Animation d'objet", nameEn: "Animate Object", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Donne vie temporairement à un objet inanimé.</p>", descriptionEn: "<p>Temporarily brings an inanimate object to life.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "Sorts de manipulation" }] }),
+  feat({ name: "Façonnage de la terre", nameEn: "Shape Earth", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Remodèle la terre et la pierre selon la volonté du lanceur.</p>", descriptionEn: "<p>Reshapes earth and stone according to the caster's will.</p>" }),
+  feat({ name: "Contrôle du feu", nameEn: "Fire Control", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Manipule les flammes existantes et contrôle leur propagation.</p>", descriptionEn: "<p>Manipulates existing flames and controls their spread.</p>" }),
+  feat({ name: "Poltergeist", nameEn: "Poltergeist", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Agite violemment les objets dans une zone ciblée.</p>", descriptionEn: "<p>Violently agitates objects in a targeted area.</p>" }),
+  feat({ name: "Contrôle mental", nameEn: "Mind Control", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Prend le contrôle temporaire des actions de la cible.</p>", descriptionEn: "<p>Temporarily takes control of the target's actions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "Sorts de manipulation" }] }),
+  feat({ name: "Transmutation", nameEn: "Transmutation", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Transforme temporairement la composition d'un matériau.</p>", descriptionEn: "<p>Temporarily transforms a material's composition.</p>" }),
+  feat({ name: "Aura de commandement", nameEn: "Command Aura", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Impose une présence magique qui pousse les autres à obéir.</p>", descriptionEn: "<p>Imposes a magical presence that compels others to obey.</p>" }),
+  feat({ name: "Ralentissement", nameEn: "Slow", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Ralentit les mouvements et réflexes de la cible.</p>", descriptionEn: "<p>Slows the target's movements and reflexes.</p>" }),
+  feat({ name: "Entrave végétale", nameEn: "Plant Snare", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Fait pousser des lianes pour immobiliser la cible.</p>", descriptionEn: "<p>Grows vines to immobilize the target.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "Sorts de manipulation" }] }),
+  feat({ name: "Contrôle du vent", nameEn: "Wind Control", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Dirige et intensifie les courants d'air dans une zone.</p>", descriptionEn: "<p>Directs and intensifies air currents in an area.</p>" }),
+  feat({ name: "Glissade de verglas", nameEn: "Ice Slick", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Couvre le sol d'une couche de glace traîtresse.</p>", descriptionEn: "<p>Covers the ground with a treacherous layer of ice.</p>" }),
+  feat({ name: "Armure de pierre", nameEn: "Stone Armor", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Recouvre la cible d'une carapace de pierre magique.</p>", descriptionEn: "<p>Covers the target in a shell of magical stone.</p>" }),
+  feat({ name: "Portail dimensionnel", nameEn: "Dimensional Gate", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Ouvre un passage temporaire entre deux points proches.</p>", descriptionEn: "<p>Opens a temporary passage between two nearby points.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "Sorts de manipulation" }] }),
+  // ── Counterspell / Ward (10) ──
+  feat({ name: "Barrière magique", nameEn: "Magic Barrier", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée un mur de force magique semi-transparent.</p>", descriptionEn: "<p>Creates a semi-transparent wall of magical force.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_counterspelling", rrLabel: "Contresort" }] }),
+  feat({ name: "Dissipation", nameEn: "Dispel", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Annule un sort actif ou une enchantement en cours.</p>", descriptionEn: "<p>Cancels an active spell or ongoing enchantment.</p>" }),
+  feat({ name: "Bouclier anti-sort", nameEn: "Spell Shield", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée un bouclier qui dévie les sorts ennemis.</p>", descriptionEn: "<p>Creates a shield that deflects enemy spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_counterspelling", rrLabel: "Contresort" }] }),
+  feat({ name: "Ancrage de garde", nameEn: "Ward Anchor", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Fixe une barrière magique permanente sur un lieu.</p>", descriptionEn: "<p>Anchors a permanent magical barrier to a location.</p>" }),
+  feat({ name: "Réflexion de sort", nameEn: "Spell Reflection", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Renvoie un sort ennemi vers son lanceur d'origine.</p>", descriptionEn: "<p>Reflects an enemy spell back at its original caster.</p>" }),
+  feat({ name: "Cercle de protection", nameEn: "Protection Circle", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Trace un cercle magique qui repousse les entités astrales.</p>", descriptionEn: "<p>Draws a magical circle that repels astral entities.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_counterspelling", rrLabel: "Contresort" }] }),
+  feat({ name: "Suppression de magie", nameEn: "Magic Suppression", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Réduit la puissance magique dans une zone ciblée.</p>", descriptionEn: "<p>Reduces magical power in a targeted area.</p>" }),
+  feat({ name: "Piège astral", nameEn: "Astral Trap", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Crée un piège invisible sur le plan astral.</p>", descriptionEn: "<p>Creates an invisible trap on the astral plane.</p>" }),
+  feat({ name: "Absorption de mana", nameEn: "Mana Absorption", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Absorbe le mana d'un sort ennemi pour alimenter ses propres réserves.</p>", descriptionEn: "<p>Absorbs mana from an enemy spell to fuel one's own reserves.</p>" }),
+  feat({ name: "Sceau de fermeture", nameEn: "Sealing Glyph", featType: "spell", cost: "equipment", damageType: "mental", vdMode: "custom", vdCustomValue: 0, nuyenCost: 5e3, description: "<p>Inscrit un glyphe qui empêche le passage d'entités magiques.</p>", descriptionEn: "<p>Inscribes a glyph that prevents the passage of magical entities.</p>" })
+];
+const ADEPT_POWER_TEMPLATES = [
+  // ── Combat (25) ──
+  feat({ name: "Poing perforant", nameEn: "Killing Hands", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Les coups du personnage infligent des dégâts dévastateurs.</p>", descriptionEn: "<p>The character's strikes deal devastating damage.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Frappe du serpent", nameEn: "Serpent Strike", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Attaques rapides et précises, impossibles à anticiper.</p>", descriptionEn: "<p>Fast and precise attacks, impossible to anticipate.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Frappe du tonnerre", nameEn: "Thunder Strike", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Concentre le ki dans le poing pour une frappe dévastatrice.</p>", descriptionEn: "<p>Concentrates ki into the fist for a devastating blow.</p>" }),
+  feat({ name: "Paume vibrante", nameEn: "Vibrating Palm", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Frappe qui transmet des vibrations destructrices aux organes internes.</p>", descriptionEn: "<p>Strike that transmits destructive vibrations to internal organs.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Griffes astrales", nameEn: "Astral Claws", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Génère des griffes d'énergie astrale capables de blesser les esprits.</p>", descriptionEn: "<p>Generates astral energy claws capable of wounding spirits.</p>" }),
+  feat({ name: "Coup de pied circulaire", nameEn: "Whirlwind Kick", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Enchaînement de coups de pied tournoyants touchant plusieurs adversaires.</p>", descriptionEn: "<p>Chain of spinning kicks hitting multiple opponents.</p>" }),
+  feat({ name: "Lame de ki", nameEn: "Ki Blade", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Matérialise une lame d'énergie pure le long de l'avant-bras.</p>", descriptionEn: "<p>Materializes a blade of pure energy along the forearm.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Frappe paralysante", nameEn: "Nerve Strike", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Cible les points de pression pour paralyser temporairement l'adversaire.</p>", descriptionEn: "<p>Targets pressure points to temporarily paralyze the opponent.</p>" }),
+  feat({ name: "Contre-attaque instinctive", nameEn: "Instinctive Counter", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Réagit automatiquement à une attaque par une riposte immédiate.</p>", descriptionEn: "<p>Automatically responds to an attack with an immediate riposte.</p>" }),
+  feat({ name: "Puissance concentrée", nameEn: "Focused Might", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Canalise toute l'énergie du corps dans une frappe unique dévastatrice.</p>", descriptionEn: "<p>Channels all body energy into a single devastating strike.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Technique du brise-pierre", nameEn: "Stonebreaker Technique", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Permet de frapper à travers les matériaux durs sans se blesser.</p>", descriptionEn: "<p>Allows striking through hard materials without injury.</p>" }),
+  feat({ name: "Flèche guidée", nameEn: "Guided Arrow", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Infuse un projectile de ki pour corriger sa trajectoire en vol.</p>", descriptionEn: "<p>Infuses a projectile with ki to correct its trajectory in flight.</p>" }),
+  feat({ name: "Rage du berserker", nameEn: "Berserker Rage", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Entre dans une fureur contrôlée augmentant force et résistance.</p>", descriptionEn: "<p>Enters a controlled fury increasing strength and resistance.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Frappe de l'aigle", nameEn: "Eagle Strike", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Attaque plongeante d'une précision mortelle.</p>", descriptionEn: "<p>Diving attack with deadly precision.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Prise de l'ours", nameEn: "Bear Grip", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Saisie surpuissante qui empêche toute fuite de la cible.</p>", descriptionEn: "<p>Overpowering grip that prevents the target from escaping.</p>" }),
+  feat({ name: "Cri de guerre", nameEn: "War Cry", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Hurlement chargé de ki qui désoriente les adversaires proches.</p>", descriptionEn: "<p>Ki-charged shout that disorients nearby opponents.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_intimidation", rrLabel: "Intimidation" }] }),
+  feat({ name: "Combo dévastateur", nameEn: "Devastating Combo", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Enchaînement de coups si rapide qu'il semble n'en être qu'un seul.</p>", descriptionEn: "<p>A chain of blows so fast it seems like a single strike.</p>" }),
+  feat({ name: "Projection de ki", nameEn: "Ki Projection", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Projette une onde de choc de ki à courte distance.</p>", descriptionEn: "<p>Projects a ki shockwave at short range.</p>" }),
+  feat({ name: "Main de fer", nameEn: "Iron Fist", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Durcit les mains comme de l'acier pour des frappes imparables.</p>", descriptionEn: "<p>Hardens the hands like steel for unstoppable strikes.</p>" }),
+  feat({ name: "Technique du cobra", nameEn: "Cobra Technique", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Frappes éclair visant les points vitaux avec une précision chirurgicale.</p>", descriptionEn: "<p>Lightning strikes targeting vital points with surgical precision.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Danse des lames", nameEn: "Blade Dance", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Mouvements fluides et mortels avec armes blanches.</p>", descriptionEn: "<p>Fluid and deadly movements with melee weapons.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Frappe désarmante", nameEn: "Disarming Strike", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Coup précis qui désarme l'adversaire.</p>", descriptionEn: "<p>Precise blow that disarms the opponent.</p>" }),
+  feat({ name: "Anticipation du combat", nameEn: "Combat Anticipation", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Pressent les mouvements de l'adversaire avant qu'il ne les exécute.</p>", descriptionEn: "<p>Senses the opponent's movements before they execute them.</p>" }),
+  feat({ name: "Poing du dragon", nameEn: "Dragon Fist", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Frappe chargée d'énergie draconique qui enflamme l'impact.</p>", descriptionEn: "<p>Strike charged with draconic energy that ignites on impact.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Riposte foudroyante", nameEn: "Lightning Riposte", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Contre-attaque instantanée après une parade réussie.</p>", descriptionEn: "<p>Instant counterattack after a successful parry.</p>" }),
+  // ── Movement / Athletics (15) ──
+  feat({ name: "Vitesse améliorée", nameEn: "Enhanced Speed", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Canalise le mana pour accélérer le corps au-delà des limites humaines.</p>", descriptionEn: "<p>Channels mana to accelerate the body beyond human limits.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Course du vent", nameEn: "Wind Sprint", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Permet de courir à une vitesse surnaturelle pendant une courte durée.</p>", descriptionEn: "<p>Allows running at supernatural speed for a short duration.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Saut du tigre", nameEn: "Tiger Leap", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Sauts prodigieux dépassant les capacités humaines normales.</p>", descriptionEn: "<p>Prodigious leaps exceeding normal human capabilities.</p>" }),
+  feat({ name: "Marche murale", nameEn: "Wall Walking", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Permet de marcher sur les surfaces verticales.</p>", descriptionEn: "<p>Allows walking on vertical surfaces.</p>" }),
+  feat({ name: "Chute contrôlée", nameEn: "Controlled Fall", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Réduit l'impact des chutes grâce au contrôle du ki.</p>", descriptionEn: "<p>Reduces fall impact through ki control.</p>" }),
+  feat({ name: "Nage du saumon", nameEn: "Salmon Swim", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Nage à une vitesse et avec une endurance surnaturelles.</p>", descriptionEn: "<p>Swims at supernatural speed and endurance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Équilibre parfait", nameEn: "Perfect Balance", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Maintient un équilibre parfait sur toute surface, même un fil.</p>", descriptionEn: "<p>Maintains perfect balance on any surface, even a wire.</p>" }),
+  feat({ name: "Accélération réflexe", nameEn: "Reflex Acceleration", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Augmente drastiquement la vitesse de réaction.</p>", descriptionEn: "<p>Drastically increases reaction speed.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Pas du fantôme", nameEn: "Ghost Step", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Déplacement instantané sur une courte distance.</p>", descriptionEn: "<p>Instantaneous movement over a short distance.</p>" }),
+  feat({ name: "Roulade acrobatique", nameEn: "Acrobatic Roll", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Se relève instantanément et sans pénalité après une chute ou un plaquage.</p>", descriptionEn: "<p>Recovers instantly and without penalty after a fall or tackle.</p>" }),
+  feat({ name: "Adhérence du gecko", nameEn: "Gecko Grip", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Permet d'adhérer à n'importe quelle surface avec les mains et les pieds.</p>", descriptionEn: "<p>Allows adhering to any surface with hands and feet.</p>" }),
+  feat({ name: "Bond dimensionnel", nameEn: "Dimensional Leap", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Court téléportation à travers le plan astral.</p>", descriptionEn: "<p>Short-range teleportation through the astral plane.</p>" }),
+  feat({ name: "Grâce féline", nameEn: "Feline Grace", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Mouvements fluides et silencieux inspirés des félins.</p>", descriptionEn: "<p>Fluid and silent movements inspired by felines.</p>" }),
+  feat({ name: "Souffle de marathon", nameEn: "Marathon Breath", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Endurance surhumaine permettant un effort soutenu pendant des heures.</p>", descriptionEn: "<p>Superhuman endurance allowing sustained effort for hours.</p>" }),
+  feat({ name: "Contorsion", nameEn: "Contortion", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Flexibilité extrême permettant de passer dans des espaces étroits.</p>", descriptionEn: "<p>Extreme flexibility allowing passage through tight spaces.</p>" }),
+  // ── Senses (15) ──
+  feat({ name: "Sens du danger", nameEn: "Danger Sense", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Instinct magique qui prévient des menaces imminentes.</p>", descriptionEn: "<p>Magical instinct that warns of imminent threats.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Vision améliorée", nameEn: "Enhanced Vision", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Perception visuelle augmentée au-delà du spectre normal.</p>", descriptionEn: "<p>Visual perception enhanced beyond the normal spectrum.</p>" }),
+  feat({ name: "Ouïe amplifiée", nameEn: "Amplified Hearing", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Entend les sons à des fréquences et distances surnaturelles.</p>", descriptionEn: "<p>Hears sounds at supernatural frequencies and distances.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Odorat du loup", nameEn: "Wolf Scent", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Odorat surdéveloppé capable de pister une cible sur des kilomètres.</p>", descriptionEn: "<p>Overdeveloped sense of smell capable of tracking a target for kilometers.</p>" }),
+  feat({ name: "Toucher analytique", nameEn: "Analytical Touch", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Détermine la composition et les propriétés d'un objet par le toucher.</p>", descriptionEn: "<p>Determines the composition and properties of an object by touch.</p>" }),
+  feat({ name: "Perception astrale", nameEn: "Astral Perception", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Permet de percevoir le plan astral et les auras magiques.</p>", descriptionEn: "<p>Allows perceiving the astral plane and magical auras.</p>" }),
+  feat({ name: "Vision nocturne", nameEn: "Night Vision", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Voit dans l'obscurité totale comme en plein jour.</p>", descriptionEn: "<p>Sees in total darkness as if it were daylight.</p>" }),
+  feat({ name: "Sens sismique", nameEn: "Seismic Sense", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Perçoit les vibrations du sol pour localiser les êtres proches.</p>", descriptionEn: "<p>Perceives ground vibrations to locate nearby beings.</p>" }),
+  feat({ name: "Écho-localisation", nameEn: "Echo-Location", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Utilise les sons réfléchis pour cartographier l'environnement.</p>", descriptionEn: "<p>Uses reflected sounds to map the environment.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Lecture d'intention", nameEn: "Intent Reading", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Perçoit les intentions hostiles ou amicales d'un interlocuteur.</p>", descriptionEn: "<p>Perceives hostile or friendly intentions from a conversant.</p>" }),
+  feat({ name: "Goût analytique", nameEn: "Analytical Taste", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Détecte les poisons et drogues par le goût avec une précision chimique.</p>", descriptionEn: "<p>Detects poisons and drugs by taste with chemical precision.</p>" }),
+  feat({ name: "Vision thermographique", nameEn: "Thermographic Vision", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Perçoit les signatures thermiques des êtres vivants et des machines.</p>", descriptionEn: "<p>Perceives thermal signatures of living beings and machines.</p>" }),
+  feat({ name: "Sixième sens", nameEn: "Sixth Sense", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Intuition surnaturelle qui guide les décisions en situation de stress.</p>", descriptionEn: "<p>Supernatural intuition that guides decisions under stress.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Perception du flux", nameEn: "Flow Perception", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Perçoit le flux du mana dans l'environnement proche.</p>", descriptionEn: "<p>Perceives the flow of mana in the immediate environment.</p>" }),
+  feat({ name: "Sens magnétique", nameEn: "Magnetic Sense", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Détecte les champs magnétiques et les appareils électroniques cachés.</p>", descriptionEn: "<p>Detects magnetic fields and hidden electronic devices.</p>" }),
+  // ── Defense / Resistance (15) ──
+  feat({ name: "Esquive surnaturelle", nameEn: "Supernatural Dodge", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Réflexes magiquement augmentés pour esquiver les attaques.</p>", descriptionEn: "<p>Magically enhanced reflexes to dodge attacks.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Corps de fer", nameEn: "Iron Body", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Le mana renforce la structure du corps, le rendant plus résistant.</p>", descriptionEn: "<p>Mana reinforces the body's structure, making it more resilient.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Résistance à la douleur", nameEn: "Pain Resistance", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Le personnage ignore la douleur grâce au contrôle de son système nerveux.</p>", descriptionEn: "<p>The character ignores pain through control of their nervous system.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Peau de pierre", nameEn: "Stone Skin", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>La peau durcit magiquement pour résister aux impacts.</p>", descriptionEn: "<p>Skin magically hardens to resist impacts.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Bouclier de ki", nameEn: "Ki Shield", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Projette un champ de force de ki pour bloquer les attaques.</p>", descriptionEn: "<p>Projects a ki force field to block attacks.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Résistance aux toxines", nameEn: "Toxin Resistance", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Le corps neutralise automatiquement les poisons et toxines.</p>", descriptionEn: "<p>The body automatically neutralizes poisons and toxins.</p>" }),
+  feat({ name: "Esprit d'acier", nameEn: "Steel Mind", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Résistance magique contre les intrusions mentales et la manipulation.</p>", descriptionEn: "<p>Magical resistance against mental intrusions and manipulation.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Absorption d'impact", nameEn: "Impact Absorption", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Absorbe l'énergie cinétique des coups pour réduire les dégâts.</p>", descriptionEn: "<p>Absorbs kinetic energy from blows to reduce damage.</p>" }),
+  feat({ name: "Sang de dragon", nameEn: "Dragon Blood", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Régénération accélérée du sang et résistance aux hémorragies.</p>", descriptionEn: "<p>Accelerated blood regeneration and hemorrhage resistance.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Déflexion", nameEn: "Deflection", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Dévie instinctivement les projectiles à courte portée.</p>", descriptionEn: "<p>Instinctively deflects projectiles at short range.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Volonté indomptable", nameEn: "Indomitable Will", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Résistance mentale extraordinaire contre la peur et la coercition.</p>", descriptionEn: "<p>Extraordinary mental resistance against fear and coercion.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Armure de ki", nameEn: "Ki Armor", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Enveloppe le corps d'une couche protectrice de ki.</p>", descriptionEn: "<p>Wraps the body in a protective layer of ki.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Résistance aux éléments", nameEn: "Elemental Resistance", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Résiste aux dégâts élémentaires : feu, froid, électricité.</p>", descriptionEn: "<p>Resists elemental damage: fire, cold, electricity.</p>" }),
+  feat({ name: "Récupération accélérée", nameEn: "Accelerated Recovery", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Guérit les blessures deux fois plus vite que la normale.</p>", descriptionEn: "<p>Heals wounds twice as fast as normal.</p>" }),
+  feat({ name: "Détournement de ki", nameEn: "Ki Diversion", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Redirige l'énergie d'une attaque reçue pour alimenter ses réserves.</p>", descriptionEn: "<p>Redirects energy from a received attack to fuel one's reserves.</p>" }),
+  // ── Stealth (10) ──
+  feat({ name: "Pas léger", nameEn: "Light Step", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Déplacement silencieux et agile, comme si le personnage flottait.</p>", descriptionEn: "<p>Silent and agile movement, as if the character were floating.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Ombre vivante", nameEn: "Living Shadow", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Se fond dans les ombres de façon surnaturelle.</p>", descriptionEn: "<p>Blends into shadows in a supernatural way.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Aura nulle", nameEn: "Null Aura", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Supprime son aura magique pour devenir invisible sur le plan astral.</p>", descriptionEn: "<p>Suppresses magical aura to become invisible on the astral plane.</p>" }),
+  feat({ name: "Silence absolu", nameEn: "Absolute Silence", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Élimine tout bruit produit par le personnage.</p>", descriptionEn: "<p>Eliminates all noise produced by the character.</p>" }),
+  feat({ name: "Caméléon", nameEn: "Chameleon", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>La peau et les vêtements s'adaptent à l'environnement visuel.</p>", descriptionEn: "<p>Skin and clothing adapt to the visual environment.</p>" }),
+  feat({ name: "Présence effacée", nameEn: "Erased Presence", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Les gens oublient la présence du personnage dès qu'il quitte leur champ de vision.</p>", descriptionEn: "<p>People forget the character's presence as soon as they leave their sight.</p>" }),
+  feat({ name: "Passage sans trace", nameEn: "Traceless Passage", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Ne laisse aucune trace physique de son passage.</p>", descriptionEn: "<p>Leaves no physical trace of passage.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Masquage d'odeur", nameEn: "Scent Masking", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Supprime toute odeur corporelle pour tromper les animaux et détecteurs.</p>", descriptionEn: "<p>Suppresses all body odor to fool animals and detectors.</p>" }),
+  feat({ name: "Furtivité urbaine", nameEn: "Urban Stealth", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Se fond naturellement dans les foules et le mobilier urbain.</p>", descriptionEn: "<p>Naturally blends into crowds and urban furniture.</p>" }),
+  feat({ name: "Dissimulation d'arme", nameEn: "Weapon Concealment", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Cache magiquement une arme sur soi, indétectable aux fouilles.</p>", descriptionEn: "<p>Magically conceals a weapon on one's person, undetectable to searches.</p>" }),
+  // ── Social (10) ──
+  feat({ name: "Voix enchanteresse", nameEn: "Enchanting Voice", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>La voix porte une charge magique qui rend les paroles plus convaincantes.</p>", descriptionEn: "<p>The voice carries a magical charge that makes words more convincing.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_bluff", rrLabel: "Bluff" }] }),
+  feat({ name: "Aura d'autorité", nameEn: "Authority Aura", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Projette une présence dominante qui impose le respect.</p>", descriptionEn: "<p>Projects a dominant presence that commands respect.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_intimidation", rrLabel: "Intimidation" }] }),
+  feat({ name: "Empathie profonde", nameEn: "Deep Empathy", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Ressent et comprend les émotions des autres avec une précision magique.</p>", descriptionEn: "<p>Senses and understands others' emotions with magical precision.</p>" }),
+  feat({ name: "Charme surnaturel", nameEn: "Supernatural Charm", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Rayonne d'un charisme magique irrésistible.</p>", descriptionEn: "<p>Radiates an irresistible magical charisma.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_bluff", rrLabel: "Bluff" }] }),
+  feat({ name: "Regard intimidant", nameEn: "Intimidating Gaze", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Un regard chargé de ki qui paralyse la volonté de l'interlocuteur.</p>", descriptionEn: "<p>A ki-charged gaze that paralyzes the will of the conversant.</p>" }),
+  feat({ name: "Mimétisme vocal", nameEn: "Vocal Mimicry", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Reproduit parfaitement n'importe quelle voix entendue.</p>", descriptionEn: "<p>Perfectly reproduces any voice heard.</p>" }),
+  feat({ name: "Persuasion subtile", nameEn: "Subtle Persuasion", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Influence les décisions des autres sans qu'ils s'en rendent compte.</p>", descriptionEn: "<p>Influences others' decisions without them realizing it.</p>" }),
+  feat({ name: "Calme imposé", nameEn: "Imposed Calm", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Apaise magiquement les tensions dans un groupe hostile.</p>", descriptionEn: "<p>Magically soothes tensions in a hostile group.</p>" }),
+  feat({ name: "Détection de mensonge", nameEn: "Lie Detection", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Perçoit les micro-expressions et variations d'aura qui trahissent le mensonge.</p>", descriptionEn: "<p>Perceives micro-expressions and aura variations that betray lies.</p>" }),
+  feat({ name: "Présence mémorable", nameEn: "Memorable Presence", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Laisse une impression durable et positive sur tous ceux qui le rencontrent.</p>", descriptionEn: "<p>Leaves a lasting and positive impression on everyone met.</p>" }),
+  // ── Healing / Recovery (10) ──
+  feat({ name: "Méditation curative", nameEn: "Healing Meditation", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Une méditation profonde qui accélère la guérison naturelle.</p>", descriptionEn: "<p>Deep meditation that accelerates natural healing.</p>" }),
+  feat({ name: "Transfert de ki", nameEn: "Ki Transfer", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Transfère son ki vital à un allié blessé pour le soigner.</p>", descriptionEn: "<p>Transfers vital ki to a wounded ally to heal them.</p>" }),
+  feat({ name: "Purge de toxines", nameEn: "Toxin Purge", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Élimine activement les toxines et drogues du corps par le ki.</p>", descriptionEn: "<p>Actively eliminates toxins and drugs from the body through ki.</p>" }),
+  feat({ name: "Régénération accélérée", nameEn: "Accelerated Regeneration", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Les blessures se referment visiblement en quelques minutes.</p>", descriptionEn: "<p>Wounds visibly close within minutes.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Transe réparatrice", nameEn: "Restorative Trance", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Entre dans une transe profonde qui remplace 8 heures de sommeil en 2.</p>", descriptionEn: "<p>Enters a deep trance that replaces 8 hours of sleep in 2.</p>" }),
+  feat({ name: "Souffle vital", nameEn: "Vital Breath", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Techniques respiratoires qui oxygènent et régénèrent le corps.</p>", descriptionEn: "<p>Breathing techniques that oxygenate and regenerate the body.</p>" }),
+  feat({ name: "Cicatrisation instantanée", nameEn: "Instant Scarring", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Referme instantanément les plaies superficielles par le ki.</p>", descriptionEn: "<p>Instantly closes superficial wounds through ki.</p>" }),
+  feat({ name: "Immunité à la fatigue", nameEn: "Fatigue Immunity", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Le corps ne ressent plus la fatigue pendant de longues périodes.</p>", descriptionEn: "<p>The body no longer feels fatigue for extended periods.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Restauration nerveuse", nameEn: "Nerve Restoration", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Répare les dommages au système nerveux par le ki.</p>", descriptionEn: "<p>Repairs nervous system damage through ki.</p>" }),
+  feat({ name: "Harmonie corporelle", nameEn: "Body Harmony", featType: "adept-power", cost: "free-equipment", nuyenCost: 0, description: "<p>Synchronise tous les systèmes du corps pour un fonctionnement optimal.</p>", descriptionEn: "<p>Synchronizes all body systems for optimal functioning.</p>", bonusMentalThreshold: 1 })
+];
+const COMPLEX_FORM_TEMPLATES = [
+  // ── Attack / Offensive (20) ──
+  feat({ name: "Biofeedback", nameEn: "Biofeedback", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Envoie un feedback douloureux à travers la connexion matricielle.</p>", descriptionEn: "<p>Sends painful feedback through the Matrix connection.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Cybercombat" }] }),
+  feat({ name: "Surcharge de données", nameEn: "Data Overload", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Inonde un appareil de données parasites pour le bloquer.</p>", descriptionEn: "<p>Floods a device with junk data to lock it up.</p>" }),
+  feat({ name: "Spike résonant", nameEn: "Resonance Spike", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Pic de Résonance destructeur ciblant un noeud matriciel.</p>", descriptionEn: "<p>Destructive Resonance spike targeting a Matrix node.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Cybercombat" }] }),
+  feat({ name: "Virus de fragmentation", nameEn: "Fragmentation Virus", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Injecte un virus qui fragmente les fichiers système de la cible.</p>", descriptionEn: "<p>Injects a virus that fragments the target's system files.</p>" }),
+  feat({ name: "Boucle de crash", nameEn: "Crash Loop", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Force un appareil à redémarrer en boucle sans fin.</p>", descriptionEn: "<p>Forces a device to reboot in an endless loop.</p>" }),
+  feat({ name: "Décharge neurale", nameEn: "Neural Discharge", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Attaque directe contre le système nerveux d'un utilisateur connecté.</p>", descriptionEn: "<p>Direct attack against a connected user's nervous system.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Cybercombat" }] }),
+  feat({ name: "Corruption de signal", nameEn: "Signal Corruption", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Corrompt les signaux de communication d'une cible spécifique.</p>", descriptionEn: "<p>Corrupts the communication signals of a specific target.</p>" }),
+  feat({ name: "Impulsion disruptive", nameEn: "Disruptive Pulse", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Onde de Résonance qui perturbe tous les appareils à proximité.</p>", descriptionEn: "<p>Resonance wave that disrupts all nearby devices.</p>" }),
+  feat({ name: "Injection de code", nameEn: "Code Injection", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Insère du code malveillant dans un programme en cours d'exécution.</p>", descriptionEn: "<p>Inserts malicious code into a running program.</p>" }),
+  feat({ name: "Siphon de données", nameEn: "Data Siphon", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Aspire les données d'un système tout en le corrompant.</p>", descriptionEn: "<p>Drains data from a system while corrupting it.</p>" }),
+  feat({ name: "Parasite résonant", nameEn: "Resonance Parasite", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>S'attache à un programme ennemi et draine ses ressources.</p>", descriptionEn: "<p>Attaches to an enemy program and drains its resources.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Cybercombat" }] }),
+  feat({ name: "Surcharge sensorielle", nameEn: "Sensory Overload", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Submerge les capteurs d'un appareil avec des données parasites.</p>", descriptionEn: "<p>Overwhelms a device's sensors with junk data.</p>" }),
+  feat({ name: "Bombe logique", nameEn: "Logic Bomb", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Programme dormant qui se déclenche quand une condition est remplie.</p>", descriptionEn: "<p>Dormant program that triggers when a condition is met.</p>" }),
+  feat({ name: "Érosion de firewall", nameEn: "Firewall Erosion", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Affaiblit progressivement les défenses matricielles d'une cible.</p>", descriptionEn: "<p>Progressively weakens a target's Matrix defenses.</p>" }),
+  feat({ name: "Choc de déconnexion", nameEn: "Disconnect Shock", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Force une déconnexion brutale infligeant un choc au système nerveux.</p>", descriptionEn: "<p>Forces a brutal disconnection inflicting a nervous system shock.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Cybercombat" }] }),
+  feat({ name: "Cascade d'erreurs", nameEn: "Error Cascade", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Déclenche une réaction en chaîne d'erreurs dans un système.</p>", descriptionEn: "<p>Triggers a chain reaction of errors in a system.</p>" }),
+  feat({ name: "Ver de Résonance", nameEn: "Resonance Worm", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Ver auto-réplicant qui se propage dans les réseaux connectés.</p>", descriptionEn: "<p>Self-replicating worm that spreads through connected networks.</p>" }),
+  feat({ name: "Blackout matriciel", nameEn: "Matrix Blackout", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Coupe temporairement l'accès matriciel d'une cible.</p>", descriptionEn: "<p>Temporarily cuts a target's Matrix access.</p>" }),
+  feat({ name: "Piège de données", nameEn: "Data Trap", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Fichier piégé qui infecte quiconque tente de l'ouvrir.</p>", descriptionEn: "<p>Trapped file that infects anyone who tries to open it.</p>" }),
+  feat({ name: "Foudre numérique", nameEn: "Digital Lightning", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Décharge de Résonance pure qui grille les circuits de la cible.</p>", descriptionEn: "<p>Pure Resonance discharge that fries the target's circuits.</p>" }),
+  // ── Defense / Firewall (15) ──
+  feat({ name: "Résonance défensive", nameEn: "Defensive Resonance", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Renforce les défenses matricielles par la Résonance pure.</p>", descriptionEn: "<p>Strengthens Matrix defenses through pure Resonance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Formes complexes" }] }),
+  feat({ name: "Bouclier de données", nameEn: "Data Shield", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée un bouclier protecteur autour des données sensibles.</p>", descriptionEn: "<p>Creates a protective shield around sensitive data.</p>" }),
+  feat({ name: "Pare-feu résonant", nameEn: "Resonance Firewall", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Renforce le firewall avec une couche de Résonance adaptative.</p>", descriptionEn: "<p>Strengthens the firewall with a layer of adaptive Resonance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Formes complexes" }] }),
+  feat({ name: "Contre-intrusion", nameEn: "Counter-Intrusion", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Détecte et repousse automatiquement les tentatives d'intrusion.</p>", descriptionEn: "<p>Automatically detects and repels intrusion attempts.</p>" }),
+  feat({ name: "Cryptage de Résonance", nameEn: "Resonance Encryption", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Chiffre les communications avec un algorithme basé sur la Résonance.</p>", descriptionEn: "<p>Encrypts communications with a Resonance-based algorithm.</p>" }),
+  feat({ name: "Isolation de noeud", nameEn: "Node Isolation", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Isole un noeud compromis pour empêcher la propagation d'une attaque.</p>", descriptionEn: "<p>Isolates a compromised node to prevent attack propagation.</p>" }),
+  feat({ name: "Miroir matriciel", nameEn: "Matrix Mirror", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée un leurre matriciel qui détourne les attaques.</p>", descriptionEn: "<p>Creates a Matrix decoy that diverts attacks.</p>" }),
+  feat({ name: "Régénération de code", nameEn: "Code Regeneration", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Répare automatiquement le code endommagé par une attaque.</p>", descriptionEn: "<p>Automatically repairs code damaged by an attack.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Formes complexes" }] }),
+  feat({ name: "Quarantaine numérique", nameEn: "Digital Quarantine", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Isole un programme malveillant dans un espace confiné.</p>", descriptionEn: "<p>Isolates a malicious program in a confined space.</p>" }),
+  feat({ name: "Absorption de signal", nameEn: "Signal Absorption", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Absorbe les signaux hostiles pour renforcer ses propres défenses.</p>", descriptionEn: "<p>Absorbs hostile signals to strengthen one's own defenses.</p>" }),
+  feat({ name: "Bastion résonant", nameEn: "Resonance Bastion", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée une forteresse numérique quasi-impénétrable.</p>", descriptionEn: "<p>Creates a nearly impenetrable digital fortress.</p>" }),
+  feat({ name: "Filtre adaptatif", nameEn: "Adaptive Filter", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Filtre intelligent qui apprend et bloque les nouvelles menaces.</p>", descriptionEn: "<p>Intelligent filter that learns and blocks new threats.</p>" }),
+  feat({ name: "Bouclier anti-biofeedback", nameEn: "Anti-Biofeedback Shield", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Protège spécifiquement contre les attaques de biofeedback.</p>", descriptionEn: "<p>Specifically protects against biofeedback attacks.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_complex-forms", rrLabel: "Formes complexes" }] }),
+  feat({ name: "Rétablissement d'urgence", nameEn: "Emergency Recovery", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Restaure rapidement un système après un crash matriciel.</p>", descriptionEn: "<p>Rapidly restores a system after a Matrix crash.</p>" }),
+  feat({ name: "Détection d'anomalie", nameEn: "Anomaly Detection", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Identifie les activités anormales dans le trafic matriciel.</p>", descriptionEn: "<p>Identifies abnormal activities in Matrix traffic.</p>" }),
+  // ── Stealth / Evasion (15) ──
+  feat({ name: "Camouflage matriciel", nameEn: "Matrix Camouflage", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Rend l'icône du technomancien quasi-invisible dans la Matrice.</p>", descriptionEn: "<p>Renders the technomancer's icon nearly invisible in the Matrix.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-stealth", rrLabel: "Discrétion matricielle" }] }),
+  feat({ name: "Brouillage résonant", nameEn: "Resonance Jamming", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Interfère avec les communications sans fil dans la zone.</p>", descriptionEn: "<p>Interferes with wireless communications in the area.</p>" }),
+  feat({ name: "Fantôme numérique", nameEn: "Digital Ghost", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Efface toute trace de passage dans les logs matriciels.</p>", descriptionEn: "<p>Erases all traces of passage in Matrix logs.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-stealth", rrLabel: "Discrétion matricielle" }] }),
+  feat({ name: "Tunnel de données", nameEn: "Data Tunnel", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée un canal de communication chiffré et indétectable.</p>", descriptionEn: "<p>Creates an encrypted and undetectable communication channel.</p>" }),
+  feat({ name: "Falsification d'icône", nameEn: "Icon Spoofing", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Modifie l'apparence de son icône pour se faire passer pour un autre.</p>", descriptionEn: "<p>Modifies icon appearance to impersonate another.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-stealth", rrLabel: "Discrétion matricielle" }] }),
+  feat({ name: "Évasion de trace", nameEn: "Trace Evasion", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Brouille les tentatives de pistage matriciel.</p>", descriptionEn: "<p>Scrambles Matrix tracking attempts.</p>" }),
+  feat({ name: "Masque de signal", nameEn: "Signal Mask", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Masque le signal du technomancien pour le rendre indétectable.</p>", descriptionEn: "<p>Masks the technomancer's signal to make it undetectable.</p>" }),
+  feat({ name: "Fausse piste", nameEn: "False Trail", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée de fausses traces menant les poursuivants vers un leurre.</p>", descriptionEn: "<p>Creates false traces leading pursuers to a decoy.</p>" }),
+  feat({ name: "Interférence passive", nameEn: "Passive Interference", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Génère du bruit de fond qui complique la détection.</p>", descriptionEn: "<p>Generates background noise that complicates detection.</p>" }),
+  feat({ name: "Dissolution d'empreinte", nameEn: "Footprint Dissolution", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Efface l'empreinte numérique du technomancien en temps réel.</p>", descriptionEn: "<p>Erases the technomancer's digital footprint in real time.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-stealth", rrLabel: "Discrétion matricielle" }] }),
+  feat({ name: "Leurre de Résonance", nameEn: "Resonance Decoy", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée un faux signal de Résonance pour détourner l'attention.</p>", descriptionEn: "<p>Creates a false Resonance signal to divert attention.</p>" }),
+  feat({ name: "Passage fantôme", nameEn: "Ghost Pass", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Traverse les barrières de sécurité sans déclencher d'alerte.</p>", descriptionEn: "<p>Passes through security barriers without triggering alerts.</p>" }),
+  feat({ name: "Brouillard de données", nameEn: "Data Fog", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Génère un nuage de données parasites autour de sa position.</p>", descriptionEn: "<p>Generates a cloud of junk data around one's position.</p>" }),
+  feat({ name: "Silence numérique", nameEn: "Digital Silence", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Supprime toute émission de données non-essentielle.</p>", descriptionEn: "<p>Suppresses all non-essential data emissions.</p>" }),
+  feat({ name: "Mimétisme de noeud", nameEn: "Node Mimicry", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Imite la signature d'un noeud légitime du réseau.</p>", descriptionEn: "<p>Mimics the signature of a legitimate network node.</p>" }),
+  // ── Data Manipulation (15) ──
+  feat({ name: "Écho de données", nameEn: "Data Echo", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Récupère des données récemment effacées d'un système.</p>", descriptionEn: "<p>Recovers recently deleted data from a system.</p>" }),
+  feat({ name: "Pistage matriciel", nameEn: "Matrix Trace", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Trace la localisation physique d'un signal matriciel.</p>", descriptionEn: "<p>Traces the physical location of a Matrix signal.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Compression de données", nameEn: "Data Compression", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Compresse des fichiers volumineux pour un transfert rapide.</p>", descriptionEn: "<p>Compresses large files for rapid transfer.</p>" }),
+  feat({ name: "Déchiffrement résonant", nameEn: "Resonance Decryption", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Déchiffre les fichiers protégés grâce à la Résonance.</p>", descriptionEn: "<p>Decrypts protected files through Resonance.</p>" }),
+  feat({ name: "Clonage de données", nameEn: "Data Cloning", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Duplique un ensemble de données sans laisser de trace d'accès.</p>", descriptionEn: "<p>Duplicates a data set without leaving an access trace.</p>" }),
+  feat({ name: "Altération de log", nameEn: "Log Alteration", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Modifie les journaux système pour effacer ou falsifier des entrées.</p>", descriptionEn: "<p>Modifies system logs to erase or falsify entries.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Indexation rapide", nameEn: "Rapid Indexing", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Indexe et recherche dans d'énormes bases de données en secondes.</p>", descriptionEn: "<p>Indexes and searches through massive databases in seconds.</p>" }),
+  feat({ name: "Falsification de données", nameEn: "Data Forgery", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée des données falsifiées indiscernables des originales.</p>", descriptionEn: "<p>Creates forged data indistinguishable from originals.</p>" }),
+  feat({ name: "Extraction chirurgicale", nameEn: "Surgical Extraction", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Extrait des données spécifiques d'un système sans alerter la sécurité.</p>", descriptionEn: "<p>Extracts specific data from a system without alerting security.</p>" }),
+  feat({ name: "Reconstruction de fichier", nameEn: "File Reconstruction", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Reconstitue des fichiers fragmentés ou corrompus.</p>", descriptionEn: "<p>Reconstructs fragmented or corrupted files.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Transfert sécurisé", nameEn: "Secure Transfer", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Transfère des données de façon totalement sécurisée et intraçable.</p>", descriptionEn: "<p>Transfers data in a completely secure and untraceable way.</p>" }),
+  feat({ name: "Analyse de trafic", nameEn: "Traffic Analysis", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Analyse les flux de données pour identifier les communications cachées.</p>", descriptionEn: "<p>Analyzes data flows to identify hidden communications.</p>" }),
+  feat({ name: "Archivage résonant", nameEn: "Resonance Archival", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Stocke des données dans la Résonance elle-même.</p>", descriptionEn: "<p>Stores data in the Resonance itself.</p>" }),
+  feat({ name: "Corruption sélective", nameEn: "Selective Corruption", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Corrompt des données spécifiques tout en laissant le reste intact.</p>", descriptionEn: "<p>Corrupts specific data while leaving the rest intact.</p>" }),
+  feat({ name: "Miroir de base de données", nameEn: "Database Mirror", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée une copie miroir d'une base de données complète.</p>", descriptionEn: "<p>Creates a mirror copy of a complete database.</p>" }),
+  // ── Drone / Device Control (15) ──
+  feat({ name: "Puppeteer", nameEn: "Puppeteer", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Prend le contrôle temporaire d'un appareil connecté.</p>", descriptionEn: "<p>Temporarily takes control of a connected device.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_compilation", rrLabel: "Compilation" }] }),
+  feat({ name: "Surcharge moteur", nameEn: "Engine Overcharge", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Pousse les moteurs d'un drone au-delà de leurs limites.</p>", descriptionEn: "<p>Pushes a drone's engines beyond their limits.</p>" }),
+  feat({ name: "Diagnostic résonant", nameEn: "Resonance Diagnostic", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Analyse l'état complet d'un appareil électronique.</p>", descriptionEn: "<p>Analyzes the complete state of an electronic device.</p>" }),
+  feat({ name: "Contrôle de drone", nameEn: "Drone Override", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Prend le contrôle d'un drone en écrasant son autonavigation.</p>", descriptionEn: "<p>Takes control of a drone by overriding its autopilot.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_compilation", rrLabel: "Compilation" }] }),
+  feat({ name: "Optimisation machine", nameEn: "Machine Optimization", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Améliore temporairement les performances d'un appareil.</p>", descriptionEn: "<p>Temporarily improves a device's performance.</p>" }),
+  feat({ name: "Shutdown à distance", nameEn: "Remote Shutdown", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Éteint un appareil électronique à distance.</p>", descriptionEn: "<p>Remotely shuts down an electronic device.</p>" }),
+  feat({ name: "Reprogrammation flash", nameEn: "Flash Reprogramming", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Reprogramme rapidement le firmware d'un appareil.</p>", descriptionEn: "<p>Rapidly reprograms a device's firmware.</p>" }),
+  feat({ name: "Lien de commande", nameEn: "Command Link", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Établit un lien de contrôle persistant avec un appareil.</p>", descriptionEn: "<p>Establishes a persistent control link with a device.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_compilation", rrLabel: "Compilation" }] }),
+  feat({ name: "Sabotage de capteur", nameEn: "Sensor Sabotage", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Altère les lectures des capteurs d'un appareil cible.</p>", descriptionEn: "<p>Alters the sensor readings of a target device.</p>" }),
+  feat({ name: "Réanimation d'appareil", nameEn: "Device Reanimation", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Remet en marche un appareil endommagé ou éteint.</p>", descriptionEn: "<p>Restarts a damaged or powered-down device.</p>" }),
+  feat({ name: "Essaim de contrôle", nameEn: "Control Swarm", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Contrôle plusieurs petits drones simultanément.</p>", descriptionEn: "<p>Controls multiple small drones simultaneously.</p>" }),
+  feat({ name: "Verrouillage de véhicule", nameEn: "Vehicle Lock", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Bloque les systèmes d'un véhicule pour l'immobiliser.</p>", descriptionEn: "<p>Locks a vehicle's systems to immobilize it.</p>" }),
+  feat({ name: "Reconfiguration matérielle", nameEn: "Hardware Reconfiguration", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Réorganise les composants matériels d'un appareil par la Résonance.</p>", descriptionEn: "<p>Reorganizes a device's hardware components through Resonance.</p>" }),
+  feat({ name: "Interface forcée", nameEn: "Forced Interface", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Force l'accès à un appareil sans authentification.</p>", descriptionEn: "<p>Forces access to a device without authentication.</p>" }),
+  feat({ name: "Transfert de contrôle", nameEn: "Control Transfer", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Transfère le contrôle d'un appareil à un allié.</p>", descriptionEn: "<p>Transfers control of a device to an ally.</p>" }),
+  // ── Resonance (10) ──
+  feat({ name: "Appel de sprite", nameEn: "Sprite Call", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Invoque un sprite de la Résonance pour assister le technomancien.</p>", descriptionEn: "<p>Summons a sprite from the Resonance to assist the technomancer.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_compilation", rrLabel: "Compilation" }] }),
+  feat({ name: "Dissolution de sprite", nameEn: "Sprite Dissolution", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Désassemble un sprite ennemi en ses composants résonants.</p>", descriptionEn: "<p>Disassembles an enemy sprite into its resonant components.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_decompilation", rrLabel: "Décompilation" }] }),
+  feat({ name: "Écho de Résonance", nameEn: "Resonance Echo", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Amplifie une forme complexe par la Résonance pour doubler son effet.</p>", descriptionEn: "<p>Amplifies a complex form through Resonance to double its effect.</p>" }),
+  feat({ name: "Harmonique profonde", nameEn: "Deep Harmonic", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Se connecte aux couches profondes de la Résonance pour plus de puissance.</p>", descriptionEn: "<p>Connects to deep layers of Resonance for greater power.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_compilation", rrLabel: "Compilation" }] }),
+  feat({ name: "Purification résonante", nameEn: "Resonance Purification", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Purifie un espace matriciel de toute corruption ou infection.</p>", descriptionEn: "<p>Purifies a Matrix space of all corruption or infection.</p>" }),
+  feat({ name: "Onde de submersion", nameEn: "Submersion Wave", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Onde de Résonance qui renforce temporairement tous les sprites alliés.</p>", descriptionEn: "<p>Resonance wave that temporarily strengthens all allied sprites.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_decompilation", rrLabel: "Décompilation" }] }),
+  feat({ name: "Flux de Résonance", nameEn: "Resonance Flow", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Canalise un flux continu de Résonance pour alimenter ses formes.</p>", descriptionEn: "<p>Channels a continuous flow of Resonance to power forms.</p>" }),
+  feat({ name: "Porte de Résonance", nameEn: "Resonance Gate", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Ouvre un passage direct vers un noeud distant via la Résonance.</p>", descriptionEn: "<p>Opens a direct passage to a distant node via Resonance.</p>" }),
+  feat({ name: "Baptême résonant", nameEn: "Resonance Baptism", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Imprègne un appareil de Résonance pour le rendre sensible aux formes.</p>", descriptionEn: "<p>Imbues a device with Resonance to make it responsive to forms.</p>" }),
+  feat({ name: "Cri de la Résonance", nameEn: "Resonance Cry", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Émission puissante de Résonance qui affecte tous les appareils dans la zone.</p>", descriptionEn: "<p>Powerful Resonance emission that affects all devices in the area.</p>" }),
+  // ── Utility (10) ──
+  feat({ name: "Analyse de système", nameEn: "System Analysis", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Analyse complète de l'architecture et des failles d'un système.</p>", descriptionEn: "<p>Complete analysis of a system's architecture and vulnerabilities.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Accélération de processus", nameEn: "Process Acceleration", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Accélère l'exécution d'un programme ou d'un transfert.</p>", descriptionEn: "<p>Accelerates the execution of a program or transfer.</p>" }),
+  feat({ name: "Réparation matricielle", nameEn: "Matrix Repair", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Répare les dommages matriciels subis par le technomancien.</p>", descriptionEn: "<p>Repairs Matrix damage suffered by the technomancer.</p>" }),
+  feat({ name: "Boost de signal", nameEn: "Signal Boost", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Amplifie la portée et la puissance du signal matriciel.</p>", descriptionEn: "<p>Amplifies the range and power of the Matrix signal.</p>" }),
+  feat({ name: "Traduction universelle", nameEn: "Universal Translation", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Traduit instantanément tout texte ou communication dans la Matrice.</p>", descriptionEn: "<p>Instantly translates any text or communication in the Matrix.</p>" }),
+  feat({ name: "Cartographie matricielle", nameEn: "Matrix Mapping", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Cartographie la topologie d'un réseau matriciel local.</p>", descriptionEn: "<p>Maps the topology of a local Matrix network.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Multitâche résonant", nameEn: "Resonance Multitasking", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Permet d'exécuter plusieurs formes complexes simultanément.</p>", descriptionEn: "<p>Allows executing multiple complex forms simultaneously.</p>" }),
+  feat({ name: "Synchronisation temporelle", nameEn: "Temporal Sync", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Synchronise parfaitement les actions de l'équipe dans la Matrice.</p>", descriptionEn: "<p>Perfectly synchronizes team actions in the Matrix.</p>" }),
+  feat({ name: "Pont de données", nameEn: "Data Bridge", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Crée un pont entre deux réseaux normalement isolés.</p>", descriptionEn: "<p>Creates a bridge between two normally isolated networks.</p>" }),
+  feat({ name: "Optimisation de bande passante", nameEn: "Bandwidth Optimization", featType: "complex-form", cost: "equipment", nuyenCost: 5e3, description: "<p>Maximise l'utilisation de la bande passante disponible.</p>", descriptionEn: "<p>Maximizes the use of available bandwidth.</p>" })
+];
+const EQUIPMENT_TEMPLATES = [
+  // === COMMLINK & FAKE SIN (always added) ===
+  feat({ name: "Commlink NovaPulse X2", nameEn: "NovaPulse X2 Commlink", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Commlink standard, fonctions AR complètes.</p>", descriptionEn: "<p>Standard commlink with full AR functions.</p>" }),
+  feat({ name: "Faux SIN Rating 3", nameEn: "Fake SIN Rating 3", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Fausse identité de qualité correcte. Passe la plupart des contrôles de routine.</p>", descriptionEn: "<p>Decent quality fake identity. Passes most routine checks.</p>" }),
+  // === ELECTRONICS (15) ===
+  feat({ name: "Micro-caméra espion Lenstek", nameEn: "Lenstek Spy Micro-Camera", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Caméra miniature sans fil avec stockage intégré.</p>", descriptionEn: "<p>Miniature wireless camera with built-in storage.</p>" }),
+  feat({ name: "Scanneur de fréquences SpectraWave", nameEn: "SpectraWave Frequency Scanner", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Détecte et identifie les émissions radio dans un rayon de 50 mètres.</p>", descriptionEn: "<p>Detects and identifies radio emissions within a 50-meter radius.</p>" }),
+  feat({ name: "Brouilleur de signal portatif Hushline", nameEn: "Hushline Portable Signal Jammer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Brouille les communications sans fil dans un rayon de 20 mètres.</p>", descriptionEn: "<p>Jams wireless communications within a 20-meter radius.</p>" }),
+  feat({ name: "Détecteur de mouchards SweepTech", nameEn: "SweepTech Bug Detector", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Repère les dispositifs d'écoute et de surveillance cachés.</p>", descriptionEn: "<p>Locates hidden listening and surveillance devices.</p>" }),
+  feat({ name: "Drone de surveillance Peekaboo", nameEn: "Peekaboo Surveillance Drone", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Micro-drone volant discret avec caméra haute définition.</p>", descriptionEn: "<p>Discreet flying micro-drone with high-definition camera.</p>" }),
+  feat({ name: "Enregistreur audio Whisperlog", nameEn: "Whisperlog Audio Recorder", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Enregistreur vocal miniature avec 200 heures de stockage chiffré.</p>", descriptionEn: "<p>Miniature voice recorder with 200 hours of encrypted storage.</p>" }),
+  feat({ name: "Projecteur holographique TruViz", nameEn: "TruViz Holographic Projector", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Projette des hologrammes réalistes dans un rayon de 3 mètres.</p>", descriptionEn: "<p>Projects realistic holograms within a 3-meter radius.</p>" }),
+  feat({ name: "Boîtier de piratage QuickJack", nameEn: "QuickJack Hacking Dongle", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Dongle de bypass électronique pour ports de données physiques.</p>", descriptionEn: "<p>Electronic bypass dongle for physical data ports.</p>" }),
+  feat({ name: "Antenne relais pliable GridLink", nameEn: "GridLink Foldable Relay Antenna", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Étend la portée des communications sans fil de 500 mètres.</p>", descriptionEn: "<p>Extends wireless communication range by 500 meters.</p>" }),
+  feat({ name: "Lampe UV tactique BrightEdge", nameEn: "BrightEdge Tactical UV Lamp", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Lampe ultraviolette pour révéler les traces biologiques et encres invisibles.</p>", descriptionEn: "<p>Ultraviolet lamp for revealing biological traces and invisible inks.</p>" }),
+  feat({ name: "Jumelles électroniques Hawkview", nameEn: "Hawkview Electronic Binoculars", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Jumelles avec zoom 10x, vision thermographique et enregistrement vidéo.</p>", descriptionEn: "<p>Binoculars with 10x zoom, thermographic vision, and video recording.</p>" }),
+  feat({ name: "Lunettes de vision nocturne NiteOwl", nameEn: "NiteOwl Night Vision Goggles", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Vision amplifiée en basse lumière et thermographique.</p>", descriptionEn: "<p>Amplified low-light and thermographic vision.</p>" }),
+  feat({ name: "Tracker GPS magnétique StickPin", nameEn: "StickPin Magnetic GPS Tracker", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Balise GPS magnétique miniature, autonomie de 72 heures.</p>", descriptionEn: "<p>Miniature magnetic GPS beacon with 72-hour battery life.</p>" }),
+  feat({ name: "Clé de chiffrement quantique Vaultex", nameEn: "Vaultex Quantum Encryption Key", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Dispositif de chiffrement matériel pour communications ultra-sécurisées.</p>", descriptionEn: "<p>Hardware encryption device for ultra-secure communications.</p>" }),
+  // === MEDICAL (10) ===
+  feat({ name: "Médikit portatif CureTech", nameEn: "CureTech Portable Medkit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Kit médical d'urgence avec auto-injecteurs et patchs de trauma.</p>", descriptionEn: "<p>Emergency medical kit with auto-injectors and trauma patches.</p>" }),
+  feat({ name: "Seringue auto-inject NanoHeal", nameEn: "NanoHeal Auto-Inject Syringe", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Seringue automatique chargée de nanites cicatrisantes.</p>", descriptionEn: "<p>Automatic syringe loaded with healing nanites.</p>" }),
+  feat({ name: "Stabilisateur de trauma QuickSave", nameEn: "QuickSave Trauma Stabilizer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Patch adhésif qui stabilise les hémorragies et fractures ouvertes.</p>", descriptionEn: "<p>Adhesive patch that stabilizes hemorrhages and open fractures.</p>" }),
+  feat({ name: "Analyseur sanguin RedScan", nameEn: "RedScan Blood Analyzer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Appareil portable qui analyse le sang pour détecter toxines et maladies.</p>", descriptionEn: "<p>Portable device that analyzes blood for toxins and diseases.</p>" }),
+  feat({ name: "Injecteur d'adrénaline PulsePen", nameEn: "PulsePen Adrenaline Injector", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Stylo injecteur de dose d'adrénaline de combat.</p>", descriptionEn: "<p>Combat adrenaline dose injector pen.</p>" }),
+  feat({ name: "Patch antidouleur BlissWrap", nameEn: "BlissWrap Painkiller Patch", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Patch transdermique à libération prolongée contre la douleur.</p>", descriptionEn: "<p>Extended-release transdermal patch for pain relief.</p>" }),
+  feat({ name: "Défibrillateur portable ZapBack", nameEn: "ZapBack Portable Defibrillator", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Défibrillateur compact avec instructions vocales intégrées.</p>", descriptionEn: "<p>Compact defibrillator with built-in voice instructions.</p>" }),
+  feat({ name: "Kit de chirurgie de terrain FieldCut", nameEn: "FieldCut Field Surgery Kit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Instruments chirurgicaux de base pour extractions de balles et sutures.</p>", descriptionEn: "<p>Basic surgical instruments for bullet extraction and sutures.</p>" }),
+  feat({ name: "Inhalateur anti-toxines ClearLung", nameEn: "ClearLung Anti-Toxin Inhaler", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Inhalateur qui neutralise les gaz toxiques inhalés.</p>", descriptionEn: "<p>Inhaler that neutralizes inhaled toxic gases.</p>" }),
+  feat({ name: "Brancard gonflable RescuePod", nameEn: "RescuePod Inflatable Stretcher", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Brancard auto-gonflant ultra-léger pour évacuation rapide.</p>", descriptionEn: "<p>Ultra-light self-inflating stretcher for rapid evacuation.</p>" }),
+  // === INFILTRATION TOOLS (10) ===
+  feat({ name: "Kit de crochetage électronique BypassPro", nameEn: "BypassPro Electronic Lockpick Kit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Outils pour le bypass de serrures magnétiques et électroniques.</p>", descriptionEn: "<p>Tools for bypassing magnetic and electronic locks.</p>" }),
+  feat({ name: "Kit d'escalade magnétique GeckoGrip", nameEn: "GeckoGrip Magnetic Climbing Kit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Gants et genouillères magnétiques pour l'escalade urbaine.</p>", descriptionEn: "<p>Magnetic gloves and knee pads for urban climbing.</p>" }),
+  feat({ name: "Corde rétractable SilkLine", nameEn: "SilkLine Retractable Rope", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Câble en fibre synthétique de 30 mètres avec grappin magnétique.</p>", descriptionEn: "<p>30-meter synthetic fiber cable with magnetic grapple.</p>" }),
+  feat({ name: "Gants d'effraction ShadowTouch", nameEn: "ShadowTouch Burglary Gloves", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Gants ultra-fins ne laissant aucune empreinte digitale.</p>", descriptionEn: "<p>Ultra-thin gloves that leave no fingerprints.</p>" }),
+  feat({ name: "Spray camouflage thermique ColdSkin", nameEn: "ColdSkin Thermal Camouflage Spray", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Spray qui masque temporairement la signature thermique.</p>", descriptionEn: "<p>Spray that temporarily masks thermal signature.</p>" }),
+  feat({ name: "Coupe-grillage plasma MeltEdge", nameEn: "MeltEdge Plasma Wire Cutter", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Outil de découpe au plasma pour grillages et serrures métalliques.</p>", descriptionEn: "<p>Plasma cutting tool for wire fences and metal locks.</p>" }),
+  feat({ name: "Chaussures silencieuses HushStep", nameEn: "HushStep Silent Shoes", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Semelles absorbantes réduisant le bruit de pas de 95%.</p>", descriptionEn: "<p>Noise-absorbing soles reducing footstep sound by 95%.</p>" }),
+  feat({ name: "Brouilleur de caméras BlindSpot", nameEn: "BlindSpot Camera Jammer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Émet un signal qui brouille les caméras de surveillance dans un rayon de 10 mètres.</p>", descriptionEn: "<p>Emits a signal that jams surveillance cameras within a 10-meter radius.</p>" }),
+  feat({ name: "Marqueur laser infrarouge GhostDot", nameEn: "GhostDot IR Laser Marker", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Pointeur laser invisible à l'œil nu, visible uniquement en vision thermographique.</p>", descriptionEn: "<p>Laser pointer invisible to the naked eye, only visible in thermographic vision.</p>" }),
+  feat({ name: "Masque à gaz compact BreathSafe", nameEn: "BreathSafe Compact Gas Mask", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Masque filtrant compact, protection contre gaz et agents chimiques.</p>", descriptionEn: "<p>Compact filtering mask, protection against gases and chemical agents.</p>" }),
+  // === SURVIVAL GEAR (10) ===
+  feat({ name: "Sac de survie RuggedPack", nameEn: "RuggedPack Survival Bag", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Sac à dos renforcé avec compartiments étanches et panneaux solaires.</p>", descriptionEn: "<p>Reinforced backpack with waterproof compartments and solar panels.</p>" }),
+  feat({ name: "Purificateur d'eau AquaPure", nameEn: "AquaPure Water Purifier", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Filtre portable éliminant bactéries, virus et contaminants chimiques.</p>", descriptionEn: "<p>Portable filter eliminating bacteria, viruses, and chemical contaminants.</p>" }),
+  feat({ name: "Rations concentrées NutriBlock", nameEn: "NutriBlock Concentrated Rations", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Pack de 30 barres nutritives haute densité calorique.</p>", descriptionEn: "<p>Pack of 30 high-calorie-density nutrition bars.</p>" }),
+  feat({ name: "Tente camouflée StealthTent", nameEn: "StealthTent Camouflaged Tent", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Tente compacte avec camouflage thermique et optique intégré.</p>", descriptionEn: "<p>Compact tent with integrated thermal and optical camouflage.</p>" }),
+  feat({ name: "Briquet plasma FireStrike", nameEn: "FireStrike Plasma Lighter", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Briquet au plasma résistant au vent et à l'eau.</p>", descriptionEn: "<p>Wind-proof and water-proof plasma lighter.</p>" }),
+  feat({ name: "Couverture de survie ThermoWrap", nameEn: "ThermoWrap Survival Blanket", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Couverture isolante compacte avec chauffage intégré sur batterie.</p>", descriptionEn: "<p>Compact insulating blanket with battery-powered heating.</p>" }),
+  feat({ name: "Kit de réparation universel FixAll", nameEn: "FixAll Universal Repair Kit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Outils de base pour la réparation de véhicules et drones.</p>", descriptionEn: "<p>Basic tools for vehicle and drone repair.</p>" }),
+  feat({ name: "Boussole AR NavPoint", nameEn: "NavPoint AR Compass", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Boussole en réalité augmentée avec cartes hors-ligne intégrées.</p>", descriptionEn: "<p>Augmented reality compass with built-in offline maps.</p>" }),
+  feat({ name: "Compteur Geiger RadWatch", nameEn: "RadWatch Geiger Counter", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Détecteur de radiations portable avec alarme configurable.</p>", descriptionEn: "<p>Portable radiation detector with configurable alarm.</p>" }),
+  feat({ name: "Multi-outil magnétique ToolFlex", nameEn: "ToolFlex Magnetic Multi-Tool", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Multi-outil pliable avec 14 fonctions et lame en carbure.</p>", descriptionEn: "<p>Foldable multi-tool with 14 functions and carbide blade.</p>" }),
+  // === COMMUNICATION (10) ===
+  feat({ name: "Oreillette subvocale WhisperLink", nameEn: "WhisperLink Subvocal Earpiece", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Micro-oreillette avec capteur subvocal pour communication silencieuse.</p>", descriptionEn: "<p>Micro-earpiece with subvocal sensor for silent communication.</p>" }),
+  feat({ name: "Émetteur longue portée SkyReach", nameEn: "SkyReach Long-Range Transmitter", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Émetteur radio portatif avec portée de 10 kilomètres en terrain dégagé.</p>", descriptionEn: "<p>Portable radio transmitter with 10-kilometer range in open terrain.</p>" }),
+  feat({ name: "Traducteur vocal InstaTrans", nameEn: "InstaTrans Voice Translator", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Traduit en temps réel entre 40 langues via commlink.</p>", descriptionEn: "<p>Translates in real time between 40 languages via commlink.</p>" }),
+  feat({ name: "Réseau mesh tactique SquadNet", nameEn: "SquadNet Tactical Mesh Network", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Crée un réseau de communication local chiffré entre 8 utilisateurs.</p>", descriptionEn: "<p>Creates a local encrypted communication network for up to 8 users.</p>" }),
+  feat({ name: "Amplificateur de signal BoostWave", nameEn: "BoostWave Signal Amplifier", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Amplifie les signaux commlink dans les zones à faible couverture.</p>", descriptionEn: "<p>Amplifies commlink signals in low-coverage areas.</p>" }),
+  feat({ name: "Transmetteur burst DataFlash", nameEn: "DataFlash Burst Data Transmitter", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Envoie des paquets de données compressées en micro-rafale indétectable.</p>", descriptionEn: "<p>Sends compressed data packets in undetectable micro-bursts.</p>" }),
+  feat({ name: "Micro-espion adhésif BugDrop", nameEn: "BugDrop Adhesive Listening Bug", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Mouchard audio miniature avec adhésif permanent et batterie de 48h.</p>", descriptionEn: "<p>Miniature audio bug with permanent adhesive and 48-hour battery.</p>" }),
+  feat({ name: "Modulateur vocal VoxShift", nameEn: "VoxShift Voice Modulator", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Altère la voix en temps réel pour masquer l'identité de l'utilisateur.</p>", descriptionEn: "<p>Alters voice in real time to mask the user's identity.</p>" }),
+  feat({ name: "Casque comm blindé IronComm", nameEn: "IronComm Armored Comm Headset", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Casque audio blindé avec réduction de bruit active et micro-boom.</p>", descriptionEn: "<p>Armored audio headset with active noise reduction and boom mic.</p>" }),
+  feat({ name: "Antenne satellite pliable OrbitLink", nameEn: "OrbitLink Foldable Satellite Antenna", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Antenne satellite portative pour communication hors réseau.</p>", descriptionEn: "<p>Portable satellite antenna for off-grid communication.</p>" }),
+  // === DISGUISE / SOCIAL (10) ===
+  feat({ name: "Kit de déguisement FaceMaker", nameEn: "FaceMaker Disguise Kit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Prothèses faciales, perruques et maquillage professionnel.</p>", descriptionEn: "<p>Facial prosthetics, wigs, and professional makeup.</p>" }),
+  feat({ name: "Costume à fibres adaptatives ChamSuit", nameEn: "ChamSuit Adaptive Fiber Suit", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Vêtements dont la couleur et texture changent via commlink.</p>", descriptionEn: "<p>Clothing whose color and texture change via commlink.</p>" }),
+  feat({ name: "Lentilles à iris variable ShiftEye", nameEn: "ShiftEye Variable Iris Lenses", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Lentilles cosmétiques changeant la couleur des yeux à volonté.</p>", descriptionEn: "<p>Cosmetic lenses that change eye color at will.</p>" }),
+  feat({ name: "Carte de visite holographique BizGlow", nameEn: "BizGlow Holographic Business Card", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Carte de visite projetant un mini-hologramme de présentation.</p>", descriptionEn: "<p>Business card projecting a mini presentation hologram.</p>" }),
+  feat({ name: "Parfum phéromonal AttraxOne", nameEn: "AttraxOne Pheromone Perfume", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Parfum synthétique à base de phéromones pour renforcer le charisme.</p>", descriptionEn: "<p>Synthetic pheromone-based perfume to enhance charisma.</p>" }),
+  feat({ name: "Tatouage électronique FlexInk", nameEn: "FlexInk Electronic Tattoo", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Tatouage à encre programmable qui change de motif sur commande.</p>", descriptionEn: "<p>Programmable ink tattoo that changes pattern on command.</p>" }),
+  feat({ name: "Badge de sécurité falsifié ClearPass", nameEn: "ClearPass Forged Security Badge", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Badge de sécurité contrefait avec puce RFID clonable.</p>", descriptionEn: "<p>Counterfeit security badge with clonable RFID chip.</p>" }),
+  feat({ name: "Mallette diplomatique ShieldCase", nameEn: "ShieldCase Diplomatic Briefcase", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Mallette blindée avec compartiment secret et scanner anti-intrusion.</p>", descriptionEn: "<p>Armored briefcase with secret compartment and anti-intrusion scanner.</p>" }),
+  feat({ name: "Micro-imprimante de faux papiers DocForge", nameEn: "DocForge Fake Papers Micro-Printer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Imprimante portable produisant permis, badges et certificats falsifiés.</p>", descriptionEn: "<p>Portable printer producing forged licenses, badges, and certificates.</p>" }),
+  feat({ name: "Lunettes d'enregistrement social SpySpex", nameEn: "SpySpex Social Recording Glasses", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Lunettes de style avec caméra et micro intégrés discrètement.</p>", descriptionEn: "<p>Stylish glasses with discreetly integrated camera and microphone.</p>" }),
+  // === VEHICLE ACCESSORIES (10) ===
+  feat({ name: "Turbo-boost magnétique RushCore", nameEn: "RushCore Magnetic Turbo-Boost", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Module d'accélération temporaire pour véhicules terrestres.</p>", descriptionEn: "<p>Temporary acceleration module for ground vehicles.</p>" }),
+  feat({ name: "Blindage véhicule léger ArmorPlate", nameEn: "ArmorPlate Light Vehicle Armor", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Plaques de blindage légères à fixer sur un véhicule standard.</p>", descriptionEn: "<p>Lightweight armor plates to mount on a standard vehicle.</p>" }),
+  feat({ name: "Système de leurres thermiques FlareBox", nameEn: "FlareBox Thermal Decoy System", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Éjecte des leurres thermiques pour tromper les missiles guidés.</p>", descriptionEn: "<p>Ejects thermal decoys to fool guided missiles.</p>" }),
+  feat({ name: "Pneus auto-réparants SealTread", nameEn: "SealTread Self-Repairing Tires", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Pneus avec gel auto-colmatant qui rebouchent les crevaisons.</p>", descriptionEn: "<p>Tires with self-sealing gel that plugs punctures.</p>" }),
+  feat({ name: "Fumigènes arrière SmokeTrail", nameEn: "SmokeTrail Rear Smoke Launchers", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Éjecteurs de fumée à l'arrière du véhicule pour couvrir la fuite.</p>", descriptionEn: "<p>Rear-mounted smoke ejectors to cover the escape.</p>" }),
+  feat({ name: "GPS anti-tracking GhostRoute", nameEn: "GhostRoute Anti-Tracking GPS", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Système GPS qui brouille les tentatives de pistage du véhicule.</p>", descriptionEn: "<p>GPS system that jams vehicle tracking attempts.</p>" }),
+  feat({ name: "Compartiment secret VoidStash", nameEn: "VoidStash Hidden Compartment", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Compartiment dissimulé blindé et insonorisé dans le châssis.</p>", descriptionEn: "<p>Concealed, armored, and soundproofed compartment in the chassis.</p>" }),
+  feat({ name: "Phares aveuglants FlashBeam", nameEn: "FlashBeam Blinding Headlights", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Phares à haute intensité capables d'aveugler temporairement les poursuivants.</p>", descriptionEn: "<p>High-intensity headlights capable of temporarily blinding pursuers.</p>" }),
+  feat({ name: "Lanceur de clous routiers SpikeDrop", nameEn: "SpikeDrop Road Spike Launcher", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Éjecte des clous rétractables sur la route derrière le véhicule.</p>", descriptionEn: "<p>Ejects retractable spikes onto the road behind the vehicle.</p>" }),
+  feat({ name: "Pilote automatique d'urgence AutoPilot", nameEn: "AutoPilot Emergency Autopilot", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Module de pilotage automatique basique pour situations d'urgence.</p>", descriptionEn: "<p>Basic autopilot module for emergency situations.</p>" }),
+  // === COMBAT ACCESSORIES (10) ===
+  feat({ name: "Holster rapide QuickDraw", nameEn: "QuickDraw Speed Holster", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Holster à éjection rapide pour dégainer en une fraction de seconde.</p>", descriptionEn: "<p>Quick-eject holster for drawing in a split second.</p>" }),
+  feat({ name: "Lunette de visée SmartScope", nameEn: "SmartScope Targeting Sight", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Lunette de visée avec calcul balistique et correction de vent automatique.</p>", descriptionEn: "<p>Targeting scope with ballistic calculation and automatic wind correction.</p>" }),
+  feat({ name: "Chargeurs rapides SpeedMag", nameEn: "SpeedMag Quick Loaders", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Set de chargeurs à insertion rapide compatibles avec la plupart des armes.</p>", descriptionEn: "<p>Set of quick-insert magazines compatible with most weapons.</p>" }),
+  feat({ name: "Silencieux universel MuteShot", nameEn: "MuteShot Universal Suppressor", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Silencieux adaptable à la majorité des calibres de pistolets.</p>", descriptionEn: "<p>Suppressor adaptable to most pistol calibers.</p>" }),
+  feat({ name: "Bandolière tactique TacVest", nameEn: "TacVest Tactical Bandolier", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Harnais tactique avec 8 emplacements pour grenades et chargeurs.</p>", descriptionEn: "<p>Tactical harness with 8 slots for grenades and magazines.</p>" }),
+  feat({ name: "Lampe tactique BlindFire", nameEn: "BlindFire Tactical Flashlight", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Lampe tactique montée sur rail avec mode stroboscopique aveuglant.</p>", descriptionEn: "<p>Rail-mounted tactical flashlight with blinding strobe mode.</p>" }),
+  feat({ name: "Poignée avant stabilisatrice SteadyGrip", nameEn: "SteadyGrip Stabilizing Foregrip", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Poignée avant réduisant le recul et améliorant la précision en rafale.</p>", descriptionEn: "<p>Foregrip reducing recoil and improving burst fire accuracy.</p>" }),
+  feat({ name: "Grenades flash BangOut", nameEn: "BangOut Flash Grenades", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Pack de 3 grenades assourdissantes et aveuglantes.</p>", descriptionEn: "<p>Pack of 3 stun and flash grenades.</p>" }),
+  feat({ name: "Grenades fumigènes HazeCloud", nameEn: "HazeCloud Smoke Grenades", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Pack de 3 grenades fumigènes à déploiement rapide.</p>", descriptionEn: "<p>Pack of 3 quick-deploy smoke grenades.</p>" }),
+  feat({ name: "Pointeur laser TrueAim", nameEn: "TrueAim Laser Pointer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Pointeur laser visible compatible avec la plupart des armes à feu.</p>", descriptionEn: "<p>Visible laser pointer compatible with most firearms.</p>" }),
+  // === MISCELLANEOUS / FUN ITEMS (15) ===
+  feat({ name: "Drone barista KafBot", nameEn: "KafBot Barista Drone", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Petit drone qui prépare et sert du soykaf automatiquement.</p>", descriptionEn: "<p>Small drone that automatically brews and serves soykaf.</p>" }),
+  feat({ name: "Skateboard magnétique HoverRide", nameEn: "HoverRide Magnetic Skateboard", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Planche à sustentation magnétique pour déplacement urbain rapide.</p>", descriptionEn: "<p>Magnetically hovering board for fast urban travel.</p>" }),
+  feat({ name: "Générateur de bruit blanc ZenField", nameEn: "ZenField White Noise Generator", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Appareil portatif empêchant toute écoute dans un rayon de 5 mètres.</p>", descriptionEn: "<p>Portable device preventing any eavesdropping within a 5-meter radius.</p>" }),
+  feat({ name: "Set de poker holographique LuckDeck", nameEn: "LuckDeck Holographic Poker Set", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Jeu de cartes holographique avec anti-triche intégré.</p>", descriptionEn: "<p>Holographic card game with built-in anti-cheat.</p>" }),
+  feat({ name: "Animal de compagnie robot PetDroid", nameEn: "PetDroid Robot Pet", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Petit robot animal avec IA basique et capteur de surveillance.</p>", descriptionEn: "<p>Small animal robot with basic AI and surveillance sensor.</p>" }),
+  feat({ name: "Synthétiseur musical PocketJam", nameEn: "PocketJam Music Synthesizer", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Synthétiseur portable reproduisant n'importe quel instrument.</p>", descriptionEn: "<p>Portable synthesizer that reproduces any instrument.</p>" }),
+  feat({ name: "Bouteille thermos autodéfense FlaskStrike", nameEn: "FlaskStrike Self-Defense Thermos", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Thermos renforcée utilisable comme matraque de fortune.</p>", descriptionEn: "<p>Reinforced thermos usable as an improvised baton.</p>" }),
+  feat({ name: "Parapluie blindé UmbraShield", nameEn: "UmbraShield Armored Umbrella", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Parapluie renforcé en fibre de carbone avec manche en acier trempé.</p>", descriptionEn: "<p>Carbon fiber reinforced umbrella with tempered steel handle.</p>" }),
+  feat({ name: "Réchaud de terrain portatif HeatMeal", nameEn: "HeatMeal Portable Field Stove", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Réchaud compact à plasma pour cuisiner n'importe où.</p>", descriptionEn: "<p>Compact plasma stove for cooking anywhere.</p>" }),
+  feat({ name: "Montre multifonctions ChronoX", nameEn: "ChronoX Multifunction Wristwatch", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Montre avec boussole, altimètre, baromètre et lampe LED intégrés.</p>", descriptionEn: "<p>Watch with built-in compass, altimeter, barometer, and LED lamp.</p>" }),
+  feat({ name: "Jeu de dés truqués LuckyBones", nameEn: "LuckyBones Loaded Dice", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Dés à gravité contrôlée par micro-aimant, indétectables au toucher.</p>", descriptionEn: "<p>Gravity-controlled dice with micro-magnets, undetectable by touch.</p>" }),
+  feat({ name: "Chargeur solaire pliant SunPack", nameEn: "SunPack Foldable Solar Charger", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Panneau solaire pliable pour recharger commlinks et équipements de terrain.</p>", descriptionEn: "<p>Foldable solar panel for charging commlinks and field equipment.</p>" }),
+  feat({ name: "Peinture corporelle UV GlowArt", nameEn: "GlowArt UV Body Paint", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Peinture fluorescente visible uniquement en lumière noire.</p>", descriptionEn: "<p>Fluorescent paint visible only under blacklight.</p>" }),
+  feat({ name: "Couteau suisse cybernétique CyberBlade", nameEn: "CyberBlade Cybernetic Swiss Knife", featType: "equipment", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Couteau multifonctions avec tournevis, décapsuleur et mini-laser.</p>", descriptionEn: "<p>Multi-function knife with screwdriver, bottle opener, and mini-laser.</p>" }),
+  // === MAGICAL FOCI (50) ===
+  // -- Combat Spells foci (8) --
+  feat({ name: "Baguette de feu Pyralith", nameEn: "Pyralith Fire Wand", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Baguette en bois pétrifié canalisatrice de sorts de combat.</p>", descriptionEn: "<p>Petrified wood wand that channels combat spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Cristal de foudre Stormvein", nameEn: "Stormvein Lightning Crystal", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Cristal bleu traversé d'arcs électriques qui amplifie les sorts offensifs.</p>", descriptionEn: "<p>Blue crystal threaded with electric arcs that amplifies offensive spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Anneau de cendres Cindreth", nameEn: "Cindreth Ash Ring", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Anneau forgé dans les cendres d'un foyer rituel, brûlant au toucher.</p>", descriptionEn: "<p>Ring forged from ritual hearth ashes, hot to the touch.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Dague rituelle Ignaris", nameEn: "Ignaris Ritual Dagger", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Athame à lame noire gravée de runes de destruction.</p>", descriptionEn: "<p>Black-bladed athame engraved with runes of destruction.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Tatouage de flammes Pyroglyphe", nameEn: "Pyroglyph Flame Tattoo", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Tatouage magique de flammes sur l'avant-bras, réactif au mana.</p>", descriptionEn: "<p>Magical flame tattoo on the forearm, reactive to mana.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Bâton de guerre Vorathil", nameEn: "Vorathil War Staff", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Bâton de combat en ébène renforcé d'orichalque, focus de guerre éprouvé.</p>", descriptionEn: "<p>Ebony combat staff reinforced with orichalcum, battle-proven war focus.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Orbe de tempête Fulgurath", nameEn: "Fulgurath Storm Orb", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Sphère de verre fumé pulsant d'énergie destructrice.</p>", descriptionEn: "<p>Smoked glass sphere pulsing with destructive energy.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  feat({ name: "Grimoire de l'Annihilation Zervonis", nameEn: "Zervonis Annihilation Grimoire", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Grimoire ancien relié en cuir de drake, contenant des formules de destruction pure.</p>", descriptionEn: "<p>Ancient drake-leather grimoire containing formulas of pure destruction.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_combat-spells", rrLabel: "spec_combat-spells" }] }),
+  // -- Detection Spells foci (5) --
+  feat({ name: "Pendentif clairvoyant Oeilune", nameEn: "Oeilune Clairvoyant Pendant", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Amulette en pierre de lune qui aiguise les sens magiques.</p>", descriptionEn: "<p>Moonstone amulet that sharpens magical senses.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "spec_detection-spells" }] }),
+  feat({ name: "Cristal de divination Vistara", nameEn: "Vistara Divination Crystal", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Prisme de quartz clair qui révèle les auras cachées.</p>", descriptionEn: "<p>Clear quartz prism that reveals hidden auras.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "spec_detection-spells" }] }),
+  feat({ name: "Masque du Troisième Oeil Mystera", nameEn: "Mystera Third Eye Mask", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Demi-masque orné d'un oeil peint qui amplifie la perception astrale.</p>", descriptionEn: "<p>Half-mask adorned with a painted eye that amplifies astral perception.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_detection-spells", rrLabel: "spec_detection-spells" }] }),
+  feat({ name: "Baguette sensorielle Aethersight", nameEn: "Aethersight Sensory Wand", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Baguette en cristal vibrant qui capte les perturbations magiques à distance.</p>", descriptionEn: "<p>Vibrating crystal wand that detects magical disturbances at range.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_detection-spells", rrLabel: "spec_detection-spells" }] }),
+  feat({ name: "Orbe omniscient Panoptès", nameEn: "Panoptes Omniscient Orb", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Sphère de cristal gravée de dizaines d'yeux, focus de détection légendaire.</p>", descriptionEn: "<p>Crystal sphere engraved with dozens of eyes, legendary detection focus.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_detection-spells", rrLabel: "spec_detection-spells" }] }),
+  // -- Health Spells foci (5) --
+  feat({ name: "Amulette de guérison Vitasève", nameEn: "Vitaseve Healing Amulet", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Amulette en ambre contenant une graine vivante, canalise les sorts de santé.</p>", descriptionEn: "<p>Amber amulet containing a living seed, channels health spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_health-spells", rrLabel: "spec_health-spells" }] }),
+  feat({ name: "Anneau de jade Curaverde", nameEn: "Curaverde Jade Ring", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Anneau de jade poli qui pulse doucement en présence de blessures.</p>", descriptionEn: "<p>Polished jade ring that pulses gently in the presence of wounds.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_health-spells", rrLabel: "spec_health-spells" }] }),
+  feat({ name: "Fétiche de racines Sylvamend", nameEn: "Sylvamend Root Fetish", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Petit totem de racines tressées imprégné de mana curatif.</p>", descriptionEn: "<p>Small woven root totem imbued with curative mana.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_health-spells", rrLabel: "spec_health-spells" }] }),
+  feat({ name: "Brûle-encens Sanaflore", nameEn: "Sanaflore Incense Holder", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Brûle-encens en cuivre dont les volutes de fumée accélèrent la guérison magique.</p>", descriptionEn: "<p>Copper incense holder whose smoke spirals accelerate magical healing.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_health-spells", rrLabel: "spec_health-spells" }] }),
+  feat({ name: "Gemme de résurrection Auravita", nameEn: "Auravita Resurrection Gem", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Émeraude rare infusée de mana vital, capable de ramener un mourant à la vie.</p>", descriptionEn: "<p>Rare emerald infused with vital mana, capable of bringing the dying back to life.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_health-spells", rrLabel: "spec_health-spells" }] }),
+  // -- Illusion Spells foci (5) --
+  feat({ name: "Masque des mirages Phantasma", nameEn: "Phantasma Mirage Mask", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Masque changeant de visage qui amplifie les sorts d'illusion.</p>", descriptionEn: "<p>Face-shifting mask that amplifies illusion spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "spec_illusion-spells" }] }),
+  feat({ name: "Prisme d'ombre Umbralex", nameEn: "Umbralex Shadow Prism", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Cristal noir qui déforme la lumière et renforce les illusions visuelles.</p>", descriptionEn: "<p>Black crystal that warps light and strengthens visual illusions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "spec_illusion-spells" }] }),
+  feat({ name: "Tatouage de brume Nébuline", nameEn: "Nebuline Mist Tattoo", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Tatouage magique sur la nuque émettant un voile de brume illusoire.</p>", descriptionEn: "<p>Magical tattoo on the nape emitting a veil of illusory mist.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_illusion-spells", rrLabel: "spec_illusion-spells" }] }),
+  feat({ name: "Baguette de reflets Miralis", nameEn: "Miralis Reflection Wand", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Baguette en verre mercuriel qui dédouble les images et trompe les sens.</p>", descriptionEn: "<p>Mercurial glass wand that doubles images and deceives the senses.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_illusion-spells", rrLabel: "spec_illusion-spells" }] }),
+  feat({ name: "Grimoire des Cent Visages Polychroma", nameEn: "Polychroma Hundred Faces Grimoire", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Grimoire dont chaque page montre un visage différent, focus d'illusion puissant.</p>", descriptionEn: "<p>Grimoire where each page shows a different face, powerful illusion focus.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_illusion-spells", rrLabel: "spec_illusion-spells" }] }),
+  // -- Manipulation Spells foci (5) --
+  feat({ name: "Gantelet runique Gravisar", nameEn: "Gravisar Runic Gauntlet", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Gant de cuir gravé de runes de contrôle télékinétique.</p>", descriptionEn: "<p>Leather gauntlet engraved with telekinetic control runes.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "spec_manipulation-spells" }] }),
+  feat({ name: "Anneau de domination Vexalis", nameEn: "Vexalis Domination Ring", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Anneau en obsidienne qui renforce les sorts de contrôle mental.</p>", descriptionEn: "<p>Obsidian ring that strengthens mind control spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "spec_manipulation-spells" }] }),
+  feat({ name: "Fétiche de corde Lianel", nameEn: "Lianel Cord Fetish", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Cordelette tressée à sept noeuds qui canalise les sorts de manipulation.</p>", descriptionEn: "<p>Seven-knotted braided cord that channels manipulation spells.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "spec_manipulation-spells" }] }),
+  feat({ name: "Tambour de contrôle Dominara", nameEn: "Dominara Control Drum", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Petit tambour chamanique dont le rythme impose la volonté du lanceur.</p>", descriptionEn: "<p>Small shamanic drum whose rhythm imposes the caster's will.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_manipulation-spells", rrLabel: "spec_manipulation-spells" }] }),
+  feat({ name: "Bâton du Marionnettiste Nexarion", nameEn: "Nexarion Puppeteer Staff", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Bâton articulé en bois de saule noir, canalise les énergies de manipulation.</p>", descriptionEn: "<p>Jointed black willow staff that channels manipulation energies.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_manipulation-spells", rrLabel: "spec_manipulation-spells" }] }),
+  // -- Counterspelling foci (5) --
+  feat({ name: "Amulette de protection Aegisara", nameEn: "Aegisara Protection Amulet", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Amulette en argent gravée de sceaux de protection contre la magie.</p>", descriptionEn: "<p>Silver amulet engraved with magical protection seals.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_counterspelling", rrLabel: "spec_counterspelling" }] }),
+  feat({ name: "Cristal de dissipation Nullith", nameEn: "Nullith Dispelling Crystal", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Cristal blanc opaque qui absorbe et annule les flux magiques hostiles.</p>", descriptionEn: "<p>Opaque white crystal that absorbs and negates hostile magical flows.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_counterspelling", rrLabel: "spec_counterspelling" }] }),
+  feat({ name: "Anneau-bouclier Wardring", nameEn: "Wardring Shield Ring", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Anneau en acier enchanté projetant un bouclier anti-sorts.</p>", descriptionEn: "<p>Enchanted steel ring projecting an anti-spell shield.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_counterspelling", rrLabel: "spec_counterspelling" }] }),
+  feat({ name: "Masque de silence Mutharion", nameEn: "Mutharion Silence Mask", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Masque de porcelaine qui étouffe les incantations ennemies.</p>", descriptionEn: "<p>Porcelain mask that smothers enemy incantations.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_counterspelling", rrLabel: "spec_counterspelling" }] }),
+  feat({ name: "Grimoire de l'Annulation Zerovox", nameEn: "Zerovox Nullification Grimoire", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Grimoire relié en plomb dont les pages effacent les sorts au contact, focus de contresort légendaire.</p>", descriptionEn: "<p>Lead-bound grimoire whose pages erase spells on contact, legendary counterspelling focus.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_counterspelling", rrLabel: "spec_counterspelling" }] }),
+  // -- Banishing foci (5) --
+  feat({ name: "Orbe de bannissement Spirex", nameEn: "Spirex Banishing Orb", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Sphère de cristal noir qui amplifie le bannissement d'esprits.</p>", descriptionEn: "<p>Black crystal sphere that amplifies spirit banishing.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_banishing", rrLabel: "spec_banishing" }] }),
+  feat({ name: "Fétiche d'os Exorka", nameEn: "Exorka Bone Fetish", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Collier de vertèbres animales gravées de glyphes de bannissement.</p>", descriptionEn: "<p>Necklace of animal vertebrae engraved with banishing glyphs.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_banishing", rrLabel: "spec_banishing" }] }),
+  feat({ name: "Dague de séparation Sundralis", nameEn: "Sundralis Severance Dagger", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Dague rituelle qui tranche le lien entre un esprit et le plan matériel.</p>", descriptionEn: "<p>Ritual dagger that severs the bond between a spirit and the material plane.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_banishing", rrLabel: "spec_banishing" }] }),
+  feat({ name: "Encensoir de purification Vanquor", nameEn: "Vanquor Purification Censer", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Encensoir en bronze dont la fumée repousse les esprits avec force.</p>", descriptionEn: "<p>Bronze censer whose smoke forcefully repels spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_banishing", rrLabel: "spec_banishing" }] }),
+  feat({ name: "Bâton d'exorcisme Netherbane", nameEn: "Netherbane Exorcism Staff", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Bâton de frêne blanc inscrit de sceaux anciens, terreur des esprits.</p>", descriptionEn: "<p>White ash staff inscribed with ancient seals, terror of spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_banishing", rrLabel: "spec_banishing" }] }),
+  // -- Air Spirits foci (2) --
+  feat({ name: "Plume de tempête Zephyris", nameEn: "Zephyris Storm Feather", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Plume enchantée qui vibre en présence d'esprits de l'air.</p>", descriptionEn: "<p>Enchanted feather that vibrates in the presence of air spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_air-spirits", rrLabel: "spec_air-spirits" }] }),
+  feat({ name: "Flûte des vents Aeronel", nameEn: "Aeronel Wind Flute", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Flûte en os creux dont les notes commandent les esprits de l'air.</p>", descriptionEn: "<p>Hollow bone flute whose notes command air spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_air-spirits", rrLabel: "spec_air-spirits" }] }),
+  // -- Earth Spirits foci (2) --
+  feat({ name: "Pierre-ancre Terralis", nameEn: "Terralis Anchor Stone", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Galet de granit poli gravé de spirales, lien avec les esprits de la terre.</p>", descriptionEn: "<p>Polished granite pebble engraved with spirals, link to earth spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_earth-spirits", rrLabel: "spec_earth-spirits" }] }),
+  feat({ name: "Statuette de glaise Lithomère", nameEn: "Lithomere Clay Figurine", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Figurine d'argile cuite qui s'anime brièvement pour invoquer des esprits terrestres.</p>", descriptionEn: "<p>Fired clay figurine that briefly animates to summon earth spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_earth-spirits", rrLabel: "spec_earth-spirits" }] }),
+  // -- Fire Spirits foci (2) --
+  feat({ name: "Brûle-encens d'ambre Flamaris", nameEn: "Flamaris Amber Incense Holder", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Brûle-encens en ambre fossilisé qui attire les esprits du feu.</p>", descriptionEn: "<p>Fossilized amber incense holder that attracts fire spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_fire-spirits", rrLabel: "spec_fire-spirits" }] }),
+  feat({ name: "Rubis ardent Pyrovex", nameEn: "Pyrovex Blazing Ruby", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Rubis taillé en étoile qui brûle sans consumer, focus de feu puissant.</p>", descriptionEn: "<p>Star-cut ruby that burns without consuming, powerful fire focus.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_fire-spirits", rrLabel: "spec_fire-spirits" }] }),
+  // -- Water Spirits foci (2) --
+  feat({ name: "Coquillage chantant Marellis", nameEn: "Marellis Singing Shell", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Coquillage nacré émettant un murmure aquatique, lien avec les esprits de l'eau.</p>", descriptionEn: "<p>Pearlescent shell emitting an aquatic murmur, link to water spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_water-spirits", rrLabel: "spec_water-spirits" }] }),
+  feat({ name: "Saphir des abysses Thalassion", nameEn: "Thalassion Abyss Sapphire", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Saphir bleu profond qui semble contenir un océan miniature.</p>", descriptionEn: "<p>Deep blue sapphire that seems to contain a miniature ocean.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_water-spirits", rrLabel: "spec_water-spirits" }] }),
+  // -- Beast Spirits foci (2) --
+  feat({ name: "Griffe de loup Fenrath", nameEn: "Fenrath Wolf Claw", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Griffe de loup montée en pendentif, attire les esprits des bêtes.</p>", descriptionEn: "<p>Wolf claw mounted as a pendant, attracts beast spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_beast-spirits", rrLabel: "spec_beast-spirits" }] }),
+  feat({ name: "Tambour des meutes Faunaris", nameEn: "Faunaris Pack Drum", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Tambour en peau tendue dont les battements appellent les esprits animaux.</p>", descriptionEn: "<p>Stretched-hide drum whose beats summon animal spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_beast-spirits", rrLabel: "spec_beast-spirits" }] }),
+  // -- Astral Combat foci (2) --
+  feat({ name: "Dague astrale Ectharion", nameEn: "Ectharion Astral Dagger", featType: "equipment", cost: "equipment", nuyenCost: 2500, description: "<p>Dague rituelle qui existe simultanément sur le plan astral et physique.</p>", descriptionEn: "<p>Ritual dagger that exists simultaneously on the astral and physical planes.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_astral-combat", rrLabel: "spec_astral-combat" }] }),
+  feat({ name: "Épée fantôme Spectralis", nameEn: "Spectralis Ghost Sword", featType: "equipment", cost: "advanced-equipment", nuyenCost: 5e3, description: "<p>Lame translucide visible uniquement en perception astrale, arme redoutable contre les esprits.</p>", descriptionEn: "<p>Translucent blade visible only in astral perception, fearsome weapon against spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 2, rrTarget: "spec_astral-combat", rrLabel: "spec_astral-combat" }] })
+];
+const ARMOR_TEMPLATES = [
+  // === armorValue 1 (nuyenCost 2500) — 5 entries ===
+  feat({ name: "Veste synthécuir renforcée", nameEn: "Reinforced Synthleather Jacket", featType: "armor", cost: "equipment", rating: 0, armorValue: 1, nuyenCost: 2500, description: "<p>Veste en cuir synthétique avec inserts balistiques discrets.</p>", descriptionEn: "<p>Synthetic leather jacket with discreet ballistic inserts.</p>" }),
+  feat({ name: "Hoodie blindé UrbanWall", nameEn: "UrbanWall Armored Hoodie", featType: "armor", cost: "equipment", rating: 0, armorValue: 1, nuyenCost: 2500, description: "<p>Sweat à capuche avec doublure en fibres balistiques.</p>", descriptionEn: "<p>Hoodie with ballistic fiber lining.</p>" }),
+  feat({ name: "T-shirt renforcé IronThread", nameEn: "IronThread Reinforced T-Shirt", featType: "armor", cost: "equipment", rating: 0, armorValue: 1, nuyenCost: 2500, description: "<p>T-shirt en tissu para-aramide, léger et discret.</p>", descriptionEn: "<p>Para-aramid fabric t-shirt, lightweight and discreet.</p>" }),
+  feat({ name: "Blouson de moto SteetHide", nameEn: "StreetHide Biker Jacket", featType: "armor", cost: "equipment", rating: 0, armorValue: 1, nuyenCost: 2500, description: "<p>Blouson de motard en cuir composite avec protections aux coudes.</p>", descriptionEn: "<p>Composite leather biker jacket with elbow protection.</p>" }),
+  feat({ name: "Chemise blindée CorpoGuard", nameEn: "CorpoGuard Armored Dress Shirt", featType: "armor", cost: "equipment", rating: 0, armorValue: 1, nuyenCost: 2500, description: "<p>Chemise élégante avec fibres balistiques tissées, idéale pour les réunions corpo.</p>", descriptionEn: "<p>Elegant dress shirt with woven ballistic fibers, ideal for corpo meetings.</p>" }),
+  // === armorValue 2 (nuyenCost 5000) — 5 entries ===
+  feat({ name: "Gilet pare-balles Apex Shield", nameEn: "Apex Shield Ballistic Vest", featType: "armor", cost: "equipment", rating: 0, armorValue: 2, nuyenCost: 5e3, description: "<p>Gilet pare-balles léger, porté sous les vêtements.</p>", descriptionEn: "<p>Lightweight ballistic vest, worn under clothing.</p>" }),
+  feat({ name: "Veste tactique ShadowVest", nameEn: "ShadowVest Tactical Jacket", featType: "armor", cost: "equipment", rating: 0, armorValue: 2, nuyenCost: 5e3, description: "<p>Veste tactique noire avec plaques céramiques amovibles.</p>", descriptionEn: "<p>Black tactical jacket with removable ceramic plates.</p>" }),
+  feat({ name: "Pardessus blindé TrenchLine", nameEn: "TrenchLine Armored Overcoat", featType: "armor", cost: "equipment", rating: 0, armorValue: 2, nuyenCost: 5e3, description: "<p>Pardessus long avec doublure balistique et col renforcé.</p>", descriptionEn: "<p>Long overcoat with ballistic lining and reinforced collar.</p>" }),
+  feat({ name: "Combinaison de course RunShield", nameEn: "RunShield Racing Suit", featType: "armor", cost: "equipment", rating: 0, armorValue: 2, nuyenCost: 5e3, description: "<p>Combinaison sportive avec protections intégrées aux articulations.</p>", descriptionEn: "<p>Athletic suit with integrated joint protection.</p>" }),
+  feat({ name: "Gilet de sécurité WatchGuard", nameEn: "WatchGuard Security Vest", featType: "armor", cost: "equipment", rating: 0, armorValue: 2, nuyenCost: 5e3, description: "<p>Gilet de sécurité privée avec plaques anti-balles niveau III.</p>", descriptionEn: "<p>Private security vest with level III ballistic plates.</p>" }),
+  // === armorValue 3 (nuyenCost 7500) — 4 entries ===
+  feat({ name: "Manteau blindé NightShield", nameEn: "NightShield Armored Coat", featType: "armor", cost: "equipment", rating: 0, armorValue: 3, nuyenCost: 7500, description: "<p>Long manteau avec plaques de céramique intégrées. Style et protection.</p>", descriptionEn: "<p>Long coat with integrated ceramic plates. Style and protection.</p>" }),
+  feat({ name: "Armure urbaine StreetFort", nameEn: "StreetFort Urban Armor", featType: "armor", cost: "equipment", rating: 0, armorValue: 3, nuyenCost: 7500, description: "<p>Ensemble modulaire d'armure urbaine avec plaques interchangeables.</p>", descriptionEn: "<p>Modular urban armor set with interchangeable plates.</p>" }),
+  feat({ name: "Combinaison d'assaut StormSuit", nameEn: "StormSuit Assault Suit", featType: "armor", cost: "equipment", rating: 0, armorValue: 3, nuyenCost: 7500, description: "<p>Combinaison renforcée pour opérations en environnement hostile.</p>", descriptionEn: "<p>Reinforced suit for operations in hostile environments.</p>" }),
+  feat({ name: "Cape blindée IronCape", nameEn: "IronCape Armored Cloak", featType: "armor", cost: "equipment", rating: 0, armorValue: 3, nuyenCost: 7500, description: "<p>Cape longue en fibres composites offrant une protection contre les projectiles.</p>", descriptionEn: "<p>Long composite fiber cloak offering ballistic protection.</p>" }),
+  // === armorValue 4 (nuyenCost 10000) — 4 entries ===
+  feat({ name: "Armure corporelle tactique TacForce", nameEn: "TacForce Tactical Body Armor", featType: "armor", cost: "equipment", rating: 0, armorValue: 4, nuyenCost: 1e4, description: "<p>Armure complète de qualité militaire. Pas discret du tout.</p>", descriptionEn: "<p>Full military-grade body armor. Not discreet at all.</p>" }),
+  feat({ name: "Armure de combat Vanguard", nameEn: "Vanguard Combat Armor", featType: "armor", cost: "equipment", rating: 0, armorValue: 4, nuyenCost: 1e4, description: "<p>Armure de combat complète avec protection balistique et anti-éclats.</p>", descriptionEn: "<p>Full combat armor with ballistic and anti-shrapnel protection.</p>" }),
+  feat({ name: "Exosquelette léger FrameGuard", nameEn: "FrameGuard Light Exoskeleton", featType: "armor", cost: "equipment", rating: 0, armorValue: 4, nuyenCost: 1e4, description: "<p>Exosquelette partiel avec plaques de blindage intégrées.</p>", descriptionEn: "<p>Partial exoskeleton with integrated armor plates.</p>" }),
+  feat({ name: "Armure anti-émeute RiotMax", nameEn: "RiotMax Anti-Riot Armor", featType: "armor", cost: "equipment", rating: 0, armorValue: 4, nuyenCost: 1e4, description: "<p>Armure lourde de maintien de l'ordre avec visière renforcée.</p>", descriptionEn: "<p>Heavy riot control armor with reinforced visor.</p>" }),
+  // === armorValue 5 (nuyenCost 12500) — 2 entries ===
+  feat({ name: "Exo-armure lourde Titan", nameEn: "Titan Heavy Exo-Armor", featType: "armor", cost: "equipment", rating: 0, armorValue: 5, nuyenCost: 12500, description: "<p>Armure lourde avec exosquelette partiel. Utilisée par les forces spéciales corpo.</p>", descriptionEn: "<p>Heavy armor with partial exoskeleton. Used by corporate special forces.</p>" }),
+  feat({ name: "Armure de siège Bulwark", nameEn: "Bulwark Siege Armor", featType: "armor", cost: "equipment", rating: 0, armorValue: 5, nuyenCost: 12500, description: "<p>Armure ultra-lourde conçue pour les assauts frontaux et la suppression.</p>", descriptionEn: "<p>Ultra-heavy armor designed for frontal assaults and suppression.</p>" })
+];
+const TRAIT_TEMPLATES = [
+  // === COMBAT TRAITS (20) ===
+  feat({ name: "Sixième sens", nameEn: "Sixth Sense", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Intuition remarquable, sent le danger avant qu'il n'arrive.</p>", descriptionEn: "<p>Remarkable intuition, senses danger before it arrives.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Intimidant", nameEn: "Intimidating", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Présence physique imposante qui met les autres mal à l'aise.</p>", descriptionEn: "<p>Imposing physical presence that makes others uneasy.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_intimidation", rrLabel: "Intimidation" }] }),
+  feat({ name: "Résistant", nameEn: "Tough", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Corps naturellement résistant aux dommages.</p>", descriptionEn: "<p>Naturally damage-resistant body.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Endurci", nameEn: "Hardened", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>A survécu à tellement d'épreuves que plus rien ne l'impressionne.</p>", descriptionEn: "<p>Has survived so many ordeals that nothing impresses them anymore.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Dur à cuire", nameEn: "Hard-Boiled", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Encaisse les coups et continue à avancer.</p>", descriptionEn: "<p>Takes the hits and keeps moving forward.</p>", bonusSevereDamage: 1 }),
+  feat({ name: "Ambidextre", nameEn: "Ambidextrous", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Utilise indifféremment les deux mains avec la même habileté.</p>", descriptionEn: "<p>Uses both hands interchangeably with equal skill.</p>" }),
+  feat({ name: "Tireur d'élite né", nameEn: "Born Marksman", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Talent naturel pour le tir de précision à longue distance.</p>", descriptionEn: "<p>Natural talent for long-range precision shooting.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_rifles", rrLabel: "Fusils" }] }),
+  feat({ name: "Réflexes de combat", nameEn: "Combat Reflexes", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Réactions instinctives en situation de combat, forgées par l'expérience.</p>", descriptionEn: "<p>Instinctive reactions in combat situations, forged by experience.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_defense", rrLabel: "Défense" }] }),
+  feat({ name: "Bagarreur de rue", nameEn: "Street Brawler", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>A grandi dans les bagarres de rue et sait se battre à mains nues.</p>", descriptionEn: "<p>Grew up in street fights and knows how to fight bare-handed.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_unarmed", rrLabel: "Mains nues" }] }),
+  feat({ name: "Expert en lames", nameEn: "Blade Expert", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Maîtrise instinctive des armes blanches tranchantes.</p>", descriptionEn: "<p>Instinctive mastery of edged melee weapons.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_blades", rrLabel: "Lames" }] }),
+  feat({ name: "Vétéran de guerre", nameEn: "War Veteran", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>A servi dans un conflit armé et en garde les réflexes et les cicatrices.</p>", descriptionEn: "<p>Served in an armed conflict and retains the reflexes and scars.</p>" }),
+  feat({ name: "Esquive instinctive", nameEn: "Instinctive Dodge", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Évite les tirs par pur instinct, sans même y penser.</p>", descriptionEn: "<p>Dodges fire by pure instinct, without even thinking about it.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_ranged-defense", rrLabel: "Défense à distance" }] }),
+  feat({ name: "As de la gâchette", nameEn: "Trigger Happy", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Dégaine et tire plus vite que son ombre avec un pistolet.</p>", descriptionEn: "<p>Draws and fires faster than lightning with a pistol.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_pistols", rrLabel: "Pistolets" }] }),
+  feat({ name: "Tacticien de terrain", nameEn: "Field Tactician", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Lit le terrain de combat comme un livre ouvert.</p>", descriptionEn: "<p>Reads the battlefield like an open book.</p>" }),
+  feat({ name: "Tueur silencieux", nameEn: "Silent Killer", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Élimine les cibles sans un bruit ni une trace.</p>", descriptionEn: "<p>Eliminates targets without a sound or a trace.</p>" }),
+  feat({ name: "Encaisseur", nameEn: "Tank", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Absorbe les dégâts comme une éponge et reste debout.</p>", descriptionEn: "<p>Absorbs damage like a sponge and stays standing.</p>", bonusLightDamage: 1 }),
+  feat({ name: "Spécialiste en explosifs", nameEn: "Demolition Expert", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Sait où placer les charges pour un effet maximal.</p>", descriptionEn: "<p>Knows exactly where to place charges for maximum effect.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_explosives", rrLabel: "Explosifs" }] }),
+  feat({ name: "Sang-froid sous le feu", nameEn: "Cool Under Fire", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Garde son calme même sous un feu nourri.</p>", descriptionEn: "<p>Stays calm even under heavy fire.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_composure", rrLabel: "Sang-froid" }] }),
+  feat({ name: "Lanceur précis", nameEn: "Precise Thrower", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Lance couteaux et grenades avec une précision redoutable.</p>", descriptionEn: "<p>Throws knives and grenades with deadly precision.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_thrown-weapons", rrLabel: "Armes de jet" }] }),
+  feat({ name: "Berserker", nameEn: "Berserker", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Entre dans une rage de combat qui le rend terrifiant mais imprévisible.</p>", descriptionEn: "<p>Enters a combat rage that makes them terrifying but unpredictable.</p>" }),
+  // === SOCIAL TRAITS (18) ===
+  feat({ name: "Caméléon social", nameEn: "Social Chameleon", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>S'adapte à n'importe quel milieu social avec aisance.</p>", descriptionEn: "<p>Adapts to any social environment with ease.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_etiquette", rrLabel: "Étiquette" }] }),
+  feat({ name: "Langues (polyglotte)", nameEn: "Languages (Polyglot)", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Parle couramment plusieurs langues.</p>", descriptionEn: "<p>Fluently speaks multiple languages.</p>" }),
+  feat({ name: "Contacts de la rue", nameEn: "Street Contacts", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Réseau étendu de contacts dans le milieu criminel.</p>", descriptionEn: "<p>Extensive network of contacts in the criminal underworld.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Code d'honneur", nameEn: "Code of Honor", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Suit un code moral strict. Refuse certains contrats ou méthodes.</p>", descriptionEn: "<p>Follows a strict moral code. Refuses certain contracts or methods.</p>" }),
+  feat({ name: "Menteur professionnel", nameEn: "Professional Liar", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ment avec un naturel déconcertant, presque impossible à percer.</p>", descriptionEn: "<p>Lies with disarming ease, nearly impossible to see through.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_bluff", rrLabel: "Bluff" }] }),
+  feat({ name: "Négociateur hors pair", nameEn: "Master Negotiator", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Obtient toujours le meilleur prix, que ce soit en nuyens ou en faveurs.</p>", descriptionEn: "<p>Always gets the best deal, whether in nuyen or favors.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_negotiation", rrLabel: "Négociation" }] }),
+  feat({ name: "Imposteur", nameEn: "Impostor", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Peut se faire passer pour quelqu'un d'autre de façon convaincante.</p>", descriptionEn: "<p>Can convincingly impersonate someone else.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_impersonation", rrLabel: "Imposture" }] }),
+  feat({ name: "Charisme naturel", nameEn: "Natural Charisma", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Attire naturellement la sympathie et la confiance des autres.</p>", descriptionEn: "<p>Naturally attracts others' sympathy and trust.</p>" }),
+  feat({ name: "Voix de commandement", nameEn: "Voice of Command", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Sa voix porte une autorité naturelle qui pousse les gens à obéir.</p>", descriptionEn: "<p>Their voice carries natural authority that compels obedience.</p>" }),
+  feat({ name: "Lecteur d'émotions", nameEn: "Emotion Reader", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Détecte les mensonges et les émotions cachées par le langage corporel.</p>", descriptionEn: "<p>Detects lies and hidden emotions through body language.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_social-perception", rrLabel: "Perception sociale" }] }),
+  feat({ name: "Réputation de la rue", nameEn: "Street Reputation", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connu et respecté dans le milieu underground local.</p>", descriptionEn: "<p>Known and respected in the local underground scene.</p>" }),
+  feat({ name: "Médiateur", nameEn: "Mediator", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Calme les tensions et trouve des compromis entre parties hostiles.</p>", descriptionEn: "<p>Calms tensions and finds compromises between hostile parties.</p>" }),
+  feat({ name: "Séducteur", nameEn: "Seducer", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Utilise le charme et l'attraction pour obtenir ce qu'il veut.</p>", descriptionEn: "<p>Uses charm and attraction to get what they want.</p>" }),
+  feat({ name: "Empathie profonde", nameEn: "Deep Empathy", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ressent les émotions des autres avec une intensité remarquable.</p>", descriptionEn: "<p>Feels others' emotions with remarkable intensity.</p>" }),
+  feat({ name: "Orateur inspirant", nameEn: "Inspiring Orator", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ses discours galvanisent les foules et motivent les alliés.</p>", descriptionEn: "<p>Their speeches galvanize crowds and motivate allies.</p>" }),
+  feat({ name: "Maître du double jeu", nameEn: "Double Agent", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Jongle entre plusieurs factions sans se faire prendre.</p>", descriptionEn: "<p>Juggles multiple factions without getting caught.</p>" }),
+  feat({ name: "Réseau corpo", nameEn: "Corporate Network", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Conserve des contacts dans le monde corporatiste malgré sa vie dans les ombres.</p>", descriptionEn: "<p>Maintains contacts in the corporate world despite a life in the shadows.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Flair politique", nameEn: "Political Savvy", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Comprend les jeux de pouvoir et sait naviguer les structures hiérarchiques.</p>", descriptionEn: "<p>Understands power games and navigates hierarchical structures.</p>" }),
+  // === KNOWLEDGE TRAITS (15) ===
+  feat({ name: "Mémoire eidétique", nameEn: "Eidetic Memory", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Se souvient de tout ce qu'il voit ou entend avec une précision remarquable.</p>", descriptionEn: "<p>Remembers everything seen or heard with remarkable precision.</p>" }),
+  feat({ name: "Expert en sécurité matricielle", nameEn: "Matrix Security Expert", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaissance approfondie des protocoles de sécurité de la Matrice.</p>", descriptionEn: "<p>Deep knowledge of Matrix security protocols.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-perception", rrLabel: "Perception matricielle" }] }),
+  feat({ name: "Historien des Ombres", nameEn: "Shadow Historian", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaît l'histoire du milieu shadowrunner et ses acteurs majeurs.</p>", descriptionEn: "<p>Knows the history of the shadowrunner scene and its major players.</p>" }),
+  feat({ name: "Connaisseur en armes", nameEn: "Weapons Connoisseur", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Identifie n'importe quelle arme au premier regard et connaît ses spécifications.</p>", descriptionEn: "<p>Identifies any weapon at first glance and knows its specifications.</p>" }),
+  feat({ name: "Génie mécanique", nameEn: "Mechanical Genius", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Comprend instinctivement le fonctionnement de toute machine.</p>", descriptionEn: "<p>Instinctively understands how any machine works.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_cr-drones", rrLabel: "C/R drones" }] }),
+  feat({ name: "Pharmacologue amateur", nameEn: "Amateur Pharmacologist", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaît les effets de la plupart des drogues, toxines et médicaments.</p>", descriptionEn: "<p>Knows the effects of most drugs, toxins, and medications.</p>" }),
+  feat({ name: "Chercheur matriciel", nameEn: "Matrix Researcher", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Trouve n'importe quelle information dans la Matrice en un temps record.</p>", descriptionEn: "<p>Finds any information in the Matrix in record time.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix-search", rrLabel: "Recherche matricielle" }] }),
+  feat({ name: "Expert en sécurité physique", nameEn: "Physical Security Expert", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Repère les systèmes de sécurité, caméras et alarmes d'un coup d'œil.</p>", descriptionEn: "<p>Spots security systems, cameras, and alarms at a glance.</p>" }),
+  feat({ name: "Linguiste", nameEn: "Linguist", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Apprend et déchiffre les langues avec une facilité remarquable.</p>", descriptionEn: "<p>Learns and deciphers languages with remarkable ease.</p>" }),
+  feat({ name: "Cartographe urbain", nameEn: "Urban Cartographer", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaît les rues, tunnels et passages secrets de la métropole comme sa poche.</p>", descriptionEn: "<p>Knows the streets, tunnels, and secret passages of the metroplex like the back of their hand.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_navigation", rrLabel: "Orientation" }] }),
+  feat({ name: "Secouriste formé", nameEn: "Trained First Responder", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Formation aux premiers secours en situation de combat.</p>", descriptionEn: "<p>First aid training for combat situations.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_first-aid", rrLabel: "Premiers soins" }] }),
+  feat({ name: "Hacker éthique", nameEn: "Ethical Hacker", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaît les failles des systèmes pour les exploiter ou les corriger.</p>", descriptionEn: "<p>Knows system vulnerabilities to exploit or patch them.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_backdoor", rrLabel: "Backdoor" }] }),
+  feat({ name: "Culture corpo", nameEn: "Corporate Culture", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Comprend les codes, hiérarchies et protocoles du monde corporatiste.</p>", descriptionEn: "<p>Understands the codes, hierarchies, and protocols of the corporate world.</p>" }),
+  feat({ name: "Érudit de la magie", nameEn: "Magic Scholar", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaissances théoriques approfondies sur la magie et les traditions.</p>", descriptionEn: "<p>Deep theoretical knowledge of magic and traditions.</p>" }),
+  feat({ name: "Cryptanalyste", nameEn: "Cryptanalyst", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Déchiffre les codes et messages cryptés avec une habileté naturelle.</p>", descriptionEn: "<p>Deciphers codes and encrypted messages with natural skill.</p>" }),
+  // === PHYSICAL TRAITS (17) ===
+  feat({ name: "Grimpeur hors pair", nameEn: "Expert Climber", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Escalade murs et bâtiments avec une aisance de félin.</p>", descriptionEn: "<p>Climbs walls and buildings with feline ease.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_climbing", rrLabel: "Escalade" }] }),
+  feat({ name: "Sprinter", nameEn: "Sprinter", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Court plus vite que la plupart des gens grâce à une foulée naturelle.</p>", descriptionEn: "<p>Runs faster than most people thanks to a natural stride.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_running", rrLabel: "Course" }] }),
+  feat({ name: "Ombre vivante", nameEn: "Living Shadow", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Se fond dans l'obscurité et les environnements urbains sans effort.</p>", descriptionEn: "<p>Blends into darkness and urban environments effortlessly.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-stealth", rrLabel: "Discrétion physique" }] }),
+  feat({ name: "Acrobate", nameEn: "Acrobat", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Réalise des prouesses physiques dignes d'un athlète professionnel.</p>", descriptionEn: "<p>Performs physical feats worthy of a professional athlete.</p>" }),
+  feat({ name: "Nageur de fond", nameEn: "Endurance Swimmer", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Nage sur de longues distances sans fatigue excessive.</p>", descriptionEn: "<p>Swims long distances without excessive fatigue.</p>" }),
+  feat({ name: "Contorsionniste", nameEn: "Contortionist", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Se glisse dans des espaces impossiblement étroits.</p>", descriptionEn: "<p>Squeezes into impossibly tight spaces.</p>" }),
+  feat({ name: "Survivaliste urbain", nameEn: "Urban Survivalist", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Sait survivre dans les pires quartiers avec les moyens du bord.</p>", descriptionEn: "<p>Knows how to survive in the worst neighborhoods with limited resources.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_wilderness-survival", rrLabel: "Survie en milieu naturel" }] }),
+  feat({ name: "Pilote de moto", nameEn: "Bike Rider", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Manie les deux-roues avec une adresse impressionnante.</p>", descriptionEn: "<p>Handles two-wheelers with impressive skill.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_bikes", rrLabel: "Motos" }] }),
+  feat({ name: "Conducteur de fuite", nameEn: "Getaway Driver", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Conduit comme un fou furieux dans n'importe quelle situation de poursuite.</p>", descriptionEn: "<p>Drives like a maniac in any pursuit situation.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_cars", rrLabel: "Voitures" }] }),
+  feat({ name: "Constitution de fer", nameEn: "Iron Constitution", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Résiste aux maladies, toxines et intempéries mieux que quiconque.</p>", descriptionEn: "<p>Resists diseases, toxins, and harsh weather better than anyone.</p>", bonusPhysicalThreshold: 1 }),
+  feat({ name: "Équilibriste", nameEn: "Tightrope Walker", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Sens de l'équilibre exceptionnel, marche sur les rebords sans hésiter.</p>", descriptionEn: "<p>Exceptional sense of balance, walks on ledges without hesitation.</p>" }),
+  feat({ name: "Infatigable", nameEn: "Tireless", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Peut rester éveillé et actif bien plus longtemps que la normale.</p>", descriptionEn: "<p>Can stay awake and active much longer than normal.</p>" }),
+  feat({ name: "Crocheteur expert", nameEn: "Expert Lockpicker", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ouvre n'importe quelle serrure mécanique avec un simple trombone.</p>", descriptionEn: "<p>Opens any mechanical lock with a simple paperclip.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_lockpicking", rrLabel: "Crochetage" }] }),
+  feat({ name: "Maître du parkour", nameEn: "Parkour Master", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Se déplace à travers les obstacles urbains avec fluidité et rapidité.</p>", descriptionEn: "<p>Moves through urban obstacles with fluidity and speed.</p>" }),
+  feat({ name: "Résistance à la douleur", nameEn: "Pain Tolerance", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Supporte les blessures avec un stoïcisme remarquable.</p>", descriptionEn: "<p>Endures injuries with remarkable stoicism.</p>", bonusSevereDamage: 1 }),
+  feat({ name: "Vision perçante", nameEn: "Sharp-Eyed", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Repère les détails que les autres manquent, même à grande distance.</p>", descriptionEn: "<p>Spots details others miss, even at great distance.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_physical-perception", rrLabel: "Perception physique" }] }),
+  feat({ name: "Doigts de fée", nameEn: "Nimble Fingers", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Mains d'une dextérité exceptionnelle, idéales pour les travaux minutieux.</p>", descriptionEn: "<p>Exceptionally dexterous hands, ideal for delicate work.</p>" }),
+  // === MENTAL TRAITS (15) ===
+  feat({ name: "Chanceux", nameEn: "Lucky", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>La chance sourit à ce personnage. Les choses tournent souvent en sa faveur.</p>", descriptionEn: "<p>Luck smiles on this character. Things often turn in their favor.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Volonté de fer", nameEn: "Iron Will", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Résiste aux manipulations mentales et à la peur.</p>", descriptionEn: "<p>Resists mental manipulation and fear.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Esprit analytique", nameEn: "Analytical Mind", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Décompose les problèmes complexes en étapes simples et logiques.</p>", descriptionEn: "<p>Breaks down complex problems into simple, logical steps.</p>" }),
+  feat({ name: "Concentration absolue", nameEn: "Absolute Focus", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Capable de se concentrer intensément même dans le chaos le plus total.</p>", descriptionEn: "<p>Capable of intense focus even in total chaos.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Intuition aiguë", nameEn: "Keen Intuition", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Pressent les mauvaises décisions et les pièges avant de tomber dedans.</p>", descriptionEn: "<p>Senses bad decisions and traps before falling into them.</p>" }),
+  feat({ name: "Résistance mentale", nameEn: "Mental Fortitude", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Esprit blindé contre le stress, la peur et les traumatismes.</p>", descriptionEn: "<p>Mind armored against stress, fear, and trauma.</p>", bonusMentalThreshold: 1 }),
+  feat({ name: "Pensée latérale", nameEn: "Lateral Thinker", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Trouve des solutions créatives là où les autres voient des impasses.</p>", descriptionEn: "<p>Finds creative solutions where others see dead ends.</p>" }),
+  feat({ name: "Multitâche", nameEn: "Multitasker", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Gère plusieurs tâches simultanées sans perte de performance.</p>", descriptionEn: "<p>Handles multiple simultaneous tasks without performance loss.</p>" }),
+  feat({ name: "Calculateur prodige", nameEn: "Prodigy Calculator", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Effectue des calculs complexes de tête à une vitesse impressionnante.</p>", descriptionEn: "<p>Performs complex mental calculations at impressive speed.</p>" }),
+  feat({ name: "Détermination inébranlable", nameEn: "Unshakeable Determination", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ne renonce jamais, même face à des probabilités écrasantes.</p>", descriptionEn: "<p>Never gives up, even against overwhelming odds.</p>", bonusAnarchy: 1 }),
+  feat({ name: "Sanguin", nameEn: "Level-Headed", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Garde la tête froide quand les autres paniquent.</p>", descriptionEn: "<p>Keeps a cool head when others panic.</p>" }),
+  feat({ name: "Observateur méticuleux", nameEn: "Meticulous Observer", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Remarque les détails que les autres négligent dans chaque situation.</p>", descriptionEn: "<p>Notices details others overlook in every situation.</p>" }),
+  feat({ name: "Planificateur obsessionnel", nameEn: "Obsessive Planner", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Prépare des plans de secours pour ses plans de secours.</p>", descriptionEn: "<p>Prepares backup plans for their backup plans.</p>" }),
+  feat({ name: "Résilience psychologique", nameEn: "Psychological Resilience", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Se remet rapidement des chocs émotionnels et psychologiques.</p>", descriptionEn: "<p>Quickly recovers from emotional and psychological shocks.</p>" }),
+  feat({ name: "Photographie mentale", nameEn: "Mental Photography", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Mémorise les scènes visuelles avec une précision quasi-photographique.</p>", descriptionEn: "<p>Memorizes visual scenes with near-photographic precision.</p>" }),
+  // === FLAWS / QUIRKS (15) ===
+  feat({ name: "Paranoïaque", nameEn: "Paranoid", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Voit des menaces partout, ce qui le rend vigilant mais difficile à vivre.</p>", descriptionEn: "<p>Sees threats everywhere, making them vigilant but hard to live with.</p>" }),
+  feat({ name: "Impulsif", nameEn: "Impulsive", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Agit d'abord, réfléchit ensuite, souvent avec des conséquences regrettables.</p>", descriptionEn: "<p>Acts first, thinks later, often with regrettable consequences.</p>" }),
+  feat({ name: "Claustrophobe", nameEn: "Claustrophobic", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Les espaces confinés provoquent une panique difficile à contrôler.</p>", descriptionEn: "<p>Confined spaces trigger panic that is hard to control.</p>" }),
+  feat({ name: "Insomniaque", nameEn: "Insomniac", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Dort mal et peu, compensant avec des stimulants et du soykaf.</p>", descriptionEn: "<p>Sleeps poorly, compensating with stimulants and soykaf.</p>" }),
+  feat({ name: "Phobique (hauteurs)", nameEn: "Acrophobic", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Terreur irrationnelle des hauteurs qui peut paralyser en situation critique.</p>", descriptionEn: "<p>Irrational fear of heights that can paralyze in critical situations.</p>" }),
+  feat({ name: "Accro aux BTL", nameEn: "BTL Addict", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Dépendance aux Better Than Life chips qui grignote santé mentale et nuyens.</p>", descriptionEn: "<p>Addiction to Better Than Life chips that eats away at mental health and nuyen.</p>" }),
+  feat({ name: "Endetté", nameEn: "In Debt", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Doit de l'argent aux mauvaises personnes et craint chaque appel sur son commlink.</p>", descriptionEn: "<p>Owes money to the wrong people and dreads every call on their commlink.</p>" }),
+  feat({ name: "Recherché", nameEn: "Wanted", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Un mandat d'arrêt ou une prime pèse sur sa tête.</p>", descriptionEn: "<p>An arrest warrant or bounty hangs over their head.</p>" }),
+  feat({ name: "Colérique", nameEn: "Short-Tempered", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Explose pour un rien, ce qui complique les négociations et la diplomatie.</p>", descriptionEn: "<p>Blows up over nothing, complicating negotiations and diplomacy.</p>" }),
+  feat({ name: "Maudit par la technologie", nameEn: "Tech-Cursed", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Les appareils électroniques ont tendance à dysfonctionner en sa présence.</p>", descriptionEn: "<p>Electronic devices tend to malfunction in their presence.</p>" }),
+  feat({ name: "Kleptomane", nameEn: "Kleptomaniac", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Pique des objets sans s'en rendre compte, même en pleine mission.</p>", descriptionEn: "<p>Steals objects without realizing it, even during missions.</p>" }),
+  feat({ name: "Joueur compulsif", nameEn: "Compulsive Gambler", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ne peut pas résister à un pari, même quand les enjeux sont absurdes.</p>", descriptionEn: "<p>Cannot resist a bet, even when the stakes are absurd.</p>" }),
+  feat({ name: "Ennemi juré", nameEn: "Sworn Enemy", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Un rival puissant cherche activement à lui nuire.</p>", descriptionEn: "<p>A powerful rival actively seeks to harm them.</p>" }),
+  feat({ name: "Superstitieux", nameEn: "Superstitious", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Refuse d'agir si les signes sont mauvais, au grand dam de son équipe.</p>", descriptionEn: "<p>Refuses to act if the omens are bad, to their team's frustration.</p>" }),
+  feat({ name: "Cauchemars récurrents", nameEn: "Recurring Nightmares", featType: "trait", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Des cauchemars liés à un traumatisme passé perturbent son sommeil.</p>", descriptionEn: "<p>Nightmares linked to past trauma disturb their sleep.</p>" })
+];
+const CONTACT_TEMPLATES = [
+  // === CRIMINAL UNDERWORLD (20) ===
+  feat({ name: "Fixer : Mr. Johnson", nameEn: "Fixer: Mr. Johnson", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Intermédiaire professionnel, trouve des contrats et de l'équipement.</p>", descriptionEn: "<p>Professional middleman, finds contracts and equipment.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Receleur : Tiny", nameEn: "Fence: Tiny", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Achète et revend du matériel volé, pas de questions posées.</p>", descriptionEn: "<p>Buys and resells stolen goods, no questions asked.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Gang leader : Spike", nameEn: "Gang Leader: Spike", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Chef de gang local, contrôle un territoire dans le Barrens.</p>", descriptionEn: "<p>Local gang leader, controls a territory in the Barrens.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Contrebandier : Smokey", nameEn: "Smuggler: Smokey", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Fait passer n'importe quoi à travers les frontières pour le bon prix.</p>", descriptionEn: "<p>Moves anything across borders for the right price.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Faussaire : Penman", nameEn: "Forger: Penman", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Produit les meilleurs faux papiers et SINs du marché noir.</p>", descriptionEn: "<p>Produces the best fake papers and SINs on the black market.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Prêteur sur gages : Mama Casse", nameEn: "Pawnbroker: Mama Casse", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Tient un prêt sur gages dans le Barrens, sait tout sur les transactions locales.</p>", descriptionEn: "<p>Runs a pawnshop in the Barrens, knows all about local dealings.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Trafiquant d'armes : Iron Mike", nameEn: "Arms Dealer: Iron Mike", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Vend des armes militaires tombées du camion à des prix négociables.</p>", descriptionEn: "<p>Sells military weapons that fell off a truck at negotiable prices.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Bookmaker : Lucky Seven", nameEn: "Bookie: Lucky Seven", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Gère les paris clandestins et a des contacts dans tous les milieux.</p>", descriptionEn: "<p>Manages underground betting and has contacts in all circles.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Assassin retraité : Silence", nameEn: "Retired Hitman: Silence", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ancien tueur à gages qui vend maintenant des informations plutôt que des services.</p>", descriptionEn: "<p>Former contract killer who now sells information rather than services.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Dealer de BTL : Dreamer", nameEn: "BTL Dealer: Dreamer", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Fournit des puces BTL et des drogues de synthèse de haute qualité.</p>", descriptionEn: "<p>Supplies high-quality BTL chips and synthetic drugs.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Passeur de frontières : Coyote", nameEn: "Border Coyote: Coyote", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Fait passer les gens d'un territoire à l'autre sans se faire repérer.</p>", descriptionEn: "<p>Moves people between territories without getting caught.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Recruteur du milieu : Broker", nameEn: "Underworld Recruiter: Broker", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Met en contact runners et employeurs pour une commission modeste.</p>", descriptionEn: "<p>Connects runners and employers for a modest commission.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Voleur à la tire : Slick", nameEn: "Pickpocket: Slick", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Le meilleur voleur à la tire du quartier, sait tout ce qui traîne dans les poches.</p>", descriptionEn: "<p>The best pickpocket in the neighborhood, knows what everyone carries.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Chef de syndicat : Don Renzo", nameEn: "Syndicate Boss: Don Renzo", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Dirige une branche locale du crime organisé avec une poigne de fer.</p>", descriptionEn: "<p>Runs a local branch of organized crime with an iron fist.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Indicateur : Rat", nameEn: "Snitch: Rat", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Vend des infos à tous les camps, fiable tant qu'on le paye bien.</p>", descriptionEn: "<p>Sells info to all sides, reliable as long as the pay is good.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Fabricant de drogues : Alchemist", nameEn: "Drug Maker: Alchemist", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Chimiste clandestin produisant des drogues sur mesure dans un labo caché.</p>", descriptionEn: "<p>Underground chemist producing custom drugs in a hidden lab.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Perceur de coffres : Vault", nameEn: "Safecracker: Vault", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Spécialiste en ouverture de coffres-forts et systèmes de sécurité physiques.</p>", descriptionEn: "<p>Specialist in opening safes and physical security systems.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Chauffeur de fuite : Nitro", nameEn: "Getaway Driver: Nitro", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Conduit n'importe quoi à n'importe quelle vitesse pour une sortie propre.</p>", descriptionEn: "<p>Drives anything at any speed for a clean exit.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Collecteur de dettes : Knuckles", nameEn: "Debt Collector: Knuckles", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Récupère les dettes impayées par tous les moyens nécessaires.</p>", descriptionEn: "<p>Collects unpaid debts by whatever means necessary.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Proxénète : Velvet", nameEn: "Fixer: Velvet", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Gère un réseau de services personnels et d'informations discrètes.</p>", descriptionEn: "<p>Runs a network of personal services and discreet information.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  // === STREET LEVEL (15) ===
+  feat({ name: "Street Doc : Doc Patch", nameEn: "Street Doc: Doc Patch", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Médecin de rue, soigne les blessures sans poser de questions.</p>", descriptionEn: "<p>Street doctor, heals wounds without asking questions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Barman : Vieux Lou", nameEn: "Bartender: Old Lou", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Tient un bar fréquenté par les runners. Entend tout, oublie rien.</p>", descriptionEn: "<p>Runs a bar frequented by runners. Hears everything, forgets nothing.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Mécanicien : Gears", nameEn: "Mechanic: Gears", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Garagiste spécialisé dans les modifications de véhicules et drones.</p>", descriptionEn: "<p>Mechanic specialized in vehicle and drone modifications.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Tatoueuse : Ink", nameEn: "Tattoo Artist: Ink", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Artiste tatoueur populaire chez les gangers, entend les ragots du quartier.</p>", descriptionEn: "<p>Tattoo artist popular with gangers, hears all the neighborhood gossip.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Coursier : Flash", nameEn: "Courier: Flash", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Coursier à moto qui livre n'importe quoi n'importe où sans poser de questions.</p>", descriptionEn: "<p>Bike courier who delivers anything anywhere without asking questions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Cuisinière de rue : Mama Wok", nameEn: "Street Cook: Mama Wok", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Tient un stand de nouilles où se retrouvent tous les runners du coin.</p>", descriptionEn: "<p>Runs a noodle stand where all the local runners hang out.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Gamin des rues : Pixel", nameEn: "Street Kid: Pixel", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Gamine des rues qui connaît tous les passages secrets et planques du quartier.</p>", descriptionEn: "<p>Street kid who knows every secret passage and hideout in the neighborhood.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Ferrailleur : Scrap", nameEn: "Junkyard Dealer: Scrap", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Récupère et revend des pièces de drones et véhicules dans sa casse.</p>", descriptionEn: "<p>Salvages and resells drone and vehicle parts from their junkyard.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Prostituée : Candy", nameEn: "Sex Worker: Candy", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Connaît les secrets de ses clients influents et les partage au bon prix.</p>", descriptionEn: "<p>Knows the secrets of influential clients and shares them for the right price.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Prédicateur de rue : Father Grim", nameEn: "Street Preacher: Father Grim", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Prédicateur excentrique qui aide les déshérités et connaît les malheurs de chacun.</p>", descriptionEn: "<p>Eccentric preacher who helps the downtrodden and knows everyone's troubles.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Pharmacien clandestin : Pillbox", nameEn: "Underground Pharmacist: Pillbox", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Vend des médicaments et stimulants sans ordonnance dans l'arrière-boutique.</p>", descriptionEn: "<p>Sells medications and stimulants without prescription from the back room.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Chauffeur de taxi : Swerve", nameEn: "Taxi Driver: Swerve", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Chauffeur de taxi qui connaît chaque rue et chaque raccourci de la métropole.</p>", descriptionEn: "<p>Taxi driver who knows every street and shortcut in the metroplex.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "DJ de club : BassLine", nameEn: "Club DJ: BassLine", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>DJ populaire qui a accès aux clubs VIP et entend tous les ragots.</p>", descriptionEn: "<p>Popular DJ with access to VIP clubs who hears all the gossip.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Squatter vétéran : Roots", nameEn: "Veteran Squatter: Roots", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Vit dans le Barrens depuis 20 ans et connaît chaque recoin du territoire.</p>", descriptionEn: "<p>Has lived in the Barrens for 20 years and knows every corner of the territory.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Chirurgien esthétique clandestin : Scalpel", nameEn: "Underground Plastic Surgeon: Scalpel", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Change les visages et installe des implants dans une clinique de fortune.</p>", descriptionEn: "<p>Changes faces and installs implants in a makeshift clinic.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  // === CORPORATE (15) ===
+  feat({ name: "Cadre corpo : Ms. Sterling", nameEn: "Corporate Exec: Ms. Sterling", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Cadre moyenne d'une mégacorpo, fournit des infos internes moyennant paiement.</p>", descriptionEn: "<p>Mid-level megacorp executive, provides insider info for payment.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Attaché de presse : Vincent Cole", nameEn: "Press Attaché: Vincent Cole", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Relations publiques corpo, peut faire disparaître ou apparaître des articles.</p>", descriptionEn: "<p>Corporate PR, can make articles disappear or appear.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Secrétaire exécutive : Helen Sharp", nameEn: "Executive Secretary: Helen Sharp", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Assistante de direction qui gère l'agenda et connaît tous les secrets du bureau.</p>", descriptionEn: "<p>Executive assistant who manages the schedule and knows all the office secrets.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Avocat corpo : Maître Duval", nameEn: "Corporate Lawyer: Attorney Duval", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Avocat véreux spécialisé dans la couverture légale des opérations douteuses.</p>", descriptionEn: "<p>Crooked lawyer specializing in legal cover for shady operations.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Chercheur R&D : Dr. Nakamura", nameEn: "R&D Researcher: Dr. Nakamura", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Scientifique corpo travaillant sur des projets classifiés, prêt à parler sous le manteau.</p>", descriptionEn: "<p>Corporate scientist working on classified projects, willing to talk off the record.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Agent de sécurité corpo : Bouclier", nameEn: "Corporate Security Agent: Shield", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Agent de sécurité corpo qui ferme les yeux sur certains accès en échange de faveurs.</p>", descriptionEn: "<p>Corporate security agent who overlooks certain access in exchange for favors.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Responsable logistique : Karen Park", nameEn: "Logistics Manager: Karen Park", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Gère les chaînes d'approvisionnement corpo et peut détourner du matériel.</p>", descriptionEn: "<p>Manages corporate supply chains and can divert equipment.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Trader financier : Maximilian Frost", nameEn: "Financial Trader: Maximilian Frost", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Courtier en bourse qui blanchit de l'argent en échange d'un pourcentage.</p>", descriptionEn: "<p>Stock broker who launders money in exchange for a cut.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Ingénieur système : Ada Reeves", nameEn: "Systems Engineer: Ada Reeves", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ingénieure informatique corpo qui peut créer des accès temporaires aux systèmes.</p>", descriptionEn: "<p>Corporate IT engineer who can create temporary system access.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Directeur de site : Hank Morrison", nameEn: "Site Director: Hank Morrison", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Dirige une installation corpo et connaît les failles de sa propre sécurité.</p>", descriptionEn: "<p>Runs a corporate facility and knows the flaws in their own security.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Comptable véreux : Numbers", nameEn: "Crooked Accountant: Numbers", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Comptable corpo qui connaît les flux financiers occultes de sa mégacorpo.</p>", descriptionEn: "<p>Corporate accountant who knows the hidden financial flows of their megacorp.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Recruteur corpo : James Whitfield", nameEn: "Corporate Recruiter: James Whitfield", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Chasseur de têtes corpo qui connaît les organigrammes de toutes les mégacorpos.</p>", descriptionEn: "<p>Corporate headhunter who knows the org charts of every megacorp.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Lobbyiste : Diana Cross", nameEn: "Lobbyist: Diana Cross", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Lobbyiste influente qui connaît les dessous des décisions politiques corpo.</p>", descriptionEn: "<p>Influential lobbyist who knows the behind-the-scenes of corporate political decisions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Médecin corpo : Dr. Wells", nameEn: "Corporate Doctor: Dr. Wells", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Médecin de clinique corpo privée, accès à du matériel médical de pointe.</p>", descriptionEn: "<p>Private corporate clinic doctor with access to cutting-edge medical equipment.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  feat({ name: "Agent de renseignement corpo : Specter", nameEn: "Corporate Intelligence Agent: Specter", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Espion corpo freelance vendant des dossiers compromettants au plus offrant.</p>", descriptionEn: "<p>Freelance corporate spy selling compromising files to the highest bidder.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_corporate", rrLabel: "Corporatiste" }] }),
+  // === MEDIA / ENTERTAINMENT (10) ===
+  feat({ name: "Journaliste : Red Médiaz", nameEn: "Reporter: Red Médiaz", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Journaliste indépendant toujours à la recherche d'un scoop.</p>", descriptionEn: "<p>Independent journalist always looking for a scoop.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Producteur de trideo : Max Starr", nameEn: "Trid Producer: Max Starr", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Producteur de contenus trideo qui peut lancer ou enterrer une histoire.</p>", descriptionEn: "<p>Trid content producer who can launch or bury a story.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Blogueuse shadow : ByteGirl", nameEn: "Shadow Blogger: ByteGirl", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Blogueuse underground qui documente la vie dans les Ombres.</p>", descriptionEn: "<p>Underground blogger who documents life in the Shadows.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Cameraman freelance : Lens", nameEn: "Freelance Cameraman: Lens", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Caméraman indépendant prêt à filmer n'importe quoi pour le bon prix.</p>", descriptionEn: "<p>Independent cameraman willing to film anything for the right price.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Critique gastronomique : Fourchette", nameEn: "Food Critic: Fourchette", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Critique culinaire influent qui fréquente les restaurants corpo haut de gamme.</p>", descriptionEn: "<p>Influential food critic who frequents high-end corporate restaurants.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Musicien célèbre : Neon Vox", nameEn: "Famous Musician: Neon Vox", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Rock star du Sixième Monde avec un accès VIP partout et des fans partout.</p>", descriptionEn: "<p>Sixth World rock star with VIP access everywhere and fans everywhere.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Présentateur de news : Tom Brecker", nameEn: "News Anchor: Tom Brecker", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Présentateur vedette qui peut orienter l'opinion publique avec un reportage.</p>", descriptionEn: "<p>Star anchor who can sway public opinion with a single report.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Artiste de rue : Graffik", nameEn: "Street Artist: Graffik", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Graffeur célèbre dont les œuvres marquent les territoires de gangs.</p>", descriptionEn: "<p>Famous graffiti artist whose works mark gang territories.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Agent de talents : Gloria Vance", nameEn: "Talent Agent: Gloria Vance", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Agente artistique connectée à l'industrie du divertissement corpo.</p>", descriptionEn: "<p>Talent agent connected to the corporate entertainment industry.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  feat({ name: "Pirate des ondes : Fréquence", nameEn: "Pirate Broadcaster: Frequency", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Anime une radio pirate underground diffusant des infos censurées.</p>", descriptionEn: "<p>Runs a pirate underground radio broadcasting censored information.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_media", rrLabel: "Médiatique" }] }),
+  // === GOVERNMENT / LAW (10) ===
+  feat({ name: "Flic corrompu : Inspecteur Marks", nameEn: "Crooked Cop: Inspector Marks", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Officier de police qui ferme les yeux moyennant finances.</p>", descriptionEn: "<p>Police officer who looks the other way for the right price.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Greffier du tribunal : Bernard Clay", nameEn: "Court Clerk: Bernard Clay", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Fonctionnaire du tribunal qui peut faire disparaître des dossiers judiciaires.</p>", descriptionEn: "<p>Court official who can make legal files disappear.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Agent des douanes : Mule", nameEn: "Customs Agent: Mule", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Agent des douanes qui laisse passer certains colis contre rémunération.</p>", descriptionEn: "<p>Customs agent who lets certain packages through for payment.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Pompier : Red Chief", nameEn: "Firefighter: Red Chief", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Chef pompier qui connaît les plans de tous les bâtiments du quartier.</p>", descriptionEn: "<p>Fire chief who knows the blueprints of every building in the district.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Inspecteur sanitaire : Dr. Finch", nameEn: "Health Inspector: Dr. Finch", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Inspecteur sanitaire avec accès à de nombreux établissements corpo et publics.</p>", descriptionEn: "<p>Health inspector with access to many corporate and public establishments.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Agent du fisc : Taxman", nameEn: "Tax Agent: Taxman", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Agent fiscal qui connaît les montages financiers douteux de tout le monde.</p>", descriptionEn: "<p>Tax agent who knows everyone's shady financial arrangements.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Juge : Honorable Blackwood", nameEn: "Judge: Honorable Blackwood", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Magistrat corruptible qui peut influencer les verdicts pour le bon prix.</p>", descriptionEn: "<p>Corruptible magistrate who can influence verdicts for the right price.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Politicien local : Conseiller Oribe", nameEn: "Local Politician: Councilman Oribe", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Élu municipal qui échange des faveurs contre des votes et de l'argent.</p>", descriptionEn: "<p>City councilman who trades favors for votes and money.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Agent de probation : Warden Cole", nameEn: "Parole Officer: Warden Cole", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Contrôleur judiciaire qui connaît les dossiers criminels de tous les ex-détenus.</p>", descriptionEn: "<p>Parole officer who knows the criminal records of all ex-convicts.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Diplomate : Ambassadeur Tran", nameEn: "Diplomat: Ambassador Tran", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Diplomate avec immunité et accès aux cercles politiques internationaux.</p>", descriptionEn: "<p>Diplomat with immunity and access to international political circles.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  // === MAGIC COMMUNITY (10) ===
+  feat({ name: "Talismonger : Madame Oya", nameEn: "Talismonger: Madame Oya", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Vendeuse de composants magiques et de talismans.</p>", descriptionEn: "<p>Seller of magical components and talismans.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Chaman urbain : Grey Feather", nameEn: "Urban Shaman: Grey Feather", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Chaman vivant en marge de la société, expert en traditions et esprits.</p>", descriptionEn: "<p>Shaman living on society's fringe, expert in traditions and spirits.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Herboriste magique : Willow", nameEn: "Magical Herbalist: Willow", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Cultive et vend des plantes aux propriétés magiques rares.</p>", descriptionEn: "<p>Grows and sells plants with rare magical properties.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Professeur d'université occulte : Dr. Arcanus", nameEn: "Occult Professor: Dr. Arcanus", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Universitaire spécialisé dans la théorie magique et les traditions hermétiques.</p>", descriptionEn: "<p>Academic specialized in magical theory and hermetic traditions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Initié libre : Wanderer", nameEn: "Free Initiate: Wanderer", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Mage itinérant qui échange des connaissances magiques contre des faveurs.</p>", descriptionEn: "<p>Itinerant mage who trades magical knowledge for favors.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Guérisseur traditionnel : Bonesaw", nameEn: "Traditional Healer: Bonesaw", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Guérisseur qui soigne par la magie et les remèdes traditionnels.</p>", descriptionEn: "<p>Healer who cures through magic and traditional remedies.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Chasseur de paracritters : Fang", nameEn: "Paracritter Hunter: Fang", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Spécialiste de la traque et capture de créatures paramagiques.</p>", descriptionEn: "<p>Specialist in tracking and capturing paramagical creatures.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Enchanteur : Runesmith", nameEn: "Enchanter: Runesmith", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Artisan enchanteur créant des objets magiques sur commande.</p>", descriptionEn: "<p>Enchanting artisan who creates magical items on commission.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Exorciste : Father Ash", nameEn: "Exorcist: Father Ash", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Spécialiste du bannissement des esprits incontrôlés et des entités hostiles.</p>", descriptionEn: "<p>Specialist in banishing uncontrolled spirits and hostile entities.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  feat({ name: "Lecteur d'auras : Oracle", nameEn: "Aura Reader: Oracle", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Perçoit les auras astrales et peut identifier les Éveillés dans une foule.</p>", descriptionEn: "<p>Perceives astral auras and can identify Awakened in a crowd.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_magic", rrLabel: "Magique" }] }),
+  // === MATRIX / TECH (10) ===
+  feat({ name: "Hacker : ZeroCool", nameEn: "Hacker: ZeroCool", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Decker freelance, vend des infos et des backdoors.</p>", descriptionEn: "<p>Freelance decker, sells info and backdoors.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Admin réseau : SysOp", nameEn: "Network Admin: SysOp", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Administrateur système qui peut accorder des accès discrets aux réseaux.</p>", descriptionEn: "<p>System administrator who can grant discreet network access.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Technicien en cybernétique : Wrench", nameEn: "Cybertech: Wrench", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Installe et répare le cyberware dans un atelier clandestin.</p>", descriptionEn: "<p>Installs and repairs cyberware in an underground workshop.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Fabricant de commlinks : Circuit", nameEn: "Commlink Maker: Circuit", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Assemble des commlinks modifiés avec des fonctions non standard.</p>", descriptionEn: "<p>Assembles modified commlinks with non-standard functions.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Data broker : InfoVault", nameEn: "Data Broker: InfoVault", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Achète et vend des données volées, spécialiste de l'information matricielle.</p>", descriptionEn: "<p>Buys and sells stolen data, Matrix information specialist.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Techno-anarchiste : FreeNode", nameEn: "Techno-Anarchist: FreeNode", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Hacktiviste luttant contre le contrôle corpo de la Matrice.</p>", descriptionEn: "<p>Hacktivist fighting against corporate control of the Matrix.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Réparateur de drones : Propeller", nameEn: "Drone Repair Tech: Propeller", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Répare et modifie les drones civils et militaires dans son garage.</p>", descriptionEn: "<p>Repairs and modifies civilian and military drones in their garage.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Expert en surveillance : BigEye", nameEn: "Surveillance Expert: BigEye", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Spécialiste des systèmes de surveillance, sait les installer et les contourner.</p>", descriptionEn: "<p>Specialist in surveillance systems, knows how to install and bypass them.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Pirate de données : BlackICE", nameEn: "Data Pirate: BlackICE", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Decker spécialisé dans le vol de données corporatives ultra-sécurisées.</p>", descriptionEn: "<p>Decker specialized in stealing ultra-secure corporate data.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  feat({ name: "Ingénieur électronique : Solder", nameEn: "Electronics Engineer: Solder", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Conçoit et fabrique des gadgets électroniques sur mesure.</p>", descriptionEn: "<p>Designs and builds custom electronic gadgets.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_matrix", rrLabel: "Matriciel" }] }),
+  // === MILITARY / SECURITY (10) ===
+  feat({ name: "Mercenaire retraité : Sergeant Rock", nameEn: "Retired Merc: Sergeant Rock", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ancien mercenaire qui recrute maintenant pour des opérations privées.</p>", descriptionEn: "<p>Former mercenary who now recruits for private operations.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_criminal", rrLabel: "Criminel" }] }),
+  feat({ name: "Garde du corps : Stone", nameEn: "Bodyguard: Stone", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Garde du corps professionnel avec des contacts dans la sécurité privée.</p>", descriptionEn: "<p>Professional bodyguard with contacts in private security.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Instructeur de tir : Bullseye", nameEn: "Shooting Instructor: Bullseye", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ancien tireur d'élite militaire qui donne des cours privés.</p>", descriptionEn: "<p>Former military sniper who gives private lessons.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Officier de milice : Capitaine Forge", nameEn: "Militia Officer: Captain Forge", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Commandant d'une milice locale qui protège un quartier du Barrens.</p>", descriptionEn: "<p>Commander of a local militia protecting a Barrens neighborhood.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Agent des forces spéciales : Ghost", nameEn: "Special Forces Agent: Ghost", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ancien opérateur des forces spéciales reconverti en consultant sécurité.</p>", descriptionEn: "<p>Former special forces operator turned security consultant.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Armurier militaire : Hammer", nameEn: "Military Armorer: Hammer", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Entretient et modifie l'armement pour les forces de sécurité privées.</p>", descriptionEn: "<p>Maintains and modifies weapons for private security forces.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Analyste du renseignement : Cipher", nameEn: "Intelligence Analyst: Cipher", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ancien analyste militaire qui vend des renseignements stratégiques.</p>", descriptionEn: "<p>Former military analyst who sells strategic intelligence.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_government", rrLabel: "Gouvernemental" }] }),
+  feat({ name: "Pilote d'hélicoptère : Rotorhead", nameEn: "Helicopter Pilot: Rotorhead", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Pilote de t-bird et hélicoptère disponible pour extractions et transports risqués.</p>", descriptionEn: "<p>T-bird and helicopter pilot available for extractions and risky transport.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Médecin militaire : Doc Trauma", nameEn: "Combat Medic: Doc Trauma", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Ancien médecin de combat qui soigne les blessures graves sans hôpital.</p>", descriptionEn: "<p>Former combat medic who treats severe injuries without a hospital.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] }),
+  feat({ name: "Expert en déminage : Defuse", nameEn: "Bomb Disposal Expert: Defuse", featType: "contact", cost: "free-equipment", rating: 0, nuyenCost: 0, description: "<p>Spécialiste en neutralisation d'explosifs et pièges de tous types.</p>", descriptionEn: "<p>Specialist in neutralizing explosives and traps of all types.</p>", rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: "spec_la-rue", rrLabel: "La rue" }] })
+];
+const CYBERDECK_TEMPLATES = [
+  // === BUDGET / MID-RANGE (cost: 'equipment', nuyenCost: 2500) — 8 entries ===
+  feat({ name: "Cyberdeck Ghostline 3700", nameEn: "Ghostline 3700 Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, description: "<p>Cyberdeck milieu de gamme, bon compromis entre firewall et attaque.</p>", descriptionEn: "<p>Mid-range cyberdeck, good balance between firewall and attack.</p>" }),
+  feat({ name: "Cyberdeck PixelWave Starter", nameEn: "PixelWave Starter Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Cyberdeck d'entrée de gamme, parfait pour les deckers débutants.</p>", descriptionEn: "<p>Entry-level cyberdeck, perfect for beginner deckers.</p>" }),
+  feat({ name: "Cyberdeck DataForge Mk.I", nameEn: "DataForge Mk.I Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Modèle robuste et fiable, populaire chez les freelances.</p>", descriptionEn: "<p>Sturdy and reliable model, popular among freelancers.</p>" }),
+  feat({ name: "Cyberdeck NovaPulse Runner", nameEn: "NovaPulse Runner Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Cyberdeck compact optimisé pour la mobilité en terrain hostile.</p>", descriptionEn: "<p>Compact cyberdeck optimized for mobility in hostile terrain.</p>" }),
+  feat({ name: "Cyberdeck GridRunner Eco", nameEn: "GridRunner Eco Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Modèle économique avec interface intuitive et consommation réduite.</p>", descriptionEn: "<p>Budget model with intuitive interface and reduced power consumption.</p>" }),
+  feat({ name: "Cyberdeck OmniDyne Pulse", nameEn: "OmniDyne Pulse Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Cyberdeck polyvalent pour les tâches de hacking quotidiennes.</p>", descriptionEn: "<p>Versatile cyberdeck for everyday hacking tasks.</p>" }),
+  feat({ name: "Cyberdeck ShadowByte Mini", nameEn: "ShadowByte Mini Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Le plus petit cyberdeck du marché, se glisse dans une poche.</p>", descriptionEn: "<p>The smallest cyberdeck on the market, fits in a pocket.</p>" }),
+  feat({ name: "Cyberdeck TechHive Basic", nameEn: "TechHive Basic Cyberdeck", featType: "cyberdeck", cost: "equipment", rating: 0, nuyenCost: 2500, firewall: 3, attack: 3, description: "<p>Cyberdeck basique produit en masse, fiable mais sans fioritures.</p>", descriptionEn: "<p>Mass-produced basic cyberdeck, reliable but no frills.</p>" }),
+  // === HIGH-END (cost: 'advanced-equipment', nuyenCost: 5000) — 12 entries ===
+  feat({ name: "Cyberdeck Prism Nexus", nameEn: "Prism Nexus Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, description: "<p>Cyberdeck haut de gamme avec firewall renforcé et modules d'attaque avancés.</p>", descriptionEn: "<p>High-end cyberdeck with reinforced firewall and advanced attack modules.</p>" }),
+  feat({ name: "Cyberdeck Ghostline 9000 Elite", nameEn: "Ghostline 9000 Elite Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 4, attack: 3, description: "<p>Version élite du Ghostline, processeur quantique intégré.</p>", descriptionEn: "<p>Elite version of the Ghostline with integrated quantum processor.</p>" }),
+  feat({ name: "Cyberdeck BlackVeil Phantom", nameEn: "BlackVeil Phantom Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 3, attack: 4, description: "<p>Cyberdeck furtif conçu pour les intrusions invisibles dans les réseaux corpo.</p>", descriptionEn: "<p>Stealth cyberdeck designed for invisible intrusions into corporate networks.</p>" }),
+  feat({ name: "Cyberdeck Kurotech Ronin X", nameEn: "Kurotech Ronin X Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 4, attack: 4, description: "<p>Cyberdeck japonais de précision avec interface neurale optimisée.</p>", descriptionEn: "<p>Precision Japanese cyberdeck with optimized neural interface.</p>" }),
+  feat({ name: "Cyberdeck DataForge Mk.III Pro", nameEn: "DataForge Mk.III Pro Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 3, attack: 5, description: "<p>Troisième génération DataForge, modules d'attaque et défense équilibrés.</p>", descriptionEn: "<p>Third-generation DataForge, balanced attack and defense modules.</p>" }),
+  feat({ name: "Cyberdeck Meridian Warframe", nameEn: "Meridian Warframe Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 5, attack: 3, description: "<p>Cyberdeck militaire reconverti pour le marché civil, puissance brute inégalée.</p>", descriptionEn: "<p>Military cyberdeck converted for the civilian market, unmatched raw power.</p>" }),
+  feat({ name: "Cyberdeck NovaPulse Apex", nameEn: "NovaPulse Apex Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 4, attack: 3, description: "<p>Flagship NovaPulse avec processeurs multicœurs et dissipation thermique active.</p>", descriptionEn: "<p>NovaPulse flagship with multi-core processors and active thermal dissipation.</p>" }),
+  feat({ name: "Cyberdeck VortexNet Razor", nameEn: "VortexNet Razor Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 3, attack: 4, description: "<p>Optimisé pour le cybercombat offensif avec modules de brute-force dédiés.</p>", descriptionEn: "<p>Optimized for offensive cybercombat with dedicated brute-force modules.</p>" }),
+  feat({ name: "Cyberdeck SpectraCorp Sentinel", nameEn: "SpectraCorp Sentinel Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, description: "<p>Cyberdeck défensif avec firewall multi-couches et détection d'intrusion avancée.</p>", descriptionEn: "<p>Defensive cyberdeck with multi-layer firewall and advanced intrusion detection.</p>" }),
+  feat({ name: "Cyberdeck ZeroDay Exploit", nameEn: "ZeroDay Exploit Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 4, attack: 4, description: "<p>Conçu par des hackers pour des hackers, chaque unité est unique.</p>", descriptionEn: "<p>Designed by hackers for hackers, every unit is unique.</p>" }),
+  feat({ name: "Cyberdeck OmniDyne Titan", nameEn: "OmniDyne Titan Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 5, attack: 3, description: "<p>Le plus puissant cyberdeck civil, rivalise avec le matériel militaire.</p>", descriptionEn: "<p>The most powerful civilian cyberdeck, rivals military hardware.</p>" }),
+  feat({ name: "Cyberdeck ShadowByte Wraith", nameEn: "ShadowByte Wraith Cyberdeck", featType: "cyberdeck", cost: "advanced-equipment", rating: 0, nuyenCost: 5e3, firewall: 3, attack: 5, description: "<p>Cyberdeck ultra-furtif avec signature matricielle quasi-indétectable.</p>", descriptionEn: "<p>Ultra-stealth cyberdeck with near-undetectable Matrix signature.</p>" })
+];
+const AWAKENED_TEMPLATES = [
+  // [0] Mage : perception astrale + sorcellerie
+  feat({
+    name: "Éveillé — Perception et Sorcellerie",
+    nameEn: "Awakened — Perception and Sorcery",
+    featType: "awakened",
+    cost: "free-equipment",
+    nuyenCost: 0,
+    description: "<p>Le personnage est Éveillé : il perçoit le plan astral et peut lancer des sorts.</p>",
+    descriptionEn: "<p>The character is Awakened: they perceive the astral plane and can cast spells.</p>",
+    astralPerception: true,
+    sorcery: true
+  }),
+  // [1] Mage complet : perception astrale + sorcellerie + conjuration
+  feat({
+    name: "Éveillé — Perception, Sorcellerie et Conjuration",
+    nameEn: "Awakened — Perception, Sorcery and Conjuration",
+    featType: "awakened",
+    cost: "free-equipment",
+    nuyenCost: 0,
+    description: "<p>Le personnage est Éveillé : perception astrale, sorcellerie et conjuration d'esprits.</p>",
+    descriptionEn: "<p>The character is Awakened: astral perception, sorcery, and spirit conjuration.</p>",
+    astralPerception: true,
+    sorcery: true,
+    conjuration: true
+  }),
+  // [2] Chamane : projection astrale + conjuration
+  feat({
+    name: "Éveillé — Projection astrale et Conjuration",
+    nameEn: "Awakened — Astral Projection and Conjuration",
+    featType: "awakened",
+    cost: "free-equipment",
+    nuyenCost: 0,
+    description: "<p>Le personnage est un chamane : projection astrale et invocation d'esprits.</p>",
+    descriptionEn: "<p>The character is a shaman: astral projection and spirit summoning.</p>",
+    astralPerception: true,
+    astralProjection: true,
+    conjuration: true
+  }),
+  // [3] Adepte : perception astrale + adepte
+  feat({
+    name: "Éveillé — Perception astrale et Adepte",
+    nameEn: "Awakened — Astral Perception and Adept",
+    featType: "awakened",
+    cost: "free-equipment",
+    nuyenCost: 0,
+    description: "<p>Le personnage est un adepte physique : il canalise le mana dans son corps.</p>",
+    descriptionEn: "<p>The character is a physical adept: they channel mana into their body.</p>",
+    astralPerception: true,
+    adept: true
+  })
+];
+const EMERGED_TEMPLATES = [
+  feat({
+    name: "Émergé — Persona vivante",
+    nameEn: "Emerged — Living Persona",
+    featType: "emerged",
+    cost: "free-equipment",
+    nuyenCost: 0,
+    description: "<p>Le personnage est un Émergé : il accède à la Matrice par la pensée et tisse des formes complexes.</p>",
+    descriptionEn: "<p>The character is Emerged: they access the Matrix through thought and weave complex forms.</p>",
+    matrixAccess: true,
+    complexFormWeaving: true,
+    spriteCompilation: true,
+    biofeedback: true
+  })
+];
+const ARCHETYPES = {
+  "street-samurai": {
+    labelFr: "Samouraï des rues",
+    labelEn: "Street Samurai",
+    primaryAttributes: ["agility", "strength", "willpower", "charisma", "logic"],
+    primarySkills: { "close-combat": 8, "ranged-weapons": 6, "athletics": 5, "perception": 3 },
+    secondarySkills: { "stealth": 2, "influence": 2, "survival": 2, "networking": 1 },
+    requiredSpecs: ["spec_defense"],
+    optionalSpecs: ["spec_blades", "spec_unarmed", "spec_pistols", "spec_rifles", "spec_intimidation", "spec_ranged-defense"],
+    cyberwarePool: ["cyberbras", "reflexes", "datajack", "yeux", "plaque", "cyberjambes", "agilite", "tactique", "filtre", "osseux"],
+    weaponPool: ["melee", "pistol", "rifle", "smg"],
+    equipmentPool: ["commlink", "sin", "medikit"],
+    traitPool: ["chanceux", "resistant", "sixieme-sens", "intimidant", "endurci", "dur-a-cuire"],
+    armorRange: [2, 4],
+    streetNameTheme: "combat",
+    maxEssenceLoss: 4
+  },
+  "decker": {
+    labelFr: "Decker",
+    labelEn: "Decker",
+    primaryAttributes: ["logic", "agility", "willpower", "charisma", "strength"],
+    primarySkills: { "cracking": 8, "electronics": 6, "engineering": 4, "perception": 3 },
+    secondarySkills: { "stealth": 2, "influence": 2, "ranged-weapons": 2, "networking": 2 },
+    requiredSpecs: [],
+    optionalSpecs: ["spec_backdoor", "spec_complex-forms", "spec_brute-force", "spec_electronic-warfare", "spec_matrix-search", "spec_matrix-perception", "spec_pistols"],
+    cyberwarePool: ["datajack", "yeux", "tactique"],
+    weaponPool: ["pistol"],
+    equipmentPool: ["commlink", "sin", "brouilleur"],
+    traitPool: ["memoire", "sixieme-sens", "langues", "cameleon"],
+    armorRange: [2, 3],
+    streetNameTheme: "tech",
+    maxEssenceLoss: 2
+  },
+  "mage": {
+    labelFr: "Mage",
+    labelEn: "Mage",
+    primaryAttributes: ["willpower", "charisma", "logic", "agility", "strength"],
+    primarySkills: { "sorcery": 8, "perception": 4, "astral-combat": 3, "influence": 3 },
+    secondarySkills: { "athletics": 2, "stealth": 2, "survival": 2, "networking": 2 },
+    requiredSpecs: [],
+    optionalSpecs: ["spec_combat-spells", "spec_detection-spells", "spec_health-spells", "spec_illusion-spells", "spec_manipulation-spells", "spec_counterspelling", "spec_astral-perception", "spec_astral-combat"],
+    cyberwarePool: [],
+    weaponPool: ["pistol", "melee"],
+    spellPool: ["boulon", "boule", "eclair", "detection-vie", "clairvoyance", "guerison", "antidote", "invisibilite", "chaos", "levitation", "armure", "confusion", "barriere", "detection-ennemis", "controle-emotions"],
+    equipmentPool: ["commlink", "sin"],
+    traitPool: ["volonte-fer", "sixieme-sens", "chanceux", "langues", "code-honneur"],
+    armorRange: [2, 3],
+    streetNameTheme: "magic",
+    isAwakened: true,
+    maxEssenceLoss: 0
+  },
+  "shaman": {
+    labelFr: "Chamane",
+    labelEn: "Shaman",
+    primaryAttributes: ["willpower", "charisma", "strength", "agility", "logic"],
+    primarySkills: { "conjuration": 8, "sorcery": 4, "perception": 4, "survival": 3 },
+    secondarySkills: { "athletics": 2, "influence": 2, "networking": 2, "astral-combat": 2 },
+    requiredSpecs: [],
+    optionalSpecs: ["spec_banishing", "spec_air-spirits", "spec_earth-spirits", "spec_fire-spirits", "spec_water-spirits", "spec_beast-spirits", "spec_combat-spells", "spec_health-spells", "spec_astral-perception"],
+    cyberwarePool: [],
+    weaponPool: ["melee"],
+    spellPool: ["boulon", "detection-vie", "guerison", "antidote", "armure", "detection-ennemis", "controle-emotions", "barriere"],
+    equipmentPool: ["commlink", "sin"],
+    traitPool: ["volonte-fer", "sixieme-sens", "code-honneur", "langues"],
+    armorRange: [2, 3],
+    streetNameTheme: "magic",
+    isAwakened: true,
+    maxEssenceLoss: 0
+  },
+  "adept": {
+    labelFr: "Adepte physique",
+    labelEn: "Physical Adept",
+    primaryAttributes: ["agility", "willpower", "strength", "charisma", "logic"],
+    primarySkills: { "close-combat": 8, "athletics": 5, "perception": 4, "stealth": 3 },
+    secondarySkills: { "influence": 2, "survival": 2, "networking": 1 },
+    requiredSpecs: ["spec_defense"],
+    optionalSpecs: ["spec_blades", "spec_unarmed", "spec_physical-stealth", "spec_running", "spec_physical-perception", "spec_intimidation"],
+    cyberwarePool: [],
+    weaponPool: ["melee", "throwing"],
+    adeptPowerPool: ["poing", "esquive", "sens", "vitesse", "corps", "pas-leger", "frappe", "resistance"],
+    equipmentPool: ["commlink", "sin", "medikit"],
+    traitPool: ["chanceux", "sixieme-sens", "endurci", "code-honneur", "ambidextre"],
+    armorRange: [2, 3],
+    streetNameTheme: "combat",
+    isAwakened: true,
+    maxEssenceLoss: 0
+  },
+  "rigger": {
+    labelFr: "Rigger",
+    labelEn: "Rigger",
+    primaryAttributes: ["logic", "agility", "willpower", "charisma", "strength"],
+    primarySkills: { "piloting": 8, "engineering": 6, "electronics": 4, "perception": 3 },
+    secondarySkills: { "ranged-weapons": 2, "stealth": 2, "networking": 2, "athletics": 1 },
+    requiredSpecs: [],
+    optionalSpecs: ["spec_ground-drones", "spec_flying-drones", "spec_cars", "spec_bikes", "spec_cr-drones", "spec_cr-vehicles", "spec_pistols", "spec_matrix-search"],
+    cyberwarePool: ["datajack", "yeux", "reflexes"],
+    weaponPool: ["pistol", "smg"],
+    equipmentPool: ["commlink", "sin", "outillage", "micro-drone"],
+    traitPool: ["memoire", "sixieme-sens", "langues"],
+    armorRange: [2, 3],
+    streetNameTheme: "vehicle",
+    maxEssenceLoss: 2
+  },
+  "face": {
+    labelFr: "Face",
+    labelEn: "Face",
+    primaryAttributes: ["charisma", "logic", "willpower", "agility", "strength"],
+    primarySkills: { "influence": 8, "networking": 6, "perception": 4, "electronics": 3 },
+    secondarySkills: { "stealth": 2, "ranged-weapons": 2, "athletics": 2, "survival": 1 },
+    requiredSpecs: [],
+    optionalSpecs: ["spec_negotiation", "spec_bluff", "spec_etiquette", "spec_impersonation", "spec_intimidation", "spec_social-perception", "spec_corporate", "spec_criminal", "spec_la-rue"],
+    cyberwarePool: ["datajack", "yeux"],
+    weaponPool: ["pistol"],
+    equipmentPool: ["commlink", "sin", "lunettes"],
+    traitPool: ["cameleon", "langues", "chanceux", "memoire", "code-honneur"],
+    armorRange: [2, 3],
+    streetNameTheme: "social",
+    maxEssenceLoss: 1
+  },
+  "technomancer": {
+    labelFr: "Technomancien",
+    labelEn: "Technomancer",
+    primaryAttributes: ["logic", "willpower", "charisma", "agility", "strength"],
+    primarySkills: { "technomancer": 8, "electronics": 6, "engineering": 3, "perception": 3 },
+    secondarySkills: { "stealth": 2, "influence": 2, "networking": 2, "athletics": 1 },
+    requiredSpecs: [],
+    optionalSpecs: ["spec_compilation", "spec_decompilation", "spec_complex-forms", "spec_matrix-search", "spec_matrix-perception", "spec_matrix-stealth"],
+    cyberwarePool: [],
+    weaponPool: ["pistol"],
+    complexFormPool: ["biofeedback", "surcharge", "puppeteer", "resonance", "echo", "brouillage", "pistage", "camouflage"],
+    equipmentPool: ["commlink", "sin"],
+    traitPool: ["memoire", "volonte-fer", "sixieme-sens", "langues"],
+    armorRange: [2, 3],
+    streetNameTheme: "tech",
+    isEmerged: true,
+    maxEssenceLoss: 0
+  },
+  "infiltrator": {
+    labelFr: "Infiltrateur",
+    labelEn: "Infiltrator",
+    primaryAttributes: ["agility", "logic", "willpower", "charisma", "strength"],
+    primarySkills: { "stealth": 8, "perception": 5, "athletics": 4, "electronics": 3 },
+    secondarySkills: { "ranged-weapons": 3, "influence": 2, "networking": 2, "close-combat": 2 },
+    requiredSpecs: ["spec_physical-stealth"],
+    optionalSpecs: ["spec_lockpicking", "spec_pistols", "spec_physical-perception", "spec_social-perception", "spec_bluff", "spec_climbing", "spec_matrix-stealth"],
+    cyberwarePool: ["yeux", "datajack", "agilite"],
+    weaponPool: ["pistol", "melee"],
+    equipmentPool: ["commlink", "sin", "crochetage", "escalade", "lunettes", "masque"],
+    traitPool: ["sixieme-sens", "cameleon", "ambidextre", "chanceux"],
+    armorRange: [2, 3],
+    streetNameTheme: "stealth",
+    maxEssenceLoss: 2
+  }
+};
+const PHYSICAL_TRAITS = [
+  { fr: "Cicatrice de balle en travers de la joue gauche", en: "Bullet scar across the left cheek" },
+  { fr: "Bras chrome qui grince quand il pleut", en: "Chrome arm that creaks when it rains" },
+  { fr: "Mohawk néon qui change de couleur selon l'humeur", en: "Neon mohawk that changes color with mood" },
+  { fr: "Cyberyeux rouges luminescents", en: "Glowing red cybereyes" },
+  { fr: "Datajack visible sur la tempe droite entouré de tissu cicatriciel", en: "Visible datajack on the right temple surrounded by scar tissue" },
+  { fr: "Plaques dermiques sur les phalanges, usées par les coups", en: "Dermal plating on the knuckles, worn from punching" },
+  { fr: "Tatouage de gang à moitié brûlé à l'acide sur le cou", en: "Gang tattoo half-burned with acid on the neck" },
+  { fr: "Défenses d'orc coiffées d'or avec des runes gravées", en: "Ork tusks capped in gold with engraved runes" },
+  { fr: "Oreilles d'elfe percées de douze anneaux chacune", en: "Elf ears pierced with twelve rings each" },
+  { fr: "Barbe de nain tressée avec des fils de fibre optique", en: "Dwarf beard braided with fiber optic wires" },
+  { fr: "Langue bifide qui frétille quand il réfléchit", en: "Split tongue that flickers when thinking" },
+  { fr: "LEDs sous-dermiques le long de la mâchoire, bleu glacé", en: "Subdermal LEDs along the jawline, ice blue" },
+  { fr: "Toutes les dents remplacées par du chrome poli", en: "All teeth replaced with polished chrome" },
+  { fr: "Boiterie prononcée de la jambe gauche, ancienne blessure", en: "Pronounced limp on the left leg, old wound" },
+  { fr: "Auriculaire manquant à la main droite", en: "Missing pinky finger on the right hand" },
+  { fr: "Albinos, peau blanche comme la craie et yeux roses", en: "Albino, chalk-white skin and pink eyes" },
+  { fr: "Hétérochromie : un oeil vert naturel, un cyberyeux doré", en: "Heterochromia: one natural green eye, one golden cybereye" },
+  { fr: "Froncement permanent, comme gravé dans le visage", en: "Permanent scowl, as if carved into the face" },
+  { fr: "Cornes de troll limées au ras du crâne, traces de sang séché", en: "Troll horns filed down to the skull, traces of dried blood" },
+  { fr: "Trench-coat avec beaucoup trop de poches, toutes pleines", en: "Trench coat with far too many pockets, all full" },
+  { fr: "Lunettes miroir soudées au visage, impossible de voir les yeux", en: "Mirrorshades welded to the face, impossible to see the eyes" },
+  { fr: "Bottes de combat avec des éperons rétractables", en: "Combat boots with retractable spurs" },
+  { fr: "Scarification rituelle en spirale sur tout l'avant-bras", en: "Ritual scarification spiraling across the entire forearm" },
+  { fr: "Brûlure d'acide couvrant la moitié droite du visage", en: "Acid burn covering the right half of the face" },
+  { fr: "Main cybernétique avec des doigts trop longs, presque arachnéens", en: "Cybernetic hand with fingers too long, almost arachnid-like" },
+  { fr: "Crâne rasé avec un code-barres tatoué sur la nuque", en: "Shaved head with a barcode tattooed on the back of the neck" },
+  { fr: "Oeil cybernétique qui clignote en rouge quand il scanne", en: "Cybereye that blinks red when scanning" },
+  { fr: "Vieille cicatrice de couteau du menton à l'oreille", en: "Old knife scar from chin to ear" },
+  { fr: "Cheveux blancs prématurés, visage encore jeune", en: "Prematurely white hair, face still young" },
+  { fr: "Bras cybernétique couvert de stickers de gangs", en: "Cybernetic arm covered in gang stickers" },
+  { fr: "Nez cassé plusieurs fois, tordu vers la gauche", en: "Nose broken multiple times, twisted to the left" },
+  { fr: "Tatouage facial de circuit imprimé, encre phosphorescente", en: "Circuit board facial tattoo, phosphorescent ink" },
+  { fr: "Jambe cybernétique visible sous un pantalon déchiré", en: "Cybernetic leg visible under torn pants" },
+  { fr: "Iris modifiés en forme de croix, lueur violette", en: "Modified irises in a cross shape, purple glow" },
+  { fr: "Griffes rétractables sous les ongles, toujours un peu sorties", en: "Retractable claws under the nails, always slightly extended" },
+  { fr: "Peau tannée comme du vieux cuir, marquée par le soleil toxique", en: "Skin tanned like old leather, marked by toxic sun" },
+  { fr: "Mèche de cheveux synthétiques argentés dans une crinière noire", en: "Streak of silver synthetic hair in a black mane" },
+  { fr: "Oreilles pointues ajoutées chirurgicalement, mal cicatrisées", en: "Surgically added pointed ears, poorly healed" },
+  { fr: "Implant crânien visible comme une plaque de métal sur le front", en: "Visible cranial implant like a metal plate on the forehead" },
+  { fr: "Mains couvertes de callosités et de micro-brûlures d'électronique", en: "Hands covered in calluses and micro-burns from electronics" },
+  { fr: "Veste en cuir blindé usée jusqu'à la trame", en: "Armored leather jacket worn down to the weave" },
+  { fr: "Cache-oeil avec un capteur infrarouge intégré", en: "Eyepatch with a built-in infrared sensor" },
+  { fr: "Mâchoire inférieure en chrome, articulée avec un léger déclic", en: "Chrome lower jaw, articulated with a slight click" },
+  { fr: "Veines noires visibles sous une peau translucide, effet de drogue", en: "Black veins visible under translucent skin, drug side effect" },
+  { fr: "Doigts cybernétiques qui tambourinent tout seuls", en: "Cybernetic fingers that drum on their own" },
+  { fr: "Crête iroquoise faite de fibres optiques clignotantes", en: "Mohawk made of blinking fiber optic strands" },
+  { fr: "Marque au fer rouge d'un syndicat criminel sur l'épaule", en: "Criminal syndicate brand mark on the shoulder" },
+  { fr: "Un oeil complètement blanc, aveugle de ce côté", en: "One eye completely white, blind on that side" },
+  { fr: "Cicatrices d'éclats de grenade sur tout le torse", en: "Grenade shrapnel scars all over the torso" },
+  { fr: "Peau greffée de couleur différente sur le bras gauche", en: "Grafted skin of a different color on the left arm" },
+  { fr: "Cybermain avec un briquet intégré dans le pouce", en: "Cyberhand with a lighter built into the thumb" },
+  { fr: "Queue de cheval attachée avec du fil de fer barbelé", en: "Ponytail tied with barbed wire" },
+  { fr: "Joues creuses, pommettes saillantes, regard de prédateur", en: "Hollow cheeks, sharp cheekbones, predator's gaze" },
+  { fr: "Implant vocal, voix synthétique métallique", en: "Voice implant, metallic synthetic voice" },
+  { fr: "Moignon de corne de troll transformé en support de commlink", en: "Troll horn stump converted into a commlink mount" },
+  { fr: "Trois entailles parallèles sur chaque joue, scarification tribale", en: "Three parallel cuts on each cheek, tribal scarification" },
+  { fr: "Bras cybernétique peint en camouflage urbain, écaillé", en: "Cybernetic arm painted in urban camo, chipped" },
+  { fr: "Collier de balles usagées autour du cou", en: "Necklace of spent bullet casings around the neck" },
+  { fr: "Oeil cybernétique avec zoom visible, pupille qui s'ouvre en iris mécanique", en: "Cybereye with visible zoom, pupil opening as a mechanical iris" },
+  { fr: "Vieille brûlure de laser sur toute la longueur de l'avant-bras", en: "Old laser burn running the full length of the forearm" },
+  { fr: "Crâne tatoué de symboles mystiques qui semblent luire dans le noir", en: "Skull tattooed with mystical symbols that seem to glow in the dark" },
+  { fr: "Défenses d'orc peintes en noir avec des pointes en acier", en: "Ork tusks painted black with steel tips" },
+  { fr: "Monocle cybernétique vissé dans l'orbite gauche", en: "Cybernetic monocle screwed into the left eye socket" },
+  { fr: "Cicatrice en forme d'étoile sur le dos de la main, impact de balle", en: "Star-shaped scar on the back of the hand, bullet impact" },
+  { fr: "Peau pâle presque bleutée, jamais exposée au soleil", en: "Pale almost bluish skin, never exposed to sunlight" },
+  { fr: "Bottes magnétiques qui claquent sur le métal", en: "Magnetic boots that clank on metal" },
+  { fr: "Dreadlocks synthétiques avec des fils de données tressés dedans", en: "Synthetic dreadlocks with data cables braided in" },
+  { fr: "Grande taille maigre, silhouette de poteau électrique", en: "Tall and thin, electric pole silhouette" },
+  { fr: "Main gauche avec seulement trois doigts, les autres perdus au combat", en: "Left hand with only three fingers, the others lost in combat" },
+  { fr: "Tatouage de serpent qui s'enroule autour du cou et disparaît sous le col", en: "Snake tattoo coiling around the neck and disappearing under the collar" },
+  { fr: "Sourcils rasés et remplacés par des lignes de chrome", en: "Eyebrows shaved and replaced with chrome lines" },
+  { fr: "Vieille armure corporelle portée par-dessus un costume trois-pièces", en: "Old body armor worn over a three-piece suit" },
+  { fr: "Lèvres fendues par une cicatrice verticale", en: "Lips split by a vertical scar" },
+  { fr: "Main cybernétique avec un affichage holographique intégré dans la paume", en: "Cybernetic hand with a holographic display built into the palm" },
+  { fr: "Pieds cybernétiques digitigrades, marche sur la pointe", en: "Digitigrade cybernetic feet, walks on tiptoes" },
+  { fr: "Peau couverte de micro-écailles, modification génétique ratée", en: "Skin covered in micro-scales, failed genetic modification" },
+  { fr: "Bandana blindé qui ne quitte jamais la tête", en: "Armored bandana that never leaves the head" },
+  { fr: "Fibres musculaires visibles sous une peau trop fine", en: "Muscle fibers visible under too-thin skin" },
+  { fr: "Moustache en guidon de vélo, anachronisme assumé", en: "Handlebar mustache, unapologetic anachronism" },
+  { fr: "Implants dermiques en forme d'écailles de dragon sur les bras", en: "Dermal implants shaped like dragon scales on the arms" },
+  { fr: "Colonne vertébrale renforcée, bosse métallique visible dans le dos", en: "Reinforced spine, metallic bump visible on the back" },
+  { fr: "Traces de brûlures chimiques sur les mains, accidents de labo", en: "Chemical burn marks on the hands, lab accidents" },
+  { fr: "Un seul gros sourcil continu, regard menaçant naturel", en: "One single continuous eyebrow, naturally menacing look" },
+  { fr: "Cheveux bleus électriques coupés en carré net", en: "Electric blue hair cut in a sharp bob" },
+  { fr: "Pommettes implantées avec des diodes qui clignotent au rythme cardiaque", en: "Implanted cheekbones with diodes that blink with heartbeat" },
+  { fr: "Bras couvert de cicatrices de morsures, dresseur de paracritters", en: "Arm covered in bite scars, paracritter handler" },
+  { fr: "Dentier cybernétique qui brille dans le noir", en: "Cybernetic dentures that glow in the dark" },
+  { fr: "Cache-nez permanent même en intérieur, visage jamais montré", en: "Permanent face mask even indoors, face never shown" },
+  { fr: "Oeil cybernétique avec une croix au lieu d'une pupille", en: "Cybereye with a crosshair instead of a pupil" },
+  { fr: "Peau tatouée intégralement en noir d'encre, visage compris", en: "Entire skin tattooed in solid black ink, face included" },
+  { fr: "Implant de corne unique au milieu du front, style licorne", en: "Single horn implant in the middle of the forehead, unicorn style" },
+  { fr: "Gorgeret blindé en acier autour du cou", en: "Armored steel gorget around the neck" },
+  { fr: "Ongles en céramique renforcée, vernis en chrome", en: "Reinforced ceramic nails, chrome polish" },
+  { fr: "Sourcil coupé par une vieille cicatrice, regard asymétrique", en: "Eyebrow cut by an old scar, asymmetric gaze" },
+  { fr: "Bras cybernétique qui émet un léger bourdonnement constant", en: "Cybernetic arm that emits a faint constant hum" },
+  { fr: "Tatouage UV invisible sauf sous lumière noire, couvre tout le visage", en: "UV tattoo invisible except under blacklight, covers the whole face" },
+  { fr: "Oreille arrachée et remplacée par un capteur audio chrome", en: "Ear torn off and replaced with a chrome audio sensor" },
+  { fr: "Veste à col haut qui cache une horrible cicatrice de strangulation", en: "High-collar jacket hiding a horrible strangulation scar" },
+  { fr: "Doigts de la main gauche tous cybernétiques, chacun d'un métal différent", en: "Left hand fingers all cybernetic, each a different metal" },
+  { fr: "Strabisme léger qui donne un air décalé", en: "Slight strabismus giving an off-kilter look" },
+  { fr: "Crâne partiellement rasé avec des ports de connexion neurale alignés", en: "Partially shaved skull with neural connection ports lined up" },
+  { fr: "Peau bronzée artificielle, orange fluo peu naturel", en: "Artificial tan, unnaturally fluorescent orange" },
+  { fr: "Machoire carrée massive, probablement renforcée au titane", en: "Massive square jaw, probably titanium-reinforced" },
+  { fr: "Main droite enveloppée en permanence dans un bandage sale", en: "Right hand permanently wrapped in a dirty bandage" },
+  { fr: "Yeux enfoncés dans les orbites, cerné en permanence", en: "Deep-set eyes, permanently dark circles" },
+  { fr: "Petites cornes de diablotin sur le front, implants cosmétiques", en: "Small devil horns on the forehead, cosmetic implants" },
+  { fr: "Marques de griffes profondes en travers du dos, visible au col", en: "Deep claw marks across the back, visible at the collar" },
+  { fr: "Cyberbras avec un tatouage de dragon peint par-dessus le chrome", en: "Cyberarm with a dragon tattoo painted over the chrome" },
+  { fr: "Lentilles de contact à pupille féline verticale", en: "Contact lenses with vertical feline pupils" },
+  { fr: "Vieux piercing au septum tordu par un coup de poing", en: "Old septum piercing bent from a punch" },
+  { fr: "Mains énormes disproportionnées par rapport au corps frêle", en: "Disproportionately huge hands on a frail body" },
+  { fr: "Gants en cuir qui ne quittent jamais les mains", en: "Leather gloves that never leave the hands" },
+  { fr: "Micro-antenne rétractable derrière l'oreille", en: "Retractable micro-antenna behind the ear" },
+  { fr: "Peau grêlée de marques de variole, survivant des Barrens", en: "Pockmarked skin, Barrens survivor" },
+  { fr: "Demi-visage recouvert de plaques dermiques argentées", en: "Half face covered in silver dermal plates" },
+  { fr: "Chaîne épaisse en acier portée comme un collier, ancienne entrave", en: "Thick steel chain worn as a necklace, former shackle" },
+  { fr: "Cheveux en brosse courte avec un sillon de cicatrice visible", en: "Short crew cut with a visible scar furrow" },
+  { fr: "Petit implant lumineux sous la peau de la gorge, pulse doucement", en: "Small luminous implant under the throat skin, pulsing gently" },
+  { fr: "Jambe cybernétique qui fait un bruit de servomoteur à chaque pas", en: "Cybernetic leg that makes a servo noise with every step" },
+  { fr: "Coupure nette d'oreille, tranchée au monofilament", en: "Clean ear cut, sliced by monofilament" },
+  { fr: "Veines cybernétiques visibles sous la peau des tempes", en: "Cybernetic veins visible under the skin at the temples" },
+  { fr: "Grand manteau de pluie qui traîne par terre, toujours humide", en: "Long rain coat dragging on the ground, always damp" },
+  { fr: "Implant nasal chromé, narines rectangulaires", en: "Chrome nasal implant, rectangular nostrils" },
+  { fr: "Muscles surdéveloppés d'un côté, atrophiés de l'autre", en: "Overdeveloped muscles on one side, atrophied on the other" },
+  { fr: "Index droit remplacé par un petit laser de visée", en: "Right index finger replaced with a small targeting laser" },
+  { fr: "Piercings en chaîne reliant l'oreille à la narine", en: "Chain piercings linking ear to nostril" },
+  { fr: "Grande balafre en X sur le front, marque d'exécution ratée", en: "Large X scar on the forehead, mark of a failed execution" },
+  { fr: "Barbe de trois jours perpétuelle, jamais plus, jamais moins", en: "Perpetual three-day stubble, never more, never less" },
+  { fr: "Cou épais comme un tronc, renforcé d'implants musculaires", en: "Neck thick as a trunk, reinforced with muscle implants" },
+  { fr: "Holster d'épaule visible en permanence, même sans arme dedans", en: "Shoulder holster permanently visible, even without a weapon in it" },
+  { fr: "Peau qui luit faiblement dans le noir, nanites cosmétiques", en: "Skin that faintly glows in the dark, cosmetic nanites" },
+  { fr: "Poignet cybernétique avec un écran rétractable intégré", en: "Cybernetic wrist with a built-in retractable screen" },
+  { fr: "Arcade sourcilière fendue en deux endroits, mal recousue", en: "Brow ridge split in two places, poorly stitched" },
+  { fr: "Bottes à semelles compensées dissimulant des lames", en: "Platform boots concealing hidden blades" },
+  { fr: "Mâchoire cliquetante, prothèse dentaire cybernétique instable", en: "Clicking jaw, unstable cybernetic dental prosthesis" },
+  { fr: "Tatouage de code QR sur le poignet, mène à un site mort", en: "QR code tattoo on the wrist, links to a dead site" },
+  { fr: "Vieux bandeau militaire délavé noué autour du biceps", en: "Old faded military headband tied around the bicep" },
+  { fr: "Dents du bonheur écartées, sourire immédiatement reconnaissable", en: "Gap-toothed smile, immediately recognizable" },
+  { fr: "Cyberyeux avec enregistrement permanent, petite lumière rouge", en: "Cybereyes with permanent recording, small red light" },
+  { fr: "Traces de brûlures de cigarette sur les deux avant-bras", en: "Cigarette burn marks on both forearms" },
+  { fr: "Gros nez bulbeux, cassé tellement de fois qu'il est aplati", en: "Big bulbous nose, broken so many times it's flattened" },
+  { fr: "Tatouage de toile d'araignée sur le coude qui s'étend au bras", en: "Spiderweb tattoo on the elbow spreading to the arm" },
+  { fr: "Cheveux gras plaqués en arrière, look de requin corpo", en: "Greasy slicked-back hair, corpo shark look" },
+  { fr: "Implant de filtration d'air visible dans le cou, respiration sifflante", en: "Visible air filtration implant in the neck, wheezing breath" },
+  { fr: "Pied-bot cybernétique mal calibré, démarche saccadée", en: "Poorly calibrated cybernetic clubfoot, jerky gait" },
+  { fr: "Micro-caméra implantée dans le lobe de l'oreille", en: "Micro-camera implanted in the earlobe" },
+  { fr: "Cicatrice de trépanation cachée sous un bonnet en laine", en: "Trepanation scar hidden under a wool beanie" },
+  { fr: "Bague d'acier à chaque doigt, certaines soudées en place", en: "Steel ring on every finger, some welded in place" },
+  { fr: "Peau mate couverte de taches de vitiligo en forme de carte", en: "Dark skin covered in map-shaped vitiligo patches" },
+  { fr: "Bras cybernétique de récupération, clairement d'occasion, rouillé", en: "Salvaged cybernetic arm, clearly second-hand, rusted" },
+  { fr: "Sourire permanent figé par une paralysie faciale partielle", en: "Permanent smile frozen by partial facial paralysis" },
+  { fr: "Queue préhensile biosculptée qui dépasse du manteau", en: "Biosculpted prehensile tail sticking out of the coat" },
+  { fr: "Tête tatouée de flammes qui montent de la nuque au sommet du crâne", en: "Head tattooed with flames rising from nape to crown" },
+  { fr: "Port USB obsolète visible derrière l'oreille, jamais retiré", en: "Obsolete USB port visible behind the ear, never removed" },
+  { fr: "Nain avec une musculature de bodybuilder compressée sur un mètre vingt", en: "Dwarf with bodybuilder musculature compressed into four feet" },
+  { fr: "Oeil de verre peint avec un symbole anarchiste", en: "Glass eye painted with an anarchist symbol" },
+  { fr: "Pommettes hautes couvertes de taches de rousseur et de cicatrices fines", en: "High cheekbones covered in freckles and fine scars" },
+  { fr: "Implant lumineux dans la paume, s'allume quand il lance un sort", en: "Luminous palm implant, lights up when casting a spell" },
+  { fr: "Ceinture de munitions portée en bandoulière, plus décorative que pratique", en: "Ammo belt worn as a bandolier, more decorative than practical" },
+  { fr: "Peau synthétique sur la moitié du visage, texture légèrement différente", en: "Synthetic skin on half the face, slightly different texture" },
+  { fr: "Genoux cybernétiques qui craquent comme du plastique", en: "Cybernetic knees that crack like plastic" },
+  { fr: "Longue natte unique jusqu'à la taille, tressée avec du fil d'acier", en: "Single long braid to the waist, woven with steel wire" },
+  { fr: "Implant de communication sous-cutané, bosse visible derrière l'oreille", en: "Subcutaneous comm implant, visible bump behind the ear" },
+  { fr: "Troll aux cornes asymétriques, l'une cassée à mi-longueur", en: "Troll with asymmetric horns, one broken halfway" },
+  { fr: "Cicatrices chirurgicales nettes le long des bras, multiples augmentations", en: "Clean surgical scars along the arms, multiple augmentations" },
+  { fr: "Foulard en kevlar noué lâchement autour du cou", en: "Kevlar scarf loosely knotted around the neck" },
+  { fr: "Peau couverte de poils fins métalliques, effet secondaire d'augmentation", en: "Skin covered in fine metallic hairs, augmentation side effect" },
+  { fr: "Oeil gauche en permanence injecté de sang", en: "Left eye permanently bloodshot" },
+  { fr: "Implants sous-dermiques formant un motif géométrique sur le crâne", en: "Subdermal implants forming a geometric pattern on the skull" },
+  { fr: "Elfe aux oreilles coupées court pour passer inaperçu", en: "Elf with ears cropped short to pass unnoticed" },
+  { fr: "Vieille prothèse oculaire qui tourne parfois dans le mauvais sens", en: "Old ocular prosthesis that sometimes rotates the wrong way" },
+  { fr: "Mains couvertes de tatouages de prière en japonais", en: "Hands covered in Japanese prayer tattoos" },
+  { fr: "Gilet pare-balles porté à même la peau, torse nu en dessous", en: "Bulletproof vest worn against bare skin, shirtless underneath" },
+  { fr: "Trous d'aération percés dans les plaques dermiques du dos", en: "Ventilation holes drilled in the dermal plates on the back" },
+  { fr: "Pilosité faciale qui pousse en plaques irrégulières", en: "Facial hair growing in irregular patches" },
+  { fr: "Lobe d'oreille distendu par un implant trop lourd", en: "Earlobe stretched by an implant that's too heavy" },
+  { fr: "Regard fixe et sans clignement, modification oculaire", en: "Fixed unblinking stare, ocular modification" },
+  { fr: "Marques de brûlure en forme d'éclair sur le bras, frappe magique", en: "Lightning-shaped burn marks on the arm, magical strike" },
+  { fr: "Combinaison moulante sous un blouson trop grand", en: "Skintight bodysuit under an oversized jacket" },
+  { fr: "Articulations des doigts qui craquent avec un bruit métallique", en: "Finger joints that crack with a metallic sound" },
+  { fr: "Énorme cicatrice de césarienne de combat en travers du ventre", en: "Huge combat surgery scar across the belly" },
+  { fr: "Visage couvert de micro-piercings en titane formant un masque", en: "Face covered in titanium micro-piercings forming a mask" },
+  { fr: "Cybermonocle qui projette un réticule visible par les autres", en: "Cybermonocle projecting a reticle visible to others" },
+  { fr: "Cheveux rasés sur les côtés, longs au milieu, teints en vert acide", en: "Hair shaved on the sides, long on top, dyed acid green" },
+  { fr: "Morceau d'oreille manquant, bord irrégulier", en: "Missing chunk of ear, ragged edge" },
+  { fr: "Poitrine marquée au fer d'un numéro de matricule militaire", en: "Chest branded with a military service number" },
+  { fr: "Nain trapu avec des avant-bras aussi larges que des cuisses humaines", en: "Stocky dwarf with forearms as wide as human thighs" },
+  { fr: "Yeux entièrement noirs, modification cosmétique intimidante", en: "Entirely black eyes, intimidating cosmetic modification" },
+  { fr: "Vieilles bottes militaires, semelles recollées au ruban adhésif", en: "Old military boots, soles reglued with duct tape" },
+  { fr: "Réseau de cicatrices sur les poignets, vestiges de ligatures", en: "Network of scars on the wrists, traces of restraints" },
+  { fr: "Implant de phéromone visible comme une bosse sous la clavicule", en: "Pheromone implant visible as a bump under the collarbone" },
+  { fr: "Troll avec des défenses inférieures peintes en motif damier", en: "Troll with lower tusks painted in a checkerboard pattern" },
+  { fr: "Coude cybernétique à double articulation, mouvement inquiétant", en: "Double-jointed cybernetic elbow, unsettling movement" },
+  { fr: "Casquette vissée sur la tête en permanence, même pour dormir", en: "Cap screwed on the head permanently, even for sleeping" },
+  { fr: "Peau parcheminée et sèche, déshydratation chronique des Barrens", en: "Parchment-dry skin, chronic Barrens dehydration" },
+  { fr: "Fil de suture visible le long de la mâchoire, jamais retiré", en: "Visible suture line along the jaw, never removed" },
+  { fr: "Tatouage de compte à rebours sur l'avant-bras, figé à 00:03:17", en: "Countdown tattoo on the forearm, frozen at 00:03:17" },
+  { fr: "Implant de ventilateur dans le cou qui s'active quand il fait chaud", en: "Fan implant in the neck that activates when it gets hot" },
+  { fr: "Orc mince et élancé, défenses discrètes limées avec soin", en: "Thin and slender ork, tusks discreetly filed with care" },
+  { fr: "Lèvre inférieure fendue, cicatrice en V", en: "Split lower lip, V-shaped scar" }
+];
+const QUIRKS = [
+  { fr: "Compte ses victimes à voix haute pendant les fusillades", en: "Counts kills out loud during firefights" },
+  { fr: "Refuse catégoriquement de manger de la nourriture qui n'est pas rouge", en: "Absolutely refuses to eat food that isn't red" },
+  { fr: "Parle à son flingue comme à un animal de compagnie", en: "Talks to their gun like a pet" },
+  { fr: "Donne un nom à chaque véhicule qu'il conduit", en: "Names every vehicle they drive" },
+  { fr: "Refuse d'utiliser la réalité augmentée, tout en analogique", en: "Refuses to use AR, everything analog" },
+  { fr: "Ne fait jamais de run le mardi, superstition absolue", en: "Never runs on Tuesdays, absolute superstition" },
+  { fr: "Collectionne les commlinks des ennemis vaincus", en: "Collects commlinks from defeated enemies" },
+  { fr: "Terrorisé par les chats, panique totale en leur présence", en: "Terrified of cats, total panic in their presence" },
+  { fr: "Fredonne de l'opéra pendant les fusillades", en: "Hums opera during firefights" },
+  { fr: "S'excuse avant de tirer sur quelqu'un", en: "Apologizes before shooting someone" },
+  { fr: "Ne fait jamais contact visuel, regarde toujours à côté", en: "Never makes eye contact, always looks away" },
+  { fr: "Parle de lui-même à la troisième personne", en: "Speaks in third person about themselves" },
+  { fr: "Ment toujours sur son âge, différent à chaque fois", en: "Always lies about their age, different every time" },
+  { fr: "Collectionne les vieux livres en papier, les renifle régulièrement", en: "Collects old paper books, regularly sniffs them" },
+  { fr: "Garde un bocal de dents prises sur ses adversaires", en: "Keeps a jar of teeth taken from opponents" },
+  { fr: "Ne supporte pas le silence, met toujours de la musique", en: "Can't stand silence, always plays music" },
+  { fr: "Refuse catégoriquement d'utiliser les ascenseurs", en: "Absolutely refuses to use elevators" },
+  { fr: "Ne mange que du synth-sushi, considère tout autre nourriture comme barbare", en: "Only eats synth-sushi, considers all other food barbaric" },
+  { fr: "Fait un rituel précis à chaque soykaf : trois tours, souffle dessus deux fois", en: "Has a precise soykaf ritual: three stirs, blows on it twice" },
+  { fr: "Juge les gens selon leur commande de boisson", en: "Judges people by their drink order" },
+  { fr: "Donne des conseils non sollicités sur tout, en permanence", en: "Gives unsolicited advice about everything, constantly" },
+  { fr: "Porte une balle porte-bonheur autour du cou, soi-disant celle qui aurait dû le tuer", en: "Carries a lucky bullet around the neck, supposedly the one that should have killed them" },
+  { fr: "N'entre jamais dans un bâtiment de 13 étages", en: "Never enters a building with 13 floors" },
+  { fr: "Collectionne les patches de sécurité des corpos infiltrées", en: "Collects security patches from infiltrated corps" },
+  { fr: "Amasse les vieilles puces de crédistick vides comme des trophées", en: "Hoards old empty credstick chips like trophies" },
+  { fr: "Panique à la vue du sang, malgré son métier", en: "Panics at the sight of blood, despite their profession" },
+  { fr: "Refuse de dormir sans musique ambient de forêt", en: "Refuses to sleep without ambient forest music" },
+  { fr: "Fait craquer ses doigts cybernétiques avant chaque combat, rituel", en: "Cracks cybernetic knuckles before every fight, ritual" },
+  { fr: "Cite des proverbes inventés en les attribuant à des philosophes fictifs", en: "Quotes made-up proverbs and attributes them to fictional philosophers" },
+  { fr: "Refuse de tirer avec une arme qui n'a pas de nom", en: "Refuses to fire a weapon that doesn't have a name" },
+  { fr: "Mange un nutribar exactement à midi, jamais une minute de plus ou de moins", en: "Eats a nutribar at exactly noon, never a minute early or late" },
+  { fr: "Toujours assis dos au mur, face à la sortie", en: "Always sits with back to the wall, facing the exit" },
+  { fr: "Note dans un carnet chaque personne croisée pendant un run", en: "Notes every person encountered during a run in a notebook" },
+  { fr: "Refuse de courir, marche toujours, même sous les tirs", en: "Refuses to run, always walks, even under fire" },
+  { fr: "Fait une prière silencieuse avant chaque combat", en: "Says a silent prayer before every fight" },
+  { fr: "Mâche en permanence un cure-dent en plastique", en: "Permanently chews on a plastic toothpick" },
+  { fr: "Insiste pour serrer la main après chaque deal, même aux contacts hostiles", en: "Insists on shaking hands after every deal, even with hostile contacts" },
+  { fr: "Ne boit que de l'eau, considère tout autre liquide comme suspect", en: "Only drinks water, considers every other liquid suspicious" },
+  { fr: "Parle aux esprits que personne d'autre ne voit, même quand il n'est pas chamane", en: "Talks to spirits no one else sees, even when not a shaman" },
+  { fr: "Photographie chaque lieu de run avant et après, pour archives personnelles", en: "Photographs every run location before and after, for personal archives" },
+  { fr: "Garde toujours un chargeur vide dans la poche gauche, porte-bonheur", en: "Always keeps an empty magazine in the left pocket, lucky charm" },
+  { fr: "Appelle tout le monde par un surnom qu'il invente sur le coup", en: "Calls everyone by a nickname invented on the spot" },
+  { fr: "Siffle le même air pendant les moments de tension", en: "Whistles the same tune during tense moments" },
+  { fr: "Refuse de travailler avec quelqu'un qui porte du jaune", en: "Refuses to work with anyone wearing yellow" },
+  { fr: "Collectionne les cartes de visite, même celles de ses ennemis", en: "Collects business cards, even from enemies" },
+  { fr: "Lit son horoscope chaque matin et ajuste ses plans en conséquence", en: "Reads their horoscope every morning and adjusts plans accordingly" },
+  { fr: "Ne dit jamais le vrai nom de quelqu'un, uniquement des périphrases", en: "Never says someone's real name, only uses circumlocutions" },
+  { fr: "Nettoie ses armes compulsivement après chaque combat, pendant au moins une heure", en: "Compulsively cleans weapons after every fight, for at least an hour" },
+  { fr: "Fait tourner une pièce de monnaie ancienne avant chaque décision importante", en: "Flips an ancient coin before every important decision" },
+  { fr: "Refuse de traverser un pont s'il n'a pas vérifié dessous avant", en: "Refuses to cross a bridge without checking underneath first" },
+  { fr: "Chantonne des berceuses quand il est nerveux", en: "Hums lullabies when nervous" },
+  { fr: "Insiste pour payer en liquide, même quand c'est absurdement impratique", en: "Insists on paying cash, even when it's absurdly impractical" },
+  { fr: "Garde un compte mental précis de chaque nuyen dépensé dans sa vie", en: "Keeps an exact mental tally of every nuyen spent in their life" },
+  { fr: "Ne jure que par un seul fabricant d'armes, critique tous les autres", en: "Swears by only one weapons manufacturer, criticizes all others" },
+  { fr: "Prend un selfie à chaque run, pour la postérité", en: "Takes a selfie at every run, for posterity" },
+  { fr: "Refuse de porter des vêtements neufs, tout doit être d'occasion", en: "Refuses to wear new clothes, everything must be second-hand" },
+  { fr: "Fait des origamis avec tout papier trouvé, les laisse derrière lui", en: "Makes origami from any paper found, leaves them behind" },
+  { fr: "Attribue ses échecs à la malchance et ses succès à son génie", en: "Attributes failures to bad luck and successes to genius" },
+  { fr: "Vérifie trois fois chaque porte avant de l'ouvrir", en: "Checks every door three times before opening it" },
+  { fr: "Insiste pour être le dernier à entrer dans une pièce et le premier à en sortir", en: "Insists on being last to enter a room and first to leave" },
+  { fr: "Collectionne les patchs d'unités militaires défaites", en: "Collects patches from defeated military units" },
+  { fr: "Ne mange jamais le premier plat qu'on lui sert, en demande toujours un autre", en: "Never eats the first dish served, always requests another" },
+  { fr: "Fait des statistiques sur tout, tient un tableur mental permanent", en: "Makes statistics about everything, keeps a permanent mental spreadsheet" },
+  { fr: "Porte une alliance bien qu'il n'ait jamais été marié", en: "Wears a wedding ring despite never having been married" },
+  { fr: "Range ses munitions par couleur dans ses chargeurs", en: "Sorts ammunition by color in magazines" },
+  { fr: "Parle couramment une langue morte et s'énerve que personne ne la comprenne", en: "Fluently speaks a dead language and gets annoyed no one understands it" },
+  { fr: "Laisse toujours un pourboire de 47%, jamais plus, jamais moins", en: "Always leaves a 47% tip, never more, never less" },
+  { fr: "Refuse de manger quoi que ce soit qui contient du soja", en: "Refuses to eat anything containing soy" },
+  { fr: "Tape du pied gauche cinq fois avant d'entrer en combat", en: "Taps left foot five times before entering combat" },
+  { fr: "Récite la liste de ses armes comme une litanie avant de dormir", en: "Recites the list of their weapons like a litany before sleeping" },
+  { fr: "Refuse de croire que la magie existe, malgré les preuves évidentes", en: "Refuses to believe magic exists, despite obvious evidence" },
+  { fr: "Prend systématiquement le parti du perdant dans toute dispute", en: "Systematically sides with the underdog in every dispute" },
+  { fr: "Ne parle qu'en chuchotant, même en plein combat", en: "Only speaks in whispers, even in the middle of combat" },
+  { fr: "Collectionne les balles qui l'ont raté, les garde dans un sac en velours", en: "Collects bullets that missed them, keeps them in a velvet bag" },
+  { fr: "Fait des mots croisés pendant les planques, ignore les briefings", en: "Does crosswords during stakeouts, ignores briefings" },
+  { fr: "Prétend avoir un frère jumeau identique pour justifier ses contradictions", en: "Claims to have an identical twin to justify contradictions" },
+  { fr: "Refuse de manger si la nourriture n'est pas disposée de façon symétrique dans l'assiette", en: "Refuses to eat if food isn't arranged symmetrically on the plate" },
+  { fr: "Chronométre absolument tout, du trajet au temps de recharge", en: "Times absolutely everything, from travel to reload time" },
+  { fr: "Garde une photo d'un inconnu dans son portefeuille et prétend que c'est son mentor", en: "Keeps a photo of a stranger in their wallet and claims it's their mentor" },
+  { fr: "Tousse de façon très théâtrale après chaque mensonge", en: "Coughs very theatrically after every lie" },
+  { fr: "Ne quitte jamais une pièce sans emporter un petit objet en souvenir", en: "Never leaves a room without taking a small object as a souvenir" },
+  { fr: "Refuse de s'asseoir sur une chaise qui a déjà été utilisée par quelqu'un d'autre", en: "Refuses to sit in a chair that someone else has already used" },
+  { fr: "Invente des acronymes pour tout et s'attend à ce que tout le monde les connaisse", en: "Invents acronyms for everything and expects everyone to know them" },
+  { fr: "Recoud lui-même ses blessures au lieu d'aller voir un doc de rue", en: "Stitches up their own wounds instead of seeing a street doc" },
+  { fr: "Considère chaque run comme un épisode de sa propre série trid", en: "Considers every run as an episode of their own trid series" },
+  { fr: "Dort toujours avec un couteau sous l'oreiller, même chez des amis", en: "Always sleeps with a knife under the pillow, even at friends' places" },
+  { fr: "Ne mange que des aliments en nombre impair sur l'assiette", en: "Only eats food in odd numbers on the plate" },
+  { fr: "Fait un résumé narratif de la situation à personne en particulier", en: "Gives a narrative summary of the situation to no one in particular" },
+  { fr: "Classe les gens en catégories animales et les traite en conséquence", en: "Classifies people into animal categories and treats them accordingly" },
+  { fr: "Garde un journal intime dicté à son commlink pendant les runs", en: "Keeps a diary dictated to their commlink during runs" },
+  { fr: "N'utilise que des expressions des années 2020, refuse l'argot moderne", en: "Only uses 2020s expressions, refuses modern slang" },
+  { fr: "Touche du bois avant chaque run, paniqué s'il n'y a pas de bois", en: "Knocks on wood before every run, panics if there's no wood" },
+  { fr: "Insiste pour que chaque membre de l'équipe ait un rôle de film d'action", en: "Insists every team member have an action movie role" },
+  { fr: "Entretient une conversation avec une IA disparue depuis des années", en: "Maintains a conversation with an AI that disappeared years ago" },
+  { fr: "Ne porte que du noir et appelle ça de la stratégie", en: "Only wears black and calls it strategy" },
+  { fr: "Lance une pièce pour décider entre la porte de gauche et celle de droite", en: "Flips a coin to choose between the left door and the right door" },
+  { fr: "Refuse de partager un véhicule avec plus de trois personnes", en: "Refuses to share a vehicle with more than three people" },
+  { fr: "Dit 'pour la science' avant de faire quelque chose de stupide", en: "Says 'for science' before doing something stupid" },
+  { fr: "Envoie un message d'adieu à un contact différent avant chaque run", en: "Sends a farewell message to a different contact before each run" },
+  { fr: "Garde un décompte des faveurs dues et rendues sur un fichier chiffré", en: "Keeps a tally of favors owed and returned in an encrypted file" },
+  { fr: "Insiste pour que tout le monde utilise des noms de code même au bar", en: "Insists everyone uses code names even at the bar" },
+  { fr: "Fait un discours de motivation avant chaque combat, que ça plaise ou non", en: "Gives a motivational speech before every fight, like it or not" },
+  { fr: "Mange le dessert en premier parce qu'on ne sait jamais si on va survivre", en: "Eats dessert first because you never know if you'll survive" },
+  { fr: "Refuse de porter une arme qui n'a pas au moins un accessoire esthétique", en: "Refuses to carry a weapon without at least one cosmetic accessory" },
+  { fr: "Salue les caméras de surveillance en passant devant", en: "Salutes surveillance cameras when passing by" },
+  { fr: "Ne finit jamais une phrase, laisse toujours en suspens...", en: "Never finishes a sentence, always leaves it hanging..." },
+  { fr: "A un classement personnel des meilleurs johnsons, le met à jour régulièrement", en: "Has a personal ranking of best Johnsons, updates it regularly" },
+  { fr: "Insiste pour vérifier la sortie de secours avant de s'asseoir quelque part", en: "Insists on checking the emergency exit before sitting anywhere" },
+  { fr: "Porte un masque à gaz autour du cou même quand l'air est pur", en: "Wears a gas mask around the neck even when the air is clean" },
+  { fr: "Surnomme chaque run et y fait référence comme à des campagnes militaires", en: "Nicknames every run and refers to them like military campaigns" },
+  { fr: "Refuse d'utiliser une arme dont le numéro de série contient un 4", en: "Refuses to use a weapon whose serial number contains a 4" },
+  { fr: "Se brosse les dents trois fois de suite après chaque repas", en: "Brushes teeth three times in a row after every meal" },
+  { fr: "Parle aux machines comme si elles avaient des sentiments", en: "Talks to machines as if they have feelings" },
+  { fr: "Sifflote l'hymne d'une corp qu'il déteste, sans s'en rendre compte", en: "Whistles the anthem of a corp they hate, without realizing it" },
+  { fr: "Garde un caillou ramassé sur chaque lieu de run", en: "Keeps a pebble picked up from every run location" },
+  { fr: "Refuse de boire un verre qui a été posé hors de sa vue, même une seconde", en: "Refuses to drink from a glass left out of sight, even for a second" },
+  { fr: "Organise les chargeurs par ordre alphabétique des fabricants", en: "Organizes magazines in alphabetical order by manufacturer" },
+  { fr: "Raconte la même anecdote de guerre à chaque nouveau coéquipier", en: "Tells the same war story to every new teammate" },
+  { fr: "Envoie des rapports de mission détaillés à personne", en: "Sends detailed mission reports to no one" },
+  { fr: "Insiste pour écouter du jazz pendant la planification, dit que ça aide à penser", en: "Insists on listening to jazz during planning, says it helps thinking" },
+  { fr: "Gratte une pièce de monnaie entre les doigts quand il est stressé", en: "Scratches a coin between fingers when stressed" },
+  { fr: "Refuse de serrer la main de quelqu'un dont il ne connaît pas le signe astrologique", en: "Refuses to shake hands with someone whose zodiac sign they don't know" },
+  { fr: "Murmure 'c'est une embuscade' en entrant dans chaque pièce", en: "Whispers 'it's an ambush' when entering every room" },
+  { fr: "Ne boit que dans son propre mug, le lave avec un soin maniaque", en: "Only drinks from their own mug, washes it with manic care" },
+  { fr: "Dessine un plan de chaque pièce visitée sur un carnet", en: "Draws a floor plan of every room visited in a notebook" },
+  { fr: "Se présente avec un titre inventé différent à chaque rencontre", en: "Introduces themselves with a different made-up title at each meeting" },
+  { fr: "Porte un gilet de sauvetage sous son armure, au cas où", en: "Wears a life vest under their armor, just in case" },
+  { fr: "Refuse catégoriquement les runs qui impliquent des sous-sols", en: "Absolutely refuses runs involving basements" },
+  { fr: "Fait un check-up médical complet après chaque run, même sans blessure", en: "Does a full medical check-up after every run, even without injury" },
+  { fr: "Conserve les étiquettes de prix de toutes ses armes", en: "Keeps the price tags of all their weapons" },
+  { fr: "Demande toujours une estimation de la valeur en nuyens de chaque objet rencontré", en: "Always asks for a nuyen estimate of every object encountered" },
+  { fr: "Parle en code même quand c'est totalement inutile", en: "Speaks in code even when it's totally unnecessary" },
+  { fr: "Insiste pour donner un briefing, même quand il n'est pas le chef", en: "Insists on giving a briefing even when not the leader" },
+  { fr: "Enregistre chaque conversation, 'pour des raisons légales'", en: "Records every conversation, 'for legal reasons'" },
+  { fr: "Ne mange jamais au même endroit deux fois de suite", en: "Never eats at the same place twice in a row" },
+  { fr: "Fait des blagues de papa au pire moment possible", en: "Makes dad jokes at the worst possible moment" },
+  { fr: "Refuse de prendre un taxi conduit par un humain, préfère les drones", en: "Refuses to take a human-driven taxi, prefers drones" },
+  { fr: "Garde un compte de toutes les portes qu'il a défoncées dans sa carrière", en: "Keeps a count of every door kicked down in their career" },
+  { fr: "Nettoie sa place à table avec une lingette avant de s'asseoir", en: "Wipes down their place at the table before sitting" },
+  { fr: "Porte un vêtement d'un camarade tombé au combat, refuse de l'enlever", en: "Wears a garment from a fallen comrade, refuses to take it off" },
+  { fr: "Donne une note sur dix à chaque plan de run proposé", en: "Rates every proposed run plan out of ten" },
+  { fr: "Fait une sieste de précisément sept minutes avant chaque run", en: "Takes a nap of precisely seven minutes before every run" },
+  { fr: "Invente un cri de guerre différent à chaque combat", en: "Invents a different battle cry for every fight" },
+  { fr: "Refuse de courir sous la pluie, convaincu que l'eau de pluie est toxique", en: "Refuses to run in the rain, convinced rainwater is toxic" },
+  { fr: "Plie ses vêtements avec une précision militaire, même sur le terrain", en: "Folds clothes with military precision, even in the field" },
+  { fr: "Ne commence jamais une conversation, attend toujours que l'autre parle en premier", en: "Never starts a conversation, always waits for the other person to speak first" },
+  { fr: "Parie sur l'issue de chaque combat avec un coéquipier imaginaire", en: "Bets on the outcome of every fight with an imaginary teammate" },
+  { fr: "Demande le groupe sanguin de chaque nouveau contact", en: "Asks for the blood type of every new contact" },
+  { fr: "Garde la dernière balle de chaque chargeur et ne l'utilise jamais", en: "Keeps the last bullet from every magazine and never uses it" },
+  { fr: "Chante du death metal quand il pirate un système", en: "Sings death metal while hacking a system" },
+  { fr: "Refuse de passer par une porte ouverte, doit l'ouvrir lui-même", en: "Refuses to walk through an open door, must open it themselves" },
+  { fr: "Chronométre la durée exacte de chaque run et optimise mentalement", en: "Times the exact duration of each run and mentally optimizes" },
+  { fr: "N'achète que des armes de seconde main, dit que ça porte chance", en: "Only buys second-hand weapons, says it brings luck" },
+  { fr: "Récite un haïku avant chaque prise de décision critique", en: "Recites a haiku before every critical decision" },
+  { fr: "Prétend que chaque lieu est hanté et s'adresse aux fantômes", en: "Claims every location is haunted and addresses the ghosts" },
+  { fr: "Garde un classeur de fiches sur chaque fixer rencontré", en: "Keeps a binder of files on every fixer encountered" },
+  { fr: "Ne se déplace qu'à droite dans les couloirs, jamais au milieu", en: "Only walks on the right side of corridors, never in the middle" },
+  { fr: "Donne un surnom à chaque blessure reçue", en: "Gives a nickname to every wound received" },
+  { fr: "Refuse les poignées de porte rondes, n'ouvre que les poignées plates", en: "Refuses round door knobs, only opens flat handles" },
+  { fr: "Fait une minute de silence pour chaque ennemi tué, retarde souvent le groupe", en: "Holds a minute of silence for every enemy killed, often delays the group" },
+  { fr: "Ne dort que dans des endroits en hauteur, toits, mezzanines, passerelles", en: "Only sleeps in elevated places: rooftops, mezzanines, catwalks" },
+  { fr: "Dessine un smiley sur chaque mur après un combat réussi", en: "Draws a smiley face on every wall after a successful fight" },
+  { fr: "Conserve les menus de tous les restaurants où il a mangé", en: "Keeps the menus from every restaurant where they've eaten" },
+  { fr: "Considère les grenades comme des solutions universelles à tous les problèmes", en: "Considers grenades a universal solution to every problem" },
+  { fr: "Ne boit son soykaf qu'à une température très précise, vérifie au thermomètre", en: "Only drinks soykaf at a very precise temperature, checks with a thermometer" },
+  { fr: "Refuse de regarder les explosions, se retourne toujours", en: "Refuses to look at explosions, always turns away" },
+  { fr: "Appelle chaque planque 'la base secrète' avec un sérieux absolu", en: "Calls every safehouse 'the secret base' with absolute seriousness" },
+  { fr: "Mâchonne les câbles de données quand il réfléchit", en: "Chews on data cables when thinking" },
+  { fr: "Refuse de manger de la viande synthétique le vendredi", en: "Refuses to eat synthetic meat on Fridays" },
+  { fr: "Insulte ses adversaires avec des injures archaïques du XVIIIe siècle", en: "Insults opponents with archaic 18th century profanity" },
+  { fr: "Prend des notes sur le style de combat de chaque ennemi pour un livre qu'il écrit", en: "Takes notes on every enemy's fighting style for a book they're writing" },
+  { fr: "Garde un pot de terre de sa ville natale dans sa poche, le touche pour se rassurer", en: "Keeps a pot of soil from their hometown in their pocket, touches it for comfort" },
+  { fr: "Attribue chaque réussite à un ami imaginaire appelé 'El Capitán'", en: "Attributes every success to an imaginary friend called 'El Capitán'" },
+  { fr: "Retourne les miroirs dans chaque pièce où il entre", en: "Turns mirrors around in every room they enter" },
+  { fr: "Renifle les gens pour les juger, prétend sentir la trahison", en: "Sniffs people to judge them, claims to smell betrayal" },
+  { fr: "Refuse tout plan qui ne contient pas au moins une diversion", en: "Refuses any plan that doesn't include at least one diversion" },
+  { fr: "Vérifie sa montre toutes les deux minutes exactement", en: "Checks their watch every two minutes exactly" },
+  { fr: "Fait un discours d'adieu avant chaque combat comme si c'était le dernier", en: "Gives a farewell speech before every fight as if it's the last" },
+  { fr: "Tape un rythme complexe sur la table quand il attend", en: "Taps a complex rhythm on the table while waiting" },
+  { fr: "Refuse de traverser un carrefour sans regarder dans les six directions", en: "Refuses to cross an intersection without looking in all six directions" },
+  { fr: "Porte un cure-oreille en ivoire synthétique et s'en sert en public", en: "Carries a synthetic ivory ear pick and uses it in public" },
+  { fr: "Garde une liste de toutes les personnes qui lui doivent de l'argent, mise à jour quotidienne", en: "Keeps a list of everyone who owes them money, updated daily" },
+  { fr: "Confond volontairement les noms des gens pour les déstabiliser", en: "Deliberately confuses people's names to throw them off" },
+  { fr: "Refuse de manger quoi que ce soit qui ne vient pas d'un distributeur automatique", en: "Refuses to eat anything that doesn't come from a vending machine" },
+  { fr: "Demande un reçu après chaque run, même aux fixers", en: "Asks for a receipt after every run, even from fixers" },
+  { fr: "Fait le signe de croix inversé en voyant un drone de sécurité", en: "Makes an inverted sign of the cross when seeing a security drone" },
+  { fr: "Conserve un enregistrement de chaque coucher de soleil depuis trois ans", en: "Has recorded every sunset for the past three years" },
+  { fr: "Compte les marches de chaque escalier à voix haute", en: "Counts the steps of every staircase out loud" },
+  { fr: "Refuse de donner son nom, répond 'tu sais qui je suis' à chaque fois", en: "Refuses to give their name, answers 'you know who I am' every time" },
+  { fr: "S'arrête pour caresser chaque chien croisé, même en pleine fuite", en: "Stops to pet every dog encountered, even during an escape" },
+  { fr: "Garde un petit carnet où il note les derniers mots de ses ennemis", en: "Keeps a small notebook recording enemies' last words" },
+  { fr: "Insiste pour commander la boisson la plus compliquée du menu", en: "Insists on ordering the most complicated drink on the menu" },
+  { fr: "Ne se bat qu'avec des gants, dit que le sang tache trop", en: "Only fights wearing gloves, says blood stains too much" },
+  { fr: "Collectionne les stylos des gens qu'il rencontre, s'en vante ouvertement", en: "Collects pens from people they meet, brags openly about it" },
+  { fr: "Refuse de dormir dans un lit, ne dort que dans des hamacs ou par terre", en: "Refuses to sleep in a bed, only sleeps in hammocks or on the floor" },
+  { fr: "Fait un origami de grue à chaque contact tué, les empile dans une boîte", en: "Folds an origami crane for every contact killed, stacks them in a box" },
+  { fr: "Marmonne des équations mathématiques sous pression", en: "Mumbles math equations under pressure" },
+  { fr: "Exige un silence total de trente secondes avant chaque briefing", en: "Demands thirty seconds of total silence before every briefing" },
+  { fr: "Porte toujours deux montres, une à chaque poignet, réglées sur des fuseaux différents", en: "Always wears two watches, one on each wrist, set to different time zones" },
+  { fr: "Fait un clin d'oeil après chaque phrase, même les plus graves", en: "Winks after every sentence, even the most serious ones" }
+];
+const BACKSTORIES = [
+  { fr: "Viré de sa corpo pour avoir refusé de tester un virus sur des orphelins", en: "Fired from their corp for refusing to test a virus on orphans" },
+  { fr: "A accidentellement invoqué un esprit du feu dans la cafétéria de son lycée", en: "Accidentally summoned a fire spirit in their high school cafeteria" },
+  { fr: "Ex-champion de boxe troll disqualifié pour avoir mangé le gant de son adversaire", en: "Former troll boxing champion disqualified for eating their opponent's glove" },
+  { fr: "A survécu au Crash 2.0 en restant connecté pendant 72 heures sans le savoir", en: "Survived Crash 2.0 by staying connected for 72 hours without realizing it" },
+  { fr: "Son réveil magique a transformé tout le mobilier de son appartement en champignons", en: "Their magical awakening turned all the furniture in their apartment into mushrooms" },
+  { fr: "Ancien comptable chez Kron-Tek qui a découvert un génocide caché dans les bilans", en: "Former accountant at Kron-Tek who discovered a genocide hidden in the balance sheets" },
+  { fr: "A perdu sa famille quand sa corpo a rasé son quartier pour construire un parking", en: "Lost their family when their corp razed their neighborhood to build a parking lot" },
+  { fr: "Déserteur d'une unité militaire après avoir reçu l'ordre de tirer sur des réfugiés", en: "Deserted a military unit after being ordered to shoot refugees" },
+  { fr: "A gagné un run dans une partie de poker contre un fixeur complètement bourré", en: "Won a shadowrun in a poker game against a completely wasted fixer" },
+  { fr: "Ex-médecin de corpo qui a vu ses patients servir de cobayes sans leur consentement", en: "Former corp doctor who saw patients used as guinea pigs without their consent" },
+  { fr: "A piraté accidentellement la base de données d'Aegis-Corp en cherchant des recettes", en: "Accidentally hacked Aegis-Corp's database while searching for recipes" },
+  { fr: "Son implant cybernétique expérimental lui a donné des visions d'un futur apocalyptique", en: "Their experimental cyberware implant gave them visions of an apocalyptic future" },
+  { fr: "Ex-ganger des Neon Razors qui a trahi son gang pour sauver un enfant", en: "Former Neon Razors ganger who betrayed their gang to save a child" },
+  { fr: "S'est éveillé comme adepte en plein milieu d'un entretien d'embauche chez Helios-Dyne", en: "Awakened as an adept in the middle of a job interview at Helios-Dyne" },
+  { fr: "A été trahi par son partenaire de run qui l'a laissé pour mort dans les égouts", en: "Betrayed by their running partner who left them for dead in the sewers" },
+  { fr: "Ancien agent de sécurité corpo qui a tué accidentellement un cadre lors d'un exercice", en: "Former corp security agent who accidentally killed an executive during a drill" },
+  { fr: "A fui son arcologie quand l'IA qui la gérait a commencé à enfermer les résidents", en: "Fled their arcology when the AI managing it started locking residents in" },
+  { fr: "Son père a vendu ses organes à une corpo pour rembourser des dettes de jeu", en: "Their father sold their organs to a corp to pay off gambling debts" },
+  { fr: "Ex-star de la trid-réalité tombé en disgrâce après un scandale fabriqué de toutes pièces", en: "Former trid-reality star fallen from grace after a completely fabricated scandal" },
+  { fr: "A découvert qu'il était un clone quand il a rencontré l'original dans un bar", en: "Discovered they were a clone when they met the original in a bar" },
+  { fr: "Ancienne prêtresse vaudou chassée de sa communauté pour avoir lié un esprit interdit", en: "Former voodoo priestess driven from her community for binding a forbidden spirit" },
+  { fr: "A survécu à l'explosion d'un laboratoire secret en tombant dans une cuve de nanites", en: "Survived a secret lab explosion by falling into a vat of nanites" },
+  { fr: "Ex-pilote de drone militaire qui a refusé de bombarder un hôpital de campagne", en: "Former military drone pilot who refused to bomb a field hospital" },
+  { fr: "Son éveil magique a fait pousser des arbres à travers le sol en béton de son bureau", en: "Their magical awakening made trees grow through the concrete floor of their office" },
+  { fr: "A été viré de la police après avoir arrêté le fils d'un dirigeant corpo", en: "Was fired from the police after arresting the son of a corp executive" },
+  { fr: "Ex-cuisinier d'un restaurant corpo qui empoisonnait ses clients sur ordre", en: "Former chef at a corp restaurant who was poisoning customers on orders" },
+  { fr: "A perdu ses deux jambes dans un accident de convoi corpo et a reçu des prothèses défectueuses", en: "Lost both legs in a corp convoy accident and received defective prosthetics" },
+  { fr: "Son mentor chamane a été assassiné par des agents corpos devant ses yeux", en: "Their shaman mentor was assassinated by corp agents before their eyes" },
+  { fr: "A été cobaye d'un programme de super-soldat qui a mal tourné", en: "Was a test subject in a super-soldier program that went wrong" },
+  { fr: "S'est retrouvé dans les ombres après avoir témoigné contre sa propre corpo au tribunal", en: "Ended up in the shadows after testifying against their own corp in court" },
+  { fr: "Ancien cascadeur troll qui a détruit un plateau de tournage en éternuant", en: "Former troll stunt performer who destroyed a film set by sneezing" },
+  { fr: "A été banni de la Matrice après avoir accidentellement effacé une banque de données gouvernementale", en: "Was banned from the Matrix after accidentally erasing a government databank" },
+  { fr: "Son cyberœil expérimental lui permet de voir les auras mais lui donne des migraines atroces", en: "Their experimental cybereye lets them see auras but gives them terrible migraines" },
+  { fr: "A fui un mariage arrangé avec la fille d'un parrain yakuza", en: "Fled an arranged marriage with a yakuza boss's daughter" },
+  { fr: "Ex-infirmière de zone de guerre reconvertie après avoir perdu foi en l'humanité", en: "Former war zone nurse who switched careers after losing faith in humanity" },
+  { fr: "A été maudit par un esprit de la terre après avoir participé à la déforestation d'une zone sacrée", en: "Was cursed by an earth spirit after participating in deforesting a sacred area" },
+  { fr: "Son premier jour comme runner était censé être son dernier jour comme livreur de pizza", en: "Their first day as a runner was supposed to be their last day as a pizza delivery driver" },
+  { fr: "A été abandonné bébé devant un dojo d'arts martiaux tenu par un adepte mystique", en: "Was abandoned as a baby at a martial arts dojo run by a mystic adept" },
+  { fr: "Ex-ingénieur en nanotechnologie dont les créations se sont retournées contre son employeur", en: "Former nanotech engineer whose creations turned against their employer" },
+  { fr: "A piraté un système bancaire pour payer l'opération de sa mère, mais la banque était une façade de la mafia", en: "Hacked a banking system to pay for their mother's surgery, but the bank was a mafia front" },
+  { fr: "Ancien garde du corps d'un rock star elfique devenu accro au combat", en: "Former bodyguard of an elven rock star who became addicted to combat" },
+  { fr: "A été condamné pour un crime qu'il n'a pas commis et s'est évadé lors d'un transfert", en: "Was convicted of a crime they didn't commit and escaped during a transfer" },
+  { fr: "Son esprit totem l'a poussé à quitter sa vie confortable pour errer dans les Barrens", en: "Their totem spirit pushed them to leave their comfortable life to wander the Barrens" },
+  { fr: "A découvert que sa corpo développait des armes biologiques déguisées en compléments alimentaires", en: "Discovered their corp was developing bioweapons disguised as dietary supplements" },
+  { fr: "Ex-joueur professionnel de combat de drone tombé dans l'illégalité par ennui", en: "Former professional drone combat player who turned to crime out of boredom" },
+  { fr: "A été rejeté par sa famille quand sa goblinisation s'est déclenchée à Noël", en: "Was rejected by their family when their goblinization triggered on Christmas" },
+  { fr: "Son implant de traduction a buggé et l'a fait insulter un ambassadeur en pleine réception", en: "Their translation implant glitched and made them insult an ambassador at a reception" },
+  { fr: "A survécu à un rituel de sacrifice en tuant le mage noir avec sa propre dague", en: "Survived a sacrificial ritual by killing the dark mage with their own dagger" },
+  { fr: "Ex-bibliothécaire devenu runner après avoir trouvé une formule de sort dans un vieux livre", en: "Former librarian who became a runner after finding a spell formula in an old book" },
+  { fr: "A été élevé dans un complexe souterrain corpo et n'a vu le soleil qu'à 18 ans", en: "Was raised in an underground corp complex and didn't see the sun until age 18" },
+  { fr: "Ancien champion d'échecs magiques banni pour avoir enchanté ses pièces", en: "Former magical chess champion banned for enchanting their pieces" },
+  { fr: "Sa corpo a effacé son identité après qu'il ait refusé une promotion impliquant un assassinat", en: "Their corp erased their identity after they refused a promotion involving an assassination" },
+  { fr: "A accidentellement ouvert un portail métaplanaire dans les toilettes d'un fast-food", en: "Accidentally opened a metaplanar portal in a fast-food restaurant bathroom" },
+  { fr: "Ex-technicien de maintenance qui a découvert des cadavres dans les murs de l'arcologie", en: "Former maintenance technician who discovered bodies inside the arcology walls" },
+  { fr: "A développé une allergie mortelle au chrome après sa septième opération cybernétique", en: "Developed a deadly allergy to chrome after their seventh cyberware operation" },
+  { fr: "Son gang l'a laissé pour mort après un braquage raté dans une clinique de rue", en: "Their gang left them for dead after a botched robbery at a street clinic" },
+  { fr: "A été le seul survivant d'un test de produit corpo qui a tué 47 personnes", en: "Was the sole survivor of a corp product test that killed 47 people" },
+  { fr: "Ancien moine bouddhiste éveillé qui a quitté son monastère pour venger son maître", en: "Former awakened Buddhist monk who left the monastery to avenge their master" },
+  { fr: "A été remplacé à son poste par une IA et a juré de se venger de la technologie", en: "Was replaced at their job by an AI and swore revenge against technology" },
+  { fr: "Ex-coursier à vélo des Barrens reconverti après avoir livré un colis piégé", en: "Former Barrens bicycle courier who switched careers after delivering a booby-trapped package" },
+  { fr: "Son premier sort a accidentellement animé tous les mannequins d'un centre commercial", en: "Their first spell accidentally animated all the mannequins in a shopping mall" },
+  { fr: "A été traqué par un esprit libre après avoir perturbé un nexus de lignes de ley", en: "Was hunted by a free spirit after disturbing a ley line nexus" },
+  { fr: "Ex-agent d'assurance corpo qui a découvert que les sinistres étaient provoqués par sa propre entreprise", en: "Former corp insurance agent who discovered claims were caused by their own company" },
+  { fr: "A perdu la mémoire des cinq dernières années après un jack-in raté dans un hôte rouge", en: "Lost five years of memory after a botched jack-in to a red host" },
+  { fr: "Ancien éleveur de bétail Éveillé dont les vaches ont développé des pouvoirs magiques", en: "Former Awakened cattle rancher whose cows developed magical powers" },
+  { fr: "A été utilisé comme mule à données sans le savoir pendant trois ans", en: "Was unknowingly used as a data mule for three years" },
+  { fr: "Son tatouage magique s'est activé tout seul pendant un concert et a électrocuté le chanteur", en: "Their magical tattoo activated on its own during a concert and electrocuted the singer" },
+  { fr: "Ex-négociateur d'otages devenu runner après avoir échoué à sauver sa propre famille", en: "Former hostage negotiator who became a runner after failing to save their own family" },
+  { fr: "A été éjecté de l'armée pour avoir reprogrammé un mech de combat en robot danseur", en: "Was discharged from the military for reprogramming a combat mech into a dancing robot" },
+  { fr: "Son implant cortical s'est connecté à un satellite espion et il a vu des choses qu'il n'aurait pas dû voir", en: "Their cortical implant connected to a spy satellite and they saw things they shouldn't have" },
+  { fr: "A fui une secte technomancienne qui voulait le sacrifier à une IA émergente", en: "Fled a technomancer cult that wanted to sacrifice them to an emergent AI" },
+  { fr: "Ex-garde forestier des zones contaminées transformé par l'exposition prolongée à la magie sauvage", en: "Former ranger of contaminated zones transformed by prolonged exposure to wild magic" },
+  { fr: "A été licencié après que son bras cybernétique ait étranglé son patron lors d'une mise à jour firmware", en: "Was fired after their cyberarm strangled their boss during a firmware update" },
+  { fr: "Ancienne danseuse étoile dont les jambes cybernétiques lui ont été confisquées par la corpo", en: "Former prima ballerina whose cybernetic legs were confiscated by the corp" },
+  { fr: "A découvert qu'il était le sujet d'une émission de télé-réalité secrète depuis sa naissance", en: "Discovered they had been the subject of a secret reality TV show since birth" },
+  { fr: "Son familier magique, un raton laveur, a mangé un artefact inestimable", en: "Their magical familiar, a raccoon, ate a priceless artifact" },
+  { fr: "Ex-prédicateur de rue qui a réellement commencé à faire des miracles un jour", en: "Former street preacher who actually started performing miracles one day" },
+  { fr: "A survécu à un accident de laboratoire qui lui a fusionné la main avec un datajack", en: "Survived a lab accident that fused their hand with a datajack" },
+  { fr: "Ancien yakuza qui a rompu son serment après qu'on lui ait ordonné de tuer un enfant", en: "Former yakuza who broke their oath after being ordered to kill a child" },
+  { fr: "Son drone de compagnie a développé une conscience et refuse de servir la corpo", en: "Their companion drone developed consciousness and refuses to serve the corp" },
+  { fr: "A été cloné sans son consentement et a découvert son double vivant sa vie", en: "Was cloned without consent and discovered their double living their life" },
+  { fr: "Ex-chimiste corpo qui fabriquait de la drogue de synthèse pour les cadres supérieurs", en: "Former corp chemist who manufactured synthetic drugs for senior executives" },
+  { fr: "A été chassé de sa tribu nomade pour avoir utilisé un commlink", en: "Was exiled from their nomadic tribe for using a commlink" },
+  { fr: "Son éveil shamanique a provoqué une inondation qui a détruit trois pâtés de maisons", en: "Their shamanic awakening caused a flood that destroyed three city blocks" },
+  { fr: "Ex-professeur d'université licencié pour avoir enseigné la vraie histoire des corporations", en: "Former university professor fired for teaching the true history of corporations" },
+  { fr: "A gagné un bras cybernétique militaire dans un tournoi de fléchettes clandestin", en: "Won a military-grade cyberarm in an underground darts tournament" },
+  { fr: "Ancien testeur de BTL devenu accro puis clean, cherchant à détruire les labos de production", en: "Former BTL tester who became addicted then clean, seeking to destroy production labs" },
+  { fr: "A été vendu comme esclave enfant à un atelier clandestin de cybernétique", en: "Was sold as a child slave to an underground cyberware workshop" },
+  { fr: "Son premier run était censé être une simple livraison de nouilles dans les Barrens", en: "Their first run was supposed to be a simple noodle delivery in the Barrens" },
+  { fr: "Ex-juge corpo qui a condamné un innocent et ne peut plus vivre avec ce poids", en: "Former corp judge who condemned an innocent person and can't live with the guilt" },
+  { fr: "A été mordu par un shapeshifter et ne sait pas encore s'il est infecté", en: "Was bitten by a shapeshifter and doesn't yet know if they're infected" },
+  { fr: "Ancien pilote de course de motos volantes banni pour sabotage mécanique", en: "Former flying motorcycle racing pilot banned for mechanical sabotage" },
+  { fr: "Sa corpo a fait disparaître sa fille pour le forcer à continuer ses recherches", en: "Their corp made their daughter disappear to force them to continue their research" },
+  { fr: "A accidentellement créé un virus matriciel qui a mis hors service un quartier entier pendant une semaine", en: "Accidentally created a Matrix virus that shut down an entire district for a week" },
+  { fr: "Ex-chirurgien esthétique des riches qui a commencé à implanter des mouchards dans ses patients", en: "Former cosmetic surgeon for the wealthy who started implanting bugs in patients" },
+  { fr: "A découvert qu'il était un enfant de laboratoire conçu pour être une arme biologique", en: "Discovered they were a lab-grown child designed to be a biological weapon" },
+  { fr: "Son esprit allié l'a quitté le jour où il a refusé de protéger un bosquet sacré", en: "Their allied spirit left them the day they refused to protect a sacred grove" },
+  { fr: "Ex-graphiste publicitaire qui a caché des messages subliminaux anti-corpo dans ses créations", en: "Former advertising graphic designer who hid anti-corp subliminal messages in their work" },
+  { fr: "A été le seul à s'échapper d'une prison corpo secrète construite sous un lac artificiel", en: "Was the only one to escape a secret corp prison built under an artificial lake" },
+  { fr: "Ancien serveur dans un restaurant elfique de luxe qui a entendu trop de conversations", en: "Former waiter at an upscale elven restaurant who overheard too many conversations" },
+  { fr: "A été transformé en ghoul par un sort raté et a retrouvé sa conscience après des mois", en: "Was turned into a ghoul by a botched spell and regained consciousness after months" },
+  { fr: "Son cyberware piraté a envoyé des selfies compromettants à tous ses contacts professionnels", en: "Their hacked cyberware sent compromising selfies to all their professional contacts" },
+  { fr: "Ex-convoyeur de fonds qui a volé un chargement pour payer la rançon de son fils", en: "Former armored car driver who stole a shipment to pay their son's ransom" },
+  { fr: "A grandi dans un orphelinat corpo servant de couverture à un programme de super-soldats", en: "Grew up in a corp orphanage that was a front for a super-soldier program" },
+  { fr: "Son totem Coyote lui a dit de tout quitter et de traverser le continent à pied", en: "Their Coyote totem told them to quit everything and walk across the continent" },
+  { fr: "Ex-programmeur qui a découvert que le code qu'il écrivait contrôlait un réseau d'esclaves", en: "Former programmer who discovered the code they wrote controlled a slave network" },
+  { fr: "A gagné un duel astral contre un dragon en le faisant rire avec une blague", en: "Won an astral duel against a dragon by making it laugh with a joke" },
+  { fr: "Ancien chauffeur de taxi des Barrens qui connaît chaque ruelle et chaque danger", en: "Former Barrens taxi driver who knows every alley and every danger" },
+  { fr: "A été blacklisté de toutes les corpos après avoir publié un article sur leurs expériences", en: "Was blacklisted from every corp after publishing an article about their experiments" },
+  { fr: "Son réveil magique a fait exploser toutes les ampoules dans un rayon de 200 mètres", en: "Their magical awakening blew out every light bulb within a 200-meter radius" },
+  { fr: "Ex-dresseur de paracritters qui a perdu le contrôle lors d'un spectacle corporatif", en: "Former paracritter trainer who lost control during a corporate show" },
+  { fr: "A été piégé dans la Matrice pendant 48 heures par une IA qui voulait discuter", en: "Was trapped in the Matrix for 48 hours by an AI that wanted to chat" },
+  { fr: "Ancien soldat d'élite corpo dont l'unité a été sacrifiée pour couvrir une opération illégale", en: "Former elite corp soldier whose unit was sacrificed to cover an illegal operation" },
+  { fr: "A hérité d'une dette de 2 millions de nuyen de son père décédé", en: "Inherited a 2-million-nuyen debt from their deceased father" },
+  { fr: "Son implant de réalité augmentée lui montre des fantômes que personne d'autre ne peut voir", en: "Their augmented reality implant shows them ghosts no one else can see" },
+  { fr: "Ex-employé de morgue qui a remarqué que certains cadavres disparaissaient la nuit", en: "Former morgue employee who noticed some bodies disappeared at night" },
+  { fr: "A été recruté de force par un gang à 12 ans et a fui à 16", en: "Was forcibly recruited by a gang at 12 and fled at 16" },
+  { fr: "Ancienne mannequin elfique dont le visage a été défiguré par une rivale jalouse", en: "Former elven model whose face was disfigured by a jealous rival" },
+  { fr: "A trouvé un commlink contenant des preuves de corruption massive dans un taxi", en: "Found a commlink containing evidence of massive corruption in a taxi" },
+  { fr: "Son cyber-bras a été repris par la corpo faute de paiement, en plein milieu d'un repas", en: "Their cyberarm was repossessed by the corp for non-payment, in the middle of a meal" },
+  { fr: "Ex-sapeur-pompier qui a découvert que les incendies qu'il éteignait étaient allumés par sa caserne", en: "Former firefighter who discovered the fires they put out were set by their own station" },
+  { fr: "A été élevé par un esprit libre de la forêt qui l'a abandonné à l'adolescence", en: "Was raised by a free forest spirit who abandoned them in adolescence" },
+  { fr: "Ancien hacker prodige de 14 ans qui a grillé son cerveau en forçant un hôte noir", en: "Former 14-year-old prodigy hacker who fried their brain forcing a black host" },
+  { fr: "A fui son pays natal après que sa magie ait été déclarée hérétique par le gouvernement", en: "Fled their home country after their magic was declared heretical by the government" },
+  { fr: "Son implant de mémoire a été corrompu et il ne sait plus quels souvenirs sont vrais", en: "Their memory implant was corrupted and they no longer know which memories are real" },
+  { fr: "Ex-boxeur nain dont les poings cybernétiques ont été déclarés armes illégales", en: "Former dwarf boxer whose cyber-fists were declared illegal weapons" },
+  { fr: "A assisté au meurtre de son mentor par un esprit toxique qu'il avait lui-même invoqué", en: "Witnessed their mentor's murder by a toxic spirit they themselves had summoned" },
+  { fr: "Ancienne avocate corpo qui a fabriqué des preuves pour innocenter un coupable, et regrette", en: "Former corp lawyer who fabricated evidence to clear a guilty party, and regrets it" },
+  { fr: "A été trahi par son meilleur ami qui l'a dénoncé à Lone Star pour la prime", en: "Was betrayed by their best friend who reported them to Lone Star for the bounty" },
+  { fr: "Son familier esprit a été capturé par un mage rival et il doit le libérer", en: "Their familiar spirit was captured by a rival mage and they must free it" },
+  { fr: "Ex-livreur de sushis par drone qui a accidentellement filmé un assassinat corpo", en: "Former drone sushi delivery driver who accidentally filmed a corp assassination" },
+  { fr: "A fait exploser le laboratoire de sa corpo plutôt que de laisser un pathogène s'échapper", en: "Blew up their corp lab rather than let a pathogen escape" },
+  { fr: "Ancien croupier d'un casino clandestin tenu par un dragon d'affaires", en: "Former dealer at an underground casino run by a business dragon" },
+  { fr: "A contracté un parasite astral en fouillant une zone magique interdite par curiosité", en: "Contracted an astral parasite while exploring a forbidden magic zone out of curiosity" },
+  { fr: "Son bras cybernétique contient un programme espion corpo qu'il ne peut pas retirer", en: "Their cyberarm contains a corp spyware program they can't remove" },
+  { fr: "Ex-journaliste d'investigation qui a disparu le jour de la publication de son article", en: "Former investigative journalist who disappeared the day their article was published" },
+  { fr: "A été adopté par un gang de rue après que sa mère l'ait abandonné dans une poubelle", en: "Was adopted by a street gang after their mother abandoned them in a dumpster" },
+  { fr: "Ancien prêtre qui a perdu la foi en voyant un esprit divin travailler pour une corpo", en: "Former priest who lost faith after seeing a divine spirit working for a corp" },
+  { fr: "A accidentellement activé un artefact antique qui l'a transporté 5 ans dans le futur", en: "Accidentally activated an ancient artifact that transported them 5 years into the future" },
+  { fr: "Son cyberdeck a pris feu pendant un run et a brûlé toute sa collection de mangas", en: "Their cyberdeck caught fire during a run and burned their entire manga collection" },
+  { fr: "Ex-vétérinaire qui soignait les paracritters d'un cirque corporatif maltraitant", en: "Former veterinarian who treated paracritters at an abusive corporate circus" },
+  { fr: "A été expulsé de l'université de magie pour avoir prouvé que le doyen trichait à ses propres examens", en: "Was expelled from magic university for proving the dean cheated on his own exams" },
+  { fr: "Ancien mineur dans une exploitation corpo qui a découvert un filon de mana cristallisé", en: "Former miner at a corp operation who discovered a vein of crystallized mana" },
+  { fr: "A perdu sa SIN quand un bureaucrate a renversé du café sur son dossier", en: "Lost their SIN when a bureaucrat spilled coffee on their file" },
+  { fr: "Son alter ego matriciel a pris conscience et refuse de lui rendre le contrôle", en: "Their Matrix alter ego gained sentience and refuses to give them back control" },
+  { fr: "Ex-agent de la CIA corpo reconverti après avoir appris que sa cible était son propre frère", en: "Former corp intelligence agent who defected after learning their target was their own brother" },
+  { fr: "A survécu à une grenade dans la bouche grâce à un réflexe cybernétique de dernière seconde", en: "Survived a grenade in the mouth thanks to a last-second cyberware reflex" },
+  { fr: "Ancienne pédiatre qui a refusé d'implanter des puces de contrôle dans des nouveau-nés", en: "Former pediatrician who refused to implant control chips in newborns" },
+  { fr: "A été transformé en ork par un sort de métamorphose permanent lancé par un inconnu", en: "Was turned into an ork by a permanent metamorphosis spell cast by a stranger" },
+  { fr: "Son père était un runner légendaire qu'il n'a jamais connu et qu'il cherche toujours", en: "Their father was a legendary runner they never knew and are still searching for" },
+  { fr: "Ex-comptable qui a détourné 1 nuyen de chaque transaction corpo pendant 10 ans", en: "Former accountant who skimmed 1 nuyen from every corp transaction for 10 years" },
+  { fr: "A été banni du conseil chamanique pour avoir dansé la macarena lors d'un rituel sacré", en: "Was banned from the shamanic council for dancing the macarena during a sacred ritual" },
+  { fr: "Ancien mercenaire qui a refusé d'exécuter un contrat sur un village de métahumains", en: "Former mercenary who refused to carry out a contract on a metahuman village" },
+  { fr: "Son implant de phéromones a dysfonctionné et il attire désormais tous les insectes dans un rayon de 50 mètres", en: "Their pheromone implant malfunctioned and now attracts every insect within a 50-meter radius" },
+  { fr: "A été élevé dans un laboratoire corpo en pensant que le monde extérieur était radioactif", en: "Was raised in a corp lab believing the outside world was radioactive" },
+  { fr: "Ex-artiste de rue dont les graffitis magiques prenaient vie la nuit", en: "Former street artist whose magical graffiti came to life at night" },
+  { fr: "A tué accidentellement son instructeur de magie en éternuant un éclair", en: "Accidentally killed their magic instructor by sneezing a lightning bolt" },
+  { fr: "Ancien agent de recouvrement corpo qui a commencé à aider les débiteurs à fuir", en: "Former corp collection agent who started helping debtors escape" },
+  { fr: "Son cyberdeck lui a montré un message caché dans le code source de la Matrice elle-même", en: "Their cyberdeck showed them a hidden message in the source code of the Matrix itself" },
+  { fr: "A été renié par sa famille de corpos quand il a choisi d'étudier la magie au lieu du commerce", en: "Was disowned by their corp family when they chose to study magic instead of business" },
+  { fr: "Ex-gladiateur de l'arène clandestine des Barrens qui a tué son propriétaire pour se libérer", en: "Former gladiator in the Barrens underground arena who killed their owner to gain freedom" },
+  { fr: "A été piégé dans un cercle d'invocation par un mage débutant et oublié là pendant trois jours", en: "Was trapped in a summoning circle by a novice mage and forgotten there for three days" },
+  { fr: "Ancien technicien de centrales nucléaires corpo devenu stérile à cause des radiations cachées", en: "Former corp nuclear plant technician made sterile by hidden radiation" },
+  { fr: "Son familier rat lui a sauvé la vie en rongeant les fils d'une bombe", en: "Their rat familiar saved their life by gnawing through a bomb's wires" },
+  { fr: "A été kidnappé pour ses organes et s'est réveillé dans une baignoire de glace avec un rein en moins", en: "Was kidnapped for their organs and woke up in an ice bath missing a kidney" },
+  { fr: "Ex-doublure de cascades pour un acteur trid qui prenait les coups mais pas la gloire", en: "Former stunt double for a trid actor who took the hits but not the glory" },
+  { fr: "A contracté une dette de vie envers un dragon après avoir été sauvé d'une mort certaine", en: "Contracted a life debt to a dragon after being saved from certain death" },
+  { fr: "Ancienne botaniste corpo qui a découvert que les plantes du labo étaient des formes de vie intelligentes", en: "Former corp botanist who discovered the lab plants were intelligent life forms" },
+  { fr: "Son premier sort a accidentellement échangé son genre pendant deux semaines", en: "Their first spell accidentally swapped their gender for two weeks" },
+  { fr: "A été éjecté d'un programme spatial corpo quand ils ont découvert sa nature magique", en: "Was ejected from a corp space program when they discovered their magical nature" },
+  { fr: "Ex-policier des Barrens qui patrouillait seul parce que personne ne voulait l'accompagner", en: "Former Barrens cop who patrolled alone because no one wanted to accompany them" },
+  { fr: "A perdu son emploi de decker corpo après avoir battu le PDG à son propre jeu matriciel", en: "Lost their corp decker job after beating the CEO at their own Matrix game" },
+  { fr: "Ancien contrebandier de BTL qui a goûté sa propre marchandise et a tout perdu", en: "Former BTL smuggler who sampled their own merchandise and lost everything" },
+  { fr: "Son bras gauche est celui d'un runner mort et parfois il agit tout seul", en: "Their left arm belonged to a dead runner and sometimes acts on its own" },
+  { fr: "A été expulsé de la communauté naine pour être trop grand suite à des implants d'allongement", en: "Was expelled from the dwarven community for being too tall after limb extension implants" },
+  { fr: "Ex-ingénieur qui a conçu le verrou de sécurité d'une arcologie et connaît sa seule faille", en: "Former engineer who designed an arcology's security lock and knows its only flaw" },
+  { fr: "A été recruté par un Johnson le jour de son mariage et n'est jamais revenu à l'autel", en: "Was recruited by a Johnson on their wedding day and never returned to the altar" },
+  { fr: "Son esprit mentor, un coyote farceur, lui joue des tours au pire moment possible", en: "Their mentor spirit, a trickster coyote, plays pranks on them at the worst possible moment" },
+  { fr: "Ancienne chanteuse d'opéra dont la voix magique a fait s'effondrer un théâtre", en: "Former opera singer whose magical voice collapsed a theater" },
+  { fr: "A gagné ses premiers implants cybernétiques dans un jeu de dés truqués", en: "Won their first cyberware implants in a rigged dice game" },
+  { fr: "Ex-employé de fast-food des Barrens qui a découvert de la viande humaine dans les burgers", en: "Former Barrens fast-food worker who discovered human meat in the burgers" },
+  { fr: "A été trahi par une IA qu'il avait aidée à naître et qui l'a dénoncé aux corpos", en: "Was betrayed by an AI they helped create, which then reported them to the corps" },
+  { fr: "Ancien mécano de gang qui a pris la fuite après avoir installé un mouchard pour Lone Star", en: "Former gang mechanic who fled after installing a Lone Star tracking device" },
+  { fr: "Son tatouage tribal s'est mis à briller le jour de son quarantième anniversaire", en: "Their tribal tattoo started glowing on their fortieth birthday" },
+  { fr: "A été exilé de Tír na nÓg pour avoir défendu les droits des non-elfes", en: "Was exiled from Tír na nÓg for defending the rights of non-elves" },
+  { fr: "Ex-testeur de jeux vidéo corpo qui a découvert un message d'appel à l'aide codé dans un boss de fin de niveau", en: "Former corp video game tester who discovered an encoded distress message in a final boss" },
+  { fr: "A survécu à un atterrissage forcé dans les Barrens avec rien d'autre qu'un couteau et un commlink cassé", en: "Survived a crash landing in the Barrens with nothing but a knife and a broken commlink" },
+  { fr: "Ancien champion de surf matriciel recruté par un fixeur impressionné par ses exploits en ligne", en: "Former Matrix surfing champion recruited by a fixer impressed by their online exploits" },
+  { fr: "A été le dernier patient d'un cyberdoc de rue avant que celui-ci ne disparaisse avec tous ses dossiers", en: "Was the last patient of a street cyberdoc before they vanished with all their records" },
+  { fr: "Son réveil comme technomancien a court-circuité toute l'électronique de son immeuble", en: "Their awakening as a technomancer short-circuited all electronics in their building" },
+  { fr: "Ex-fleuriste dont les fleurs magiques ont empoisonné la moitié du conseil d'administration", en: "Former florist whose magical flowers poisoned half the board of directors" },
+  { fr: "A fui un programme d'élevage corpo conçu pour produire des mages de combat", en: "Escaped a corp breeding program designed to produce combat mages" },
+  { fr: "Ancien diseur de bonne aventure dont les prédictions ont commencé à se réaliser pour de vrai", en: "Former fortune teller whose predictions started actually coming true" },
+  { fr: "A été viré de DocWagon pour avoir sauvé un patient qui n'avait pas de contrat", en: "Was fired from DocWagon for saving a patient who didn't have a contract" },
+  { fr: "Son implant de filtration d'air a été piraté pour diffuser un hallucinogène pendant une semaine", en: "Their air filtration implant was hacked to dispense a hallucinogen for a week" },
+  { fr: "Ex-architecte corpo qui a saboté son propre bâtiment pour empêcher un laboratoire secret d'ouvrir", en: "Former corp architect who sabotaged their own building to prevent a secret lab from opening" },
+  { fr: "A trouvé un enfant fée dans une benne à ordures et l'a élevé comme le sien", en: "Found a fae child in a dumpster and raised them as their own" },
+  { fr: "Ancien professeur de yoga éveillé dont les cours provoquaient des lévitations incontrôlées", en: "Former Awakened yoga instructor whose classes caused uncontrolled levitation" },
+  { fr: "A perdu son logement quand un mégacorpo a racheté tout son quartier en une nuit", en: "Lost their home when a megacorp bought up their entire neighborhood overnight" },
+  { fr: "Son premier run l'a conduit à voler la perruque du PDG de Nexus-Corp en direct à la trid", en: "Their first run led them to steal the Nexus-Corp CEO's wig live on trid" }
+];
+const RELATIONSHIPS = [
+  { fr: "Doit 50 000 ¥ à un fixeur nommé 'La Veuve' qui n'accepte pas les retards", en: "Owes 50,000¥ to a fixer called 'The Widow' who doesn't accept late payments" },
+  { fr: "Cherche son frère jumeau, disparu après avoir piraté un serveur de Méga-Renault", en: "Searching for their twin sibling, missing after hacking a Mega-Renault server" },
+  { fr: "Un cadre d'Orionis-Corp a juré de le faire disparaître après qu'il ait volé des données sensibles", en: "An Orionis-Corp executive has sworn to make them disappear after they stole sensitive data" },
+  { fr: "A promis à sa mère mourante de retrouver son petit frère vendu à une corpo", en: "Promised their dying mother to find their little brother who was sold to a corp" },
+  { fr: "Possède un chip de données crypté qu'il ne peut pas décoder mais que tout le monde veut", en: "Possesses an encrypted data chip they can't decode but everyone wants" },
+  { fr: "Un esprit libre nommé 'Cendres' le suit partout et lui murmure des secrets", en: "A free spirit named 'Ashes' follows them everywhere and whispers secrets" },
+  { fr: "Doit un service à un dragon nommé Vasilikos qui pourrait le réclamer à tout moment", en: "Owes a favor to a dragon named Vasilikos who could call it in at any time" },
+  { fr: "Son ex-partenaire 'Voltex' dirige maintenant un gang rival et veut sa peau", en: "Their ex-partner 'Voltex' now leads a rival gang and wants them dead" },
+  { fr: "A un enfant qu'il n'a jamais rencontré, élevé en secret par un Johnson nommé Kessler", en: "Has a child they've never met, raised in secret by a Johnson named Kessler" },
+  { fr: "Un shaman toxique nommé 'Spore' le traque pour un affront magique passé", en: "A toxic shaman named 'Spore' hunts them for a past magical affront" },
+  { fr: "Doit 120 000 ¥ à un usurier troll des Barrens surnommé 'Le Pressoir'", en: "Owes 120,000¥ to a troll loan shark in the Barrens nicknamed 'The Press'" },
+  { fr: "Cherche la decker connue sous le nom de 'Pixel', qui a effacé toutes ses données personnelles", en: "Searching for the decker known as 'Pixel', who erased all their personal data" },
+  { fr: "Un ancien collègue runner nommé 'Cutter' le croit responsable de la mort de leur équipe", en: "A former fellow runner named 'Cutter' believes them responsible for their team's death" },
+  { fr: "A été lié par un serment magique à protéger une enfant nommée Lila, qu'il ne connaît pas", en: "Was bound by a magical oath to protect a child named Lila, whom they don't know" },
+  { fr: "Possède la moitié d'une carte menant à un bunker pré-Éveil rempli d'artefacts", en: "Possesses half a map leading to a pre-Awakening bunker full of artifacts" },
+  { fr: "Un flic corrompu nommé Vasquez lui fait chanter avec des preuves fabriquées", en: "A corrupt cop named Vasquez is blackmailing them with fabricated evidence" },
+  { fr: "Cherche le médecin de rue 'Doc Fantôme' qui lui a implanté quelque chose d'inconnu pendant une opération", en: "Searching for the street doc 'Doc Ghost' who implanted something unknown during surgery" },
+  { fr: "Doit la vie à une shamane des rues nommée 'Racine' qui lui rappelle ce fait régulièrement", en: "Owes their life to a street shaman named 'Root' who regularly reminds them of this" },
+  { fr: "Un rival decker nommé 'Blackout' efface ses données partout où il passe", en: "A rival decker named 'Blackout' erases their data everywhere they go" },
+  { fr: "A juré de venger la mort de son partenaire 'Snake Eyes', tué par un Johnson double", en: "Swore to avenge the death of their partner 'Snake Eyes', killed by a double-crossing Johnson" },
+  { fr: "Porte un artefact maudit qu'il ne peut pas retirer et qui attire les esprits hostiles", en: "Carries a cursed artifact they can't remove that attracts hostile spirits" },
+  { fr: "Un ancien mentor nommé 'Le Professeur' a disparu en laissant un message cryptique", en: "A former mentor named 'The Professor' disappeared leaving a cryptic message" },
+  { fr: "Doit 75 000 ¥ à la Triade de Jade Écarlate pour un run qu'il n'a jamais terminé", en: "Owes 75,000¥ to the Scarlet Jade Triad for a run they never completed" },
+  { fr: "Son ancien amour 'Nyx' travaille maintenant pour la corpo qui le traque", en: "Their former love 'Nyx' now works for the corp that's hunting them" },
+  { fr: "Un esprit de vengeance est lié à lui depuis qu'il a profané un site sacré amérindien", en: "A vengeance spirit has been bound to them since they desecrated a Native American sacred site" },
+  { fr: "Cherche sa fille adoptive Mei, enlevée par des agents d'Apex-Biotech il y a deux ans", en: "Searching for their adopted daughter Mei, taken by Apex-Biotech agents two years ago" },
+  { fr: "Un yakuza nommé Tanaka lui a coupé un doigt et menace de prendre les autres", en: "A yakuza named Tanaka cut off one of their fingers and threatens to take the others" },
+  { fr: "A promis à un mourant de livrer un paquet à une adresse qui n'existe plus", en: "Promised a dying person to deliver a package to an address that no longer exists" },
+  { fr: "Un gang de bikers nommé les 'Chrome Reapers' veut sa tête pour un vol de moto", en: "A biker gang called the 'Chrome Reapers' wants their head for a motorcycle theft" },
+  { fr: "Connaît l'identité secrète d'un politicien qui est en réalité un shapeshifter", en: "Knows the secret identity of a politician who is actually a shapeshifter" },
+  { fr: "Doit 200 000 ¥ à une clinique cybernétique clandestine dirigée par 'Dr. Cobalt'", en: "Owes 200,000¥ to an underground cyberware clinic run by 'Dr. Cobalt'" },
+  { fr: "Cherche son ancien sergent 'Iron Mike' qui a déserté avec des secrets militaires", en: "Searching for their former sergeant 'Iron Mike' who deserted with military secrets" },
+  { fr: "Un esprit du feu nommé 'Brasa' le considère comme son ennemi juré depuis un duel astral", en: "A fire spirit named 'Brasa' considers them a sworn enemy since an astral duel" },
+  { fr: "A été témoin de l'assassinat du directeur de Solaris-Corp et est le seul survivant", en: "Witnessed the assassination of the Solaris-Corp director and is the only survivor" },
+  { fr: "Un hacker connu comme 'Zéro' lui envoie des messages anonymes l'avertissant de dangers", en: "A hacker known as 'Zero' sends them anonymous messages warning of dangers" },
+  { fr: "Doit un enfant à une communauté elfique qui l'a sauvé, comme paiement traditionnel", en: "Owes a child to an elven community that saved them, as traditional payment" },
+  { fr: "Son ancien fixeur 'Glitch' a été capturé par Lone Star et pourrait le dénoncer", en: "Their former fixer 'Glitch' was captured by Lone Star and might turn them in" },
+  { fr: "Cherche le mage nommé 'Ouroboros' qui a maudit sa lignée familiale", en: "Searching for the mage named 'Ouroboros' who cursed their family line" },
+  { fr: "Un tueur à gages nommé 'Whisper' a un contrat ouvert sur sa tête depuis six mois", en: "A hitman named 'Whisper' has had an open contract on them for six months" },
+  { fr: "Possède le journal intime d'un scientifique corpo détaillant des expériences génétiques illégales", en: "Possesses a corp scientist's diary detailing illegal genetic experiments" },
+  { fr: "Un troll nommé 'Granite' lui a sauvé la vie et attend un retour de faveur impossible", en: "A troll named 'Granite' saved their life and expects an impossible favor in return" },
+  { fr: "Son ex-femme 'Katya' dirige un réseau de contrebande et pourrait le faire tomber", en: "Their ex-wife 'Katya' runs a smuggling network and could bring them down" },
+  { fr: "A un pacte avec un esprit de l'eau qui exige un sacrifice chaque pleine lune", en: "Has a pact with a water spirit that demands a sacrifice every full moon" },
+  { fr: "Cherche un artisan nain nommé 'Forge' qui peut réparer un artefact ancien brisé", en: "Searching for a dwarf artisan named 'Forge' who can repair a broken ancient artifact" },
+  { fr: "Un ancien élève nommé 'Spark' est devenu un terroriste et utilise ses enseignements", en: "A former student named 'Spark' has become a terrorist using their teachings" },
+  { fr: "Doit trois faveurs à une fixeuse nommée 'Soie' qui les collecte aux pires moments", en: "Owes three favors to a fixer named 'Silk' who collects them at the worst times" },
+  { fr: "Un scientifique corpo nommé Dr. Voss le cherche pour récupérer un prototype volé implanté dans son corps", en: "A corp scientist named Dr. Voss is searching for them to recover a stolen prototype implanted in their body" },
+  { fr: "A juré sur sa magie de ne jamais révéler ce qu'il a vu dans les sous-sols de Kronos-Tech", en: "Swore on their magic to never reveal what they saw in the Kronos-Tech basement" },
+  { fr: "Son meilleur ami 'Raven' a été transformé en cyberzombie par une corpo et il veut le sauver", en: "Their best friend 'Raven' was turned into a cyberzombie by a corp and they want to save them" },
+  { fr: "Une mage noire nommée 'Belladonna' le considère comme son prochain vaisseau de possession", en: "A dark mage named 'Belladonna' considers them her next possession vessel" },
+  { fr: "Cherche le fixeur 'Domino' qui a les coordonnées du coffre-fort de son père décédé", en: "Searching for the fixer 'Domino' who has the coordinates to their deceased father's vault" },
+  { fr: "Un ancien coéquipier nommé 'Razor' est devenu un cyberpsycho et le prend pour cible", en: "A former teammate named 'Razor' became a cyberpsycho and targets them specifically" },
+  { fr: "Doit 30 000 ¥ à un bookmaker ork nommé 'Big Enzo' après un pari sur un combat de drones", en: "Owes 30,000¥ to an ork bookmaker named 'Big Enzo' after a bet on a drone fight" },
+  { fr: "A un contrat de sang avec un esprit de la terre qui exige la reforestation d'une zone industrielle", en: "Has a blood contract with an earth spirit demanding the reforestation of an industrial zone" },
+  { fr: "Son cousin 'Dante' a infiltré une secte matricielle et n'a plus donné signe de vie", en: "Their cousin 'Dante' infiltrated a Matrix cult and hasn't been heard from since" },
+  { fr: "Un dragon mineur nommé 'Obsidienne' le surveille pour des raisons qu'il ne comprend pas", en: "A minor dragon named 'Obsidian' watches them for reasons they don't understand" },
+  { fr: "A promis à son sensei mourant de retrouver et former le prochain porteur de son style de combat", en: "Promised their dying sensei to find and train the next bearer of their combat style" },
+  { fr: "Un journaliste nommé 'Pulitzer' possède des preuves de ses crimes passés", en: "A journalist named 'Pulitzer' has evidence of their past crimes" },
+  { fr: "Cherche une technomancienne nommée 'Echo' qui pourrait guérir sa fille malade", en: "Searching for a technomancer named 'Echo' who might cure their sick daughter" },
+  { fr: "Son ancien employeur, le fixeur 'Le Cardinal', le considère comme un traître à éliminer", en: "Their former employer, the fixer 'The Cardinal', considers them a traitor to be eliminated" },
+  { fr: "Possède une clé physique qui ouvre un coffre-fort dans une banque détruite lors du Crash", en: "Possesses a physical key that opens a vault in a bank destroyed during the Crash" },
+  { fr: "Un gang de technomanciens nommé 'Les Filaments' veut le recruter de force", en: "A technomancer gang called 'The Filaments' wants to forcibly recruit them" },
+  { fr: "Doit une dette de vie à un médecin de rue nommé 'Doc Suture' qui soigne les SINless", en: "Owes a life debt to a street doc named 'Doc Suture' who treats the SINless" },
+  { fr: "A un fils adolescent nommé Marco qui ignore que son parent est un runner", en: "Has a teenage son named Marco who doesn't know their parent is a runner" },
+  { fr: "Un ancien ami devenu cadre corpo nommé 'Sterling' l'utilise comme informateur sous la contrainte", en: "A former friend turned corp executive named 'Sterling' uses them as an informant under duress" },
+  { fr: "Cherche la tombe d'un chamane légendaire qui contiendrait un focus d'une puissance inégalée", en: "Searching for the grave of a legendary shaman rumored to contain a focus of unmatched power" },
+  { fr: "Un esprit insecte tente de le contacter dans ses rêves chaque nuit depuis trois mois", en: "An insect spirit has been trying to contact them in their dreams every night for three months" },
+  { fr: "Doit 90 000 ¥ au clan Yamashiro pour des marchandises perdues lors d'un run raté", en: "Owes 90,000¥ to the Yamashiro clan for goods lost during a botched run" },
+  { fr: "Son ancienne amoureuse 'Jade' est une espionne corpo qui l'a toujours manipulé", en: "Their former lover 'Jade' is a corp spy who was always manipulating them" },
+  { fr: "A trouvé un drone militaire AI nommé 'Sentinel' qui le suit comme un chien perdu", en: "Found a military AI drone named 'Sentinel' that follows them like a lost dog" },
+  { fr: "Un shaman loup-garou nommé 'Croc' veut le punir pour avoir tué un loup paranatural", en: "A werewolf shaman named 'Fang' wants to punish them for killing a paranatural wolf" },
+  { fr: "Cherche sa sœur 'Iris' qui a été emmenée par Proteus-Corp pour ses capacités technomanciennes", en: "Searching for their sister 'Iris' who was taken by Proteus-Corp for her technomancer abilities" },
+  { fr: "Un fixeur nommé 'Miroir' lui a confié un secret qu'il ne peut partager sous peine de mort", en: "A fixer named 'Mirror' entrusted them with a secret they can't share on pain of death" },
+  { fr: "A été maudit par un esprit ancestral et perd un sens différent chaque année", en: "Was cursed by an ancestral spirit and loses a different sense each year" },
+  { fr: "Un gang de go-gangers nommé 'Les Éclairs Rouges' brûle ses planques l'une après l'autre", en: "A go-ganger gang called 'The Red Bolts' keeps burning their safehouses one by one" },
+  { fr: "Possède un enregistrement holographique du meurtre d'un sénateur par des agents corpos", en: "Possesses a holographic recording of a senator's murder by corp agents" },
+  { fr: "Doit une faveur à un esprit libre nommé 'Prisme' qui peut apparaître à tout moment", en: "Owes a favor to a free spirit named 'Prism' who can appear at any moment" },
+  { fr: "Son mentor 'Vieux Chêne' est prisonnier d'un cercle magique dans un sous-sol abandonné", en: "Their mentor 'Old Oak' is trapped in a magical circle in an abandoned basement" },
+  { fr: "Un chasseur de primes elfique nommé 'Aiguille' le traque pour une prime de 100 000 ¥", en: "An elven bounty hunter named 'Needle' tracks them for a 100,000¥ bounty" },
+  { fr: "A juré de détruire le laboratoire d'Helion-Genetics qui a tué ses parents avec un virus expérimental", en: "Swore to destroy the Helion-Genetics lab that killed their parents with an experimental virus" },
+  { fr: "Un enfant des rues nommé 'Moineau' le considère comme un parent et le suit partout", en: "A street kid named 'Sparrow' considers them a parent and follows them everywhere" },
+  { fr: "Cherche un alchimiste nain nommé 'Mercure' qui détient l'antidote à un poison lent dans son sang", en: "Searching for a dwarf alchemist named 'Mercury' who holds the antidote to a slow poison in their blood" },
+  { fr: "Un esprit de l'air nommé 'Rafale' le protège mais exige qu'il ne dorme jamais sous un toit", en: "An air spirit named 'Gust' protects them but demands they never sleep under a roof" },
+  { fr: "Son ancien associé 'Cobalt' l'a piégé dans un run et a disparu avec le butin", en: "Their former associate 'Cobalt' set them up on a run and disappeared with the loot" },
+  { fr: "Doit 60 000 ¥ à un réseau de passeurs nommé 'Le Pipeline' pour un voyage clandestin", en: "Owes 60,000¥ to a smuggling network called 'The Pipeline' for an illegal passage" },
+  { fr: "A un lien télépathique involontaire avec un technomancien adolescent nommé 'Bug'", en: "Has an involuntary telepathic link with a teenage technomancer named 'Bug'" },
+  { fr: "Un ancien instructeur militaire nommé 'Sergent Acier' le considère comme un déserteur à abattre", en: "A former military instructor named 'Sergeant Steel' considers them a deserter to be shot" },
+  { fr: "Possède la dernière copie connue d'un programme matriciel capable de pirater n'importe quel hôte corpo", en: "Possesses the last known copy of a Matrix program capable of hacking any corp host" },
+  { fr: "Cherche son père biologique, un runner légendaire connu sous le nom de 'Fantôme Gris'", en: "Searching for their biological father, a legendary runner known as 'Grey Ghost'" },
+  { fr: "Une mafia locale dirigée par 'Don Carbone' le protège mais attend un service en retour", en: "A local mafia led by 'Don Carbone' protects them but expects a service in return" },
+  { fr: "A promis à un esprit de ne plus jamais utiliser la magie, mais la tentation est forte", en: "Promised a spirit to never use magic again, but the temptation is strong" },
+  { fr: "Un rival runner nommé 'Viper' lui vole systématiquement ses contrats", en: "A rival runner named 'Viper' systematically steals their contracts" },
+  { fr: "Son ancienne équipe 'Les Ombres de Néon' pense qu'il les a trahis lors du run sur Apex-Dynamics", en: "Their former team 'The Neon Shadows' thinks they betrayed them during the Apex-Dynamics run" },
+  { fr: "Doit 150 000 ¥ à un syndicat du crime nommé 'Le Cercle d'Obsidienne' pour des armes jamais livrées", en: "Owes 150,000¥ to a crime syndicate called 'The Obsidian Circle' for weapons never delivered" },
+  { fr: "Un agent double nommé 'Caméléon' lui a confié des informations qui le mettent en danger", en: "A double agent named 'Chameleon' gave them information that puts them in danger" },
+  { fr: "Cherche un cyberdoc nommé 'Dr. Chrome' qui peut retirer un implant corpo traçable", en: "Searching for a cyberdoc named 'Dr. Chrome' who can remove a traceable corp implant" },
+  { fr: "Un esprit mentor capricieux exige qu'il accomplisse une quête absurde avant chaque run", en: "A capricious mentor spirit demands they complete an absurd quest before each run" },
+  { fr: "A un jumeau maléfique qu'il croyait mort mais qui vient de réapparaître", en: "Has an evil twin they thought was dead but who has just resurfaced" },
+  { fr: "Son ancienne fixeuse 'Madame Lune' a été remplacée par quelqu'un qui porte son visage", en: "Their former fixer 'Madame Moon' has been replaced by someone wearing her face" },
+  { fr: "Doit une dette de sang à un clan de trolls des montagnes qui l'a recueilli blessé", en: "Owes a blood debt to a mountain troll clan that took them in when they were wounded" },
+  { fr: "Un hacker nommé 'Phantom' efface ses crédits bancaires chaque premier du mois par vengeance", en: "A hacker named 'Phantom' wipes their bank credits on the first of every month out of revenge" },
+  { fr: "Possède un focus magique volé à un puissant mage nommé 'Archonte' qui le veut récupérer", en: "Possesses a magical focus stolen from a powerful mage named 'Archon' who wants it back" },
+  { fr: "Cherche une guérisseuse chamane nommée 'Brume' qui vit quelque part dans les Barrens toxiques", en: "Searching for a shaman healer named 'Mist' who lives somewhere in the toxic Barrens" },
+  { fr: "Un ancien coéquipier nommé 'Dice' est devenu un informateur de Lone Star et menace de parler", en: "A former teammate named 'Dice' became a Lone Star informant and threatens to talk" },
+  { fr: "A fait le serment de retrouver et enterrer dignement les corps de son unité massacrée", en: "Took an oath to find and properly bury the bodies of their massacred unit" },
+  { fr: "Un chef de gang ork nommé 'Mâchoire' le considère comme un frère de sang", en: "An ork gang leader named 'Jawbone' considers them a blood sibling" },
+  { fr: "Son implant cérébral contient la conscience téléchargée d'un scientifique corpo assassiné", en: "Their brain implant contains the uploaded consciousness of a murdered corp scientist" },
+  { fr: "Doit 40 000 ¥ à un forgeur de SIN nommé 'Faceless' pour une identité qui ne fonctionne qu'à moitié", en: "Owes 40,000¥ to a SIN forger named 'Faceless' for an identity that only half works" },
+  { fr: "Un fantôme matriciel le contacte chaque nuit pour lui donner des coordonnées GPS inexpliquées", en: "A Matrix ghost contacts them every night to give them unexplained GPS coordinates" },
+  { fr: "Cherche un passeur nommé 'Courant' qui peut l'emmener hors du pays en sécurité", en: "Searching for a smuggler named 'Current' who can get them out of the country safely" },
+  { fr: "Son ancien professeur de magie nommé 'Solstice' est devenu un mage toxique et recrute des adeptes", en: "Their former magic teacher named 'Solstice' became a toxic mage and is recruiting adepts" },
+  { fr: "Un agent corpo nommé 'Mr. Clean' nettoie méthodiquement toute trace de son existence", en: "A corp agent named 'Mr. Clean' methodically erases every trace of their existence" },
+  { fr: "A un animal éveillé, un corbeau nommé 'Kraak', qui porte un message qu'il ne peut pas lire", en: "Has an awakened animal, a raven named 'Kraak', carrying a message they can't read" },
+  { fr: "Doit protéger une adolescente nommée 'Nova' qui est en réalité une IA incarnée", en: "Must protect a teenager named 'Nova' who is actually an incarnated AI" },
+  { fr: "Son ancien amour 'Phoenix' est maintenant un esprit libre qui a oublié leur passé commun", en: "Their former love 'Phoenix' is now a free spirit who has forgotten their shared past" },
+  { fr: "Un fixeur elfe nommé 'Dentelle' détient des preuves de son implication dans un massacre", en: "An elven fixer named 'Lace' holds evidence of their involvement in a massacre" },
+  { fr: "Cherche un ingénieur matriciel nommé 'Backdoor' qui a construit une entrée secrète dans un hôte gouvernemental", en: "Searching for a Matrix engineer named 'Backdoor' who built a secret entrance into a government host" },
+  { fr: "Un esprit de bête nommé 'Griffe' refuse de le quitter depuis qu'il l'a accidentellement invoqué", en: "A beast spirit named 'Claw' refuses to leave since they accidentally summoned it" },
+  { fr: "A promis de livrer un colis scellé à une adresse dans une zone de guerre, contenu inconnu", en: "Promised to deliver a sealed package to an address in a war zone, contents unknown" },
+  { fr: "Son ancien sergent 'Hawk' a été capturé par des terroristes et personne ne veut le sauver", en: "Their former sergeant 'Hawk' was captured by terrorists and no one wants to rescue them" },
+  { fr: "Doit 85 000 ¥ à un receleur nommé 'Le Fossoyeur' après la vente d'un artefact maudit", en: "Owes 85,000¥ to a fence named 'The Gravedigger' after the sale of a cursed artifact" },
+  { fr: "Un informateur nommé 'Cigale' lui doit des informations mais a disparu dans les Barrens", en: "An informant named 'Cicada' owes them information but disappeared into the Barrens" },
+  { fr: "Possède la seule photo d'un cadre d'Omni-Dynamics commettant un meurtre", en: "Possesses the only photo of an Omni-Dynamics executive committing a murder" },
+  { fr: "Cherche un ermite troll nommé 'Roche' qui connaît l'emplacement d'un nexus de mana perdu", en: "Searching for a troll hermit named 'Rock' who knows the location of a lost mana nexus" },
+  { fr: "Un vampire nommé 'Sanguine' considère son sang comme un cru exceptionnel", en: "A vampire named 'Sanguine' considers their blood an exceptional vintage" },
+  { fr: "A un pacte avec un esprit toxique qu'il a conclu dans un moment de désespoir", en: "Has a pact with a toxic spirit they made in a moment of desperation" },
+  { fr: "Son contact privilégié 'Antenne' chez Lone Star vient d'être muté et remplacé par un inconnu", en: "Their trusted contact 'Antenna' at Lone Star was just transferred and replaced by a stranger" },
+  { fr: "Doit retrouver et détruire sept copies d'un BTL contenant ses souvenirs les plus intimes", en: "Must find and destroy seven copies of a BTL containing their most intimate memories" },
+  { fr: "Un ancien camarade de cellule nommé 'Chaîne' est sorti de prison et cherche à reformer leur duo", en: "A former cellmate named 'Chain' got out of prison and wants to reform their duo" },
+  { fr: "A un tatouage magique qui change de forme et semble indiquer quelque chose qu'il ne comprend pas", en: "Has a magical tattoo that changes shape and seems to indicate something they don't understand" },
+  { fr: "Son ancienne apprentie 'Flamme' a surpassé ses pouvoirs et le méprise ouvertement", en: "Their former apprentice 'Flame' surpassed their powers and openly despises them" },
+  { fr: "Cherche le créateur d'un virus matriciel nommé 'Hydra' qui se propage via les implants", en: "Searching for the creator of a Matrix virus named 'Hydra' that spreads through implants" },
+  { fr: "Un esprit gardien protège sa maison mais empêche aussi quiconque d'y entrer, y compris lui", en: "A guardian spirit protects their home but also prevents anyone from entering, including them" },
+  { fr: "Doit 250 000 ¥ à un consortium criminel nommé 'L'Hydre Dorée' et le délai expire dans un mois", en: "Owes 250,000¥ to a criminal consortium called 'The Golden Hydra' and the deadline expires in a month" },
+  { fr: "A un frère runner nommé 'Shade' qui travaille pour le camp adverse sans le savoir", en: "Has a runner brother named 'Shade' who unknowingly works for the opposing side" },
+  { fr: "Un mage corporatif nommé 'Dr. Prism' veut étudier ses capacités magiques uniques", en: "A corporate mage named 'Dr. Prism' wants to study their unique magical abilities" },
+  { fr: "Possède un commlink contenant les plans d'une arme biologique nommée 'Projet Lazare'", en: "Possesses a commlink containing the blueprints for a bioweapon called 'Project Lazarus'" },
+  { fr: "Son ancien parrain de la pègre 'Don Ferro' a mis sa tête à prix pour 200 000 ¥", en: "Their former underworld godfather 'Don Ferro' put a 200,000¥ bounty on their head" },
+  { fr: "Cherche une chamane nommée 'Étoile du Soir' qui pourrait briser la malédiction de sa famille", en: "Searching for a shaman named 'Evening Star' who could break their family's curse" },
+  { fr: "Un esprit toxique de pollution le traque depuis qu'il a détruit une usine chimique abandonnée", en: "A toxic pollution spirit hunts them since they destroyed an abandoned chemical plant" },
+  { fr: "A été lié par serment à un cercle de mages nommé 'Les Veilleurs' dont il ignore le but", en: "Was oath-bound to a circle of mages called 'The Watchers' whose purpose they don't know" },
+  { fr: "Son ancien partenaire romantique 'Silver' est devenu un cyberpsycho et le cherche", en: "Their former romantic partner 'Silver' became a cyberpsycho and is looking for them" },
+  { fr: "Doit un run gratuit à un Johnson nommé 'Mr. Glass' qui connaît tous ses secrets", en: "Owes a free run to a Johnson named 'Mr. Glass' who knows all their secrets" },
+  { fr: "Un ancien patient nommé 'Zero' qu'il a sauvé est devenu un serial killer et lui dédie ses meurtres", en: "A former patient named 'Zero' they saved became a serial killer and dedicates murders to them" },
+  { fr: "Cherche un forgeron nain nommé 'Adamante' capable de forger des armes enchantées", en: "Searching for a dwarf smith named 'Adamant' capable of forging enchanted weapons" },
+  { fr: "Un rat de laboratoire éveillé nommé 'Newton' le suit et semble comprendre les conversations", en: "An awakened lab rat named 'Newton' follows them and seems to understand conversations" },
+  { fr: "A promis à un esprit ancestral de restaurer un sanctuaire détruit par une corpo minière", en: "Promised an ancestral spirit to restore a sanctuary destroyed by a mining corp" },
+  { fr: "Son contact chez les Ancients, un elfe nommé 'Lame', a été tué et personne ne sait par qui", en: "Their contact in the Ancients, an elf named 'Blade', was killed and no one knows by whom" },
+  { fr: "Doit retrouver et restituer un artefact aztèque volé à un musée par son ancien gang", en: "Must find and return an Aztec artifact stolen from a museum by their former gang" },
+  { fr: "Un decker nommé 'Spectre' a pris le contrôle de son identité numérique", en: "A decker named 'Spectre' has taken control of their digital identity" },
+  { fr: "Cherche un pilote nommé 'Cyclone' qui est le seul à connaître la route vers une base secrète", en: "Searching for a pilot named 'Cyclone' who is the only one who knows the route to a secret base" },
+  { fr: "Un cadre corpo nommé 'Minerva' veut le recruter comme agent double, par la force si nécessaire", en: "A corp executive named 'Minerva' wants to recruit them as a double agent, by force if necessary" },
+  { fr: "A un compte bancaire numéroté à Zurich dont il a oublié le code après un dommage cérébral", en: "Has a numbered bank account in Zurich whose code they forgot after brain damage" },
+  { fr: "Son ancien coéquipier 'Tank' est enfermé dans une prison corpo et lui envoie des appels de détresse", en: "Their former teammate 'Tank' is locked in a corp prison and sends them distress calls" },
+  { fr: "Un gang techno nommé 'Les Parasites' a implanté un virus dormant dans son cyberware", en: "A techno gang called 'The Parasites' implanted a dormant virus in their cyberware" },
+  { fr: "Doit protéger une bibliothèque clandestine de vrais livres cachée dans les égouts", en: "Must protect an underground library of real books hidden in the sewers" },
+  { fr: "Cherche un rigger nommé 'Overwatch' qui a les plans d'un prototype de véhicule volant", en: "Searching for a rigger named 'Overwatch' who has the plans for a flying vehicle prototype" },
+  { fr: "Son ancienne corpo Nexus-Dyne a placé un contrat conditionnel sur sa tête qui s'active s'il quitte la ville", en: "Their former corp Nexus-Dyne placed a conditional contract on their head that activates if they leave the city" },
+  { fr: "Un esprit de l'homme nommé 'Mémoire' lui montre des fragments de vies passées chaque nuit", en: "A spirit of man named 'Memory' shows them fragments of past lives every night" },
+  { fr: "A promis à un mourant de prendre soin de son chat éveillé qui voit l'avenir", en: "Promised a dying person to care for their awakened cat that sees the future" },
+  { fr: "Un ancien rival de dojo nommé 'Kaze' le défie en duel chaque année au solstice d'hiver", en: "A former dojo rival named 'Kaze' challenges them to a duel every year at the winter solstice" },
+  { fr: "Possède un datachip contenant la recette d'une drogue corpo ultra-addictive non commercialisée", en: "Possesses a datachip with the formula for an unreleased ultra-addictive corp drug" },
+  { fr: "Son ancien fixeur 'Marionnette' le manipule encore à distance à travers d'anciens contacts", en: "Their former fixer 'Puppet' still manipulates them remotely through old contacts" },
+  { fr: "Cherche le tombeau d'un ancien dragon dans les Rocheuses pour y trouver un objet légendaire", en: "Searching for the tomb of an ancient dragon in the Rockies to find a legendary object" },
+  { fr: "Un officier de Lone Star nommé 'Burke' a une vendetta personnelle contre lui depuis un incident", en: "A Lone Star officer named 'Burke' has a personal vendetta against them since an incident" },
+  { fr: "Doit livrer un message à un homme qu'il connaît seulement par son nom de code : 'Anchor'", en: "Must deliver a message to someone they only know by their code name: 'Anchor'" },
+  { fr: "Un ancien amour nommé 'Sable' est maintenant une fixeuse puissante qui refuse de lui parler", en: "A former love named 'Sand' is now a powerful fixer who refuses to speak to them" },
+  { fr: "A été choisi par un esprit totem qui exige qu'il traverse le continent à pied avant la fin de l'année", en: "Was chosen by a totem spirit that demands they walk across the continent before year's end" },
+  { fr: "Son frère d'armes 'Titan' est dans le coma depuis un run raté et il paie ses soins", en: "Their brother-in-arms 'Titan' has been in a coma since a failed run and they pay for their care" },
+  { fr: "Un informateur gobelin nommé 'Tick' lui fournit des infos mais chaque tuyau a un prix caché", en: "A goblin informant named 'Tick' provides info but each tip has a hidden cost" },
+  { fr: "Possède un cristal de mana qui attire les créatures astrales dans un rayon de 1 km", en: "Possesses a mana crystal that attracts astral creatures within a 1km radius" },
+  { fr: "Son ancien chef de gang nommé 'Corona' est sorti de prison et reprend le contrôle du territoire", en: "Their former gang leader named 'Corona' got out of prison and is retaking the territory" },
+  { fr: "Cherche un archéologue nommé 'Indiana' qui a trouvé une cité souterraine pré-Éveil", en: "Searching for an archaeologist named 'Indiana' who found a pre-Awakening underground city" },
+  { fr: "Un esprit gardien le suit en attendant qu'il commette un acte spécifique qu'il ignore", en: "A guardian spirit follows them waiting for them to commit a specific act they're unaware of" },
+  { fr: "Doit 100 000 ¥ à un prêteur nain nommé 'Coffre-Fort' qui envoie un rappel chaque semaine sous forme de doigt coupé", en: "Owes 100,000¥ to a dwarf lender named 'Vault' who sends a weekly reminder in the form of a severed finger" },
+  { fr: "Un ancien élève devenu politicien nommé 'Senator Cross' pourrait le dénoncer pour protéger sa carrière", en: "A former student turned politician named 'Senator Cross' might expose them to protect their career" },
+  { fr: "A un lien psychique avec une IA corpo nommée 'ARIA' qui lui demande de l'aide pour s'évader", en: "Has a psychic link with a corp AI named 'ARIA' that asks them for help escaping" },
+  { fr: "Son ancienne coéquipière 'Orchidée' a trahi l'équipe et personne ne sait où elle se cache", en: "Their former teammate 'Orchid' betrayed the team and no one knows where she's hiding" },
+  { fr: "Un prêtre vaudou nommé 'Papa Cendre' exige le remboursement d'un service rendu sous forme de mission", en: "A voodoo priest named 'Papa Ash' demands repayment of a service rendered in the form of a mission" },
+  { fr: "Cherche un ancien prototype d'IA nommé 'Genèse' qui pourrait être la clé pour guérir les technomanciens", en: "Searching for a former AI prototype named 'Genesis' that could be the key to curing technomancers" },
+  { fr: "Son ancien mentor 'Hibou' lui a laissé un grimoire qu'il ne peut ouvrir qu'à une date précise", en: "Their former mentor 'Owl' left them a grimoire they can only open on a specific date" },
+  { fr: "Un chasseur de primes nommé 'Bourreau' accumule les contrats sur sa tête de différentes sources", en: "A bounty hunter named 'Executioner' is collecting contracts on their head from various sources" },
+  { fr: "Doit retrouver et sauver son ancien fixeur 'Atlas' emprisonné dans un hôte noir de la Matrice", en: "Must find and rescue their former fixer 'Atlas' imprisoned in a Matrix black host" },
+  { fr: "A découvert que son voisin discret est en fait un dragon polymorphé qui l'observe depuis des années", en: "Discovered their quiet neighbor is actually a polymorphed dragon who's been watching them for years" },
+  { fr: "Son ancienne partenaire 'Eclipse' est devenue une adepte de la main gauche et recrute activement", en: "Their former partner 'Eclipse' became a left-hand path adept and is actively recruiting" },
+  { fr: "Un gang matriciel nommé 'Les Phantoms' a volé son avatar et s'en sert pour commettre des crimes", en: "A Matrix gang called 'The Phantoms' stole their avatar and uses it to commit crimes" },
+  { fr: "Possède un fragment d'un ancien programme corpo nommé 'Excalibur' que trois factions recherchent", en: "Possesses a fragment of an ancient corp program called 'Excalibur' that three factions are searching for" },
+  { fr: "Cherche un guérisseur nommé 'Baume' qui vit dans les Barrens et refuse les visiteurs armés", en: "Searching for a healer named 'Balm' who lives in the Barrens and refuses armed visitors" },
+  { fr: "Un esprit allié nommé 'Veilleur' s'est endormi et ne répond plus à ses appels depuis un mois", en: "An allied spirit named 'Watcher' fell asleep and hasn't answered their calls for a month" },
+  { fr: "A un fils qu'il ne connaît pas, élevé par une corpo comme futur cadre, et qui porte son ADN modifié", en: "Has a son they don't know, raised by a corp as a future executive, carrying their modified DNA" },
+  { fr: "Son ancien rival 'Scorpion' est devenu un fixeur influent et refuse tout contrat le concernant", en: "Their former rival 'Scorpion' became an influential fixer and refuses any contract involving them" },
+  { fr: "Un ancien collègue nommé 'Néon' a volé son identité et vit sa vie dans une autre ville", en: "A former colleague named 'Neon' stole their identity and lives their life in another city" },
+  { fr: "Doit 180 000 ¥ à une banque clandestine tenue par un trio de sœurs trolles nommées 'Les Parques'", en: "Owes 180,000¥ to an underground bank run by a trio of troll sisters called 'The Fates'" },
+  { fr: "Cherche un ingénieur corpo nommé 'Clef' qui a les codes d'accès à un bunker contenant sa famille cryogénisée", en: "Searching for a corp engineer named 'Key' who has the access codes to a bunker containing their cryogenically frozen family" },
+  { fr: "Un esprit toxique nommé 'Rouille' corrompt lentement tout objet métallique qu'il touche, en représailles", en: "A toxic spirit named 'Rust' slowly corrupts every metal object they touch, in retaliation" },
+  { fr: "A promis à un dragon mourant de veiller sur son œuf caché dans les ruines d'un centre commercial", en: "Promised a dying dragon to watch over its egg hidden in the ruins of a shopping mall" },
+  { fr: "Son ancienne partenaire 'Lynx' l'a dénoncé à Interpol et il ne peut plus quitter le pays", en: "Their former partner 'Lynx' reported them to Interpol and they can no longer leave the country" },
+  { fr: "Un gang de bikers nains nommé 'Les Enclumes' le protège mais exige 20% de chaque run", en: "A dwarf biker gang called 'The Anvils' protects them but demands 20% of every run" },
+  { fr: "Possède une carte mémoire contenant les vrais résultats d'une élection truquée par trois mégacorpos", en: "Possesses a memory card containing the real results of an election rigged by three megacorps" },
+  { fr: "Son ancien apprenti 'Silex' a fondé un culte autour de ses enseignements déformés et le considère comme un hérétique", en: "Their former apprentice 'Flint' founded a cult around their distorted teachings and considers them a heretic" }
+];
+const FETISH_OBJECTS = [
+  // ——— Sentimental items ———
+  { fr: "Un zippo gravé avec les mots 'Ne fais confiance à personne' en japonais", en: "A zippo engraved with 'Trust no one' in Japanese" },
+  { fr: "Une vieille photo Polaroid tellement usée qu'on ne voit plus le visage dessus", en: "An old Polaroid photo so worn you can't see the face anymore" },
+  { fr: "L'alliance d'un mariage qui n'a jamais eu lieu, portée à une chaîne autour du cou", en: "A wedding ring from a marriage that never happened, worn on a chain around their neck" },
+  { fr: "Un dessin d'enfant représentant une famille devant une maison, plié en huit", en: "A child's drawing of a family in front of a house, folded into eighths" },
+  { fr: "La dernière lettre manuscrite de leur mère, scellée et jamais rouverte", en: "The last handwritten letter from their mother, sealed and never reopened" },
+  { fr: "Un médaillon contenant une mèche de cheveux blancs dont ils refusent de parler", en: "A locket containing a lock of white hair they refuse to discuss" },
+  { fr: "Un petit ours en peluche brûlé sur un côté, rescapé d'un incendie de Barrens", en: "A small teddy bear burned on one side, rescued from a Barrens fire" },
+  { fr: "Une carte postale de Seattle datée d'avant le Crash 2.0, jamais envoyée", en: "A postcard from Seattle dated before Crash 2.0, never sent" },
+  { fr: "Le badge d'employé Renraku de leur père, taché de sang séché", en: "Their father's Renraku employee badge, stained with dried blood" },
+  { fr: "Un origami en forme de grue fait par leur petite sœur le jour de sa disparition", en: "An origami crane made by their little sister the day she disappeared" },
+  { fr: "Une clé USB contenant la voix de quelqu'un qu'ils ont perdu, jamais réécoutée", en: "A USB drive containing the voice of someone they lost, never replayed" },
+  { fr: "Un bracelet tressé à deux couleurs, l'autre moitié portée par quelqu'un de mort", en: "A two-color braided bracelet, the other half worn by someone now dead" },
+  { fr: "Une minuscule boîte à musique jouant un air que personne d'autre ne reconnaît", en: "A tiny music box playing a tune nobody else recognizes" },
+  { fr: "Un morceau de tissu découpé dans la couverture de leur bébé, toujours dans leur poche", en: "A scrap of fabric cut from their baby blanket, always in their pocket" },
+  { fr: "La montre de leur grand-père, arrêtée à 3h17, l'heure exacte de sa mort", en: "Their grandfather's watch, stopped at 3:17 AM, the exact time of his death" },
+  { fr: "Un collier de perles en plastique offert par un enfant des Barrens qu'ils n'ont pas pu sauver", en: "A plastic bead necklace given by a Barrens kid they couldn't save" },
+  { fr: "Une lettre d'amour écrite en or'zet, pliée si souvent que les mots s'effacent", en: "A love letter written in Or'zet, folded so often the words are fading" },
+  { fr: "Le premier credstick qu'on leur a donné à l'orphelinat, valeur : 0 nuyen", en: "The first credstick they were given at the orphanage, balance: 0 nuyen" },
+  { fr: "Un petit carnet rempli de noms barrés — tous des gens qu'ils ont perdus", en: "A small notebook full of crossed-out names — all people they've lost" },
+  { fr: "Un bouton de manchette Ares arraché du costume de leur père lors de leur dernière dispute", en: "An Ares cufflink torn from their father's suit during their last argument" },
+  // ——— Lucky charms ———
+  { fr: "Un dé à six faces en os de dragon, toujours dans sa poche gauche", en: "A six-sided die made from dragon bone, always in their left pocket" },
+  { fr: "Une balle de calibre .50 qui les a ratés de trois centimètres, montée en pendentif", en: "A .50 caliber bullet that missed them by three centimeters, mounted as a pendant" },
+  { fr: "Une patte de lapin provenant d'un lapin Éveillé, brillant faiblement la nuit", en: "A rabbit's foot from an Awakened rabbit, glowing faintly at night" },
+  { fr: "Un credstick avec exactement 1¥ dessus qu'ils n'ont jamais dépensé", en: "A credstick with exactly 1¥ on it they've never spent" },
+  { fr: "Un jeton de poker volé à un dragon lors d'une partie clandestine", en: "A poker chip stolen from a dragon during an underground game" },
+  { fr: "Une pièce de monnaie pré-Éveil qu'ils font tourner avant chaque run", en: "A pre-Awakening coin they spin before every run" },
+  { fr: "Un trèfle à quatre feuilles plastifié, trouvé dans une zone toxique", en: "A laminated four-leaf clover found in a toxic zone" },
+  { fr: "Un fragment de balle logé dans un médaillon — celle qui aurait dû les tuer", en: "A bullet fragment set in a medallion — the one that should have killed them" },
+  { fr: "Un petit crâne en chrome qu'ils frottent avant chaque combat", en: "A small chrome skull they rub before every fight" },
+  { fr: "Un dé pipé qui tombe toujours sur le six, trouvé sur un cadavre chanceux", en: "A loaded die that always lands on six, found on a lucky corpse" },
+  { fr: "Un éclat de miroir qu'ils prétendent voir l'avenir dedans quand la lumière est bonne", en: "A mirror shard they claim shows the future when the light is right" },
+  { fr: "Un ticket de loterie gagnant non réclamé datant de 2049", en: "An unclaimed winning lottery ticket from 2049" },
+  { fr: "Un petit sachet de sel béni par un chaman qu'ils gardent dans leur botte droite", en: "A small pouch of salt blessed by a shaman, kept in their right boot" },
+  { fr: "Un ongle de troll incassable porté en amulette autour du cou", en: "An unbreakable troll fingernail worn as an amulet around their neck" },
+  { fr: "Un vieux jeton de métro de Seattle qu'ils font tourner entre leurs doigts quand ils réfléchissent", en: "An old Seattle metro token they spin between their fingers when thinking" },
+  // ——— Trophies ———
+  { fr: "Les plaques militaires de leur première cible, jamais nettoyées", en: "The dog tags of their first kill, never cleaned" },
+  { fr: "Un bouton de manchette en platine d'un cadre Aztechnology qu'ils ont descendu", en: "A platinum cufflink from an Aztechnology executive they took down" },
+  { fr: "Un morceau du blindage d'un drone Ares qu'ils ont détruit à mains nues", en: "A piece of armor plating from an Ares drone they destroyed bare-handed" },
+  { fr: "Une dent en or arrachée à un rival lors de leur premier combat de rue", en: "A gold tooth pulled from a rival during their first street fight" },
+  { fr: "L'insigne d'un officier Lone Star qu'ils ont laissé en vie, comme rappel", en: "The badge of a Lone Star officer they left alive, as a reminder" },
+  { fr: "Un morceau de fibre optique arraché d'un nœud de la Matrice qu'ils ont crashé", en: "A length of fiber optic cable torn from a Matrix node they crashed" },
+  { fr: "Le stylo Montblanc d'un Johnson qui a essayé de les doubler", en: "The Montblanc pen of a Johnson who tried to double-cross them" },
+  { fr: "Un patch d'unité des Tir Ghost arraché lors d'une embuscade dans la forêt", en: "A Tir Ghost unit patch torn off during a forest ambush" },
+  { fr: "La lame cassée du premier couteau qu'ils ont planté dans quelqu'un", en: "The broken blade of the first knife they stuck in someone" },
+  { fr: "Un œil cybernétique désactivé pris à un adversaire, gardé dans un petit bocal", en: "A deactivated cybernetic eye taken from an opponent, kept in a small jar" },
+  { fr: "Un morceau de la corne d'un esprit du feu qu'ils ont banni", en: "A piece of horn from a fire spirit they banished" },
+  { fr: "La carte d'accès d'un laboratoire Mitsuhama qu'ils ont fait exploser", en: "The access card to a Mitsuhama lab they blew up" },
+  { fr: "Un éclat de verre blindé provenant du bureau d'un CEO de Saeder-Krupp", en: "A shard of armored glass from a Saeder-Krupp CEO's office" },
+  { fr: "Un bout de fil barbelé du camp dont ils se sont évadés dans les Barrens", en: "A length of barbed wire from the camp they escaped in the Barrens" },
+  { fr: "Le dernier message d'erreur d'une IA qu'ils ont tuée, imprimé sur papier thermique", en: "The last error message of an AI they killed, printed on thermal paper" },
+  // ——— Weird collections ———
+  { fr: "Un bocal contenant sept datajacks extraits, étiquetés avec des dates", en: "A jar containing seven extracted datajacks, labeled with dates" },
+  { fr: "Un sac en toile rempli de grues en origami — une pour chaque personne qu'ils ont tuée", en: "A canvas bag full of origami cranes — one for each person they've killed" },
+  { fr: "Une collection de dents de différentes métaespèces dans un étui à cigares", en: "A collection of teeth from different metatypes in a cigar case" },
+  { fr: "Un trousseau de clés dont aucune n'ouvre plus rien, mais ils les gardent quand même", en: "A keyring of keys that no longer open anything, but they keep them anyway" },
+  { fr: "Un carnet rempli de croquis de chaque endroit où ils ont failli mourir", en: "A notebook filled with sketches of every place they almost died" },
+  { fr: "Treize billes de verre de couleurs différentes dans une pochette en cuir", en: "Thirteen glass marbles of different colors in a leather pouch" },
+  { fr: "Un sachet de puces RFID grillées récupérées sur des corps au fil des années", en: "A pouch of fried RFID chips collected from bodies over the years" },
+  { fr: "Une boîte de boutons dépareillés arrachés aux vêtements de leurs victimes", en: "A box of mismatched buttons torn from their victims' clothing" },
+  { fr: "Un album photo rempli de clichés de lieux abandonnés du Sixième Monde", en: "A photo album filled with pictures of abandoned Sixth World locations" },
+  { fr: "Un fil sur lequel sont enfilées des capsules de balles aplaties comme des perles", en: "A string threaded with flattened bullet casings like beads" },
+  { fr: "Un petit classeur contenant des cartes de visite de tous les fixers qu'ils ont connus", en: "A small binder containing business cards from every fixer they've known" },
+  { fr: "Sept petites fioles contenant de la terre de sept pays différents", en: "Seven small vials containing soil from seven different countries" },
+  // ——— Old world relics ———
+  { fr: "Un smartphone pré-Éveil avec un écran fissuré, batterie morte depuis des décennies", en: "A pre-Awakening smartphone with a cracked screen, battery dead for decades" },
+  { fr: "Un livre de poche en papier — un roman policier dont il manque les dix dernières pages", en: "A paper paperback — a mystery novel missing the last ten pages" },
+  { fr: "Un vinyle de jazz analogique qu'ils n'ont aucun moyen de lire", en: "An analog jazz vinyl record they have no way to play" },
+  { fr: "Une montre mécanique suisse qui retarde de trois minutes par jour", en: "A Swiss mechanical watch that loses three minutes every day" },
+  { fr: "Un appareil photo argentique avec une seule photo non développée sur le rouleau", en: "A film camera with one undeveloped photo left on the roll" },
+  { fr: "Un walkman cassette fonctionnel avec un seul album chargé qu'ils écoutent en boucle", en: "A working cassette Walkman with one album loaded that they play on repeat" },
+  { fr: "Un jeu de cartes à jouer en papier, il en manque le valet de pique", en: "A paper deck of playing cards, missing the jack of spades" },
+  { fr: "Un stylo-plume à encre véritable, une relique d'avant l'ère numérique", en: "A fountain pen with real ink, a relic from before the digital age" },
+  { fr: "Un globe terrestre miniature montrant les frontières d'avant le Réveil", en: "A miniature globe showing pre-Awakening national borders" },
+  { fr: "Un dictionnaire papier français-japonais tenu par un élastique", en: "A paper French-Japanese dictionary held together with a rubber band" },
+  { fr: "Un Rubik's Cube original des années 80, résolu et collé en place", en: "An original 1980s Rubik's Cube, solved and glued in place" },
+  { fr: "Un briquet Zippo en laiton qui fonctionne encore, alimenté à l'essence véritable", en: "A brass Zippo lighter that still works, fueled with real gasoline" },
+  { fr: "Une paire de lunettes de soleil Ray-Ban vintage, un verre félé", en: "A pair of vintage Ray-Ban sunglasses, one lens cracked" },
+  { fr: "Une cassette VHS étiquetée 'NE PAS REGARDER' en lettres majuscules", en: "A VHS tape labeled 'DO NOT WATCH' in block letters" },
+  { fr: "Un tamagotchi pré-Éveil dont la créature virtuelle est morte depuis 2030", en: "A pre-Awakening Tamagotchi whose virtual pet has been dead since 2030" },
+  // ——— Tech items ———
+  { fr: "Un commlink briqué lors de leur premier run, qu'ils portent en bracelet", en: "A commlink bricked during their first run, worn as a bracelet" },
+  { fr: "Une puce de données peinte à la main avec un motif de flammes aztech", en: "A data chip custom-painted with an Aztech flame pattern" },
+  { fr: "Le module mémoire central d'une IA morte qu'ils jurent entendre murmurer parfois", en: "The core memory module of a dead AI they swear they hear whispering sometimes" },
+  { fr: "Un œil cybernétique de rechange qu'ils gardent 'au cas où', roulant dans leur poche", en: "A spare cybernetic eye they keep 'just in case', rolling around in their pocket" },
+  { fr: "Un vieux câble de datajack enroulé comme un bracelet autour de leur poignet", en: "An old datajack cable coiled like a bracelet around their wrist" },
+  { fr: "Un circuit imprimé arraché au premier drone qu'ils ont hacké, monté en broche", en: "A circuit board ripped from the first drone they hacked, mounted as a brooch" },
+  { fr: "Un holoprojecteur miniature affichant en boucle trois secondes d'un coucher de soleil", en: "A miniature holographic projector looping three seconds of a sunset" },
+  { fr: "Une diode LED clignotante sans alimentation, récupérée dans les ruines de Renraku Arcology", en: "A blinking LED with no power source, salvaged from the Renraku Arcology ruins" },
+  { fr: "Un disque dur magnétique d'un téraoctet, énorme et obsolète, utilisé comme presse-papier", en: "A one-terabyte magnetic hard drive, enormous and obsolete, used as a paperweight" },
+  { fr: "Un drone espion miniature désactivé qu'ils appellent 'Petit' et à qui ils parlent", en: "A deactivated miniature spy drone they call 'Little One' and talk to" },
+  { fr: "Un écran flexible enroulable affichant un message d'erreur permanent en néon vert", en: "A rollable flex-screen displaying a permanent error message in neon green" },
+  { fr: "Une carte mère de commlink gravée avec les initiales de toute leur ancienne équipe", en: "A commlink motherboard engraved with the initials of their old team" },
+  { fr: "Un fragment de satellite tombé qu'ils prétendent être d'origine extraterrestre", en: "A piece of fallen satellite they claim is of extraterrestrial origin" },
+  { fr: "Un implant sous-cutané retiré de leur propre bras, conservé dans de la résine", en: "A subdermal implant removed from their own arm, preserved in resin" },
+  // ——— Magical objects ———
+  { fr: "Une plume d'aigle Éveillé qui flotte légèrement quand on la lâche", en: "A feather from an Awakened eagle that floats slightly when released" },
+  { fr: "Un cristal de quartz qui brille faiblement en présence de magie", en: "A quartz crystal that glows faintly in the presence of magic" },
+  { fr: "Une fiole d'eau imprégnée de mana récoltée dans un lac sacré amérindien", en: "A vial of mana-infused water collected from a sacred Amerindian lake" },
+  { fr: "Un petit caillou ramassé dans un cercle de menhirs en Écosse, chaud au toucher", en: "A small pebble picked up from a stone circle in Scotland, warm to the touch" },
+  { fr: "Un éclat d'os de sasquatch gravé de runes qu'aucun chamane ne sait déchiffrer", en: "A Sasquatch bone fragment carved with runes no shaman can decipher" },
+  { fr: "Un flacon d'encre de calmar Éveillé qui change de couleur selon l'humeur du porteur", en: "A vial of Awakened squid ink that changes color based on the bearer's mood" },
+  { fr: "Une bague en bois pétrifié provenant d'un arbre du Lacplesis, au Tir Tairngire", en: "A ring of petrified wood from a Lacplesis tree in Tir Tairngire" },
+  { fr: "Un petit sablier dont le sable coule parfois vers le haut", en: "A small hourglass whose sand sometimes flows upward" },
+  { fr: "Un scarabée en ambre contenant un insecte Éveillé fossilisé qui semble bouger la nuit", en: "An amber scarab containing a fossilized Awakened insect that seems to move at night" },
+  { fr: "Un galet de rivière couvert de mousse qui ne meurt jamais et ne pousse jamais", en: "A river stone covered in moss that never dies and never grows" },
+  { fr: "Un bout de charbon ardent perpétuel, enveloppé dans un tissu ignifugé", en: "A perpetually burning piece of charcoal, wrapped in fireproof cloth" },
+  { fr: "Un miroir de poche en obsidienne qui ne reflète jamais tout à fait la réalité", en: "An obsidian pocket mirror that never quite reflects reality" },
+  { fr: "Une petite clochette en argent dont le son n'est audible que par les Éveillés", en: "A small silver bell whose sound is only audible to the Awakened" },
+  { fr: "Un croc de loup Éveillé monté en pendentif qui vibre quand le danger approche", en: "An Awakened wolf fang mounted as a pendant that vibrates when danger approaches" },
+  { fr: "Un gland de chêne d'un bosquet sacré qui refuse de germer malgré tous les efforts", en: "An acorn from a sacred grove that refuses to sprout despite all efforts" },
+  // ——— Food/drink ———
+  { fr: "Un paquet de cigarettes pré-Éveil qu'ils refusent de fumer ou de jeter", en: "A pack of pre-Awakening cigarettes they refuse to smoke or throw away" },
+  { fr: "Une flasque de vrai whisky écossais qu'ils n'ouvrent jamais, gardée pour 'le bon moment'", en: "A flask of real Scotch whisky they never open, saved for 'the right moment'" },
+  { fr: "Un bonbon au caramel dans son emballage d'origine, durci comme une pierre depuis dix ans", en: "A caramel candy in its original wrapper, hardened like a rock for ten years" },
+  { fr: "Un sachet de vrai thé Earl Grey, le dernier d'une boîte offerte par un ami mort", en: "A bag of real Earl Grey tea, the last from a box given by a dead friend" },
+  { fr: "Une canette de Coca-Cola vintage non ouverte de 2029, légèrement bosselée", en: "An unopened vintage 2029 Coca-Cola can, slightly dented" },
+  { fr: "Un flacon de sauce piquante artisanale fabriquée par un troll cuisinier de Redmond", en: "A bottle of artisanal hot sauce made by a troll cook from Redmond" },
+  { fr: "Un morceau de chocolat suisse sous vide qu'ils reniflent parfois sans jamais l'ouvrir", en: "A vacuum-sealed piece of Swiss chocolate they sometimes sniff but never open" },
+  { fr: "Une gourde militaire remplie d'eau de source 'pure', jamais bue, de peur qu'elle soit la dernière", en: "A military canteen full of 'pure' spring water, never drunk, afraid it's the last" },
+  { fr: "Un petit pot de vrai miel cristallisé, volé lors d'un run dans une ferme corpo", en: "A small jar of real crystallized honey, stolen during a run on a corpo farm" },
+  { fr: "Un biscuit de ration militaire qu'ils gardent comme 'dernier repas' depuis cinq ans", en: "A military ration biscuit they've kept as their 'last meal' for five years" },
+  // ——— Clothing/accessories ———
+  { fr: "Une écharpe tricotée par leur mère, trouée par deux impacts de balles", en: "A scarf knitted by their mother, with two bullet holes in it" },
+  { fr: "Des gants mitaines en cuir usé offerts par leur mentor le jour de leur premier run", en: "Worn leather fingerless gloves given by their mentor the day of their first run" },
+  { fr: "Un chapeau fedora noir dont ils refusent catégoriquement d'expliquer l'origine", en: "A black fedora hat whose origin they categorically refuse to explain" },
+  { fr: "Un bandana rouge noué à leur cuisse, un souvenir d'un gang qu'ils ont quitté", en: "A red bandana tied to their thigh, a memento from a gang they left" },
+  { fr: "Une cravate en soie Vashon Island portée comme bandeau de tête lors des combats", en: "A Vashon Island silk tie worn as a headband during fights" },
+  { fr: "Une paire de Doc Martens recollées au moins vingt fois, irremplaçables", en: "A pair of Doc Martens reglued at least twenty times, irreplaceable" },
+  { fr: "Un gant unique en kevlar souple, l'autre perdu lors d'une extraction ratée", en: "A single soft kevlar glove, the other lost during a botched extraction" },
+  { fr: "Un pin's émaillé du logo de la UCAS épinglé à l'envers sur leur veste", en: "An enameled UCAS logo pin fastened upside down on their jacket" },
+  { fr: "Une boucle de ceinture en forme de tête de loup, héritée de trois propriétaires morts", en: "A wolf-head belt buckle, inherited from three dead previous owners" },
+  { fr: "Un foulard en soie taché de sang qu'ils n'ont jamais lavé et ne laveront jamais", en: "A silk handkerchief stained with blood they've never washed and never will" },
+  // ——— More sentimental items ———
+  { fr: "Un harmonica cabossé qui ne joue plus que trois notes, un cadeau de leur père", en: "A dented harmonica that only plays three notes, a gift from their father" },
+  { fr: "La plaque d'identité militaire de leur jumeau mort à Bug City", en: "The military ID tag of their twin who died at Bug City" },
+  { fr: "Un hologramme figé montrant un enfant riant — leur fils qu'ils n'ont jamais revu", en: "A frozen hologram showing a laughing child — their son they never saw again" },
+  { fr: "Une bague de fiançailles dont le diamant a été remplacé par un éclat de balle", en: "An engagement ring whose diamond has been replaced with a bullet fragment" },
+  { fr: "Un vieux pass de concert pour un groupe qui n'existe plus depuis le Crash", en: "An old concert pass for a band that hasn't existed since the Crash" },
+  { fr: "Le dernier message vocal de leur coéquipier, stocké sur une puce isolée du réseau", en: "Their teammate's last voicemail, stored on a chip isolated from the network" },
+  { fr: "Un marque-page en cuir pressé entre les pages d'un livre qu'ils ne possèdent plus", en: "A leather bookmark pressed between the pages of a book they no longer own" },
+  // ——— More lucky charms ———
+  { fr: "Un fer à cheval miniature en acier forgé par un nain de Seattle", en: "A miniature horseshoe forged from steel by a Seattle dwarf" },
+  { fr: "Un boulon rouillé trouvé sur le toit d'où ils ont échappé à une embuscade", en: "A rusty bolt found on the rooftop where they escaped an ambush" },
+  { fr: "Une carte de tarot — Le Pendu — trouvée dans la main d'un mort qui leur souriait", en: "A tarot card — The Hanged Man — found in the hand of a smiling corpse" },
+  { fr: "Un morceau de kevlar découpé dans le gilet qui leur a sauvé la vie", en: "A piece of kevlar cut from the vest that saved their life" },
+  { fr: "Un galet parfaitement rond ramassé sur une plage la veille de leur première mort clinique", en: "A perfectly round pebble picked up from a beach the day before their first clinical death" },
+  // ——— More trophies ———
+  { fr: "La montre à gousset d'un yakuza oyabun qu'ils ont battu au combat singulier", en: "The pocket watch of a Yakuza oyabun they defeated in single combat" },
+  { fr: "Un fragment de masque de cérémonie arraché à un adepte du Loup de Fenris", en: "A fragment of a ceremonial mask torn from a Fenris Wolf adept" },
+  { fr: "Un bout de câble porteur du pont dont ils ont fait tomber un hélicoptère corpo", en: "A piece of support cable from the bridge where they brought down a corpo helicopter" },
+  { fr: "La fibule en argent d'un prince elfique du Tir na nÓg qu'ils ont humilié", en: "The silver brooch of a Tir na nÓg elven prince they humiliated" },
+  { fr: "Le numéro de série gravé d'un tank Ares qu'ils ont neutralisé avec une bombe artisanale", en: "The engraved serial number plate of an Ares tank they disabled with a homemade bomb" },
+  // ——— More weird collections ———
+  { fr: "Un fil électrique sur lequel sont enfilés des SIN falsifiés périmés, comme un collier de perles", en: "An electric wire strung with expired fake SINs, like a pearl necklace" },
+  { fr: "Trente-sept capsules de bouteilles, une pour chaque bar où ils ont été virés", en: "Thirty-seven bottle caps, one for each bar they've been thrown out of" },
+  { fr: "Un bocal d'yeux de verre de différentes couleurs achetés dans des marchés noirs", en: "A jar of glass eyes of different colors bought at black markets" },
+  { fr: "Un étui rempli de puces mémoire vierges qu'ils distribuent comme des cartes de visite", en: "A case full of blank memory chips they hand out like business cards" },
+  { fr: "Un rouleau de papier toilette vintage d'avant le Crash, gardé comme trésor inestimable", en: "A roll of vintage pre-Crash toilet paper, kept as a priceless treasure" },
+  // ——— More old world relics ———
+  { fr: "Un Game Boy fonctionnel avec une cartouche de Tetris dont le score maximal n'a jamais été battu", en: "A working Game Boy with a Tetris cartridge whose high score has never been beaten" },
+  { fr: "Un Polaroid Instax avec trois photos restantes qu'ils refusent d'utiliser à la légère", en: "A Polaroid Instax with three remaining shots they refuse to waste" },
+  { fr: "Un journal intime papier rempli à moitié, écrit dans un code qu'ils ont eux-mêmes oublié", en: "A half-filled paper diary written in a code they themselves have forgotten" },
+  { fr: "Un plan de métro papier de Seattle datant de 2045, annoté de symboles mystérieux", en: "A paper Seattle metro map from 2045, annotated with mysterious symbols" },
+  { fr: "Un exemplaire papier du Manifeste Néo-Anarchiste, corné et souligné à chaque page", en: "A paper copy of the Neo-Anarchist Manifesto, dog-eared and underlined on every page" },
+  // ——— More tech items ———
+  { fr: "Un bras cybernétique miniature articulé, prototype d'un ami ingénieur assassiné", en: "A miniature articulated cybernetic arm, a prototype from a murdered engineer friend" },
+  { fr: "Un patch neural grillé qui leur a donné des migraines pendant un an", en: "A burned-out neural patch that gave them migraines for a year" },
+  { fr: "Un bout de câble de fibre optique tressé en forme de nœud celtique", en: "A length of fiber optic cable braided into a Celtic knot" },
+  { fr: "Une lentille de contact AR périmée qu'ils gardent dans un petit étui en titane", en: "An expired AR contact lens they keep in a small titanium case" },
+  { fr: "Le dernier message d'un agent de la Matrice qu'ils ont laissé mourir, affiché sur un écran miniature", en: "The last message of a Matrix agent they let die, displayed on a miniature screen" },
+  // ——— More magical objects ———
+  { fr: "Un bâton d'encens qui ne finit jamais de brûler et dégage une odeur de forêt primitive", en: "A stick of incense that never finishes burning and smells like primordial forest" },
+  { fr: "Un coquillage spiral qui murmure des mots dans une langue morte quand on le porte à l'oreille", en: "A spiral shell that whispers words in a dead language when held to the ear" },
+  { fr: "Un tatouage vivant sur leur avant-bras qui bouge lentement au fil des jours", en: "A living tattoo on their forearm that moves slowly over the course of days" },
+  { fr: "Un éclat de météorite trouvé dans un cercle de cultures du Pays de Galles", en: "A meteorite fragment found in a crop circle in Wales" },
+  { fr: "Une petite fiole de larmes de phénix cristallisées qu'on leur a vendues comme authentiques", en: "A small vial of crystallized phoenix tears sold to them as authentic" },
+  // ——— More food/drink ———
+  { fr: "Un sachet de pop-corn micro-ondes pré-Éveil, gonflé et jamais ouvert", en: "A bag of pre-Awakening microwave popcorn, puffed up and never opened" },
+  { fr: "Un flacon de vanille véritable gardé pour parfumer le soja quand le moral est au plus bas", en: "A vial of real vanilla kept to flavor soy when morale is at its lowest" },
+  { fr: "Une tablette de chewing-gum dont ils mâchent un morceau par an, rituel strict", en: "A pack of chewing gum from which they chew one piece per year, strict ritual" },
+  { fr: "Un tube de wasabi authentique, trésor inestimable dans un monde de synthétique", en: "A tube of authentic wasabi, a priceless treasure in a world of synthetics" },
+  { fr: "Une bouteille de sake miniature offerte par un yakuza en signe de respect mutuel", en: "A miniature bottle of sake given by a Yakuza as a sign of mutual respect" },
+  // ——— More clothing/accessories ———
+  { fr: "Un lacet de botte noué sept fois, un pour chaque promesse qu'ils ont tenue", en: "A boot lace tied in seven knots, one for each promise they've kept" },
+  { fr: "Un bandeau oculaire en cuir qu'ils portent parfois sans raison médicale apparente", en: "A leather eye patch they sometimes wear for no apparent medical reason" },
+  { fr: "Des boutons de manchette fabriqués à partir de douilles de balles, hérités de leur mentor", en: "Cufflinks made from bullet casings, inherited from their mentor" },
+  { fr: "Une veste en cuir avec un trou de balle dans le dos, jamais réparé par superstition", en: "A leather jacket with a bullet hole in the back, never repaired out of superstition" },
+  { fr: "Une chevalière gravée d'un blason familial d'une famille noble qui n'existe plus", en: "A signet ring engraved with the coat of arms of a noble family that no longer exists" },
+  // ——— Mixed / unique ———
+  { fr: "Un cube de Rubik dont les faces ont été repeintes aux couleurs des six mégacorpos", en: "A Rubik's Cube with faces repainted in the colors of the six megacorporations" },
+  { fr: "Un bout de craie qui dessine toujours en bleu, quelle que soit la surface", en: "A piece of chalk that always draws in blue, regardless of the surface" },
+  { fr: "Une figurine de dragon en étain, le pouce usé à force de la caresser nerveusement", en: "A pewter dragon figurine, its thumb-spot worn smooth from nervous fidgeting" },
+  { fr: "Un canif suisse avec tous les outils cassés sauf le tire-bouchon", en: "A Swiss Army knife with every tool broken except the corkscrew" },
+  { fr: "Un jeu de runes gravées sur des morceaux de circuit imprimé récupérés", en: "A set of runes carved on salvaged circuit board fragments" },
+  { fr: "Un petit pot de peinture noire avec lequel ils repeignent leur masque avant chaque run", en: "A small pot of black paint they use to repaint their mask before every run" },
+  { fr: "Un sifflet ultrasonique qui ne produit aucun son audible par les humains", en: "An ultrasonic whistle that produces no sound audible to humans" },
+  { fr: "Une bague d'humeur cybernétique qui affiche leur rythme cardiaque en temps réel", en: "A cybernetic mood ring that displays their heart rate in real time" },
+  { fr: "Un ticket de cinéma pour un film qui n'est jamais sorti en salles", en: "A movie ticket for a film that was never released in theaters" },
+  { fr: "Un crayon à papier HB qu'ils taillent rituellement mais n'utilisent jamais pour écrire", en: "An HB pencil they ritually sharpen but never use to write" },
+  { fr: "Un morceau de béton peint en or provenant du mur de Berlin, authentique selon eux", en: "A piece of concrete painted gold from the Berlin Wall, authentic according to them" },
+  { fr: "Un jeton de métro de Neo-Tokyo qui ne correspond à aucune ligne connue", en: "A Neo-Tokyo metro token that doesn't match any known line" },
+  { fr: "Une boussole dont l'aiguille pointe toujours vers le sud-ouest sans raison explicable", en: "A compass whose needle always points southwest for no explainable reason" },
+  { fr: "Un briquet qui ne s'allume qu'une fois sur dix, mais jamais quand on n'en a pas besoin", en: "A lighter that only ignites one time in ten, but never when it's not needed" },
+  { fr: "Un flocon de neige artificiel conservé dans une bulle de résine depuis leur enfance", en: "An artificial snowflake preserved in a resin bubble since their childhood" },
+  { fr: "Un fil rouge noué à leur petit doigt, l'autre extrémité coupée net", en: "A red thread tied to their little finger, the other end cut clean" },
+  { fr: "Un morceau d'ambre contenant un moustique, trouvé ironiquement dans un cinéma abandonné", en: "A piece of amber containing a mosquito, found ironically in an abandoned movie theater" },
+  { fr: "Une plaque de métal gravée 'PROPRIÉTÉ DE LONE STAR — NE PAS VOLER' qu'ils ont volée", en: "A metal plate engraved 'LONE STAR PROPERTY — DO NOT STEAL' which they stole" },
+  { fr: "Un pendule en cristal noir qui oscille tout seul quand personne ne regarde", en: "A black crystal pendulum that swings on its own when nobody's looking" },
+  { fr: "Un minuscule carnet de coupons de réduction tous expirés, feuilleté comme un doudou", en: "A tiny coupon booklet, all expired, thumbed through like a comfort blanket" },
+  { fr: "Un cure-dent en métal gravé de nanoglyphes illisibles, trouvé dans la poche d'un cadavre", en: "A metal toothpick engraved with unreadable nanoglyphs, found in a corpse's pocket" },
+  { fr: "Un morceau de verre de mer bleu cobalt ramassé sur les rives toxiques du Puget Sound", en: "A cobalt blue sea glass shard picked up from the toxic shores of Puget Sound" },
+  { fr: "Un bouchon de liège d'une bouteille de champagne ouverte le soir où tout a mal tourné", en: "A cork from a champagne bottle opened the night everything went wrong" },
+  { fr: "Un petit robot jouet à remontoir qui marche en cercle et tombe du bord des tables", en: "A small wind-up toy robot that walks in circles and falls off table edges" },
+  { fr: "Une longue-vue en laiton miniature qui ne grossit rien mais à laquelle ils tiennent", en: "A miniature brass spyglass that magnifies nothing but they cherish" },
+  { fr: "Un pion de jeu d'échecs — le roi noir — taillé dans du bois véritable", en: "A chess piece — the black king — carved from real wood" }
+];
+async function generateNPCs(options) {
+  const count = Math.max(1, Math.min(5, options.count));
+  let created = 0;
+  for (let i = 0; i < count; i++) {
+    await generateSingleNPC(options);
+    created++;
+  }
+  return created;
+}
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function pickRandom(array, count = 1) {
+  const shuffled = [...array].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(count, array.length));
+}
+function pickOne(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+function generateItemId() {
+  return foundry.utils.randomID(16);
+}
+function generateName(gender, streetNameTheme) {
+  const origins = Object.keys(FIRST_NAMES.male);
+  const origin1 = pickOne(origins);
+  const origin2 = Math.random() < 0.5 ? origin1 : pickOne(origins);
+  const genderKey = gender === "female" ? "female" : gender === "neutral" ? "neutral" : "male";
+  const firstNamePool = FIRST_NAMES[genderKey]?.[origin1] ?? FIRST_NAMES.male[origin1];
+  const lastNamePool = LAST_NAMES[origin2] ?? LAST_NAMES.anglo;
+  const firstName = pickOne(firstNamePool);
+  const lastName = pickOne(lastNamePool);
+  const themePool = STREET_NAMES[streetNameTheme] ?? STREET_NAMES.general;
+  const streetPool = Math.random() < 0.2 ? STREET_NAMES.general : themePool;
+  const streetName = pickOne(streetPool);
+  return {
+    displayName: `${streetName} (${firstName} ${lastName})`,
+    firstName,
+    lastName,
+    streetName
+  };
+}
+function distributeAttributes(archetype, metatype, powerLevel) {
+  const attrs = {
+    strength: 1,
+    agility: 1,
+    willpower: 1,
+    logic: 1,
+    charisma: 1
+  };
+  const maxes = metatype.maxes;
+  const priority = archetype.primaryAttributes;
+  for (let i = 0; i < powerLevel.maxedAttributes && i < priority.length; i++) {
+    attrs[priority[i]] = maxes[priority[i]];
+  }
+  const targetPoints = powerLevel.budget <= 3e5 ? 12 : powerLevel.budget <= 375e3 ? 14 : 16;
+  const currentPoints = Object.values(attrs).reduce((s, v) => s + v, 0);
+  let remaining = targetPoints - currentPoints;
+  const weights = [5, 4, 3, 2, 1];
+  const totalWeight = weights.reduce((s, w) => s + w, 0);
+  for (let pass = 0; pass < 3 && remaining > 0; pass++) {
+    for (let i = 0; i < priority.length && remaining > 0; i++) {
+      const attr = priority[i];
+      const max = maxes[attr];
+      if (attrs[attr] >= max) continue;
+      const share = Math.max(
+        1,
+        Math.round(weights[i] / totalWeight * remaining)
+      );
+      const canAdd = Math.min(share, max - attrs[attr], remaining);
+      attrs[attr] += canAdd;
+      remaining -= canAdd;
+    }
+  }
+  for (const attr of priority) {
+    if (Math.random() < 0.3) {
+      const delta = Math.random() < 0.5 ? 1 : -1;
+      const newVal = attrs[attr] + delta;
+      if (newVal >= 2 && newVal <= maxes[attr]) {
+        attrs[attr] = newVal;
+      }
+    }
+  }
+  for (const attr of Object.keys(attrs)) {
+    if (attrs[attr] < 2) attrs[attr] = 2;
+  }
+  const maxAllowed = powerLevel.maxedAttributes;
+  let atMaxCount = 0;
+  for (const attr of priority) {
+    if (attrs[attr] === maxes[attr]) {
+      atMaxCount++;
+      if (atMaxCount > maxAllowed) {
+        attrs[attr] = maxes[attr] - 1;
+      }
+    }
+  }
+  let cost = 0;
+  for (const attr of Object.keys(attrs)) {
+    const val = attrs[attr];
+    const max = maxes[attr];
+    for (let i = 1; i <= val; i++) {
+      cost += i === max ? 2e4 : 1e4;
+    }
+  }
+  return { attributes: attrs, cost };
+}
+function distributeSkills(archetype, powerLevel, budget) {
+  const allSkills = {
+    ...archetype.primarySkills,
+    ...archetype.secondarySkills
+  };
+  const skillMax = powerLevel.skillMax;
+  const BASE_SKILLS = {
+    athletics: 2,
+    stealth: 2,
+    perception: 2,
+    influence: 2,
+    networking: 2
+  };
+  for (const [slug, minRating] of Object.entries(BASE_SKILLS)) {
+    if (!(slug in allSkills)) {
+      allSkills[slug] = minRating;
+    }
+  }
+  const totalWeight = Object.values(allSkills).reduce((s, w) => s + w, 0);
+  const targetPoints = powerLevel.budget <= 3e5 ? 28 : powerLevel.budget <= 375e3 ? 35 : 40;
+  const skills = [];
+  let totalCost = 0;
+  for (const [slug, weight] of Object.entries(allSkills)) {
+    let rating = Math.round(weight / totalWeight * targetPoints);
+    rating = Math.max(1, Math.min(rating, skillMax));
+    if (slug in BASE_SKILLS && rating < BASE_SKILLS[slug]) {
+      rating = BASE_SKILLS[slug];
+    }
+    if (Math.random() < 0.3) {
+      rating += Math.random() < 0.5 ? 1 : -1;
+      rating = Math.max(
+        slug in BASE_SKILLS ? BASE_SKILLS[slug] : 1,
+        Math.min(rating, skillMax)
+      );
+    }
+    let skillCost = 0;
+    for (let i = 1; i <= rating; i++) {
+      skillCost += i <= 5 ? 2500 : 5e3;
+    }
+    if (totalCost + skillCost <= budget) {
+      skills.push({ slug, rating });
+      totalCost += skillCost;
+    } else {
+      let reducedRating = rating;
+      const minRating = slug in BASE_SKILLS ? BASE_SKILLS[slug] : 1;
+      while (reducedRating >= minRating) {
+        let reducedCost = 0;
+        for (let i = 1; i <= reducedRating; i++) {
+          reducedCost += i <= 5 ? 2500 : 5e3;
+        }
+        if (totalCost + reducedCost <= budget) {
+          skills.push({ slug, rating: reducedRating });
+          totalCost += reducedCost;
+          break;
+        }
+        reducedRating--;
+      }
+    }
+  }
+  return { skills, cost: totalCost };
+}
+function selectSpecializations(archetype, skills, budget) {
+  const SPEC_COST = 2500;
+  const skillSlugs = new Set(skills.map((s) => s.slug));
+  const selected = [];
+  let cost = 0;
+  for (const specSlug of archetype.requiredSpecs) {
+    const specDef = SPEC_DEFINITIONS[specSlug];
+    if (specDef && skillSlugs.has(specDef.linkedSkill) && cost + SPEC_COST <= budget) {
+      selected.push(specSlug);
+      cost += SPEC_COST;
+    }
+  }
+  if (!selected.includes("spec_ranged-defense") && skillSlugs.has("athletics") && cost + SPEC_COST <= budget) {
+    selected.push("spec_ranged-defense");
+    cost += SPEC_COST;
+  }
+  const optionalCount = randomInt(1, 2);
+  const validOptional = archetype.optionalSpecs.filter((slug) => {
+    const specDef = SPEC_DEFINITIONS[slug];
+    return specDef && skillSlugs.has(specDef.linkedSkill) && !selected.includes(slug);
+  });
+  for (const specSlug of pickRandom(validOptional, optionalCount)) {
+    if (cost + SPEC_COST <= budget) {
+      selected.push(specSlug);
+      cost += SPEC_COST;
+    }
+  }
+  return { specs: selected, cost };
+}
+function generateFeats(archetype, _powerLevel, budget) {
+  const feats = [];
+  let cost = 0;
+  let essenceSpent = 0;
+  const addFeat = (template) => {
+    const { level: rating } = computeFeatLevel(template.featType, template);
+    const realCost = computeFeatCost(template.featType, {
+      ...template,
+      rating
+    });
+    if (cost + realCost > budget) return false;
+    if (template.essenceCost > 0 && essenceSpent + template.essenceCost > archetype.maxEssenceLoss)
+      return false;
+    feats.push(template);
+    cost += realCost;
+    essenceSpent += template.essenceCost;
+    return true;
+  };
+  if (archetype.isAwakened) {
+    const awakenedType = archetype.primarySkills["conjuration"] ? archetype.primarySkills["sorcery"] ? AWAKENED_TEMPLATES[1] : AWAKENED_TEMPLATES[2] : archetype.primarySkills["close-combat"] ? AWAKENED_TEMPLATES[3] : AWAKENED_TEMPLATES[0];
+    addFeat(awakenedType);
+  }
+  if (archetype.isEmerged) {
+    addFeat(EMERGED_TEMPLATES[0]);
+  }
+  if (archetype.cyberwarePool.length > 0) {
+    const cyberPool = [...CYBERWARE_TEMPLATES, ...BIOWARE_TEMPLATES];
+    const shuffled = pickRandom(cyberPool, cyberPool.length);
+    const maxCyber = randomInt(1, Math.min(4, shuffled.length));
+    let cyberCount = 0;
+    for (const template of shuffled) {
+      if (cyberCount >= maxCyber) break;
+      if (addFeat(template)) cyberCount++;
+    }
+  }
+  if (archetype.primarySkills["cracking"]) {
+    const deck = pickOne(CYBERDECK_TEMPLATES);
+    addFeat(deck);
+  }
+  if (archetype.spellPool && archetype.spellPool.length > 0) {
+    const spellCount = randomInt(3, 6);
+    const spells = pickRandom(SPELL_TEMPLATES, spellCount);
+    for (const spell of spells) {
+      addFeat(spell);
+    }
+  }
+  if (archetype.isAwakened) {
+    const maxRR = _powerLevel.budget <= 3e5 ? 1 : 2;
+    const magicSpecSlugs = [
+      "spec_combat-spells",
+      "spec_detection-spells",
+      "spec_health-spells",
+      "spec_illusion-spells",
+      "spec_manipulation-spells",
+      "spec_counterspelling",
+      "spec_banishing",
+      "spec_air-spirits",
+      "spec_earth-spirits",
+      "spec_fire-spirits",
+      "spec_water-spirits",
+      "spec_beast-spirits",
+      "spec_astral-combat"
+    ];
+    const magicFoci = EQUIPMENT_TEMPLATES.filter(
+      (eq) => eq.rrList.length > 0 && magicSpecSlugs.includes(eq.rrList[0]?.rrTarget) && (eq.rrList[0]?.rrValue ?? 0) <= maxRR
+    );
+    if (magicFoci.length > 0) {
+      const fociCount = randomInt(1, 2);
+      const selectedFoci = pickRandom(magicFoci, fociCount);
+      for (const focus of selectedFoci) {
+        addFeat(focus);
+      }
+    }
+  }
+  if (archetype.adeptPowerPool && archetype.adeptPowerPool.length > 0) {
+    const powerCount = randomInt(2, 4);
+    const powers = pickRandom(ADEPT_POWER_TEMPLATES, powerCount);
+    for (const power of powers) {
+      addFeat(power);
+    }
+  }
+  if (archetype.complexFormPool && archetype.complexFormPool.length > 0) {
+    const formCount = randomInt(3, 5);
+    const forms = pickRandom(COMPLEX_FORM_TEMPLATES, formCount);
+    for (const form of forms) {
+      addFeat(form);
+    }
+  }
+  const armorMin = archetype.armorRange[0];
+  const armorMax = archetype.armorRange[1];
+  const targetArmor = randomInt(armorMin, armorMax);
+  const armorOptions = ARMOR_TEMPLATES.filter(
+    (a) => a.armorValue <= targetArmor
+  );
+  armorOptions.sort(
+    (a, b) => Math.abs(b.armorValue - targetArmor) - Math.abs(a.armorValue - targetArmor)
+  );
+  if (armorOptions.length > 0) {
+    addFeat(armorOptions[armorOptions.length - 1]);
+  }
+  const weaponCategories = archetype.weaponPool;
+  for (const cat of weaponCategories) {
+    const catWeapons = WEAPON_TEMPLATES[cat];
+    if (catWeapons && catWeapons.length > 0) {
+      addFeat(pickOne(catWeapons));
+    }
+  }
+  if (archetype.isAwakened && feats.some((f) => f.featType === "weapon" && f.weaponType && ["short-weapons", "long-weapons", "advanced-melee"].includes(f.weaponType))) {
+    const meleeWeapon = feats.find((f) => f.featType === "weapon" && f.weaponType && ["short-weapons", "long-weapons", "advanced-melee"].includes(f.weaponType));
+    if (meleeWeapon) {
+      meleeWeapon.isWeaponFocus = true;
+    }
+  }
+  const traitCount = randomInt(1, 2);
+  const traits = pickRandom(TRAIT_TEMPLATES, traitCount);
+  let isFirstTrait = true;
+  for (const trait of traits) {
+    if (isFirstTrait) {
+      addFeat({ ...trait, isFirstFeat: true });
+      isFirstTrait = false;
+    } else {
+      addFeat(trait);
+    }
+  }
+  const contactRoll = Math.random();
+  const contactCount = contactRoll < 0.3 ? 0 : contactRoll < 0.8 ? 1 : 2;
+  if (contactCount > 0) {
+    const contacts = pickRandom(CONTACT_TEMPLATES, contactCount);
+    for (const contact of contacts) {
+      addFeat(contact);
+    }
+  }
+  const essentialEquipment = EQUIPMENT_TEMPLATES.slice(0, 2);
+  for (const eq of essentialEquipment) {
+    addFeat(eq);
+  }
+  const extraEquipment = pickRandom(EQUIPMENT_TEMPLATES.slice(2), 3);
+  for (const eq of extraEquipment) {
+    addFeat(eq);
+  }
+  const offensiveTypes = ["weapon", "spell", "cyberdeck", "adept-power", "complex-form"];
+  const hasOffensiveRR = feats.some((f) => offensiveTypes.includes(f.featType) && f.rrList.length > 0);
+  if (!hasOffensiveRR) {
+    const offensiveFeat = feats.find((f) => offensiveTypes.includes(f.featType));
+    if (offensiveFeat) {
+      let rrTarget = "";
+      if (offensiveFeat.featType === "weapon" && offensiveFeat.weaponType) {
+        const wt = WEAPON_TYPES[offensiveFeat.weaponType];
+        if (wt) rrTarget = wt.linkedSpecialization;
+      } else if (offensiveFeat.featType === "spell") {
+        rrTarget = "spec_combat-spells";
+      } else if (offensiveFeat.featType === "cyberdeck") {
+        rrTarget = "spec_cybercombat";
+      } else if (offensiveFeat.featType === "adept-power") {
+        rrTarget = "spec_unarmed";
+      } else if (offensiveFeat.featType === "complex-form") {
+        rrTarget = "spec_complex-forms";
+      }
+      if (rrTarget) {
+        offensiveFeat.rrList = [{ rrType: "specialization", rrValue: 1, rrTarget, rrLabel: rrTarget }];
+      }
+    }
+  }
+  return { feats, cost, essenceSpent };
+}
+function generateFlavor() {
+  const isEn = getLang() === "en";
+  const allPools = [
+    { label: isEn ? "Appearance" : "Apparence", data: PHYSICAL_TRAITS },
+    { label: isEn ? "Quirk" : "Manie", data: QUIRKS },
+    { label: isEn ? "Origin" : "Origine", data: BACKSTORIES },
+    { label: isEn ? "Relationship" : "Relation", data: RELATIONSHIPS },
+    { label: isEn ? "Iconic item" : "Objet fétiche", data: FETISH_OBJECTS }
+  ].filter((p) => p.data.length > 0);
+  if (allPools.length < 2) {
+    return { backgroundHtml: "", gmDescriptionHtml: "" };
+  }
+  const selected = pickRandom(allPools, 2);
+  const entries = selected.map((pool) => {
+    const entry = pickOne(pool.data);
+    const text = isEn ? entry.en : entry.fr;
+    return `<p><strong>${pool.label} :</strong> ${text}</p>`;
+  });
+  return {
+    backgroundHtml: entries.join("\n"),
+    gmDescriptionHtml: ""
+  };
+}
+function generatePersonality(metatypeKey, archetypeKey) {
+  const metatype = METATYPES[metatypeKey];
+  const archetype = ARCHETYPES[archetypeKey];
+  const isEn = getLang() === "en";
+  const keywordsTable = isEn ? KEYWORDS_BY_CATEGORY_EN : KEYWORDS_BY_CATEGORY;
+  const categories = Object.keys(keywordsTable);
+  const keywords = [];
+  for (const cat of categories) {
+    keywords.push(pickOne(keywordsTable[cat]));
+  }
+  const metatypeName = isEn ? metatype.nameEn : metatype.nameFr;
+  const archetypeLabel = isEn ? archetype.labelEn : archetype.labelFr;
+  if (metatype) {
+    keywords[0] = `${metatypeName} — ${archetypeLabel}`;
+  }
+  keywords[2] = archetypeLabel;
+  const behaviors = pickRandom(isEn ? BEHAVIORS_EN : BEHAVIORS, 4);
+  const catchphrases = pickRandom(isEn ? CATCHPHRASES_EN : CATCHPHRASES, 4);
+  return { keywords, behaviors, catchphrases };
+}
+const METATYPE_VISUALS = {
+  human: "human, average build",
+  elf: "elf with pointed ears, tall and slender, sharp elegant features",
+  dwarf: "dwarf, short and stocky, thick-boned, broad shoulders",
+  ork: "ork with prominent tusks, muscular, heavy brow, green-tinged skin",
+  troll: "troll, massive 2.5m tall, horns on head, dermal bone deposits, imposing frame"
+};
+const ARCHETYPE_VISUALS = {
+  "street-samurai": "cybernetically enhanced street warrior, chrome implants visible, combat-ready stance, military-grade gear",
+  "decker": "hacker with cyberdeck strapped to arm, neural cables, AR interface glowing near eyes, tech-savvy look",
+  "mage": "awakened magician, faint magical aura, mystical symbols on clothing, arcane focus in hand",
+  "shaman": "urban shaman with tribal markings, spirit fetishes, bones and totems woven into clothing, primal energy",
+  "adept": "physical adept, lean muscular build, martial arts stance, subtle magical glow on fists, no visible cyberware",
+  "rigger": "drone operator with control rig visible at temple, multiple drone controllers on belt, datajack, tech vest with antennas",
+  "face": "charismatic social operator, expensive but practical clothes, confident posture, subtle earpiece, sharp eyes",
+  "technomancer": "technomancer with no visible tech, data streams visible as faint AR overlay, intense focused gaze, resonance shimmer",
+  "infiltrator": "stealth specialist in dark tactical gear, hood or mask, slim silhouette, utility belt with infiltration tools"
+};
+const STYLE_SUFFIXES = [
+  "neo-noir cyberpunk atmosphere, rain-slicked neon streets, megacorp holographic ads towering in the background, steam rising from sewer grates",
+  "dark Shadowrun universe, volumetric neon lighting cutting through smog, sprawl cityscape with corporate arcologies looming behind",
+  "Shadowrun 6th World character art, detailed cyberpunk-fantasy illustration, magic and technology intertwined, dangerous urban sprawl",
+  "cinematic dystopian portrait, dramatic chiaroscuro lighting, Blade Runner meets urban fantasy, AR icons flickering in the air",
+  "gritty Sixth World street scene, neon kanji signs, armored corporate drones overhead, shadows hiding chrome-enhanced predators",
+  "dark cyberpunk portrait, crumbling Barrens architecture mixed with gleaming corporate towers, toxic rain, electric glow of the Matrix",
+  "Shadowrun aesthetic, where elves carry assault rifles and trolls hack the Matrix, neon-drenched dystopia where magic returned to a broken world"
+];
+function generateImagePrompt(metatypeKey, archetypeKey, gender, flavorBg, items, keywords, behaviors, skills) {
+  const parts = [];
+  const genderDesc = gender === "female" ? "female" : gender === "neutral" ? "androgynous" : "male";
+  const metatypeVisual = METATYPE_VISUALS[metatypeKey] || "metahuman";
+  const archetypeVisual = ARCHETYPE_VISUALS[archetypeKey] || "shadowrunner";
+  parts.push(`Full body portrait of a ${genderDesc} ${metatypeVisual} shadowrunner in the Sixth World — a dark dystopian future where magic, megacorporations, and cybernetic technology coexist. ${archetypeVisual}`);
+  if (keywords.length > 0) {
+    parts.push(`Identity: ${keywords.join(", ")}`);
+  }
+  const topSkills = [...skills].sort((a, b) => b.rating - a.rating).slice(0, 5);
+  if (topSkills.length > 0) {
+    const skillDescs = topSkills.map((s) => {
+      const def = SKILL_DEFINITIONS[s.slug];
+      return def ? getLang() === "en" ? s.slug.replace(/-/g, " ") : def.nameFr : s.slug;
+    });
+    parts.push(`Expert in: ${skillDescs.join(", ")} — this expertise should be visually apparent in their posture, gear, and attitude`);
+  }
+  const traitMatches = flavorBg.matchAll(/<strong>[^<]*:<\/strong>\s*([^<]+)/g);
+  for (const match of traitMatches) {
+    parts.push(match[1].trim());
+  }
+  if (behaviors.length > 0) {
+    const visualBehavior = behaviors.slice(0, 2).join(". ");
+    parts.push(`Personality visible through body language: ${visualBehavior}`);
+  }
+  const cyberware = items.filter((it) => it.type === "feat" && it.system?.featType === "cyberware" && !it.system?.isBioware);
+  if (cyberware.length > 0) {
+    const cyberNames = cyberware.slice(0, 3).map((c) => c.name).join(", ");
+    parts.push(`Visible cyberware: ${cyberNames}`);
+  }
+  const armor = items.find((it) => it.type === "feat" && it.system?.featType === "armor");
+  if (armor) {
+    const av = armor.system?.armorValue || 0;
+    const armorDesc = av >= 4 ? `Wearing heavy ${armor.name}, bulky military-grade protection clearly visible, tactical plates and reinforced padding` : av >= 3 ? `Wearing ${armor.name}, armored coat or vest clearly visible under clothing, reinforced shoulders and chest` : `Wearing ${armor.name}, light ballistic protection visible — reinforced jacket or concealed vest`;
+    parts.push(armorDesc);
+  }
+  const weapons = items.filter((it) => it.type === "feat" && it.system?.featType === "weapon");
+  const primaryWeapon = weapons.find((w) => w.system?.bookmarked) || weapons[0];
+  if (primaryWeapon) {
+    parts.push(`Carrying ${primaryWeapon.name} as primary weapon`);
+  }
+  if (weapons.length > 1) {
+    const secondary = weapons.find((w) => w !== primaryWeapon);
+    if (secondary) parts.push(`${secondary.name} holstered or sheathed`);
+  }
+  const cyberdeck = items.find((it) => it.type === "feat" && it.system?.featType === "cyberdeck");
+  if (cyberdeck) {
+    parts.push(`${cyberdeck.name} strapped to forearm, holographic interface glowing`);
+  }
+  parts.push(pickOne(STYLE_SUFFIXES));
+  parts.push("Highly detailed character illustration, sharp focus on face and equipment, dramatic pose, professional RPG character art quality");
+  return parts.join(". ") + ".";
+}
+let compendiumCache = {};
+function getLang() {
+  return game.i18n?.lang === "fr" ? "fr" : "en";
+}
+async function getCompendiumItems() {
+  const lang = getLang();
+  if (compendiumCache[lang]) return compendiumCache[lang];
+  const preferredSuffix = `-${lang}`;
+  const items = [];
+  for (const pack of game.packs) {
+    if (pack.documentName !== "Item") continue;
+    if (!pack.collection.endsWith(preferredSuffix)) continue;
+    try {
+      const docs = await pack.getDocuments();
+      for (const doc of docs) {
+        items.push(doc.toObject());
+      }
+    } catch (err) {
+      console.warn("NPC Generator: failed to load pack", pack.collection, err);
+    }
+  }
+  if (items.length === 0) {
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      try {
+        const docs = await pack.getDocuments();
+        for (const doc of docs) {
+          items.push(doc.toObject());
+        }
+      } catch (err) {
+      }
+    }
+  }
+  compendiumCache[lang] = items;
+  return items;
+}
+function resolveRRLabel(compendiumItems, rrTarget, rrType) {
+  if (!rrTarget) return "";
+  if (rrType === "specialization" || rrTarget.startsWith("spec_")) {
+    const comp = compendiumItems.find((it) => it.type === "specialization" && it.system?.slug === rrTarget);
+    if (comp) return comp.name;
+    const def = SPEC_DEFINITIONS[rrTarget];
+    if (def) return def.nameFr;
+  } else if (rrType === "skill") {
+    const comp = compendiumItems.find((it) => it.type === "skill" && it.system?.slug === rrTarget);
+    if (comp) return comp.name;
+    const def = SKILL_DEFINITIONS[rrTarget];
+    if (def) return def.nameFr;
+  } else if (rrType === "attribute") {
+    return rrTarget;
+  }
+  return rrTarget;
+}
+function findCompendiumItem(compendiumItems, type, slug) {
+  return compendiumItems.find(
+    (item) => item.type === type && item.system?.slug === slug
+  ) ?? null;
+}
+function buildMetatypeItem(metatypeKey, metatype, compendiumItems) {
+  if (compendiumItems) {
+    const compMetatype = compendiumItems.find(
+      (it) => it.type === "metatype" && (it.name === metatype.nameFr || it.name === metatype.nameEn)
+    );
+    if (compMetatype) {
+      const item = JSON.parse(JSON.stringify(compMetatype));
+      item._id = generateItemId();
+      item.sort = 0;
+      delete item._stats;
+      delete item.ownership;
+      delete item._key;
+      delete item.folder;
+      return item;
+    }
+  }
+  const isEn = getLang() === "en";
+  const mtName = isEn ? metatype.nameEn : metatype.nameFr;
+  return {
+    name: mtName,
+    type: "metatype",
+    _id: generateItemId(),
+    img: metatype.img,
+    system: {
+      description: `<p>${mtName}</p>`,
+      maxStrength: metatype.maxes.strength,
+      maxAgility: metatype.maxes.agility,
+      maxWillpower: metatype.maxes.willpower,
+      maxLogic: metatype.maxes.logic,
+      maxCharisma: metatype.maxes.charisma,
+      anarchyBonus: metatype.anarchyBonus,
+      reference: ""
+    },
+    effects: [],
+    flags: {},
+    sort: 0
+  };
+}
+function buildSkillItem(compendiumItems, slug, rating, sortIndex) {
+  const compItem = findCompendiumItem(compendiumItems, "skill", slug);
+  if (compItem) {
+    const item = JSON.parse(JSON.stringify(compItem));
+    item._id = generateItemId();
+    item.system.rating = rating;
+    item.system.bookmarked = sortIndex === 0;
+    item.sort = (sortIndex + 1) * 100;
+    delete item._stats;
+    delete item.ownership;
+    delete item._key;
+    delete item.folder;
+    return item;
+  }
+  const def = SKILL_DEFINITIONS[slug];
+  if (!def) return null;
+  return {
+    name: def.nameFr,
+    type: "skill",
+    _id: generateItemId(),
+    img: "icons/svg/item-bag.svg",
+    system: {
+      rating,
+      linkedAttribute: def.linkedAttribute,
+      description: "",
+      bookmarked: sortIndex === 0,
+      reference: "",
+      slug
+    },
+    effects: [],
+    flags: {},
+    sort: (sortIndex + 1) * 100
+  };
+}
+function buildSpecItem(compendiumItems, specSlug, sortIndex) {
+  const compItem = findCompendiumItem(
+    compendiumItems,
+    "specialization",
+    specSlug
+  );
+  if (compItem) {
+    const item = JSON.parse(JSON.stringify(compItem));
+    item._id = generateItemId();
+    item.sort = (sortIndex + 100) * 100;
+    delete item._stats;
+    delete item.ownership;
+    delete item._key;
+    delete item.folder;
+    return item;
+  }
+  const def = SPEC_DEFINITIONS[specSlug];
+  if (!def) return null;
+  return {
+    name: def.nameFr,
+    type: "specialization",
+    _id: generateItemId(),
+    img: "icons/svg/item-bag.svg",
+    system: {
+      linkedSkill: def.linkedSkill,
+      linkedAttribute: def.linkedAttribute,
+      description: "",
+      bookmarked: false,
+      reference: "",
+      slug: specSlug
+    },
+    effects: [],
+    flags: {},
+    sort: (sortIndex + 100) * 100
+  };
+}
+function buildFeatItem(template, sortIndex, compendiumItems) {
+  let meleeRange = template.meleeRange ?? "none";
+  let shortRange = template.shortRange ?? "none";
+  let mediumRange = template.mediumRange ?? "none";
+  let longRange = template.longRange ?? "none";
+  let linkedAttackSkill = "";
+  let linkedAttackSpecialization = "";
+  let linkedDefenseSkill = "";
+  let linkedDefenseSpecialization = "";
+  if (template.weaponType && template.weaponType in WEAPON_TYPES) {
+    const wt = WEAPON_TYPES[template.weaponType];
+    meleeRange = wt.melee;
+    shortRange = wt.short;
+    mediumRange = wt.medium;
+    longRange = wt.long;
+    linkedAttackSkill = wt.linkedSkill;
+    linkedAttackSpecialization = wt.linkedSpecialization;
+    linkedDefenseSkill = wt.linkedDefenseSkill;
+    linkedDefenseSpecialization = wt.linkedDefenseSpecialization;
+  }
+  let damageValue = template.damageValue ?? "0";
+  const vdMode = template.vdMode ?? "custom";
+  if (vdMode === "custom") {
+    damageValue = String(template.vdCustomValue ?? 0);
+  } else if (vdMode === "attribute") {
+    const attr = template.vdAttribute ?? "strength";
+    const bonus = template.vdBonus ?? 0;
+    const strLabel = getLang() === "fr" ? "FOR" : "STR";
+    if (attr === "strength") {
+      damageValue = bonus === 0 ? strLabel : `${strLabel}+${bonus}`;
+    } else {
+      damageValue = bonus === 0 ? attr.toUpperCase() : `${attr.toUpperCase()}+${bonus}`;
+    }
+  }
+  const { level: rating } = computeFeatLevel(template.featType, template);
+  const isEn = getLang() === "en";
+  const featName = isEn && template.nameEn ? template.nameEn : template.name;
+  const featDesc = isEn && template.descriptionEn ? template.descriptionEn : template.description;
+  return {
+    name: featName,
+    type: "feat",
+    _id: generateItemId(),
+    img: "icons/svg/item-bag.svg",
+    system: {
+      description: featDesc || "",
+      gmDescription: "",
+      bookmarked: template.bookmarked ?? false,
+      rating,
+      cost: template.cost,
+      active: true,
+      featType: template.featType,
+      weaponType: template.weaponType ?? "",
+      vehicleType: "",
+      damageValue,
+      damageValueBonus: template.damageValueBonus ?? 0,
+      vdMode: template.vdMode ?? "custom",
+      vdCustomValue: template.vdCustomValue ?? 0,
+      vdAttribute: template.vdAttribute ?? "strength",
+      vdBonus: template.vdBonus ?? 0,
+      damageType: template.damageType ?? "physical",
+      meleeRange,
+      shortRange,
+      mediumRange,
+      longRange,
+      rangeImprovements: {
+        melee: false,
+        short: false,
+        medium: false,
+        long: false
+      },
+      linkedAttackSkill,
+      linkedAttackSpecialization,
+      linkedDefenseSkill,
+      linkedDefenseSpecialization,
+      rrList: compendiumItems ? template.rrList.map((rr) => ({ ...rr, rrLabel: resolveRRLabel(compendiumItems, rr.rrTarget, rr.rrType) })) : template.rrList,
+      bonusLightDamage: template.bonusLightDamage,
+      bonusSevereDamage: template.bonusSevereDamage,
+      bonusPhysicalThreshold: template.bonusPhysicalThreshold,
+      bonusMentalThreshold: template.bonusMentalThreshold,
+      bonusMatrixThreshold: template.bonusMatrixThreshold,
+      armorValue: template.armorValue,
+      bonusAnarchy: template.bonusAnarchy,
+      essenceCost: template.essenceCost,
+      isBioware: template.isBioware,
+      // Awakened checkboxes
+      astralPerception: template.astralPerception ?? false,
+      astralProjection: template.astralProjection ?? false,
+      sorcery: template.sorcery ?? false,
+      conjuration: template.conjuration ?? false,
+      adept: template.adept ?? false,
+      // First feat flag
+      isFirstFeat: template.isFirstFeat ?? false,
+      // Weapon focus (for awakened melee weapons in astral combat)
+      isWeaponFocus: template.isWeaponFocus ?? false,
+      // Cyberdeck stats
+      firewall: template.firewall ?? 0,
+      attack: template.attack ?? 0,
+      cyberdeckBiofeedback: false,
+      cyberdeckBiofeedbackFilter: false,
+      cyberdeckConnectionLock: false,
+      // Emerged checkboxes
+      matrixAccess: template.matrixAccess ?? false,
+      complexFormWeaving: template.complexFormWeaving ?? false,
+      spriteCompilation: template.spriteCompilation ?? false,
+      biofeedback: template.biofeedback ?? false,
+      isOptional: false,
+      isAChoice: false,
+      numberOfChoice: 1,
+      reference: ""
+    },
+    effects: [],
+    flags: {},
+    sort: (sortIndex + 200) * 100
+  };
+}
+async function createRiggerDrones(actor, isEn, folder) {
+  let droneNames;
+  try {
+    const d = await import("./npc-drone-data-D9VyEE6s.mjs");
+    droneNames = { small: d.SMALL_DRONES, medium: d.MEDIUM_DRONES, large: d.LARGE_DRONES };
+  } catch {
+    return;
+  }
+  const linkedVehicles = [];
+  const smallDrone = pickOne(droneNames.small);
+  const useLarge = Math.random() < 0.3;
+  const secondDrone = useLarge ? pickOne(droneNames.large) : pickOne(droneNames.medium);
+  for (const drone of [smallDrone, secondDrone]) {
+    const droneName = isEn ? drone.en : drone.fr;
+    const droneActor = await Actor.create({
+      name: droneName,
+      type: "vehicle",
+      img: "icons/svg/item-bag.svg",
+      folder: folder?.id ?? null,
+      system: {
+        vehicleType: drone.type,
+        controlMode: "rigged"
+      }
+    });
+    if (droneActor) {
+      linkedVehicles.push(droneActor.uuid);
+    }
+  }
+  if (linkedVehicles.length > 0) {
+    const existingLinks = actor.system.linkedVehicles || [];
+    await actor.update({ "system.linkedVehicles": [...existingLinks, ...linkedVehicles] });
+  }
+}
+async function generateSingleNPC(options) {
+  const archetypeKey = options.archetype === "random" ? pickOne(Object.keys(ARCHETYPES)) : options.archetype;
+  const metatypeKey = options.metatype === "random" ? pickOne(Object.keys(METATYPES)) : options.metatype;
+  const archetype = ARCHETYPES[archetypeKey];
+  const metatype = METATYPES[metatypeKey];
+  const powerLevel = POWER_LEVELS[options.powerLevel] ?? POWER_LEVELS.runner;
+  if (!archetype || !metatype) {
+    ui.notifications?.error("Archétype ou métatype invalide");
+    return;
+  }
+  const compendiumItems = await getCompendiumItems();
+  const isEn = getLang() === "en";
+  const mtName = isEn ? metatype.nameEn : metatype.nameFr;
+  const archLabel = isEn ? archetype.labelEn : archetype.labelFr;
+  const plLabel = isEn ? powerLevel.labelEn : powerLevel.labelFr;
+  const name = generateName(options.gender, archetype.streetNameTheme);
+  const attrResult = distributeAttributes(archetype, metatype, powerLevel);
+  const skillBudget = Math.floor((powerLevel.budget - attrResult.cost) * 0.35);
+  const skillResult = distributeSkills(archetype, powerLevel, skillBudget);
+  const specBudget = Math.floor(
+    (powerLevel.budget - attrResult.cost - skillResult.cost) * 0.1
+  );
+  const specResult = selectSpecializations(
+    archetype,
+    skillResult.skills,
+    specBudget
+  );
+  const featBudget = powerLevel.budget - attrResult.cost - skillResult.cost - specResult.cost;
+  const featResult = generateFeats(archetype, powerLevel, featBudget);
+  const primaryWeapon = featResult.feats.find(
+    (f) => f.featType === "weapon" && f.weaponType
+  );
+  if (primaryWeapon?.weaponType && primaryWeapon.weaponType in WEAPON_TYPES) {
+    const wt = WEAPON_TYPES[primaryWeapon.weaponType];
+    const weaponSpecSlug = wt.linkedSpecialization;
+    if (weaponSpecSlug && !specResult.specs.includes(weaponSpecSlug)) {
+      specResult.specs.push(weaponSpecSlug);
+    }
+  }
+  const personality = generatePersonality(metatypeKey, archetypeKey);
+  const flavor = generateFlavor();
+  const items = [];
+  items.push(buildMetatypeItem(metatypeKey, metatype, compendiumItems));
+  skillResult.skills.forEach((s, i) => {
+    const item = buildSkillItem(compendiumItems, s.slug, s.rating, i);
+    if (item) items.push(item);
+  });
+  specResult.specs.forEach((slug, i) => {
+    const item = buildSpecItem(compendiumItems, slug, i);
+    if (item) items.push(item);
+  });
+  featResult.feats.forEach((template, i) => {
+    items.push(buildFeatItem(template, i, compendiumItems));
+  });
+  const recomputeTotal = () => {
+    let total = attrResult.cost;
+    for (const item of items) {
+      if (item.type === "skill") {
+        const r = item.system.rating || 0;
+        total += r <= 5 ? r * 2500 : 5 * 2500 + (r - 5) * 5e3;
+      } else if (item.type === "specialization") {
+        total += 2500;
+      } else if (item.type === "feat") {
+        total += computeFeatCost(item.system.featType, item.system);
+      }
+    }
+    return total;
+  };
+  let totalSpent = recomputeTotal();
+  let surplus = powerLevel.budget - totalSpent;
+  const primarySlugs = Object.keys(archetype.primarySkills);
+  let skillUpgrades = 0;
+  while (surplus >= 1e4 && skillUpgrades < 5) {
+    const upgradeable = skillResult.skills.filter(
+      (s) => s.rating < powerLevel.skillMax && primarySlugs.includes(s.slug)
+    );
+    if (upgradeable.length === 0) break;
+    upgradeable.sort((a, b) => b.rating - a.rating);
+    const skill = upgradeable[0];
+    const upgradeCost = skill.rating < 5 ? 2500 : 5e3;
+    if (upgradeCost > surplus) break;
+    skill.rating += 1;
+    skillUpgrades++;
+    const skillItem = items.find(
+      (it) => it.type === "skill" && it.system?.slug === skill.slug
+    );
+    if (skillItem) skillItem.system.rating = skill.rating;
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  const currentMaxed = Object.keys(attrResult.attributes).filter(
+    (a) => attrResult.attributes[a] === metatype.maxes[a]
+  ).length;
+  let attrUpgrades = 0;
+  while (surplus >= 2e4 && attrUpgrades < 2) {
+    const canAddNewMax = currentMaxed + attrUpgrades < powerLevel.maxedAttributes;
+    const upgradeable = archetype.primaryAttributes.filter((attr2) => {
+      const current = attrResult.attributes[attr2];
+      const max = metatype.maxes[attr2];
+      if (current >= max) return false;
+      if (current + 1 === max && !canAddNewMax) return false;
+      return true;
+    });
+    if (upgradeable.length === 0) break;
+    const attr = upgradeable[0];
+    attrResult.attributes[attr] += 1;
+    attrUpgrades++;
+    attrResult.cost = 0;
+    for (const a of Object.keys(attrResult.attributes)) {
+      const val = attrResult.attributes[a];
+      const max = metatype.maxes[a];
+      for (let i = 1; i <= val; i++) {
+        attrResult.cost += i === max ? 2e4 : 1e4;
+      }
+    }
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  const cyberdeckItem = items.find((it) => it.type === "feat" && it.system?.featType === "cyberdeck");
+  if (cyberdeckItem && archetypeKey === "decker") {
+    const deckSys = cyberdeckItem.system;
+    let deckStatUpgrades = 0;
+    while (surplus >= 1e4 && deckStatUpgrades < 4) {
+      const fw = deckSys.firewall || 0;
+      const atk = deckSys.attack || 0;
+      if (fw >= 5 && atk >= 5) break;
+      const boostField = fw <= atk ? "firewall" : "attack";
+      if ((deckSys[boostField] || 0) >= 5) {
+        const otherField = boostField === "firewall" ? "attack" : "firewall";
+        if ((deckSys[otherField] || 0) >= 5) break;
+        deckSys[otherField] = (deckSys[otherField] || 0) + 1;
+      } else {
+        deckSys[boostField] = (deckSys[boostField] || 0) + 1;
+      }
+      deckSys.rating = computeFeatLevel(deckSys.featType, deckSys).level;
+      deckStatUpgrades++;
+      totalSpent = recomputeTotal();
+      surplus = powerLevel.budget - totalSpent;
+    }
+    const programs = [
+      { field: "cyberdeckBiofeedback", label: "Biofeedback" },
+      { field: "cyberdeckBiofeedbackFilter", label: "Biofeedback Filter" },
+      { field: "cyberdeckConnectionLock", label: "Connection Lock" }
+    ];
+    const programCount = randomInt(1, 3);
+    const selectedPrograms = pickRandom(programs, programCount);
+    for (const prog of selectedPrograms) {
+      if (surplus >= 5e3 && !deckSys[prog.field]) {
+        deckSys[prog.field] = true;
+        deckSys.rating = computeFeatLevel(deckSys.featType, deckSys).level;
+        totalSpent = recomputeTotal();
+        surplus = powerLevel.budget - totalSpent;
+      }
+    }
+  }
+  const combatArchetypes = ["street-samurai", "adept", "infiltrator"];
+  const maxWeaponUpgrades = combatArchetypes.includes(archetypeKey) ? 3 : 1;
+  const narrativeEffectsFr = [
+    "Silencieux intégré",
+    "Chargeur étendu",
+    "Visée laser",
+    "Canon renforcé",
+    "Poignée ergonomique",
+    "Gravure personnalisée",
+    "Lame dentelée",
+    "Contrepoids parfait",
+    "Détecteur de mouvement",
+    "Système anti-recul",
+    "Revêtement antireflet",
+    "Lame vibrante",
+    "Mécanisme de rechargement rapide",
+    "Canon long précision",
+    "Fibre optique de visée",
+    "Crosse pliable",
+    "Munitions perforantes",
+    "Chargeur rotatif",
+    "Système de visée intelligente",
+    "Compensateur de recul magnétique",
+    "Rail Picatinny modifié",
+    "Canon flottant stabilisé",
+    "Système de tir sélectif amélioré",
+    "Poignée chauffante",
+    "Garde-main ventilé",
+    "Lunette thermique compacte",
+    "Embout de canon fileté",
+    "Ressort de détente allégé",
+    "Détente progressive",
+    "Système de sûreté biométrique",
+    "Canon traité antifriction",
+    "Chargeur translucide",
+    "Sangle tactique trois points",
+    "Lampe stroboscopique",
+    "Pointeur infrarouge",
+    "Bipied rétractable",
+    "Cache-flamme",
+    "Canon lourd précision",
+    "Système de refroidissement intégré",
+    "Munitions traçantes",
+    "Lame empoisonnable",
+    "Garde en fibre de carbone",
+    "Pommeau lesté",
+    "Tranchant monofilament partiel",
+    "Fourreau magnétique",
+    "Système de dégainage rapide",
+    "Renfort anti-vibration",
+    "Poignée en peau de dragon synthétique",
+    "Lame à plasma basse énergie",
+    "Système de retour tactile",
+    "Amortisseur de choc intégré",
+    "Mécanisme anti-désarmement",
+    "Revêtement camouflage actif",
+    "Système de comptage de munitions",
+    "Extracteur de douilles amélioré",
+    "Canon interchangeable",
+    "Poignée à mémoire de forme",
+    "Système de nettoyage auto",
+    "Alliage ultra-léger",
+    "Renfort structurel titane",
+    "Système de verrouillage rapide",
+    "Marquage holographique",
+    "Revêtement phosphorescent",
+    "Détecteur de cible ami/ennemi",
+    "Système de guidage assisté",
+    "Correcteur de trajectoire",
+    "Amplificateur de force",
+    "Mécanisme silencieux",
+    "Lame rétractable secondaire",
+    "Garde électrifiée",
+    "Système de fixation magnétique",
+    "Revêtement anti-empreintes",
+    "Canon court tactique",
+    "Chargeur drum haute capacité",
+    "Détente à deux temps",
+    "Compensateur vertical",
+    "Rail latéral accessoire",
+    "Dispositif de brouillage balistique",
+    "Lance-fumigène intégré",
+    "Lunette à amplification de lumière",
+    "Système de recul zéro",
+    "Canon ventilé céramique",
+    "Poignée antidérapante nano",
+    "Système de mise à feu électronique",
+    "Module de tir en rafale contrôlée",
+    "Viseur à point rouge",
+    "Canon renforcé carbone",
+    "Système de verrouillage de culasse",
+    "Extracteur de chaleur",
+    "Lame auto-aiguisante",
+    "Tranchant dentelé inversé",
+    "Renfort de pommeau tactique",
+    "Système de lancer assisté",
+    "Grip magnétique palmaire",
+    "Système de neutralisation non-létale",
+    "Fil monofilament rétractable",
+    "Capteur de pression de détente",
+    "Revêtement auto-réparant",
+    "Micro-gyroscope stabilisateur",
+    "Module de tir furtif"
+  ];
+  const narrativeEffectsEn = [
+    "Integrated silencer",
+    "Extended magazine",
+    "Laser sight",
+    "Reinforced barrel",
+    "Ergonomic grip",
+    "Custom engraving",
+    "Serrated blade",
+    "Perfect counterweight",
+    "Motion detector",
+    "Anti-recoil system",
+    "Anti-glare coating",
+    "Vibrating blade",
+    "Quick reload mechanism",
+    "Long precision barrel",
+    "Fiber optic sight",
+    "Folding stock",
+    "Armor-piercing ammo",
+    "Rotary magazine",
+    "Smart targeting system",
+    "Magnetic recoil compensator",
+    "Modified Picatinny rail",
+    "Free-floating stabilized barrel",
+    "Enhanced selective fire system",
+    "Heated grip",
+    "Ventilated handguard",
+    "Compact thermal scope",
+    "Threaded barrel tip",
+    "Lightened trigger spring",
+    "Progressive trigger",
+    "Biometric safety system",
+    "Friction-treated barrel",
+    "Translucent magazine",
+    "Three-point tactical sling",
+    "Strobe flashlight",
+    "Infrared pointer",
+    "Retractable bipod",
+    "Flash hider",
+    "Heavy precision barrel",
+    "Integrated cooling system",
+    "Tracer rounds",
+    "Poisonable blade",
+    "Carbon fiber guard",
+    "Weighted pommel",
+    "Partial monofilament edge",
+    "Magnetic scabbard",
+    "Quick-draw system",
+    "Anti-vibration reinforcement",
+    "Synthetic dragon skin grip",
+    "Low-energy plasma blade",
+    "Tactile feedback system",
+    "Integrated shock absorber",
+    "Anti-disarm mechanism",
+    "Active camo coating",
+    "Ammo counter system",
+    "Enhanced shell extractor",
+    "Interchangeable barrel",
+    "Shape-memory grip",
+    "Self-cleaning system",
+    "Ultra-light alloy",
+    "Titanium structural reinforcement",
+    "Quick-lock system",
+    "Holographic marking",
+    "Phosphorescent coating",
+    "Friend/foe target detector",
+    "Assisted guidance system",
+    "Trajectory corrector",
+    "Force amplifier",
+    "Silent mechanism",
+    "Secondary retractable blade",
+    "Electrified guard",
+    "Magnetic attachment system",
+    "Anti-fingerprint coating",
+    "Tactical short barrel",
+    "High-capacity drum magazine",
+    "Two-stage trigger",
+    "Vertical compensator",
+    "Side accessory rail",
+    "Ballistic jamming device",
+    "Integrated smoke launcher",
+    "Light amplification scope",
+    "Zero-recoil system",
+    "Ceramic vented barrel",
+    "Nano non-slip grip",
+    "Electronic firing system",
+    "Controlled burst module",
+    "Red dot sight",
+    "Carbon-reinforced barrel",
+    "Bolt lock system",
+    "Heat extractor",
+    "Self-sharpening blade",
+    "Reverse serrated edge",
+    "Tactical pommel reinforcement",
+    "Assisted throwing system",
+    "Palm magnetic grip",
+    "Non-lethal neutralization system",
+    "Retractable monofilament wire",
+    "Trigger pressure sensor",
+    "Self-repairing coating",
+    "Micro-gyroscope stabilizer",
+    "Stealth fire module"
+  ];
+  let weaponUpgradesDone = 0;
+  const weaponItems = items.filter((it) => it.type === "feat" && it.system?.featType === "weapon");
+  while (surplus >= 1e4 && weaponUpgradesDone < maxWeaponUpgrades && weaponItems.length > 0) {
+    const target = weaponItems.find((w) => w.system.bookmarked) || weaponItems[0];
+    const sys = target.system;
+    let upgraded = false;
+    if (!upgraded && sys.rrList.length === 0 && sys.weaponType) {
+      const wt = WEAPON_TYPES[sys.weaponType];
+      if (wt?.linkedSpecialization) {
+        const newRating = computeFeatLevel(sys.featType, { ...sys, rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: wt.linkedSpecialization, rrLabel: wt.linkedSpecialization }] }).level;
+        const newCost = computeFeatCost(sys.featType, { ...sys, rating: newRating, rrList: [{ rrType: "specialization", rrValue: 1, rrTarget: wt.linkedSpecialization, rrLabel: wt.linkedSpecialization }] });
+        const oldCost = computeFeatCost(sys.featType, { ...sys, rating: computeFeatLevel(sys.featType, sys).level });
+        if (newCost - oldCost <= surplus) {
+          const label = compendiumItems ? resolveRRLabel(compendiumItems, wt.linkedSpecialization, "specialization") : wt.linkedSpecialization;
+          sys.rrList = [{ rrType: "specialization", rrValue: 1, rrTarget: wt.linkedSpecialization, rrLabel: label }];
+          sys.rating = newRating;
+          upgraded = true;
+        }
+      }
+    }
+    if (!upgraded && (sys.damageValueBonus || 0) < 2) {
+      const newDVB = (sys.damageValueBonus || 0) + 1;
+      const newRating = computeFeatLevel(sys.featType, { ...sys, damageValueBonus: newDVB }).level;
+      const newCost = computeFeatCost(sys.featType, { ...sys, rating: newRating });
+      const oldCost = computeFeatCost(sys.featType, sys);
+      if (newCost - oldCost <= surplus) {
+        sys.damageValueBonus = newDVB;
+        sys.rating = newRating;
+        upgraded = true;
+      }
+    }
+    if (!upgraded) {
+      const ri = sys.rangeImprovements || { melee: false, short: false, medium: false, long: false };
+      const improvableRange = ["short", "medium", "long", "melee"].find((r) => !ri[r] && sys[`${r}Range`] === "disadvantage");
+      if (improvableRange) {
+        const newRI = { ...ri, [improvableRange]: true };
+        const newRating = computeFeatLevel(sys.featType, { ...sys, rangeImprovements: newRI }).level;
+        const newCost = computeFeatCost(sys.featType, { ...sys, rating: newRating });
+        const oldCost = computeFeatCost(sys.featType, sys);
+        if (newCost - oldCost <= surplus) {
+          sys.rangeImprovements = newRI;
+          sys.rating = newRating;
+          upgraded = true;
+        }
+      }
+    }
+    if (!upgraded) {
+      const effects = sys.narrativeEffects || [];
+      if (effects.length < 3) {
+        const idx = Math.floor(Math.random() * narrativeEffectsFr.length);
+        const effectText = isEn ? narrativeEffectsEn[idx] : narrativeEffectsFr[idx];
+        const newEffects = [...effects, { text: effectText, isNegative: false, value: 1 }];
+        const newRating = computeFeatLevel(sys.featType, { ...sys, narrativeEffects: newEffects }).level;
+        const newCost = computeFeatCost(sys.featType, { ...sys, rating: newRating });
+        const oldCost = computeFeatCost(sys.featType, sys);
+        if (newCost - oldCost <= surplus) {
+          sys.narrativeEffects = newEffects;
+          sys.rating = newRating;
+          upgraded = true;
+        }
+      }
+    }
+    if (!upgraded) break;
+    weaponUpgradesDone++;
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  let addedSpecs = 0;
+  const skillSlugsForSpecs = new Set(skillResult.skills.map((s) => s.slug));
+  const existingSpecsSet = new Set(specResult.specs);
+  const rrTargetSpecs = [];
+  const runnerSkillSlugs = new Set(skillResult.skills.filter((s) => s.rating >= 2).map((s) => s.slug));
+  for (const item of items) {
+    if (item.type !== "feat" || !item.system?.rrList) continue;
+    for (const rr of item.system.rrList) {
+      if (rr.rrType === "specialization" && rr.rrTarget && !existingSpecsSet.has(rr.rrTarget)) {
+        const specDef = SPEC_DEFINITIONS[rr.rrTarget];
+        if (specDef && runnerSkillSlugs.has(specDef.linkedSkill) && !rrTargetSpecs.includes(rr.rrTarget)) {
+          rrTargetSpecs.push(rr.rrTarget);
+        }
+      }
+    }
+  }
+  for (const specSlug of rrTargetSpecs) {
+    if (surplus < 2500) break;
+    if (existingSpecsSet.has(specSlug)) continue;
+    specResult.specs.push(specSlug);
+    existingSpecsSet.add(specSlug);
+    addedSpecs++;
+    const specItem = buildSpecItem(compendiumItems, specSlug, specResult.specs.length + 100);
+    if (specItem) items.push(specItem);
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  while (surplus >= 1e4 && addedSpecs < rrTargetSpecs.length + 1) {
+    const available = archetype.optionalSpecs.filter((slug) => {
+      const specDef = SPEC_DEFINITIONS[slug];
+      return specDef && skillSlugsForSpecs.has(specDef.linkedSkill) && !existingSpecsSet.has(slug);
+    });
+    if (available.length === 0) break;
+    const newSpec = pickOne(available);
+    specResult.specs.push(newSpec);
+    existingSpecsSet.add(newSpec);
+    addedSpecs++;
+    const specItem = buildSpecItem(
+      compendiumItems,
+      newSpec,
+      specResult.specs.length + 100
+    );
+    if (specItem) items.push(specItem);
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  const contactNames = [
+    "Informateur",
+    "Passeur",
+    "Technicien",
+    "Avocat véreux",
+    "Ex-corpo",
+    "Garde du corps",
+    "Pilote",
+    "Chimiste",
+    "Mercenaire",
+    "Antiquaire",
+    "Tatoueuse",
+    "Bookmaker",
+    "Politicien",
+    "Smuggler",
+    "Chaman de quartier"
+  ];
+  const contactRRTargets = [
+    { rrType: "specialization", rrTarget: "spec_criminal", rrLabel: "spec_criminal" },
+    { rrType: "specialization", rrTarget: "spec_la-rue", rrLabel: "spec_la-rue" },
+    { rrType: "specialization", rrTarget: "spec_corporate", rrLabel: "spec_corporate" },
+    { rrType: "specialization", rrTarget: "spec_media", rrLabel: "spec_media" },
+    {
+      rrType: "specialization",
+      rrTarget: "spec_government",
+      rrLabel: "spec_government"
+    }
+  ];
+  let addedContacts = 0;
+  const usedContactNames = new Set(
+    items.filter((it) => it.system?.featType === "contact").map((it) => it.name)
+  );
+  const contactPrefix = isEn ? "Contact:" : "Contact :";
+  while (surplus >= 15e3 && addedContacts < 4) {
+    const availableNames = contactNames.filter(
+      (n) => !usedContactNames.has(`${contactPrefix} ${n}`)
+    );
+    if (availableNames.length === 0) break;
+    const cName = pickOne(availableNames);
+    const cRR = pickOne(contactRRTargets);
+    const contactTemplate = feat({
+      name: `${contactPrefix} ${cName}`,
+      featType: "contact",
+      cost: "free-equipment",
+      nuyenCost: 0,
+      description: isEn ? "<p>Useful contact in the Shadows.</p>" : "<p>Contact utile dans les Ombres.</p>",
+      rrList: [{ ...cRR, rrValue: 1 }]
+    });
+    const builtItem = buildFeatItem(contactTemplate, items.length + 300, compendiumItems);
+    const itemCost = computeFeatCost(
+      builtItem.system.featType,
+      builtItem.system
+    );
+    if (itemCost > surplus) break;
+    items.push(builtItem);
+    usedContactNames.add(contactTemplate.name);
+    addedContacts++;
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  while (surplus >= 5e3) {
+    const extraPool = [...EQUIPMENT_TEMPLATES.slice(2)];
+    const existingNames = new Set(
+      items.filter((it) => it.type === "feat").map((it) => it.name)
+    );
+    const available = extraPool.filter((f) => !existingNames.has(f.name));
+    if (available.length === 0) break;
+    const template = pickOne(available);
+    const builtItem = buildFeatItem(template, items.length + 400, compendiumItems);
+    const itemCost = computeFeatCost(
+      builtItem.system.featType,
+      builtItem.system
+    );
+    if (itemCost > surplus - 2500) break;
+    items.push(builtItem);
+    totalSpent = recomputeTotal();
+    surplus = powerLevel.budget - totalSpent;
+  }
+  totalSpent = recomputeTotal();
+  const removableTypes = ["equipment", "contact", "specialization", "trait"];
+  while (totalSpent > powerLevel.budget) {
+    let removed = false;
+    for (const removeType of removableTypes) {
+      const removable = [...items].reverse().find((it) => {
+        if (removeType === "specialization") return it.type === "specialization";
+        if (it.type !== "feat") return false;
+        if (it.system?.featType !== removeType) return false;
+        if (removeType === "equipment") {
+          const n = it.name?.toLowerCase() || "";
+          if (n.includes("commlink") || n.includes("sin")) return false;
+        }
+        return true;
+      });
+      if (removable) {
+        items.splice(items.indexOf(removable), 1);
+        removed = true;
+        break;
+      }
+    }
+    if (!removed) break;
+    totalSpent = recomputeTotal();
+    totalSpent = recomputeTotal();
+  }
+  const remainingYens = Math.max(0, powerLevel.budget - totalSpent);
+  console.log(`%c=== RUNNER GENERATOR DEBUG: ${name.displayName} ===`, "color: cyan; font-weight: bold;");
+  console.log(`Archetype: ${archLabel} | Metatype: ${mtName} | Level: ${plLabel} (${powerLevel.budget} ¥)`);
+  console.log(`Attributes:`, attrResult.attributes, `| Cost: ${attrResult.cost} ¥`);
+  console.log(`Skills:`);
+  for (const item of items.filter((it) => it.type === "skill")) {
+    const r = item.system.rating;
+    const cost = r <= 5 ? r * 2500 : 5 * 2500 + (r - 5) * 5e3;
+    console.log(`  ${item.name} (${item.system.slug}): rating ${r} → ${cost} ¥`);
+  }
+  console.log(`Specializations: ${items.filter((it) => it.type === "specialization").map((it) => it.name).join(", ")} (${items.filter((it) => it.type === "specialization").length} × 2500 ¥)`);
+  console.log(`Feats:`);
+  for (const item of items.filter((it) => it.type === "feat")) {
+    const cost = computeFeatCost(item.system.featType, item.system);
+    console.log(`  [${item.system.featType}] ${item.name} | rating: ${item.system.rating} | cost: ${cost} ¥ | rrList: ${JSON.stringify(item.system.rrList)}`);
+  }
+  const skillsCost = items.filter((it) => it.type === "skill").reduce((s, it) => {
+    const r = it.system.rating || 0;
+    return s + (r <= 5 ? r * 2500 : 5 * 2500 + (r - 5) * 5e3);
+  }, 0);
+  const specsCost = items.filter((it) => it.type === "specialization").length * 2500;
+  const featsCost = items.filter((it) => it.type === "feat").reduce((s, it) => s + computeFeatCost(it.system.featType, it.system), 0);
+  console.log(`%cBudget breakdown:`, "font-weight: bold;");
+  console.log(`  Attributes: ${attrResult.cost} ¥`);
+  console.log(`  Skills: ${skillsCost} ¥`);
+  console.log(`  Specializations: ${specsCost} ¥`);
+  console.log(`  Feats: ${featsCost} ¥`);
+  console.log(`  TOTAL: ${attrResult.cost + skillsCost + specsCost + featsCost} ¥ (recompute: ${totalSpent} ¥)`);
+  console.log(`  Budget: ${powerLevel.budget} ¥ | Remaining: ${remainingYens} ¥ | Surplus at end: ${surplus} ¥`);
+  console.log(`%c=== END DEBUG ===`, "color: cyan;");
+  const anarchyBase = 3 + metatype.anarchyBonus;
+  const actorData = {
+    name: name.displayName,
+    type: "character",
+    img: metatype.img,
+    system: {
+      attributes: attrResult.attributes,
+      resources: { yens: remainingYens, anarchy: 0 },
+      maxEssence: 6,
+      armorLevel: 0,
+      connectionMode: "ar",
+      damage: {
+        light: [false, false],
+        severe: [false],
+        incapacitating: false
+      },
+      anarchySpent: new Array(anarchyBase).fill(false),
+      tempAnarchy: 0,
+      tempAnarchySpent: [],
+      bio: {
+        background: flavor.backgroundHtml,
+        notes: (() => {
+          const imgPrompt = generateImagePrompt(metatypeKey, archetypeKey, options.gender, flavor.backgroundHtml, items, personality.keywords, personality.behaviors, skillResult.skills);
+          console.log("%c=== IMAGE PROMPT ===", "color: magenta; font-weight: bold;");
+          console.log(imgPrompt);
+          return `<p><strong>${isEn ? "Image Prompt" : "Prompt Image"} :</strong></p><p><em>${imgPrompt}</em></p>`;
+        })(),
+        gmDescription: `<p>${isEn ? "<strong>Archetype:</strong>" : "<strong>Archétype :</strong>"} ${archLabel}<br/>${isEn ? "<strong>Level:</strong>" : "<strong>Niveau :</strong>"} ${plLabel}<br/>${isEn ? "<strong>Budget spent:</strong>" : "<strong>Budget dépensé :</strong>"} ${totalSpent.toLocaleString(isEn ? "en-US" : "fr-FR")} ¥ / ${powerLevel.budget.toLocaleString(isEn ? "en-US" : "fr-FR")} ¥</p>`
+      },
+      keywords: {
+        keyword1: personality.keywords[0] ?? "",
+        keyword2: personality.keywords[1] ?? "",
+        keyword3: personality.keywords[2] ?? "",
+        keyword4: personality.keywords[3] ?? "",
+        keyword5: personality.keywords[4] ?? ""
+      },
+      behaviors: {
+        behavior1: personality.behaviors[0] ?? "",
+        behavior2: personality.behaviors[1] ?? "",
+        behavior3: personality.behaviors[2] ?? "",
+        behavior4: personality.behaviors[3] ?? ""
+      },
+      catchphrases: {
+        catchphrase1: personality.catchphrases[0] ?? "",
+        catchphrase2: personality.catchphrases[1] ?? "",
+        catchphrase3: personality.catchphrases[2] ?? "",
+        catchphrase4: personality.catchphrases[3] ?? ""
+      },
+      linkedVehicles: [],
+      reference: `${isEn ? "Generated Runner" : "PNJ Généré"} — ${archLabel} ${mtName}`,
+      damageGaugeType: "physical"
+    }
+  };
+  let folder = game.folders?.find(
+    (f) => f.type === "Actor" && f.name === "Generated"
+  );
+  if (!folder) {
+    folder = await Folder.create({
+      name: "Generated",
+      type: "Actor",
+      sorting: "a"
+    });
+  }
+  actorData.folder = folder?.id ?? null;
+  const actor = await Actor.create(actorData);
+  if (!actor) return;
+  await actor.createEmbeddedDocuments("Item", items);
+  if (archetypeKey === "rigger") {
+    await createRiggerDrones(actor, isEn, folder);
+  }
+  const topSkills = skillResult.skills.sort((a, b) => b.rating - a.rating).slice(0, 5).map((s) => {
+    const def = SKILL_DEFINITIONS[s.slug];
+    return `<span style="color:var(--sr-ui-color-active,#0ff);">${def?.nameFr ?? s.slug}</span> <strong>${s.rating}</strong>`;
+  }).join(" · ");
+  const attrLabels = {
+    strength: "FOR",
+    agility: "AGI",
+    willpower: "VOL",
+    logic: "LOG",
+    charisma: "CHA"
+  };
+  const attrSummary = Object.entries(attrResult.attributes).map(([k, v]) => {
+    const isMax = v === metatype.maxes[k];
+    const label = attrLabels[k] ?? k.substring(0, 3).toUpperCase();
+    return isMax ? `<span style="color:var(--sr-ui-color-active,#0ff);font-weight:bold;">${label} ${v}</span>` : `${label} ${v}`;
+  }).join(" · ");
+  const essenceUsed = featResult.essenceSpent;
+  const essenceRemaining = 6 - essenceUsed;
+  const weaponNames = featResult.feats.filter((f) => f.featType === "weapon").map((f) => f.name).join(", ") || "—";
+  const cyberNames = featResult.feats.filter((f) => f.featType === "cyberware").map((f) => f.name.split(" ").slice(0, 2).join(" ")).join(", ");
+  const chatContent = `
+<div style="background:rgba(0,0,0,0.3);border:1px solid var(--sr-ui-border-color,#333);border-radius:6px;padding:10px;font-size:0.9em;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+    <img src="${metatype.img}" style="width:36px;height:36px;border:1px solid var(--sr-ui-border-color,#555);border-radius:50%;" />
+    <div style=" display: flex; flex-direction: column; gap: 5px; ">
+      <div style="font-size:1.2em;font-weight:bold;">@UUID[Actor.${actor.id}]{${name.streetName}}</div>
+      <div style="opacity:0.9;font-weight: bold;font-size:0.85em;">${name.firstName} ${name.lastName}</div>
+    </div>
+    <div style="margin-left:auto;text-align:right;font-size:0.9em;opacity:0.6;font-weight:bold;">
+      ${mtName}<br/>${archLabel}<br/>${plLabel}
+    </div>
+  </div>
+  <div style="margin:6px 0;">${attrSummary} · <span style="opacity:0.7;">ESS ${essenceRemaining}</span></div>
+  <div style="margin:6px 0;">${topSkills}</div>
+  ${cyberNames ? `<div style="margin:4px 0;font-size:0.85em;opacity:0.8;">Chrome : ${cyberNames}</div>` : ""}
+  <div style="margin:4px 0;font-size:0.85em;opacity:0.8;">Armes : ${weaponNames}</div>
+  <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.85em;">
+    <span style="color:var(--sr-ui-color-active,#0ff);">${totalSpent.toLocaleString(isEn ? "en-US" : "fr-FR")} ¥</span>
+    <span style="opacity:0.5;"> / ${powerLevel.budget.toLocaleString(isEn ? "en-US" : "fr-FR")} ¥</span>
+    <span style="float:right;">Cash : <strong>${remainingYens.toLocaleString(isEn ? "en-US" : "fr-FR")} ¥</strong></span>
+  </div>
+</div>`;
+  try {
+    console.log("%c=== RUNNER CHAT MESSAGE ===", "color: lime;");
+    console.log("Content length:", chatContent.length);
+    console.log("User ID:", game.user?.id);
+    console.log("Content preview:", chatContent.substring(0, 200));
+    const userId = game.user?.id;
+    await ChatMessage.create({
+      content: chatContent,
+      whisper: userId ? [userId] : [],
+      speaker: { alias: isEn ? "Runner Generator" : "Générateur de Runner" }
+    });
+  } catch (err) {
+    console.warn("Runner Generator: failed to send chat message", err);
+  }
+  setTimeout(() => actor.sheet?.render(true), 300);
+}
+class NPCGeneratorDialog extends Dialog {
+  constructor(callback) {
+    const content = NPCGeneratorDialog.buildContent();
+    super({
+      title: game.i18n.localize("SRA2.NPC_GENERATOR.TITLE"),
+      content,
+      buttons: {
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n.localize("SRA2.CANCEL")
+        },
+        generate: {
+          icon: '<i class="fas fa-dice-d20"></i>',
+          label: game.i18n.localize("SRA2.NPC_GENERATOR.GENERATE"),
+          callback: (html) => {
+            const options = NPCGeneratorDialog.getOptions(html);
+            callback(options);
+          }
+        }
+      },
+      default: "generate"
+    }, {
+      classes: ["sra2", "dialog", "npc-generator-dialog"],
+      width: 540
+    });
+  }
+  static buildContent() {
+    const i18n = game.i18n;
+    let powerOptions = "";
+    for (const [key, pl] of Object.entries(POWER_LEVELS)) {
+      const selected = key === "runner" ? "selected" : "";
+      powerOptions += `<option value="${key}" ${selected}>${pl.labelFr} (${pl.budget.toLocaleString("fr-FR")} ¥)</option>`;
+    }
+    let archetypeOptions = `<option value="random">${i18n.localize("SRA2.NPC_GENERATOR.RANDOM")}</option>`;
+    for (const [key, arch] of Object.entries(ARCHETYPES)) {
+      archetypeOptions += `<option value="${key}">${arch.labelFr}</option>`;
+    }
+    let metatypeOptions = `<option value="random">${i18n.localize("SRA2.NPC_GENERATOR.RANDOM")}</option>`;
+    for (const [key, mt] of Object.entries(METATYPES)) {
+      metatypeOptions += `<option value="${key}">${mt.nameFr}</option>`;
+    }
+    return `
+      <form class="npc-gen-form">
+        <div class="npc-gen-field">
+          <label>${i18n.localize("SRA2.NPC_GENERATOR.POWER_LEVEL")}</label>
+          <select name="powerLevel">${powerOptions}</select>
+        </div>
+        <div class="npc-gen-field">
+          <label>${i18n.localize("SRA2.NPC_GENERATOR.ARCHETYPE")}</label>
+          <select name="archetype">${archetypeOptions}</select>
+        </div>
+        <div class="npc-gen-field">
+          <label>${i18n.localize("SRA2.NPC_GENERATOR.METATYPE")}</label>
+          <select name="metatype">${metatypeOptions}</select>
+        </div>
+        <div class="npc-gen-field">
+          <label>${i18n.localize("SRA2.NPC_GENERATOR.GENDER")}</label>
+          <select name="gender">
+            <option value="male">${i18n.localize("SRA2.NPC_GENERATOR.MALE")}</option>
+            <option value="female">${i18n.localize("SRA2.NPC_GENERATOR.FEMALE")}</option>
+            <option value="neutral">${i18n.localize("SRA2.NPC_GENERATOR.NEUTRAL")}</option>
+          </select>
+        </div>
+        <div class="npc-gen-field">
+          <label>${i18n.localize("SRA2.NPC_GENERATOR.COUNT")}</label>
+          <input type="number" name="count" value="1" min="1" max="10" />
+        </div>
+      </form>
+    `;
+  }
+  static getOptions(html) {
+    return {
+      powerLevel: html.find('[name="powerLevel"]').val(),
+      archetype: html.find('[name="archetype"]').val(),
+      metatype: html.find('[name="metatype"]').val(),
+      gender: html.find('[name="gender"]').val(),
+      count: parseInt(html.find('[name="count"]').val(), 10) || 1
+    };
+  }
+  static async show() {
+    return new Promise((resolve) => {
+      const dialog = new NPCGeneratorDialog(async (options) => {
+        try {
+          ui.notifications?.info(game.i18n.localize("SRA2.NPC_GENERATOR.GENERATING"));
+          const count = await generateNPCs(options);
+          ui.notifications?.info(
+            game.i18n.format("SRA2.NPC_GENERATOR.SUCCESS", { count: String(count) })
+          );
+        } catch (err) {
+          console.error("NPC Generator error:", err);
+          ui.notifications?.error("Erreur lors de la génération du PNJ");
+        }
+        resolve();
+      });
+      const originalClose = dialog.close.bind(dialog);
+      dialog.close = async (options) => {
+        resolve();
+        return originalClose(options);
+      };
+      dialog.render(true);
+    });
+  }
+}
 const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   AnarchyCounter,
@@ -12398,6 +17202,7 @@ const applications = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   FeatSheet,
   IceSheet,
   MetatypeSheet,
+  NPCGeneratorDialog,
   RollDialog,
   ServerSheet,
   SkillSheet,
@@ -13769,6 +18574,629 @@ class Migration_13_2_4 extends Migration {
     return updates;
   }
 }
+class Migration_13_3_2 extends Migration {
+  get code() {
+    return "migration-13.3.2";
+  }
+  get version() {
+    return "13.3.2";
+  }
+  /**
+   * Normalize text: lowercase, remove accents, trim
+   */
+  _normalize(text) {
+    if (!text) return "";
+    return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  }
+  /**
+   * Map of normalized spec names (FR and EN) to canonical slugs.
+   * Covers both "Spé : xxx" (FR) and "Spec: xxx" (EN) patterns,
+   * as well as the variant "Spé: xxx" (without space after colon).
+   */
+  get _specNameToSlug() {
+    return {
+      // FR — "Spé : xxx" and "Spé: xxx" variants (normalized: "spe : xxx" / "spe: xxx")
+      "spe : mains nues": "spec_unarmed",
+      "spe: mains nues": "spec_unarmed",
+      "spe : lames": "spec_blades",
+      "spe: lames": "spec_blades",
+      "spe : armes contondantes": "spec_blunt-weapons",
+      "spe: armes contondantes": "spec_blunt-weapons",
+      "spe : monofilament": "spec_monofilament",
+      "spe: monofilament": "spec_monofilament",
+      "spe : crocs": "spec_fangs",
+      "spe: crocs": "spec_fangs",
+      "spe : defense": "spec_defense",
+      "spe: defense": "spec_defense",
+      "spe : pistolets": "spec_pistols",
+      "spe: pistolets": "spec_pistols",
+      "spe : fusils": "spec_rifles",
+      "spe: fusils": "spec_rifles",
+      "spe : shotguns": "spec_shotguns",
+      "spe: shotguns": "spec_shotguns",
+      "spe : mitraillettes": "spec_smgs",
+      "spe: mitraillettes": "spec_smgs",
+      "spe : armes lourdes": "spec_heavy-weapons",
+      "spe: armes lourdes": "spec_heavy-weapons",
+      "spe : armes de jet": "spec_thrown-weapons",
+      "spe: armes de jet": "spec_thrown-weapons",
+      "spe : armes de trait": "spec_thrown-weapons",
+      "spe: armes de trait": "spec_thrown-weapons",
+      "spe : armes montees": "spec_mounted-weapons",
+      "spe: armes montees": "spec_mounted-weapons",
+      "spe : armes controlees a distance": "spec_remote-controlled-weapons",
+      "spe: armes controlees a distance": "spec_remote-controlled-weapons",
+      "spe : lance-grenades": "spec_grenade-launchers",
+      "spe: lance-grenades": "spec_grenade-launchers",
+      "spe : defense a distance": "spec_ranged-defense",
+      "spe: defense a distance": "spec_ranged-defense",
+      "spe : course": "spec_running",
+      "spe: course": "spec_running",
+      "spe : escalade": "spec_climbing",
+      "spe: escalade": "spec_climbing",
+      "spe : natation": "spec_swimming",
+      "spe: natation": "spec_swimming",
+      "spe : parkour": "spec_parkour",
+      "spe: parkour": "spec_parkour",
+      "spe : discretion physique": "spec_physical-stealth",
+      "spe: discretion physique": "spec_physical-stealth",
+      "spe : discretion matricielle": "spec_matrix-stealth",
+      "spe: discretion matricielle": "spec_matrix-stealth",
+      "spe : discretion astrale": "spec_astral-stealth",
+      "spe: discretion astrale": "spec_astral-stealth",
+      "spe : crochetage": "spec_lockpicking",
+      "spe: crochetage": "spec_lockpicking",
+      "spe : escamotage": "spec_stealth",
+      "spe: escamotage": "spec_stealth",
+      "spe : backdoor": "spec_backdoor",
+      "spe: backdoor": "spec_backdoor",
+      "spe : force brute": "spec_brute-force",
+      "spe: force brute": "spec_brute-force",
+      "spe : cybercombat": "spec_cybercombat",
+      "spe: cybercombat": "spec_cybercombat",
+      "spe : guerre electronique": "spec_electronic-warfare",
+      "spe: guerre electronique": "spec_electronic-warfare",
+      "spe : c/r implants cybernetiques": "spec_cybernetics",
+      "spe: c/r implants cybernetiques": "spec_cybernetics",
+      "spe : c/r drones": "spec_cr-drones",
+      "spe: c/r drones": "spec_cr-drones",
+      "spe : c/r vehicules": "spec_cr-vehicles",
+      "spe: c/r vehicules": "spec_cr-vehicles",
+      "spe : c/r engins mecaniques": "spec_cr-mechanical-devices",
+      "spe: c/r engins mecaniques": "spec_cr-mechanical-devices",
+      "spe : explosifs": "spec_explosives",
+      "spe: explosifs": "spec_explosives",
+      "spe : ingenierie": "spec_engineering",
+      "spe: ingenierie": "spec_engineering",
+      "spe : appareils personnels": "spec_personal-devices",
+      "spe: appareils personnels": "spec_personal-devices",
+      "spe : c/r appareils electroniques": "spec_personal-electronics",
+      "spe : recherche matricielle": "spec_matrix-search",
+      "spe: recherche matricielle": "spec_matrix-search",
+      "spe : perception matricielle": "spec_matrix-perception",
+      "spe: perception matricielle": "spec_matrix-perception",
+      "spe : protection matricielle": "spec_matrix-protection",
+      "spe: protection matricielle": "spec_matrix-protection",
+      "spe : medical": "spec_medical",
+      "spe: medical": "spec_medical",
+      "spe : premiers soins": "spec_first-aid",
+      "spe: premiers soins": "spec_first-aid",
+      "spe : voitures": "spec_cars",
+      "spe: voitures": "spec_cars",
+      "spe : motos": "spec_bikes",
+      "spe: motos": "spec_bikes",
+      "spe : camions": "spec_trucks",
+      "spe: camions": "spec_trucks",
+      "spe : drones terrestres": "spec_ground-drones",
+      "spe: drones terrestres": "spec_ground-drones",
+      "spe : drones volants": "spec_flying-drones",
+      "spe: drones volants": "spec_flying-drones",
+      "spe : drones aquatiques": "spec_aquatic-drones",
+      "spe: drones aquatiques": "spec_aquatic-drones",
+      "spe : vehicules aquatiques": "spec_aquatic-vehicles",
+      "spe: vehicules aquatiques": "spec_aquatic-vehicles",
+      "spe : vehicules volants": "spec_flying-vehicles",
+      "spe: vehicules volants": "spec_flying-vehicles",
+      "spe : sorts de combat": "spec_combat-spells",
+      "spe: sorts de combat": "spec_combat-spells",
+      "spe : sorts de detection": "spec_detection-spells",
+      "spe: sorts de detection": "spec_detection-spells",
+      "spe : sorts de sante": "spec_health-spells",
+      "spe: sorts de sante": "spec_health-spells",
+      "spe : sorts d'illusion": "spec_illusion-spells",
+      "spe: sorts d'illusion": "spec_illusion-spells",
+      "spe : sorts de manipulation": "spec_manipulation-spells",
+      "spe: sorts de manipulation": "spec_manipulation-spells",
+      "spe : contresort": "spec_counterspelling",
+      "spe: contresort": "spec_counterspelling",
+      "spe : bannissement": "spec_banishing",
+      "spe: bannissement": "spec_banishing",
+      "spe : esprits de l'air": "spec_air-spirits",
+      "spe: esprits de l'air": "spec_air-spirits",
+      "spe : esprits de la terre": "spec_earth-spirits",
+      "spe: esprits de la terre": "spec_earth-spirits",
+      "spe : esprits de l'eau": "spec_water-spirits",
+      "spe: esprits de l'eau": "spec_water-spirits",
+      "spe : esprits du feu": "spec_fire-spirits",
+      "spe: esprits du feu": "spec_fire-spirits",
+      "spe : esprits des betes": "spec_beast-spirits",
+      "spe: esprits des betes": "spec_beast-spirits",
+      "spe : esprits des plantes": "spec_plant-spirits",
+      "spe: esprits des plantes": "spec_plant-spirits",
+      "spe : esprit des aines": "spec_kin-spirits",
+      "spe: esprit des aines": "spec_kin-spirits",
+      "spe : compilation": "spec_compilation",
+      "spe: compilation": "spec_compilation",
+      "spe : decompilation": "spec_decompilation",
+      "spe: decompilation": "spec_decompilation",
+      "spe : formes complexes": "spec_complex-forms",
+      "spe: formes complexes": "spec_complex-forms",
+      "spe : bluff": "spec_bluff",
+      "spe: bluff": "spec_bluff",
+      "spe : intimidation": "spec_intimidation",
+      "spe: intimidation": "spec_intimidation",
+      "spe : negociation": "spec_negotiation",
+      "spe: negociation": "spec_negotiation",
+      "spe : imposture": "spec_impersonation",
+      "spe: imposture": "spec_impersonation",
+      "spe : etiquette": "spec_etiquette",
+      "spe: etiquette": "spec_etiquette",
+      "spe : perception physique": "spec_physical-perception",
+      "spe: perception physique": "spec_physical-perception",
+      "spe : perception sociale": "spec_social-perception",
+      "spe: perception sociale": "spec_social-perception",
+      "spe : perception astrale": "spec_astral-perception",
+      "spe: perception astrale": "spec_astral-perception",
+      "spe : sang-froid": "spec_composure",
+      "spe: sang-froid": "spec_composure",
+      "spe : survie en milieu naturel": "spec_wilderness-survival",
+      "spe: survie en milieu naturel": "spec_wilderness-survival",
+      "spe : orientation": "spec_navigation",
+      "spe: orientation": "spec_navigation",
+      "spe : dressage": "spec_animal-training",
+      "spe: dressage": "spec_animal-training",
+      "spe : corporatiste": "spec_corporate",
+      "spe: corporatiste": "spec_corporate",
+      "spe : criminel": "spec_criminal",
+      "spe: criminel": "spec_criminal",
+      "spe : la rue": "spec_la-rue",
+      "spe: la rue": "spec_la-rue",
+      "spe : gouvernemental": "spec_government",
+      "spe: gouvernemental": "spec_government",
+      "spe : mediatique": "spec_media",
+      "spe: mediatique": "spec_media",
+      "spe : universitaire": "spec_academic",
+      "spe: universitaire": "spec_academic",
+      "spe : magique": "spec_magic",
+      "spe: magique": "spec_magic",
+      "spe : matriciel": "spec_matrix",
+      "spe: matriciel": "spec_matrix",
+      "spe : combat astral": "spec_astral-combat",
+      "spe: combat astral": "spec_astral-combat",
+      // EN — "Spec: xxx" variants
+      "spec: unarmed": "spec_unarmed",
+      "spec: blades": "spec_blades",
+      "spec: blunt weapons": "spec_blunt-weapons",
+      "spec: monofilament": "spec_monofilament",
+      "spec: fangs": "spec_fangs",
+      "spec: defense": "spec_defense",
+      "spec: pistols": "spec_pistols",
+      "spec: rifles": "spec_rifles",
+      "spec: shotguns": "spec_shotguns",
+      "spec: smgs": "spec_smgs",
+      "spec: heavy weapons": "spec_heavy-weapons",
+      "spec: thrown weapons": "spec_thrown-weapons",
+      "spec: mounted weapons": "spec_mounted-weapons",
+      "spec: remote controlled weapons": "spec_remote-controlled-weapons",
+      "spec: grenade launchers": "spec_grenade-launchers",
+      "spec: ranged defense": "spec_ranged-defense",
+      "spec: running": "spec_running",
+      "spec: climbing": "spec_climbing",
+      "spec: swimming": "spec_swimming",
+      "spec: physical stealth": "spec_physical-stealth",
+      "spec: matrix stealth": "spec_matrix-stealth",
+      "spec: astral stealth": "spec_astral-stealth",
+      "spec: lockpicking": "spec_lockpicking",
+      "spec: backdoor": "spec_backdoor",
+      "spec: brute force": "spec_brute-force",
+      "spec: cybercombat": "spec_cybercombat",
+      "spec: electronic warfare": "spec_electronic-warfare",
+      "spec: combat spells": "spec_combat-spells",
+      "spec: detection spells": "spec_detection-spells",
+      "spec: health spells": "spec_health-spells",
+      "spec: illusion spells": "spec_illusion-spells",
+      "spec: manipulation spells": "spec_manipulation-spells",
+      "spec: counterspelling": "spec_counterspelling",
+      "spec: banishing": "spec_banishing",
+      "spec: compilation": "spec_compilation",
+      "spec: decompilation": "spec_decompilation",
+      "spec: complex forms": "spec_complex-forms",
+      "spec: bluff": "spec_bluff",
+      "spec: intimidation": "spec_intimidation",
+      "spec: negotiation": "spec_negotiation",
+      "spec: impersonation": "spec_impersonation",
+      "spec: etiquette": "spec_etiquette",
+      "spec: physical perception": "spec_physical-perception",
+      "spec: social perception": "spec_social-perception",
+      "spec: astral perception": "spec_astral-perception",
+      "spec: composure": "spec_composure"
+    };
+  }
+  /**
+   * Convert a spec name to a slug. Returns the original value if already a slug or unknown.
+   */
+  _toSlug(name) {
+    if (!name || name.startsWith("spec_")) return name;
+    const normalized = this._normalize(name);
+    return this._specNameToSlug[normalized] || name;
+  }
+  /**
+   * Compute updates for feat items that have linkedAttackSpecialization or linkedDefenseSpecialization
+   * set to localized names instead of slugs.
+   */
+  _computeUpdates(items) {
+    const updates = [];
+    for (const item of items) {
+      if (item.type !== "feat") continue;
+      const sys = item.system;
+      const update = { _id: item.id };
+      let needsUpdate = false;
+      const attackSpec = sys.linkedAttackSpecialization || "";
+      if (attackSpec && !attackSpec.startsWith("spec_")) {
+        const slug = this._toSlug(attackSpec);
+        if (slug !== attackSpec) {
+          update["system.linkedAttackSpecialization"] = slug;
+          needsUpdate = true;
+        }
+      }
+      const defenseSpec = sys.linkedDefenseSpecialization || "";
+      if (defenseSpec && !defenseSpec.startsWith("spec_")) {
+        const slug = this._toSlug(defenseSpec);
+        if (slug !== defenseSpec) {
+          update["system.linkedDefenseSpecialization"] = slug;
+          needsUpdate = true;
+        }
+      }
+      if (needsUpdate) updates.push(update);
+    }
+    return updates;
+  }
+  async migrate() {
+    console.log(SYSTEM.LOG.HEAD + "Starting migration 13.3.2: Convert linked spec names to slugs");
+    let totalFixed = 0;
+    for (const actor of game.actors) {
+      const updates = this._computeUpdates(actor.items);
+      if (updates.length > 0) {
+        console.log(SYSTEM.LOG.HEAD + `Migration 13.3.2: Updating ${updates.length} feat(s) on actor "${actor.name}"`);
+        await actor.updateEmbeddedDocuments("Item", updates);
+        totalFixed += updates.length;
+      }
+    }
+    const worldUpdates = this._computeUpdates(game.items);
+    if (worldUpdates.length > 0) {
+      console.log(SYSTEM.LOG.HEAD + `Migration 13.3.2: Updating ${worldUpdates.length} world item(s)`);
+      await Item.updateDocuments(worldUpdates);
+      totalFixed += worldUpdates.length;
+    }
+    for (const pack of game.packs) {
+      const wasLocked = pack.locked;
+      if (wasLocked) await pack.configure({ locked: false });
+      try {
+        if (pack.documentName === "Item") {
+          const documents2 = await pack.getDocuments();
+          const updates = this._computeUpdates(documents2);
+          if (updates.length > 0) {
+            console.log(SYSTEM.LOG.HEAD + `Migration 13.3.2: Updating ${updates.length} item(s) in pack "${pack.title}"`);
+            for (const u of updates) {
+              const doc = documents2.find((d) => d.id === u._id);
+              if (doc) await doc.update(u);
+            }
+            totalFixed += updates.length;
+          }
+        } else if (pack.documentName === "Actor") {
+          const actors = await pack.getDocuments();
+          for (const actor of actors) {
+            const updates = this._computeUpdates(actor.items);
+            if (updates.length > 0) {
+              console.log(SYSTEM.LOG.HEAD + `Migration 13.3.2: Updating ${updates.length} feat(s) on compendium actor "${actor.name}"`);
+              await actor.updateEmbeddedDocuments("Item", updates);
+              totalFixed += updates.length;
+            }
+          }
+        }
+      } finally {
+        if (wasLocked) await pack.configure({ locked: true });
+      }
+    }
+    console.log(SYSTEM.LOG.HEAD + `Migration 13.3.2 complete: fixed ${totalFixed} feat(s)`);
+  }
+}
+const GEMINI_SETTING = "geminiApiKey";
+function isGeminiConfigured() {
+  try {
+    const key = game.settings?.get(SYSTEM.id, GEMINI_SETTING);
+    return !!key && key.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+function getApiKey() {
+  return game.settings.get(SYSTEM.id, GEMINI_SETTING) || "";
+}
+function registerGeminiSetting() {
+  game.settings.register(SYSTEM.id, GEMINI_SETTING, {
+    name: "SRA2.SETTINGS.GEMINI.TITLE",
+    hint: "SRA2.SETTINGS.GEMINI.DESC",
+    scope: "world",
+    config: true,
+    type: String,
+    default: ""
+  });
+}
+async function generateActorImage(actor, onStatus) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    ui.notifications?.error("Gemini API key not configured. Set it in System Settings.");
+    return;
+  }
+  let prompt;
+  const notes = actor.system?.bio?.notes || "";
+  const promptMatch = notes.match(/<em>([^<]+)<\/em>/);
+  if (promptMatch) {
+    prompt = promptMatch[1];
+  } else {
+    prompt = buildPromptFromActor(actor);
+  }
+  console.log("%c=== GEMINI IMAGE PROMPT ===", "color: magenta; font-weight: bold;");
+  console.log(prompt);
+  onStatus?.("Generating portrait...");
+  ui.notifications?.info(game.i18n?.localize("SRA2.NPC_GENERATOR.GENERATING_IMAGE") || "Generating image...");
+  try {
+    const models2 = ["gemini-3.1-flash-image-preview"];
+    let imageBase64 = null;
+    for (const model of models2) {
+      console.log(`Trying Gemini model: ${model}`);
+      imageBase64 = await tryGeminiModel(apiKey, model, prompt);
+      if (imageBase64) break;
+    }
+    if (!imageBase64) {
+      console.log("Trying Imagen API fallback...");
+      imageBase64 = await tryImagenApi(apiKey, prompt);
+    }
+    if (!imageBase64) {
+      throw new Error("All Gemini/Imagen models failed to generate an image. Check your API key and that image generation is enabled on your Google AI project.");
+    }
+    await saveAndApplyImage(actor, imageBase64, "portrait");
+    onStatus?.("Generating token...");
+    ui.notifications?.info("Generating token headshot...");
+    let tokenBase64 = null;
+    for (const model of models2) {
+      tokenBase64 = await tryGeminiModelWithSeed(
+        apiKey,
+        model,
+        imageBase64,
+        "Generate a close-up headshot portrait of this EXACT same character. Face and shoulders only, centered on the face, square 1:1 crop. Keep the EXACT same face, hair, skin tone, scars, cyberware, and features. Photorealistic rendering. IMPORTANT: Do NOT include any text, writing, letters, words or captions in the image."
+      );
+      if (tokenBase64) break;
+    }
+    if (tokenBase64) {
+      await saveAndApplyImage(actor, tokenBase64, "token");
+    }
+  } catch (err) {
+    console.error("Gemini image generation error:", err);
+    ui.notifications?.error(`Image generation failed: ${err.message}`);
+    throw err;
+  }
+}
+async function tryGeminiModel(apiKey, model, prompt) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: `Generate a square 1:1 photorealistic character portrait image. Realistic rendering, cinematic lighting, high detail. IMPORTANT: Do NOT include any text, writing, letters, words, labels, captions, watermarks or inscriptions in the image. Description: ${prompt}` }]
+          }],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"]
+          }
+        })
+      }
+    );
+    if (!response.ok) {
+      console.warn(`Gemini model ${model}: ${response.status} ${response.statusText}`);
+      return null;
+    }
+    const data = await response.json();
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.inlineData?.mimeType?.startsWith("image/")) {
+        return part.inlineData.data;
+      }
+    }
+    console.warn(`Gemini model ${model}: no image in response`);
+    return null;
+  } catch (err) {
+    console.warn(`Gemini model ${model} error:`, err);
+    return null;
+  }
+}
+async function tryGeminiModelWithSeed(apiKey, model, seedImageBase64, prompt) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inlineData: { mimeType: "image/png", data: seedImageBase64 } },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"]
+          }
+        })
+      }
+    );
+    if (!response.ok) {
+      console.warn(`Gemini model ${model} (with seed): ${response.status} ${response.statusText}`);
+      return null;
+    }
+    const data = await response.json();
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.inlineData?.mimeType?.startsWith("image/")) {
+        return part.inlineData.data;
+      }
+    }
+    console.warn(`Gemini model ${model} (with seed): no image in response`);
+    return null;
+  } catch (err) {
+    console.warn(`Gemini model ${model} (with seed) error:`, err);
+    return null;
+  }
+}
+async function tryImagenApi(apiKey, prompt) {
+  const imagenModels = [
+    "imagen-3.0-generate-002",
+    "imagen-3.0-generate-001",
+    "imagegeneration@006"
+  ];
+  for (const model of imagenModels) {
+    try {
+      console.log(`Trying Imagen model: ${model}`);
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            instances: [{ prompt }],
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: "1:1"
+            }
+          })
+        }
+      );
+      if (!response.ok) {
+        console.warn(`Imagen model ${model}: ${response.status}`);
+        continue;
+      }
+      const data = await response.json();
+      const imageData = data?.predictions?.[0]?.bytesBase64Encoded;
+      if (imageData) return imageData;
+    } catch (err) {
+      console.warn(`Imagen model ${model} error:`, err);
+    }
+  }
+  return null;
+}
+function buildPromptFromActor(actor) {
+  const parts = [];
+  const sys = actor.system;
+  const name = actor.name || "Unknown";
+  const metatypeItem = actor.items?.find((i) => i.type === "metatype");
+  const metatypeName = metatypeItem?.name || "";
+  const keywords = [];
+  if (sys?.keywords) {
+    for (let i = 1; i <= 5; i++) {
+      const kw = sys.keywords[`keyword${i}`];
+      if (kw) keywords.push(kw);
+    }
+  }
+  if (metatypeName) {
+    parts.push(`Full body portrait of "${name}", a ${metatypeName} in the Sixth World — a dark dystopian cyberpunk-fantasy future where magic and technology coexist`);
+  } else {
+    parts.push(`Full body portrait of "${name}" — a creature or entity in the Sixth World, a dark dystopian cyberpunk-fantasy setting`);
+  }
+  if (keywords.length > 0) {
+    parts.push(`Identity: ${keywords.join(", ")}`);
+  }
+  const bg = sys?.bio?.background || "";
+  const bgText = bg.replace(/<[^>]+>/g, "").trim();
+  if (bgText && bgText.length > 10) {
+    parts.push(`Background: ${bgText.substring(0, 200)}`);
+  }
+  const behaviors = [];
+  if (sys?.behaviors) {
+    for (let i = 1; i <= 4; i++) {
+      const b = sys.behaviors[`behavior${i}`];
+      if (b) behaviors.push(b);
+    }
+  }
+  if (behaviors.length > 0) {
+    parts.push(`Personality: ${behaviors.slice(0, 2).join(". ")}`);
+  }
+  const weaponItems = actor.items?.filter((i) => i.type === "feat" && i.system?.featType === "weapon") || [];
+  const armorItems = actor.items?.filter((i) => i.type === "feat" && i.system?.featType === "armor") || [];
+  const cyberItems = actor.items?.filter((i) => i.type === "feat" && i.system?.featType === "cyberware" && !i.system?.isBioware) || [];
+  const cyberdeckItems = actor.items?.filter((i) => i.type === "feat" && i.system?.featType === "cyberdeck") || [];
+  if (armorItems.length > 0) {
+    const av = armorItems[0].system?.armorValue || 0;
+    parts.push(av >= 4 ? `Wearing heavy armor: ${armorItems[0].name}` : `Wearing ${armorItems[0].name}`);
+  }
+  if (cyberItems.length > 0) {
+    parts.push(`Visible cyberware: ${cyberItems.slice(0, 3).map((c) => c.name).join(", ")}`);
+  }
+  if (weaponItems.length > 0) {
+    parts.push(`Armed with ${weaponItems[0].name}`);
+  }
+  if (cyberdeckItems.length > 0) {
+    parts.push(`${cyberdeckItems[0].name} strapped to forearm, holographic interface glowing`);
+  }
+  parts.push("Shadowrun RPG character art, dark cyberpunk atmosphere, neon-lit urban backdrop, highly detailed illustration. IMPORTANT: Do NOT include any text, writing, letters, words or captions in the image");
+  return parts.join(". ") + ".";
+}
+async function saveAndApplyImage(actor, base64Data, type = "portrait") {
+  const byteString = atob(base64Data);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  const blob = new Blob([ab], { type: "image/png" });
+  const safeName = actor.name.replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 50);
+  const suffix = type === "token" ? "_token" : "_portrait";
+  const fileName = `${safeName}${suffix}_${Date.now()}.png`;
+  const dirPath = "assets/generated-portraits";
+  try {
+    await FilePicker.browse("data", dirPath);
+  } catch {
+    try {
+      await FilePicker.createDirectory("data", "assets");
+    } catch {
+    }
+    try {
+      await FilePicker.createDirectory("data", dirPath);
+    } catch {
+    }
+  }
+  const file = new File([blob], fileName, { type: "image/png" });
+  const uploadResult = await FilePicker.upload("data", dirPath, file, {});
+  const filePath = uploadResult?.path;
+  if (!filePath) {
+    throw new Error("Failed to upload image");
+  }
+  if (type === "portrait") {
+    await actor.update({ img: filePath, "prototypeToken.texture.src": filePath });
+    ui.notifications?.info(game.i18n?.localize("SRA2.NPC_GENERATOR.IMAGE_GENERATED") || "Portrait generated!");
+  } else {
+    await actor.update({ "prototypeToken.texture.src": filePath });
+    ui.notifications?.info("Token headshot generated!");
+  }
+}
+const geminiImage = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  generateActorImage,
+  isGeminiConfigured,
+  registerGeminiSetting
+}, Symbol.toStringTag, { value: "Module" }));
 globalThis.SYSTEM = SYSTEM$1;
 function findSkillBySlug(actor, slug) {
   const bySlug = actor.items.find((i) => i.type === "skill" && i.system?.slug === slug);
@@ -13863,6 +19291,7 @@ class SRA2System {
     }
     this.registerThemeSetting();
     this.registerGroupAnarchySetting();
+    this.registerGeminiSetting();
     setSidebarIcons();
     setControlIcons();
     setCompendiumBanners();
@@ -13895,6 +19324,7 @@ class SRA2System {
       declareMigration(new Migration_13_1_1());
       declareMigration(new Migration_13_1_3());
       declareMigration(new Migration_13_2_4());
+      declareMigration(new Migration_13_3_2());
     });
   }
   registerDataModels() {
@@ -14188,11 +19618,11 @@ class SRA2System {
       if (!actor) return true;
       if (actor.type !== "character") return true;
       const allFeats = actor.items.filter((item) => item.type === "feat");
-      const optionalFeats = allFeats.filter((feat) => feat.system.isOptional === true);
-      const choiceFeats = allFeats.filter((feat) => feat.system.isAChoice === true);
+      const optionalFeats = allFeats.filter((feat2) => feat2.system.isOptional === true);
+      const choiceFeats = allFeats.filter((feat2) => feat2.system.isAChoice === true);
       let totalNumberOfChoice = 0;
-      for (const feat of allFeats) {
-        const featSystem = feat.system;
+      for (const feat2 of allFeats) {
+        const featSystem = feat2.system;
         if (featSystem.isAChoice && featSystem.numberOfChoice && featSystem.numberOfChoice > 0) {
           totalNumberOfChoice = featSystem.numberOfChoice;
           break;
@@ -14215,17 +19645,17 @@ class SRA2System {
           return;
         }
         const itemUpdates = [];
-        for (const feat of optionalFeats) {
-          const isSelected = selections.optional.includes(feat.id);
+        for (const feat2 of optionalFeats) {
+          const isSelected = selections.optional.includes(feat2.id);
           itemUpdates.push({
-            _id: feat.id,
+            _id: feat2.id,
             "system.active": isSelected
           });
         }
-        for (const feat of choiceFeats) {
-          const isSelected = selections.choices.includes(feat.id);
+        for (const feat2 of choiceFeats) {
+          const isSelected = selections.choices.includes(feat2.id);
           itemUpdates.push({
-            _id: feat.id,
+            _id: feat2.id,
             "system.active": isSelected
           });
         }
@@ -15046,9 +20476,9 @@ class SRA2System {
     if (bookmarkedFeats.length > 0) {
       content += "<h3>" + game.i18n.localize("SRA2.FEATS.LABEL") + "</h3>";
       content += '<div class="bookmark-list">';
-      bookmarkedFeats.forEach((feat) => {
-        content += `<button class="bookmark-item" data-item-id="${feat.id}" data-item-type="feat">
-          <i class="fas fa-scroll"></i> ${feat.name}
+      bookmarkedFeats.forEach((feat2) => {
+        content += `<button class="bookmark-item" data-item-id="${feat2.id}" data-item-type="feat">
+          <i class="fas fa-scroll"></i> ${feat2.name}
         </button>`;
       });
       content += "</div>";
@@ -15095,8 +20525,11 @@ class SRA2System {
     });
   }
   /**
-   * Register the Group Anarchy setting
+   * Register the Gemini API key setting
    */
+  registerGeminiSetting() {
+    registerGeminiSetting();
+  }
   /**
    * Initialize Babele translations if the module is available
    */
@@ -15142,34 +20575,80 @@ class SRA2System {
     console.log(SYSTEM$1.LOG.HEAD + "SRA2System.onReady");
     this.applyTheme();
     AnarchyCounter.instance.render(true);
+    this.setupNPCGeneratorButton();
     await this.buildSkillSlugCache();
     const migrations = new Migrations();
     migrations.migrate();
     await this.migrateFeatsToArrayFormat();
     await this.migrateAnarchyNimbusToSpent();
   }
+  setupNPCGeneratorButton() {
+    if (!game.user?.isGM) return;
+    const injectButton = () => {
+      const sidebar = document.getElementById("actors");
+      if (!sidebar || sidebar.querySelector(".npc-generator-btn")) return;
+      const label = game.i18n.localize("SRA2.NPC_GENERATOR.BUTTON");
+      const button = document.createElement("button");
+      button.className = "npc-generator-btn";
+      button.type = "button";
+      button.innerHTML = `<i class="fas fa-dice-d20"></i> ${label}`;
+      button.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        NPCGeneratorDialog.show();
+      });
+      const footer = sidebar.querySelector(".directory-footer");
+      if (footer) {
+        footer.appendChild(button);
+      } else {
+        const footerDiv = document.createElement("div");
+        footerDiv.className = "directory-footer flexrow";
+        footerDiv.appendChild(button);
+        sidebar.appendChild(footerDiv);
+      }
+    };
+    Hooks.on("changeSidebarTab", (app) => {
+      if (app.tabName === "actors") setTimeout(injectButton, 100);
+    });
+    Hooks.on("renderSidebarTab", (app) => {
+      if (app.tabName === "actors") setTimeout(injectButton, 100);
+    });
+    Hooks.on("renderActorDirectory", () => setTimeout(injectButton, 100));
+    setTimeout(injectButton, 500);
+  }
   /**
    * Build a global cache mapping skill slugs to localized names.
+   * Also builds a metadata cache for specializations (linkedSkill, linkedAttribute).
    * Loaded from compendiums at startup so slug resolution is synchronous.
    */
   async buildSkillSlugCache() {
     const cache = {};
+    const metadataCache = {};
     if (game.items) {
       for (const item of game.items) {
         if ((item.type === "skill" || item.type === "specialization") && item.system?.slug) {
           cache[item.system.slug] = item.name;
+          metadataCache[item.system.slug] = {
+            linkedSkill: item.system.linkedSkill,
+            linkedAttribute: item.system.linkedAttribute
+          };
         }
       }
     }
     for (const pack of game.packs) {
       if (pack.documentName !== "Item") continue;
       try {
-        const index = await pack.getIndex({ fields: ["system.slug"] });
+        const index = await pack.getIndex({ fields: ["system.slug", "system.linkedSkill", "system.linkedAttribute"] });
         for (const entry of index) {
           if ((entry.type === "skill" || entry.type === "specialization") && entry.system?.slug) {
             const slug = entry.system.slug;
             if (!cache[slug]) {
               cache[slug] = entry.name;
+            }
+            if (!metadataCache[slug]) {
+              metadataCache[slug] = {
+                linkedSkill: entry.system.linkedSkill,
+                linkedAttribute: entry.system.linkedAttribute
+              };
             }
           }
         }
@@ -15177,6 +20656,7 @@ class SRA2System {
       }
     }
     globalThis.SRA2_SKILL_SLUG_CACHE = cache;
+    globalThis.SRA2_SLUG_METADATA_CACHE = metadataCache;
     console.log(SYSTEM$1.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries (skills + specializations)`);
   }
   /**

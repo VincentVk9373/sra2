@@ -1091,6 +1091,10 @@
                 "SRA2": "Shadowrun Anarchy 2",
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
+            },
+            "GEMINI": {
+                "TITLE": "Clé API Gemini",
+                "DESC": "Clé API Google Gemini pour la génération d'images de portraits. Laissez vide pour désactiver."
             }
         },
         "ANARCHY_COUNTER": {
@@ -1223,6 +1227,25 @@
             "CONJURATION": "Conjuration",
             "ADEPT": "Adepte",
             "SHAMANIC_MASK": "Masque chamanique"
+        },
+        "NPC_GENERATOR": {
+            "TITLE": "Générateur de Runner",
+            "BUTTON": "Générer Runner",
+            "GENERATE": "Générer",
+            "GENERATING": "Génération en cours...",
+            "SUCCESS": "{count} Runner(s) généré(s) avec succès",
+            "POWER_LEVEL": "Niveau de puissance",
+            "ARCHETYPE": "Archétype",
+            "METATYPE": "Métatype",
+            "GENDER": "Genre (nom)",
+            "COUNT": "Nombre",
+            "RANDOM": "Aléatoire",
+            "MALE": "Masculin",
+            "FEMALE": "Féminin",
+            "NEUTRAL": "Neutre",
+            "GENERATE_PORTRAIT": "Générer Portrait IA",
+            "GENERATING_IMAGE": "Génération du portrait en cours...",
+            "IMAGE_GENERATED": "Portrait généré avec succès !"
         }
     }
 }

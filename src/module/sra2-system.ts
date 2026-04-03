@@ -49,6 +49,9 @@ import { Migration_13_1_3 } from "./migration/migration-13.1.3.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_2_4 } from "./migration/migration-13.2.4.mjs";
 // @ts-ignore - JavaScript module without type declarations
+import { Migration_13_3_2 } from "./migration/migration-13.3.2.mjs";
+import { registerGeminiSetting, isGeminiConfigured, generateActorImage } from "./helpers/gemini-image.js";
+// @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
 /**
@@ -180,6 +183,7 @@ export class SRA2System {
 
     this.registerThemeSetting();
     this.registerGroupAnarchySetting();
+    this.registerGeminiSetting();
 
     setSidebarIcons();
     setControlIcons();
@@ -216,6 +220,7 @@ export class SRA2System {
       declareMigration(new Migration_13_1_1());
       declareMigration(new Migration_13_1_3());
       declareMigration(new Migration_13_2_4());
+      declareMigration(new Migration_13_3_2());
     });
   }
 
@@ -1783,8 +1788,12 @@ export class SRA2System {
   }
 
   /**
-   * Register the Group Anarchy setting
+   * Register the Gemini API key setting
    */
+  registerGeminiSetting(): void {
+    registerGeminiSetting();
+  }
+
   /**
    * Initialize Babele translations if the module is available
    */
@@ -1851,6 +1860,9 @@ export class SRA2System {
     // Initialize the Group Anarchy Counter (visible to all)
     applications.AnarchyCounter.instance.render(true);
 
+    // Add NPC Generator button to Actors sidebar (GM only)
+    this.setupNPCGeneratorButton();
+
     // Build skill slug → name cache from compendiums (for resolving slugs to localized names)
     await this.buildSkillSlugCache();
 
@@ -1865,18 +1877,66 @@ export class SRA2System {
     await this.migrateAnarchyNimbusToSpent();
   }
 
+  private setupNPCGeneratorButton(): void {
+    if (!game.user?.isGM) return;
+
+    const injectButton = () => {
+      const sidebar = document.getElementById('actors');
+      if (!sidebar || sidebar.querySelector('.npc-generator-btn')) return;
+
+      const label = game.i18n!.localize('SRA2.NPC_GENERATOR.BUTTON');
+      const button = document.createElement('button');
+      button.className = 'npc-generator-btn';
+      button.type = 'button';
+      button.innerHTML = `<i class="fas fa-dice-d20"></i> ${label}`;
+      button.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        applications.NPCGeneratorDialog.show();
+      });
+
+      const footer = sidebar.querySelector('.directory-footer');
+      if (footer) {
+        footer.appendChild(button);
+      } else {
+        const footerDiv = document.createElement('div');
+        footerDiv.className = 'directory-footer flexrow';
+        footerDiv.appendChild(button);
+        sidebar.appendChild(footerDiv);
+      }
+    };
+
+    // Inject on sidebar tab changes and re-renders
+    Hooks.on('changeSidebarTab', (app: any) => {
+      if (app.tabName === 'actors') setTimeout(injectButton, 100);
+    });
+    Hooks.on('renderSidebarTab', (app: any) => {
+      if (app.tabName === 'actors') setTimeout(injectButton, 100);
+    });
+    // Catch re-renders from actor creation/deletion
+    Hooks.on('renderActorDirectory', () => setTimeout(injectButton, 100));
+
+    // Initial injection
+    setTimeout(injectButton, 500);
+  }
+
   /**
    * Build a global cache mapping skill slugs to localized names.
+   * Also builds a metadata cache for specializations (linkedSkill, linkedAttribute).
    * Loaded from compendiums at startup so slug resolution is synchronous.
    */
   private async buildSkillSlugCache(): Promise<void> {
     const cache: Record<string, string> = {};
+    const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = {};
 
     // Load from world items first (skills and specializations)
     if (game.items) {
       for (const item of game.items as any) {
         if ((item.type === 'skill' || item.type === 'specialization') && item.system?.slug) {
           cache[item.system.slug] = item.name;
+          metadataCache[item.system.slug] = {
+            linkedSkill: item.system.linkedSkill,
+            linkedAttribute: item.system.linkedAttribute,
+          };
         }
       }
     }
@@ -1885,13 +1945,19 @@ export class SRA2System {
     for (const pack of game.packs as any) {
       if (pack.documentName !== 'Item') continue;
       try {
-        const index = await pack.getIndex({ fields: ['system.slug'] });
+        const index = await pack.getIndex({ fields: ['system.slug', 'system.linkedSkill', 'system.linkedAttribute'] });
         for (const entry of index) {
           if ((entry.type === 'skill' || entry.type === 'specialization') && (entry as any).system?.slug) {
             const slug = (entry as any).system.slug;
             // Don't overwrite world item names (they take priority)
             if (!cache[slug]) {
               cache[slug] = entry.name;
+            }
+            if (!metadataCache[slug]) {
+              metadataCache[slug] = {
+                linkedSkill: (entry as any).system.linkedSkill,
+                linkedAttribute: (entry as any).system.linkedAttribute,
+              };
             }
           }
         }
@@ -1902,6 +1968,7 @@ export class SRA2System {
 
     // Store globally for synchronous access
     (globalThis as any).SRA2_SKILL_SLUG_CACHE = cache;
+    (globalThis as any).SRA2_SLUG_METADATA_CACHE = metadataCache;
     console.log(SYSTEM.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries (skills + specializations)`);
   }
 

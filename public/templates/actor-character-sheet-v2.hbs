@@ -3,7 +3,7 @@
 <form class="{{cssClass}} sra2-character-sheet-v2" autocomplete="off">
     <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
         <div class="avatar-section">
-            <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+            <img class="profile-img" src="{{actor.prototypeToken.texture.src}}" data-edit="prototypeToken.texture.src" title="{{actor.name}}" />
             <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="{{localize 'SRA2.COMMON.ADVANCED_MODE'}}">
                 <i class="fas fa-cog"></i>
             </button>
@@ -1459,6 +1459,11 @@
                         {{/if}}
                     </div>
                     <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+                    {{#if (and geminiAvailable advancedMode)}}
+                    <button type="button" class="gemini-generate-btn" data-action="generate-gemini-portrait" title="{{localize 'SRA2.NPC_GENERATOR.GENERATE_PORTRAIT'}}">
+                        <i class="fas fa-image"></i> {{localize 'SRA2.NPC_GENERATOR.GENERATE_PORTRAIT'}}
+                    </button>
+                    {{/if}}
                 </section>
                 {{#if advancedMode}}
                 <section class="char-section metatype-advanced-section">
@@ -1762,7 +1767,6 @@
                 </div>
             </div>
         </footer>
-        {{#if advancedMode}}
         <div class="bio-section">
             <div class="bio-tabs">
                 <button type="button" class="bio-tab active" data-tab="background">{{localize "SRA2.BIO"}}</button>
@@ -1775,7 +1779,6 @@
                 <div class="editor-content">{{editor system.bio.notes target="system.bio.notes" button=false engine="prosemirror" collaborate=false}}</div>
             </div>
         </div>
-        {{/if}}
         {{#if (and isGM advancedMode)}}
         <div class="gm-description-section">
             <h3><i class="fas fa-eye-slash"></i> {{localize "SRA2.GM_DESCRIPTION"}}</h3>

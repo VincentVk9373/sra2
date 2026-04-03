@@ -32,12 +32,25 @@ export class CharacterSheetV2 extends CharacterSheet {
     });
   }
 
+  override render(force?: boolean, options?: any): this {
+    if ((this as any)._blockRender) return this;
+    return super.render(force, options);
+  }
+
   override async getData(): Promise<any> {
     const context = await super.getData();
-    
+
     // Add advanced mode flag to context
     context.advancedMode = this._advancedMode;
-    
+
+    // Check if Gemini portrait generation is available
+    try {
+      const { isGeminiConfigured } = await import('../helpers/gemini-image.js');
+      context.geminiAvailable = isGeminiConfigured();
+    } catch {
+      context.geminiAvailable = false;
+    }
+
     return context;
   }
 
@@ -55,6 +68,27 @@ export class CharacterSheetV2 extends CharacterSheet {
           event.preventDefault();
           this._onToggleAdvancedMode(event as any);
         }
+      }
+    });
+
+    // Gemini portrait generation button
+    html.find('[data-action="generate-gemini-portrait"]').on('click', async (ev: any) => {
+      ev.preventDefault();
+      const btn = $(ev.currentTarget);
+      const originalHtml = btn.html();
+      btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generating portrait...');
+      // Block re-renders during generation
+      (this as any)._blockRender = true;
+      try {
+        const { generateActorImage } = await import('../helpers/gemini-image.js');
+        await generateActorImage(this.actor, (status: string) => {
+          btn.html(`<i class="fas fa-spinner fa-spin"></i> ${status}`);
+        });
+        (this as any)._blockRender = false;
+        this.render(false);
+      } catch {
+        (this as any)._blockRender = false;
+        btn.prop('disabled', false).html(originalHtml);
       }
     });
 

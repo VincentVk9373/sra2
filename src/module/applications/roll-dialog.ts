@@ -963,11 +963,11 @@ export class RollDialog extends Application {
         );
         context.selectedValue = selectedSkill ? selectedSkill.value : '';
       } else if (this.rollData.linkedAttackSpecialization) {
-        // Fallback: try to find by linkedAttackSpecialization using normalized comparison
-        const normalizedLinkedSpec = ItemSearch.normalizeSearchText(this.rollData.linkedAttackSpecialization);
-        const selectedSpec = dropdownOptions.find((opt: any) => 
-          (opt.type === 'specialization' || opt.type === 'phantom-spec') && 
-          ItemSearch.normalizeSearchText(opt.name) === normalizedLinkedSpec
+        // Fallback: try to find by linkedAttackSpecialization (slug or normalized name)
+        const linkedSpec = this.rollData.linkedAttackSpecialization;
+        const selectedSpec = dropdownOptions.find((opt: any) =>
+          (opt.type === 'specialization' || opt.type === 'phantom-spec') &&
+          (opt.slug === linkedSpec || ItemSearch.normalizeSearchText(opt.name) === ItemSearch.normalizeSearchText(linkedSpec))
         );
         context.selectedValue = selectedSpec ? selectedSpec.value : '';
       } else if (this.rollData.linkedAttackSkill) {
@@ -1158,8 +1158,8 @@ export class RollDialog extends Application {
       // Check if weapon has a specialization and if actor has that specialization
       let preferredSpecName: string | undefined = undefined;
       if (weaponLinkedSpecialization) {
-        const specExists = linkedSpecs.find((spec: any) => 
-          spec.name === weaponLinkedSpecialization
+        const specExists = linkedSpecs.find((spec: any) =>
+          spec.name === weaponLinkedSpecialization || spec.system?.slug === weaponLinkedSpecialization
         );
         if (specExists) {
           preferredSpecName = weaponLinkedSpecialization;
