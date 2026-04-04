@@ -10586,6 +10586,17 @@ class ServerSheet extends ActorSheet {
     }));
   }
 }
+function isPackForActiveLanguage(pack) {
+  const lang = game.i18n?.lang || "en";
+  const collection = pack.collection || "";
+  if (collection.endsWith(`-${lang}`)) return true;
+  return false;
+}
+function getLanguagePacks$1() {
+  const allPacks = [...game.packs].filter((p) => p.documentName === "Item");
+  const langPacks = allPacks.filter(isPackForActiveLanguage);
+  return langPacks.length > 0 ? langPacks : allPacks;
+}
 class FeatSheet extends ItemSheet {
   /** Track the currently active section */
   _activeSection = "general";
@@ -11175,8 +11186,7 @@ class FeatSheet extends ItemSheet {
         }
       }
     }
-    for (const pack of game.packs) {
-      if (pack.documentName !== "Item") continue;
+    for (const pack of getLanguagePacks$1()) {
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
         if (doc.type === rrType && normalizeSearchText(doc.name).includes(searchTerm)) {
@@ -11336,8 +11346,7 @@ class FeatSheet extends ItemSheet {
         }
       }
     }
-    for (const pack of game.packs) {
-      if (pack.documentName !== "Item") continue;
+    for (const pack of getLanguagePacks$1()) {
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
         if (doc.type === "skill" && normalizeSearchText(doc.name).includes(searchTerm)) {
@@ -11508,8 +11517,7 @@ class FeatSheet extends ItemSheet {
         }
       }
     }
-    for (const pack of game.packs) {
-      if (pack.documentName !== "Item") continue;
+    for (const pack of getLanguagePacks$1()) {
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
         if (doc.type === "specialization" && normalizeSearchText(doc.name).includes(searchTerm)) {
@@ -11774,6 +11782,12 @@ class SkillSheet extends ItemSheet {
     return this.item.update(expandedData);
   }
 }
+function getLanguagePacks() {
+  const allPacks = [...game.packs].filter((p) => p.documentName === "Item");
+  const lang = game.i18n?.lang || "en";
+  const langPacks = allPacks.filter((p) => (p.collection || "").endsWith(`-${lang}`));
+  return langPacks.length > 0 ? langPacks : allPacks;
+}
 class SpecializationSheet extends ItemSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -11928,8 +11942,7 @@ class SpecializationSheet extends ItemSheet {
         }
       }
     }
-    for (const pack of game.packs) {
-      if (pack.documentName !== "Item") continue;
+    for (const pack of getLanguagePacks()) {
       const documents2 = await pack.getDocuments();
       for (const doc of documents2) {
         if (doc.type === "skill" && normalizeSearchText(doc.name).includes(searchTerm)) {
@@ -19941,13 +19954,19 @@ class SRA2System {
       try {
         let skillTemplate = findItemInGame("skill", linkedSkillName);
         if (!skillTemplate) {
-          for (const pack of game.packs) {
+          const lang = game.i18n?.lang || "en";
+          const packs = [...game.packs].sort((a, b) => {
+            const aMatch = a.collection?.endsWith(`-${lang}`) ? -1 : 0;
+            const bMatch = b.collection?.endsWith(`-${lang}`) ? -1 : 0;
+            return aMatch - bMatch;
+          });
+          for (const pack of packs) {
             if (pack.documentName !== "Item") continue;
             try {
-              const index = await pack.getIndex({ fields: ["system.slug", "type"] });
-              const entry = index.find((e) => e.type === "skill" && e.system?.slug === linkedSkillName);
-              if (entry) {
-                skillTemplate = await pack.getDocument(entry._id);
+              const docs = await pack.getDocuments();
+              const found = docs.find((d) => d.type === "skill" && d.system?.slug === linkedSkillName);
+              if (found) {
+                skillTemplate = found;
                 break;
               }
             } catch {
@@ -19962,26 +19981,10 @@ class SRA2System {
             console.error(SYSTEM$1.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
           }
         } else {
-          const linkedAttribute = item.system?.linkedAttribute || "strength";
-          const slugCache = globalThis.SRA2_SKILL_SLUG_CACHE || {};
-          const resolvedName = slugCache[linkedSkillName] || linkedSkillName;
-          const skillData = {
-            name: resolvedName,
-            type: "skill",
-            system: {
-              rating: 0,
-              linkedAttribute,
-              description: "",
-              bookmarked: false,
-              slug: linkedSkillName
-            }
-          };
-          try {
-            await actor.createEmbeddedDocuments("Item", [skillData]);
-            console.log(SYSTEM$1.LOG.HEAD + `Auto-created linked skill "${resolvedName}" (slug: ${linkedSkillName}) for specialization "${item.name}"`);
-          } catch (error) {
-            console.error(SYSTEM$1.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
-          }
+          console.error(SYSTEM$1.LOG.HEAD + `Skill "${linkedSkillName}" not found in world items or compendiums. Cannot auto-add for specialization "${item.name}".`);
+          ui.notifications?.error(
+            game.i18n?.format("SRA2.SKILLS.AUTO_ADD_FAILED", { skill: linkedSkillName, spec: item.name }) || `Skill "${linkedSkillName}" not found. Please add it manually from the compendium.`
+          );
         }
       } finally {
         SRA2System.skillsBeingCreated.delete(skillKey);

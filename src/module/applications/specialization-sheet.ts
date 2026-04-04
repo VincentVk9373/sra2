@@ -2,6 +2,16 @@ import * as ItemSearch from '../../../item-search.js';
 import { DELAYS } from '../config/constants.js';
 
 /**
+ * Get compendium packs filtered by active language, with fallback to all packs
+ */
+function getLanguagePacks(): any[] {
+  const allPacks = [...(game.packs as any)].filter((p: any) => p.documentName === 'Item');
+  const lang = game.i18n?.lang || 'en';
+  const langPacks = allPacks.filter((p: any) => (p.collection || '').endsWith(`-${lang}`));
+  return langPacks.length > 0 ? langPacks : allPacks;
+}
+
+/**
  * Specialization Sheet Application
  */
 export class SpecializationSheet extends ItemSheet {
@@ -208,11 +218,7 @@ export class SpecializationSheet extends ItemSheet {
     }
 
     // Search in all compendiums
-    for (const pack of game.packs as any) {
-      // Only search in Item compendiums
-      if (pack.documentName !== 'Item') continue;
-
-      // Get all documents from the pack
+    for (const pack of getLanguagePacks()) {
       const documents = await pack.getDocuments();
 
       // Filter for skills that match the search term

@@ -3,6 +3,27 @@ import * as ItemSearch from '../../../item-search.js';
 import { DELAYS } from '../config/constants.js';
 
 /**
+ * Check if a compendium pack matches the active language
+ */
+function isPackForActiveLanguage(pack: any): boolean {
+  const lang = game.i18n?.lang || 'en';
+  const collection = pack.collection || '';
+  // Match packs ending with -fr or -en
+  if (collection.endsWith(`-${lang}`)) return true;
+  // If no language-specific pack found, accept all
+  return false;
+}
+
+/**
+ * Get compendium packs filtered by active language, with fallback to all packs
+ */
+function getLanguagePacks(): any[] {
+  const allPacks = [...(game.packs as any)].filter((p: any) => p.documentName === 'Item');
+  const langPacks = allPacks.filter(isPackForActiveLanguage);
+  return langPacks.length > 0 ? langPacks : allPacks;
+}
+
+/**
  * Feat Sheet Application
  */
 export class FeatSheet extends ItemSheet {
@@ -826,12 +847,8 @@ export class FeatSheet extends ItemSheet {
       }
     }
     
-    // Search in all compendiums
-    for (const pack of game.packs as any) {
-      // Only search in Item compendiums
-      if (pack.documentName !== 'Item') continue;
-      
-      // Get all documents from the pack
+    // Search in compendiums (active language first, fallback to all)
+    for (const pack of getLanguagePacks()) {
       const documents = await pack.getDocuments();
       
       // Filter for items that match the search term and type
@@ -1043,12 +1060,8 @@ export class FeatSheet extends ItemSheet {
       }
     }
     
-    // Search in all compendiums
-    for (const pack of game.packs as any) {
-      // Only search in Item compendiums
-      if (pack.documentName !== 'Item') continue;
-      
-      // Get all documents from the pack
+    // Search in compendiums (active language first, fallback to all)
+    for (const pack of getLanguagePacks()) {
       const documents = await pack.getDocuments();
       
       // Filter for skills that match the search term
@@ -1273,9 +1286,8 @@ export class FeatSheet extends ItemSheet {
       }
     }
 
-    // Search in all compendiums
-    for (const pack of game.packs as any) {
-      if (pack.documentName !== 'Item') continue;
+    // Search in compendiums (active language first, fallback to all)
+    for (const pack of getLanguagePacks()) {
       const documents = await pack.getDocuments();
       for (const doc of documents) {
         if (doc.type === 'specialization' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {

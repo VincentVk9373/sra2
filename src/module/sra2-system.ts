@@ -491,14 +491,21 @@ export class SRA2System {
         let skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
 
         // If not found in game.items, search compendium packs by slug
+        // Prioritize the pack matching the active language, fallback to all packs
         if (!skillTemplate) {
-          for (const pack of game.packs as any) {
+          const lang = game.i18n?.lang || 'en';
+          const packs = [...(game.packs as any)].sort((a: any, b: any) => {
+            const aMatch = a.collection?.endsWith(`-${lang}`) ? -1 : 0;
+            const bMatch = b.collection?.endsWith(`-${lang}`) ? -1 : 0;
+            return aMatch - bMatch;
+          });
+          for (const pack of packs) {
             if (pack.documentName !== 'Item') continue;
             try {
-              const index = await pack.getIndex({ fields: ['system.slug', 'type'] });
-              const entry = index.find((e: any) => e.type === 'skill' && e.system?.slug === linkedSkillName);
-              if (entry) {
-                skillTemplate = await pack.getDocument(entry._id);
+              const docs = await pack.getDocuments();
+              const found = docs.find((d: any) => d.type === 'skill' && d.system?.slug === linkedSkillName);
+              if (found) {
+                skillTemplate = found;
                 break;
               }
             } catch { /* skip pack */ }
@@ -514,28 +521,12 @@ export class SRA2System {
             console.error(SYSTEM.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
           }
         } else {
-          // Skill not found anywhere — resolve name from slug cache or use slug as-is
-          const linkedAttribute = item.system?.linkedAttribute || 'strength';
-          const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
-          const resolvedName = slugCache[linkedSkillName] || linkedSkillName;
-          const skillData = {
-            name: resolvedName,
-            type: 'skill',
-            system: {
-              rating: 0,
-              linkedAttribute: linkedAttribute,
-              description: '',
-              bookmarked: false,
-              slug: linkedSkillName
-            }
-          };
-
-          try {
-            await actor.createEmbeddedDocuments('Item', [skillData]);
-            console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${resolvedName}" (slug: ${linkedSkillName}) for specialization "${item.name}"`);
-          } catch (error) {
-            console.error(SYSTEM.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
-          }
+          // Skill not found in game.items or compendiums — abort, don't create a broken skill
+          console.error(SYSTEM.LOG.HEAD + `Skill "${linkedSkillName}" not found in world items or compendiums. Cannot auto-add for specialization "${item.name}".`);
+          ui.notifications?.error(
+            game.i18n?.format('SRA2.SKILLS.AUTO_ADD_FAILED', { skill: linkedSkillName, spec: item.name })
+            || `Skill "${linkedSkillName}" not found. Please add it manually from the compendium.`
+          );
         }
       } finally {
         // Remove from the set after creation (or error)

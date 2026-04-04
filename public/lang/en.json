@@ -965,6 +965,7 @@
             "SPECIALIZATION_PLACEHOLDER": "Optional specialization",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} is already on this character",
+            "AUTO_ADD_FAILED": "Skill \"{skill}\" not found in compendiums. Please add it manually for specialization \"{spec}\".",
             "ONLY_SKILLS": "Only skill items can be dropped in the skills section",
             "ROLL": "Roll Dice",
             "ROLL_TITLE": "Roll {name}",

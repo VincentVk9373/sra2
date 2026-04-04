@@ -965,6 +965,7 @@
             "SPECIALIZATION_PLACEHOLDER": "Spécialisation optionnelle",
             "DESCRIPTION": "Description",
             "ALREADY_EXISTS": "{name} est déjà sur ce personnage",
+            "AUTO_ADD_FAILED": "Compétence \"{skill}\" introuvable dans les compendiums. Ajoutez-la manuellement pour la spécialisation \"{spec}\".",
             "ONLY_SKILLS": "Seules les compétences peuvent être déposées dans la section des compétences",
             "ROLL": "Lancer les dés",
             "ROLL_TITLE": "Lancer {name}",
