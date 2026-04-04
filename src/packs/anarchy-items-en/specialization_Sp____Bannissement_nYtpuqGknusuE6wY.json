@@ -6,7 +6,7 @@
   "img": "icons/svg/item-bag.svg",
   "system": {
     "linkedSkill": "conjuration",
-    "linkedAttribute": "willpower",
+    "linkedAttribute": "logic",
     "description": "",
     "bookmarked": false,
     "reference": "",

@@ -971,11 +971,11 @@ export class RollDialog extends Application {
         );
         context.selectedValue = selectedSpec ? selectedSpec.value : '';
       } else if (this.rollData.linkedAttackSkill) {
-        // Fallback: try to find by linkedAttackSkill using normalized comparison
-        const normalizedLinkedSkill = ItemSearch.normalizeSearchText(this.rollData.linkedAttackSkill);
-        const selectedSkill = dropdownOptions.find((opt: any) => 
-          (opt.type === 'skill' || opt.type === 'phantom-skill') && 
-          ItemSearch.normalizeSearchText(opt.name) === normalizedLinkedSkill
+        // Fallback: try to find by linkedAttackSkill (slug or normalized name)
+        const linkedSkill = this.rollData.linkedAttackSkill;
+        const selectedSkill = dropdownOptions.find((opt: any) =>
+          (opt.type === 'skill' || opt.type === 'phantom-skill') &&
+          (opt.slug === linkedSkill || ItemSearch.normalizeSearchText(opt.name) === ItemSearch.normalizeSearchText(linkedSkill))
         );
         context.selectedValue = selectedSkill ? selectedSkill.value : '';
       } else {

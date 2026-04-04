@@ -1148,11 +1148,11 @@ export function enrichFeats(feats: any[], actorStrength: number, calculateFinalD
         }
       }
 
-      // If no specialization found, try to find the linked attack skill
+      // If no specialization found, try to find the linked attack skill (by slug or name)
       if (!attackSpecName && linkedAttackSkill) {
         const foundSkill = actor.items.find((i: any) =>
           i.type === 'skill' &&
-          normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSkill)
+          (i.system?.slug === linkedAttackSkill || normalizeSearchText(i.name) === normalizeSearchText(linkedAttackSkill))
         );
 
         if (foundSkill) {
@@ -1342,12 +1342,10 @@ export function findAttackSkillAndSpec(
 
   // If no specialization found, try to find the linked attack skill
   if (!result.specName && !result.skillLevel && targetSkill) {
-    const foundSkill = lookupBySlug
-      ? actor.items.find((i: any) => i.type === 'skill' && i.system.slug === targetSkill)
-      : actor.items.find((i: any) =>
-          i.type === 'skill' &&
-          ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill)
-        );
+    const foundSkill = actor.items.find((i: any) =>
+      i.type === 'skill' &&
+      (i.system?.slug === targetSkill || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill))
+    );
 
     if (foundSkill) {
       const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || defaultAttribute;
@@ -1450,7 +1448,7 @@ function _trySpellSpecKeywordSearch(
     if (i.type !== 'specialization') return false;
     const normalizedName = ItemSearch.normalizeSearchText(i.name);
     const linkedSkill = (i.system as any)?.linkedSkill;
-    if (linkedSkill === SKILL_SLUGS.SORCERY || ItemSearch.normalizeSearchText(linkedSkill) === 'sorcellerie') {
+    if (linkedSkill === SKILL_SLUGS.SORCERY || linkedSkill === 'sorcery' || linkedSkill === 'sorcellerie') {
       return normalizedKeywords.some(normalizedKeyword => normalizedName.includes(normalizedKeyword));
     }
     return false;
@@ -1876,7 +1874,7 @@ export function getSpecializationsForSkill(actor: any, skillName: string): any[]
   const normalizedSkillName = ItemSearch.normalizeSearchText(skillName);
 
   // Also find the skill's slug for matching against linkedSkill (which is now stored as a slug)
-  const skillItem = actor.items.find((i: any) => i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === normalizedSkillName);
+  const skillItem = actor.items.find((i: any) => i.type === 'skill' && (i.system?.slug === skillName || ItemSearch.normalizeSearchText(i.name) === normalizedSkillName));
   const skillSlug = skillItem?.system?.slug || '';
 
   return actor.items.filter((i: any) => {
