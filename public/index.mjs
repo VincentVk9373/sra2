@@ -752,7 +752,7 @@ const WEAPON_TYPES = {
     medium: "disadvantage",
     long: "none",
     linkedSkill: "ranged-weapons",
-    linkedSpecialization: "spec_rifles",
+    linkedSpecialization: "spec_shotguns",
     linkedDefenseSkill: "athletics",
     linkedDefenseSpecialization: "spec_ranged-defense"
   },
@@ -6205,6 +6205,9 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
   const foundryRollMode = game.settings?.get("core", "rollMode") ?? "publicroll";
   ChatMessage.applyRollMode(messageData, foundryRollMode);
   await ChatMessage.create(messageData);
+  if (rollResult.complication !== "none") {
+    whisperComplicationSuggestions(rollData, rollResult);
+  }
   await handleDrain(attacker, rollData, rollResult);
 }
 async function handleDrain(actor, rollData, rollResult) {
@@ -6337,6 +6340,70 @@ async function handleDrain(actor, rollData, rollResult) {
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`);
+  }
+}
+async function whisperComplicationSuggestions(rollData, rollResult) {
+  const gmUsers = game.users?.filter((u) => u.isGM)?.map((u) => u.id) || [];
+  if (gmUsers.length === 0) return;
+  try {
+    const { COMPLICATIONS } = await import("./complication-data-CFOrR8b8.mjs");
+    const skillSlug = rollData.linkedAttackSkill || rollData.skillSlug || "";
+    let lookupKey = skillSlug;
+    if (skillSlug === "influence" && rollData.linkedAttackSpecialization) {
+      const spec = rollData.linkedAttackSpecialization;
+      if (spec.includes("bluff") || spec.includes("imposture")) lookupKey = "influence_bluff";
+      else if (spec.includes("negotiation") || spec.includes("negociation")) lookupKey = "influence_negotiation";
+      else if (spec.includes("intimidation")) lookupKey = "influence_intimidation";
+      else if (spec.includes("etiquette")) lookupKey = "influence_etiquette";
+      else lookupKey = "influence_social";
+    }
+    const table = COMPLICATIONS[lookupKey] || COMPLICATIONS[skillSlug] || COMPLICATIONS["default"];
+    if (!table) return;
+    const level = rollResult.complication;
+    const entries = table[level];
+    if (!entries) return;
+    const isEn = game.i18n?.lang !== "fr";
+    const suggestions = isEn ? entries.en : entries.fr;
+    if (!suggestions || suggestions.length === 0) return;
+    const count = Math.min(2, suggestions.length);
+    const shuffled = [...suggestions].sort(() => Math.random() - 0.5);
+    const picked = shuffled.slice(0, count);
+    const colors = {
+      minor: "#ffc107",
+      // Yellow
+      critical: "#fd7e14",
+      // Orange
+      disaster: "#dc3545"
+      // Red
+    };
+    const labels = {
+      minor: { fr: "Complication Mineure", en: "Minor Complication" },
+      critical: { fr: "Complication Critique", en: "Critical Complication" },
+      disaster: { fr: "Désastre", en: "Disaster" }
+    };
+    const color = colors[level] || "#ffc107";
+    const label = isEn ? labels[level]?.en : labels[level]?.fr;
+    const skillName = rollData.itemName || rollData.skillName || lookupKey;
+    const content = `
+<div style="border-left:3px solid ${color};padding:6px 10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:0.9em;">
+  <div style="color:${color};font-weight:bold;margin-bottom:4px;">
+    <i class="fas fa-exclamation-triangle"></i> ${label} — ${skillName}
+  </div>
+  <div style="font-style:italic;opacity:0.8;margin-bottom:6px;">
+    ${isEn ? "Suggestions for the GM:" : "Suggestions pour le MJ :"}
+  </div>
+  <ul style="margin:0;padding-left:16px;">
+    ${picked.map((s) => `<li>${s}</li>`).join("")}
+  </ul>
+</div>`;
+    await ChatMessage.create({
+      content,
+      whisper: gmUsers,
+      speaker: { alias: isEn ? "Complication" : "Complication" },
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  } catch (err) {
+    console.warn("Failed to whisper complication suggestions:", err);
   }
 }
 const DiceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -11417,6 +11484,7 @@ class FeatSheet extends ItemSheet {
         if (item.type === "specialization" && normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
+            slug: item.system?.slug || "",
             uuid: item.uuid,
             source: game.i18n.localize("SRA2.FEATS.FROM_ACTOR"),
             type: "specialization"
@@ -11431,6 +11499,7 @@ class FeatSheet extends ItemSheet {
           if (!exists) {
             results.push({
               name: item.name,
+              slug: item.system?.slug || "",
               uuid: item.uuid,
               source: game.i18n.localize("SRA2.SKILLS.WORLD_ITEMS"),
               type: "specialization"
@@ -11448,6 +11517,7 @@ class FeatSheet extends ItemSheet {
           if (!exists) {
             results.push({
               name: doc.name,
+              slug: doc.system?.slug || "",
               uuid: doc.uuid,
               source: pack.title,
               type: "specialization"
@@ -11474,12 +11544,12 @@ class FeatSheet extends ItemSheet {
     } else {
       for (const result of results) {
         html += `
-          <div class="search-result-item" data-result-name="${result.name}" data-field="${fieldName}">
+          <div class="search-result-item" data-result-name="${result.name}" data-result-slug="${result.slug || ""}" data-field="${fieldName}">
             <div class="result-info">
               <span class="result-name">${result.name}</span>
               <span class="result-pack">${result.source}</span>
             </div>
-            <button class="select-power-spec-btn" data-target-name="${result.name}" data-field="${fieldName}">
+            <button class="select-power-spec-btn" data-target-name="${result.name}" data-target-slug="${result.slug || ""}" data-field="${fieldName}">
               ${game.i18n.localize("SRA2.FEATS.SELECT")}
             </button>
           </div>
@@ -11508,12 +11578,13 @@ class FeatSheet extends ItemSheet {
     event.stopImmediatePropagation();
     const button = event.currentTarget;
     const targetName = button.dataset.targetName;
+    const targetSlug = button.dataset.targetSlug;
     const fieldName = button.dataset.field;
     if (!targetName || !fieldName) return;
     const container = $(button).closest(".power-spec-search-container");
     const input = container.find(`input[name="system.${fieldName}"]`)[0];
     if (input) {
-      input.value = targetName;
+      input.value = targetSlug || targetName;
       $(input).trigger("change");
     }
     const resultsDiv = container.find(".power-spec-search-results")[0];
@@ -19510,7 +19581,21 @@ class SRA2System {
       }
       SRA2System.skillsBeingCreated.add(skillKey);
       try {
-        const skillTemplate = findItemInGame("skill", linkedSkillName);
+        let skillTemplate = findItemInGame("skill", linkedSkillName);
+        if (!skillTemplate) {
+          for (const pack of game.packs) {
+            if (pack.documentName !== "Item") continue;
+            try {
+              const index = await pack.getIndex({ fields: ["system.slug", "type"] });
+              const entry = index.find((e) => e.type === "skill" && e.system?.slug === linkedSkillName);
+              if (entry) {
+                skillTemplate = await pack.getDocument(entry._id);
+                break;
+              }
+            } catch {
+            }
+          }
+        }
         if (skillTemplate) {
           try {
             await actor.createEmbeddedDocuments("Item", [skillTemplate.toObject()]);
@@ -19520,19 +19605,22 @@ class SRA2System {
           }
         } else {
           const linkedAttribute = item.system?.linkedAttribute || "strength";
+          const slugCache = globalThis.SRA2_SKILL_SLUG_CACHE || {};
+          const resolvedName = slugCache[linkedSkillName] || linkedSkillName;
           const skillData = {
-            name: linkedSkillName,
+            name: resolvedName,
             type: "skill",
             system: {
               rating: 0,
               linkedAttribute,
               description: "",
-              bookmarked: false
+              bookmarked: false,
+              slug: linkedSkillName
             }
           };
           try {
             await actor.createEmbeddedDocuments("Item", [skillData]);
-            console.log(SYSTEM$1.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+            console.log(SYSTEM$1.LOG.HEAD + `Auto-created linked skill "${resolvedName}" (slug: ${linkedSkillName}) for specialization "${item.name}"`);
           } catch (error) {
             console.error(SYSTEM$1.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
           }

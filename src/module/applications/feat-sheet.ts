@@ -1246,6 +1246,7 @@ export class FeatSheet extends ItemSheet {
         if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
+            slug: item.system?.slug || '',
             uuid: item.uuid,
             source: game.i18n!.localize('SRA2.FEATS.FROM_ACTOR'),
             type: 'specialization'
@@ -1253,16 +1254,16 @@ export class FeatSheet extends ItemSheet {
         }
       }
     }
-    
+
     // Search in world items
     if (game.items) {
       for (const item of game.items as any) {
         if (item.type === 'specialization' && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
-          // Check if not already in results
           const exists = results.some(r => r.name === item.name);
           if (!exists) {
             results.push({
               name: item.name,
+              slug: item.system?.slug || '',
               uuid: item.uuid,
               source: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
               type: 'specialization'
@@ -1271,23 +1272,18 @@ export class FeatSheet extends ItemSheet {
         }
       }
     }
-    
+
     // Search in all compendiums
     for (const pack of game.packs as any) {
-      // Only search in Item compendiums
       if (pack.documentName !== 'Item') continue;
-      
-      // Get all documents from the pack
       const documents = await pack.getDocuments();
-      
-      // Filter for specializations that match the search term
       for (const doc of documents) {
         if (doc.type === 'specialization' && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
-          // Check if not already in results
           const exists = results.some(r => r.name === doc.name);
           if (!exists) {
             results.push({
               name: doc.name,
+              slug: doc.system?.slug || '',
               uuid: doc.uuid,
               source: pack.title,
               type: 'specialization'
@@ -1319,12 +1315,12 @@ export class FeatSheet extends ItemSheet {
       // Display search results
       for (const result of results) {
         html += `
-          <div class="search-result-item" data-result-name="${result.name}" data-field="${fieldName}">
+          <div class="search-result-item" data-result-name="${result.name}" data-result-slug="${result.slug || ''}" data-field="${fieldName}">
             <div class="result-info">
               <span class="result-name">${result.name}</span>
               <span class="result-pack">${result.source}</span>
             </div>
-            <button class="select-power-spec-btn" data-target-name="${result.name}" data-field="${fieldName}">
+            <button class="select-power-spec-btn" data-target-name="${result.name}" data-target-slug="${result.slug || ''}" data-field="${fieldName}">
               ${game.i18n!.localize('SRA2.FEATS.SELECT')}
             </button>
           </div>
@@ -1365,16 +1361,19 @@ export class FeatSheet extends ItemSheet {
     
     const button = event.currentTarget as HTMLButtonElement;
     const targetName = button.dataset.targetName;
+    const targetSlug = button.dataset.targetSlug;
     const fieldName = button.dataset.field;
-    
+
     if (!targetName || !fieldName) return;
-    
+
     // Find the container and input field
     const container = $(button).closest('.power-spec-search-container');
     const input = container.find(`input[name="system.${fieldName}"]`)[0] as HTMLInputElement;
-    
+
     if (input) {
-      input.value = targetName;
+      // Use slug if available (for linkedAttackSpecialization/linkedDefenseSpecialization),
+      // fall back to name for display fields
+      input.value = targetSlug || targetName;
       // Trigger change event to save
       $(input).trigger('change');
     }

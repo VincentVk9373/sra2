@@ -484,11 +484,26 @@ export class SRA2System {
       SRA2System.skillsBeingCreated.add(skillKey);
 
       try {
-        // Try to find the skill in game.items
-        const skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
+        // Try to find the skill in game.items (by name or slug)
+        let skillTemplate = SheetHelpers.findItemInGame('skill', linkedSkillName);
+
+        // If not found in game.items, search compendium packs by slug
+        if (!skillTemplate) {
+          for (const pack of game.packs as any) {
+            if (pack.documentName !== 'Item') continue;
+            try {
+              const index = await pack.getIndex({ fields: ['system.slug', 'type'] });
+              const entry = index.find((e: any) => e.type === 'skill' && e.system?.slug === linkedSkillName);
+              if (entry) {
+                skillTemplate = await pack.getDocument(entry._id);
+                break;
+              }
+            } catch { /* skip pack */ }
+          }
+        }
 
         if (skillTemplate) {
-          // Skill found in game.items, create it on the actor
+          // Skill found, create it on the actor
           try {
             await actor.createEmbeddedDocuments('Item', [skillTemplate.toObject()]);
             console.log(SYSTEM.LOG.HEAD + `Auto-added linked skill "${linkedSkillName}" for specialization "${item.name}"`);
@@ -496,23 +511,25 @@ export class SRA2System {
             console.error(SYSTEM.LOG.HEAD + `Error auto-adding skill "${linkedSkillName}":`, error);
           }
         } else {
-          // Skill not found in game.items, create a new one with default values
-          // Use the linkedAttribute from the specialization
+          // Skill not found anywhere — resolve name from slug cache or use slug as-is
           const linkedAttribute = item.system?.linkedAttribute || 'strength';
+          const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
+          const resolvedName = slugCache[linkedSkillName] || linkedSkillName;
           const skillData = {
-            name: linkedSkillName,
+            name: resolvedName,
             type: 'skill',
             system: {
               rating: 0,
               linkedAttribute: linkedAttribute,
               description: '',
-              bookmarked: false
+              bookmarked: false,
+              slug: linkedSkillName
             }
           };
 
           try {
             await actor.createEmbeddedDocuments('Item', [skillData]);
-            console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${linkedSkillName}" for specialization "${item.name}"`);
+            console.log(SYSTEM.LOG.HEAD + `Auto-created linked skill "${resolvedName}" (slug: ${linkedSkillName}) for specialization "${item.name}"`);
           } catch (error) {
             console.error(SYSTEM.LOG.HEAD + `Error auto-creating skill "${linkedSkillName}":`, error);
           }

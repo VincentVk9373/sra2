@@ -881,6 +881,11 @@ async function createRollChatMessage(
   ChatMessage.applyRollMode(messageData, foundryRollMode);
   await ChatMessage.create(messageData);
 
+  // Whisper complication suggestions to GM if applicable
+  if (rollResult.complication !== 'none') {
+    whisperComplicationSuggestions(rollData, rollResult);
+  }
+
   // Handle drain for Sorcery and Conjuration tests
   await handleDrain(attacker, rollData, rollResult);
 }
@@ -1054,6 +1059,89 @@ async function handleDrain(
         <br/>
         <span style="margin-left: 20px; display: block; margin-top: 4px;">${message}</span>
       </div>`);
+  }
+}
+
+/**
+ * Whisper complication suggestions to the GM based on the skill used and complication level
+ */
+async function whisperComplicationSuggestions(rollData: RollRequestData, rollResult: RollResult): Promise<void> {
+  // Only whisper to GM
+  const gmUsers = (game.users as any)?.filter((u: any) => u.isGM)?.map((u: any) => u.id) || [];
+  if (gmUsers.length === 0) return;
+
+  try {
+    const { COMPLICATIONS } = await import('../config/complication-data.js');
+
+    // Find the skill slug used for this roll
+    const skillSlug = rollData.linkedAttackSkill || rollData.skillSlug || '';
+
+    // Also check for influence sub-types based on specialization
+    let lookupKey = skillSlug;
+    if (skillSlug === 'influence' && rollData.linkedAttackSpecialization) {
+      const spec = rollData.linkedAttackSpecialization;
+      if (spec.includes('bluff') || spec.includes('imposture')) lookupKey = 'influence_bluff';
+      else if (spec.includes('negotiation') || spec.includes('negociation')) lookupKey = 'influence_negotiation';
+      else if (spec.includes('intimidation')) lookupKey = 'influence_intimidation';
+      else if (spec.includes('etiquette')) lookupKey = 'influence_etiquette';
+      else lookupKey = 'influence_social';
+    }
+
+    // Get complication table for this skill
+    const table = COMPLICATIONS[lookupKey] || COMPLICATIONS[skillSlug] || COMPLICATIONS['default'];
+    if (!table) return;
+
+    const level = rollResult.complication;
+    const entries = table[level as keyof typeof table];
+    if (!entries) return;
+
+    const isEn = game.i18n?.lang !== 'fr';
+    const suggestions = isEn ? entries.en : entries.fr;
+    if (!suggestions || suggestions.length === 0) return;
+
+    // Pick 1-2 random suggestions
+    const count = Math.min(2, suggestions.length);
+    const shuffled = [...suggestions].sort(() => Math.random() - 0.5);
+    const picked = shuffled.slice(0, count);
+
+    // Style based on complication level
+    const colors: Record<string, string> = {
+      minor: '#ffc107',    // Yellow
+      critical: '#fd7e14',  // Orange
+      disaster: '#dc3545',  // Red
+    };
+    const labels: Record<string, Record<string, string>> = {
+      minor: { fr: 'Complication Mineure', en: 'Minor Complication' },
+      critical: { fr: 'Complication Critique', en: 'Critical Complication' },
+      disaster: { fr: 'Désastre', en: 'Disaster' },
+    };
+
+    const color = colors[level] || '#ffc107';
+    const label = isEn ? labels[level]?.en : labels[level]?.fr;
+    const skillName = rollData.itemName || rollData.skillName || lookupKey;
+
+    const content = `
+<div style="border-left:3px solid ${color};padding:6px 10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:0.9em;">
+  <div style="color:${color};font-weight:bold;margin-bottom:4px;">
+    <i class="fas fa-exclamation-triangle"></i> ${label} — ${skillName}
+  </div>
+  <div style="font-style:italic;opacity:0.8;margin-bottom:6px;">
+    ${isEn ? 'Suggestions for the GM:' : 'Suggestions pour le MJ :'}
+  </div>
+  <ul style="margin:0;padding-left:16px;">
+    ${picked.map(s => `<li>${s}</li>`).join('')}
+  </ul>
+</div>`;
+
+    await ChatMessage.create({
+      content,
+      whisper: gmUsers,
+      speaker: { alias: isEn ? 'Complication' : 'Complication' },
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    });
+
+  } catch (err) {
+    console.warn('Failed to whisper complication suggestions:', err);
   }
 }
 
