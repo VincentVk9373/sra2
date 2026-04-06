@@ -821,6 +821,7 @@ export class FeatSheet extends ItemSheet {
         if (item.type === rrType && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
           results.push({
             name: item.name,
+            slug: item.system?.slug || '',
             uuid: item.uuid,
             source: game.i18n!.localize('SRA2.FEATS.FROM_ACTOR'),
             type: rrType
@@ -838,6 +839,7 @@ export class FeatSheet extends ItemSheet {
           if (!exists) {
             results.push({
               name: item.name,
+              slug: item.system?.slug || '',
               uuid: item.uuid,
               source: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
               type: rrType
@@ -859,6 +861,7 @@ export class FeatSheet extends ItemSheet {
           if (!exists) {
             results.push({
               name: doc.name,
+              slug: doc.system?.slug || '',
               uuid: doc.uuid,
               source: pack.title,
               type: rrType
@@ -899,7 +902,7 @@ export class FeatSheet extends ItemSheet {
               <span class="result-name">${result.name}</span>
               <span class="result-pack">${result.source} - ${typeLabel}</span>
             </div>
-            <button class="add-rr-target-btn" data-target-name="${result.name}" data-rr-index="${rrIndex}">
+            <button class="add-rr-target-btn" data-target-name="${result.name}"  data-target-slug="${result.slug}" data-rr-index="${rrIndex}">
               ${game.i18n!.localize('SRA2.FEATS.SELECT')}
             </button>
           </div>
@@ -935,14 +938,17 @@ export class FeatSheet extends ItemSheet {
     
     const button = event.currentTarget as HTMLButtonElement;
     const targetName = button.dataset.targetName;
+    const targetSlug = button.dataset.targetSlug;
     const rrIndex = parseInt(button.dataset.rrIndex || '0');
     
     if (!targetName) return;
     
+    const rrTarget = targetSlug || targetName;
+
     const rrList = [...((this.item.system as any).rrList || [])];
     
     if (rrList[rrIndex]) {
-      rrList[rrIndex] = { ...rrList[rrIndex], rrTarget: targetName };
+      rrList[rrIndex] = { ...rrList[rrIndex], rrTarget };
     }
     
     await this.item.update({ 'system.rrList': rrList } as any);
