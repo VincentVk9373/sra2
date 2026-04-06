@@ -1675,7 +1675,7 @@ export class SRA2System {
             alias: actor.name
           },
           content: html,
-          type: CONST.CHAT_MESSAGE_STYLES.OTHER,
+          style: CONST.CHAT_MESSAGE_STYLES.OTHER,
           flags: {
             sra2: {
               rollType: 'skill',
