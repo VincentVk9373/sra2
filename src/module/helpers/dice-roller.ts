@@ -879,6 +879,7 @@ async function createRollChatMessage(
 
   const foundryRollMode = (game.settings?.get('core', 'rollMode') ?? 'publicroll') as string;
   ChatMessage.applyRollMode(messageData, foundryRollMode);
+  delete messageData.type; // V14: applyRollMode injects legacy `type` field, remove it
   await ChatMessage.create(messageData);
 
   // Whisper complication suggestions to GM if applicable
@@ -974,6 +975,7 @@ async function handleDrain(
       style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     };
     ChatMessage.applyRollMode(data, drainRollMode);
+    delete data.type; // V14: applyRollMode injects legacy `type` field, remove it
     await ChatMessage.create(data);
   };
 
