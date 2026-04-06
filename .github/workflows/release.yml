@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name : list dir files
         run: |
@@ -132,7 +132,7 @@ jobs:
             Download the zip file below and extract it to your Foundry `Data/systems/` folder.
             
             ---
-            *Compatible with Foundry VTT v13*
+            *Compatible with Foundry VTT v14*
           files: foundry-sra2-${{ steps.version.outputs.tag }}.zip
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, 'beta') || contains(steps.version.outputs.tag, 'alpha') }}
