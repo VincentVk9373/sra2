@@ -601,7 +601,7 @@ export async function createIceAttackMessage(
       alias: iceActor.name
     },
     content: html,
-    type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+    type: CONST.CHAT_MESSAGE_STYLES.OTHER,
     flags: {
       sra2: {
         rollType: 'ice-attack',

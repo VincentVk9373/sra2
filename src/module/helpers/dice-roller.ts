@@ -860,7 +860,7 @@ async function createRollChatMessage(
     user:    game.user?.id,
     speaker: { actor: attacker?.id, alias: attacker?.name },
     content: html,
-    type:    CONST.CHAT_MESSAGE_TYPES.OTHER,
+    type:    CONST.CHAT_MESSAGE_STYLES.OTHER,
     flags: {
       sra2: {
         rollType:          isAttack ? 'attack' : 'skill',
@@ -971,7 +971,7 @@ async function handleDrain(
       user: game.user?.id,
       speaker: { actor: actor.id, alias: actor.name },
       content,
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+      type: CONST.CHAT_MESSAGE_STYLES.OTHER,
     };
     ChatMessage.applyRollMode(data, drainRollMode);
     await ChatMessage.create(data);
@@ -1137,7 +1137,7 @@ async function whisperComplicationSuggestions(rollData: RollRequestData, rollRes
       content,
       whisper: gmUsers,
       speaker: { alias: isEn ? 'Complication' : 'Complication' },
-      type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+      type: CONST.CHAT_MESSAGE_STYLES.OTHER,
     });
 
   } catch (err) {
