@@ -90,30 +90,39 @@ export class SpecializationSheet extends ItemSheet {
     return slug;
   }
 
+  private _abortController: AbortController | null = null;
+
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
-    
+    const el = html[0] as HTMLElement;
+
     // Clear linked skill button
-    html.find('[data-action="clear-linked-skill"]').on('click', this._onClearLinkedSkill.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="clear-linked-skill"]').forEach(elem => elem.addEventListener('click', this._onClearLinkedSkill.bind(this)));
+
     // Skill search
-    html.find('.skill-search-input').on('input', this._onSkillSearch.bind(this));
-    html.find('.skill-search-input').on('focus', this._onSkillSearchFocus.bind(this));
-    html.find('.skill-search-input').on('blur', this._onSkillSearchBlur.bind(this));
-    
-    // Close skill search results when clicking outside
-    $(document).on('click.skill-search-spec', (event) => {
-      const target = event.target as unknown as HTMLElement;
-      const skillSearchContainer = html.find('.skill-search-container')[0] as HTMLElement;
-      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
-        html.find('.skill-search-results').hide();
-      }
+    el.querySelectorAll<HTMLElement>('.skill-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onSkillSearch.bind(this));
+      elem.addEventListener('focus', this._onSkillSearchFocus.bind(this));
+      elem.addEventListener('blur', this._onSkillSearchBlur.bind(this));
     });
+
+    // Close skill search results when clicking outside
+    this._abortController?.abort();
+    this._abortController = new AbortController();
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const skillSearchContainer = el.querySelector('.skill-search-container') as HTMLElement;
+      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
+        const resultsEl = el.querySelector('.skill-search-results') as HTMLElement;
+        if (resultsEl) resultsEl.style.display = 'none';
+      }
+    }, { signal: this._abortController.signal });
   }
 
   override async close(options?: Application.CloseOptions): Promise<void> {
     // Clean up document-level event listeners
-    $(document).off('click.skill-search-spec');
+    this._abortController?.abort();
+    this._abortController = null;
     return super.close(options);
   }
 
@@ -173,7 +182,7 @@ export class SpecializationSheet extends ItemSheet {
   private async _onSkillSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
-    const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+    const resultsDiv = input.parentElement?.querySelector('.skill-search-results') as HTMLElement;
     
     // Clear previous timeout
     if (this.skillSearchTimeout) {
@@ -306,32 +315,32 @@ export class SpecializationSheet extends ItemSheet {
     resultsDiv.style.display = 'block';
     
     // Attach click handlers
-    $(resultsDiv).find('.link-skill-btn').on('click', this._onLinkSkillFromSearch.bind(this));
-    $(resultsDiv).find('.create-skill-btn, .create-skill-btn-inline').on('click', this._onCreateNewSkill.bind(this));
-    
+    resultsDiv.querySelectorAll<HTMLElement>('.link-skill-btn').forEach(elem => elem.addEventListener('click', this._onLinkSkillFromSearch.bind(this)));
+    resultsDiv.querySelectorAll<HTMLElement>('.create-skill-btn, .create-skill-btn-inline').forEach(elem => elem.addEventListener('click', this._onCreateNewSkill.bind(this)));
+
     // Make entire result items clickable (except create button)
-    $(resultsDiv).find('.search-result-item:not(.no-results-create):not(.create-new-item)').on('click', (event) => {
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.no-results-create):not(.create-new-item)').forEach(elem => elem.addEventListener('click', (event) => {
       // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.link-skill-btn').length > 0) return;
-      
+      if ((event.target as HTMLElement).closest('.link-skill-btn')) return;
+
       // Find the button in this item and trigger its click
-      const button = $(event.currentTarget).find('.link-skill-btn')[0];
+      const button = (event.currentTarget as HTMLElement).querySelector('.link-skill-btn') as HTMLElement | null;
       if (button) {
-        $(button).trigger('click');
+        button.click();
       }
-    });
-    
+    }));
+
     // Make create items clickable on the entire row
-    $(resultsDiv).find('.search-result-item.create-new-item').on('click', (event) => {
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item.create-new-item').forEach(elem => elem.addEventListener('click', (event) => {
       // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.create-skill-btn-inline').length > 0) return;
-      
+      if ((event.target as HTMLElement).closest('.create-skill-btn-inline')) return;
+
       // Find the button and trigger its click
-      const button = $(event.currentTarget).find('.create-skill-btn-inline')[0];
+      const button = (event.currentTarget as HTMLElement).querySelector('.create-skill-btn-inline') as HTMLElement | null;
       if (button) {
-        $(button).trigger('click');
+        button.click();
       }
-    });
+    }));
     
     return Promise.resolve();
   }
@@ -353,16 +362,17 @@ export class SpecializationSheet extends ItemSheet {
     await this.item.update({ 'system.linkedSkill': skillSlug || skillName } as any);
     
     // Clear the search input and hide results
-    const searchInput = this.element.find('.skill-search-input')[0] as HTMLInputElement;
+    const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const searchInput = sheetEl?.querySelector('.skill-search-input') as HTMLInputElement;
     if (searchInput) {
       searchInput.value = '';
     }
-    
-    const resultsDiv = this.element.find('.skill-search-results')[0] as HTMLElement;
-    if (resultsDiv) {
-      resultsDiv.style.display = 'none';
+
+    const resultsDiv2 = sheetEl?.querySelector('.skill-search-results') as HTMLElement;
+    if (resultsDiv2) {
+      resultsDiv2.style.display = 'none';
     }
-    
+
     this.render(false);
     ui.notifications?.info(game.i18n!.format('SRA2.SPECIALIZATIONS.SKILL_LINKED', { name: skillName }));
   }
@@ -375,7 +385,7 @@ export class SpecializationSheet extends ItemSheet {
     
     // If there's already content and results, show them
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector('.skill-search-results') as HTMLElement;
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = 'block';
       }
@@ -393,7 +403,7 @@ export class SpecializationSheet extends ItemSheet {
     
     // Check if the new focus target is within the results div
     setTimeout(() => {
-      const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector('.skill-search-results') as HTMLElement;
       if (resultsDiv) {
         // Check if the related target (where focus is going) is inside the results div
         const relatedTarget = blurEvent.relatedTarget as HTMLElement;
@@ -454,14 +464,15 @@ export class SpecializationSheet extends ItemSheet {
       await this.item.update({ 'system.linkedSkill': createdSlug } as any);
       
       // Clear the search input and hide results
-      const searchInput = this.element.find('.skill-search-input')[0] as HTMLInputElement;
+      const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+      const searchInput = sheetEl?.querySelector('.skill-search-input') as HTMLInputElement;
       if (searchInput) {
         searchInput.value = '';
       }
-      
-      const resultsDiv = this.element.find('.skill-search-results')[0] as HTMLElement;
-      if (resultsDiv) {
-        resultsDiv.style.display = 'none';
+
+      const resultsDiv2 = sheetEl?.querySelector('.skill-search-results') as HTMLElement;
+      if (resultsDiv2) {
+        resultsDiv2.style.display = 'none';
       }
       
       this.render(false);

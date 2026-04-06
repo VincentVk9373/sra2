@@ -151,51 +151,56 @@ export class AnarchyCounter extends Application {
    */
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
+    const el = html[0] as HTMLElement;
 
     // Add button (GM only)
-    html.find(".anarchy-add").on("click", async (event) => {
+    el.querySelectorAll<HTMLElement>(".anarchy-add").forEach(elem => elem.addEventListener("click", async (event) => {
       event.preventDefault();
       const current = AnarchyCounter.getGroupAnarchy();
       await AnarchyCounter.setGroupAnarchy(current + 1);
-    });
+    }));
 
     // Remove button (GM only)
-    html.find(".anarchy-remove").on("click", async (event) => {
+    el.querySelectorAll<HTMLElement>(".anarchy-remove").forEach(elem => elem.addEventListener("click", async (event) => {
       event.preventDefault();
       const current = AnarchyCounter.getGroupAnarchy();
       await AnarchyCounter.setGroupAnarchy(current - 1);
-    });
+    }));
 
     // Make the window draggable and save position on drag end
-    const header = html.closest(".app").find(".window-header");
-    header.on("mouseup", () => {
-      setTimeout(() => this.savePosition(), DELAYS.SHEET_RENDER);
-    });
+    const appEl = el.closest(".app");
+    const header = appEl?.querySelector(".window-header");
+    if (header) {
+      header.addEventListener("mouseup", () => {
+        setTimeout(() => this.savePosition(), DELAYS.SHEET_RENDER);
+      });
+    }
   }
 
   /**
    * Trigger animation when value changes
    */
   triggerAnimation(direction: "increase" | "decrease"): void {
-    const element = this.element;
-    if (!element || !element.length) return;
+    const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    if (!sheetEl) return;
 
-    const valueEl = element.find(".anarchy-value");
-    
+    const valueEl = sheetEl.querySelector(".anarchy-value");
+    if (!valueEl) return;
+
     // Remove existing animation classes
-    valueEl.removeClass("animate-increase animate-decrease");
-    
+    valueEl.classList.remove("animate-increase", "animate-decrease");
+
     // Clear any existing timeout
     if (this.animationTimeout) {
       clearTimeout(this.animationTimeout);
     }
 
     // Add animation class
-    valueEl.addClass(`animate-${direction}`);
+    valueEl.classList.add(`animate-${direction}`);
 
     // Remove animation class after animation completes
     this.animationTimeout = window.setTimeout(() => {
-      valueEl.removeClass("animate-increase animate-decrease");
+      valueEl.classList.remove("animate-increase", "animate-decrease");
     }, 500);
   }
 

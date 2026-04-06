@@ -31,6 +31,8 @@ export class FeatSheet extends ItemSheet {
   private _activeSection: string = 'general';
   /** Timeout for power search debouncing */
   private powerSearchTimeout: any = null;
+  /** AbortController for document-level event listeners */
+  private _featSheetAbortController: AbortController | null = null;
   
   static override get defaultOptions(): DocumentSheet.Options<Item> {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -111,104 +113,131 @@ export class FeatSheet extends ItemSheet {
 
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
-    
+    const el = html[0] as HTMLElement;
+
+    // Set up AbortController for document-level listeners
+    this._featSheetAbortController?.abort();
+    this._featSheetAbortController = new AbortController();
+    const signal = this._featSheetAbortController.signal;
+
     // Add RR entry button
-    html.find('[data-action="add-rr-entry"]').on('click', this._onAddRREntry.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="add-rr-entry"]').forEach(elem => elem.addEventListener('click', this._onAddRREntry.bind(this)));
+
     // Remove RR entry button
-    html.find('[data-action="remove-rr-entry"]').on('click', this._onRemoveRREntry.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="remove-rr-entry"]').forEach(elem => elem.addEventListener('click', this._onRemoveRREntry.bind(this)));
+
     // Clear RR target button
-    html.find('[data-action="clear-rr-target"]').on('click', this._onClearRRTarget.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="clear-rr-target"]').forEach(elem => elem.addEventListener('click', this._onClearRRTarget.bind(this)));
+
     // Add narrative effect button
-    html.find('[data-action="add-narrative-effect"]').on('click', this._onAddNarrativeEffect.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="add-narrative-effect"]').forEach(elem => elem.addEventListener('click', this._onAddNarrativeEffect.bind(this)));
+
     // Remove narrative effect button
-    html.find('[data-action="remove-narrative-effect"]').on('click', this._onRemoveNarrativeEffect.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="remove-narrative-effect"]').forEach(elem => elem.addEventListener('click', this._onRemoveNarrativeEffect.bind(this)));
+
     // Narrative effect negative checkbox change
-    html.find('input[name^="system.narrativeEffects"][name$=".isNegative"]').on('change', this._onNarrativeEffectNegativeChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('input[name^="system.narrativeEffects"][name$=".isNegative"]').forEach(elem => elem.addEventListener('change', this._onNarrativeEffectNegativeChange.bind(this)));
+
     // Weapon type selection
-    html.find('[data-action="select-weapon-type"]').on('change', this._onWeaponTypeChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('[data-action="select-weapon-type"]').forEach(elem => elem.addEventListener('change', this._onWeaponTypeChange.bind(this)));
+
     // VD mode selection (for custom weapons) - use event delegation
-    html.on('change', '.vd-mode-select', this._onVdModeChange.bind(this));
-    
+    el.addEventListener('change', (event) => {
+      if ((event.target as HTMLElement).matches('.vd-mode-select')) this._onVdModeChange.call(this, event);
+    });
+
     // VD custom value change - use change event for number inputs to work better with submitOnChange
-    html.on('change', 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
-    html.on('blur', 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
-    
+    el.addEventListener('change', (event) => {
+      if ((event.target as HTMLElement).matches('input[name="system.vdCustomValue"]')) this._onVdValueChange.call(this, event);
+    });
+    el.addEventListener('blur', (event) => {
+      if ((event.target as HTMLElement).matches('input[name="system.vdCustomValue"]')) this._onVdValueChange.call(this, event);
+    }, true);
+
     // VD attribute and bonus changes - use change event for both
-    html.on('change', 'select[name="system.vdAttribute"]', this._onVdValueChange.bind(this));
-    html.on('change', 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
-    html.on('blur', 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
-    
+    el.addEventListener('change', (event) => {
+      const target = event.target as HTMLElement;
+      if (target.matches('select[name="system.vdAttribute"]') || target.matches('input[name="system.vdBonus"]')) {
+        this._onVdValueChange.call(this, event);
+      }
+    });
+    el.addEventListener('blur', (event) => {
+      if ((event.target as HTMLElement).matches('input[name="system.vdBonus"]')) this._onVdValueChange.call(this, event);
+    }, true);
+
     // Damage value bonus checkboxes
-    html.find('.damage-bonus-checkbox').on('change', this._onDamageValueBonusChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.damage-bonus-checkbox').forEach(elem => elem.addEventListener('change', this._onDamageValueBonusChange.bind(this)));
+
     // Sustained spell checkboxes
-    html.find('.sustained-spell-checkbox').on('change', this._onSustainedSpellChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.sustained-spell-checkbox').forEach(elem => elem.addEventListener('change', this._onSustainedSpellChange.bind(this)));
+
     // Summoned spirit checkbox
-    html.find('.summoned-spirit-checkbox').on('change', this._onSummonedSpiritChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.summoned-spirit-checkbox').forEach(elem => elem.addEventListener('change', this._onSummonedSpiritChange.bind(this)));
+
     // Range improvement checkboxes
-    html.find('.range-improvement-checkbox input[type="checkbox"]').on('change', this._onRangeImprovementChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.range-improvement-checkbox input[type="checkbox"]').forEach(elem => elem.addEventListener('change', this._onRangeImprovementChange.bind(this)));
+
     // Astral projection checkbox change - automatically enable astral perception
-    html.find('input[name="system.astralProjection"]').on('change', this._onAstralProjectionChange.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('input[name="system.astralProjection"]').forEach(elem => elem.addEventListener('change', this._onAstralProjectionChange.bind(this)));
+
     // Section navigation
-    html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.section-nav .nav-item').forEach(elem => elem.addEventListener('click', this._onSectionNavigation.bind(this)));
+
     // RR target search
-    html.find('.rr-target-search-input').on('input', this._onRRTargetSearch.bind(this));
-    html.find('.rr-target-search-input').on('focus', this._onRRTargetSearchFocus.bind(this));
-    html.find('.rr-target-search-input').on('blur', this._onRRTargetSearchBlur.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.rr-target-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onRRTargetSearch.bind(this));
+      elem.addEventListener('focus', this._onRRTargetSearchFocus.bind(this));
+      elem.addEventListener('blur', this._onRRTargetSearchBlur.bind(this));
+    });
+
     // Close RR target search results when clicking outside
-    $(document).on('click.rr-target-search', (event) => {
-      const target = event.target as unknown as HTMLElement;
-      const searchContainers = html.find('.rr-target-search-container');
-      searchContainers.each((_, container) => {
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const searchContainers = el.querySelectorAll<HTMLElement>('.rr-target-search-container');
+      searchContainers.forEach(container => {
         if (!container.contains(target)) {
-          $(container).find('.rr-target-search-results').hide();
+          const results = container.querySelector<HTMLElement>('.rr-target-search-results');
+          if (results) results.style.display = 'none';
         }
       });
-    });
-    
+    }, { signal });
+
     // Power skill/spec search
-    html.find('.power-skill-search-input').on('input', this._onPowerSkillSearch.bind(this));
-    html.find('.power-skill-search-input').on('focus', this._onPowerSkillSearchFocus.bind(this));
-    html.find('.power-skill-search-input').on('blur', this._onPowerSkillSearchBlur.bind(this));
-    
-    html.find('.power-spec-search-input').on('input', this._onPowerSpecSearch.bind(this));
-    html.find('.power-spec-search-input').on('focus', this._onPowerSpecSearchFocus.bind(this));
-    html.find('.power-spec-search-input').on('blur', this._onPowerSpecSearchBlur.bind(this));
-    
+    el.querySelectorAll<HTMLElement>('.power-skill-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onPowerSkillSearch.bind(this));
+      elem.addEventListener('focus', this._onPowerSkillSearchFocus.bind(this));
+      elem.addEventListener('blur', this._onPowerSkillSearchBlur.bind(this));
+    });
+
+    el.querySelectorAll<HTMLElement>('.power-spec-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onPowerSpecSearch.bind(this));
+      elem.addEventListener('focus', this._onPowerSpecSearchFocus.bind(this));
+      elem.addEventListener('blur', this._onPowerSpecSearchBlur.bind(this));
+    });
+
     // Close power search results when clicking outside
-    $(document).on('click.power-search', (event) => {
-      const target = event.target as unknown as HTMLElement;
-      
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+
       // Don't close if clicking on a button inside results
-      if ($(target).closest('.select-power-skill-btn, .select-power-spec-btn').length > 0) {
+      if (target.closest('.select-power-skill-btn, .select-power-spec-btn')) {
         return;
       }
-      
+
       // Don't close if clicking on a result item
-      if ($(target).closest('.search-result-item').length > 0) {
+      if (target.closest('.search-result-item')) {
         return;
       }
-      
-      const searchContainers = html.find('.power-skill-search-container, .power-spec-search-container');
-      searchContainers.each((_, container) => {
+
+      const searchContainers = el.querySelectorAll<HTMLElement>('.power-skill-search-container, .power-spec-search-container');
+      searchContainers.forEach(container => {
         if (!container.contains(target)) {
-          $(container).find('.power-skill-search-results, .power-spec-search-results').hide();
+          container.querySelectorAll<HTMLElement>('.power-skill-search-results, .power-spec-search-results').forEach(resultsEl => {
+            resultsEl.style.display = 'none';
+          });
         }
       });
-    });
+    }, { signal });
   }
   
   /**
@@ -227,15 +256,15 @@ export class FeatSheet extends ItemSheet {
     
     // Find the form element
     if (!this.form) return;
-    const form = $(this.form);
-    
+    const form = this.form as HTMLElement;
+
     // Update navigation buttons
-    form.find('.section-nav .nav-item').removeClass('active');
+    form.querySelectorAll<HTMLElement>('.section-nav .nav-item').forEach(el => el.classList.remove('active'));
     button.classList.add('active');
-    
+
     // Update content sections
-    form.find('.content-section').removeClass('active');
-    form.find(`[data-section-content="${section}"]`).addClass('active');
+    form.querySelectorAll<HTMLElement>('.content-section').forEach(el => el.classList.remove('active'));
+    form.querySelector<HTMLElement>(`[data-section-content="${section}"]`)?.classList.add('active');
   }
 
   /**
@@ -608,15 +637,14 @@ export class FeatSheet extends ItemSheet {
     }
     
     // Update the hidden input field
-    const hiddenInput = this.element.find('input[name="system.damageValueBonus"]')[0] as HTMLInputElement;
+    const elRoot = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const hiddenInput = elRoot.querySelector<HTMLInputElement>('input[name="system.damageValueBonus"]');
     if (hiddenInput) {
       hiddenInput.value = newBonus.toString();
     }
-    
+
     // Update the checkboxes state
-    const checkboxes = this.element.find('.damage-bonus-checkbox');
-    checkboxes.each((_, cb) => {
-      const cbElement = cb as HTMLInputElement;
+    elRoot.querySelectorAll<HTMLInputElement>('.damage-bonus-checkbox').forEach(cbElement => {
       const cbValue = parseInt(cbElement.dataset.bonusValue || '0');
       if (cbValue === 1) {
         cbElement.checked = newBonus >= 1;
@@ -653,15 +681,14 @@ export class FeatSheet extends ItemSheet {
     }
     
     // Update the hidden input field
-    const hiddenInput = this.element.find('input[name="system.sustainedSpellCount"]')[0] as HTMLInputElement;
+    const elRoot = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const hiddenInput = elRoot.querySelector<HTMLInputElement>('input[name="system.sustainedSpellCount"]');
     if (hiddenInput) {
       hiddenInput.value = newCount.toString();
     }
-    
+
     // Update the checkboxes state
-    const checkboxes = this.element.find('.sustained-spell-checkbox');
-    checkboxes.each((_, cb) => {
-      const cbElement = cb as HTMLInputElement;
+    elRoot.querySelectorAll<HTMLInputElement>('.sustained-spell-checkbox').forEach(cbElement => {
       const cbValue = parseInt(cbElement.dataset.spellValue || '0');
       if (cbValue === 1) {
         cbElement.checked = newCount >= 1;
@@ -681,7 +708,8 @@ export class FeatSheet extends ItemSheet {
     const newCount = checkbox.checked ? 1 : 0;
     
     // Update the hidden input field
-    const hiddenInput = this.element.find('input[name="system.summonedSpiritCount"]')[0] as HTMLInputElement;
+    const elRoot = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const hiddenInput = elRoot.querySelector<HTMLInputElement>('input[name="system.summonedSpiritCount"]');
     if (hiddenInput) {
       hiddenInput.value = newCount.toString();
     }
@@ -743,7 +771,8 @@ export class FeatSheet extends ItemSheet {
     select.value = newValue;
     
     // Update the hidden input that holds the actual value
-    const hiddenInput = this.element.find(`input[name="${fieldName}"]`)[0] as HTMLInputElement;
+    const elRoot = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const hiddenInput = elRoot.querySelector<HTMLInputElement>(`input[name="${fieldName}"]`);
     if (hiddenInput) {
       hiddenInput.value = newValue;
     }
@@ -759,7 +788,8 @@ export class FeatSheet extends ItemSheet {
     
     if (isProjectionEnabled) {
       // Automatically enable astral perception
-      const astralPerceptionInput = this.element.find('input[name="system.astralPerception"]')[0] as HTMLInputElement;
+      const elRoot = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+      const astralPerceptionInput = elRoot.querySelector<HTMLInputElement>('input[name="system.astralPerception"]');
       if (astralPerceptionInput) {
         astralPerceptionInput.checked = true;
       }
@@ -783,19 +813,20 @@ export class FeatSheet extends ItemSheet {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const rrIndex = parseInt(input.dataset.rrIndex || '0');
-    const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
-    
+    const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.rr-target-search-results');
+    if (!resultsDiv) return;
+
     // Clear previous timeout
     if (this.rrTargetSearchTimeout) {
       clearTimeout(this.rrTargetSearchTimeout);
     }
-    
+
     // If search term is empty, hide results
     if (searchTerm.length === 0) {
       resultsDiv.style.display = 'none';
       return;
     }
-    
+
     // Debounce search
     this.rrTargetSearchTimeout = setTimeout(async () => {
       await this._performRRTargetSearch(searchTerm, rrIndex, resultsDiv);
@@ -912,21 +943,21 @@ export class FeatSheet extends ItemSheet {
     
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = 'block';
-    
+
     // Attach click handlers to buttons
-    $(resultsDiv).find('.add-rr-target-btn').on('click', this._onSelectRRTarget.bind(this));
-    
+    resultsDiv.querySelectorAll<HTMLElement>('.add-rr-target-btn').forEach(elem => elem.addEventListener('click', this._onSelectRRTarget.bind(this)));
+
     // Make entire result items clickable
-    $(resultsDiv).find('.search-result-item:not(.no-results)').on('click', (event) => {
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.no-results)').forEach(elem => elem.addEventListener('click', (event) => {
       // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.add-rr-target-btn').length > 0) return;
-      
+      if ((event.target as HTMLElement).closest('.add-rr-target-btn')) return;
+
       // Find the button in this item and trigger its click
-      const button = $(event.currentTarget).find('.add-rr-target-btn')[0] as HTMLButtonElement;
+      const button = elem.querySelector<HTMLButtonElement>('.add-rr-target-btn');
       if (button) {
-        $(button).trigger('click');
+        button.click();
       }
-    });
+    }));
   }
 
   /**
@@ -962,10 +993,10 @@ export class FeatSheet extends ItemSheet {
    */
   private _onRRTargetSearchFocus(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
-    
+
     // If there's already content and results, show them
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.rr-target-search-results');
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = 'block';
       }
@@ -978,10 +1009,10 @@ export class FeatSheet extends ItemSheet {
   private _onRRTargetSearchBlur(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
     const blurEvent = event as FocusEvent;
-    
+
     // Check if the new focus target is within the results div
     setTimeout(() => {
-      const resultsDiv = $(input).siblings('.rr-target-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.rr-target-search-results');
       if (resultsDiv) {
         // Check if the related target (where focus is going) is inside the results div
         const relatedTarget = blurEvent.relatedTarget as HTMLElement;
@@ -989,14 +1020,14 @@ export class FeatSheet extends ItemSheet {
           // Don't hide if focus is moving to an element within the results
           return;
         }
-        
+
         // Also check if any element in the results is focused
         const activeElement = document.activeElement as HTMLElement;
         if (activeElement && resultsDiv.contains(activeElement)) {
           // Don't hide if an element in results is active
           return;
         }
-        
+
         resultsDiv.style.display = 'none';
       }
     }, DELAYS.SEARCH_HIDE);
@@ -1009,19 +1040,20 @@ export class FeatSheet extends ItemSheet {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const fieldName = input.dataset.field || '';
-    const resultsDiv = $(input).siblings('.power-skill-search-results')[0] as HTMLElement;
-    
+    const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.power-skill-search-results');
+    if (!resultsDiv) return;
+
     // Clear previous timeout
     if (this.powerSearchTimeout) {
       clearTimeout(this.powerSearchTimeout);
     }
-    
+
     // If search term is empty, hide results
     if (searchTerm.length === 0) {
       resultsDiv.style.display = 'none';
       return;
     }
-    
+
     // Debounce search
     this.powerSearchTimeout = setTimeout(async () => {
       await this._performPowerSkillSearch(searchTerm, fieldName, resultsDiv);
@@ -1124,25 +1156,22 @@ export class FeatSheet extends ItemSheet {
     
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = 'block';
-    
+
     // Use mousedown instead of click to capture before blur event
     // This ensures handlers work even when results are replaced
-    $(resultsDiv).off('mousedown', '.select-power-skill-btn');
-    $(resultsDiv).off('mousedown', '.search-result-item');
-    
-    $(resultsDiv).on('mousedown', '.select-power-skill-btn', this._onSelectPowerSkill.bind(this));
-    
+    resultsDiv.querySelectorAll<HTMLElement>('.select-power-skill-btn').forEach(elem => elem.addEventListener('mousedown', this._onSelectPowerSkill.bind(this)));
+
     // Make entire result items clickable (except no-results)
-    $(resultsDiv).on('mousedown', '.search-result-item:not(.no-results)', (event) => {
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.no-results)').forEach(elem => elem.addEventListener('mousedown', (event) => {
       // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.select-power-skill-btn').length > 0) return;
-      
+      if ((event.target as HTMLElement).closest('.select-power-skill-btn')) return;
+
       // Find the button in this item and trigger its mousedown
-      const button = $(event.currentTarget).find('.select-power-skill-btn')[0] as HTMLButtonElement;
+      const button = elem.querySelector<HTMLButtonElement>('.select-power-skill-btn');
       if (button) {
-        $(button).trigger('mousedown');
+        button.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
       }
-    });
+    }));
   }
 
   /**
@@ -1160,17 +1189,18 @@ export class FeatSheet extends ItemSheet {
     if (!targetName || !fieldName) return;
     
     // Find the container and input field
-    const container = $(button).closest('.power-skill-search-container');
-    const input = container.find(`input[name="system.${fieldName}"]`)[0] as HTMLInputElement;
-    
+    const container = button.closest('.power-skill-search-container');
+    if (!container) return;
+    const input = container.querySelector<HTMLInputElement>(`input[name="system.${fieldName}"]`);
+
     if (input) {
       input.value = targetName;
       // Trigger change event to save
-      $(input).trigger('change');
+      input.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    
+
     // Hide results immediately
-    const resultsDiv = container.find('.power-skill-search-results')[0] as HTMLElement;
+    const resultsDiv = container.querySelector<HTMLElement>('.power-skill-search-results');
     if (resultsDiv) {
       resultsDiv.style.display = 'none';
     }
@@ -1181,10 +1211,10 @@ export class FeatSheet extends ItemSheet {
    */
   private _onPowerSkillSearchFocus(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
-    
+
     // If there's already content and results, show them
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings('.power-skill-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.power-skill-search-results');
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = 'block';
       }
@@ -1197,10 +1227,10 @@ export class FeatSheet extends ItemSheet {
   private _onPowerSkillSearchBlur(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
     const blurEvent = event as FocusEvent;
-    
+
     // Check if the new focus target is within the results div
     setTimeout(() => {
-      const resultsDiv = $(input).siblings('.power-skill-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.power-skill-search-results');
       if (resultsDiv) {
         // Check if the related target (where focus is going) is inside the results div
         const relatedTarget = blurEvent.relatedTarget as HTMLElement;
@@ -1208,20 +1238,14 @@ export class FeatSheet extends ItemSheet {
           // Don't hide if focus is moving to an element within the results
           return;
         }
-        
+
         // Also check if any element in the results is focused or being clicked
         const activeElement = document.activeElement as HTMLElement;
         if (activeElement && resultsDiv.contains(activeElement)) {
           // Don't hide if an element in results is active
           return;
         }
-        
-        // Check if mouse is over the results div (user might be clicking)
-        const mouseEvent = (event as any).originalEvent;
-        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget as HTMLElement)) {
-          return;
-        }
-        
+
         resultsDiv.style.display = 'none';
       }
     }, DELAYS.SEARCH_HIDE_LONG); // Longer delay to allow button clicks to register
@@ -1234,19 +1258,20 @@ export class FeatSheet extends ItemSheet {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
     const fieldName = input.dataset.field || '';
-    const resultsDiv = $(input).siblings('.power-spec-search-results')[0] as HTMLElement;
-    
+    const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.power-spec-search-results');
+    if (!resultsDiv) return;
+
     // Clear previous timeout
     if (this.powerSearchTimeout) {
       clearTimeout(this.powerSearchTimeout);
     }
-    
+
     // If search term is empty, hide results
     if (searchTerm.length === 0) {
       resultsDiv.style.display = 'none';
       return;
     }
-    
+
     // Debounce search
     this.powerSearchTimeout = setTimeout(async () => {
       await this._performPowerSpecSearch(searchTerm, fieldName, resultsDiv);
@@ -1348,25 +1373,22 @@ export class FeatSheet extends ItemSheet {
     
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = 'block';
-    
+
     // Use mousedown instead of click to capture before blur event
     // This ensures handlers work even when results are replaced
-    $(resultsDiv).off('mousedown', '.select-power-spec-btn');
-    $(resultsDiv).off('mousedown', '.search-result-item');
-    
-    $(resultsDiv).on('mousedown', '.select-power-spec-btn', this._onSelectPowerSpec.bind(this));
-    
+    resultsDiv.querySelectorAll<HTMLElement>('.select-power-spec-btn').forEach(elem => elem.addEventListener('mousedown', this._onSelectPowerSpec.bind(this)));
+
     // Make entire result items clickable (except no-results)
-    $(resultsDiv).on('mousedown', '.search-result-item:not(.no-results)', (event) => {
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.no-results)').forEach(elem => elem.addEventListener('mousedown', (event) => {
       // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.select-power-spec-btn').length > 0) return;
-      
+      if ((event.target as HTMLElement).closest('.select-power-spec-btn')) return;
+
       // Find the button in this item and trigger its mousedown
-      const button = $(event.currentTarget).find('.select-power-spec-btn')[0] as HTMLButtonElement;
+      const button = elem.querySelector<HTMLButtonElement>('.select-power-spec-btn');
       if (button) {
-        $(button).trigger('mousedown');
+        button.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
       }
-    });
+    }));
   }
 
   /**
@@ -1385,19 +1407,20 @@ export class FeatSheet extends ItemSheet {
     if (!targetName || !fieldName) return;
 
     // Find the container and input field
-    const container = $(button).closest('.power-spec-search-container');
-    const input = container.find(`input[name="system.${fieldName}"]`)[0] as HTMLInputElement;
+    const container = button.closest('.power-spec-search-container');
+    if (!container) return;
+    const input = container.querySelector<HTMLInputElement>(`input[name="system.${fieldName}"]`);
 
     if (input) {
       // Use slug if available (for linkedAttackSpecialization/linkedDefenseSpecialization),
       // fall back to name for display fields
       input.value = targetSlug || targetName;
       // Trigger change event to save
-      $(input).trigger('change');
+      input.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    
+
     // Hide results immediately
-    const resultsDiv = container.find('.power-spec-search-results')[0] as HTMLElement;
+    const resultsDiv = container.querySelector<HTMLElement>('.power-spec-search-results');
     if (resultsDiv) {
       resultsDiv.style.display = 'none';
     }
@@ -1408,10 +1431,10 @@ export class FeatSheet extends ItemSheet {
    */
   private _onPowerSpecSearchFocus(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
-    
+
     // If there's already content and results, show them
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings('.power-spec-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.power-spec-search-results');
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = 'block';
       }
@@ -1424,10 +1447,10 @@ export class FeatSheet extends ItemSheet {
   private _onPowerSpecSearchBlur(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
     const blurEvent = event as FocusEvent;
-    
+
     // Check if the new focus target is within the results div
     setTimeout(() => {
-      const resultsDiv = $(input).siblings('.power-spec-search-results')[0] as HTMLElement;
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.power-spec-search-results');
       if (resultsDiv) {
         // Check if the related target (where focus is going) is inside the results div
         const relatedTarget = blurEvent.relatedTarget as HTMLElement;
@@ -1435,20 +1458,14 @@ export class FeatSheet extends ItemSheet {
           // Don't hide if focus is moving to an element within the results
           return;
         }
-        
+
         // Also check if any element in the results is focused or being clicked
         const activeElement = document.activeElement as HTMLElement;
         if (activeElement && resultsDiv.contains(activeElement)) {
           // Don't hide if an element in results is active
           return;
         }
-        
-        // Check if mouse is over the results div (user might be clicking)
-        const mouseEvent = (event as any).originalEvent;
-        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget as HTMLElement)) {
-          return;
-        }
-        
+
         resultsDiv.style.display = 'none';
       }
     }, DELAYS.SEARCH_HIDE_LONG); // Longer delay to allow button clicks to register
@@ -1554,8 +1571,8 @@ export class FeatSheet extends ItemSheet {
 
   override async close(options?: Application.CloseOptions): Promise<void> {
     // Clean up document-level event listeners
-    $(document).off('click.rr-target-search');
-    $(document).off('click.power-search');
+    this._featSheetAbortController?.abort();
+    this._featSheetAbortController = null;
     return super.close(options);
   }
 

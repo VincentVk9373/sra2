@@ -44,18 +44,19 @@ export class IceSheet extends ActorSheet {
 
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
+    const el = html[0] as HTMLElement;
 
     // Submit on damage checkbox change so the visual state updates
-    html.find('.damage-track input[type="checkbox"]').on('change', () => this.submit());
+    el.querySelectorAll<HTMLInputElement>('.damage-track input[type="checkbox"]').forEach(elem => elem.addEventListener('change', () => this.submit()));
 
     // Handle ICE type change
-    html.find('.ice-type-select').on('change', this._onIceTypeChange.bind(this));
+    el.querySelectorAll<HTMLElement>('.ice-type-select').forEach(elem => elem.addEventListener('change', this._onIceTypeChange.bind(this)));
 
     // Handle server index change
-    html.find('input[name="system.serverIndex"]').on('change', this._onServerIndexChange.bind(this));
+    el.querySelectorAll<HTMLInputElement>('input[name="system.serverIndex"]').forEach(elem => elem.addEventListener('change', this._onServerIndexChange.bind(this)));
 
     // Handle ICE attack button
-    html.find('.ice-attack-button').on('click', this._onIceAttack.bind(this));
+    el.querySelectorAll<HTMLElement>('.ice-attack-button').forEach(elem => elem.addEventListener('click', this._onIceAttack.bind(this)));
   }
 
   /**

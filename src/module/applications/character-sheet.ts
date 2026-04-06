@@ -13,6 +13,9 @@ export class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   private _activeSection: string = 'identity';
 
+  /** AbortController for document-level event listeners */
+  private _sheetAbortController: AbortController | null = null;
+
   static override get defaultOptions(): DocumentSheet.Options<Actor> {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ['sra2', 'sheet', 'actor', 'character'],
@@ -757,192 +760,226 @@ export class CharacterSheet extends ActorSheet {
 
   override async close(options?: Application.CloseOptions): Promise<void> {
     // Clean up document-level event listeners
-    $(document).off('click.skill-search');
-    $(document).off('click.feat-search');
+    this._sheetAbortController?.abort();
+    this._sheetAbortController = null;
     return super.close(options);
   }
 
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
+    const el = html[0] as HTMLElement;
+
+    // Set up AbortController for document-level listeners
+    this._sheetAbortController?.abort();
+    this._sheetAbortController = new AbortController();
+    const signal = this._sheetAbortController.signal;
+
+    // Helper to bind click handlers to elements matching a selector
+    const bindClick = (selector: string, handler: (event: Event) => void) => {
+      el.querySelectorAll<HTMLElement>(selector).forEach(elem => {
+        elem.addEventListener('click', handler);
+      });
+    };
+
+    // Helper to bind change handlers to elements matching a selector
+    const bindChange = (selector: string, handler: (event: Event) => void) => {
+      el.querySelectorAll<HTMLElement>(selector).forEach(elem => {
+        elem.addEventListener('change', handler);
+      });
+    };
+
     // Switch sheet button
-    html.find('[data-action="switch-sheet"]').on('click', this._onSwitchSheet.bind(this));
+    bindClick('[data-action="switch-sheet"]', this._onSwitchSheet.bind(this));
 
     // Section navigation
-    html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
+    bindClick('.section-nav .nav-item', this._onSectionNavigation.bind(this));
 
     // Edit metatype
-    html.find('[data-action="edit-metatype"]').on('click', this._onEditMetatype.bind(this));
-    
+    bindClick('[data-action="edit-metatype"]', this._onEditMetatype.bind(this));
+
     // Delete metatype
-    html.find('[data-action="delete-metatype"]').on('click', this._onDeleteMetatype.bind(this));
+    bindClick('[data-action="delete-metatype"]', this._onDeleteMetatype.bind(this));
 
     // Edit feat
-    html.find('[data-action="edit-feat"]').on('click', this._onEditFeat.bind(this));
+    bindClick('[data-action="edit-feat"]', this._onEditFeat.bind(this));
 
     // Delete feat
-    html.find('[data-action="delete-feat"]').on('click', this._onDeleteFeat.bind(this));
+    bindClick('[data-action="delete-feat"]', this._onDeleteFeat.bind(this));
 
     // Open vehicle sheet
-    html.find('[data-action="open-vehicle"]').on('click', this._onOpenVehicle.bind(this));
+    bindClick('[data-action="open-vehicle"]', this._onOpenVehicle.bind(this));
 
     // Unlink vehicle
-    html.find('[data-action="unlink-vehicle"]').on('click', this._onUnlinkVehicle.bind(this));
+    bindClick('[data-action="unlink-vehicle"]', this._onUnlinkVehicle.bind(this));
 
     // Set vehicle control mode
-    html.find('[data-action="set-vehicle-control-mode"]').on('click', this._onSetVehicleControlMode.bind(this));
+    bindClick('[data-action="set-vehicle-control-mode"]', this._onSetVehicleControlMode.bind(this));
 
     // Set cyberdeck connection mode
-    html.find('[data-action="set-character-connection-mode"]').on('click', this._onSetConnectionMode.bind(this));
-    html.find('[data-action="show-connection-mode-menu"], [data-action="show-connection-mode-menu-header"]').on('click', (event: Event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const el = event.currentTarget as HTMLElement;
-      const menu = el.closest('.connection-mode-selector')?.querySelector('.connection-mode-menu') as HTMLElement
-        || el.closest('.connection-mode-badge')?.querySelector('.connection-mode-menu') as HTMLElement;
-      if (menu) menu.classList.toggle('visible');
+    bindClick('[data-action="set-character-connection-mode"]', this._onSetConnectionMode.bind(this));
+    el.querySelectorAll<HTMLElement>('[data-action="show-connection-mode-menu"], [data-action="show-connection-mode-menu-header"]').forEach(elem => {
+      elem.addEventListener('click', (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const target = event.currentTarget as HTMLElement;
+        const menu = target.closest('.connection-mode-selector')?.querySelector('.connection-mode-menu') as HTMLElement
+          || target.closest('.connection-mode-badge')?.querySelector('.connection-mode-menu') as HTMLElement;
+        if (menu) menu.classList.toggle('visible');
+      });
     });
 
     // Edit skill
-    html.find('[data-action="edit-skill"]').on('click', this._onEditSkill.bind(this));
+    bindClick('[data-action="edit-skill"]', this._onEditSkill.bind(this));
 
     // Delete skill
-    html.find('[data-action="delete-skill"]').on('click', this._onDeleteSkill.bind(this));
+    bindClick('[data-action="delete-skill"]', this._onDeleteSkill.bind(this));
 
     // Edit specialization
-    html.find('[data-action="edit-specialization"]').on('click', this._onEditSpecialization.bind(this));
+    bindClick('[data-action="edit-specialization"]', this._onEditSpecialization.bind(this));
 
     // Delete specialization
-    html.find('[data-action="delete-specialization"]').on('click', this._onDeleteSpecialization.bind(this));
+    bindClick('[data-action="delete-specialization"]', this._onDeleteSpecialization.bind(this));
 
     // Roll attribute
-    html.find('[data-action="roll-attribute"]').on('click', this._onRollAttribute.bind(this));
+    bindClick('[data-action="roll-attribute"]', this._onRollAttribute.bind(this));
 
     // Roll skill
-    html.find('[data-action="roll-skill"]').on('click', this._onRollSkill.bind(this));
+    bindClick('[data-action="roll-skill"]', this._onRollSkill.bind(this));
 
     // Quick roll skill (from dice badge)
-    html.find('[data-action="quick-roll-skill"]').on('click', this._onQuickRollSkill.bind(this));
+    bindClick('[data-action="quick-roll-skill"]', this._onQuickRollSkill.bind(this));
 
     // Roll specialization
-    html.find('[data-action="roll-specialization"]').on('click', this._onRollSpecialization.bind(this));
+    bindClick('[data-action="roll-specialization"]', this._onRollSpecialization.bind(this));
 
     // Quick roll specialization (from dice badge)
-    html.find('[data-action="quick-roll-specialization"]').on('click', this._onQuickRollSpecialization.bind(this));
+    bindClick('[data-action="quick-roll-specialization"]', this._onQuickRollSpecialization.bind(this));
 
     // Roll phantom RR (RR on skill/spec not owned)
-    html.find('[data-action="roll-phantom-rr"]').on('click', this._onRollPhantomRR.bind(this));
+    bindClick('[data-action="roll-phantom-rr"]', this._onRollPhantomRR.bind(this));
 
     // Roll orphan specialization (spec exists but linked skill doesn't)
-    html.find('[data-action="roll-orphan-spec"]').on('click', this._onRollOrphanSpec.bind(this));
+    bindClick('[data-action="roll-orphan-spec"]', this._onRollOrphanSpec.bind(this));
 
     // Send catchphrase to chat
-    html.find('[data-action="send-catchphrase"]').on('click', this._onSendCatchphrase.bind(this));
-    
+    bindClick('[data-action="send-catchphrase"]', this._onSendCatchphrase.bind(this));
+
     // Toggle bookmark - use event delegation to work with dynamically rendered items
-    html.on('click', '[data-action="toggle-bookmark"]', this._onToggleBookmark.bind(this));
-    
+    el.addEventListener('click', (event: MouseEvent) => {
+      const target = (event.target as HTMLElement).closest('[data-action="toggle-bookmark"]');
+      if (target) this._onToggleBookmark.call(this, event);
+    });
+
     // Click on bookmarked item in header
-    html.find('.bookmark-item').on('click', this._onBookmarkItemClick.bind(this));
-    
+    bindClick('.bookmark-item', this._onBookmarkItemClick.bind(this));
+
     // Handle damage tracker checkboxes - explicit handler to ensure data is saved
-    html.find('input[name^="system.damage"]').on('change', this._onDamageChange.bind(this));
-    html.find('input[name^="system.anarchySpent"]').on('change', this._onAnarchyChange.bind(this));
-    html.find('input[name^="system.tempAnarchySpent"]').on('change', this._onTempAnarchyChange.bind(this));
-    html.find('[data-action="add-temp-anarchy"]').on('click', this._onAddTempAnarchy.bind(this));
-    
+    bindChange('input[name^="system.damage"]', this._onDamageChange.bind(this));
+    bindChange('input[name^="system.anarchySpent"]', this._onAnarchyChange.bind(this));
+    bindChange('input[name^="system.tempAnarchySpent"]', this._onTempAnarchyChange.bind(this));
+    bindClick('[data-action="add-temp-anarchy"]', this._onAddTempAnarchy.bind(this));
+
     // Handle cyberdeck firewall malus buttons
-    html.find('[data-action="increase-fw-malus"]').on('click', this._onChangeFwMalus.bind(this, 1));
-    html.find('[data-action="decrease-fw-malus"]').on('click', this._onChangeFwMalus.bind(this, -1));
+    bindClick('[data-action="increase-fw-malus"]', this._onChangeFwMalus.bind(this, 1));
+    bindClick('[data-action="decrease-fw-malus"]', this._onChangeFwMalus.bind(this, -1));
 
     // Handle cyberdeck attack malus buttons
-    html.find('[data-action="increase-att-malus"]').on('click', this._onChangeAttMalus.bind(this, 1));
-    html.find('[data-action="decrease-att-malus"]').on('click', this._onChangeAttMalus.bind(this, -1));
+    bindClick('[data-action="increase-att-malus"]', this._onChangeAttMalus.bind(this, 1));
+    bindClick('[data-action="decrease-att-malus"]', this._onChangeAttMalus.bind(this, -1));
 
     // Handle cyberdeck connection lock toggle
-    html.find('[data-action="toggle-connection-lock"]').on('click', this._onToggleConnectionLock.bind(this));
+    bindClick('[data-action="toggle-connection-lock"]', this._onToggleConnectionLock.bind(this));
 
     // Handle cyberdeck damage tracker checkboxes
-    html.find('input[name*=".cyberdeckDamage."]').on('change', this._onCyberdeckDamageChange.bind(this));
+    bindChange('input[name*=".cyberdeckDamage."]', this._onCyberdeckDamageChange.bind(this));
 
     // Handle vehicle damage tracker checkboxes
-    html.find('input[name^="vehicle-damage."]').on('change', this._onVehicleDamageChange.bind(this));
+    bindChange('input[name^="vehicle-damage."]', this._onVehicleDamageChange.bind(this));
 
     // Roll cyberdeck attack
-    html.find('[data-action="roll-cyberdeck-attack"]').on('click', this._onRollCyberdeckAttack.bind(this));
+    bindClick('[data-action="roll-cyberdeck-attack"]', this._onRollCyberdeckAttack.bind(this));
 
     // Roll weapon
-    html.find('[data-action="roll-weapon"]').on('click', this._onRollWeapon.bind(this));
+    bindClick('[data-action="roll-weapon"]', this._onRollWeapon.bind(this));
 
     // Roll spell
-    html.find('[data-action="roll-spell"]').on('click', this._onRollSpell.bind(this));
+    bindClick('[data-action="roll-spell"]', this._onRollSpell.bind(this));
 
     // Roll power
-    html.find('[data-action="roll-power"]').on('click', this._onRollPower.bind(this));
+    bindClick('[data-action="roll-power"]', this._onRollPower.bind(this));
 
     // Roll complex form
-    html.find('[data-action="roll-complex-form"]').on('click', this._onRollComplexForm.bind(this));
+    bindClick('[data-action="roll-complex-form"]', this._onRollComplexForm.bind(this));
 
     // Roll vehicle weapon (mounted weapon using character skills)
-    html.find('[data-action="roll-vehicle-weapon"]').on('click', this._onRollVehicleWeaponFromSheet.bind(this));
-    
+    bindClick('[data-action="roll-vehicle-weapon"]', this._onRollVehicleWeaponFromSheet.bind(this));
+
     // Roll vehicle weapon with autopilot
-    html.find('[data-action="roll-vehicle-weapon-autopilot"]').on('click', this._onRollVehicleWeaponAutopilot.bind(this));
-    
+    bindClick('[data-action="roll-vehicle-weapon-autopilot"]', this._onRollVehicleWeaponAutopilot.bind(this));
+
     // Roll vehicle autopilot
-    html.find('[data-action="roll-vehicle-autopilot"]').on('click', this._onRollVehicleAutopilot.bind(this));
+    bindClick('[data-action="roll-vehicle-autopilot"]', this._onRollVehicleAutopilot.bind(this));
 
     // Handle rating changes
-    html.find('.rating-input').on('change', this._onRatingChange.bind(this));
+    el.querySelectorAll<HTMLElement>('.rating-input').forEach(elem => {
+      elem.addEventListener('change', this._onRatingChange.bind(this));
+    });
 
     // Skill search
-    html.find('.skill-search-input').on('input', this._onSkillSearch.bind(this));
-    html.find('.skill-search-input').on('focus', this._onSkillSearchFocus.bind(this));
-    html.find('.skill-search-input').on('blur', this._onSkillSearchBlur.bind(this));
-    
-    // Close skill search results when clicking outside
-    $(document).on('click.skill-search', (event) => {
-      const target = event.target as unknown as HTMLElement;
-      const skillSearchContainer = html.find('.skill-search-container')[0] as HTMLElement;
-      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
-        html.find('.skill-search-results').hide();
-      }
+    el.querySelectorAll<HTMLElement>('.skill-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onSkillSearch.bind(this));
+      elem.addEventListener('focus', this._onSkillSearchFocus.bind(this));
+      elem.addEventListener('blur', this._onSkillSearchBlur.bind(this));
     });
+
+    // Close skill search results when clicking outside
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const skillSearchContainer = el.querySelector('.skill-search-container');
+      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
+        const results = el.querySelector('.skill-search-results') as HTMLElement;
+        if (results) results.style.display = 'none';
+      }
+    }, { signal });
 
     // Feat search
-    html.find('.feat-search-input').on('input', this._onFeatSearch.bind(this));
-    html.find('.feat-search-input').on('focus', this._onFeatSearchFocus.bind(this));
-    html.find('.feat-search-input').on('blur', this._onFeatSearchBlur.bind(this));
-    
-    // Close feat search results when clicking outside
-    $(document).on('click.feat-search', (event) => {
-      const target = event.target as unknown as HTMLElement;
-      const featSearchContainer = html.find('.feat-search-container')[0] as HTMLElement;
-      if (featSearchContainer && !featSearchContainer.contains(target)) {
-        html.find('.feat-search-results').hide();
-      }
+    el.querySelectorAll<HTMLElement>('.feat-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onFeatSearch.bind(this));
+      elem.addEventListener('focus', this._onFeatSearchFocus.bind(this));
+      elem.addEventListener('blur', this._onFeatSearchBlur.bind(this));
     });
 
+    // Close feat search results when clicking outside
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const featSearchContainer = el.querySelector('.feat-search-container');
+      if (featSearchContainer && !featSearchContainer.contains(target)) {
+        const results = el.querySelector('.feat-search-results') as HTMLElement;
+        if (results) results.style.display = 'none';
+      }
+    }, { signal });
+
     // Make feat items draggable
-    html.find('.feat-item').each((_index, item) => {
+    el.querySelectorAll<HTMLElement>('.feat-item').forEach(item => {
       item.setAttribute('draggable', 'true');
       item.addEventListener('dragstart', this._onDragStart.bind(this));
     });
 
     // Make skill items draggable
-    html.find('.skill-item').each((_index, item) => {
+    el.querySelectorAll<HTMLElement>('.skill-item').forEach(item => {
       item.setAttribute('draggable', 'true');
       item.addEventListener('dragstart', this._onDragStart.bind(this));
     });
 
     // Make specialization items draggable
-    html.find('.specialization-item').each((_index, item) => {
+    el.querySelectorAll<HTMLElement>('.specialization-item').forEach(item => {
       item.setAttribute('draggable', 'true');
       item.addEventListener('dragstart', this._onDragStart.bind(this));
     });
 
     // Make vehicle actor items draggable
-    html.find('.vehicle-actor-item').each((_index, item) => {
+    el.querySelectorAll<HTMLElement>('.vehicle-actor-item').forEach(item => {
       item.setAttribute('draggable', 'true');
       item.addEventListener('dragstart', this._onDragStart.bind(this));
     });
@@ -1425,7 +1462,7 @@ export class CharacterSheet extends ActorSheet {
   private async _onSkillSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
-    const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+    const resultsDiv = input.parentElement?.querySelector('.skill-search-results') as HTMLElement;
     this.searchTimeout = debounceSearchInput(this.searchTimeout, searchTerm, resultsDiv, DELAYS.SEARCH_DEBOUNCE,
       async () => this._performSkillSearch(searchTerm, resultsDiv));
   }
@@ -1521,31 +1558,39 @@ export class CharacterSheet extends ActorSheet {
     resultsDiv.style.display = 'block';
     
     // Attach click handlers to buttons
-    $(resultsDiv).find('.add-skill-btn').on('click', this._onAddSkillFromSearch.bind(this));
-    $(resultsDiv).find('.create-skill-btn, .create-skill-btn-inline').on('click', this._onCreateNewSkill.bind(this));
-    
-    // Make entire result items clickable (except disabled ones and create button)
-    $(resultsDiv).find('.search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)').on('click', (event) => {
-      // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.add-skill-btn').length > 0) return;
-      
-      // Find the button in this item and trigger its click
-      const button = $(event.currentTarget).find('.add-skill-btn')[0] as HTMLButtonElement;
-      if (button && !button.disabled) {
-        $(button).trigger('click');
-      }
+    resultsDiv.querySelectorAll<HTMLElement>('.add-skill-btn').forEach(btn => {
+      btn.addEventListener('click', this._onAddSkillFromSearch.bind(this));
     });
-    
+    resultsDiv.querySelectorAll<HTMLElement>('.create-skill-btn, .create-skill-btn-inline').forEach(btn => {
+      btn.addEventListener('click', this._onCreateNewSkill.bind(this));
+    });
+
+    // Make entire result items clickable (except disabled ones and create button)
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)').forEach(item => {
+      item.addEventListener('click', (event) => {
+        // Don't trigger if clicking directly on the button
+        if ((event.target as HTMLElement).closest('.add-skill-btn')) return;
+
+        // Find the button in this item and trigger its click
+        const button = item.querySelector('.add-skill-btn') as HTMLButtonElement;
+        if (button && !button.disabled) {
+          button.click();
+        }
+      });
+    });
+
     // Make create items clickable on the entire row
-    $(resultsDiv).find('.search-result-item.create-new-item').on('click', (event) => {
-      // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.create-skill-btn-inline').length > 0) return;
-      
-      // Find the button and trigger its click
-      const button = $(event.currentTarget).find('.create-skill-btn-inline')[0];
-      if (button) {
-        $(button).trigger('click');
-      }
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item.create-new-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        // Don't trigger if clicking directly on the button
+        if ((event.target as HTMLElement).closest('.create-skill-btn-inline')) return;
+
+        // Find the button and trigger its click
+        const button = item.querySelector('.create-skill-btn-inline') as HTMLElement;
+        if (button) {
+          button.click();
+        }
+      });
     });
   }
 
@@ -1595,7 +1640,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onSkillSearchFocus(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    handleSearchFocus(input, $(input).siblings('.skill-search-results')[0] as HTMLElement);
+    handleSearchFocus(input, input.parentElement?.querySelector('.skill-search-results') as HTMLElement);
     return Promise.resolve();
   }
 
@@ -1604,7 +1649,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onSkillSearchBlur(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const resultsDiv = $(input).siblings('.skill-search-results')[0] as HTMLElement;
+    const resultsDiv = input.parentElement?.querySelector('.skill-search-results') as HTMLElement;
     handleSearchBlur((event as FocusEvent).relatedTarget as HTMLElement | null, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
@@ -1645,16 +1690,17 @@ export class CharacterSheet extends ActorSheet {
       const newSkill = createdItems[0] as any;
       
       // Clear the search input and hide results
-      const searchInput = this.element.find('.skill-search-input')[0] as HTMLInputElement;
+      const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+      const searchInput = sheetEl?.querySelector('.skill-search-input') as HTMLInputElement;
       if (searchInput) {
         searchInput.value = '';
       }
-      
-      const resultsDiv = this.element.find('.skill-search-results')[0] as HTMLElement;
+
+      const resultsDiv = sheetEl?.querySelector('.skill-search-results') as HTMLElement;
       if (resultsDiv) {
         resultsDiv.style.display = 'none';
       }
-      
+
       // Open the skill sheet for editing
       if (newSkill && newSkill.sheet) {
         setTimeout(() => {
@@ -1679,7 +1725,7 @@ export class CharacterSheet extends ActorSheet {
   private async _onFeatSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
-    const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
+    const resultsDiv = input.parentElement?.querySelector('.feat-search-results') as HTMLElement;
     this.featSearchTimeout = debounceSearchInput(this.featSearchTimeout, searchTerm, resultsDiv, DELAYS.SEARCH_DEBOUNCE,
       async () => this._performFeatSearch(searchTerm, resultsDiv));
   }
@@ -1822,33 +1868,41 @@ export class CharacterSheet extends ActorSheet {
     resultsDiv.style.display = 'block';
     
     // Attach click handlers
-    $(resultsDiv).find('.add-feat-btn').on('click', this._onAddFeatFromSearch.bind(this));
-    $(resultsDiv).find('.create-feat-btn, .create-feat-btn-inline').on('click', this._onCreateNewFeat.bind(this));
-    
+    resultsDiv.querySelectorAll<HTMLElement>('.add-feat-btn').forEach(btn => {
+      btn.addEventListener('click', this._onAddFeatFromSearch.bind(this));
+    });
+    resultsDiv.querySelectorAll<HTMLElement>('.create-feat-btn, .create-feat-btn-inline').forEach(btn => {
+      btn.addEventListener('click', this._onCreateNewFeat.bind(this));
+    });
+
     // Make entire result items clickable (except disabled ones and create button)
-    $(resultsDiv).find('.search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)').on('click', (event) => {
-      // Don't trigger if clicking directly on the button
-      if ($(event.target).closest('.add-feat-btn').length > 0) return;
-      
-      // Find the button in this item and trigger its click
-      const button = $(event.currentTarget).find('.add-feat-btn')[0] as HTMLButtonElement;
-      if (button && !button.disabled) {
-        $(button).trigger('click');
-      }
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)').forEach(item => {
+      item.addEventListener('click', (event) => {
+        // Don't trigger if clicking directly on the button
+        if ((event.target as HTMLElement).closest('.add-feat-btn')) return;
+
+        // Find the button in this item and trigger its click
+        const button = item.querySelector('.add-feat-btn') as HTMLButtonElement;
+        if (button && !button.disabled) {
+          button.click();
+        }
+      });
     });
-    
+
     // Make create items clickable on the entire row
-    $(resultsDiv).find('.search-result-item.create-new-item').on('click', (event) => {
-      // Don't trigger if clicking directly on the button or select
-      if ($(event.target).closest('.create-feat-btn-inline, .feat-type-selector-inline').length > 0) return;
-      
-      // Find the button and trigger its click
-      const button = $(event.currentTarget).find('.create-feat-btn-inline')[0];
-      if (button) {
-        $(button).trigger('click');
-      }
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item.create-new-item').forEach(item => {
+      item.addEventListener('click', (event) => {
+        // Don't trigger if clicking directly on the button or select
+        if ((event.target as HTMLElement).closest('.create-feat-btn-inline, .feat-type-selector-inline')) return;
+
+        // Find the button and trigger its click
+        const button = item.querySelector('.create-feat-btn-inline') as HTMLElement;
+        if (button) {
+          button.click();
+        }
+      });
     });
-    
+
     return Promise.resolve();
   }
 
@@ -1898,7 +1952,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onFeatSearchFocus(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    handleSearchFocus(input, $(input).siblings('.feat-search-results')[0] as HTMLElement);
+    handleSearchFocus(input, input.parentElement?.querySelector('.feat-search-results') as HTMLElement);
     return Promise.resolve();
   }
 
@@ -1907,7 +1961,7 @@ export class CharacterSheet extends ActorSheet {
    */
   private _onFeatSearchBlur(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
-    const resultsDiv = $(input).siblings('.feat-search-results')[0] as HTMLElement;
+    const resultsDiv = input.parentElement?.querySelector('.feat-search-results') as HTMLElement;
     handleSearchBlur((event as FocusEvent).relatedTarget as HTMLElement | null, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
@@ -3103,7 +3157,7 @@ export class CharacterSheet extends ActorSheet {
     if (!featName) return;
     
     // Get the feat type from the selector
-    const selector = $(button).siblings('.feat-type-selector, .feat-type-selector-inline')[0] as HTMLSelectElement;
+    const selector = button.parentElement?.querySelector('.feat-type-selector, .feat-type-selector-inline') as HTMLSelectElement;
     const featType = selector ? selector.value : 'equipment';
     
     // Capitalize first letter of each word
@@ -3141,12 +3195,13 @@ export class CharacterSheet extends ActorSheet {
       const newFeat = createdItems[0] as any;
       
       // Clear the search input and hide results
-      const searchInput = this.element.find('.feat-search-input')[0] as HTMLInputElement;
+      const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+      const searchInput = sheetEl?.querySelector('.feat-search-input') as HTMLInputElement;
       if (searchInput) {
         searchInput.value = '';
       }
-      
-      const resultsDiv = this.element.find('.feat-search-results')[0] as HTMLElement;
+
+      const resultsDiv = sheetEl?.querySelector('.feat-search-results') as HTMLElement;
       if (resultsDiv) {
         resultsDiv.style.display = 'none';
       }
