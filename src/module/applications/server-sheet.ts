@@ -60,16 +60,17 @@ export class ServerSheet extends ActorSheet {
 
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
+    const el = html[0] as HTMLElement;
 
     // Server index change triggers form submit
-    html.find('input[name="system.serverIndex"]').on('change', () => this.submit());
-    html.find('input[name="system.physicalSecurity"]').on('change', () => this.submit());
+    el.querySelectorAll<HTMLInputElement>('input[name="system.serverIndex"]').forEach(elem => elem.addEventListener('change', () => this.submit()));
+    el.querySelectorAll<HTMLInputElement>('input[name="system.physicalSecurity"]').forEach(elem => elem.addEventListener('change', () => this.submit()));
 
     // ICE actions
-    html.find('.open-ice').on('click', this._onOpenICE.bind(this));
-    html.find('.remove-ice').on('click', this._onRemoveICE.bind(this));
-    html.find('[data-action="deploy-ice"]').on('click', this._onDeployICE.bind(this));
-    html.find('[data-action="refresh"]').on('click', () => this.render(false));
+    el.querySelectorAll<HTMLElement>('.open-ice').forEach(elem => elem.addEventListener('click', this._onOpenICE.bind(this)));
+    el.querySelectorAll<HTMLElement>('.remove-ice').forEach(elem => elem.addEventListener('click', this._onRemoveICE.bind(this)));
+    el.querySelectorAll<HTMLElement>('[data-action="deploy-ice"]').forEach(elem => elem.addEventListener('click', this._onDeployICE.bind(this)));
+    el.querySelectorAll<HTMLElement>('[data-action="refresh"]').forEach(elem => elem.addEventListener('click', () => this.render(false)));
   }
 
   /**

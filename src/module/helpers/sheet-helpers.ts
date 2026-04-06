@@ -1091,9 +1091,11 @@ export function restoreActiveSection(
  * @param html - jQuery object of the sheet
  * @returns The current active section name, or null
  */
-export function getCurrentActiveSection(html: JQuery): string | null {
-  const activeNavItem = html.find('.section-nav .nav-item.active');
-  return activeNavItem.length > 0 ? (activeNavItem.data('section') as string) : null;
+export function getCurrentActiveSection(html: JQuery | HTMLElement): string | null {
+  const el = html instanceof HTMLElement ? html : html[0] as HTMLElement;
+  if (!el) return null;
+  const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+  return activeNavItem ? (activeNavItem.dataset.section || null) : null;
 }
 
 // ============================================================================

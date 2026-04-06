@@ -199,7 +199,8 @@ export class VehicleSheet extends ActorSheet {
     // Restore active section if it was saved
     if (this._activeSection) {
       setTimeout(() => {
-        const form = html.closest('form')[0];
+        const el = html[0] as HTMLElement;
+        const form = el.closest('form');
         if (form) {
           const navButton = form.querySelector(`[data-section="${this._activeSection}"]`);
           if (navButton) {
@@ -216,27 +217,29 @@ export class VehicleSheet extends ActorSheet {
       }, 10);
     }
 
+    const el = html[0] as HTMLElement;
+
     // Section navigation
-    html.find('.section-nav .nav-item').on('click', this._onSectionNavigation.bind(this));
+    el.querySelectorAll<HTMLElement>('.section-nav .nav-item').forEach(elem => elem.addEventListener('click', this._onSectionNavigation.bind(this)));
 
     // Edit feat/weapon
-    html.find('.feat-edit, .weapon-edit').on('click', (event) => {
+    el.querySelectorAll<HTMLElement>('.feat-edit, .weapon-edit').forEach(elem => elem.addEventListener('click', (event) => {
       event.preventDefault();
-      const itemId = $(event.currentTarget).data('item-id');
+      const itemId = (event.currentTarget as HTMLElement).dataset.itemId || '';
       const item = this.actor.items.get(itemId);
       if (item) {
         item.sheet?.render(true);
       }
-    });
+    }));
 
     // Delete feat/weapon
-    html.find('.feat-delete, .weapon-delete').on('click', async (event) => {
+    el.querySelectorAll<HTMLElement>('.feat-delete, .weapon-delete').forEach(elem => elem.addEventListener('click', async (event) => {
       event.preventDefault();
       // Save current active section before deletion
-      const activeNavItem = html.find('.section-nav .nav-item.active');
-      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : null;
-      
-      const itemId = $(event.currentTarget).data('item-id');
+      const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
+
+      const itemId = (event.currentTarget as HTMLElement).dataset.itemId || '';
       const item = this.actor.items.get(itemId);
       if (item) {
         const confirmed = await Dialog.confirm({
@@ -251,21 +254,21 @@ export class VehicleSheet extends ActorSheet {
           // The sheet will auto-render, and activateListeners will restore the section
         }
       }
-    });
+    }));
 
     // Add world weapon (only weapons allowed)
-    html.find('.add-world-weapon-button').on('click', async (event) => {
+    el.querySelectorAll<HTMLElement>('.add-world-weapon-button').forEach(elem => elem.addEventListener('click', async (event) => {
       event.preventDefault();
       // Save current active section before opening browser
-      const activeNavItem = html.find('.section-nav .nav-item.active');
-      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : null;
+      const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
       this._showItemBrowser('feat', true); // true = weapons only
-    });
+    }));
 
     // Roll weapon dice (using autopilot)
-    html.find('.weapon-dice-pool').on('click', async (event) => {
+    el.querySelectorAll<HTMLElement>('.weapon-dice-pool').forEach(elem => elem.addEventListener('click', async (event) => {
       event.preventDefault();
-      const itemId = $(event.currentTarget).data('item-id');
+      const itemId = (event.currentTarget as HTMLElement).dataset.itemId || '';
       const item = this.actor.items.get(itemId);
       if (!item) return;
       
@@ -284,34 +287,33 @@ export class VehicleSheet extends ActorSheet {
       
       // Call dice roller with prepared data
       DiceRoller.handleRollRequest(rollRequestData);
-    });
+    }));
 
     // Handle vehicle type change
-    html.find('.vehicle-type-select').on('change', this._onVehicleTypeChange.bind(this));
+    el.querySelectorAll<HTMLElement>('.vehicle-type-select').forEach(elem => elem.addEventListener('change', this._onVehicleTypeChange.bind(this)));
 
     // Handle bonus changes - update attributes in real-time
-    html.find('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').on('change', this._onBonusChange.bind(this));
-    
+    el.querySelectorAll<HTMLInputElement>('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').forEach(elem => elem.addEventListener('change', this._onBonusChange.bind(this)));
+
     // Handle option changes - update attributes in real-time
-    html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on('change', this._onOptionChange.bind(this));
+    el.querySelectorAll<HTMLInputElement>('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').forEach(elem => elem.addEventListener('change', this._onOptionChange.bind(this)));
 
     // Add narrative effect
-    html.find('[data-action="add-narrative-effect"]').on('click', async (event) => {
+    el.querySelectorAll<HTMLElement>('[data-action="add-narrative-effect"]').forEach(elem => elem.addEventListener('click', async (event) => {
       event.preventDefault();
-      
+
       // Read current narrative effects from form inputs to preserve unsaved changes
       const currentNarrativeEffects: any[] = [];
-      
+
       // Extract all narrative effect values from form (preserve order and unsaved changes)
-      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
-      narrativeEffectTextareas.each((_index, textarea) => {
-        const textareaElement = textarea as HTMLTextAreaElement;
+      const narrativeEffectTextareas = el.querySelectorAll<HTMLTextAreaElement>('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.forEach((textareaElement) => {
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
           const index = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || '';
-          const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
-          const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          const valueInput = el.querySelector<HTMLSelectElement>(`select[name="system.narrativeEffects.${index}.value"]`);
+          const value = valueInput ? parseInt(valueInput.value) || 0 : 0;
           
           // Determine isNegative based on value (for backward compatibility)
           const isNegative = value < 0;
@@ -337,26 +339,25 @@ export class VehicleSheet extends ActorSheet {
       await this.actor.update({
         'system.narrativeEffects': currentNarrativeEffects
       } as any);
-    });
+    }));
 
     // Remove narrative effect
-    html.find('[data-action="remove-narrative-effect"]').on('click', async (event) => {
+    el.querySelectorAll<HTMLElement>('[data-action="remove-narrative-effect"]').forEach(elem => elem.addEventListener('click', async (event) => {
       event.preventDefault();
-      const index = parseInt($(event.currentTarget).data('index') || '0');
-      
+      const index = parseInt((event.currentTarget as HTMLElement).dataset.index || '0');
+
       // Read current narrative effects from form inputs to preserve unsaved changes
       const currentNarrativeEffects: any[] = [];
-      
+
       // Extract all narrative effect values from form (preserve order and unsaved changes)
-      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
-      narrativeEffectTextareas.each((_inputIndex, textarea) => {
-        const textareaElement = textarea as HTMLTextAreaElement;
+      const narrativeEffectTextareas = el.querySelectorAll<HTMLTextAreaElement>('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.forEach((textareaElement) => {
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
           const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || '';
-          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
-          const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          const valueInput = el.querySelector<HTMLSelectElement>(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput ? parseInt(valueInput.value) || 0 : 0;
           
           // Determine isNegative based on value (for backward compatibility)
           const isNegative = value < 0;
@@ -382,7 +383,7 @@ export class VehicleSheet extends ActorSheet {
       await this.actor.update({
         'system.narrativeEffects': currentNarrativeEffects
       } as any);
-    });
+    }));
 
     // Handle narrative effect changes (text or value) - auto-save to trigger character sheet re-render
     // Use debounce for textarea input to avoid too many saves while typing
@@ -399,15 +400,14 @@ export class VehicleSheet extends ActorSheet {
       const currentNarrativeEffects: any[] = [];
 
       // Extract all narrative effect values from form (preserve order and unsaved changes)
-      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
-      narrativeEffectTextareas.each((_inputIndex, textarea) => {
-        const textareaElement = textarea as HTMLTextAreaElement;
+      const narrativeEffectTextareas = el.querySelectorAll<HTMLTextAreaElement>('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.forEach((textareaElement) => {
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
           const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || '';
-          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
-          const value = valueInput.length > 0 ? parseInt(valueInput.val() as string) || 0 : 0;
+          const valueInput = el.querySelector<HTMLSelectElement>(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput ? parseInt(valueInput.value) || 0 : 0;
 
           // Determine isNegative based on value (for backward compatibility)
           const isNegative = value < 0;
@@ -435,7 +435,8 @@ export class VehicleSheet extends ActorSheet {
       // Restore focus after re-render if the user was typing in a narrative effect textarea
       if (activeFieldName && activeFieldName.startsWith('system.narrativeEffects.')) {
         setTimeout(() => {
-          const restored = this.element.find(`textarea[name="${activeFieldName}"]`)[0] as HTMLTextAreaElement | undefined;
+          const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+          const restored = sheetEl?.querySelector<HTMLTextAreaElement>(`textarea[name="${activeFieldName}"]`);
           if (restored) {
             restored.focus();
             restored.setSelectionRange(cursorPos, cursorEnd);
@@ -445,37 +446,47 @@ export class VehicleSheet extends ActorSheet {
     };
     
     // Handle select changes (immediate save)
-    html.find('select[name^="system.narrativeEffects."]').on('change', async (event) => {
+    el.querySelectorAll<HTMLSelectElement>('select[name^="system.narrativeEffects."]').forEach(elem => elem.addEventListener('change', async (event) => {
       event.preventDefault();
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
         narrativeEffectSaveTimeout = null;
       }
       await saveNarrativeEffects();
-    });
-    
+    }));
+
     // Handle textarea changes (debounced save for input, immediate for change/blur)
-    html.find('textarea[name^="system.narrativeEffects."]').on('input', (_event) => {
-      if (narrativeEffectSaveTimeout) {
-        clearTimeout(narrativeEffectSaveTimeout);
-      }
-      // Debounce: save after NARRATIVE_SAVE_DEBOUNCE ms of no typing
-      narrativeEffectSaveTimeout = setTimeout(async () => {
+    el.querySelectorAll<HTMLTextAreaElement>('textarea[name^="system.narrativeEffects."]').forEach(elem => {
+      elem.addEventListener('input', (_event) => {
+        if (narrativeEffectSaveTimeout) {
+          clearTimeout(narrativeEffectSaveTimeout);
+        }
+        // Debounce: save after NARRATIVE_SAVE_DEBOUNCE ms of no typing
+        narrativeEffectSaveTimeout = setTimeout(async () => {
+          await saveNarrativeEffects();
+          narrativeEffectSaveTimeout = null;
+        }, NARRATIVE_SAVE_DEBOUNCE);
+      });
+
+      elem.addEventListener('change', async (_event) => {
+        if (narrativeEffectSaveTimeout) {
+          clearTimeout(narrativeEffectSaveTimeout);
+          narrativeEffectSaveTimeout = null;
+        }
         await saveNarrativeEffects();
-        narrativeEffectSaveTimeout = null;
-      }, NARRATIVE_SAVE_DEBOUNCE);
-    });
-    
-    html.find('textarea[name^="system.narrativeEffects."]').on('change blur', async (_event) => {
-      if (narrativeEffectSaveTimeout) {
-        clearTimeout(narrativeEffectSaveTimeout);
-        narrativeEffectSaveTimeout = null;
-      }
-      await saveNarrativeEffects();
+      });
+
+      elem.addEventListener('blur', async (_event) => {
+        if (narrativeEffectSaveTimeout) {
+          clearTimeout(narrativeEffectSaveTimeout);
+          narrativeEffectSaveTimeout = null;
+        }
+        await saveNarrativeEffects();
+      });
     });
 
     // Handle damage checkbox changes (both in header and combat section)
-    html.find('input[name^="system.damage."]').on('change', async (event) => {
+    el.querySelectorAll<HTMLInputElement>('input[name^="system.damage."]').forEach(elem => elem.addEventListener('change', async (event) => {
       const input = event.currentTarget as HTMLInputElement;
       const name = input.name;
       const checked = input.checked;
@@ -490,8 +501,9 @@ export class VehicleSheet extends ActorSheet {
       });
       
       // Save current active section before update
-      const activeSection = SheetHelpers.getCurrentActiveSection(html);
-      
+      const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+      const activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
+
       // Get current damage from actor data (read from _source for persisted values)
       const actorSource = (this.actor as any)._source;
       const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
@@ -499,29 +511,32 @@ export class VehicleSheet extends ActorSheet {
         severe: [false],
         incapacitating: false
       };
-      
+
       // Use helper to parse and update damage
       const updatedDamage = SheetHelpers.parseDamageCheckboxChange(name, checked, currentDamage);
       if (!updatedDamage) return;
-      
+
       // Update the actor with the complete damage object
       await this.actor.update({
         'system.damage': updatedDamage
       } as any, { render: false });
-      
+
       // Synchronize all checkboxes with the same name and update visual state
-      html.find(`input[name="${name}"]`).each((_, checkbox) => {
-        const $checkbox = $(checkbox);
-        $checkbox.prop('checked', checked);
-        $checkbox.closest('label.track-box').toggleClass('checked', checked);
+      el.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((checkbox) => {
+        checkbox.checked = checked;
+        const trackBox = checkbox.closest('label.track-box');
+        if (trackBox) {
+          trackBox.classList.toggle('checked', checked);
+        }
       });
-      
+
       // Restore active section after update
-      const form = $(this.element).closest('form')[0] as HTMLElement;
+      const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+      const form = sheetEl?.closest('form') as HTMLElement;
       if (form && activeSection) {
         SheetHelpers.restoreActiveSection(form, activeSection);
       }
-    });
+    }));
   }
 
   /**
@@ -567,18 +582,21 @@ export class VehicleSheet extends ActorSheet {
     const value = parseInt(input.value) || 0;
     
     // Save current active section before update
-    const activeSection = SheetHelpers.getCurrentActiveSection($(this.element)) || 'attributes';
-    
+    const sheetEl1 = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const activeNavItem1 = sheetEl1?.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+    const activeSection = (activeNavItem1?.dataset.section) || 'attributes';
+
     // Update the actor - prepareDerivedData will recalculate attributes
     await this.actor.update({
       [name]: value
     } as any);
-    
+
     // Re-render to show updated calculated attributes
     await this.render(false);
-    
+
     // Restore active section after render
-    const form = $(this.element).closest('form')[0] as HTMLElement;
+    const sheetEl1b = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const form = sheetEl1b?.closest('form') as HTMLElement;
     if (form) {
       SheetHelpers.restoreActiveSection(form, activeSection);
     }
@@ -590,10 +608,12 @@ export class VehicleSheet extends ActorSheet {
   private async _onOptionChange(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
     const name = input.name;
-    
+
     // Save current active section before update
-    const activeSection = SheetHelpers.getCurrentActiveSection($(this.element)) || 'attributes';
-    
+    const sheetEl2 = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const activeNavItem2 = sheetEl2?.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+    const activeSection = (activeNavItem2?.dataset.section) || 'attributes';
+
     // Determine value based on input type
     let value: any;
     if (input.type === 'checkbox') {
@@ -603,17 +623,18 @@ export class VehicleSheet extends ActorSheet {
     } else {
       value = input.value;
     }
-    
+
     // Update the actor - prepareDerivedData will recalculate attributes
     await this.actor.update({
       [name]: value
     } as any);
-    
+
     // Re-render to show updated calculated attributes
     await this.render(false);
-    
+
     // Restore active section after render
-    const form = $(this.element).closest('form')[0] as HTMLElement;
+    const sheetEl2b = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const form = sheetEl2b?.closest('form') as HTMLElement;
     if (form) {
       SheetHelpers.restoreActiveSection(form, activeSection);
     }
@@ -655,7 +676,8 @@ export class VehicleSheet extends ActorSheet {
           icon: '<i class="fas fa-plus"></i>',
           label: game.i18n!.localize(`SRA2.${itemType.toUpperCase()}S.ADD_${itemType.toUpperCase()}`),
           callback: async (html: JQuery) => {
-            const itemId = html.find('#item-select').val() as string;
+            const dialogEl = html[0] as HTMLElement;
+            const itemId = (dialogEl.querySelector('#item-select') as HTMLSelectElement)?.value || '';
             if (itemId) {
               const item = game.items!.get(itemId);
               if (item) {
@@ -679,8 +701,9 @@ export class VehicleSheet extends ActorSheet {
    */
   protected override async _onDrop(event: DragEvent): Promise<boolean | void> {
     // Save current active section before drop
-    const activeNavItem = $(this.element).find('.section-nav .nav-item.active');
-    this._activeSection = activeNavItem.length > 0 ? activeNavItem.data('section') : 'attributes';
+    const sheetElDrop = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
+    const activeNavItemDrop = sheetElDrop?.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+    this._activeSection = activeNavItemDrop?.dataset.section || 'attributes';
     
     // Get the dropped data
     let data;

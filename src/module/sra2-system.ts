@@ -893,119 +893,120 @@ export class SRA2System {
   private setupChatHandlers(): void {
     // Register chat message hook for apply damage buttons
     Hooks.on('renderChatMessage', (message: any, html: any) => {
-      // Remove existing handlers first to prevent duplicates
-      html.find('.apply-damage-button').off('click');
+      const msgEl = html[0] as HTMLElement;
 
-      html.find('.apply-damage-button').on('click', async (event: any) => {
-        event.preventDefault();
-        event.stopImmediatePropagation(); // Prevent other handlers from executing
+      // Apply damage buttons (replace old listeners by cloning)
+      msgEl.querySelectorAll<HTMLButtonElement>('.apply-damage-button').forEach(origBtn => {
+        const button = origBtn.cloneNode(true) as HTMLButtonElement;
+        origBtn.replaceWith(button);
+        button.addEventListener('click', async (event: any) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
 
-        const button = $(event.currentTarget);
+          if (button.disabled) return;
 
-        // Check if button is already disabled to prevent double-clicks
-        if (button.prop('disabled')) {
-          return;
-        }
+          const targetUuid = button.dataset.targetUuid || button.dataset.defenderUuid;
+          const damage = parseInt(button.dataset.damage || '0') || 0;
+          const targetName = button.dataset.targetName || button.dataset.defenderName;
+          const damageType = (button.dataset.damageType || 'physical') as 'physical' | 'mental' | 'matrix';
 
-        // Template uses data-target-uuid, not data-defender-uuid
-        const targetUuid = button.data('target-uuid') || button.data('defender-uuid');
-        const damage = parseInt(button.data('damage')) || 0;
-        const targetName = button.data('target-name') || button.data('defender-name');
+          if (!targetUuid) {
+            console.error('Apply damage button: No target UUID found in button data attributes');
+            ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET'));
+            return;
+          }
 
-        // Get damage type from button's data attribute (set from weapon's damageType in template)
-        const damageType = (button.data('damage-type') || 'physical') as 'physical' | 'mental' | 'matrix';
+          if (damage <= 0) {
+            ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.NO_DAMAGE_TO_APPLY'));
+            return;
+          }
 
-        if (!targetUuid) {
-          console.error('Apply damage button: No target UUID found in button data attributes');
-          ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.CANNOT_FIND_TARGET'));
-          return;
-        }
+          button.disabled = true;
 
-        if (damage <= 0) {
-          ui.notifications?.info(game.i18n!.localize('SRA2.COMBAT.NO_DAMAGE_TO_APPLY'));
-          return;
-        }
+          console.log('Apply damage button clicked:', { targetUuid, targetName, damage, damageType });
 
-        // Disable button to prevent double-click
-        button.prop('disabled', true);
-
-        console.log('Apply damage button clicked:', { targetUuid, targetName, damage, damageType });
-
-        try {
-          await CombatHelpers.applyDamage(targetUuid, damage, targetName, damageType);
-        } catch (error) {
-          console.error('Error applying damage:', error);
-          ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.DAMAGE_APPLY_ERROR'));
-        } finally {
-          // Re-enable button after a short delay
-          setTimeout(() => button.prop('disabled', false), DELAYS.BUTTON_REENABLE);
-        }
+          try {
+            await CombatHelpers.applyDamage(targetUuid!, damage, targetName || '', damageType);
+          } catch (error) {
+            console.error('Error applying damage:', error);
+            ui.notifications?.error(game.i18n!.localize('SRA2.COMBAT.DAMAGE_APPLY_ERROR'));
+          } finally {
+            setTimeout(() => button.disabled = false, DELAYS.BUTTON_REENABLE);
+          }
+        });
       });
 
       // Apply cyberdeck malus (blocker/acid ICE effects)
-      html.find('.apply-cyberdeck-malus-button').off('click');
-      html.find('.apply-cyberdeck-malus-button').on('click', async (event: any) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
+      msgEl.querySelectorAll<HTMLButtonElement>('.apply-cyberdeck-malus-button').forEach(origBtn => {
+        const button = origBtn.cloneNode(true) as HTMLButtonElement;
+        origBtn.replaceWith(button);
+        button.addEventListener('click', async (event: any) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
 
-        const button = $(event.currentTarget);
-        if (button.prop('disabled')) return;
+          if (button.disabled) return;
 
-        const targetUuid = button.data('target-uuid');
-        const cyberdeckItemId = button.data('cyberdeck-item-id');
-        const malusType = button.data('malus-type'); // 'attackMalus' or 'firewallMalus'
-        const malusValue = parseInt(button.data('malus-value')) || 0;
-        const targetName = button.data('target-name');
+          const targetUuid = button.dataset.targetUuid;
+          const cyberdeckItemId = button.dataset.cyberdeckItemId;
+          const malusType = button.dataset.malusType;
+          const malusValue = parseInt(button.dataset.malusValue || '0') || 0;
+          const targetName = button.dataset.targetName;
 
-        if (!targetUuid || !cyberdeckItemId || malusValue <= 0) return;
+          if (!targetUuid || !cyberdeckItemId || malusValue <= 0) return;
 
-        button.prop('disabled', true);
+          button.disabled = true;
 
-        try {
-          const actor = await fromUuid(targetUuid as any) as any;
-          const actorObj = actor?.actor || actor;
-          if (!actorObj) return;
+          try {
+            const actor = await fromUuid(targetUuid as any) as any;
+            const actorObj = actor?.actor || actor;
+            if (!actorObj) return;
 
-          const cyberdeck = actorObj.items?.get(cyberdeckItemId);
-          if (!cyberdeck) return;
+            const cyberdeck = actorObj.items?.get(cyberdeckItemId);
+            if (!cyberdeck) return;
 
-          if (malusType === 'connectionLocked') {
-            await cyberdeck.update({ 'system.connectionLocked': true } as any);
-            ui.notifications?.info(`${targetName}: ${game.i18n!.localize('SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED')}`);
-          } else {
-            const currentMalus = (cyberdeck.system as any)[malusType] || 0;
-            const newMalus = currentMalus + malusValue;
+            if (malusType === 'connectionLocked') {
+              await cyberdeck.update({ 'system.connectionLocked': true } as any);
+              ui.notifications?.info(`${targetName}: ${game.i18n!.localize('SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED')}`);
+            } else {
+              const currentMalus = (cyberdeck.system as any)[malusType!] || 0;
+              const newMalus = currentMalus + malusValue;
 
-            await cyberdeck.update({ [`system.${malusType}`]: newMalus } as any);
+              await cyberdeck.update({ [`system.${malusType}`]: newMalus } as any);
 
-            const malusLabel = malusType === 'attackMalus'
-              ? game.i18n!.localize('SRA2.FEATS.CYBERDECK.ATTACK')
-              : game.i18n!.localize('SRA2.FEATS.CYBERDECK.FIREWALL');
-            ui.notifications?.info(`${targetName}: ${malusLabel} -${malusValue}`);
+              const malusLabel = malusType === 'attackMalus'
+                ? game.i18n!.localize('SRA2.FEATS.CYBERDECK.ATTACK')
+                : game.i18n!.localize('SRA2.FEATS.CYBERDECK.FIREWALL');
+              ui.notifications?.info(`${targetName}: ${malusLabel} -${malusValue}`);
+            }
+          } catch (error) {
+            console.error('Error applying cyberdeck malus:', error);
+          } finally {
+            setTimeout(() => button.disabled = false, 1000);
           }
-        } catch (error) {
-          console.error('Error applying cyberdeck malus:', error);
-        } finally {
-          setTimeout(() => button.prop('disabled', false), 1000);
-        }
+        });
       });
 
       // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
-      html.off('mouseenter', '.defend-button, .counter-attack-button');
-      html.on('mouseenter', '.defend-button, .counter-attack-button', (event: any) => {
-        const tokenUuid = $(event.currentTarget).data('defender-token-uuid') as string | undefined
-          ?? $(event.currentTarget).closest('.attack-actions').data('defender-token-uuid') as string | undefined;
+      // Use event delegation on msgEl
+      msgEl.addEventListener('mouseenter', (event: any) => {
+        const target = event.target as HTMLElement;
+        const btn = target.closest('.defend-button, .counter-attack-button') as HTMLElement | null;
+        if (!btn) return;
+        const tokenUuid = btn.dataset.defenderTokenUuid
+          ?? (btn.closest('.attack-actions') as HTMLElement | null)?.dataset.defenderTokenUuid;
         if (!tokenUuid) return;
         try {
           const token = (foundry.utils as any)?.fromUuidSync?.(tokenUuid);
           const center = token?.center ?? token?.object?.center;
           if (center) (canvas as any).ping?.(center, { duration: 600 });
         } catch (_e) { /* canvas not ready */ }
-      });
+      }, true);
 
       // Defense button handler
-      html.find('.defend-button').off('click');
-      html.find('.defend-button').on('click', async (event: any) => {
+      msgEl.querySelectorAll<HTMLElement>('.defend-button').forEach(origBtn => {
+        const btn = origBtn.cloneNode(true) as HTMLElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
         event.preventDefault();
 
         const messageFlags = message.flags?.sra2;
@@ -1025,10 +1026,10 @@ export class SRA2System {
 
         // Read defender info from the button's parent .attack-actions div (multi-target support).
         // Falls back to global message flags for backward compat.
-        const actionsDiv = $(event.currentTarget).closest('.attack-actions');
-        const buttonDefenderUuid      = actionsDiv.data('defender-uuid')       as string | undefined;
-        const buttonDefenderTokenUuid = actionsDiv.data('defender-token-uuid') as string | undefined;
-        const buttonDefenderId        = actionsDiv.data('defender-id')         as string | undefined;
+        const actionsDiv = (event.currentTarget as HTMLElement).closest('.attack-actions') as HTMLElement | null;
+        const buttonDefenderUuid      = actionsDiv?.dataset.defenderUuid       as string | undefined;
+        const buttonDefenderTokenUuid = actionsDiv?.dataset.defenderTokenUuid as string | undefined;
+        const buttonDefenderId        = actionsDiv?.dataset.defenderId         as string | undefined;
 
         const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
           {
@@ -1088,11 +1089,14 @@ export class SRA2System {
         // Override any stale canvas target with the known original attacker token
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
+        });
       });
 
       // Counter-attack button handler
-      html.find('.counter-attack-button').off('click');
-      html.find('.counter-attack-button').on('click', async (event: any) => {
+      msgEl.querySelectorAll<HTMLElement>('.counter-attack-button').forEach(origBtn => {
+        const btn = origBtn.cloneNode(true) as HTMLElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
         event.preventDefault();
 
         const messageFlags = message.flags?.sra2;
@@ -1108,10 +1112,10 @@ export class SRA2System {
         );
 
         // Read defender info from button's parent .attack-actions div (multi-target support)
-        const caActionsDiv = $(event.currentTarget).closest('.attack-actions');
-        const caDefenderUuid      = caActionsDiv.data('defender-uuid')       as string | undefined;
-        const caDefenderTokenUuid = caActionsDiv.data('defender-token-uuid') as string | undefined;
-        const caDefenderId        = caActionsDiv.data('defender-id')         as string | undefined;
+        const caActionsDiv = (event.currentTarget as HTMLElement).closest('.attack-actions') as HTMLElement | null;
+        const caDefenderUuid      = caActionsDiv?.dataset.defenderUuid       as string | undefined;
+        const caDefenderTokenUuid = caActionsDiv?.dataset.defenderTokenUuid as string | undefined;
+        const caDefenderId        = caActionsDiv?.dataset.defenderId         as string | undefined;
 
         const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
           {
@@ -1155,11 +1159,14 @@ export class SRA2System {
         // Always override with the known original attacker token (constructor may have captured stale targets)
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
+        });
       });
 
       // Cyber-defend button: Piratage/Cybercombat + cyberdeck FW
-      html.find('.cyber-defend-button').off('click');
-      html.find('.cyber-defend-button').on('click', async (event: any) => {
+      msgEl.querySelectorAll<HTMLElement>('.cyber-defend-button').forEach(origBtn => {
+        const btn = origBtn.cloneNode(true) as HTMLElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
         event.preventDefault();
 
         const messageFlags = message.flags?.sra2;
@@ -1173,12 +1180,12 @@ export class SRA2System {
           'Cyber-defend Attacker'
         );
 
-        const actionsDiv = $(event.currentTarget).closest('.attack-actions');
+        const actionsDiv = (event.currentTarget as HTMLElement).closest('.attack-actions') as HTMLElement | null;
         const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
           {
-            actorUuid: actionsDiv.data('defender-uuid')       as string ?? messageFlags.defenderUuid,
-            tokenUuid: actionsDiv.data('defender-token-uuid') as string ?? messageFlags.defenderTokenUuid,
-            actorId:   actionsDiv.data('defender-id')         as string ?? messageFlags.defenderId,
+            actorUuid: actionsDiv?.dataset.defenderUuid       as string ?? messageFlags.defenderUuid,
+            tokenUuid: actionsDiv?.dataset.defenderTokenUuid as string ?? messageFlags.defenderTokenUuid,
+            actorId:   actionsDiv?.dataset.defenderId         as string ?? messageFlags.defenderId,
           },
           'Cyber-defend Defender'
         );
@@ -1287,11 +1294,14 @@ export class SRA2System {
         const dialog = new RollDialog(defenseRollData);
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
+        });
       });
 
-      // Cyber-counterattack button: Piratage/Cybercombat + Volonté (same as attack)
-      html.find('.cyber-counterattack-button').off('click');
-      html.find('.cyber-counterattack-button').on('click', async (event: any) => {
+      // Cyber-counterattack button: Piratage/Cybercombat + Volonte (same as attack)
+      msgEl.querySelectorAll<HTMLElement>('.cyber-counterattack-button').forEach(origBtn => {
+        const btn = origBtn.cloneNode(true) as HTMLElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
         event.preventDefault();
 
         const messageFlags = message.flags?.sra2;
@@ -1305,12 +1315,12 @@ export class SRA2System {
           'Cyber-counterattack Attacker'
         );
 
-        const actionsDiv = $(event.currentTarget).closest('.attack-actions');
+        const actionsDiv = (event.currentTarget as HTMLElement).closest('.attack-actions') as HTMLElement | null;
         const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
           {
-            actorUuid: actionsDiv.data('defender-uuid')       as string ?? messageFlags.defenderUuid,
-            tokenUuid: actionsDiv.data('defender-token-uuid') as string ?? messageFlags.defenderTokenUuid,
-            actorId:   actionsDiv.data('defender-id')         as string ?? messageFlags.defenderId,
+            actorUuid: actionsDiv?.dataset.defenderUuid       as string ?? messageFlags.defenderUuid,
+            tokenUuid: actionsDiv?.dataset.defenderTokenUuid as string ?? messageFlags.defenderTokenUuid,
+            actorId:   actionsDiv?.dataset.defenderId         as string ?? messageFlags.defenderId,
           },
           'Cyber-counterattack Defender'
         );
@@ -1437,6 +1447,7 @@ export class SRA2System {
         const dialog = new RollDialog(cyberCounterRollData);
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
+        });
       });
 
     });
@@ -1468,19 +1479,20 @@ export class SRA2System {
     // Function to add roll dice button to chat
     const addRollDiceButton = () => {
       // Find the chat message input form in the DOM
-      const chatForm = $('.chat-form');
-      if (chatForm.length === 0) {
+      const chatForm = document.querySelector('.chat-form') as HTMLElement | null;
+      if (!chatForm) {
         return false;
       }
 
       // Check if button already exists to avoid duplicates
-      if (chatForm.find('.sra2-roll-dice-container').length > 0) {
+      if (chatForm.querySelector('.sra2-roll-dice-container')) {
         return true;
       }
 
       // Create the roll dice container with inputs and radio
-      const rollDiceContainer = $(`
-        <div class="sra2-roll-dice-container">
+      const rollDiceContainer = document.createElement('div');
+      rollDiceContainer.className = 'sra2-roll-dice-container';
+      rollDiceContainer.innerHTML = `
           <div class="sra2-roll-dice-inputs">
             <input type="text" value="3" class="sra2-dice-count-input" placeholder="${game.i18n!.localize('SRA2.CHAT.DICE_COUNT')}" title="${game.i18n!.localize('SRA2.CHAT.DICE_COUNT')}">
             <input type="text" value="0" class="sra2-risk-dice-input" placeholder="${game.i18n!.localize('SRA2.CHAT.RISK_DICE')}" title="${game.i18n!.localize('SRA2.CHAT.RISK_DICE')}">
@@ -1503,15 +1515,14 @@ export class SRA2System {
           <button type="button" class="sra2-roll-dice-button" title="${game.i18n!.localize('SRA2.CHAT.ROLL_DICE')}">
             <i class="fas fa-dice-d6"></i> ${game.i18n!.localize('SRA2.CHAT.ROLL_DICE')}
           </button>
-        </div>
-      `);
+      `;
 
       // Insert container as first element in .chat-form
       chatForm.prepend(rollDiceContainer);
 
       // Add click handler to button
-      const rollDiceButton = rollDiceContainer.find('.sra2-roll-dice-button');
-      rollDiceButton.on('click', async (event: any) => {
+      const rollDiceButton = rollDiceContainer.querySelector('.sra2-roll-dice-button') as HTMLButtonElement;
+      rollDiceButton.addEventListener('click', async (event: any) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -1525,10 +1536,10 @@ export class SRA2System {
         }
 
         // Get values from inputs and radio
-        const diceCount = parseInt(rollDiceContainer.find('.sra2-dice-count-input').val() as string) || 0;
-        const riskDiceCount = parseInt(rollDiceContainer.find('.sra2-risk-dice-input').val() as string) || 0;
-        const rr = parseInt(rollDiceContainer.find('.sra2-rr-input').val() as string) || 0;
-        const rollMode = rollDiceContainer.find('input[name="sra2-roll-mode"]:checked').val() as string || 'normal';
+        const diceCount = parseInt((rollDiceContainer.querySelector('.sra2-dice-count-input') as HTMLInputElement)?.value || '0') || 0;
+        const riskDiceCount = parseInt((rollDiceContainer.querySelector('.sra2-risk-dice-input') as HTMLInputElement)?.value || '0') || 0;
+        const rr = parseInt((rollDiceContainer.querySelector('.sra2-rr-input') as HTMLInputElement)?.value || '0') || 0;
+        const rollMode = (rollDiceContainer.querySelector('input[name="sra2-roll-mode"]:checked') as HTMLInputElement)?.value || 'normal';
 
         if (diceCount <= 0) {
           ui.notifications?.warn(game.i18n!.localize('SRA2.CHAT.INVALID_DICE_COUNT'));
@@ -1767,14 +1778,15 @@ export class SRA2System {
         }
       },
       render: (html: any) => {
-        html.find('.bookmark-item').on('click', async (event: any) => {
-          const itemId = $(event.currentTarget).data('item-id');
+        const dlgEl = html[0] as HTMLElement;
+        dlgEl.querySelectorAll<HTMLElement>('.bookmark-item').forEach(elem => elem.addEventListener('click', async (event: any) => {
+          const itemId = (event.currentTarget as HTMLElement).dataset.itemId;
           const item = actor.items.get(itemId);
           if (!item) return;
 
           // Open item sheet
           item.sheet?.render(true);
-        });
+        }));
       }
     }, { width: 350 }).render(true);
   }

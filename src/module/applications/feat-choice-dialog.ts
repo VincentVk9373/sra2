@@ -110,64 +110,69 @@ export class FeatChoiceDialog extends Dialog {
    * Activate listeners for the dialog
    */
   private static activateListeners(html: JQuery, numberOfChoice: number, choiceFeatsCount: number): void {
+    const el = html[0] as HTMLElement;
     // Get the confirm button
-    const confirmButton = html.closest('.dialog').find('button[data-button="confirm"]');
-    
+    const dialogEl = el.closest('.dialog');
+    const confirmButton = dialogEl?.querySelector('button[data-button="confirm"]') as HTMLButtonElement | null;
+
     // Function to update confirm button state
     const updateConfirmButton = () => {
-      const checkedCount = html.find('input[name="choice-feat"]:checked').length;
+      const checkedCount = el.querySelectorAll<HTMLInputElement>('input[name="choice-feat"]:checked').length;
       // Disable confirm if there are choices to make and not enough selected
-      if (choiceFeatsCount > 0 && checkedCount !== numberOfChoice) {
-        confirmButton.prop('disabled', true);
-      } else {
-        confirmButton.prop('disabled', false);
+      if (confirmButton) {
+        confirmButton.disabled = (choiceFeatsCount > 0 && checkedCount !== numberOfChoice);
       }
     };
-    
+
     // Initial state - disable confirm if choices are required
-    if (choiceFeatsCount > 0 && numberOfChoice > 0) {
-      confirmButton.prop('disabled', true);
+    if (choiceFeatsCount > 0 && numberOfChoice > 0 && confirmButton) {
+      confirmButton.disabled = true;
     }
-    
+
     // Update counter when choice checkboxes change
-    html.find('input[name="choice-feat"]').on('change', () => {
-      const checkedCount = html.find('input[name="choice-feat"]:checked').length;
-      html.find('.selection-counter .current-count').text(checkedCount);
-      
+    el.querySelectorAll<HTMLInputElement>('input[name="choice-feat"]').forEach(elem => elem.addEventListener('change', () => {
+      const checkedCount = el.querySelectorAll<HTMLInputElement>('input[name="choice-feat"]:checked').length;
+      const currentCountEl = el.querySelector('.selection-counter .current-count');
+      if (currentCountEl) currentCountEl.textContent = String(checkedCount);
+
       // Update visual state
-      if (checkedCount === numberOfChoice) {
-        html.find('.selection-counter').addClass('complete');
-      } else {
-        html.find('.selection-counter').removeClass('complete');
+      const selectionCounter = el.querySelector('.selection-counter');
+      if (selectionCounter) {
+        if (checkedCount === numberOfChoice) {
+          selectionCounter.classList.add('complete');
+        } else {
+          selectionCounter.classList.remove('complete');
+        }
       }
-      
+
       // Disable unchecked checkboxes if max reached
       if (checkedCount >= numberOfChoice) {
-        html.find('input[name="choice-feat"]:not(:checked)').prop('disabled', true);
+        el.querySelectorAll<HTMLInputElement>('input[name="choice-feat"]:not(:checked)').forEach(cb => cb.disabled = true);
       } else {
-        html.find('input[name="choice-feat"]').prop('disabled', false);
+        el.querySelectorAll<HTMLInputElement>('input[name="choice-feat"]').forEach(cb => cb.disabled = false);
       }
-      
+
       // Update confirm button state
       updateConfirmButton();
-    });
+    }));
   }
 
   /**
    * Get the selections from the dialog
    */
   private static getSelections(html: JQuery, choiceFeatsCount: number, numberOfChoice: number): { optional: string[], choices: string[] } | null {
+    const el = html[0] as HTMLElement;
     const optionalSelections: string[] = [];
     const choiceSelections: string[] = [];
-    
+
     // Get optional selections (checked means active)
-    html.find('input[name="optional-feat"]:checked').each(function() {
-      optionalSelections.push($(this).val() as string);
+    el.querySelectorAll<HTMLInputElement>('input[name="optional-feat"]:checked').forEach(input => {
+      optionalSelections.push(input.value);
     });
-    
+
     // Get choice selections
-    html.find('input[name="choice-feat"]:checked').each(function() {
-      choiceSelections.push($(this).val() as string);
+    el.querySelectorAll<HTMLInputElement>('input[name="choice-feat"]:checked').forEach(input => {
+      choiceSelections.push(input.value);
     });
     
     // Validate choice count

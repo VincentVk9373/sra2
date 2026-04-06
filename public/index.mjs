@@ -3563,8 +3563,10 @@ function restoreActiveSection(formElement, activeSection, delay = 10) {
   }, delay);
 }
 function getCurrentActiveSection(html) {
-  const activeNavItem = html.find(".section-nav .nav-item.active");
-  return activeNavItem.length > 0 ? activeNavItem.data("section") : null;
+  const el = html instanceof HTMLElement ? html : html[0];
+  if (!el) return null;
+  const activeNavItem = el.querySelector(".section-nav .nav-item.active");
+  return activeNavItem ? activeNavItem.dataset.section || null : null;
 }
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat2) => {
@@ -5079,10 +5081,11 @@ class RollDialog extends Application {
   }
   activateListeners(html) {
     super.activateListeners(html);
-    html.find(".close-button").on("click", () => {
+    const el = html[0];
+    el.querySelectorAll(".close-button").forEach((elem) => elem.addEventListener("click", () => {
       this.close();
-    });
-    html.find(".weapon-select").on("change", async (event) => {
+    }));
+    el.querySelectorAll(".weapon-select").forEach((elem) => elem.addEventListener("change", async (event) => {
       const select = event.currentTarget;
       const weaponId = select.value;
       if (!weaponId || !this.rollData.availableWeapons || !this.actor) return;
@@ -5190,8 +5193,8 @@ class RollDialog extends Application {
       this.rollData.longRange = longRange;
       this.rollData.weaponType = wepTypeName;
       this.render();
-    });
-    html.find(".skill-dropdown").on("change", (event) => {
+    }));
+    el.querySelectorAll(".skill-dropdown").forEach((elem) => elem.addEventListener("change", (event) => {
       const select = event.currentTarget;
       if (this.rollData.threshold !== void 0) {
         return;
@@ -5253,8 +5256,8 @@ class RollDialog extends Application {
         this.rollData.rrList = phantom.sources;
         this.render();
       }
-    });
-    html.find(".attribute-dropdown").on("change", (event) => {
+    }));
+    el.querySelectorAll(".attribute-dropdown").forEach((elem) => elem.addEventListener("change", (event) => {
       const select = event.currentTarget;
       const selectedAttribute = select.value;
       if (!selectedAttribute || !this.actor) return;
@@ -5300,8 +5303,8 @@ class RollDialog extends Application {
         }
       }
       this.render();
-    });
-    html.find(".rr-checkbox").on("change", (event) => {
+    }));
+    el.querySelectorAll(".rr-checkbox").forEach((elem) => elem.addEventListener("change", (event) => {
       const checkbox = event.currentTarget;
       const rrId = checkbox.dataset.rrId;
       const enabled = checkbox.checked;
@@ -5338,8 +5341,8 @@ class RollDialog extends Application {
         }
         this.render();
       }
-    });
-    html.find(".range-dropdown").on("change", (event) => {
+    }));
+    el.querySelectorAll(".range-dropdown").forEach((elem) => elem.addEventListener("change", (event) => {
       const select = event.currentTarget;
       const rangeValue = select.value;
       this.selectedRange = rangeValue || null;
@@ -5376,8 +5379,8 @@ class RollDialog extends Application {
         }
       }
       this.render();
-    });
-    html.find('input[name="roll-mode"]').on("change", (event) => {
+    }));
+    el.querySelectorAll('input[name="roll-mode"]').forEach((elem) => elem.addEventListener("change", (event) => {
       let hasSevereWound = false;
       if (this.actor) {
         const actorSystem = this.actor.system;
@@ -5395,16 +5398,17 @@ class RollDialog extends Application {
       if (modeValue === "normal" || modeValue === "disadvantage" || modeValue === "advantage") {
         this.rollMode = modeValue;
       }
-    });
-    html.find(".cover-bonus-input").on("blur", (event) => {
+    }));
+    el.querySelectorAll(".cover-bonus-input").forEach((elem) => elem.addEventListener("blur", (event) => {
       this.coverBonus = parseInt(event.currentTarget.value) || 0;
-    });
-    html.find(".aoe-zone-input").on("input", (event) => {
+    }));
+    el.querySelectorAll(".aoe-zone-input").forEach((elem) => elem.addEventListener("input", (event) => {
       const val = parseInt(event.currentTarget.value) || 0;
       this.aoeZone = Math.max(0, val);
-      html.find(".aoe-diameter").text(`${this.aoeZone * 3}m`);
-    });
-    html.find(".manual-rr-bonus-input").on("input", (event) => {
+      const diameterEl = el.querySelector(".aoe-diameter");
+      if (diameterEl) diameterEl.textContent = `${this.aoeZone * 3}m`;
+    }));
+    el.querySelectorAll(".manual-rr-bonus-input").forEach((elem) => elem.addEventListener("input", (event) => {
       const input = event.currentTarget;
       const inputValue = input.value;
       this.manualRRBonus = parseInt(inputValue) || 0;
@@ -5444,11 +5448,11 @@ class RollDialog extends Application {
       if (manualRRBonus !== 0) {
         this.render();
       }
-    });
-    html.find(".dice-icon").on("click", (event) => {
-      const diceIcon = $(event.currentTarget);
-      const diceIndex = parseInt(diceIcon.data("dice-index") || "0");
-      const isCurrentlySelected = diceIcon.hasClass("risk-dice");
+    }));
+    el.querySelectorAll(".dice-icon").forEach((elem) => elem.addEventListener("click", (event) => {
+      const diceIcon = event.currentTarget;
+      const diceIndex = parseInt(diceIcon.dataset.diceIndex || "0");
+      const isCurrentlySelected = diceIcon.classList.contains("risk-dice");
       this.riskDiceManuallySet = true;
       if (isCurrentlySelected && diceIndex === this.riskDiceCount - 1) {
         this.riskDiceCount = 0;
@@ -5456,8 +5460,8 @@ class RollDialog extends Application {
         this.riskDiceCount = diceIndex + 1;
       }
       this.render();
-    });
-    html.find(".roll-dice-button").on("click", async () => {
+    }));
+    el.querySelectorAll(".roll-dice-button").forEach((elem) => elem.addEventListener("click", async () => {
       let finalRR = 0;
       if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
         for (const rrSource of this.rollData.rrList) {
@@ -5551,7 +5555,7 @@ class RollDialog extends Application {
       };
       await executeRoll(attacker, defenders, attackerToken, updatedRollData);
       this.close();
-    });
+    }));
   }
   updateRRForSkill(skillName, linkedAttribute, dicePool) {
     if (!this.actor) return;
@@ -6920,6 +6924,8 @@ function handleSearchBlur(relatedTarget, resultsDiv, hideDelay) {
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
+  /** AbortController for document-level event listeners */
+  _sheetAbortController = null;
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "actor", "character"],
@@ -7465,96 +7471,123 @@ class CharacterSheet extends ActorSheet {
     context.phantomRRs = phantomRRsWithoutSkill;
   }
   async close(options) {
-    $(document).off("click.skill-search");
-    $(document).off("click.feat-search");
+    this._sheetAbortController?.abort();
+    this._sheetAbortController = null;
     return super.close(options);
   }
   activateListeners(html) {
     super.activateListeners(html);
-    html.find('[data-action="switch-sheet"]').on("click", this._onSwitchSheet.bind(this));
-    html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
-    html.find('[data-action="edit-metatype"]').on("click", this._onEditMetatype.bind(this));
-    html.find('[data-action="delete-metatype"]').on("click", this._onDeleteMetatype.bind(this));
-    html.find('[data-action="edit-feat"]').on("click", this._onEditFeat.bind(this));
-    html.find('[data-action="delete-feat"]').on("click", this._onDeleteFeat.bind(this));
-    html.find('[data-action="open-vehicle"]').on("click", this._onOpenVehicle.bind(this));
-    html.find('[data-action="unlink-vehicle"]').on("click", this._onUnlinkVehicle.bind(this));
-    html.find('[data-action="set-vehicle-control-mode"]').on("click", this._onSetVehicleControlMode.bind(this));
-    html.find('[data-action="set-character-connection-mode"]').on("click", this._onSetConnectionMode.bind(this));
-    html.find('[data-action="show-connection-mode-menu"], [data-action="show-connection-mode-menu-header"]').on("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const el = event.currentTarget;
-      const menu = el.closest(".connection-mode-selector")?.querySelector(".connection-mode-menu") || el.closest(".connection-mode-badge")?.querySelector(".connection-mode-menu");
-      if (menu) menu.classList.toggle("visible");
+    const el = html[0];
+    this._sheetAbortController?.abort();
+    this._sheetAbortController = new AbortController();
+    const signal = this._sheetAbortController.signal;
+    const bindClick = (selector, handler) => {
+      el.querySelectorAll(selector).forEach((elem) => {
+        elem.addEventListener("click", handler);
+      });
+    };
+    const bindChange = (selector, handler) => {
+      el.querySelectorAll(selector).forEach((elem) => {
+        elem.addEventListener("change", handler);
+      });
+    };
+    bindClick('[data-action="switch-sheet"]', this._onSwitchSheet.bind(this));
+    bindClick(".section-nav .nav-item", this._onSectionNavigation.bind(this));
+    bindClick('[data-action="edit-metatype"]', this._onEditMetatype.bind(this));
+    bindClick('[data-action="delete-metatype"]', this._onDeleteMetatype.bind(this));
+    bindClick('[data-action="edit-feat"]', this._onEditFeat.bind(this));
+    bindClick('[data-action="delete-feat"]', this._onDeleteFeat.bind(this));
+    bindClick('[data-action="open-vehicle"]', this._onOpenVehicle.bind(this));
+    bindClick('[data-action="unlink-vehicle"]', this._onUnlinkVehicle.bind(this));
+    bindClick('[data-action="set-vehicle-control-mode"]', this._onSetVehicleControlMode.bind(this));
+    bindClick('[data-action="set-character-connection-mode"]', this._onSetConnectionMode.bind(this));
+    el.querySelectorAll('[data-action="show-connection-mode-menu"], [data-action="show-connection-mode-menu-header"]').forEach((elem) => {
+      elem.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const target = event.currentTarget;
+        const menu = target.closest(".connection-mode-selector")?.querySelector(".connection-mode-menu") || target.closest(".connection-mode-badge")?.querySelector(".connection-mode-menu");
+        if (menu) menu.classList.toggle("visible");
+      });
     });
-    html.find('[data-action="edit-skill"]').on("click", this._onEditSkill.bind(this));
-    html.find('[data-action="delete-skill"]').on("click", this._onDeleteSkill.bind(this));
-    html.find('[data-action="edit-specialization"]').on("click", this._onEditSpecialization.bind(this));
-    html.find('[data-action="delete-specialization"]').on("click", this._onDeleteSpecialization.bind(this));
-    html.find('[data-action="roll-attribute"]').on("click", this._onRollAttribute.bind(this));
-    html.find('[data-action="roll-skill"]').on("click", this._onRollSkill.bind(this));
-    html.find('[data-action="quick-roll-skill"]').on("click", this._onQuickRollSkill.bind(this));
-    html.find('[data-action="roll-specialization"]').on("click", this._onRollSpecialization.bind(this));
-    html.find('[data-action="quick-roll-specialization"]').on("click", this._onQuickRollSpecialization.bind(this));
-    html.find('[data-action="roll-phantom-rr"]').on("click", this._onRollPhantomRR.bind(this));
-    html.find('[data-action="roll-orphan-spec"]').on("click", this._onRollOrphanSpec.bind(this));
-    html.find('[data-action="send-catchphrase"]').on("click", this._onSendCatchphrase.bind(this));
-    html.on("click", '[data-action="toggle-bookmark"]', this._onToggleBookmark.bind(this));
-    html.find(".bookmark-item").on("click", this._onBookmarkItemClick.bind(this));
-    html.find('input[name^="system.damage"]').on("change", this._onDamageChange.bind(this));
-    html.find('input[name^="system.anarchySpent"]').on("change", this._onAnarchyChange.bind(this));
-    html.find('input[name^="system.tempAnarchySpent"]').on("change", this._onTempAnarchyChange.bind(this));
-    html.find('[data-action="add-temp-anarchy"]').on("click", this._onAddTempAnarchy.bind(this));
-    html.find('[data-action="increase-fw-malus"]').on("click", this._onChangeFwMalus.bind(this, 1));
-    html.find('[data-action="decrease-fw-malus"]').on("click", this._onChangeFwMalus.bind(this, -1));
-    html.find('[data-action="increase-att-malus"]').on("click", this._onChangeAttMalus.bind(this, 1));
-    html.find('[data-action="decrease-att-malus"]').on("click", this._onChangeAttMalus.bind(this, -1));
-    html.find('[data-action="toggle-connection-lock"]').on("click", this._onToggleConnectionLock.bind(this));
-    html.find('input[name*=".cyberdeckDamage."]').on("change", this._onCyberdeckDamageChange.bind(this));
-    html.find('input[name^="vehicle-damage."]').on("change", this._onVehicleDamageChange.bind(this));
-    html.find('[data-action="roll-cyberdeck-attack"]').on("click", this._onRollCyberdeckAttack.bind(this));
-    html.find('[data-action="roll-weapon"]').on("click", this._onRollWeapon.bind(this));
-    html.find('[data-action="roll-spell"]').on("click", this._onRollSpell.bind(this));
-    html.find('[data-action="roll-power"]').on("click", this._onRollPower.bind(this));
-    html.find('[data-action="roll-complex-form"]').on("click", this._onRollComplexForm.bind(this));
-    html.find('[data-action="roll-vehicle-weapon"]').on("click", this._onRollVehicleWeaponFromSheet.bind(this));
-    html.find('[data-action="roll-vehicle-weapon-autopilot"]').on("click", this._onRollVehicleWeaponAutopilot.bind(this));
-    html.find('[data-action="roll-vehicle-autopilot"]').on("click", this._onRollVehicleAutopilot.bind(this));
-    html.find(".rating-input").on("change", this._onRatingChange.bind(this));
-    html.find(".skill-search-input").on("input", this._onSkillSearch.bind(this));
-    html.find(".skill-search-input").on("focus", this._onSkillSearchFocus.bind(this));
-    html.find(".skill-search-input").on("blur", this._onSkillSearchBlur.bind(this));
-    $(document).on("click.skill-search", (event) => {
+    bindClick('[data-action="edit-skill"]', this._onEditSkill.bind(this));
+    bindClick('[data-action="delete-skill"]', this._onDeleteSkill.bind(this));
+    bindClick('[data-action="edit-specialization"]', this._onEditSpecialization.bind(this));
+    bindClick('[data-action="delete-specialization"]', this._onDeleteSpecialization.bind(this));
+    bindClick('[data-action="roll-attribute"]', this._onRollAttribute.bind(this));
+    bindClick('[data-action="roll-skill"]', this._onRollSkill.bind(this));
+    bindClick('[data-action="quick-roll-skill"]', this._onQuickRollSkill.bind(this));
+    bindClick('[data-action="roll-specialization"]', this._onRollSpecialization.bind(this));
+    bindClick('[data-action="quick-roll-specialization"]', this._onQuickRollSpecialization.bind(this));
+    bindClick('[data-action="roll-phantom-rr"]', this._onRollPhantomRR.bind(this));
+    bindClick('[data-action="roll-orphan-spec"]', this._onRollOrphanSpec.bind(this));
+    bindClick('[data-action="send-catchphrase"]', this._onSendCatchphrase.bind(this));
+    el.addEventListener("click", (event) => {
+      const target = event.target.closest('[data-action="toggle-bookmark"]');
+      if (target) this._onToggleBookmark.call(this, event);
+    });
+    bindClick(".bookmark-item", this._onBookmarkItemClick.bind(this));
+    bindChange('input[name^="system.damage"]', this._onDamageChange.bind(this));
+    bindChange('input[name^="system.anarchySpent"]', this._onAnarchyChange.bind(this));
+    bindChange('input[name^="system.tempAnarchySpent"]', this._onTempAnarchyChange.bind(this));
+    bindClick('[data-action="add-temp-anarchy"]', this._onAddTempAnarchy.bind(this));
+    bindClick('[data-action="increase-fw-malus"]', this._onChangeFwMalus.bind(this, 1));
+    bindClick('[data-action="decrease-fw-malus"]', this._onChangeFwMalus.bind(this, -1));
+    bindClick('[data-action="increase-att-malus"]', this._onChangeAttMalus.bind(this, 1));
+    bindClick('[data-action="decrease-att-malus"]', this._onChangeAttMalus.bind(this, -1));
+    bindClick('[data-action="toggle-connection-lock"]', this._onToggleConnectionLock.bind(this));
+    bindChange('input[name*=".cyberdeckDamage."]', this._onCyberdeckDamageChange.bind(this));
+    bindChange('input[name^="vehicle-damage."]', this._onVehicleDamageChange.bind(this));
+    bindClick('[data-action="roll-cyberdeck-attack"]', this._onRollCyberdeckAttack.bind(this));
+    bindClick('[data-action="roll-weapon"]', this._onRollWeapon.bind(this));
+    bindClick('[data-action="roll-spell"]', this._onRollSpell.bind(this));
+    bindClick('[data-action="roll-power"]', this._onRollPower.bind(this));
+    bindClick('[data-action="roll-complex-form"]', this._onRollComplexForm.bind(this));
+    bindClick('[data-action="roll-vehicle-weapon"]', this._onRollVehicleWeaponFromSheet.bind(this));
+    bindClick('[data-action="roll-vehicle-weapon-autopilot"]', this._onRollVehicleWeaponAutopilot.bind(this));
+    bindClick('[data-action="roll-vehicle-autopilot"]', this._onRollVehicleAutopilot.bind(this));
+    el.querySelectorAll(".rating-input").forEach((elem) => {
+      elem.addEventListener("change", this._onRatingChange.bind(this));
+    });
+    el.querySelectorAll(".skill-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onSkillSearch.bind(this));
+      elem.addEventListener("focus", this._onSkillSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onSkillSearchBlur.bind(this));
+    });
+    document.addEventListener("click", (event) => {
       const target = event.target;
-      const skillSearchContainer = html.find(".skill-search-container")[0];
+      const skillSearchContainer = el.querySelector(".skill-search-container");
       if (skillSearchContainer && !skillSearchContainer.contains(target)) {
-        html.find(".skill-search-results").hide();
+        const results = el.querySelector(".skill-search-results");
+        if (results) results.style.display = "none";
       }
+    }, { signal });
+    el.querySelectorAll(".feat-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onFeatSearch.bind(this));
+      elem.addEventListener("focus", this._onFeatSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onFeatSearchBlur.bind(this));
     });
-    html.find(".feat-search-input").on("input", this._onFeatSearch.bind(this));
-    html.find(".feat-search-input").on("focus", this._onFeatSearchFocus.bind(this));
-    html.find(".feat-search-input").on("blur", this._onFeatSearchBlur.bind(this));
-    $(document).on("click.feat-search", (event) => {
+    document.addEventListener("click", (event) => {
       const target = event.target;
-      const featSearchContainer = html.find(".feat-search-container")[0];
+      const featSearchContainer = el.querySelector(".feat-search-container");
       if (featSearchContainer && !featSearchContainer.contains(target)) {
-        html.find(".feat-search-results").hide();
+        const results = el.querySelector(".feat-search-results");
+        if (results) results.style.display = "none";
       }
-    });
-    html.find(".feat-item").each((_index, item) => {
+    }, { signal });
+    el.querySelectorAll(".feat-item").forEach((item) => {
       item.setAttribute("draggable", "true");
       item.addEventListener("dragstart", this._onDragStart.bind(this));
     });
-    html.find(".skill-item").each((_index, item) => {
+    el.querySelectorAll(".skill-item").forEach((item) => {
       item.setAttribute("draggable", "true");
       item.addEventListener("dragstart", this._onDragStart.bind(this));
     });
-    html.find(".specialization-item").each((_index, item) => {
+    el.querySelectorAll(".specialization-item").forEach((item) => {
       item.setAttribute("draggable", "true");
       item.addEventListener("dragstart", this._onDragStart.bind(this));
     });
-    html.find(".vehicle-actor-item").each((_index, item) => {
+    el.querySelectorAll(".vehicle-actor-item").forEach((item) => {
       item.setAttribute("draggable", "true");
       item.addEventListener("dragstart", this._onDragStart.bind(this));
     });
@@ -7959,7 +7992,7 @@ class CharacterSheet extends ActorSheet {
   async _onSkillSearch(event) {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
-    const resultsDiv = $(input).siblings(".skill-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".skill-search-results");
     this.searchTimeout = debounceSearchInput(
       this.searchTimeout,
       searchTerm,
@@ -8035,21 +8068,29 @@ class CharacterSheet extends ActorSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).find(".add-skill-btn").on("click", this._onAddSkillFromSearch.bind(this));
-    $(resultsDiv).find(".create-skill-btn, .create-skill-btn-inline").on("click", this._onCreateNewSkill.bind(this));
-    $(resultsDiv).find(".search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)").on("click", (event) => {
-      if ($(event.target).closest(".add-skill-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".add-skill-btn")[0];
-      if (button && !button.disabled) {
-        $(button).trigger("click");
-      }
+    resultsDiv.querySelectorAll(".add-skill-btn").forEach((btn) => {
+      btn.addEventListener("click", this._onAddSkillFromSearch.bind(this));
     });
-    $(resultsDiv).find(".search-result-item.create-new-item").on("click", (event) => {
-      if ($(event.target).closest(".create-skill-btn-inline").length > 0) return;
-      const button = $(event.currentTarget).find(".create-skill-btn-inline")[0];
-      if (button) {
-        $(button).trigger("click");
-      }
+    resultsDiv.querySelectorAll(".create-skill-btn, .create-skill-btn-inline").forEach((btn) => {
+      btn.addEventListener("click", this._onCreateNewSkill.bind(this));
+    });
+    resultsDiv.querySelectorAll(".search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        if (event.target.closest(".add-skill-btn")) return;
+        const button = item.querySelector(".add-skill-btn");
+        if (button && !button.disabled) {
+          button.click();
+        }
+      });
+    });
+    resultsDiv.querySelectorAll(".search-result-item.create-new-item").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        if (event.target.closest(".create-skill-btn-inline")) return;
+        const button = item.querySelector(".create-skill-btn-inline");
+        if (button) {
+          button.click();
+        }
+      });
     });
   }
   /**
@@ -8084,7 +8125,7 @@ class CharacterSheet extends ActorSheet {
    */
   _onSkillSearchFocus(event) {
     const input = event.currentTarget;
-    handleSearchFocus(input, $(input).siblings(".skill-search-results")[0]);
+    handleSearchFocus(input, input.parentElement?.querySelector(".skill-search-results"));
     return Promise.resolve();
   }
   /**
@@ -8092,7 +8133,7 @@ class CharacterSheet extends ActorSheet {
    */
   _onSkillSearchBlur(event) {
     const input = event.currentTarget;
-    const resultsDiv = $(input).siblings(".skill-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".skill-search-results");
     handleSearchBlur(event.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
@@ -8118,11 +8159,12 @@ class CharacterSheet extends ActorSheet {
     const createdItems = await this.actor.createEmbeddedDocuments("Item", [skillData]);
     if (createdItems && createdItems.length > 0) {
       const newSkill = createdItems[0];
-      const searchInput = this.element.find(".skill-search-input")[0];
+      const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+      const searchInput = sheetEl?.querySelector(".skill-search-input");
       if (searchInput) {
         searchInput.value = "";
       }
-      const resultsDiv = this.element.find(".skill-search-results")[0];
+      const resultsDiv = sheetEl?.querySelector(".skill-search-results");
       if (resultsDiv) {
         resultsDiv.style.display = "none";
       }
@@ -8145,7 +8187,7 @@ class CharacterSheet extends ActorSheet {
   async _onFeatSearch(event) {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
-    const resultsDiv = $(input).siblings(".feat-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".feat-search-results");
     this.featSearchTimeout = debounceSearchInput(
       this.featSearchTimeout,
       searchTerm,
@@ -8266,21 +8308,29 @@ class CharacterSheet extends ActorSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).find(".add-feat-btn").on("click", this._onAddFeatFromSearch.bind(this));
-    $(resultsDiv).find(".create-feat-btn, .create-feat-btn-inline").on("click", this._onCreateNewFeat.bind(this));
-    $(resultsDiv).find(".search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)").on("click", (event) => {
-      if ($(event.target).closest(".add-feat-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".add-feat-btn")[0];
-      if (button && !button.disabled) {
-        $(button).trigger("click");
-      }
+    resultsDiv.querySelectorAll(".add-feat-btn").forEach((btn) => {
+      btn.addEventListener("click", this._onAddFeatFromSearch.bind(this));
     });
-    $(resultsDiv).find(".search-result-item.create-new-item").on("click", (event) => {
-      if ($(event.target).closest(".create-feat-btn-inline, .feat-type-selector-inline").length > 0) return;
-      const button = $(event.currentTarget).find(".create-feat-btn-inline")[0];
-      if (button) {
-        $(button).trigger("click");
-      }
+    resultsDiv.querySelectorAll(".create-feat-btn, .create-feat-btn-inline").forEach((btn) => {
+      btn.addEventListener("click", this._onCreateNewFeat.bind(this));
+    });
+    resultsDiv.querySelectorAll(".search-result-item:not(.disabled):not(.no-results-create):not(.create-new-item)").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        if (event.target.closest(".add-feat-btn")) return;
+        const button = item.querySelector(".add-feat-btn");
+        if (button && !button.disabled) {
+          button.click();
+        }
+      });
+    });
+    resultsDiv.querySelectorAll(".search-result-item.create-new-item").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        if (event.target.closest(".create-feat-btn-inline, .feat-type-selector-inline")) return;
+        const button = item.querySelector(".create-feat-btn-inline");
+        if (button) {
+          button.click();
+        }
+      });
     });
     return Promise.resolve();
   }
@@ -8316,7 +8366,7 @@ class CharacterSheet extends ActorSheet {
    */
   _onFeatSearchFocus(event) {
     const input = event.currentTarget;
-    handleSearchFocus(input, $(input).siblings(".feat-search-results")[0]);
+    handleSearchFocus(input, input.parentElement?.querySelector(".feat-search-results"));
     return Promise.resolve();
   }
   /**
@@ -8324,7 +8374,7 @@ class CharacterSheet extends ActorSheet {
    */
   _onFeatSearchBlur(event) {
     const input = event.currentTarget;
-    const resultsDiv = $(input).siblings(".feat-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".feat-search-results");
     handleSearchBlur(event.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
     return Promise.resolve();
   }
@@ -9231,7 +9281,7 @@ class CharacterSheet extends ActorSheet {
     const button = event.currentTarget;
     const featName = button.dataset.featName;
     if (!featName) return;
-    const selector = $(button).siblings(".feat-type-selector, .feat-type-selector-inline")[0];
+    const selector = button.parentElement?.querySelector(".feat-type-selector, .feat-type-selector-inline");
     const featType = selector ? selector.value : "equipment";
     const formattedName = featName.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
     const featData = {
@@ -9257,11 +9307,12 @@ class CharacterSheet extends ActorSheet {
     const createdItems = await this.actor.createEmbeddedDocuments("Item", [featData]);
     if (createdItems && createdItems.length > 0) {
       const newFeat = createdItems[0];
-      const searchInput = this.element.find(".feat-search-input")[0];
+      const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+      const searchInput = sheetEl?.querySelector(".feat-search-input");
       if (searchInput) {
         searchInput.value = "";
       }
-      const resultsDiv = this.element.find(".feat-search-results")[0];
+      const resultsDiv = sheetEl?.querySelector(".feat-search-results");
       if (resultsDiv) {
         resultsDiv.style.display = "none";
       }
@@ -9298,13 +9349,12 @@ class CharacterSheetV2 extends CharacterSheet {
   _itemSearchTimeout = null;
   /** Last search term */
   _lastSearchTerm = "";
+  /** AbortController for document-level event listeners */
+  _v2AbortController = null;
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "actor", "character", "character-v2"],
       template: "systems/sra2/templates/actor-character-sheet-v2.hbs"
-      // Vous pouvez aussi changer width/height si nécessaire
-      // width: 1000,
-      // height: 800,
     });
   }
   render(force, options) {
@@ -9324,87 +9374,119 @@ class CharacterSheetV2 extends CharacterSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
-    const keydownNamespace = `keydown-v2-${this.id}`;
-    $(document).off(`.${keydownNamespace}`);
-    $(document).on(`keydown.${keydownNamespace}`, (event) => {
+    const el = html[0];
+    this._v2AbortController?.abort();
+    this._v2AbortController = new AbortController();
+    const signal = this._v2AbortController.signal;
+    document.addEventListener("keydown", (event) => {
       if (event.ctrlKey && event.key.toLowerCase() === "e") {
-        if (this.element && this.element.is(":visible")) {
+        const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+        if (sheetEl && sheetEl.offsetParent !== null) {
           event.preventDefault();
           this._onToggleAdvancedMode(event);
         }
       }
+    }, { signal });
+    el.querySelectorAll('[data-action="generate-gemini-portrait"]').forEach((btn) => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating portrait...';
+        this._blockRender = true;
+        try {
+          const { generateActorImage: generateActorImage2 } = await Promise.resolve().then(() => geminiImage);
+          await generateActorImage2(this.actor, (status) => {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${status}`;
+          });
+          this._blockRender = false;
+          this.render(false);
+        } catch {
+          this._blockRender = false;
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+      });
     });
-    html.find('[data-action="generate-gemini-portrait"]').on("click", async (ev) => {
-      ev.preventDefault();
-      const btn = $(ev.currentTarget);
-      const originalHtml = btn.html();
-      btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Generating portrait...');
-      this._blockRender = true;
-      try {
-        const { generateActorImage: generateActorImage2 } = await Promise.resolve().then(() => geminiImage);
-        await generateActorImage2(this.actor, (status) => {
-          btn.html(`<i class="fas fa-spinner fa-spin"></i> ${status}`);
-        });
-        this._blockRender = false;
-        this.render(false);
-      } catch {
-        this._blockRender = false;
-        btn.prop("disabled", false).html(originalHtml);
-      }
+    el.querySelectorAll('[data-action="show-context-menu"]').forEach((elem) => {
+      elem.addEventListener("click", this._onShowContextMenu.bind(this));
     });
-    html.find('[data-action="show-context-menu"]').on("click", this._onShowContextMenu.bind(this));
-    const namespace = `context-menu-v2-${this.id}`;
-    $(document).on(`click.${namespace}`, (event) => {
+    document.addEventListener("click", (event) => {
       const target = event.target;
-      if (!$(target).closest('.context-menu, [data-action="show-context-menu"]').length) {
-        this.element.find(".context-menu.active").removeClass("active");
+      if (!target.closest('.context-menu, [data-action="show-context-menu"]')) {
+        const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+        if (sheetEl) {
+          sheetEl.querySelectorAll(".context-menu.active").forEach((m) => m.classList.remove("active"));
+        }
       }
+    }, { signal });
+    el.querySelectorAll(".context-menu-item").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const target = event.currentTarget;
+        const menu = target.closest(".context-menu");
+        if (target.dataset.action === "toggle-bookmark") {
+          setTimeout(() => {
+            menu?.classList.remove("active");
+          }, DELAYS.SHEET_RENDER);
+        } else {
+          menu?.classList.remove("active");
+        }
+      });
     });
-    html.find(".context-menu-item").on("click", (event) => {
-      event.stopPropagation();
-      const target = event.currentTarget;
-      const menu = $(target).closest(".context-menu");
-      if (target.dataset.action === "toggle-bookmark") {
-        setTimeout(() => {
-          menu.removeClass("active");
-        }, DELAYS.SHEET_RENDER);
-      } else {
-        menu.removeClass("active");
-      }
+    el.querySelectorAll('[data-action="toggle-active"]').forEach((elem) => {
+      elem.addEventListener("click", this._onToggleActive.bind(this));
     });
-    html.find('[data-action="toggle-active"]').on("click", this._onToggleActive.bind(this));
-    html.find('[data-action="toggle-bookmark"]').on("click", (event) => {
-      this._onToggleBookmark(event);
+    el.querySelectorAll('[data-action="toggle-bookmark"]').forEach((elem) => {
+      elem.addEventListener("click", (event) => {
+        this._onToggleBookmark(event);
+      });
     });
-    html.find('[data-action="toggle-advanced-mode"]').on("click", this._onToggleAdvancedMode.bind(this));
-    html.find(".skill-rating-input").on("change", this._onUpdateSkillRating.bind(this));
-    html.find(".attribute-input").on("change", this._onUpdateAttribute.bind(this));
-    html.find(".attribute-input").on("click", (event) => {
-      event.stopPropagation();
-      const input = event.currentTarget;
-      input.select();
+    el.querySelectorAll('[data-action="toggle-advanced-mode"]').forEach((elem) => {
+      elem.addEventListener("click", this._onToggleAdvancedMode.bind(this));
     });
-    html.find(".skill-rating-input").on("click", (event) => {
-      event.stopPropagation();
-      const input = event.currentTarget;
-      input.select();
+    el.querySelectorAll(".skill-rating-input").forEach((elem) => {
+      elem.addEventListener("change", this._onUpdateSkillRating.bind(this));
     });
-    const editMetatypeElements = html.find('[data-action="edit-metatype"]');
-    const deleteMetatypeElements = html.find('[data-action="delete-metatype"]');
+    el.querySelectorAll(".attribute-input").forEach((elem) => {
+      elem.addEventListener("change", this._onUpdateAttribute.bind(this));
+      elem.addEventListener("click", (event) => {
+        event.stopPropagation();
+        event.currentTarget.select();
+      });
+    });
+    el.querySelectorAll(".skill-rating-input").forEach((elem) => {
+      elem.addEventListener("click", (event) => {
+        event.stopPropagation();
+        event.currentTarget.select();
+      });
+    });
+    const editMetatypeElements = el.querySelectorAll('[data-action="edit-metatype"]');
+    const deleteMetatypeElements = el.querySelectorAll('[data-action="delete-metatype"]');
     console.log("[CharacterSheetV2] Edit metatype elements found:", editMetatypeElements.length);
     console.log("[CharacterSheetV2] Delete metatype elements found:", deleteMetatypeElements.length);
-    editMetatypeElements.on("mousedown", this._onEditMetatypeV2.bind(this));
-    deleteMetatypeElements.on("mousedown", this._onDeleteMetatypeV2.bind(this));
-    html.find(".search-tab").on("click", this._onSearchTabClick.bind(this));
-    html.find(".item-search-input").on("input", this._onItemSearchInput.bind(this));
-    html.find(".item-search-input").on("focus", this._onItemSearchFocus.bind(this));
-    html.find(".item-search-input").on("blur", this._onItemSearchBlur.bind(this));
-    html.find(".bio-tab").on("click", (event) => {
-      const tab = event.currentTarget.dataset.tab;
-      html.find(".bio-tab").removeClass("active");
-      html.find(".bio-tab-content").removeClass("active");
-      html.find(`.bio-tab[data-tab="${tab}"]`).addClass("active");
-      html.find(`.bio-tab-content[data-tab="${tab}"]`).addClass("active");
+    editMetatypeElements.forEach((elem) => {
+      elem.addEventListener("mousedown", this._onEditMetatypeV2.bind(this));
+    });
+    deleteMetatypeElements.forEach((elem) => {
+      elem.addEventListener("mousedown", this._onDeleteMetatypeV2.bind(this));
+    });
+    el.querySelectorAll(".search-tab").forEach((elem) => {
+      elem.addEventListener("click", this._onSearchTabClick.bind(this));
+    });
+    el.querySelectorAll(".item-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onItemSearchInput.bind(this));
+      elem.addEventListener("focus", this._onItemSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onItemSearchBlur.bind(this));
+    });
+    el.querySelectorAll(".bio-tab").forEach((tab) => {
+      tab.addEventListener("click", (event) => {
+        const tabName = event.currentTarget.dataset.tab;
+        el.querySelectorAll(".bio-tab").forEach((t) => t.classList.remove("active"));
+        el.querySelectorAll(".bio-tab-content").forEach((t) => t.classList.remove("active"));
+        el.querySelector(`.bio-tab[data-tab="${tabName}"]`)?.classList.add("active");
+        el.querySelector(`.bio-tab-content[data-tab="${tabName}"]`)?.classList.add("active");
+      });
     });
   }
   /**
@@ -9461,8 +9543,8 @@ class CharacterSheetV2 extends CharacterSheet {
     }
   }
   close(options) {
-    $(document).off(`click.context-menu-v2-${this.id}`);
-    $(document).off(`keydown.keydown-v2-${this.id}`);
+    this._v2AbortController?.abort();
+    this._v2AbortController = null;
     return super.close(options);
   }
   _onShowContextMenu(event) {
@@ -9471,27 +9553,27 @@ class CharacterSheetV2 extends CharacterSheet {
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
     const vehicleUuid = element.dataset.vehicleUuid;
-    this.element.find(".context-menu.active").removeClass("active");
-    let menu;
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    if (!sheetEl) return;
+    sheetEl.querySelectorAll(".context-menu.active").forEach((m) => m.classList.remove("active"));
+    let menu = null;
     if (itemId) {
-      const $clickedElement = $(element);
-      const $row = $clickedElement.closest(".row");
-      menu = $row.find(`.context-menu[data-item-id="${itemId}"]`);
-      if (menu.length === 0) {
-        menu = this.element.find(`.context-menu[data-item-id="${itemId}"]`).first();
+      const row = element.closest(".row");
+      menu = row?.querySelector(`.context-menu[data-item-id="${itemId}"]`);
+      if (!menu) {
+        menu = sheetEl.querySelector(`.context-menu[data-item-id="${itemId}"]`);
       }
     } else if (vehicleUuid) {
-      const $clickedElement = $(element);
-      const $row = $clickedElement.closest(".row");
-      menu = $row.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
-      if (menu.length === 0) {
-        menu = this.element.find(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`).first();
+      const row = element.closest(".row");
+      menu = row?.querySelector(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
+      if (!menu) {
+        menu = sheetEl.querySelector(`.context-menu[data-vehicle-uuid="${vehicleUuid}"]`);
       }
     } else {
       return;
     }
-    if (menu.length) {
-      menu.addClass("active");
+    if (menu) {
+      menu.classList.add("active");
     }
   }
   /**
@@ -9518,16 +9600,18 @@ class CharacterSheetV2 extends CharacterSheet {
     const searchType = target.dataset.searchType;
     if (!searchType) return;
     this._currentSearchType = searchType;
-    this.element.find(".search-tab").removeClass("active");
-    $(target).addClass("active");
-    const input = this.element.find(".item-search-input")[0];
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    if (!sheetEl) return;
+    sheetEl.querySelectorAll(".search-tab").forEach((t) => t.classList.remove("active"));
+    target.classList.add("active");
+    const input = sheetEl.querySelector(".item-search-input");
     if (input) {
       input.dataset.searchType = searchType;
       const placeholderKey = `SRA2.SEARCH.PLACEHOLDER_${searchType.toUpperCase()}`;
       input.placeholder = game.i18n.localize(placeholderKey) || game.i18n.localize("SRA2.SEARCH.PLACEHOLDER");
       input.value = "";
     }
-    const resultsDiv = this.element.find(".item-search-results")[0];
+    const resultsDiv = sheetEl.querySelector(".item-search-results");
     if (resultsDiv) {
       resultsDiv.style.display = "none";
     }
@@ -9538,7 +9622,8 @@ class CharacterSheetV2 extends CharacterSheet {
   async _onItemSearchInput(event) {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
-    const resultsDiv = this.element.find(".item-search-results")[0];
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const resultsDiv = sheetEl?.querySelector(".item-search-results");
     this._itemSearchTimeout = debounceSearchInput(
       this._itemSearchTimeout,
       searchTerm,
@@ -9609,14 +9694,20 @@ class CharacterSheetV2 extends CharacterSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).find(".add-item-btn").on("click", this._onAddItemFromSearch.bind(this));
-    $(resultsDiv).find(".create-item-btn").on("click", this._onCreateNewItem.bind(this));
-    $(resultsDiv).find(".search-result-item:not(.disabled):not(.no-results):not(.create-new-item)").on("click", (event) => {
-      if ($(event.target).closest(".add-item-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".add-item-btn")[0];
-      if (button && !button.disabled) {
-        $(button).trigger("click");
-      }
+    resultsDiv.querySelectorAll(".add-item-btn").forEach((btn) => {
+      btn.addEventListener("click", this._onAddItemFromSearch.bind(this));
+    });
+    resultsDiv.querySelectorAll(".create-item-btn").forEach((btn) => {
+      btn.addEventListener("click", this._onCreateNewItem.bind(this));
+    });
+    resultsDiv.querySelectorAll(".search-result-item:not(.disabled):not(.no-results):not(.create-new-item)").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        if (event.target.closest(".add-item-btn")) return;
+        const button = item.querySelector(".add-item-btn");
+        if (button && !button.disabled) {
+          button.click();
+        }
+      });
     });
   }
   /**
@@ -9697,7 +9788,7 @@ class CharacterSheetV2 extends CharacterSheet {
         }
       };
     } else if (itemType === "feat") {
-      const selector = $(button).siblings(".feat-type-selector")[0];
+      const selector = button.parentElement?.querySelector(".feat-type-selector");
       const featType = selector?.value || "equipment";
       itemData = {
         name: formattedName,
@@ -9713,13 +9804,16 @@ class CharacterSheetV2 extends CharacterSheet {
     const createdItems = await this.actor.createEmbeddedDocuments("Item", [itemData]);
     if (createdItems && createdItems.length > 0) {
       const newItem = createdItems[0];
-      const searchInput = this.element.find(".item-search-input")[0];
-      if (searchInput) {
-        searchInput.value = "";
-      }
-      const resultsDiv = this.element.find(".item-search-results")[0];
-      if (resultsDiv) {
-        resultsDiv.style.display = "none";
+      const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+      if (sheetEl) {
+        const searchInput = sheetEl.querySelector(".item-search-input");
+        if (searchInput) {
+          searchInput.value = "";
+        }
+        const resultsDiv = sheetEl.querySelector(".item-search-results");
+        if (resultsDiv) {
+          resultsDiv.style.display = "none";
+        }
       }
       if (newItem && newItem.sheet) {
         setTimeout(() => {
@@ -9734,15 +9828,17 @@ class CharacterSheetV2 extends CharacterSheet {
    * Handle search input focus
    */
   _onItemSearchFocus(event) {
-    handleSearchFocus(event.currentTarget, this.element.find(".item-search-results")[0]);
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    handleSearchFocus(event.currentTarget, sheetEl?.querySelector(".item-search-results"));
   }
   /**
    * Handle search input blur
    */
   _onItemSearchBlur(event) {
-    const blurEvent = event.originalEvent;
-    const resultsDiv = this.element.find(".item-search-results")[0];
-    handleSearchBlur(blurEvent?.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
+    const focusEvent = event;
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const resultsDiv = sheetEl?.querySelector(".item-search-results");
+    handleSearchBlur(focusEvent?.relatedTarget, resultsDiv, DELAYS.SEARCH_HIDE);
   }
 }
 const characterSheetV2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -9891,7 +9987,8 @@ class VehicleSheet extends ActorSheet {
     super.activateListeners(html);
     if (this._activeSection) {
       setTimeout(() => {
-        const form = html.closest("form")[0];
+        const el2 = html[0];
+        const form = el2.closest("form");
         if (form) {
           const navButton = form.querySelector(`[data-section="${this._activeSection}"]`);
           if (navButton) {
@@ -9906,20 +10003,21 @@ class VehicleSheet extends ActorSheet {
         }
       }, 10);
     }
-    html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
-    html.find(".feat-edit, .weapon-edit").on("click", (event) => {
+    const el = html[0];
+    el.querySelectorAll(".section-nav .nav-item").forEach((elem) => elem.addEventListener("click", this._onSectionNavigation.bind(this)));
+    el.querySelectorAll(".feat-edit, .weapon-edit").forEach((elem) => elem.addEventListener("click", (event) => {
       event.preventDefault();
-      const itemId = $(event.currentTarget).data("item-id");
+      const itemId = event.currentTarget.dataset.itemId || "";
       const item = this.actor.items.get(itemId);
       if (item) {
         item.sheet?.render(true);
       }
-    });
-    html.find(".feat-delete, .weapon-delete").on("click", async (event) => {
+    }));
+    el.querySelectorAll(".feat-delete, .weapon-delete").forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
-      const activeNavItem = html.find(".section-nav .nav-item.active");
-      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : null;
-      const itemId = $(event.currentTarget).data("item-id");
+      const activeNavItem = el.querySelector(".section-nav .nav-item.active");
+      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
+      const itemId = event.currentTarget.dataset.itemId || "";
       const item = this.actor.items.get(itemId);
       if (item) {
         const confirmed = await Dialog.confirm({
@@ -9933,16 +10031,16 @@ class VehicleSheet extends ActorSheet {
           await item.delete();
         }
       }
-    });
-    html.find(".add-world-weapon-button").on("click", async (event) => {
+    }));
+    el.querySelectorAll(".add-world-weapon-button").forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
-      const activeNavItem = html.find(".section-nav .nav-item.active");
-      this._activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : null;
+      const activeNavItem = el.querySelector(".section-nav .nav-item.active");
+      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
       this._showItemBrowser("feat", true);
-    });
-    html.find(".weapon-dice-pool").on("click", async (event) => {
+    }));
+    el.querySelectorAll(".weapon-dice-pool").forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
-      const itemId = $(event.currentTarget).data("item-id");
+      const itemId = event.currentTarget.dataset.itemId || "";
       const item = this.actor.items.get(itemId);
       if (!item) return;
       const autopilot = this.actor.system.attributes?.autopilot || 0;
@@ -9956,22 +10054,21 @@ class VehicleSheet extends ActorSheet {
         WEAPON_TYPES
       );
       handleRollRequest(rollRequestData);
-    });
-    html.find(".vehicle-type-select").on("change", this._onVehicleTypeChange.bind(this));
-    html.find('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').on("change", this._onBonusChange.bind(this));
-    html.find('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').on("change", this._onOptionChange.bind(this));
-    html.find('[data-action="add-narrative-effect"]').on("click", async (event) => {
+    }));
+    el.querySelectorAll(".vehicle-type-select").forEach((elem) => elem.addEventListener("change", this._onVehicleTypeChange.bind(this)));
+    el.querySelectorAll('input[name="system.autopilotBonus"], input[name="system.speedBonus"], input[name="system.handlingBonus"], input[name="system.armorBonus"]').forEach((elem) => elem.addEventListener("change", this._onBonusChange.bind(this)));
+    el.querySelectorAll('input[name="system.isFixed"], input[name="system.isFlying"], input[name="system.weaponMountImprovement"], input[name="system.autopilotUnlocked"], input[name="system.additionalDroneCount"]').forEach((elem) => elem.addEventListener("change", this._onOptionChange.bind(this)));
+    el.querySelectorAll('[data-action="add-narrative-effect"]').forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
       const currentNarrativeEffects = [];
-      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
-      narrativeEffectTextareas.each((_index, textarea) => {
-        const textareaElement = textarea;
+      const narrativeEffectTextareas = el.querySelectorAll('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.forEach((textareaElement) => {
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
           const index = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || "";
-          const valueInput = html.find(`select[name="system.narrativeEffects.${index}.value"]`);
-          const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          const valueInput = el.querySelector(`select[name="system.narrativeEffects.${index}.value"]`);
+          const value = valueInput ? parseInt(valueInput.value) || 0 : 0;
           const isNegative = value < 0;
           currentNarrativeEffects[index] = {
             text,
@@ -9989,20 +10086,19 @@ class VehicleSheet extends ActorSheet {
       await this.actor.update({
         "system.narrativeEffects": currentNarrativeEffects
       });
-    });
-    html.find('[data-action="remove-narrative-effect"]').on("click", async (event) => {
+    }));
+    el.querySelectorAll('[data-action="remove-narrative-effect"]').forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
-      const index = parseInt($(event.currentTarget).data("index") || "0");
+      const index = parseInt(event.currentTarget.dataset.index || "0");
       const currentNarrativeEffects = [];
-      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
-      narrativeEffectTextareas.each((_inputIndex, textarea) => {
-        const textareaElement = textarea;
+      const narrativeEffectTextareas = el.querySelectorAll('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.forEach((textareaElement) => {
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
           const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || "";
-          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
-          const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          const valueInput = el.querySelector(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput ? parseInt(valueInput.value) || 0 : 0;
           const isNegative = value < 0;
           currentNarrativeEffects[effectIndex] = {
             text,
@@ -10020,7 +10116,7 @@ class VehicleSheet extends ActorSheet {
       await this.actor.update({
         "system.narrativeEffects": currentNarrativeEffects
       });
-    });
+    }));
     let narrativeEffectSaveTimeout = null;
     const saveNarrativeEffects = async () => {
       const activeElement = document.activeElement;
@@ -10028,15 +10124,14 @@ class VehicleSheet extends ActorSheet {
       const cursorPos = activeElement?.selectionStart ?? 0;
       const cursorEnd = activeElement?.selectionEnd ?? cursorPos;
       const currentNarrativeEffects = [];
-      const narrativeEffectTextareas = html.find('textarea[name^="system.narrativeEffects."]');
-      narrativeEffectTextareas.each((_inputIndex, textarea) => {
-        const textareaElement = textarea;
+      const narrativeEffectTextareas = el.querySelectorAll('textarea[name^="system.narrativeEffects."]');
+      narrativeEffectTextareas.forEach((textareaElement) => {
         const nameMatch = textareaElement.name.match(/system\.narrativeEffects\.(\d+)\.text/);
         if (nameMatch) {
           const effectIndex = parseInt(nameMatch[1] ?? "0");
           const text = textareaElement.value || "";
-          const valueInput = html.find(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
-          const value = valueInput.length > 0 ? parseInt(valueInput.val()) || 0 : 0;
+          const valueInput = el.querySelector(`select[name="system.narrativeEffects.${effectIndex}.value"]`);
+          const value = valueInput ? parseInt(valueInput.value) || 0 : 0;
           const isNegative = value < 0;
           currentNarrativeEffects[effectIndex] = {
             text,
@@ -10055,7 +10150,8 @@ class VehicleSheet extends ActorSheet {
       });
       if (activeFieldName && activeFieldName.startsWith("system.narrativeEffects.")) {
         setTimeout(() => {
-          const restored = this.element.find(`textarea[name="${activeFieldName}"]`)[0];
+          const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+          const restored = sheetEl?.querySelector(`textarea[name="${activeFieldName}"]`);
           if (restored) {
             restored.focus();
             restored.setSelectionRange(cursorPos, cursorEnd);
@@ -10063,31 +10159,40 @@ class VehicleSheet extends ActorSheet {
         }, DELAYS.SHEET_RENDER);
       }
     };
-    html.find('select[name^="system.narrativeEffects."]').on("change", async (event) => {
+    el.querySelectorAll('select[name^="system.narrativeEffects."]').forEach((elem) => elem.addEventListener("change", async (event) => {
       event.preventDefault();
       if (narrativeEffectSaveTimeout) {
         clearTimeout(narrativeEffectSaveTimeout);
         narrativeEffectSaveTimeout = null;
       }
       await saveNarrativeEffects();
-    });
-    html.find('textarea[name^="system.narrativeEffects."]').on("input", (_event) => {
-      if (narrativeEffectSaveTimeout) {
-        clearTimeout(narrativeEffectSaveTimeout);
-      }
-      narrativeEffectSaveTimeout = setTimeout(async () => {
+    }));
+    el.querySelectorAll('textarea[name^="system.narrativeEffects."]').forEach((elem) => {
+      elem.addEventListener("input", (_event) => {
+        if (narrativeEffectSaveTimeout) {
+          clearTimeout(narrativeEffectSaveTimeout);
+        }
+        narrativeEffectSaveTimeout = setTimeout(async () => {
+          await saveNarrativeEffects();
+          narrativeEffectSaveTimeout = null;
+        }, NARRATIVE_SAVE_DEBOUNCE);
+      });
+      elem.addEventListener("change", async (_event) => {
+        if (narrativeEffectSaveTimeout) {
+          clearTimeout(narrativeEffectSaveTimeout);
+          narrativeEffectSaveTimeout = null;
+        }
         await saveNarrativeEffects();
-        narrativeEffectSaveTimeout = null;
-      }, NARRATIVE_SAVE_DEBOUNCE);
+      });
+      elem.addEventListener("blur", async (_event) => {
+        if (narrativeEffectSaveTimeout) {
+          clearTimeout(narrativeEffectSaveTimeout);
+          narrativeEffectSaveTimeout = null;
+        }
+        await saveNarrativeEffects();
+      });
     });
-    html.find('textarea[name^="system.narrativeEffects."]').on("change blur", async (_event) => {
-      if (narrativeEffectSaveTimeout) {
-        clearTimeout(narrativeEffectSaveTimeout);
-        narrativeEffectSaveTimeout = null;
-      }
-      await saveNarrativeEffects();
-    });
-    html.find('input[name^="system.damage."]').on("change", async (event) => {
+    el.querySelectorAll('input[name^="system.damage."]').forEach((elem) => elem.addEventListener("change", async (event) => {
       const input = event.currentTarget;
       const name = input.name;
       const checked = input.checked;
@@ -10098,7 +10203,8 @@ class VehicleSheet extends ActorSheet {
         "input.name": name,
         "checked": checked
       });
-      const activeSection = getCurrentActiveSection(html);
+      const activeNavItem = el.querySelector(".section-nav .nav-item.active");
+      const activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
       const actorSource = this.actor._source;
       const currentDamage = actorSource?.system?.damage || this.actor.system.damage || {
         light: [false, false],
@@ -10110,16 +10216,19 @@ class VehicleSheet extends ActorSheet {
       await this.actor.update({
         "system.damage": updatedDamage
       }, { render: false });
-      html.find(`input[name="${name}"]`).each((_, checkbox) => {
-        const $checkbox = $(checkbox);
-        $checkbox.prop("checked", checked);
-        $checkbox.closest("label.track-box").toggleClass("checked", checked);
+      el.querySelectorAll(`input[name="${name}"]`).forEach((checkbox) => {
+        checkbox.checked = checked;
+        const trackBox = checkbox.closest("label.track-box");
+        if (trackBox) {
+          trackBox.classList.toggle("checked", checked);
+        }
       });
-      const form = $(this.element).closest("form")[0];
+      const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+      const form = sheetEl?.closest("form");
       if (form && activeSection) {
         restoreActiveSection(form, activeSection);
       }
-    });
+    }));
   }
   /**
    * Handle section navigation
@@ -10154,12 +10263,15 @@ class VehicleSheet extends ActorSheet {
     const input = event.currentTarget;
     const name = input.name;
     const value = parseInt(input.value) || 0;
-    const activeSection = getCurrentActiveSection($(this.element)) || "attributes";
+    const sheetEl1 = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const activeNavItem1 = sheetEl1?.querySelector(".section-nav .nav-item.active");
+    const activeSection = activeNavItem1?.dataset.section || "attributes";
     await this.actor.update({
       [name]: value
     });
     await this.render(false);
-    const form = $(this.element).closest("form")[0];
+    const sheetEl1b = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const form = sheetEl1b?.closest("form");
     if (form) {
       restoreActiveSection(form, activeSection);
     }
@@ -10170,7 +10282,9 @@ class VehicleSheet extends ActorSheet {
   async _onOptionChange(event) {
     const input = event.currentTarget;
     const name = input.name;
-    const activeSection = getCurrentActiveSection($(this.element)) || "attributes";
+    const sheetEl2 = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const activeNavItem2 = sheetEl2?.querySelector(".section-nav .nav-item.active");
+    const activeSection = activeNavItem2?.dataset.section || "attributes";
     let value;
     if (input.type === "checkbox") {
       value = input.checked;
@@ -10183,7 +10297,8 @@ class VehicleSheet extends ActorSheet {
       [name]: value
     });
     await this.render(false);
-    const form = $(this.element).closest("form")[0];
+    const sheetEl2b = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const form = sheetEl2b?.closest("form");
     if (form) {
       restoreActiveSection(form, activeSection);
     }
@@ -10219,7 +10334,8 @@ class VehicleSheet extends ActorSheet {
           icon: '<i class="fas fa-plus"></i>',
           label: game.i18n.localize(`SRA2.${itemType.toUpperCase()}S.ADD_${itemType.toUpperCase()}`),
           callback: async (html) => {
-            const itemId = html.find("#item-select").val();
+            const dialogEl = html[0];
+            const itemId = dialogEl.querySelector("#item-select")?.value || "";
             if (itemId) {
               const item = game.items.get(itemId);
               if (item) {
@@ -10240,8 +10356,9 @@ class VehicleSheet extends ActorSheet {
    * Handle dropping items onto the sheet
    */
   async _onDrop(event) {
-    const activeNavItem = $(this.element).find(".section-nav .nav-item.active");
-    this._activeSection = activeNavItem.length > 0 ? activeNavItem.data("section") : "attributes";
+    const sheetElDrop = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const activeNavItemDrop = sheetElDrop?.querySelector(".section-nav .nav-item.active");
+    this._activeSection = activeNavItemDrop?.dataset.section || "attributes";
     let data;
     try {
       data = JSON.parse(event.dataTransfer?.getData("text/plain") || "{}");
@@ -10293,10 +10410,11 @@ class IceSheet extends ActorSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
-    html.find('.damage-track input[type="checkbox"]').on("change", () => this.submit());
-    html.find(".ice-type-select").on("change", this._onIceTypeChange.bind(this));
-    html.find('input[name="system.serverIndex"]').on("change", this._onServerIndexChange.bind(this));
-    html.find(".ice-attack-button").on("click", this._onIceAttack.bind(this));
+    const el = html[0];
+    el.querySelectorAll('.damage-track input[type="checkbox"]').forEach((elem) => elem.addEventListener("change", () => this.submit()));
+    el.querySelectorAll(".ice-type-select").forEach((elem) => elem.addEventListener("change", this._onIceTypeChange.bind(this)));
+    el.querySelectorAll('input[name="system.serverIndex"]').forEach((elem) => elem.addEventListener("change", this._onServerIndexChange.bind(this)));
+    el.querySelectorAll(".ice-attack-button").forEach((elem) => elem.addEventListener("click", this._onIceAttack.bind(this)));
   }
   /**
    * Handle ICE type selection change
@@ -10396,12 +10514,13 @@ class ServerSheet extends ActorSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
-    html.find('input[name="system.serverIndex"]').on("change", () => this.submit());
-    html.find('input[name="system.physicalSecurity"]').on("change", () => this.submit());
-    html.find(".open-ice").on("click", this._onOpenICE.bind(this));
-    html.find(".remove-ice").on("click", this._onRemoveICE.bind(this));
-    html.find('[data-action="deploy-ice"]').on("click", this._onDeployICE.bind(this));
-    html.find('[data-action="refresh"]').on("click", () => this.render(false));
+    const el = html[0];
+    el.querySelectorAll('input[name="system.serverIndex"]').forEach((elem) => elem.addEventListener("change", () => this.submit()));
+    el.querySelectorAll('input[name="system.physicalSecurity"]').forEach((elem) => elem.addEventListener("change", () => this.submit()));
+    el.querySelectorAll(".open-ice").forEach((elem) => elem.addEventListener("click", this._onOpenICE.bind(this)));
+    el.querySelectorAll(".remove-ice").forEach((elem) => elem.addEventListener("click", this._onRemoveICE.bind(this)));
+    el.querySelectorAll('[data-action="deploy-ice"]').forEach((elem) => elem.addEventListener("click", this._onDeployICE.bind(this)));
+    el.querySelectorAll('[data-action="refresh"]').forEach((elem) => elem.addEventListener("click", () => this.render(false)));
   }
   /**
    * Load all linked ICE actors with deployment status
@@ -10602,6 +10721,8 @@ class FeatSheet extends ItemSheet {
   _activeSection = "general";
   /** Timeout for power search debouncing */
   powerSearchTimeout = null;
+  /** AbortController for document-level event listeners */
+  _featSheetAbortController = null;
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["sra2", "sheet", "item", "feat"],
@@ -10657,58 +10778,83 @@ class FeatSheet extends ItemSheet {
   }
   activateListeners(html) {
     super.activateListeners(html);
-    html.find('[data-action="add-rr-entry"]').on("click", this._onAddRREntry.bind(this));
-    html.find('[data-action="remove-rr-entry"]').on("click", this._onRemoveRREntry.bind(this));
-    html.find('[data-action="clear-rr-target"]').on("click", this._onClearRRTarget.bind(this));
-    html.find('[data-action="add-narrative-effect"]').on("click", this._onAddNarrativeEffect.bind(this));
-    html.find('[data-action="remove-narrative-effect"]').on("click", this._onRemoveNarrativeEffect.bind(this));
-    html.find('input[name^="system.narrativeEffects"][name$=".isNegative"]').on("change", this._onNarrativeEffectNegativeChange.bind(this));
-    html.find('[data-action="select-weapon-type"]').on("change", this._onWeaponTypeChange.bind(this));
-    html.on("change", ".vd-mode-select", this._onVdModeChange.bind(this));
-    html.on("change", 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
-    html.on("blur", 'input[name="system.vdCustomValue"]', this._onVdValueChange.bind(this));
-    html.on("change", 'select[name="system.vdAttribute"]', this._onVdValueChange.bind(this));
-    html.on("change", 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
-    html.on("blur", 'input[name="system.vdBonus"]', this._onVdValueChange.bind(this));
-    html.find(".damage-bonus-checkbox").on("change", this._onDamageValueBonusChange.bind(this));
-    html.find(".sustained-spell-checkbox").on("change", this._onSustainedSpellChange.bind(this));
-    html.find(".summoned-spirit-checkbox").on("change", this._onSummonedSpiritChange.bind(this));
-    html.find('.range-improvement-checkbox input[type="checkbox"]').on("change", this._onRangeImprovementChange.bind(this));
-    html.find('input[name="system.astralProjection"]').on("change", this._onAstralProjectionChange.bind(this));
-    html.find(".section-nav .nav-item").on("click", this._onSectionNavigation.bind(this));
-    html.find(".rr-target-search-input").on("input", this._onRRTargetSearch.bind(this));
-    html.find(".rr-target-search-input").on("focus", this._onRRTargetSearchFocus.bind(this));
-    html.find(".rr-target-search-input").on("blur", this._onRRTargetSearchBlur.bind(this));
-    $(document).on("click.rr-target-search", (event) => {
+    const el = html[0];
+    this._featSheetAbortController?.abort();
+    this._featSheetAbortController = new AbortController();
+    const signal = this._featSheetAbortController.signal;
+    el.querySelectorAll('[data-action="add-rr-entry"]').forEach((elem) => elem.addEventListener("click", this._onAddRREntry.bind(this)));
+    el.querySelectorAll('[data-action="remove-rr-entry"]').forEach((elem) => elem.addEventListener("click", this._onRemoveRREntry.bind(this)));
+    el.querySelectorAll('[data-action="clear-rr-target"]').forEach((elem) => elem.addEventListener("click", this._onClearRRTarget.bind(this)));
+    el.querySelectorAll('[data-action="add-narrative-effect"]').forEach((elem) => elem.addEventListener("click", this._onAddNarrativeEffect.bind(this)));
+    el.querySelectorAll('[data-action="remove-narrative-effect"]').forEach((elem) => elem.addEventListener("click", this._onRemoveNarrativeEffect.bind(this)));
+    el.querySelectorAll('input[name^="system.narrativeEffects"][name$=".isNegative"]').forEach((elem) => elem.addEventListener("change", this._onNarrativeEffectNegativeChange.bind(this)));
+    el.querySelectorAll('[data-action="select-weapon-type"]').forEach((elem) => elem.addEventListener("change", this._onWeaponTypeChange.bind(this)));
+    el.addEventListener("change", (event) => {
+      if (event.target.matches(".vd-mode-select")) this._onVdModeChange.call(this, event);
+    });
+    el.addEventListener("change", (event) => {
+      if (event.target.matches('input[name="system.vdCustomValue"]')) this._onVdValueChange.call(this, event);
+    });
+    el.addEventListener("blur", (event) => {
+      if (event.target.matches('input[name="system.vdCustomValue"]')) this._onVdValueChange.call(this, event);
+    }, true);
+    el.addEventListener("change", (event) => {
       const target = event.target;
-      const searchContainers = html.find(".rr-target-search-container");
-      searchContainers.each((_, container) => {
+      if (target.matches('select[name="system.vdAttribute"]') || target.matches('input[name="system.vdBonus"]')) {
+        this._onVdValueChange.call(this, event);
+      }
+    });
+    el.addEventListener("blur", (event) => {
+      if (event.target.matches('input[name="system.vdBonus"]')) this._onVdValueChange.call(this, event);
+    }, true);
+    el.querySelectorAll(".damage-bonus-checkbox").forEach((elem) => elem.addEventListener("change", this._onDamageValueBonusChange.bind(this)));
+    el.querySelectorAll(".sustained-spell-checkbox").forEach((elem) => elem.addEventListener("change", this._onSustainedSpellChange.bind(this)));
+    el.querySelectorAll(".summoned-spirit-checkbox").forEach((elem) => elem.addEventListener("change", this._onSummonedSpiritChange.bind(this)));
+    el.querySelectorAll('.range-improvement-checkbox input[type="checkbox"]').forEach((elem) => elem.addEventListener("change", this._onRangeImprovementChange.bind(this)));
+    el.querySelectorAll('input[name="system.astralProjection"]').forEach((elem) => elem.addEventListener("change", this._onAstralProjectionChange.bind(this)));
+    el.querySelectorAll(".section-nav .nav-item").forEach((elem) => elem.addEventListener("click", this._onSectionNavigation.bind(this)));
+    el.querySelectorAll(".rr-target-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onRRTargetSearch.bind(this));
+      elem.addEventListener("focus", this._onRRTargetSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onRRTargetSearchBlur.bind(this));
+    });
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      const searchContainers = el.querySelectorAll(".rr-target-search-container");
+      searchContainers.forEach((container) => {
         if (!container.contains(target)) {
-          $(container).find(".rr-target-search-results").hide();
+          const results = container.querySelector(".rr-target-search-results");
+          if (results) results.style.display = "none";
         }
       });
+    }, { signal });
+    el.querySelectorAll(".power-skill-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onPowerSkillSearch.bind(this));
+      elem.addEventListener("focus", this._onPowerSkillSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onPowerSkillSearchBlur.bind(this));
     });
-    html.find(".power-skill-search-input").on("input", this._onPowerSkillSearch.bind(this));
-    html.find(".power-skill-search-input").on("focus", this._onPowerSkillSearchFocus.bind(this));
-    html.find(".power-skill-search-input").on("blur", this._onPowerSkillSearchBlur.bind(this));
-    html.find(".power-spec-search-input").on("input", this._onPowerSpecSearch.bind(this));
-    html.find(".power-spec-search-input").on("focus", this._onPowerSpecSearchFocus.bind(this));
-    html.find(".power-spec-search-input").on("blur", this._onPowerSpecSearchBlur.bind(this));
-    $(document).on("click.power-search", (event) => {
+    el.querySelectorAll(".power-spec-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onPowerSpecSearch.bind(this));
+      elem.addEventListener("focus", this._onPowerSpecSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onPowerSpecSearchBlur.bind(this));
+    });
+    document.addEventListener("click", (event) => {
       const target = event.target;
-      if ($(target).closest(".select-power-skill-btn, .select-power-spec-btn").length > 0) {
+      if (target.closest(".select-power-skill-btn, .select-power-spec-btn")) {
         return;
       }
-      if ($(target).closest(".search-result-item").length > 0) {
+      if (target.closest(".search-result-item")) {
         return;
       }
-      const searchContainers = html.find(".power-skill-search-container, .power-spec-search-container");
-      searchContainers.each((_, container) => {
+      const searchContainers = el.querySelectorAll(".power-skill-search-container, .power-spec-search-container");
+      searchContainers.forEach((container) => {
         if (!container.contains(target)) {
-          $(container).find(".power-skill-search-results, .power-spec-search-results").hide();
+          container.querySelectorAll(".power-skill-search-results, .power-spec-search-results").forEach((resultsEl) => {
+            resultsEl.style.display = "none";
+          });
         }
       });
-    });
+    }, { signal });
   }
   /**
    * Handle section navigation
@@ -10720,11 +10866,11 @@ class FeatSheet extends ItemSheet {
     if (!section) return;
     this._activeSection = section;
     if (!this.form) return;
-    const form = $(this.form);
-    form.find(".section-nav .nav-item").removeClass("active");
+    const form = this.form;
+    form.querySelectorAll(".section-nav .nav-item").forEach((el) => el.classList.remove("active"));
     button.classList.add("active");
-    form.find(".content-section").removeClass("active");
-    form.find(`[data-section-content="${section}"]`).addClass("active");
+    form.querySelectorAll(".content-section").forEach((el) => el.classList.remove("active"));
+    form.querySelector(`[data-section-content="${section}"]`)?.classList.add("active");
   }
   /**
    * Handle adding a new RR entry
@@ -11003,13 +11149,12 @@ class FeatSheet extends ItemSheet {
         newBonus = currentBonus;
       }
     }
-    const hiddenInput = this.element.find('input[name="system.damageValueBonus"]')[0];
+    const elRoot = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const hiddenInput = elRoot.querySelector('input[name="system.damageValueBonus"]');
     if (hiddenInput) {
       hiddenInput.value = newBonus.toString();
     }
-    const checkboxes = this.element.find(".damage-bonus-checkbox");
-    checkboxes.each((_, cb) => {
-      const cbElement = cb;
+    elRoot.querySelectorAll(".damage-bonus-checkbox").forEach((cbElement) => {
       const cbValue = parseInt(cbElement.dataset.bonusValue || "0");
       if (cbValue === 1) {
         cbElement.checked = newBonus >= 1;
@@ -11038,13 +11183,12 @@ class FeatSheet extends ItemSheet {
         newCount = currentCount;
       }
     }
-    const hiddenInput = this.element.find('input[name="system.sustainedSpellCount"]')[0];
+    const elRoot = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const hiddenInput = elRoot.querySelector('input[name="system.sustainedSpellCount"]');
     if (hiddenInput) {
       hiddenInput.value = newCount.toString();
     }
-    const checkboxes = this.element.find(".sustained-spell-checkbox");
-    checkboxes.each((_, cb) => {
-      const cbElement = cb;
+    elRoot.querySelectorAll(".sustained-spell-checkbox").forEach((cbElement) => {
       const cbValue = parseInt(cbElement.dataset.spellValue || "0");
       if (cbValue === 1) {
         cbElement.checked = newCount >= 1;
@@ -11060,7 +11204,8 @@ class FeatSheet extends ItemSheet {
     event.preventDefault();
     const checkbox = event.currentTarget;
     const newCount = checkbox.checked ? 1 : 0;
-    const hiddenInput = this.element.find('input[name="system.summonedSpiritCount"]')[0];
+    const elRoot = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const hiddenInput = elRoot.querySelector('input[name="system.summonedSpiritCount"]');
     if (hiddenInput) {
       hiddenInput.value = newCount.toString();
     }
@@ -11105,7 +11250,8 @@ class FeatSheet extends ItemSheet {
       }
     }
     select.value = newValue;
-    const hiddenInput = this.element.find(`input[name="${fieldName}"]`)[0];
+    const elRoot = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const hiddenInput = elRoot.querySelector(`input[name="${fieldName}"]`);
     if (hiddenInput) {
       hiddenInput.value = newValue;
     }
@@ -11118,7 +11264,8 @@ class FeatSheet extends ItemSheet {
     const checkbox = event.currentTarget;
     const isProjectionEnabled = checkbox.checked;
     if (isProjectionEnabled) {
-      const astralPerceptionInput = this.element.find('input[name="system.astralPerception"]')[0];
+      const elRoot = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+      const astralPerceptionInput = elRoot.querySelector('input[name="system.astralPerception"]');
       if (astralPerceptionInput) {
         astralPerceptionInput.checked = true;
       }
@@ -11136,7 +11283,8 @@ class FeatSheet extends ItemSheet {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
     const rrIndex = parseInt(input.dataset.rrIndex || "0");
-    const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".rr-target-search-results");
+    if (!resultsDiv) return;
     if (this.rrTargetSearchTimeout) {
       clearTimeout(this.rrTargetSearchTimeout);
     }
@@ -11238,14 +11386,14 @@ class FeatSheet extends ItemSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).find(".add-rr-target-btn").on("click", this._onSelectRRTarget.bind(this));
-    $(resultsDiv).find(".search-result-item:not(.no-results)").on("click", (event) => {
-      if ($(event.target).closest(".add-rr-target-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".add-rr-target-btn")[0];
+    resultsDiv.querySelectorAll(".add-rr-target-btn").forEach((elem) => elem.addEventListener("click", this._onSelectRRTarget.bind(this)));
+    resultsDiv.querySelectorAll(".search-result-item:not(.no-results)").forEach((elem) => elem.addEventListener("click", (event) => {
+      if (event.target.closest(".add-rr-target-btn")) return;
+      const button = elem.querySelector(".add-rr-target-btn");
       if (button) {
-        $(button).trigger("click");
+        button.click();
       }
-    });
+    }));
   }
   /**
    * Handle selecting an RR target from search results
@@ -11273,7 +11421,7 @@ class FeatSheet extends ItemSheet {
   _onRRTargetSearchFocus(event) {
     const input = event.currentTarget;
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".rr-target-search-results");
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = "block";
       }
@@ -11286,7 +11434,7 @@ class FeatSheet extends ItemSheet {
     const input = event.currentTarget;
     const blurEvent = event;
     setTimeout(() => {
-      const resultsDiv = $(input).siblings(".rr-target-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".rr-target-search-results");
       if (resultsDiv) {
         const relatedTarget = blurEvent.relatedTarget;
         if (relatedTarget && resultsDiv.contains(relatedTarget)) {
@@ -11307,7 +11455,8 @@ class FeatSheet extends ItemSheet {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
     const fieldName = input.dataset.field || "";
-    const resultsDiv = $(input).siblings(".power-skill-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".power-skill-search-results");
+    if (!resultsDiv) return;
     if (this.powerSearchTimeout) {
       clearTimeout(this.powerSearchTimeout);
     }
@@ -11399,16 +11548,14 @@ class FeatSheet extends ItemSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).off("mousedown", ".select-power-skill-btn");
-    $(resultsDiv).off("mousedown", ".search-result-item");
-    $(resultsDiv).on("mousedown", ".select-power-skill-btn", this._onSelectPowerSkill.bind(this));
-    $(resultsDiv).on("mousedown", ".search-result-item:not(.no-results)", (event) => {
-      if ($(event.target).closest(".select-power-skill-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".select-power-skill-btn")[0];
+    resultsDiv.querySelectorAll(".select-power-skill-btn").forEach((elem) => elem.addEventListener("mousedown", this._onSelectPowerSkill.bind(this)));
+    resultsDiv.querySelectorAll(".search-result-item:not(.no-results)").forEach((elem) => elem.addEventListener("mousedown", (event) => {
+      if (event.target.closest(".select-power-skill-btn")) return;
+      const button = elem.querySelector(".select-power-skill-btn");
       if (button) {
-        $(button).trigger("mousedown");
+        button.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
       }
-    });
+    }));
   }
   /**
    * Handle selecting a power skill from search results
@@ -11421,13 +11568,14 @@ class FeatSheet extends ItemSheet {
     const targetName = button.dataset.targetName;
     const fieldName = button.dataset.field;
     if (!targetName || !fieldName) return;
-    const container = $(button).closest(".power-skill-search-container");
-    const input = container.find(`input[name="system.${fieldName}"]`)[0];
+    const container = button.closest(".power-skill-search-container");
+    if (!container) return;
+    const input = container.querySelector(`input[name="system.${fieldName}"]`);
     if (input) {
       input.value = targetName;
-      $(input).trigger("change");
+      input.dispatchEvent(new Event("change", { bubbles: true }));
     }
-    const resultsDiv = container.find(".power-skill-search-results")[0];
+    const resultsDiv = container.querySelector(".power-skill-search-results");
     if (resultsDiv) {
       resultsDiv.style.display = "none";
     }
@@ -11438,7 +11586,7 @@ class FeatSheet extends ItemSheet {
   _onPowerSkillSearchFocus(event) {
     const input = event.currentTarget;
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings(".power-skill-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".power-skill-search-results");
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = "block";
       }
@@ -11451,7 +11599,7 @@ class FeatSheet extends ItemSheet {
     const input = event.currentTarget;
     const blurEvent = event;
     setTimeout(() => {
-      const resultsDiv = $(input).siblings(".power-skill-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".power-skill-search-results");
       if (resultsDiv) {
         const relatedTarget = blurEvent.relatedTarget;
         if (relatedTarget && resultsDiv.contains(relatedTarget)) {
@@ -11459,10 +11607,6 @@ class FeatSheet extends ItemSheet {
         }
         const activeElement = document.activeElement;
         if (activeElement && resultsDiv.contains(activeElement)) {
-          return;
-        }
-        const mouseEvent = event.originalEvent;
-        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget)) {
           return;
         }
         resultsDiv.style.display = "none";
@@ -11476,7 +11620,8 @@ class FeatSheet extends ItemSheet {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
     const fieldName = input.dataset.field || "";
-    const resultsDiv = $(input).siblings(".power-spec-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".power-spec-search-results");
+    if (!resultsDiv) return;
     if (this.powerSearchTimeout) {
       clearTimeout(this.powerSearchTimeout);
     }
@@ -11571,16 +11716,14 @@ class FeatSheet extends ItemSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).off("mousedown", ".select-power-spec-btn");
-    $(resultsDiv).off("mousedown", ".search-result-item");
-    $(resultsDiv).on("mousedown", ".select-power-spec-btn", this._onSelectPowerSpec.bind(this));
-    $(resultsDiv).on("mousedown", ".search-result-item:not(.no-results)", (event) => {
-      if ($(event.target).closest(".select-power-spec-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".select-power-spec-btn")[0];
+    resultsDiv.querySelectorAll(".select-power-spec-btn").forEach((elem) => elem.addEventListener("mousedown", this._onSelectPowerSpec.bind(this)));
+    resultsDiv.querySelectorAll(".search-result-item:not(.no-results)").forEach((elem) => elem.addEventListener("mousedown", (event) => {
+      if (event.target.closest(".select-power-spec-btn")) return;
+      const button = elem.querySelector(".select-power-spec-btn");
       if (button) {
-        $(button).trigger("mousedown");
+        button.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
       }
-    });
+    }));
   }
   /**
    * Handle selecting a power spec from search results
@@ -11594,13 +11737,14 @@ class FeatSheet extends ItemSheet {
     const targetSlug = button.dataset.targetSlug;
     const fieldName = button.dataset.field;
     if (!targetName || !fieldName) return;
-    const container = $(button).closest(".power-spec-search-container");
-    const input = container.find(`input[name="system.${fieldName}"]`)[0];
+    const container = button.closest(".power-spec-search-container");
+    if (!container) return;
+    const input = container.querySelector(`input[name="system.${fieldName}"]`);
     if (input) {
       input.value = targetSlug || targetName;
-      $(input).trigger("change");
+      input.dispatchEvent(new Event("change", { bubbles: true }));
     }
-    const resultsDiv = container.find(".power-spec-search-results")[0];
+    const resultsDiv = container.querySelector(".power-spec-search-results");
     if (resultsDiv) {
       resultsDiv.style.display = "none";
     }
@@ -11611,7 +11755,7 @@ class FeatSheet extends ItemSheet {
   _onPowerSpecSearchFocus(event) {
     const input = event.currentTarget;
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings(".power-spec-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".power-spec-search-results");
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = "block";
       }
@@ -11624,7 +11768,7 @@ class FeatSheet extends ItemSheet {
     const input = event.currentTarget;
     const blurEvent = event;
     setTimeout(() => {
-      const resultsDiv = $(input).siblings(".power-spec-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".power-spec-search-results");
       if (resultsDiv) {
         const relatedTarget = blurEvent.relatedTarget;
         if (relatedTarget && resultsDiv.contains(relatedTarget)) {
@@ -11632,10 +11776,6 @@ class FeatSheet extends ItemSheet {
         }
         const activeElement = document.activeElement;
         if (activeElement && resultsDiv.contains(activeElement)) {
-          return;
-        }
-        const mouseEvent = event.originalEvent;
-        if (mouseEvent && mouseEvent.relatedTarget && resultsDiv.contains(mouseEvent.relatedTarget)) {
           return;
         }
         resultsDiv.style.display = "none";
@@ -11710,8 +11850,8 @@ class FeatSheet extends ItemSheet {
     }, 50);
   }
   async close(options) {
-    $(document).off("click.rr-target-search");
-    $(document).off("click.power-search");
+    this._featSheetAbortController?.abort();
+    this._featSheetAbortController = null;
     return super.close(options);
   }
   async _updateObject(_event, formData) {
@@ -11853,22 +11993,30 @@ class SpecializationSheet extends ItemSheet {
     }
     return slug;
   }
+  _abortController = null;
   activateListeners(html) {
     super.activateListeners(html);
-    html.find('[data-action="clear-linked-skill"]').on("click", this._onClearLinkedSkill.bind(this));
-    html.find(".skill-search-input").on("input", this._onSkillSearch.bind(this));
-    html.find(".skill-search-input").on("focus", this._onSkillSearchFocus.bind(this));
-    html.find(".skill-search-input").on("blur", this._onSkillSearchBlur.bind(this));
-    $(document).on("click.skill-search-spec", (event) => {
-      const target = event.target;
-      const skillSearchContainer = html.find(".skill-search-container")[0];
-      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
-        html.find(".skill-search-results").hide();
-      }
+    const el = html[0];
+    el.querySelectorAll('[data-action="clear-linked-skill"]').forEach((elem) => elem.addEventListener("click", this._onClearLinkedSkill.bind(this)));
+    el.querySelectorAll(".skill-search-input").forEach((elem) => {
+      elem.addEventListener("input", this._onSkillSearch.bind(this));
+      elem.addEventListener("focus", this._onSkillSearchFocus.bind(this));
+      elem.addEventListener("blur", this._onSkillSearchBlur.bind(this));
     });
+    this._abortController?.abort();
+    this._abortController = new AbortController();
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      const skillSearchContainer = el.querySelector(".skill-search-container");
+      if (skillSearchContainer && !skillSearchContainer.contains(target)) {
+        const resultsEl = el.querySelector(".skill-search-results");
+        if (resultsEl) resultsEl.style.display = "none";
+      }
+    }, { signal: this._abortController.signal });
   }
   async close(options) {
-    $(document).off("click.skill-search-spec");
+    this._abortController?.abort();
+    this._abortController = null;
     return super.close(options);
   }
   /**
@@ -11915,7 +12063,7 @@ class SpecializationSheet extends ItemSheet {
   async _onSkillSearch(event) {
     const input = event.currentTarget;
     const searchTerm = normalizeSearchText(input.value.trim());
-    const resultsDiv = $(input).siblings(".skill-search-results")[0];
+    const resultsDiv = input.parentElement?.querySelector(".skill-search-results");
     if (this.skillSearchTimeout) {
       clearTimeout(this.skillSearchTimeout);
     }
@@ -12015,22 +12163,22 @@ class SpecializationSheet extends ItemSheet {
     }
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-    $(resultsDiv).find(".link-skill-btn").on("click", this._onLinkSkillFromSearch.bind(this));
-    $(resultsDiv).find(".create-skill-btn, .create-skill-btn-inline").on("click", this._onCreateNewSkill.bind(this));
-    $(resultsDiv).find(".search-result-item:not(.no-results-create):not(.create-new-item)").on("click", (event) => {
-      if ($(event.target).closest(".link-skill-btn").length > 0) return;
-      const button = $(event.currentTarget).find(".link-skill-btn")[0];
+    resultsDiv.querySelectorAll(".link-skill-btn").forEach((elem) => elem.addEventListener("click", this._onLinkSkillFromSearch.bind(this)));
+    resultsDiv.querySelectorAll(".create-skill-btn, .create-skill-btn-inline").forEach((elem) => elem.addEventListener("click", this._onCreateNewSkill.bind(this)));
+    resultsDiv.querySelectorAll(".search-result-item:not(.no-results-create):not(.create-new-item)").forEach((elem) => elem.addEventListener("click", (event) => {
+      if (event.target.closest(".link-skill-btn")) return;
+      const button = event.currentTarget.querySelector(".link-skill-btn");
       if (button) {
-        $(button).trigger("click");
+        button.click();
       }
-    });
-    $(resultsDiv).find(".search-result-item.create-new-item").on("click", (event) => {
-      if ($(event.target).closest(".create-skill-btn-inline").length > 0) return;
-      const button = $(event.currentTarget).find(".create-skill-btn-inline")[0];
+    }));
+    resultsDiv.querySelectorAll(".search-result-item.create-new-item").forEach((elem) => elem.addEventListener("click", (event) => {
+      if (event.target.closest(".create-skill-btn-inline")) return;
+      const button = event.currentTarget.querySelector(".create-skill-btn-inline");
       if (button) {
-        $(button).trigger("click");
+        button.click();
       }
-    });
+    }));
     return Promise.resolve();
   }
   /**
@@ -12044,13 +12192,14 @@ class SpecializationSheet extends ItemSheet {
     const skillSlug = button.dataset.skillSlug;
     if (!skillName) return;
     await this.item.update({ "system.linkedSkill": skillSlug || skillName });
-    const searchInput = this.element.find(".skill-search-input")[0];
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    const searchInput = sheetEl?.querySelector(".skill-search-input");
     if (searchInput) {
       searchInput.value = "";
     }
-    const resultsDiv = this.element.find(".skill-search-results")[0];
-    if (resultsDiv) {
-      resultsDiv.style.display = "none";
+    const resultsDiv2 = sheetEl?.querySelector(".skill-search-results");
+    if (resultsDiv2) {
+      resultsDiv2.style.display = "none";
     }
     this.render(false);
     ui.notifications?.info(game.i18n.format("SRA2.SPECIALIZATIONS.SKILL_LINKED", { name: skillName }));
@@ -12061,7 +12210,7 @@ class SpecializationSheet extends ItemSheet {
   _onSkillSearchFocus(event) {
     const input = event.currentTarget;
     if (input.value.trim().length > 0) {
-      const resultsDiv = $(input).siblings(".skill-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".skill-search-results");
       if (resultsDiv && resultsDiv.innerHTML.trim().length > 0) {
         resultsDiv.style.display = "block";
       }
@@ -12075,7 +12224,7 @@ class SpecializationSheet extends ItemSheet {
     const input = event.currentTarget;
     const blurEvent = event;
     setTimeout(() => {
-      const resultsDiv = $(input).siblings(".skill-search-results")[0];
+      const resultsDiv = input.parentElement?.querySelector(".skill-search-results");
       if (resultsDiv) {
         const relatedTarget = blurEvent.relatedTarget;
         if (relatedTarget && resultsDiv.contains(relatedTarget)) {
@@ -12113,13 +12262,14 @@ class SpecializationSheet extends ItemSheet {
     if (createdItems) {
       const createdSlug = createdItems.system?.slug || formattedName;
       await this.item.update({ "system.linkedSkill": createdSlug });
-      const searchInput = this.element.find(".skill-search-input")[0];
+      const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+      const searchInput = sheetEl?.querySelector(".skill-search-input");
       if (searchInput) {
         searchInput.value = "";
       }
-      const resultsDiv = this.element.find(".skill-search-results")[0];
-      if (resultsDiv) {
-        resultsDiv.style.display = "none";
+      const resultsDiv2 = sheetEl?.querySelector(".skill-search-results");
+      if (resultsDiv2) {
+        resultsDiv2.style.display = "none";
       }
       this.render(false);
       setTimeout(() => {
@@ -12248,45 +12398,50 @@ class FeatChoiceDialog extends Dialog {
    * Activate listeners for the dialog
    */
   static activateListeners(html, numberOfChoice, choiceFeatsCount) {
-    const confirmButton = html.closest(".dialog").find('button[data-button="confirm"]');
+    const el = html[0];
+    const dialogEl = el.closest(".dialog");
+    const confirmButton = dialogEl?.querySelector('button[data-button="confirm"]');
     const updateConfirmButton = () => {
-      const checkedCount = html.find('input[name="choice-feat"]:checked').length;
-      if (choiceFeatsCount > 0 && checkedCount !== numberOfChoice) {
-        confirmButton.prop("disabled", true);
-      } else {
-        confirmButton.prop("disabled", false);
+      const checkedCount = el.querySelectorAll('input[name="choice-feat"]:checked').length;
+      if (confirmButton) {
+        confirmButton.disabled = choiceFeatsCount > 0 && checkedCount !== numberOfChoice;
       }
     };
-    if (choiceFeatsCount > 0 && numberOfChoice > 0) {
-      confirmButton.prop("disabled", true);
+    if (choiceFeatsCount > 0 && numberOfChoice > 0 && confirmButton) {
+      confirmButton.disabled = true;
     }
-    html.find('input[name="choice-feat"]').on("change", () => {
-      const checkedCount = html.find('input[name="choice-feat"]:checked').length;
-      html.find(".selection-counter .current-count").text(checkedCount);
-      if (checkedCount === numberOfChoice) {
-        html.find(".selection-counter").addClass("complete");
-      } else {
-        html.find(".selection-counter").removeClass("complete");
+    el.querySelectorAll('input[name="choice-feat"]').forEach((elem) => elem.addEventListener("change", () => {
+      const checkedCount = el.querySelectorAll('input[name="choice-feat"]:checked').length;
+      const currentCountEl = el.querySelector(".selection-counter .current-count");
+      if (currentCountEl) currentCountEl.textContent = String(checkedCount);
+      const selectionCounter = el.querySelector(".selection-counter");
+      if (selectionCounter) {
+        if (checkedCount === numberOfChoice) {
+          selectionCounter.classList.add("complete");
+        } else {
+          selectionCounter.classList.remove("complete");
+        }
       }
       if (checkedCount >= numberOfChoice) {
-        html.find('input[name="choice-feat"]:not(:checked)').prop("disabled", true);
+        el.querySelectorAll('input[name="choice-feat"]:not(:checked)').forEach((cb) => cb.disabled = true);
       } else {
-        html.find('input[name="choice-feat"]').prop("disabled", false);
+        el.querySelectorAll('input[name="choice-feat"]').forEach((cb) => cb.disabled = false);
       }
       updateConfirmButton();
-    });
+    }));
   }
   /**
    * Get the selections from the dialog
    */
   static getSelections(html, choiceFeatsCount, numberOfChoice) {
+    const el = html[0];
     const optionalSelections = [];
     const choiceSelections = [];
-    html.find('input[name="optional-feat"]:checked').each(function() {
-      optionalSelections.push($(this).val());
+    el.querySelectorAll('input[name="optional-feat"]:checked').forEach((input) => {
+      optionalSelections.push(input.value);
     });
-    html.find('input[name="choice-feat"]:checked').each(function() {
-      choiceSelections.push($(this).val());
+    el.querySelectorAll('input[name="choice-feat"]:checked').forEach((input) => {
+      choiceSelections.push(input.value);
     });
     if (choiceFeatsCount > 0 && choiceSelections.length !== numberOfChoice) {
       ui.notifications?.warn(
@@ -12446,35 +12601,40 @@ class AnarchyCounter extends Application {
    */
   activateListeners(html) {
     super.activateListeners(html);
-    html.find(".anarchy-add").on("click", async (event) => {
+    const el = html[0];
+    el.querySelectorAll(".anarchy-add").forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
       const current = AnarchyCounter.getGroupAnarchy();
       await AnarchyCounter.setGroupAnarchy(current + 1);
-    });
-    html.find(".anarchy-remove").on("click", async (event) => {
+    }));
+    el.querySelectorAll(".anarchy-remove").forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
       const current = AnarchyCounter.getGroupAnarchy();
       await AnarchyCounter.setGroupAnarchy(current - 1);
-    });
-    const header = html.closest(".app").find(".window-header");
-    header.on("mouseup", () => {
-      setTimeout(() => this.savePosition(), DELAYS.SHEET_RENDER);
-    });
+    }));
+    const appEl = el.closest(".app");
+    const header = appEl?.querySelector(".window-header");
+    if (header) {
+      header.addEventListener("mouseup", () => {
+        setTimeout(() => this.savePosition(), DELAYS.SHEET_RENDER);
+      });
+    }
   }
   /**
    * Trigger animation when value changes
    */
   triggerAnimation(direction) {
-    const element = this.element;
-    if (!element || !element.length) return;
-    const valueEl = element.find(".anarchy-value");
-    valueEl.removeClass("animate-increase animate-decrease");
+    const sheetEl = this.element instanceof HTMLElement ? this.element : this.element?.[0];
+    if (!sheetEl) return;
+    const valueEl = sheetEl.querySelector(".anarchy-value");
+    if (!valueEl) return;
+    valueEl.classList.remove("animate-increase", "animate-decrease");
     if (this.animationTimeout) {
       clearTimeout(this.animationTimeout);
     }
-    valueEl.addClass(`animate-${direction}`);
+    valueEl.classList.add(`animate-${direction}`);
     this.animationTimeout = window.setTimeout(() => {
-      valueEl.removeClass("animate-increase animate-decrease");
+      valueEl.classList.remove("animate-increase", "animate-decrease");
     }, 500);
   }
   /**
@@ -17250,12 +17410,13 @@ class NPCGeneratorDialog extends Dialog {
     `;
   }
   static getOptions(html) {
+    const el = html[0];
     return {
-      powerLevel: html.find('[name="powerLevel"]').val(),
-      archetype: html.find('[name="archetype"]').val(),
-      metatype: html.find('[name="metatype"]').val(),
-      gender: html.find('[name="gender"]').val(),
-      count: parseInt(html.find('[name="count"]').val(), 10) || 1
+      powerLevel: el.querySelector('[name="powerLevel"]')?.value || "",
+      archetype: el.querySelector('[name="archetype"]')?.value || "",
+      metatype: el.querySelector('[name="metatype"]')?.value || "",
+      gender: el.querySelector('[name="gender"]')?.value || "",
+      count: parseInt(el.querySelector('[name="count"]')?.value || "1", 10) || 1
     };
   }
   static async show() {
@@ -20641,76 +20802,81 @@ class SRA2System {
   }
   setupChatHandlers() {
     Hooks.on("renderChatMessage", (message, html) => {
-      html.find(".apply-damage-button").off("click");
-      html.find(".apply-damage-button").on("click", async (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const button = $(event.currentTarget);
-        if (button.prop("disabled")) {
-          return;
-        }
-        const targetUuid = button.data("target-uuid") || button.data("defender-uuid");
-        const damage = parseInt(button.data("damage")) || 0;
-        const targetName = button.data("target-name") || button.data("defender-name");
-        const damageType = button.data("damage-type") || "physical";
-        if (!targetUuid) {
-          console.error("Apply damage button: No target UUID found in button data attributes");
-          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
-          return;
-        }
-        if (damage <= 0) {
-          ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.NO_DAMAGE_TO_APPLY"));
-          return;
-        }
-        button.prop("disabled", true);
-        console.log("Apply damage button clicked:", { targetUuid, targetName, damage, damageType });
-        try {
-          await applyDamage(targetUuid, damage, targetName, damageType);
-        } catch (error) {
-          console.error("Error applying damage:", error);
-          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.DAMAGE_APPLY_ERROR"));
-        } finally {
-          setTimeout(() => button.prop("disabled", false), DELAYS.BUTTON_REENABLE);
-        }
-      });
-      html.find(".apply-cyberdeck-malus-button").off("click");
-      html.find(".apply-cyberdeck-malus-button").on("click", async (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const button = $(event.currentTarget);
-        if (button.prop("disabled")) return;
-        const targetUuid = button.data("target-uuid");
-        const cyberdeckItemId = button.data("cyberdeck-item-id");
-        const malusType = button.data("malus-type");
-        const malusValue = parseInt(button.data("malus-value")) || 0;
-        const targetName = button.data("target-name");
-        if (!targetUuid || !cyberdeckItemId || malusValue <= 0) return;
-        button.prop("disabled", true);
-        try {
-          const actor = await fromUuid(targetUuid);
-          const actorObj = actor?.actor || actor;
-          if (!actorObj) return;
-          const cyberdeck = actorObj.items?.get(cyberdeckItemId);
-          if (!cyberdeck) return;
-          if (malusType === "connectionLocked") {
-            await cyberdeck.update({ "system.connectionLocked": true });
-            ui.notifications?.info(`${targetName}: ${game.i18n.localize("SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED")}`);
-          } else {
-            const currentMalus = cyberdeck.system[malusType] || 0;
-            const newMalus = currentMalus + malusValue;
-            await cyberdeck.update({ [`system.${malusType}`]: newMalus });
-            const malusLabel = malusType === "attackMalus" ? game.i18n.localize("SRA2.FEATS.CYBERDECK.ATTACK") : game.i18n.localize("SRA2.FEATS.CYBERDECK.FIREWALL");
-            ui.notifications?.info(`${targetName}: ${malusLabel} -${malusValue}`);
+      const msgEl = html[0];
+      msgEl.querySelectorAll(".apply-damage-button").forEach((origBtn) => {
+        const button = origBtn.cloneNode(true);
+        origBtn.replaceWith(button);
+        button.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          if (button.disabled) return;
+          const targetUuid = button.dataset.targetUuid || button.dataset.defenderUuid;
+          const damage = parseInt(button.dataset.damage || "0") || 0;
+          const targetName = button.dataset.targetName || button.dataset.defenderName;
+          const damageType = button.dataset.damageType || "physical";
+          if (!targetUuid) {
+            console.error("Apply damage button: No target UUID found in button data attributes");
+            ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+            return;
           }
-        } catch (error) {
-          console.error("Error applying cyberdeck malus:", error);
-        } finally {
-          setTimeout(() => button.prop("disabled", false), 1e3);
-        }
+          if (damage <= 0) {
+            ui.notifications?.info(game.i18n.localize("SRA2.COMBAT.NO_DAMAGE_TO_APPLY"));
+            return;
+          }
+          button.disabled = true;
+          console.log("Apply damage button clicked:", { targetUuid, targetName, damage, damageType });
+          try {
+            await applyDamage(targetUuid, damage, targetName || "", damageType);
+          } catch (error) {
+            console.error("Error applying damage:", error);
+            ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.DAMAGE_APPLY_ERROR"));
+          } finally {
+            setTimeout(() => button.disabled = false, DELAYS.BUTTON_REENABLE);
+          }
+        });
       });
-      html.off("mouseenter", ".defend-button, .counter-attack-button");
-      html.on("mouseenter", ".defend-button, .counter-attack-button", (event) => {
-        const tokenUuid = $(event.currentTarget).data("defender-token-uuid") ?? $(event.currentTarget).closest(".attack-actions").data("defender-token-uuid");
+      msgEl.querySelectorAll(".apply-cyberdeck-malus-button").forEach((origBtn) => {
+        const button = origBtn.cloneNode(true);
+        origBtn.replaceWith(button);
+        button.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          if (button.disabled) return;
+          const targetUuid = button.dataset.targetUuid;
+          const cyberdeckItemId = button.dataset.cyberdeckItemId;
+          const malusType = button.dataset.malusType;
+          const malusValue = parseInt(button.dataset.malusValue || "0") || 0;
+          const targetName = button.dataset.targetName;
+          if (!targetUuid || !cyberdeckItemId || malusValue <= 0) return;
+          button.disabled = true;
+          try {
+            const actor = await fromUuid(targetUuid);
+            const actorObj = actor?.actor || actor;
+            if (!actorObj) return;
+            const cyberdeck = actorObj.items?.get(cyberdeckItemId);
+            if (!cyberdeck) return;
+            if (malusType === "connectionLocked") {
+              await cyberdeck.update({ "system.connectionLocked": true });
+              ui.notifications?.info(`${targetName}: ${game.i18n.localize("SRA2.FEATS.CYBERDECK.CONNECTION_LOCKED")}`);
+            } else {
+              const currentMalus = cyberdeck.system[malusType] || 0;
+              const newMalus = currentMalus + malusValue;
+              await cyberdeck.update({ [`system.${malusType}`]: newMalus });
+              const malusLabel = malusType === "attackMalus" ? game.i18n.localize("SRA2.FEATS.CYBERDECK.ATTACK") : game.i18n.localize("SRA2.FEATS.CYBERDECK.FIREWALL");
+              ui.notifications?.info(`${targetName}: ${malusLabel} -${malusValue}`);
+            }
+          } catch (error) {
+            console.error("Error applying cyberdeck malus:", error);
+          } finally {
+            setTimeout(() => button.disabled = false, 1e3);
+          }
+        });
+      });
+      msgEl.addEventListener("mouseenter", (event) => {
+        const target = event.target;
+        const btn = target.closest(".defend-button, .counter-attack-button");
+        if (!btn) return;
+        const tokenUuid = btn.dataset.defenderTokenUuid ?? btn.closest(".attack-actions")?.dataset.defenderTokenUuid;
         if (!tokenUuid) return;
         try {
           const token = foundry.utils?.fromUuidSync?.(tokenUuid);
@@ -20718,382 +20884,394 @@ class SRA2System {
           if (center) canvas.ping?.(center, { duration: 600 });
         } catch (_e) {
         }
-      });
-      html.find(".defend-button").off("click");
-      html.find(".defend-button").on("click", async (event) => {
-        event.preventDefault();
-        const messageFlags = message.flags?.sra2;
-        if (!messageFlags) {
-          console.error("SRA2 | Defend: missing message flags");
-          return;
-        }
-        const rollResult = messageFlags.rollResult;
-        const rollData = messageFlags.rollData;
-        if (!rollResult || !rollData) {
-          console.error("SRA2 | Defend: missing roll data in flags");
-          return;
-        }
-        const isVehicleWeapon = rollData.isVehicleWeapon;
-        const vehicleUuid = rollData.vehicleUuid;
-        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
-          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
-          "Defense Attacker"
-        );
-        const actionsDiv = $(event.currentTarget).closest(".attack-actions");
-        const buttonDefenderUuid = actionsDiv.data("defender-uuid");
-        const buttonDefenderTokenUuid = actionsDiv.data("defender-token-uuid");
-        const buttonDefenderId = actionsDiv.data("defender-id");
-        const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
-          {
-            defenderUuid: buttonDefenderUuid ?? messageFlags.defenderUuid,
-            defenderTokenUuid: buttonDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
-            defenderId: buttonDefenderId ?? messageFlags.defenderId
-          },
-          isVehicleWeapon,
-          vehicleUuid
-        );
-        if (!defender) {
-          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
-          return;
-        }
-        const defenderActorForRoll = defenderToken?.actor ?? defender;
-        const isVehicleDefender = defenderActorForRoll.type === "vehicle";
-        const skillData = resolveDefenseSkillData(defenderActorForRoll, rollData, isVehicleDefender);
-        if (!skillData.skill) {
-          console.error("SRA2 | Defend: could not determine defense skill");
-          return;
-        }
-        const { getRRSources: getRRSources2 } = SheetHelpers;
-        let rrList = [];
-        if (!isVehicleDefender) {
-          const rrTarget = skillData.spec ?? skillData.skill;
-          const rrItemType = skillData.spec ? "specialization" : "skill";
-          rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
-        }
-        const defenderTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
-        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
-        const defenseRollData = {
-          skillName: skillData.skill,
-          specName: skillData.spec,
-          linkedAttribute: skillData.linkedAttribute,
-          skillLevel: skillData.skillLevel,
-          specLevel: skillData.specLevel,
-          actorId: defenderActorForRoll.id,
-          actorUuid: defenderActorForRoll.uuid,
-          attackerTokenUuid: defenderTokenUuid,
-          // defender's token = the one rolling
-          defenderTokenUuid: originalAttackerTokenUuid,
-          // original attacker = the "target"
-          rrList,
-          isDefend: true,
-          isCounterAttack: false,
-          attackRollResult: rollResult,
-          attackRollData: rollData
-        };
-        const { RollDialog: RollDialog2 } = applications;
-        const dialog = new RollDialog2(defenseRollData);
-        if (attackerToken) dialog.targetToken = attackerToken;
-        dialog.render(true);
-      });
-      html.find(".counter-attack-button").off("click");
-      html.find(".counter-attack-button").on("click", async (event) => {
-        event.preventDefault();
-        const messageFlags = message.flags?.sra2;
-        if (!messageFlags) {
-          console.error("SRA2 | Counter-attack: missing message flags");
-          return;
-        }
-        const rollResult = messageFlags.rollResult;
-        const rollData = messageFlags.rollData;
-        if (!rollResult || !rollData) {
-          console.error("SRA2 | Counter-attack: missing roll data in flags");
-          return;
-        }
-        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
-          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
-          "Counter-attack Attacker"
-        );
-        const caActionsDiv = $(event.currentTarget).closest(".attack-actions");
-        const caDefenderUuid = caActionsDiv.data("defender-uuid");
-        const caDefenderTokenUuid = caActionsDiv.data("defender-token-uuid");
-        const caDefenderId = caActionsDiv.data("defender-id");
-        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
-          {
-            actorUuid: caDefenderUuid ?? messageFlags.defenderUuid,
-            tokenUuid: caDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
-            actorId: caDefenderId ?? messageFlags.defenderId
-          },
-          "Counter-attack Defender"
-        );
-        if (!defender) {
-          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
-          return;
-        }
-        const defenderActorForRoll = defenderToken?.actor ?? defender;
-        const availableWeapons = getMeleeWeaponsForCounterAttack(defenderActorForRoll, WEAPON_TYPES);
-        if (availableWeapons.length === 0) {
-          ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS"));
-          return;
-        }
-        const counterAttackerTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
-        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
-        const counterAttackRollData = {
-          actorId: defenderActorForRoll.id,
-          actorUuid: messageFlags.defenderUuid ?? defenderActorForRoll.uuid,
-          attackerTokenUuid: messageFlags.defenderTokenUuid ?? counterAttackerTokenUuid,
-          // defender becomes the "attacker"
-          defenderTokenUuid: messageFlags.attackerTokenUuid ?? originalAttackerTokenUuid,
-          // original attacker = the "target"
-          availableWeapons,
-          isDefend: false,
-          isCounterAttack: true,
-          attackRollResult: rollResult,
-          attackRollData: rollData
-        };
-        const { RollDialog: RollDialog2 } = applications;
-        const dialog = new RollDialog2(counterAttackRollData);
-        if (attackerToken) dialog.targetToken = attackerToken;
-        dialog.render(true);
-      });
-      html.find(".cyber-defend-button").off("click");
-      html.find(".cyber-defend-button").on("click", async (event) => {
-        event.preventDefault();
-        const messageFlags = message.flags?.sra2;
-        if (!messageFlags) return;
-        const rollResult = messageFlags.rollResult;
-        const rollData = messageFlags.rollData;
-        if (!rollResult || !rollData) return;
-        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
-          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
-          "Cyber-defend Attacker"
-        );
-        const actionsDiv = $(event.currentTarget).closest(".attack-actions");
-        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
-          {
-            actorUuid: actionsDiv.data("defender-uuid") ?? messageFlags.defenderUuid,
-            tokenUuid: actionsDiv.data("defender-token-uuid") ?? messageFlags.defenderTokenUuid,
-            actorId: actionsDiv.data("defender-id") ?? messageFlags.defenderId
-          },
-          "Cyber-defend Defender"
-        );
-        if (!defender) {
-          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
-          return;
-        }
-        const defenderActorForRoll = defenderToken?.actor ?? defender;
-        const pirSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
-        const techSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
-        const cyberSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
-        const cfSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
-        let skillName;
-        let specName;
-        let skillLevel;
-        let specLevel;
-        let rrTarget;
-        let rrItemType;
-        let defLinkedAttribute;
-        if (cyberSpecDef && pirSkillDef) {
-          const activeCyberdeck = defenderActorForRoll.items.find(
-            (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+      }, true);
+      msgEl.querySelectorAll(".defend-button").forEach((origBtn) => {
+        const btn = origBtn.cloneNode(true);
+        origBtn.replaceWith(btn);
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          const messageFlags = message.flags?.sra2;
+          if (!messageFlags) {
+            console.error("SRA2 | Defend: missing message flags");
+            return;
+          }
+          const rollResult = messageFlags.rollResult;
+          const rollData = messageFlags.rollData;
+          if (!rollResult || !rollData) {
+            console.error("SRA2 | Defend: missing roll data in flags");
+            return;
+          }
+          const isVehicleWeapon = rollData.isVehicleWeapon;
+          const vehicleUuid = rollData.vehicleUuid;
+          const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
+            { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+            "Defense Attacker"
           );
-          const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
-          const pirRating = pirSkillDef.system?.rating ?? 0;
-          skillName = pirSkillDef.name;
-          specName = cyberSpecDef.name;
-          skillLevel = pirRating + fw;
-          specLevel = skillLevel + 2;
-          rrTarget = cyberSpecDef.name;
-          rrItemType = "specialization";
-          defLinkedAttribute = "firewall";
-        } else if (cfSpecDef && techSkillDef) {
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const techRating = techSkillDef.system?.rating ?? 0;
-          skillName = techSkillDef.name;
-          specName = cfSpecDef.name;
-          skillLevel = techRating + volonte;
-          specLevel = skillLevel + 2;
-          rrTarget = cfSpecDef.name;
-          rrItemType = "specialization";
-          defLinkedAttribute = "willpower";
-        } else if (pirSkillDef) {
-          const activeCyberdeck = defenderActorForRoll.items.find(
-            (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+          const actionsDiv = event.currentTarget.closest(".attack-actions");
+          const buttonDefenderUuid = actionsDiv?.dataset.defenderUuid;
+          const buttonDefenderTokenUuid = actionsDiv?.dataset.defenderTokenUuid;
+          const buttonDefenderId = actionsDiv?.dataset.defenderId;
+          const { actor: defender, token: defenderToken } = resolveDefenderForDefend(
+            {
+              defenderUuid: buttonDefenderUuid ?? messageFlags.defenderUuid,
+              defenderTokenUuid: buttonDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
+              defenderId: buttonDefenderId ?? messageFlags.defenderId
+            },
+            isVehicleWeapon,
+            vehicleUuid
           );
-          const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
-          const pirRating = pirSkillDef.system?.rating ?? 0;
-          skillName = pirSkillDef.name;
-          specName = null;
-          skillLevel = pirRating + fw;
-          specLevel = void 0;
-          rrTarget = skillName;
-          rrItemType = "skill";
-          defLinkedAttribute = "firewall";
-        } else {
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const techRating = techSkillDef?.system?.rating ?? 0;
-          skillName = techSkillDef?.name || "Technomancie";
-          specName = null;
-          skillLevel = techRating + volonte;
-          specLevel = void 0;
-          rrTarget = skillName;
-          rrItemType = "skill";
-          defLinkedAttribute = "willpower";
-        }
-        const { getRRSources: getRRSources2 } = SheetHelpers;
-        const rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
-        const defenderTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
-        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
-        const defenseRollData = {
-          skillName,
-          specName,
-          linkedAttribute: defLinkedAttribute,
-          skillLevel,
-          specLevel,
-          actorId: defenderActorForRoll.id,
-          actorUuid: defenderActorForRoll.uuid,
-          attackerTokenUuid: defenderTokenUuid,
-          defenderTokenUuid: originalAttackerTokenUuid,
-          rrList,
-          isDefend: true,
-          isCounterAttack: false,
-          attackRollResult: rollResult,
-          attackRollData: rollData
-        };
-        const { RollDialog: RollDialog2 } = applications;
-        const dialog = new RollDialog2(defenseRollData);
-        if (attackerToken) dialog.targetToken = attackerToken;
-        dialog.render(true);
+          if (!defender) {
+            ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+            return;
+          }
+          const defenderActorForRoll = defenderToken?.actor ?? defender;
+          const isVehicleDefender = defenderActorForRoll.type === "vehicle";
+          const skillData = resolveDefenseSkillData(defenderActorForRoll, rollData, isVehicleDefender);
+          if (!skillData.skill) {
+            console.error("SRA2 | Defend: could not determine defense skill");
+            return;
+          }
+          const { getRRSources: getRRSources2 } = SheetHelpers;
+          let rrList = [];
+          if (!isVehicleDefender) {
+            const rrTarget = skillData.spec ?? skillData.skill;
+            const rrItemType = skillData.spec ? "specialization" : "skill";
+            rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
+          }
+          const defenderTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+          const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
+          const defenseRollData = {
+            skillName: skillData.skill,
+            specName: skillData.spec,
+            linkedAttribute: skillData.linkedAttribute,
+            skillLevel: skillData.skillLevel,
+            specLevel: skillData.specLevel,
+            actorId: defenderActorForRoll.id,
+            actorUuid: defenderActorForRoll.uuid,
+            attackerTokenUuid: defenderTokenUuid,
+            // defender's token = the one rolling
+            defenderTokenUuid: originalAttackerTokenUuid,
+            // original attacker = the "target"
+            rrList,
+            isDefend: true,
+            isCounterAttack: false,
+            attackRollResult: rollResult,
+            attackRollData: rollData
+          };
+          const { RollDialog: RollDialog2 } = applications;
+          const dialog = new RollDialog2(defenseRollData);
+          if (attackerToken) dialog.targetToken = attackerToken;
+          dialog.render(true);
+        });
       });
-      html.find(".cyber-counterattack-button").off("click");
-      html.find(".cyber-counterattack-button").on("click", async (event) => {
-        event.preventDefault();
-        const messageFlags = message.flags?.sra2;
-        if (!messageFlags) return;
-        const rollResult = messageFlags.rollResult;
-        const rollData = messageFlags.rollData;
-        if (!rollResult || !rollData) return;
-        const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
-          { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
-          "Cyber-counterattack Attacker"
-        );
-        const actionsDiv = $(event.currentTarget).closest(".attack-actions");
-        const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
-          {
-            actorUuid: actionsDiv.data("defender-uuid") ?? messageFlags.defenderUuid,
-            tokenUuid: actionsDiv.data("defender-token-uuid") ?? messageFlags.defenderTokenUuid,
-            actorId: actionsDiv.data("defender-id") ?? messageFlags.defenderId
-          },
-          "Cyber-counterattack Defender"
-        );
-        if (!defender) {
-          ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
-          return;
-        }
-        const defenderActorForRoll = defenderToken?.actor ?? defender;
-        const pirSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
-        const techSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
-        const cyberSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
-        const cfSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
-        let caSkillName;
-        let caSpecName;
-        let skillLevel;
-        let specLevel;
-        let caRRTarget;
-        let caRRItemType;
-        let caItemType;
-        let attackValue;
-        let caLinkedAttribute;
-        if (cyberSpec && pirSkill) {
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const pirRating = pirSkill.system?.rating ?? 0;
-          caSkillName = pirSkill.name;
-          caSpecName = cyberSpec.name;
-          skillLevel = pirRating + volonte;
-          specLevel = skillLevel + 2;
-          caRRTarget = cyberSpec.name;
-          caRRItemType = "specialization";
-          caItemType = "cyberdeck-attack";
-          caLinkedAttribute = "willpower";
-          const activeCyberdeck = defenderActorForRoll.items.find(
-            (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+      msgEl.querySelectorAll(".counter-attack-button").forEach((origBtn) => {
+        const btn = origBtn.cloneNode(true);
+        origBtn.replaceWith(btn);
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          const messageFlags = message.flags?.sra2;
+          if (!messageFlags) {
+            console.error("SRA2 | Counter-attack: missing message flags");
+            return;
+          }
+          const rollResult = messageFlags.rollResult;
+          const rollData = messageFlags.rollData;
+          if (!rollResult || !rollData) {
+            console.error("SRA2 | Counter-attack: missing roll data in flags");
+            return;
+          }
+          const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
+            { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+            "Counter-attack Attacker"
           );
-          attackValue = activeCyberdeck?.system?.attack ?? 1;
-        } else if (cfSpec && techSkill) {
-          const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const techRating = techSkill.system?.rating ?? 0;
-          caSkillName = techSkill.name;
-          caSpecName = cfSpec.name;
-          skillLevel = techRating + resonance;
-          specLevel = skillLevel + 2;
-          caRRTarget = cfSpec.name;
-          caRRItemType = "specialization";
-          caItemType = "complex-form";
-          caLinkedAttribute = "willpower";
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          attackValue = volonte;
-        } else if (pirSkill) {
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const pirRating = pirSkill.system?.rating ?? 0;
-          caSkillName = pirSkill.name;
-          caSpecName = null;
-          skillLevel = pirRating + volonte;
-          specLevel = void 0;
-          caRRTarget = caSkillName;
-          caRRItemType = "skill";
-          caItemType = "cyberdeck-attack";
-          caLinkedAttribute = "willpower";
-          const activeCyberdeck = defenderActorForRoll.items.find(
-            (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+          const caActionsDiv = event.currentTarget.closest(".attack-actions");
+          const caDefenderUuid = caActionsDiv?.dataset.defenderUuid;
+          const caDefenderTokenUuid = caActionsDiv?.dataset.defenderTokenUuid;
+          const caDefenderId = caActionsDiv?.dataset.defenderId;
+          const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
+            {
+              actorUuid: caDefenderUuid ?? messageFlags.defenderUuid,
+              tokenUuid: caDefenderTokenUuid ?? messageFlags.defenderTokenUuid,
+              actorId: caDefenderId ?? messageFlags.defenderId
+            },
+            "Counter-attack Defender"
           );
-          attackValue = activeCyberdeck?.system?.attack ?? 1;
-        } else {
-          const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          const techRating = techSkill?.system?.rating ?? 0;
-          caSkillName = techSkill?.name || "Technomancie";
-          caSpecName = null;
-          skillLevel = techRating + resonance;
-          specLevel = void 0;
-          caRRTarget = caSkillName;
-          caRRItemType = "skill";
-          caItemType = "complex-form";
-          caLinkedAttribute = "willpower";
-          const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
-          attackValue = volonte;
-        }
-        const { getRRSources: getRRSources2 } = SheetHelpers;
-        const rrList = getRRSources2(defenderActorForRoll, caRRItemType, caRRTarget);
-        const counterAttackerTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
-        const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
-        const cyberCounterRollData = {
-          itemType: caItemType,
-          itemName: "",
-          itemId: void 0,
-          damageValue: attackValue.toString(),
-          damageType: "matrix",
-          skillName: caSkillName,
-          specName: caSpecName,
-          linkedAttribute: caLinkedAttribute,
-          skillLevel,
-          specLevel,
-          actorId: defenderActorForRoll.id,
-          actorUuid: defenderActorForRoll.uuid,
-          attackerTokenUuid: counterAttackerTokenUuid,
-          defenderTokenUuid: originalAttackerTokenUuid,
-          rrList,
-          isDefend: false,
-          isCounterAttack: true,
-          attackRollResult: rollResult,
-          attackRollData: rollData,
-          linkedAttackSkill: caSkillName,
-          linkedAttackSpecialization: caSpecName,
-          linkedDefenseSkill: caSkillName,
-          linkedDefenseSpecialization: caSpecName,
-          meleeRange: "ok"
-        };
-        const { RollDialog: RollDialog2 } = applications;
-        const dialog = new RollDialog2(cyberCounterRollData);
-        if (attackerToken) dialog.targetToken = attackerToken;
-        dialog.render(true);
+          if (!defender) {
+            ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+            return;
+          }
+          const defenderActorForRoll = defenderToken?.actor ?? defender;
+          const availableWeapons = getMeleeWeaponsForCounterAttack(defenderActorForRoll, WEAPON_TYPES);
+          if (availableWeapons.length === 0) {
+            ui.notifications?.warn(game.i18n.localize("SRA2.COMBAT.COUNTER_ATTACK.NO_WEAPONS"));
+            return;
+          }
+          const counterAttackerTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+          const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
+          const counterAttackRollData = {
+            actorId: defenderActorForRoll.id,
+            actorUuid: messageFlags.defenderUuid ?? defenderActorForRoll.uuid,
+            attackerTokenUuid: messageFlags.defenderTokenUuid ?? counterAttackerTokenUuid,
+            // defender becomes the "attacker"
+            defenderTokenUuid: messageFlags.attackerTokenUuid ?? originalAttackerTokenUuid,
+            // original attacker = the "target"
+            availableWeapons,
+            isDefend: false,
+            isCounterAttack: true,
+            attackRollResult: rollResult,
+            attackRollData: rollData
+          };
+          const { RollDialog: RollDialog2 } = applications;
+          const dialog = new RollDialog2(counterAttackRollData);
+          if (attackerToken) dialog.targetToken = attackerToken;
+          dialog.render(true);
+        });
+      });
+      msgEl.querySelectorAll(".cyber-defend-button").forEach((origBtn) => {
+        const btn = origBtn.cloneNode(true);
+        origBtn.replaceWith(btn);
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          const messageFlags = message.flags?.sra2;
+          if (!messageFlags) return;
+          const rollResult = messageFlags.rollResult;
+          const rollData = messageFlags.rollData;
+          if (!rollResult || !rollData) return;
+          const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
+            { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+            "Cyber-defend Attacker"
+          );
+          const actionsDiv = event.currentTarget.closest(".attack-actions");
+          const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
+            {
+              actorUuid: actionsDiv?.dataset.defenderUuid ?? messageFlags.defenderUuid,
+              tokenUuid: actionsDiv?.dataset.defenderTokenUuid ?? messageFlags.defenderTokenUuid,
+              actorId: actionsDiv?.dataset.defenderId ?? messageFlags.defenderId
+            },
+            "Cyber-defend Defender"
+          );
+          if (!defender) {
+            ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+            return;
+          }
+          const defenderActorForRoll = defenderToken?.actor ?? defender;
+          const pirSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
+          const techSkillDef = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
+          const cyberSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
+          const cfSpecDef = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
+          let skillName;
+          let specName;
+          let skillLevel;
+          let specLevel;
+          let rrTarget;
+          let rrItemType;
+          let defLinkedAttribute;
+          if (cyberSpecDef && pirSkillDef) {
+            const activeCyberdeck = defenderActorForRoll.items.find(
+              (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+            );
+            const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
+            const pirRating = pirSkillDef.system?.rating ?? 0;
+            skillName = pirSkillDef.name;
+            specName = cyberSpecDef.name;
+            skillLevel = pirRating + fw;
+            specLevel = skillLevel + 2;
+            rrTarget = cyberSpecDef.name;
+            rrItemType = "specialization";
+            defLinkedAttribute = "firewall";
+          } else if (cfSpecDef && techSkillDef) {
+            const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            const techRating = techSkillDef.system?.rating ?? 0;
+            skillName = techSkillDef.name;
+            specName = cfSpecDef.name;
+            skillLevel = techRating + volonte;
+            specLevel = skillLevel + 2;
+            rrTarget = cfSpecDef.name;
+            rrItemType = "specialization";
+            defLinkedAttribute = "willpower";
+          } else if (pirSkillDef) {
+            const activeCyberdeck = defenderActorForRoll.items.find(
+              (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+            );
+            const fw = activeCyberdeck ? Math.max(0, (activeCyberdeck.system.firewall || 1) - (activeCyberdeck.system.firewallMalus || 0)) : 1;
+            const pirRating = pirSkillDef.system?.rating ?? 0;
+            skillName = pirSkillDef.name;
+            specName = null;
+            skillLevel = pirRating + fw;
+            specLevel = void 0;
+            rrTarget = skillName;
+            rrItemType = "skill";
+            defLinkedAttribute = "firewall";
+          } else {
+            const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            const techRating = techSkillDef?.system?.rating ?? 0;
+            skillName = techSkillDef?.name || "Technomancie";
+            specName = null;
+            skillLevel = techRating + volonte;
+            specLevel = void 0;
+            rrTarget = skillName;
+            rrItemType = "skill";
+            defLinkedAttribute = "willpower";
+          }
+          const { getRRSources: getRRSources2 } = SheetHelpers;
+          const rrList = getRRSources2(defenderActorForRoll, rrItemType, rrTarget);
+          const defenderTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+          const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
+          const defenseRollData = {
+            skillName,
+            specName,
+            linkedAttribute: defLinkedAttribute,
+            skillLevel,
+            specLevel,
+            actorId: defenderActorForRoll.id,
+            actorUuid: defenderActorForRoll.uuid,
+            attackerTokenUuid: defenderTokenUuid,
+            defenderTokenUuid: originalAttackerTokenUuid,
+            rrList,
+            isDefend: true,
+            isCounterAttack: false,
+            attackRollResult: rollResult,
+            attackRollData: rollData
+          };
+          const { RollDialog: RollDialog2 } = applications;
+          const dialog = new RollDialog2(defenseRollData);
+          if (attackerToken) dialog.targetToken = attackerToken;
+          dialog.render(true);
+        });
+      });
+      msgEl.querySelectorAll(".cyber-counterattack-button").forEach((origBtn) => {
+        const btn = origBtn.cloneNode(true);
+        origBtn.replaceWith(btn);
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          const messageFlags = message.flags?.sra2;
+          if (!messageFlags) return;
+          const rollResult = messageFlags.rollResult;
+          const rollData = messageFlags.rollData;
+          if (!rollResult || !rollData) return;
+          const { actor: _attacker, token: attackerToken } = loadCombatantFromFlags(
+            { actorUuid: messageFlags.attackerUuid, tokenUuid: messageFlags.attackerTokenUuid, actorId: messageFlags.attackerId },
+            "Cyber-counterattack Attacker"
+          );
+          const actionsDiv = event.currentTarget.closest(".attack-actions");
+          const { actor: defender, token: defenderToken } = loadCombatantFromFlags(
+            {
+              actorUuid: actionsDiv?.dataset.defenderUuid ?? messageFlags.defenderUuid,
+              tokenUuid: actionsDiv?.dataset.defenderTokenUuid ?? messageFlags.defenderTokenUuid,
+              actorId: actionsDiv?.dataset.defenderId ?? messageFlags.defenderId
+            },
+            "Cyber-counterattack Defender"
+          );
+          if (!defender) {
+            ui.notifications?.error(game.i18n.localize("SRA2.COMBAT.CANNOT_FIND_TARGET"));
+            return;
+          }
+          const defenderActorForRoll = defenderToken?.actor ?? defender;
+          const pirSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.CRACKING);
+          const techSkill = findSkillBySlug(defenderActorForRoll, SKILL_SLUGS.TECHNOMANCER);
+          const cyberSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.CYBERCOMBAT, SKILL_SLUGS.CRACKING);
+          const cfSpec = findSpecBySlug(defenderActorForRoll, SPEC_SLUGS.COMPLEX_FORMS, SKILL_SLUGS.TECHNOMANCER);
+          let caSkillName;
+          let caSpecName;
+          let skillLevel;
+          let specLevel;
+          let caRRTarget;
+          let caRRItemType;
+          let caItemType;
+          let attackValue;
+          let caLinkedAttribute;
+          if (cyberSpec && pirSkill) {
+            const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            const pirRating = pirSkill.system?.rating ?? 0;
+            caSkillName = pirSkill.name;
+            caSpecName = cyberSpec.name;
+            skillLevel = pirRating + volonte;
+            specLevel = skillLevel + 2;
+            caRRTarget = cyberSpec.name;
+            caRRItemType = "specialization";
+            caItemType = "cyberdeck-attack";
+            caLinkedAttribute = "willpower";
+            const activeCyberdeck = defenderActorForRoll.items.find(
+              (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+            );
+            attackValue = activeCyberdeck?.system?.attack ?? 1;
+          } else if (cfSpec && techSkill) {
+            const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            const techRating = techSkill.system?.rating ?? 0;
+            caSkillName = techSkill.name;
+            caSpecName = cfSpec.name;
+            skillLevel = techRating + resonance;
+            specLevel = skillLevel + 2;
+            caRRTarget = cfSpec.name;
+            caRRItemType = "specialization";
+            caItemType = "complex-form";
+            caLinkedAttribute = "willpower";
+            const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            attackValue = volonte;
+          } else if (pirSkill) {
+            const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            const pirRating = pirSkill.system?.rating ?? 0;
+            caSkillName = pirSkill.name;
+            caSpecName = null;
+            skillLevel = pirRating + volonte;
+            specLevel = void 0;
+            caRRTarget = caSkillName;
+            caRRItemType = "skill";
+            caItemType = "cyberdeck-attack";
+            caLinkedAttribute = "willpower";
+            const activeCyberdeck = defenderActorForRoll.items.find(
+              (i) => i.type === "feat" && i.system.featType === "cyberdeck" && i.system.active === true
+            );
+            attackValue = activeCyberdeck?.system?.attack ?? 1;
+          } else {
+            const resonance = defenderActorForRoll.system?.attributes?.resonance ?? defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            const techRating = techSkill?.system?.rating ?? 0;
+            caSkillName = techSkill?.name || "Technomancie";
+            caSpecName = null;
+            skillLevel = techRating + resonance;
+            specLevel = void 0;
+            caRRTarget = caSkillName;
+            caRRItemType = "skill";
+            caItemType = "complex-form";
+            caLinkedAttribute = "willpower";
+            const volonte = defenderActorForRoll.system?.attributes?.willpower ?? 0;
+            attackValue = volonte;
+          }
+          const { getRRSources: getRRSources2 } = SheetHelpers;
+          const rrList = getRRSources2(defenderActorForRoll, caRRItemType, caRRTarget);
+          const counterAttackerTokenUuid = defenderToken?.uuid ?? defenderToken?.document?.uuid ?? messageFlags.defenderTokenUuid;
+          const originalAttackerTokenUuid = attackerToken?.uuid ?? attackerToken?.document?.uuid ?? messageFlags.attackerTokenUuid;
+          const cyberCounterRollData = {
+            itemType: caItemType,
+            itemName: "",
+            itemId: void 0,
+            damageValue: attackValue.toString(),
+            damageType: "matrix",
+            skillName: caSkillName,
+            specName: caSpecName,
+            linkedAttribute: caLinkedAttribute,
+            skillLevel,
+            specLevel,
+            actorId: defenderActorForRoll.id,
+            actorUuid: defenderActorForRoll.uuid,
+            attackerTokenUuid: counterAttackerTokenUuid,
+            defenderTokenUuid: originalAttackerTokenUuid,
+            rrList,
+            isDefend: false,
+            isCounterAttack: true,
+            attackRollResult: rollResult,
+            attackRollData: rollData,
+            linkedAttackSkill: caSkillName,
+            linkedAttackSpecialization: caSpecName,
+            linkedDefenseSkill: caSkillName,
+            linkedDefenseSpecialization: caSpecName,
+            meleeRange: "ok"
+          };
+          const { RollDialog: RollDialog2 } = applications;
+          const dialog = new RollDialog2(cyberCounterRollData);
+          if (attackerToken) dialog.targetToken = attackerToken;
+          dialog.render(true);
+        });
       });
     });
     Hooks.on("getTokenHUDOptions", (_hud, buttons, token) => {
@@ -21115,15 +21293,16 @@ class SRA2System {
       }
     });
     const addRollDiceButton = () => {
-      const chatForm = $(".chat-form");
-      if (chatForm.length === 0) {
+      const chatForm = document.querySelector(".chat-form");
+      if (!chatForm) {
         return false;
       }
-      if (chatForm.find(".sra2-roll-dice-container").length > 0) {
+      if (chatForm.querySelector(".sra2-roll-dice-container")) {
         return true;
       }
-      const rollDiceContainer = $(`
-        <div class="sra2-roll-dice-container">
+      const rollDiceContainer = document.createElement("div");
+      rollDiceContainer.className = "sra2-roll-dice-container";
+      rollDiceContainer.innerHTML = `
           <div class="sra2-roll-dice-inputs">
             <input type="text" value="3" class="sra2-dice-count-input" placeholder="${game.i18n.localize("SRA2.CHAT.DICE_COUNT")}" title="${game.i18n.localize("SRA2.CHAT.DICE_COUNT")}">
             <input type="text" value="0" class="sra2-risk-dice-input" placeholder="${game.i18n.localize("SRA2.CHAT.RISK_DICE")}" title="${game.i18n.localize("SRA2.CHAT.RISK_DICE")}">
@@ -21146,11 +21325,10 @@ class SRA2System {
           <button type="button" class="sra2-roll-dice-button" title="${game.i18n.localize("SRA2.CHAT.ROLL_DICE")}">
             <i class="fas fa-dice-d6"></i> ${game.i18n.localize("SRA2.CHAT.ROLL_DICE")}
           </button>
-        </div>
-      `);
+      `;
       chatForm.prepend(rollDiceContainer);
-      const rollDiceButton = rollDiceContainer.find(".sra2-roll-dice-button");
-      rollDiceButton.on("click", async (event) => {
+      const rollDiceButton = rollDiceContainer.querySelector(".sra2-roll-dice-button");
+      rollDiceButton.addEventListener("click", async (event) => {
         event.preventDefault();
         event.stopPropagation();
         let actor = game.user?.character || { id: game.user?.id, uuid: `User.${game.user?.id}`, name: game.user?.name };
@@ -21158,10 +21336,10 @@ class SRA2System {
           ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.NO_ACTOR") || "No controlled character");
           return;
         }
-        const diceCount = parseInt(rollDiceContainer.find(".sra2-dice-count-input").val()) || 0;
-        const riskDiceCount = parseInt(rollDiceContainer.find(".sra2-risk-dice-input").val()) || 0;
-        const rr = parseInt(rollDiceContainer.find(".sra2-rr-input").val()) || 0;
-        const rollMode = rollDiceContainer.find('input[name="sra2-roll-mode"]:checked').val() || "normal";
+        const diceCount = parseInt(rollDiceContainer.querySelector(".sra2-dice-count-input")?.value || "0") || 0;
+        const riskDiceCount = parseInt(rollDiceContainer.querySelector(".sra2-risk-dice-input")?.value || "0") || 0;
+        const rr = parseInt(rollDiceContainer.querySelector(".sra2-rr-input")?.value || "0") || 0;
+        const rollMode = rollDiceContainer.querySelector('input[name="sra2-roll-mode"]:checked')?.value || "normal";
         if (diceCount <= 0) {
           ui.notifications?.warn(game.i18n.localize("SRA2.CHAT.INVALID_DICE_COUNT"));
           return;
@@ -21345,12 +21523,13 @@ class SRA2System {
         }
       },
       render: (html) => {
-        html.find(".bookmark-item").on("click", async (event) => {
-          const itemId = $(event.currentTarget).data("item-id");
+        const dlgEl = html[0];
+        dlgEl.querySelectorAll(".bookmark-item").forEach((elem) => elem.addEventListener("click", async (event) => {
+          const itemId = event.currentTarget.dataset.itemId;
           const item = actor.items.get(itemId);
           if (!item) return;
           item.sheet?.render(true);
-        });
+        }));
       }
     }, { width: 350 }).render(true);
   }

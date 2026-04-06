@@ -87,12 +87,13 @@ export class NPCGeneratorDialog extends Dialog {
   }
 
   private static getOptions(html: JQuery): NPCGeneratorOptions {
+    const el = html[0] as HTMLElement;
     return {
-      powerLevel: html.find('[name="powerLevel"]').val() as string,
-      archetype: html.find('[name="archetype"]').val() as string,
-      metatype: html.find('[name="metatype"]').val() as string,
-      gender: html.find('[name="gender"]').val() as string,
-      count: parseInt(html.find('[name="count"]').val() as string, 10) || 1,
+      powerLevel: (el.querySelector('[name="powerLevel"]') as HTMLSelectElement)?.value || '',
+      archetype: (el.querySelector('[name="archetype"]') as HTMLSelectElement)?.value || '',
+      metatype: (el.querySelector('[name="metatype"]') as HTMLSelectElement)?.value || '',
+      gender: (el.querySelector('[name="gender"]') as HTMLSelectElement)?.value || '',
+      count: parseInt((el.querySelector('[name="count"]') as HTMLInputElement)?.value || '1', 10) || 1,
     };
   }
 

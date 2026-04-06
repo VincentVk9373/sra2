@@ -1080,14 +1080,15 @@ export class RollDialog extends Application {
 
   override activateListeners(html: JQuery): void {
     super.activateListeners(html);
-    
+    const el = html[0] as HTMLElement;
+
     // Close button
-    html.find('.close-button').on('click', () => {
+    el.querySelectorAll<HTMLElement>('.close-button').forEach(elem => elem.addEventListener('click', () => {
       this.close();
-    });
+    }));
 
     // Weapon selection for counter-attack
-    html.find('.weapon-select').on('change', async (event) => {
+    el.querySelectorAll<HTMLSelectElement>('.weapon-select').forEach(elem => elem.addEventListener('change', async (event) => {
       const select = event.currentTarget as HTMLSelectElement;
       const weaponId = select.value;
       
@@ -1252,10 +1253,10 @@ export class RollDialog extends Application {
 
       // Re-render to update the UI
       this.render();
-    });
+    }));
 
     // Skill/Spec selection dropdown (only if no threshold)
-    html.find('.skill-dropdown').on('change', (event) => {
+    el.querySelectorAll<HTMLSelectElement>('.skill-dropdown').forEach(elem => elem.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement;
       
       // Don't allow changes if threshold is set
@@ -1350,10 +1351,10 @@ export class RollDialog extends Application {
         // Re-render after RR is updated
         this.render();
       }
-    });
+    }));
 
     // Attribute selection dropdown
-    html.find('.attribute-dropdown').on('change', (event) => {
+    el.querySelectorAll<HTMLSelectElement>('.attribute-dropdown').forEach(elem => elem.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement;
       const selectedAttribute = select.value;
       
@@ -1419,10 +1420,10 @@ export class RollDialog extends Application {
       
       // Re-render to update UI
       this.render();
-    });
+    }));
 
     // RR checkbox toggles
-    html.find('.rr-checkbox').on('change', (event) => {
+    el.querySelectorAll<HTMLInputElement>('.rr-checkbox').forEach(elem => elem.addEventListener('change', (event) => {
       const checkbox = event.currentTarget as HTMLInputElement;
       const rrId = checkbox.dataset.rrId;
       const enabled = checkbox.checked;
@@ -1471,10 +1472,10 @@ export class RollDialog extends Application {
         // Re-render to update total RR and risk dice selection
         this.render();
       }
-    });
+    }));
 
     // Range selection
-    html.find('.range-dropdown').on('change', (event) => {
+    el.querySelectorAll<HTMLSelectElement>('.range-dropdown').forEach(elem => elem.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement;
       const rangeValue = select.value;
       
@@ -1523,10 +1524,10 @@ export class RollDialog extends Application {
       
       // Re-render to update UI
       this.render();
-    });
+    }));
 
     // Roll mode selection
-    html.find('input[name="roll-mode"]').on('change', (event) => {
+    el.querySelectorAll<HTMLInputElement>('input[name="roll-mode"]').forEach(elem => elem.addEventListener('change', (event) => {
       // Check if actor has severe wound - prevent changing mode
       let hasSevereWound = false;
       if (this.actor) {
@@ -1551,23 +1552,24 @@ export class RollDialog extends Application {
       if (modeValue === 'normal' || modeValue === 'disadvantage' || modeValue === 'advantage') {
         this.rollMode = modeValue as 'normal' | 'disadvantage' | 'advantage';
       }
-    });
+    }));
 
     // Cover bonus input (defense only) — read on blur to avoid re-render while typing
-    html.find('.cover-bonus-input').on('blur', (event) => {
+    el.querySelectorAll<HTMLInputElement>('.cover-bonus-input').forEach(elem => elem.addEventListener('blur', (event) => {
       this.coverBonus = parseInt((event.currentTarget as HTMLInputElement).value) || 0;
-    });
+    }));
 
     // Area of Effect zone input
-    html.find('.aoe-zone-input').on('input', (event) => {
+    el.querySelectorAll<HTMLInputElement>('.aoe-zone-input').forEach(elem => elem.addEventListener('input', (event) => {
       const val = parseInt((event.currentTarget as HTMLInputElement).value) || 0;
       this.aoeZone = Math.max(0, val);
       // Update diameter display
-      html.find('.aoe-diameter').text(`${this.aoeZone * 3}m`);
-    });
+      const diameterEl = el.querySelector('.aoe-diameter');
+      if (diameterEl) diameterEl.textContent = `${this.aoeZone * 3}m`;
+    }));
 
     // Manual RR bonus input
-    html.find('.manual-rr-bonus-input').on('input', (event) => {
+    el.querySelectorAll<HTMLInputElement>('.manual-rr-bonus-input').forEach(elem => elem.addEventListener('input', (event) => {
       const input = event.currentTarget as HTMLInputElement;
       const inputValue = input.value;
       this.manualRRBonus = parseInt(inputValue) || 0;
@@ -1618,17 +1620,17 @@ export class RollDialog extends Application {
       if (manualRRBonus !== 0) {
         this.render();
       }
-    });
+    }));
 
     // Risk dice selection
-    html.find('.dice-icon').on('click', (event) => {
-      const diceIcon = $(event.currentTarget);
-      const diceIndex = parseInt(diceIcon.data('dice-index') || '0');
-      const isCurrentlySelected = diceIcon.hasClass('risk-dice');
-      
+    el.querySelectorAll<HTMLElement>('.dice-icon').forEach(elem => elem.addEventListener('click', (event) => {
+      const diceIcon = event.currentTarget as HTMLElement;
+      const diceIndex = parseInt(diceIcon.dataset.diceIndex || '0');
+      const isCurrentlySelected = diceIcon.classList.contains('risk-dice');
+
       // Mark as manually set when user clicks
       this.riskDiceManuallySet = true;
-      
+
       // If clicking on the last selected dice, deselect all
       if (isCurrentlySelected && diceIndex === this.riskDiceCount - 1) {
         this.riskDiceCount = 0;
@@ -1636,13 +1638,13 @@ export class RollDialog extends Application {
         // Otherwise, select all dice up to and including the clicked one
         this.riskDiceCount = diceIndex + 1;
       }
-      
+
       // Re-render to update dice selection
       this.render();
-    });
+    }));
 
     // Roll Dice button
-    html.find('.roll-dice-button').on('click', async () => {
+    el.querySelectorAll<HTMLElement>('.roll-dice-button').forEach(elem => elem.addEventListener('click', async () => {
       // Calculate final RR based on enabled checkboxes
       let finalRR = 0;
       if (this.rollData.rrList && Array.isArray(this.rollData.rrList)) {
@@ -1765,7 +1767,7 @@ export class RollDialog extends Application {
       
       // Close the dialog
       this.close();
-    });
+    }));
   }
 
   private updateRRForSkill(skillName: string, linkedAttribute: string, dicePool: number): void {

@@ -9,8 +9,8 @@
   "title": "Shadowrun Anarchy 2",
   "description": "Shadowrun Anarchy 2 unofficial system for FoundryVTT",
   "compatibility": {
-    "minimum": 13,
-    "verified": 13
+    "minimum": 14,
+    "verified": 14
   },
   "authors": [
     {
