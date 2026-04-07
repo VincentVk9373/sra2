@@ -546,7 +546,23 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     } else {
       const resolved = findItemInGame(phantom.type, phantom.name);
       if (resolved) {
-        phantom.name = resolved.name;
+        // If the found item has a slug, use it and resolve via cache for localized name
+        if (resolved.system?.slug) {
+          phantom.slug = resolved.system.slug;
+          phantom.name = slugCache[resolved.system.slug] || resolved.name;
+        } else {
+          phantom.name = resolved.name;
+        }
+      } else {
+        // Reverse lookup: rrTarget might be a display name — find matching slug in cache
+        const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
+        for (const [slug, name] of Object.entries(slugCache)) {
+          if (ItemSearch.normalizeSearchText(name) === normalizedName) {
+            phantom.slug = slug;
+            phantom.name = name;
+            break;
+          }
+        }
       }
     }
   }

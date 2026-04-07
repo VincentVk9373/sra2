@@ -1194,102 +1194,66 @@ export class CharacterSheet extends ActorSheet {
     const phantomName = element.dataset.phantomName;
     const phantomSlug = element.dataset.phantomSlug;
     const phantomType = element.dataset.phantomType as 'skill' | 'specialization';
-    const linkedAttribute = element.dataset.attribute;
 
-    if (!phantomName || !linkedAttribute) return;
+    if (!phantomName) return;
 
-    // Get RR sources using slug (rrTarget in feats stores slugs after migration)
-    const rrSources = SheetHelpers.getRRSources(this.actor, phantomType, phantomSlug || phantomName);
+    // Use the pre-calculated phantom data (same source as the sheet display)
+    const phantomRRs = SheetHelpers.getPhantomRRs(this.actor);
+    const phantom = phantomRRs.find(p =>
+      (phantomSlug && p.slug === phantomSlug) ||
+      p.name === phantomName ||
+      ItemSearch.normalizeSearchText(p.name) === ItemSearch.normalizeSearchText(phantomName)
+    );
 
-    // Try to find associated skill on the actor
+    if (!phantom) return;
+
+    const linkedAttribute = phantom.linkedAttribute;
+    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
+
+    // Collect RR: phantom sources + skill/attribute RR if actor has the linked skill
+    let rrList = [...phantom.sources];
     let associatedSkill: any = null;
-    let associatedSpec: any = null;
 
-    if (phantomType === 'specialization') {
-      // Use metadata cache (covers compendiums) instead of findItemInGame (world items only)
-      const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = (globalThis as any).SRA2_SLUG_METADATA_CACHE || {};
-      const specMeta = phantomSlug ? metadataCache[phantomSlug] : undefined;
-      if (specMeta?.linkedSkill) {
-        const linkedSkillSlug = specMeta.linkedSkill;
-        // Check if actor has this skill (by slug or normalized name)
-        associatedSkill = this.actor.items.find((i: any) =>
-          i.type === 'skill' && (i.system?.slug === linkedSkillSlug || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillSlug))
-        );
-      }
-      // Also check if actor has the spec itself (by slug or normalized name)
-      associatedSpec = this.actor.items.find((i: any) =>
-        i.type === 'specialization' && (i.system?.slug === phantomSlug || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantomName))
-      );
-    } else if (phantomType === 'skill') {
-      // For phantom skill, check if actor has the skill (by slug or normalized name)
+    if (phantom.linkedSkillOnActor && phantom.linkedSkillName) {
       associatedSkill = this.actor.items.find((i: any) =>
-        i.type === 'skill' && (i.system?.slug === phantomSlug || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantomName))
+        i.type === 'skill' && (i.system?.slug === phantom.linkedSkillName || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantom.linkedSkillName))
       );
     }
-    
-    // Build roll request based on what we found
+
     if (associatedSkill) {
-      // Pre-select the associated skill with the phantom RR
-      const skillSystem = associatedSkill.system as any;
-      const skillAttribute = skillSystem.linkedAttribute || linkedAttribute;
-      const attributeValue = (this.actor.system as any).attributes?.[skillAttribute] || 0;
-      const skillRating = skillSystem.rating || 0;
-      
-      // Combine skill RR sources with phantom RR sources
+      // Actor has the linked skill: combine skill RR + attribute RR + phantom RR
       const skillRRSources = this.getRRSources('skill', associatedSkill.name);
-      const attributeRRSources = this.getRRSources('attribute', skillAttribute);
-      const combinedRRSources = [...skillRRSources, ...attributeRRSources, ...rrSources];
-      
+      const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
+      rrList = [...skillRRSources, ...attributeRRSources, ...rrList];
+
       DiceRoller.handleRollRequest({
         itemType: 'skill',
         itemName: associatedSkill.name,
         skillName: associatedSkill.name,
-        skillLevel: attributeValue + skillRating,
-        linkedAttribute: skillAttribute,
-        actorId: this.actor.id ?? undefined,
-        actorUuid: this.actor.uuid,
-        actorName: this.actor.name,
-        rrList: combinedRRSources
-      });
-    } else if (associatedSpec) {
-      // Pre-select the associated spec (without +2 since skill is missing)
-      const specSystem = associatedSpec.system as any;
-      const specAttribute = specSystem.linkedAttribute || linkedAttribute;
-      const attributeValue = (this.actor.system as any).attributes?.[specAttribute] || 0;
-      
-      // Get spec RR sources combined with phantom RR
-      const specRRSources = this.getRRSources('specialization', associatedSpec.name);
-      const attributeRRSources = this.getRRSources('attribute', specAttribute);
-      const combinedRRSources = [...specRRSources, ...attributeRRSources, ...rrSources];
-      
-      DiceRoller.handleRollRequest({
-        itemType: 'specialization',
-        itemName: associatedSpec.name,
-        specName: associatedSpec.name,
-        skillName: specSystem.linkedSkill || phantomName,
-        skillLevel: attributeValue, // No +2 since no linked skill on actor
-        linkedAttribute: specAttribute,
-        actorId: this.actor.id ?? undefined,
-        actorUuid: this.actor.uuid,
-        actorName: this.actor.name,
-        rrList: combinedRRSources
-      });
-    } else {
-      // No associated skill or spec found, open with phantom in dropdown
-      const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-      const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-      
-      DiceRoller.handleRollRequest({
-        itemType: phantomType,
-        itemName: `${phantomName} (${attributeLabel})`,
-        skillName: phantomType === 'skill' ? phantomName : undefined,
-        specName: phantomType === 'specialization' ? phantomName : undefined,
-        skillLevel: attributeValue,
+        skillLevel: phantom.totalDicePool,
         linkedAttribute: linkedAttribute,
         actorId: this.actor.id ?? undefined,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
-        rrList: rrSources
+        rrList
+      });
+    } else {
+      // No linked skill on actor: use phantom data directly
+      const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
+      rrList = [...attributeRRSources, ...rrList];
+      const attributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+
+      DiceRoller.handleRollRequest({
+        itemType: phantomType,
+        itemName: `${phantom.name} (${attributeLabel})`,
+        skillName: phantomType === 'skill' ? phantom.name : undefined,
+        specName: phantomType === 'specialization' ? phantom.name : undefined,
+        skillLevel: phantom.totalDicePool,
+        linkedAttribute: linkedAttribute,
+        actorId: this.actor.id ?? undefined,
+        actorUuid: this.actor.uuid,
+        actorName: this.actor.name,
+        rrList
       });
     }
   }
