@@ -1178,11 +1178,11 @@
                             <div class="row skill-item phantom-rr" title="{{localize 'SRA2.RR.PHANTOM_TOOLTIP'}}: {{this.linkedAttributeLabel}}">
                                 <div class="name-wrapper spe">
                                     <div class="arrow fa fa-turn-up"></div>
-                                    <div class="name phantom-name clickable" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}">
+                                    <div class="name phantom-name clickable" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-slug="{{this.slug}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}">
                                         <i class="fas fa-ghost" style="margin-right: 4px; opacity: 0.6;"></i>{{this.name}}
                                     </div>
                                 </div>
-                                <div class="dice clickable phantom-dice" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}"
+                                <div class="dice clickable phantom-dice" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-slug="{{this.slug}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
                                     {{this.totalDicePool}} <div class="fa fa-dice-d6"></div>
                                 </div>
@@ -1255,12 +1255,12 @@
                             <div class="row skill-item phantom-rr" title="{{localize 'SRA2.RR.PHANTOM_TOOLTIP'}}: {{this.linkedAttributeLabel}}">
                                 <div class="name-wrapper {{#if (eq this.type 'specialization')}}spe{{/if}}">
                                     {{#if (eq this.type 'specialization')}}<div class="arrow fa fa-turn-up"></div>{{/if}}
-                                    <div class="name phantom-name clickable" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}">
+                                    <div class="name phantom-name clickable" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-slug="{{this.slug}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}">
                                         <i class="fas fa-ghost" style="margin-right: 4px; opacity: 0.6;"></i>{{this.name}}
                                         <span class="phantom-hint">({{this.linkedAttributeLabel}})</span>
                                     </div>
                                 </div>
-                                <div class="dice clickable phantom-dice" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}"
+                                <div class="dice clickable phantom-dice" data-action="roll-phantom-rr" data-phantom-name="{{this.name}}" data-phantom-slug="{{this.slug}}" data-phantom-type="{{this.type}}" data-attribute="{{this.linkedAttribute}}" data-rr="{{this.rr}}"
                                     title="{{localize 'SRA2.SKILLS.ROLL'}}">
                                     {{this.totalDicePool}} <div class="fa fa-dice-d6"></div>
                                 </div>

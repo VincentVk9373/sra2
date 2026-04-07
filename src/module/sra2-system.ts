@@ -1941,8 +1941,9 @@ export class SRA2System {
   private async buildSkillSlugCache(): Promise<void> {
     const cache: Record<string, string> = {};
     const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = {};
+    const worldSlugs = new Set<string>();
 
-    // Load from world items first (skills and specializations)
+    // Load from world items first (skills and specializations) — these always take priority
     if (game.items) {
       for (const item of game.items as any) {
         if ((item.type === 'skill' || item.type === 'specialization') && item.system?.slug) {
@@ -1951,23 +1952,34 @@ export class SRA2System {
             linkedSkill: item.system.linkedSkill,
             linkedAttribute: item.system.linkedAttribute,
           };
+          worldSlugs.add(item.system.slug);
         }
       }
     }
 
-    // Load from compendiums
-    for (const pack of game.packs as any) {
+    // Load from compendiums — sort so the active-language pack loads last (overwrites other languages)
+    const lang = (game as any).i18n?.lang || 'en';
+    const sortedPacks = [...(game.packs as any)].sort((a: any, b: any) => {
+      const aMatch = a.metadata?.name?.endsWith(`-${lang}`) || a.metadata?.id?.endsWith(`-${lang}`);
+      const bMatch = b.metadata?.name?.endsWith(`-${lang}`) || b.metadata?.id?.endsWith(`-${lang}`);
+      if (aMatch && !bMatch) return 1;
+      if (!aMatch && bMatch) return -1;
+      return 0;
+    });
+
+    for (const pack of sortedPacks) {
       if (pack.documentName !== 'Item') continue;
+      const isLangPack = pack.metadata?.name?.endsWith(`-${lang}`) || pack.metadata?.id?.endsWith(`-${lang}`);
       try {
         const index = await pack.getIndex({ fields: ['system.slug', 'system.linkedSkill', 'system.linkedAttribute'] });
         for (const entry of index) {
           if ((entry.type === 'skill' || entry.type === 'specialization') && (entry as any).system?.slug) {
             const slug = (entry as any).system.slug;
-            // Don't overwrite world item names (they take priority)
-            if (!cache[slug]) {
+            // World items always take priority; active-language pack overwrites other compendium entries
+            if (!worldSlugs.has(slug) && (isLangPack || !cache[slug])) {
               cache[slug] = entry.name;
             }
-            if (!metadataCache[slug]) {
+            if (!worldSlugs.has(slug) && (isLangPack || !metadataCache[slug])) {
               metadataCache[slug] = {
                 linkedSkill: (entry as any).system.linkedSkill,
                 linkedAttribute: (entry as any).system.linkedAttribute,

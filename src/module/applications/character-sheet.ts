@@ -1192,38 +1192,38 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const phantomName = element.dataset.phantomName;
+    const phantomSlug = element.dataset.phantomSlug;
     const phantomType = element.dataset.phantomType as 'skill' | 'specialization';
     const linkedAttribute = element.dataset.attribute;
-    
+
     if (!phantomName || !linkedAttribute) return;
 
-    // Get RR sources for this phantom
-    const rrSources = SheetHelpers.getRRSources(this.actor, phantomType, phantomName);
-    
+    // Get RR sources using slug (rrTarget in feats stores slugs after migration)
+    const rrSources = SheetHelpers.getRRSources(this.actor, phantomType, phantomSlug || phantomName);
+
     // Try to find associated skill on the actor
     let associatedSkill: any = null;
     let associatedSpec: any = null;
-    
+
     if (phantomType === 'specialization') {
-      // For phantom spec, find the linked skill from compendiums
-      const specTemplate = SheetHelpers.findItemInGame('specialization', phantomName);
-      if (specTemplate) {
-        const linkedSkillName = (specTemplate.system as any).linkedSkill;
-        if (linkedSkillName) {
-          // Check if actor has this skill
-          associatedSkill = this.actor.items.find((i: any) =>
-            i.type === 'skill' && (ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
-          );
-        }
+      // Use metadata cache (covers compendiums) instead of findItemInGame (world items only)
+      const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = (globalThis as any).SRA2_SLUG_METADATA_CACHE || {};
+      const specMeta = phantomSlug ? metadataCache[phantomSlug] : undefined;
+      if (specMeta?.linkedSkill) {
+        const linkedSkillSlug = specMeta.linkedSkill;
+        // Check if actor has this skill (by slug or normalized name)
+        associatedSkill = this.actor.items.find((i: any) =>
+          i.type === 'skill' && (i.system?.slug === linkedSkillSlug || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(linkedSkillSlug))
+        );
       }
-      // Also check if actor has the spec itself (for pre-selection without +2)
-      associatedSpec = this.actor.items.find((i: any) => 
-        i.type === 'specialization' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantomName)
+      // Also check if actor has the spec itself (by slug or normalized name)
+      associatedSpec = this.actor.items.find((i: any) =>
+        i.type === 'specialization' && (i.system?.slug === phantomSlug || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantomName))
       );
     } else if (phantomType === 'skill') {
-      // For phantom skill, check if actor has the skill
-      associatedSkill = this.actor.items.find((i: any) => 
-        i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantomName)
+      // For phantom skill, check if actor has the skill (by slug or normalized name)
+      associatedSkill = this.actor.items.find((i: any) =>
+        i.type === 'skill' && (i.system?.slug === phantomSlug || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantomName))
       );
     }
     

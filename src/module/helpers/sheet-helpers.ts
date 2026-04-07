@@ -407,12 +407,13 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
 
       if (rrType !== itemType || rrValue <= 0) continue;
 
-      // Compare by normalized name or by slug
+      // Compare by normalized name, by slug, or direct slug-to-slug (for phantom items not on actor)
       const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
       const matchByName = normalizedRRTarget === normalizedItemName;
       const matchBySlug = itemSlug && rrTarget === itemSlug;
+      const matchByDirectSlug = !itemSlug && rrTarget === itemName;
 
-      if (matchByName || matchBySlug) {
+      if (matchByName || matchBySlug || matchByDirectSlug) {
         sources.push({
           featName: feat.name,
           rrValue: rrValue,
@@ -439,6 +440,7 @@ export function calculateRR(actor: any, itemType: 'skill' | 'specialization' | '
  */
 export interface PhantomRR {
   name: string;
+  slug?: string;
   type: 'skill' | 'specialization';
   linkedAttribute: string;
   linkedAttributeLabel: string;
@@ -537,6 +539,7 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
   const phantomSlugs = new Map<PhantomRR, string>(); // Keep original slug for metadata lookup
   for (const phantom of phantomRRs) {
     phantomSlugs.set(phantom, phantom.name); // Store original slug/name before resolution
+    phantom.slug = phantom.name; // Preserve original slug for template/roll lookup
     // Try cache first (covers compendiums), then world items
     if (slugCache[phantom.name]) {
       phantom.name = slugCache[phantom.name];
