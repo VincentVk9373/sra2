@@ -536,31 +536,31 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
   // Also keep track of original slugs for metadata lookup
   const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
   const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = (globalThis as any).SRA2_SLUG_METADATA_CACHE || {};
+  const nameToSlugCache: Record<string, string> = (globalThis as any).SRA2_NAME_TO_SLUG_CACHE || {};
   const phantomSlugs = new Map<PhantomRR, string>(); // Keep original slug for metadata lookup
   for (const phantom of phantomRRs) {
     phantomSlugs.set(phantom, phantom.name); // Store original slug/name before resolution
     phantom.slug = phantom.name; // Preserve original slug for template/roll lookup
-    // Try cache first (covers compendiums), then world items
+
     if (slugCache[phantom.name]) {
+      // rrTarget is a slug — resolve to localized display name
       phantom.name = slugCache[phantom.name];
     } else {
-      const resolved = findItemInGame(phantom.type, phantom.name);
-      if (resolved) {
-        // If the found item has a slug, use it and resolve via cache for localized name
-        if (resolved.system?.slug) {
-          phantom.slug = resolved.system.slug;
-          phantom.name = slugCache[resolved.system.slug] || resolved.name;
-        } else {
-          phantom.name = resolved.name;
-        }
+      // rrTarget might be a display name (unmigrated) — use reverse index to find slug
+      const normalizedName = phantom.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const reverseSlug = nameToSlugCache[normalizedName];
+      if (reverseSlug && slugCache[reverseSlug]) {
+        phantom.slug = reverseSlug;
+        phantom.name = slugCache[reverseSlug];
       } else {
-        // Reverse lookup: rrTarget might be a display name — find matching slug in cache
-        const normalizedName = ItemSearch.normalizeSearchText(phantom.name);
-        for (const [slug, name] of Object.entries(slugCache)) {
-          if (ItemSearch.normalizeSearchText(name) === normalizedName) {
-            phantom.slug = slug;
-            phantom.name = name;
-            break;
+        // Last resort: search world items
+        const resolved = findItemInGame(phantom.type, phantom.name);
+        if (resolved) {
+          if (resolved.system?.slug) {
+            phantom.slug = resolved.system.slug;
+            phantom.name = slugCache[resolved.system.slug] || resolved.name;
+          } else {
+            phantom.name = resolved.name;
           }
         }
       }

@@ -54,6 +54,7 @@ import { Migration_13_3_2 } from "./migration/migration-13.3.2.mjs";
 import { Migration_13_4_0 } from "./migration/migration-13.4.0.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_4_4 } from "./migration/migration-13.4.4.mjs";
+import { Migration_13_4_5 } from "./migration/migration-13.4.5.mjs";
 import { registerGeminiSetting, isGeminiConfigured, generateActorImage } from "./helpers/gemini-image.js";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
@@ -227,6 +228,7 @@ export class SRA2System {
       declareMigration(new Migration_13_3_2());
       declareMigration(new Migration_13_4_0());
       declareMigration(new Migration_13_4_4());
+      declareMigration(new Migration_13_4_5());
     });
   }
 
@@ -1941,7 +1943,11 @@ export class SRA2System {
   private async buildSkillSlugCache(): Promise<void> {
     const cache: Record<string, string> = {};
     const metadataCache: Record<string, { linkedSkill?: string, linkedAttribute?: string }> = {};
+    const nameToSlugCache: Record<string, string> = {}; // Reverse: normalized display name → slug (all languages)
     const worldSlugs = new Set<string>();
+
+    // Helper to normalize names for reverse lookup (lowercase, remove accents, trim)
+    const normalize = (text: string) => text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
     // Load from world items first (skills and specializations) — these always take priority
     if (game.items) {
@@ -1952,6 +1958,7 @@ export class SRA2System {
             linkedSkill: item.system.linkedSkill,
             linkedAttribute: item.system.linkedAttribute,
           };
+          nameToSlugCache[normalize(item.name)] = item.system.slug;
           worldSlugs.add(item.system.slug);
         }
       }
@@ -1985,6 +1992,8 @@ export class SRA2System {
                 linkedAttribute: (entry as any).system.linkedAttribute,
               };
             }
+            // Reverse index: store ALL names from ALL packs (EN + FR) → slug
+            nameToSlugCache[normalize(entry.name)] = slug;
           }
         }
       } catch (e) {
@@ -1995,7 +2004,8 @@ export class SRA2System {
     // Store globally for synchronous access
     (globalThis as any).SRA2_SKILL_SLUG_CACHE = cache;
     (globalThis as any).SRA2_SLUG_METADATA_CACHE = metadataCache;
-    console.log(SYSTEM.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries (skills + specializations)`);
+    (globalThis as any).SRA2_NAME_TO_SLUG_CACHE = nameToSlugCache;
+    console.log(SYSTEM.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries, reverse index: ${Object.keys(nameToSlugCache).length} names`);
   }
 
   /**
