@@ -3151,7 +3151,8 @@ function getRRSources$1(actor, itemType, itemName) {
       const normalizedRRTarget = normalizeSearchText(rrTarget);
       const matchByName = normalizedRRTarget === normalizedItemName;
       const matchBySlug = itemSlug && rrTarget === itemSlug;
-      if (matchByName || matchBySlug) {
+      const matchByDirectSlug = !itemSlug && rrTarget === itemName;
+      if (matchByName || matchBySlug || matchByDirectSlug) {
         sources.push({
           featName: feat2.name,
           rrValue,
@@ -3235,15 +3236,29 @@ function getPhantomRRs(actor) {
   }
   const slugCache = globalThis.SRA2_SKILL_SLUG_CACHE || {};
   const metadataCache = globalThis.SRA2_SLUG_METADATA_CACHE || {};
+  const nameToSlugCache = globalThis.SRA2_NAME_TO_SLUG_CACHE || {};
   const phantomSlugs = /* @__PURE__ */ new Map();
   for (const phantom of phantomRRs) {
     phantomSlugs.set(phantom, phantom.name);
+    phantom.slug = phantom.name;
     if (slugCache[phantom.name]) {
       phantom.name = slugCache[phantom.name];
     } else {
-      const resolved = findItemInGame(phantom.type, phantom.name);
-      if (resolved) {
-        phantom.name = resolved.name;
+      const normalizedName = phantom.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const reverseSlug = nameToSlugCache[normalizedName];
+      if (reverseSlug && slugCache[reverseSlug]) {
+        phantom.slug = reverseSlug;
+        phantom.name = slugCache[reverseSlug];
+      } else {
+        const resolved = findItemInGame(phantom.type, phantom.name);
+        if (resolved) {
+          if (resolved.system?.slug) {
+            phantom.slug = resolved.system.slug;
+            phantom.name = slugCache[resolved.system.slug] || resolved.name;
+          } else {
+            phantom.name = resolved.name;
+          }
+        }
       }
     }
   }
@@ -6190,7 +6205,7 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
     user: game.user?.id,
     speaker: { actor: attacker?.id, alias: attacker?.name },
     content: html,
-    type: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     flags: {
       sra2: {
         rollType: isAttack ? "attack" : "skill",
@@ -6208,6 +6223,7 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
   };
   const foundryRollMode = game.settings?.get("core", "rollMode") ?? "publicroll";
   ChatMessage.applyRollMode(messageData, foundryRollMode);
+  delete messageData.type;
   await ChatMessage.create(messageData);
   if (rollResult.complication !== "none") {
     whisperComplicationSuggestions(rollData, rollResult);
@@ -6271,9 +6287,10 @@ async function handleDrain(actor, rollData, rollResult) {
       user: game.user?.id,
       speaker: { actor: actor.id, alias: actor.name },
       content,
-      type: CONST.CHAT_MESSAGE_STYLES.OTHER
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER
     };
     ChatMessage.applyRollMode(data, drainRollMode);
+    delete data.type;
     await ChatMessage.create(data);
   };
   if (rollResult.complication === "minor") {
@@ -6404,7 +6421,7 @@ async function whisperComplicationSuggestions(rollData, rollResult) {
       content,
       whisper: gmUsers,
       speaker: { alias: isEn ? "Complication" : "Complication" },
-      type: CONST.CHAT_MESSAGE_STYLES.OTHER
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER
     });
   } catch (err) {
     console.warn("Failed to whisper complication suggestions:", err);
@@ -6677,7 +6694,7 @@ async function createIceAttackMessage(iceActor, iceToken, defender, defenderToke
       alias: iceActor.name
     },
     content: html,
-    type: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     flags: {
       sra2: {
         rollType: "ice-attack",
@@ -7807,83 +7824,53 @@ class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget;
     const phantomName = element.dataset.phantomName;
+    const phantomSlug = element.dataset.phantomSlug;
     const phantomType = element.dataset.phantomType;
-    const linkedAttribute = element.dataset.attribute;
-    if (!phantomName || !linkedAttribute) return;
-    const rrSources = getRRSources$1(this.actor, phantomType, phantomName);
+    if (!phantomName) return;
+    const phantomRRs = getPhantomRRs(this.actor);
+    const phantom = phantomRRs.find(
+      (p) => phantomSlug && p.slug === phantomSlug || p.name === phantomName || normalizeSearchText(p.name) === normalizeSearchText(phantomName)
+    );
+    if (!phantom) return;
+    const linkedAttribute = phantom.linkedAttribute;
+    this.actor.system.attributes?.[linkedAttribute] || 0;
+    let rrList = [...phantom.sources];
     let associatedSkill = null;
-    let associatedSpec = null;
-    if (phantomType === "specialization") {
-      const specTemplate = findItemInGame("specialization", phantomName);
-      if (specTemplate) {
-        const linkedSkillName = specTemplate.system.linkedSkill;
-        if (linkedSkillName) {
-          associatedSkill = this.actor.items.find(
-            (i) => i.type === "skill" && (normalizeSearchText(i.name) === normalizeSearchText(linkedSkillName) || i.system?.slug === linkedSkillName)
-          );
-        }
-      }
-      associatedSpec = this.actor.items.find(
-        (i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizeSearchText(phantomName)
-      );
-    } else if (phantomType === "skill") {
+    if (phantom.linkedSkillOnActor && phantom.linkedSkillName) {
       associatedSkill = this.actor.items.find(
-        (i) => i.type === "skill" && normalizeSearchText(i.name) === normalizeSearchText(phantomName)
+        (i) => i.type === "skill" && (i.system?.slug === phantom.linkedSkillName || normalizeSearchText(i.name) === normalizeSearchText(phantom.linkedSkillName))
       );
     }
     if (associatedSkill) {
-      const skillSystem = associatedSkill.system;
-      const skillAttribute = skillSystem.linkedAttribute || linkedAttribute;
-      const attributeValue = this.actor.system.attributes?.[skillAttribute] || 0;
-      const skillRating = skillSystem.rating || 0;
       const skillRRSources = this.getRRSources("skill", associatedSkill.name);
-      const attributeRRSources = this.getRRSources("attribute", skillAttribute);
-      const combinedRRSources = [...skillRRSources, ...attributeRRSources, ...rrSources];
+      const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
+      rrList = [...skillRRSources, ...attributeRRSources, ...rrList];
       handleRollRequest({
         itemType: "skill",
         itemName: associatedSkill.name,
         skillName: associatedSkill.name,
-        skillLevel: attributeValue + skillRating,
-        linkedAttribute: skillAttribute,
-        actorId: this.actor.id ?? void 0,
-        actorUuid: this.actor.uuid,
-        actorName: this.actor.name,
-        rrList: combinedRRSources
-      });
-    } else if (associatedSpec) {
-      const specSystem = associatedSpec.system;
-      const specAttribute = specSystem.linkedAttribute || linkedAttribute;
-      const attributeValue = this.actor.system.attributes?.[specAttribute] || 0;
-      const specRRSources = this.getRRSources("specialization", associatedSpec.name);
-      const attributeRRSources = this.getRRSources("attribute", specAttribute);
-      const combinedRRSources = [...specRRSources, ...attributeRRSources, ...rrSources];
-      handleRollRequest({
-        itemType: "specialization",
-        itemName: associatedSpec.name,
-        specName: associatedSpec.name,
-        skillName: specSystem.linkedSkill || phantomName,
-        skillLevel: attributeValue,
-        // No +2 since no linked skill on actor
-        linkedAttribute: specAttribute,
-        actorId: this.actor.id ?? void 0,
-        actorUuid: this.actor.uuid,
-        actorName: this.actor.name,
-        rrList: combinedRRSources
-      });
-    } else {
-      const attributeValue = this.actor.system.attributes?.[linkedAttribute] || 0;
-      const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
-      handleRollRequest({
-        itemType: phantomType,
-        itemName: `${phantomName} (${attributeLabel})`,
-        skillName: phantomType === "skill" ? phantomName : void 0,
-        specName: phantomType === "specialization" ? phantomName : void 0,
-        skillLevel: attributeValue,
+        skillLevel: phantom.totalDicePool,
         linkedAttribute,
         actorId: this.actor.id ?? void 0,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name,
-        rrList: rrSources
+        rrList
+      });
+    } else {
+      const attributeRRSources = this.getRRSources("attribute", linkedAttribute);
+      rrList = [...attributeRRSources, ...rrList];
+      const attributeLabel = game.i18n.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+      handleRollRequest({
+        itemType: phantomType,
+        itemName: `${phantom.name} (${attributeLabel})`,
+        skillName: phantomType === "skill" ? phantom.name : void 0,
+        specName: phantomType === "specialization" ? phantom.name : void 0,
+        skillLevel: phantom.totalDicePool,
+        linkedAttribute,
+        actorId: this.actor.id ?? void 0,
+        actorUuid: this.actor.uuid,
+        actorName: this.actor.name,
+        rrList
       });
     }
   }
@@ -19914,6 +19901,155 @@ class Migration_13_4_4 extends Migration {
     console.log(SYSTEM.LOG.HEAD + `Migration 13.4.4: Fix rrTarget complete — fixed ${totalFixed} feat(s)`);
   }
 }
+class Migration_13_4_5 extends Migration {
+  get code() {
+    return "migration-13.4.5";
+  }
+  get version() {
+    return "13.4.5";
+  }
+  /**
+   * Normalize text: lowercase, remove accents, trim
+   */
+  _normalize(text) {
+    if (!text) return "";
+    return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  }
+  /**
+   * Build name→slug maps dynamically from compendium packs (all languages).
+   */
+  async _buildNameToSlugMaps() {
+    const skillNameToSlug = {};
+    const specNameToSlug = {};
+    if (game.items) {
+      for (const item of game.items) {
+        if (!item.system?.slug) continue;
+        const normalized = this._normalize(item.name);
+        if (item.type === "skill") {
+          skillNameToSlug[normalized] = item.system.slug;
+        } else if (item.type === "specialization") {
+          specNameToSlug[normalized] = item.system.slug;
+        }
+      }
+    }
+    for (const pack of game.packs) {
+      if (pack.documentName !== "Item") continue;
+      try {
+        const index = await pack.getIndex({ fields: ["system.slug"] });
+        for (const entry of index) {
+          if (!entry.system?.slug) continue;
+          const normalized = this._normalize(entry.name);
+          if (entry.type === "skill") {
+            skillNameToSlug[normalized] = entry.system.slug;
+          } else if (entry.type === "specialization") {
+            specNameToSlug[normalized] = entry.system.slug;
+          }
+        }
+      } catch (e) {
+      }
+    }
+    return { skillNameToSlug, specNameToSlug };
+  }
+  /**
+   * Check if a value is already a valid slug
+   */
+  _isSlug(value, type) {
+    if (!value) return true;
+    if (type === "specialization") return value.startsWith("spec_");
+    return /^[a-z0-9-]+$/.test(value);
+  }
+  /**
+   * Compute updates for feat items
+   */
+  _computeUpdates(items, skillNameToSlug, specNameToSlug) {
+    const updates = [];
+    for (const item of items) {
+      if (item.type !== "feat") continue;
+      const rrList = item.system?.rrList || [];
+      if (rrList.length === 0) continue;
+      let rrChanged = false;
+      const newRRList = rrList.map((rr) => {
+        const newRR = { ...rr };
+        if (!rr.rrTarget) return newRR;
+        if (rr.rrType === "specialization" && !this._isSlug(rr.rrTarget, "specialization")) {
+          const normalized = this._normalize(rr.rrTarget);
+          const slug = specNameToSlug[normalized];
+          if (slug) {
+            newRR.rrTarget = slug;
+            rrChanged = true;
+          }
+        } else if (rr.rrType === "skill" && !this._isSlug(rr.rrTarget, "skill")) {
+          const normalized = this._normalize(rr.rrTarget);
+          const slug = skillNameToSlug[normalized];
+          if (slug) {
+            newRR.rrTarget = slug;
+            rrChanged = true;
+          }
+        }
+        return newRR;
+      });
+      if (rrChanged) {
+        updates.push({
+          _id: item.id,
+          "system.rrList": newRRList
+        });
+      }
+    }
+    return updates;
+  }
+  async migrate() {
+    const SYSTEM_LOG = "SRA2 | ";
+    console.log(SYSTEM_LOG + "Starting migration 13.4.5: Convert remaining rrTarget display names to slugs (dynamic)");
+    const { skillNameToSlug, specNameToSlug } = await this._buildNameToSlugMaps();
+    console.log(SYSTEM_LOG + `Migration 13.4.5: Built maps — ${Object.keys(skillNameToSlug).length} skill names, ${Object.keys(specNameToSlug).length} spec names`);
+    let totalFixed = 0;
+    for (const actor of game.actors) {
+      const updates = this._computeUpdates(actor.items, skillNameToSlug, specNameToSlug);
+      if (updates.length > 0) {
+        console.log(SYSTEM_LOG + `Migration 13.4.5: Updating ${updates.length} feat(s) on actor "${actor.name}"`);
+        await actor.updateEmbeddedDocuments("Item", updates);
+        totalFixed += updates.length;
+      }
+    }
+    const worldUpdates = this._computeUpdates(game.items, skillNameToSlug, specNameToSlug);
+    if (worldUpdates.length > 0) {
+      console.log(SYSTEM_LOG + `Migration 13.4.5: Updating ${worldUpdates.length} world item(s)`);
+      await Item.updateDocuments(worldUpdates);
+      totalFixed += worldUpdates.length;
+    }
+    for (const pack of game.packs) {
+      const wasLocked = pack.locked;
+      if (wasLocked) await pack.configure({ locked: false });
+      try {
+        if (pack.documentName === "Item") {
+          const documents2 = await pack.getDocuments();
+          const updates = this._computeUpdates(documents2, skillNameToSlug, specNameToSlug);
+          if (updates.length > 0) {
+            console.log(SYSTEM_LOG + `Migration 13.4.5: Updating ${updates.length} item(s) in pack "${pack.title}"`);
+            for (const u of updates) {
+              const doc = documents2.find((d) => d.id === u._id);
+              if (doc) await doc.update(u);
+            }
+            totalFixed += updates.length;
+          }
+        } else if (pack.documentName === "Actor") {
+          const actors = await pack.getDocuments();
+          for (const actor of actors) {
+            const updates = this._computeUpdates(actor.items, skillNameToSlug, specNameToSlug);
+            if (updates.length > 0) {
+              console.log(SYSTEM_LOG + `Migration 13.4.5: Updating ${updates.length} feat(s) on compendium actor "${actor.name}"`);
+              await actor.updateEmbeddedDocuments("Item", updates);
+              totalFixed += updates.length;
+            }
+          }
+        }
+      } finally {
+        if (wasLocked) await pack.configure({ locked: true });
+      }
+    }
+    console.log(SYSTEM_LOG + `Migration 13.4.5 complete — fixed ${totalFixed} feat(s)`);
+  }
+}
 const GEMINI_SETTING = "geminiApiKey";
 function isGeminiConfigured() {
   try {
@@ -20330,6 +20466,7 @@ class SRA2System {
       declareMigration(new Migration_13_3_2());
       declareMigration(new Migration_13_4_0());
       declareMigration(new Migration_13_4_4());
+      declareMigration(new Migration_13_4_5());
     });
   }
   registerDataModels() {
@@ -21442,7 +21579,7 @@ class SRA2System {
             alias: actor.name
           },
           content: html,
-          type: CONST.CHAT_MESSAGE_STYLES.OTHER,
+          style: CONST.CHAT_MESSAGE_STYLES.OTHER,
           flags: {
             sra2: {
               rollType: "skill",
@@ -21653,6 +21790,9 @@ class SRA2System {
   async buildSkillSlugCache() {
     const cache = {};
     const metadataCache = {};
+    const nameToSlugCache = {};
+    const worldSlugs = /* @__PURE__ */ new Set();
+    const normalize = (text) => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     if (game.items) {
       for (const item of game.items) {
         if ((item.type === "skill" || item.type === "specialization") && item.system?.slug) {
@@ -21661,25 +21801,37 @@ class SRA2System {
             linkedSkill: item.system.linkedSkill,
             linkedAttribute: item.system.linkedAttribute
           };
+          nameToSlugCache[normalize(item.name)] = item.system.slug;
+          worldSlugs.add(item.system.slug);
         }
       }
     }
-    for (const pack of game.packs) {
+    const lang = game.i18n?.lang || "en";
+    const sortedPacks = [...game.packs].sort((a, b) => {
+      const aMatch = a.metadata?.name?.endsWith(`-${lang}`) || a.metadata?.id?.endsWith(`-${lang}`);
+      const bMatch = b.metadata?.name?.endsWith(`-${lang}`) || b.metadata?.id?.endsWith(`-${lang}`);
+      if (aMatch && !bMatch) return 1;
+      if (!aMatch && bMatch) return -1;
+      return 0;
+    });
+    for (const pack of sortedPacks) {
       if (pack.documentName !== "Item") continue;
+      const isLangPack = pack.metadata?.name?.endsWith(`-${lang}`) || pack.metadata?.id?.endsWith(`-${lang}`);
       try {
         const index = await pack.getIndex({ fields: ["system.slug", "system.linkedSkill", "system.linkedAttribute"] });
         for (const entry of index) {
           if ((entry.type === "skill" || entry.type === "specialization") && entry.system?.slug) {
             const slug = entry.system.slug;
-            if (!cache[slug]) {
+            if (!worldSlugs.has(slug) && (isLangPack || !cache[slug])) {
               cache[slug] = entry.name;
             }
-            if (!metadataCache[slug]) {
+            if (!worldSlugs.has(slug) && (isLangPack || !metadataCache[slug])) {
               metadataCache[slug] = {
                 linkedSkill: entry.system.linkedSkill,
                 linkedAttribute: entry.system.linkedAttribute
               };
             }
+            nameToSlugCache[normalize(entry.name)] = slug;
           }
         }
       } catch (e) {
@@ -21687,7 +21839,8 @@ class SRA2System {
     }
     globalThis.SRA2_SKILL_SLUG_CACHE = cache;
     globalThis.SRA2_SLUG_METADATA_CACHE = metadataCache;
-    console.log(SYSTEM$1.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries (skills + specializations)`);
+    globalThis.SRA2_NAME_TO_SLUG_CACHE = nameToSlugCache;
+    console.log(SYSTEM$1.LOG.HEAD + `Slug cache built: ${Object.keys(cache).length} entries, reverse index: ${Object.keys(nameToSlugCache).length} names`);
   }
   /**
    * Migrate old feat data (single rrType/rrValue/rrTarget) to new array format
