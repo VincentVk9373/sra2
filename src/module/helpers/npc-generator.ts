@@ -46,6 +46,18 @@ import { PHYSICAL_TRAITS, QUIRKS } from "../config/npc-flavor-data.js";
 import { BACKSTORIES, RELATIONSHIPS } from "../config/npc-flavor-data-2.js";
 import { FETISH_OBJECTS } from "../config/npc-flavor-data-3.js";
 
+// Magic specialization slugs — used to identify magical foci in equipment pool
+const MAGIC_SPEC_SLUGS = [
+  'spec_combat-spells', 'spec_detection-spells', 'spec_health-spells',
+  'spec_illusion-spells', 'spec_manipulation-spells', 'spec_counterspelling',
+  'spec_banishing', 'spec_air-spirits', 'spec_earth-spirits', 'spec_fire-spirits',
+  'spec_water-spirits', 'spec_beast-spirits', 'spec_astral-combat',
+];
+
+function isMagicFocus(template: FeatTemplate): boolean {
+  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // PUBLIC INTERFACE
 // ═══════════════════════════════════════════════════════════════
@@ -470,15 +482,8 @@ function generateFeats(
   // Respect RR limits: Ganger max RR1, Runner max RR2 (spé only), Elite max RR2
   if (archetype.isAwakened) {
     const maxRR = _powerLevel.budget <= 300000 ? 1 : 2; // Ganger: 1, Runner/Elite: 2
-    const magicSpecSlugs = [
-      'spec_combat-spells', 'spec_detection-spells', 'spec_health-spells',
-      'spec_illusion-spells', 'spec_manipulation-spells', 'spec_counterspelling',
-      'spec_banishing', 'spec_air-spirits', 'spec_earth-spirits', 'spec_fire-spirits',
-      'spec_water-spirits', 'spec_beast-spirits', 'spec_astral-combat',
-    ];
     const magicFoci = EQUIPMENT_TEMPLATES.filter(eq =>
-      eq.rrList.length > 0 &&
-      magicSpecSlugs.includes(eq.rrList[0]?.rrTarget) &&
+      isMagicFocus(eq) &&
       (eq.rrList[0]?.rrValue ?? 0) <= maxRR
     );
     if (magicFoci.length > 0) {
@@ -571,8 +576,11 @@ function generateFeats(
   for (const eq of essentialEquipment) {
     addFeat(eq);
   }
-  // Extra equipment with remaining budget
-  const extraEquipment = pickRandom(EQUIPMENT_TEMPLATES.slice(2), 3);
+  // Extra equipment with remaining budget (exclude magic foci for non-awakened)
+  const mundaneEquipment = archetype.isAwakened
+    ? EQUIPMENT_TEMPLATES.slice(2)
+    : EQUIPMENT_TEMPLATES.slice(2).filter(eq => !isMagicFocus(eq));
+  const extraEquipment = pickRandom(mundaneEquipment, 3);
   for (const eq of extraEquipment) {
     addFeat(eq);
   }
@@ -1696,9 +1704,11 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
     surplus = powerLevel.budget - totalSpent;
   }
 
-  // 9e. Add extra equipment with remaining leftover
+  // 9e. Add extra equipment with remaining leftover (exclude magic foci for non-awakened)
   while (surplus >= 5000) {
-    const extraPool = [...EQUIPMENT_TEMPLATES.slice(2)];
+    const extraPool = archetype.isAwakened
+      ? [...EQUIPMENT_TEMPLATES.slice(2)]
+      : EQUIPMENT_TEMPLATES.slice(2).filter(eq => !isMagicFocus(eq));
     const existingNames = new Set(
       items.filter((it: any) => it.type === "feat").map((it: any) => it.name),
     );

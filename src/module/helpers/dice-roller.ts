@@ -1076,12 +1076,13 @@ async function whisperComplicationSuggestions(rollData: RollRequestData, rollRes
     const { COMPLICATIONS } = await import('../config/complication-data.js');
 
     // Find the skill slug used for this roll
-    const skillSlug = rollData.linkedAttackSkill || rollData.skillSlug || '';
+    // For specialization rolls, skillName contains the linked skill slug (e.g. 'influence')
+    const skillSlug = rollData.linkedAttackSkill || rollData.skillSlug || rollData.skillName || '';
 
     // Also check for influence sub-types based on specialization
     let lookupKey = skillSlug;
-    if (skillSlug === 'influence' && rollData.linkedAttackSpecialization) {
-      const spec = rollData.linkedAttackSpecialization;
+    if (skillSlug === 'influence') {
+      const spec = rollData.linkedAttackSpecialization || rollData.specName || rollData.itemName || '';
       if (spec.includes('bluff') || spec.includes('imposture')) lookupKey = 'influence_bluff';
       else if (spec.includes('negotiation') || spec.includes('negociation')) lookupKey = 'influence_negotiation';
       else if (spec.includes('intimidation')) lookupKey = 'influence_intimidation';
