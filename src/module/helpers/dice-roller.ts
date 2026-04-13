@@ -1073,20 +1073,53 @@ async function whisperComplicationSuggestions(rollData: RollRequestData, rollRes
   if (gmUsers.length === 0) return;
 
   try {
-    const { COMPLICATIONS } = await import('../config/complication-data.js');
+    const { COMPLICATIONS, BY_THE_BOOK } = await import('../config/complication-data.js');
 
     // Find the skill slug used for this roll
-    // For specialization rolls, skillName contains the linked skill slug (e.g. 'influence')
-    const skillSlug = rollData.linkedAttackSkill || rollData.skillSlug || rollData.skillName || '';
+    // Priority: skillSlug (explicitly set) > resolve from skillName > linkedAttackSkill (weapon default)
+    // skillName may be a localized name, so we normalize it to a slug for lookup
+    const SLUG_FROM_NAME: Record<string, string> = {
+      'combat rapproché': 'close-combat', 'close combat': 'close-combat',
+      'armes à distance': 'ranged-weapons', 'ranged weapons': 'ranged-weapons',
+      'athlétisme': 'athletics', 'athletics': 'athletics',
+      'furtivité': 'stealth', 'stealth': 'stealth',
+      'piratage': 'cracking', 'cracking': 'cracking',
+      'ingénierie': 'engineering', 'engineering': 'engineering',
+      'électronique': 'electronics', 'electronics': 'electronics',
+      'pilotage': 'piloting', 'piloting': 'piloting',
+      'sorcellerie': 'sorcery', 'sorcery': 'sorcery',
+      'conjuration': 'conjuration',
+      'technomancie': 'technomancer', 'technomancer': 'technomancer',
+      'influence': 'influence',
+      'perception': 'perception',
+      'survie': 'survival', 'survival': 'survival',
+      'réseau': 'networking', 'networking': 'networking',
+      'combat astral': 'astral-combat', 'astral combat': 'astral-combat',
+    };
+
+    const resolveSlug = (name: string): string => {
+      if (!name) return '';
+      const lower = name.toLowerCase().trim();
+      // Already a valid slug (contains only lowercase, digits, hyphens)
+      if (SLUG_FROM_NAME[lower]) return SLUG_FROM_NAME[lower];
+      // Might already be a slug key in the COMPLICATIONS table
+      return lower;
+    };
+
+    const skillSlug = rollData.skillSlug
+      || resolveSlug(rollData.skillName || '')
+      || resolveSlug(rollData.linkedAttackSkill || '')
+      || '';
 
     // Also check for influence sub-types based on specialization
+    // spec can be a localized name ("Spé : Bluff", "Intimidation") or a slug ("spec_bluff", "spec_intimidation")
     let lookupKey = skillSlug;
     if (skillSlug === 'influence') {
-      const spec = rollData.linkedAttackSpecialization || rollData.specName || rollData.itemName || '';
-      if (spec.includes('bluff') || spec.includes('imposture')) lookupKey = 'influence_bluff';
-      else if (spec.includes('negotiation') || spec.includes('negociation')) lookupKey = 'influence_negotiation';
-      else if (spec.includes('intimidation')) lookupKey = 'influence_intimidation';
-      else if (spec.includes('etiquette')) lookupKey = 'influence_etiquette';
+      const spec = (rollData.linkedAttackSpecialization || rollData.specName || rollData.itemName || '').toLowerCase();
+      if (spec.includes('bluff') || spec.includes('imposture') || spec.includes('spec_bluff')) lookupKey = 'influence_bluff';
+      else if (spec.includes('negotiation') || spec.includes('négociation') || spec.includes('negociation') || spec.includes('spec_negotiation')) lookupKey = 'influence_negotiation';
+      else if (spec.includes('intimidation') || spec.includes('spec_intimidation')) lookupKey = 'influence_intimidation';
+      else if (spec.includes('etiquette') || spec.includes('étiquette') || spec.includes('spec_etiquette')) lookupKey = 'influence_etiquette';
       else lookupKey = 'influence_social';
     }
 
@@ -1102,10 +1135,14 @@ async function whisperComplicationSuggestions(rollData: RollRequestData, rollRes
     const suggestions = isEn ? entries.en : entries.fr;
     if (!suggestions || suggestions.length === 0) return;
 
-    // Pick 1-2 random suggestions
-    const count = Math.min(2, suggestions.length);
+    // Pick 3 random suggestions
+    const count = Math.min(3, suggestions.length);
     const shuffled = [...suggestions].sort(() => Math.random() - 0.5);
     const picked = shuffled.slice(0, count);
+
+    // Get by-the-book rule for this tier
+    const byTheBookEntry = BY_THE_BOOK[level];
+    const byTheBookText = byTheBookEntry ? (isEn ? byTheBookEntry.en : byTheBookEntry.fr) : '';
 
     // Style based on complication level
     const colors: Record<string, string> = {
@@ -1128,8 +1165,11 @@ async function whisperComplicationSuggestions(rollData: RollRequestData, rollRes
   <div style="color:${color};font-weight:bold;margin-bottom:4px;">
     <i class="fas fa-exclamation-triangle"></i> ${label} — ${skillName}
   </div>
+  ${byTheBookText ? `<div style="opacity:0.9;margin-bottom:6px;padding:4px 8px;background:rgba(255,255,255,0.05);border-radius:3px;font-size:0.9em;">
+    <i class="fas fa-book"></i> ${byTheBookText}
+  </div>` : ''}
   <div style="font-style:italic;opacity:0.8;margin-bottom:6px;">
-    ${isEn ? 'Suggestions for the GM:' : 'Suggestions pour le MJ :'}
+    ${isEn ? 'Suggestions:' : 'Suggestions :'}
   </div>
   <ul style="margin:0;padding-left:16px;">
     ${picked.map(s => `<li>${s}</li>`).join('')}

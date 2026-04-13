@@ -45,7 +45,13 @@
                 "TRAITS": "Traits",
                 "THRESHOLD": "Threshold"
             },
-            "LINKED_VEHICLES": "Linked Vehicles"
+            "LINKED_VEHICLES": "Linked Vehicles",
+            "GENDER": {
+                "LABEL": "Gender",
+                "RANDOM": "Random",
+                "MALE": "Male",
+                "FEMALE": "Female"
+            }
         },
         "TOTAL_COST": "Total Cost",
         "NPC": {
@@ -1243,7 +1249,6 @@
             "RANDOM": "Random",
             "MALE": "Male",
             "FEMALE": "Female",
-            "NEUTRAL": "Neutral",
             "GENERATE_PORTRAIT": "Generate AI Portrait",
             "GENERATING_IMAGE": "Generating portrait...",
             "IMAGE_GENERATED": "Portrait generated successfully!"

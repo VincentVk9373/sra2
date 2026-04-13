@@ -47,15 +47,26 @@ import { BACKSTORIES, RELATIONSHIPS } from "../config/npc-flavor-data-2.js";
 import { FETISH_OBJECTS } from "../config/npc-flavor-data-3.js";
 
 // Magic specialization slugs — used to identify magical foci in equipment pool
-const MAGIC_SPEC_SLUGS = [
+const SORCERY_SPEC_SLUGS = [
   'spec_combat-spells', 'spec_detection-spells', 'spec_health-spells',
   'spec_illusion-spells', 'spec_manipulation-spells', 'spec_counterspelling',
-  'spec_banishing', 'spec_air-spirits', 'spec_earth-spirits', 'spec_fire-spirits',
-  'spec_water-spirits', 'spec_beast-spirits', 'spec_astral-combat',
 ];
+const CONJURATION_SPEC_SLUGS = [
+  'spec_banishing', 'spec_air-spirits', 'spec_earth-spirits', 'spec_fire-spirits',
+  'spec_water-spirits', 'spec_beast-spirits',
+];
+const MAGIC_SPEC_SLUGS = [...SORCERY_SPEC_SLUGS, ...CONJURATION_SPEC_SLUGS, 'spec_astral-combat'];
 
 function isMagicFocus(template: FeatTemplate): boolean {
   return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+}
+
+function isSorceryFocus(template: FeatTemplate): boolean {
+  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+}
+
+function isConjurationFocus(template: FeatTemplate): boolean {
+  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -479,13 +490,21 @@ function generateFeats(
   }
 
   // 4b. Magic Focus for awakened (1-2 foci from equipment pool with magic RR)
+  // Only add spell foci if archetype has sorcery, spirit foci if archetype has conjuration
   // Respect RR limits: Ganger max RR1, Runner max RR2 (spé only), Elite max RR2
   if (archetype.isAwakened) {
+    const allSkills = { ...archetype.primarySkills, ...archetype.secondarySkills };
+    const hasSorcery = 'sorcery' in allSkills;
+    const hasConjuration = 'conjuration' in allSkills;
     const maxRR = _powerLevel.budget <= 300000 ? 1 : 2; // Ganger: 1, Runner/Elite: 2
-    const magicFoci = EQUIPMENT_TEMPLATES.filter(eq =>
-      isMagicFocus(eq) &&
-      (eq.rrList[0]?.rrValue ?? 0) <= maxRR
-    );
+    const magicFoci = EQUIPMENT_TEMPLATES.filter(eq => {
+      if (!isMagicFocus(eq)) return false;
+      if ((eq.rrList[0]?.rrValue ?? 0) > maxRR) return false;
+      // Filter by skill: spell foci need sorcery, spirit foci need conjuration
+      if (isSorceryFocus(eq) && !hasSorcery) return false;
+      if (isConjurationFocus(eq) && !hasConjuration) return false;
+      return true;
+    });
     if (magicFoci.length > 0) {
       const fociCount = randomInt(1, 2);
       const selectedFoci = pickRandom(magicFoci, fociCount);
@@ -576,10 +595,15 @@ function generateFeats(
   for (const eq of essentialEquipment) {
     addFeat(eq);
   }
-  // Extra equipment with remaining budget (exclude magic foci for non-awakened)
-  const mundaneEquipment = archetype.isAwakened
-    ? EQUIPMENT_TEMPLATES.slice(2)
-    : EQUIPMENT_TEMPLATES.slice(2).filter(eq => !isMagicFocus(eq));
+  // Extra equipment with remaining budget (exclude foci that don't match archetype skills)
+  const allSkillKeys = { ...archetype.primarySkills, ...archetype.secondarySkills };
+  const mundaneEquipment = EQUIPMENT_TEMPLATES.slice(2).filter(eq => {
+    if (!isMagicFocus(eq)) return true; // non-magic equipment always OK
+    if (!archetype.isAwakened) return false; // non-awakened: no foci
+    if (isSorceryFocus(eq) && !('sorcery' in allSkillKeys)) return false;
+    if (isConjurationFocus(eq) && !('conjuration' in allSkillKeys)) return false;
+    return true;
+  });
   const extraEquipment = pickRandom(mundaneEquipment, 3);
   for (const eq of extraEquipment) {
     addFeat(eq);
@@ -665,6 +689,7 @@ interface PersonalityResult {
 function generatePersonality(
   metatypeKey: string,
   archetypeKey: string,
+  gender: string,
 ): PersonalityResult {
   const metatype = METATYPES[metatypeKey];
   const archetype = ARCHETYPES[archetypeKey];
@@ -678,13 +703,16 @@ function generatePersonality(
     keywords.push(pickOne(keywordsTable[cat]));
   }
 
-  // Replace keywords to match the actual archetype/metatype
+  // Replace keywords to match the actual metatype + gender
   const metatypeName = isEn ? metatype.nameEn : metatype.nameFr;
-  const archetypeLabel = isEn ? archetype.labelEn : archetype.labelFr;
+  const genderLabel = isEn
+    ? (gender === 'female' ? 'Woman' : 'Man')
+    : (gender === 'female' ? 'Femme' : 'Homme');
   if (metatype) {
-    keywords[0] = `${metatypeName} — ${archetypeLabel}`;
+    keywords[0] = `${metatypeName} — ${genderLabel}`;
   }
   // Force the "role" keyword (index 2) to match the archetype
+  const archetypeLabel = isEn ? archetype.labelEn : archetype.labelFr;
   keywords[2] = archetypeLabel;
 
   const behaviors = pickRandom(isEn ? BEHAVIORS_EN : BEHAVIORS, 4);
@@ -1192,7 +1220,7 @@ async function createRiggerDrones(actor: any, isEn: boolean, folder: any): Promi
       folder: folder?.id ?? null,
       system: {
         vehicleType: drone.type,
-        controlMode: 'rigged',
+        controlMode: 'autonomous',
       },
     });
     if (droneActor) {
@@ -1238,6 +1266,12 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
   const archLabel = isEn ? archetype.labelEn : archetype.labelFr;
   const plLabel = isEn ? powerLevel.labelEn : powerLevel.labelFr;
 
+  // Resolve random gender
+  const resolvedGender = options.gender === 'random' || !options.gender
+    ? (Math.random() < 0.5 ? 'male' : 'female')
+    : options.gender;
+  options.gender = resolvedGender;
+
   // 3. Generate name
   const name = generateName(options.gender, archetype.streetNameTheme);
 
@@ -1276,7 +1310,7 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
   }
 
   // 7. Generate personality + flavor
-  const personality = generatePersonality(metatypeKey, archetypeKey);
+  const personality = generatePersonality(metatypeKey, archetypeKey, options.gender);
   const flavor = generateFlavor();
 
   // 8. Build items array
@@ -1303,9 +1337,12 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
   });
 
   // 9. Spend surplus: upgrade skills, add specs/equipment until < 10k ¥ remaining
+  // Reserve budget for rigger drones (2 drones × 5000¥ base cost each)
+  const droneReserve = archetypeKey === 'rigger' ? 10000 : 0;
+
   // First compute accurate total from built items (same formulas as Foundry)
   const recomputeTotal = (): number => {
-    let total = attrResult.cost;
+    let total = attrResult.cost + droneReserve;
     for (const item of items) {
       if (item.type === "skill") {
         const r = item.system.rating || 0;
@@ -1704,11 +1741,16 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
     surplus = powerLevel.budget - totalSpent;
   }
 
-  // 9e. Add extra equipment with remaining leftover (exclude magic foci for non-awakened)
+  // 9e. Add extra equipment with remaining leftover (exclude foci that don't match archetype skills)
+  const spendSkillKeys = { ...archetype.primarySkills, ...archetype.secondarySkills };
   while (surplus >= 5000) {
-    const extraPool = archetype.isAwakened
-      ? [...EQUIPMENT_TEMPLATES.slice(2)]
-      : EQUIPMENT_TEMPLATES.slice(2).filter(eq => !isMagicFocus(eq));
+    const extraPool = EQUIPMENT_TEMPLATES.slice(2).filter(eq => {
+      if (!isMagicFocus(eq)) return true;
+      if (!archetype.isAwakened) return false;
+      if (isSorceryFocus(eq) && !('sorcery' in spendSkillKeys)) return false;
+      if (isConjurationFocus(eq) && !('conjuration' in spendSkillKeys)) return false;
+      return true;
+    });
     const existingNames = new Set(
       items.filter((it: any) => it.type === "feat").map((it: any) => it.name),
     );
@@ -1752,9 +1794,9 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
     }
     if (!removed) break;
     totalSpent = recomputeTotal();
-    totalSpent = recomputeTotal();
   }
 
+  // remainingYens: exclude droneReserve since it's spent on drone actors, not cash
   const remainingYens = Math.max(0, powerLevel.budget - totalSpent);
 
   // DEBUG: Log generation details
@@ -1796,6 +1838,7 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
       resources: { yens: remainingYens, anarchy: 0 },
       maxEssence: 6,
       armorLevel: 0,
+      gender: options.gender || 'random',
       connectionMode: "ar",
       damage: {
         light: [false, false],

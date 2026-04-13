@@ -1,42 +1,18 @@
-// ═══════════════════════════════════════════════════════════════
-// COMPLICATION SUGGESTION TABLES — Shadowrun Anarchy 2
-// ═══════════════════════════════════════════════════════════════
-// When a dice roll results in a complication (minor, critical, or
-// disaster), the system whispers GM suggestions drawn from these
-// tables. Data is keyed by skill slug.
-// ═══════════════════════════════════════════════════════════════
-
-/** Bilingual array of suggestion strings */
-export interface ComplicationEntry {
-  fr: string[];
-  en: string[];
-}
-
-/** Three severity tiers for a given skill */
-export interface ComplicationTable {
-  minor: ComplicationEntry;
-  critical: ComplicationEntry;
-  disaster: ComplicationEntry;
-}
-
-/** By-the-book complication rules (generic, not skill-specific) */
-export const BY_THE_BOOK: Record<string, { fr: string; en: string }> = {
+const BY_THE_BOOK = {
   minor: {
     fr: "Complication mineure (règle) : le personnage subit un désavantage sur son prochain test lié, ou perd sa prochaine action mineure.",
-    en: "Minor complication (rule): the character suffers disadvantage on their next related test, or loses their next minor action.",
+    en: "Minor complication (rule): the character suffers disadvantage on their next related test, or loses their next minor action."
   },
   critical: {
     fr: "Complication critique (règle) : le personnage subit 1 case de dégâts légers (étourdissant ou physique selon le contexte), ou subit un désavantage persistant jusqu'à la fin de la scène.",
-    en: "Critical complication (rule): the character takes 1 box of light damage (stun or physical depending on context), or suffers a persistent disadvantage until end of scene.",
+    en: "Critical complication (rule): the character takes 1 box of light damage (stun or physical depending on context), or suffers a persistent disadvantage until end of scene."
   },
   disaster: {
     fr: "Désastre (règle) : le personnage subit 1 case de dégâts graves, son équipement est endommagé ou détruit, ou une conséquence narrative majeure se produit (ennemi alerté, allié blessé, couverture grillée…).",
-    en: "Disaster (rule): the character takes 1 box of severe damage, their equipment is damaged or destroyed, or a major narrative consequence occurs (enemy alerted, ally injured, cover blown…).",
-  },
+    en: "Disaster (rule): the character takes 1 box of severe damage, their equipment is damaged or destroyed, or a major narrative consequence occurs (enemy alerted, ally injured, cover blown…)."
+  }
 };
-
-export const COMPLICATIONS: Record<string, ComplicationTable> = {
-
+const COMPLICATIONS = {
   // ─────────────────────────────────────────────────────────────
   // ATHLETICS — Course, saut, natation
   // ─────────────────────────────────────────────────────────────
@@ -81,7 +57,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le revêtement synthétique du sol se décolle sous ses pieds",
         "Un drone publicitaire le suit en diffusant de la musique, attirant l'attention",
         "Se cogne le tibia contre une borne d'amarrage de véhicule : jurons et perte de temps",
-        "Son genou craque sinistrement : douloureux, désavantage au prochain sprint",
+        "Son genou craque sinistrement : douloureux, désavantage au prochain sprint"
       ],
       en: [
         "Cramp: cannot move during next narration",
@@ -122,8 +98,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The synthetic floor coating peels off underfoot",
         "An ad drone follows them blaring music, drawing attention",
         "Smacks a shin on a vehicle mooring post: cursing and lost time",
-        "Knee pops ominously: not serious but painful, disadvantage on next sprint",
-      ],
+        "Knee pops ominously: not serious but painful, disadvantage on next sprint"
+      ]
     },
     critical: {
       fr: [
@@ -160,7 +136,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Tombe dans une fontaine publique contaminée : risque d'infection, désavantage pour 2 narrations",
         "La corde à laquelle il se balance casse net : chute de 2 mètres et blessure légère",
         "Plonge dans l'eau et découvre que le courant est bien plus fort que prévu : emporté",
-        "Sa cyberware de jambe dysfonctionne en plein effort : perte de contrôle moteur temporaire",
+        "Sa cyberware de jambe dysfonctionne en plein effort : perte de contrôle moteur temporaire"
       ],
       en: [
         "Severe cramp: cannot move and disadvantage for 2 narrations",
@@ -196,8 +172,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Falls into a contaminated public fountain: risk of infection, disadvantage for 2 narrations",
         "The rope being used to swing snaps: 2-meter fall and minor wound",
         "Dives into water and discovers the current is far stronger than expected: swept away",
-        "Leg cyberware malfunctions mid-exertion: temporary loss of motor control",
-      ],
+        "Leg cyberware malfunctions mid-exertion: temporary loss of motor control"
+      ]
     },
     disaster: {
       fr: [
@@ -224,7 +200,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Chute dans un puits de ventilation industrielle : brûlures graves par vapeur surchauffée",
         "Plonge dans une rivière souterraine et est emporté par le courant vers une destination inconnue",
         "Le pont de fortune cède sous le poids de toute l'équipe : chute collective",
-        "La course effrénée le projette à travers la vitrine d'un magasin Lone Star : arrestation imminente",
+        "La course effrénée le projette à travers la vitrine d'un magasin Lone Star : arrestation imminente"
       ],
       en: [
         "Falls and drags allies down as well",
@@ -250,11 +226,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Falls into an industrial ventilation shaft: severe burns from superheated steam",
         "Plunges into an underground river and is swept away to an unknown destination",
         "The makeshift bridge collapses under the whole team's weight: collective fall",
-        "The frantic sprint launches them through a Lone Star shop window: arrest imminent",
-      ],
-    },
+        "The frantic sprint launches them through a Lone Star shop window: arrest imminent"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // RANGED WEAPONS — Attaque à distance
   // ─────────────────────────────────────────────────────────────
@@ -300,7 +275,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "La balle traverse un panneau de signalisation qui tombe bruyamment au sol",
         "Le tireur cligne des yeux au moment du tir : le projectile part légèrement de travers",
         "La bandoulière de l'arme se détache d'un côté : l'arme pendouille maladroitement",
-        "Le chargeur surchauffe et brûle légèrement la paume à travers le gant : désavantage au prochain rechargement",
+        "Le chargeur surchauffe et brûle légèrement la paume à travers le gant : désavantage au prochain rechargement"
       ],
       en: [
         "Weapon jammed or empty magazine (1 action to fix)",
@@ -342,8 +317,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The bullet passes through a road sign that clatters loudly to the ground",
         "The shooter blinks at the moment of firing: the projectile veers slightly off target",
         "The weapon sling detaches on one side: the gun dangles awkwardly",
-        "The magazine overheats and slightly burns the palm through the glove: disadvantage on next reload",
-      ],
+        "The magazine overheats and slightly burns the palm through the glove: disadvantage on next reload"
+      ]
     },
     critical: {
       fr: [
@@ -381,7 +356,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le recul projette le tireur contre un mur : blessure légère et position compromise",
         "Le tir perce un réservoir d'eau sur le toit : inondation dans la pièce en dessous",
         "La lunette thermique se dérègle après le tir : le tireur voit des fantômes de chaleur partout",
-        "Le chargeur modifié illégalement se bloque en éjectant des cartouches dans toutes les directions",
+        "Le chargeur modifié illégalement se bloque en éjectant des cartouches dans toutes les directions"
       ],
       en: [
         "Weapon damaged: unusable until repaired (one hour) and the character suffers a minor wound",
@@ -418,8 +393,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Recoil slams the shooter against a wall: minor wound and position compromised",
         "The shot punctures a rooftop water tank: flooding in the room below",
         "The thermal scope malfunctions after the shot: the shooter sees heat ghosts everywhere",
-        "The illegally modified magazine jams, ejecting cartridges in every direction",
-      ],
+        "The illegally modified magazine jams, ejecting cartridges in every direction"
+      ]
     },
     disaster: {
       fr: [
@@ -447,7 +422,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le tir fait exploser un laboratoire clandestin dans le bâtiment voisin : nuage chimique mortel sur tout le pâté de maisons",
         "La rafale incontrôlée touche un réacteur de drone Aztechnology : pluie de débris enflammés sur la zone",
         "Le projectile perfore un conduit de données corporatiste : l'IA de sécurité remonte instantanément jusqu'au tireur",
-        "Le tir déclenche l'effondrement d'un passage aérien piéton : dizaines de victimes civiles",
+        "Le tir déclenche l'effondrement d'un passage aérien piéton : dizaines de victimes civiles"
       ],
       en: [
         "Weapon destroyed: unusable and incapacitating wound",
@@ -474,11 +449,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The shot blows up a clandestine lab in the next building: lethal chemical cloud engulfs the block",
         "The uncontrolled burst hits an Aztechnology drone reactor: a rain of burning debris over the area",
         "The round pierces a corporate data conduit: the security AI traces the shooter instantly",
-        "The shot triggers the collapse of a pedestrian overpass: dozens of civilian casualties",
-      ],
-    },
+        "The shot triggers the collapse of a pedestrian overpass: dozens of civilian casualties"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // CLOSE COMBAT — Combat rapproché
   // ─────────────────────────────────────────────────────────────
@@ -524,7 +498,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'adversaire esquive en arrière et le personnage frappe dans le vide : déséquilibré pour un instant",
         "Le bracelet de commlink du personnage se brise sous l'impact d'un coup porté : communication perdue",
         "Un mouvement de lutte renverse un conteneur de produit chimique : sol glissant et vapeurs irritantes",
-        "Le personnage mord sa propre lèvre en encaissant un coup au menton : sang dans les yeux",
+        "Le personnage mord sa propre lèvre en encaissant un coup au menton : sang dans les yeux"
       ],
       en: [
         "Drops weapon: one action to recover it",
@@ -566,8 +540,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The opponent dodges backward and the character swings at empty air: off balance for a moment",
         "The character's commlink bracelet shatters from the impact of a blow: communication lost",
         "A grappling move knocks over a chemical container: slippery floor and irritating fumes",
-        "The character bites their own lip absorbing a chin strike: blood in the eyes",
-      ],
+        "The character bites their own lip absorbing a chin strike: blood in the eyes"
+      ]
     },
     critical: {
       fr: [
@@ -605,7 +579,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est projeté à travers une porte qui mène dans une pièce inconnue : séparé du groupe",
         "L'adversaire plante un couteau dans l'épaule du personnage : blessure légère, bras affaibli",
         "Le sol s'effondre sous les deux combattants qui tombent dans une cave : coincés et blessés",
-        "Le personnage est ébloui par une grenade flash perdue qui explose pendant le corps-à-corps",
+        "Le personnage est ébloui par une grenade flash perdue qui explose pendant le corps-à-corps"
       ],
       en: [
         "Weapon is picked up by the opponent or becomes very hard to reach",
@@ -642,8 +616,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is thrown through a door into an unknown room: separated from the group",
         "The opponent plants a knife in the character's shoulder: minor wound, arm weakened",
         "The floor collapses under both fighters and they fall into a basement: trapped and wounded",
-        "The character is blinded by a stray flashbang that detonates during the melee",
-      ],
+        "The character is blinded by a stray flashbang that detonates during the melee"
+      ]
     },
     disaster: {
       fr: [
@@ -671,7 +645,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est empalé sur une tige métallique saillante en étant repoussé : blessure incapacitante",
         "L'adversaire active un implant de décharge électrique au contact : paralysie temporaire et blessure grave",
         "Le combat détruit un pilier porteur : tout le plafond commence à s'effondrer",
-        "Le personnage est défenestré du haut d'un bâtiment en perdant une prise de lutte : chute mortelle",
+        "Le personnage est défenestré du haut d'un bâtiment en perdant une prise de lutte : chute mortelle"
       ],
       en: [
         "Kills the person to extract or protect",
@@ -698,11 +672,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is impaled on a protruding metal rod when pushed back: incapacitating wound",
         "The opponent activates an electrical discharge implant on contact: temporary paralysis and serious wound",
         "The fight destroys a load-bearing pillar: the entire ceiling begins to collapse",
-        "The character is thrown out of a building window when losing a grapple: fatal fall",
-      ],
-    },
+        "The character is thrown out of a building window when losing a grapple: fatal fall"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // STEALTH — Discrétion / Furtivité
   // ─────────────────────────────────────────────────────────────
@@ -748,7 +721,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Un système de ventilation propulse une odeur de cuisine qui fait gargouiller l'estomac du personnage de manière audible",
         "Le personnage accroche un fil de pêche tendu comme alarme artisanale : tremble mais ne casse pas",
         "La condensation sur les lunettes de vision nocturne réduit le champ de vision : doit les essuyer",
-        "Un graffiti luminescent au sol révèle les empreintes de pas du personnage pendant quelques secondes",
+        "Un graffiti luminescent au sol révèle les empreintes de pas du personnage pendant quelques secondes"
       ],
       en: [
         "Leaves a clue that will lead to discovery later unless dealt with",
@@ -790,8 +763,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "A ventilation system blows cooking smells that make the character's stomach growl audibly",
         "The character snags a fishing line strung as a makeshift alarm: it trembles but does not break",
         "Condensation on the night-vision goggles reduces the field of view: must wipe them clean",
-        "Luminescent graffiti on the floor reveals the character's footprints for a few seconds",
-      ],
+        "Luminescent graffiti on the floor reveals the character's footprints for a few seconds"
+      ]
     },
     critical: {
       fr: [
@@ -829,7 +802,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage déclenche un piège à colle industrielle : immobilisé et doit se dégager bruyamment",
         "Un miroir de sécurité caché révèle le personnage à un garde dans un couloir adjacent",
         "Le personnage ouvre un conduit de ventilation qui libère un essaim de rats : chaos et bruit",
-        "Le système anti-intrusion projette une poudre UV sur le personnage : visible sous lumière noire pendant des heures",
+        "Le système anti-intrusion projette une poudre UV sur le personnage : visible sous lumière noire pendant des heures"
       ],
       en: [
         "Leaves a clue that will lead to discovery later, without being aware of it",
@@ -866,8 +839,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character triggers an industrial glue trap: immobilized and must free themselves noisily",
         "A hidden security mirror reveals the character to a guard in an adjacent corridor",
         "The character opens a ventilation duct that releases a swarm of rats: chaos and noise",
-        "The anti-intrusion system sprays UV powder on the character: visible under black light for hours",
-      ],
+        "The anti-intrusion system sprays UV powder on the character: visible under black light for hours"
+      ]
     },
     disaster: {
       fr: [
@@ -895,7 +868,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage tombe dans une fosse dissimulée qui se referme au-dessus de lui : enterré vivant",
         "Le système de sécurité inonde le conduit de ventilation où se trouve le personnage avec du gaz paralysant",
         "Le personnage est repéré par un satellite corporatiste : sa position exacte est transmise en temps réel à une équipe HTR",
-        "Le camouflage ruthenium explose en court-circuit : blessure légère et position révélée à tout le bâtiment",
+        "Le camouflage ruthenium explose en court-circuit : blessure légère et position révélée à tout le bâtiment"
       ],
       en: [
         "Alert!",
@@ -922,11 +895,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character falls into a concealed pit that closes above them: buried alive",
         "The security system floods the ventilation duct the character is in with paralytic gas",
         "The character is spotted by a corporate satellite: exact position transmitted in real time to an HTR team",
-        "The ruthenium camouflage short-circuits explosively: minor wound and position revealed to the entire building",
-      ],
-    },
+        "The ruthenium camouflage short-circuits explosively: minor wound and position revealed to the entire building"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // CRACKING — Piratage
   // ─────────────────────────────────────────────────────────────
@@ -972,7 +944,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le decker ouvre accidentellement un canal de communication non sécurisé",
         "Une subroutine de nettoyage efface les traces du decker mais aussi ses notes",
         "Le persona du decker adopte brièvement une apparence par défaut, le rendant identifiable",
-        "Le decker se connecte au mauvais sous-réseau et doit rebrousser chemin",
+        "Le decker se connecte au mauvais sous-réseau et doit rebrousser chemin"
       ],
       en: [
         "Leaves a trace that will allow the character to be tracked in the Matrix later",
@@ -1014,8 +986,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The decker accidentally opens an unsecured communication channel",
         "A cleanup subroutine erases the decker's traces but also their notes",
         "The decker's persona briefly reverts to its default appearance, making them identifiable",
-        "The decker connects to the wrong subnet and must backtrack",
-      ],
+        "The decker connects to the wrong subnet and must backtrack"
+      ]
     },
     critical: {
       fr: [
@@ -1053,7 +1025,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le decker télécharge accidentellement un rootkit corporatiste dans son propre deck",
         "Un agent de traçage s'infiltre dans le deck et commence à copier les fichiers personnels",
         "Le serveur lance un programme de rétorsion qui détruit les données de la mission sur le deck",
-        "Le decker est piégé dans un labyrinthe de données récursives conçu pour épuiser ses ressources",
+        "Le decker est piégé dans un labyrinthe de données récursives conçu pour épuiser ses ressources"
       ],
       en: [
         "Leaves a Matrix trace (e.g. by falsifying logs)",
@@ -1090,8 +1062,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The decker accidentally downloads a corporate rootkit into their own deck",
         "A trace agent infiltrates the deck and begins copying personal files",
         "The server launches a retribution program that destroys mission data on the deck",
-        "The decker is trapped in a recursive data maze designed to exhaust their resources",
-      ],
+        "The decker is trapped in a recursive data maze designed to exhaust their resources"
+      ]
     },
     disaster: {
       fr: [
@@ -1123,7 +1095,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le decker libère accidentellement une IA expérimentale confinée dans le serveur : elle se propage dans la Matrice",
         "Le biofeedback fusionne les sens du decker avec ceux du serveur : il ne peut plus distinguer le réel du virtuel",
         "Le deck du personnage devient un relais pour une attaque de masse orchestrée par la corporation cible",
-        "La conscience du decker est fragmentée entre plusieurs nœuds : blessure incapacitante et perte de mémoire",
+        "La conscience du decker est fragmentée entre plusieurs nœuds : blessure incapacitante et perte de mémoire"
       ],
       en: [
         "Convergence",
@@ -1154,11 +1126,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The decker accidentally releases an experimental AI confined in the server: it spreads across the Matrix",
         "Biofeedback merges the decker's senses with the server's: they can no longer distinguish real from virtual",
         "The character's deck becomes a relay for a mass attack orchestrated by the target corporation",
-        "The decker's consciousness is fragmented across multiple nodes: incapacitating wound and memory loss",
-      ],
-    },
+        "The decker's consciousness is fragmented across multiple nodes: incapacitating wound and memory loss"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // ELECTRONICS — Électronique / Utilisation d'appareils
   // ─────────────────────────────────────────────────────────────
@@ -1204,7 +1175,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'appareil capte un signal parasite qui brouille les données affichées",
         "Les contacts de l'appareil sont mélangés : un mauvais numéro pourrait être appelé",
         "Le mode furtif de l'appareil se désactive tout seul : il émet à nouveau normalement",
-        "Le stockage interne est presque plein : impossible de sauvegarder de nouveaux fichiers",
+        "Le stockage interne est presque plein : impossible de sauvegarder de nouveaux fichiers"
       ],
       en: [
         "Accidentally reboots the device, wasting time",
@@ -1246,8 +1217,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The device picks up a stray signal that scrambles displayed data",
         "Device contacts are mixed up: the wrong number could be dialed",
         "The device's stealth mode deactivates on its own: it starts broadcasting again",
-        "Internal storage is nearly full: unable to save new files",
-      ],
+        "Internal storage is nearly full: unable to save new files"
+      ]
     },
     critical: {
       fr: [
@@ -1281,7 +1252,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'appareil interfère avec le cyberware du personnage : désavantage à tous les tests physiques pendant 1 narration",
         "La mémoire de l'appareil est écrasée par une boucle de données sans fin",
         "Le système de reconnaissance faciale de l'appareil identifie le personnage et l'enregistre dans une base de données publique",
-        "L'appareil devient un relais pour une attaque DDoS : il consomme toute la bande passante",
+        "L'appareil devient un relais pour une attaque DDoS : il consomme toute la bande passante"
       ],
       en: [
         "The device is destroyed (assuming it is important to the current mission)",
@@ -1314,8 +1285,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The device interferes with the character's cyberware: disadvantage on all physical tests for 1 narration",
         "The device's memory is overwritten by an endless data loop",
         "The device's facial recognition system identifies the character and logs them in a public database",
-        "The device becomes a relay for a DDoS attack: it consumes all bandwidth",
-      ],
+        "The device becomes a relay for a DDoS attack: it consumes all bandwidth"
+      ]
     },
     disaster: {
       fr: [
@@ -1343,7 +1314,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'explosion provoque un effondrement partiel de la structure : le personnage est piégé sous les décombres",
         "L'appareil provoque une surcharge du réseau électrique du bâtiment : coupure totale de courant dans le quartier",
         "Le firmware compromis prend le contrôle de tous les appareils liés au même compte et les retourne contre l'équipe",
-        "L'appareil explose à proximité de matériaux inflammables : incendie majeur et blessure incapacitante",
+        "L'appareil explose à proximité de matériaux inflammables : incendie majeur et blessure incapacitante"
       ],
       en: [
         "The device is destroyed",
@@ -1370,11 +1341,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The explosion causes a partial structural collapse: the character is trapped under debris",
         "The device overloads the building's electrical grid: total power outage across the neighborhood",
         "The compromised firmware takes control of all devices linked to the same account and turns them against the team",
-        "The device explodes near flammable materials: major fire and incapacitating wound",
-      ],
-    },
+        "The device explodes near flammable materials: major fire and incapacitating wound"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // ENGINEERING — Ingénierie / Construction & réparation
   // ─────────────────────────────────────────────────────────────
@@ -1416,7 +1386,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le système de refroidissement du drone fuit légèrement : autonomie réduite",
         "Le timer de l'explosif a un décalage d'environ 3 secondes : imprécis mais fonctionnel",
         "Le vernis de protection appliqué n'est pas le bon : il s'écaillera rapidement",
-        "La réparation nécessite un outil spécifique que le personnage n'a pas : improvisation bancale",
+        "La réparation nécessite un outil spécifique que le personnage n'a pas : improvisation bancale"
       ],
       en: [
         "The device/vehicle is repaired, but some settings are off: disadvantage on the first action using it",
@@ -1454,8 +1424,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The drone's cooling system leaks slightly: reduced range",
         "The explosive timer has about a 3-second offset: imprecise but functional",
         "The wrong protective coating was applied: it will flake off quickly",
-        "The repair requires a specialized tool the character doesn't have: improvised workaround",
-      ],
+        "The repair requires a specialized tool the character doesn't have: improvised workaround"
+      ]
     },
     critical: {
       fr: [
@@ -1493,7 +1463,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Les fondations de la construction sont instables : tout s'effondrera au prochain choc ou vibration",
         "Le système de communication du véhicule est bloqué sur fréquence ouverte : tout le monde peut écouter",
         "Le matériau de construction utilisé contient de l'amiante : danger sanitaire pour la zone",
-        "La réparation déclenche accidentellement le système d'autodestruction de l'appareil (compte à rebours de 10 minutes)",
+        "La réparation déclenche accidentellement le système d'autodestruction de l'appareil (compte à rebours de 10 minutes)"
       ],
       en: [
         "The device/vehicle is poorly repaired: disadvantage on all actions using it until properly fixed",
@@ -1530,8 +1500,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The construction's foundations are unstable: everything will collapse at the next shock or vibration",
         "The vehicle's communication system is stuck on open frequency: everyone can listen in",
         "The construction material contains asbestos: health hazard for the area",
-        "The repair accidentally triggers the device's self-destruct system (10-minute countdown)",
-      ],
+        "The repair accidentally triggers the device's self-destruct system (10-minute countdown)"
+      ]
     },
     disaster: {
       fr: [
@@ -1559,7 +1529,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le drone entre en boucle de tir automatique : il vide son chargeur dans toutes les directions",
         "La réparation libère un agent chimique corporatiste stocké dans un compartiment secret de l'appareil",
         "L'appareil mal assemblé implose, créant un vide partiel qui aspire les objets et personnes proches",
-        "Le véhicule explose au démarrage : blessure incapacitante et véhicule détruit",
+        "Le véhicule explose au démarrage : blessure incapacitante et véhicule détruit"
       ],
       en: [
         "Explosion while handling a battery",
@@ -1586,11 +1556,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The drone enters an automatic fire loop: it empties its magazine in all directions",
         "The repair releases a corporate chemical agent stored in a secret compartment of the device",
         "The improperly assembled device implodes, creating a partial vacuum that pulls in nearby objects and people",
-        "The vehicle explodes on startup: incapacitating wound and vehicle destroyed",
-      ],
-    },
+        "The vehicle explodes on startup: incapacitating wound and vehicle destroyed"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // PILOTING — Pilotage
   // ─────────────────────────────────────────────────────────────
@@ -1636,7 +1605,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Un panneau publicitaire holographique éblouit le conducteur au moment d'un virage : instant de cécité",
         "Le véhicule roule sur un câble de recharge et l'arrache : étincelles et freinage involontaire",
         "Le drone perd l'une de ses hélices secondaires : vol possible mais manoeuvres limitées",
-        "Le système de freinage émet un grincement sinistre : il tiendra encore un peu mais plus pour longtemps",
+        "Le système de freinage émet un grincement sinistre : il tiendra encore un peu mais plus pour longtemps"
       ],
       en: [
         "Battery damaged: only 5 narrations before the battery dies",
@@ -1678,8 +1647,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "A holographic billboard blinds the driver at the moment of a turn: instant of blindness",
         "The vehicle runs over a charging cable and rips it out: sparks and involuntary braking",
         "The drone loses one of its secondary rotors: flight possible but maneuvers limited",
-        "The braking system emits an ominous grinding noise: it will hold a bit longer but not much",
-      ],
+        "The braking system emits an ominous grinding noise: it will hold a bit longer but not much"
+      ]
     },
     critical: {
       fr: [
@@ -1717,7 +1686,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le drone est frappé par la foudre lors d'un orage urbain : systèmes grillés, chute contrôlée",
         "Le capot se détache en pleine vitesse et obstrue le pare-brise : conduite à l'aveugle",
         "Le véhicule est pris dans l'effondrement d'un auvent de bâtiment : coincé sous les débris",
-        "Le pilote automatique se met en grève logicielle et freine brutalement en plein trafic : carambolage mineur",
+        "Le pilote automatique se met en grève logicielle et freine brutalement en plein trafic : carambolage mineur"
       ],
       en: [
         "Battery damaged: the engine cuts out",
@@ -1754,8 +1723,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The drone is struck by lightning during an urban storm: fried systems, controlled descent",
         "The hood flies off at speed and blocks the windshield: driving blind",
         "The vehicle is caught in a building awning collapse: trapped under debris",
-        "The autopilot goes on a software strike and brakes hard in heavy traffic: minor pile-up",
-      ],
+        "The autopilot goes on a software strike and brakes hard in heavy traffic: minor pile-up"
+      ]
     },
     disaster: {
       fr: [
@@ -1783,7 +1752,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le véhicule traverse un barrage de sécurité à pleine vitesse : tirs nourris des gardes, blessures graves",
         "Le drone est abattu par un système de défense aérienne militaire : l'armée enquête sur l'opérateur",
         "Le véhicule percute un convoi de matières dangereuses : explosion chimique massive",
-        "Le rigger perd conscience en plein vol et le drone s'écrase sur le QG de l'équipe : position compromise et dégâts",
+        "Le rigger perd conscience en plein vol et le drone s'écrase sur le QG de l'équipe : position compromise et dégâts"
       ],
       en: [
         "Pile-up on public road: vehicle immobilized and law enforcement en route",
@@ -1810,11 +1779,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The vehicle crashes through a security checkpoint at full speed: heavy gunfire from guards, serious wounds",
         "The drone is shot down by a military air defense system: the military investigates the operator",
         "The vehicle collides with a hazardous materials convoy: massive chemical explosion",
-        "The rigger loses consciousness mid-flight and the drone crashes into the team's HQ: position compromised and damage",
-      ],
-    },
+        "The rigger loses consciousness mid-flight and the drone crashes into the team's HQ: position compromised and damage"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // SORCERY — Sorcellerie
   // ─────────────────────────────────────────────────────────────
@@ -1860,7 +1828,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Un passant ordinaire ressent une terreur soudaine inexplicable et fixe le lanceur du regard",
         "L'énergie du sort illumine brièvement les signatures astrales cachées dans la zone",
         "La vague de mana déclenche une alarme de voiture deux pièces plus loin",
-        "La tradition magique du lanceur se manifeste sans y être invitée : hurlement totémique, sceaux hermétiques dans l'air, etc.",
+        "La tradition magique du lanceur se manifeste sans y être invitée : hurlement totémique, sceaux hermétiques dans l'air, etc."
       ],
       en: [
         "The spell's effects are slightly weakened (e.g. base DV reduced by 2 for an offensive spell)",
@@ -1902,8 +1870,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "A passing mundane feels sudden inexplicable dread and stares at the caster",
         "The spell's energy briefly illuminates hidden astral signatures in the area",
         "The mana surge sets off a car alarm two rooms away",
-        "The caster's magical tradition manifests uninvited: totemic howl, hermetic sigils in the air, etc.",
-      ],
+        "The caster's magical tradition manifests uninvited: totemic howl, hermetic sigils in the air, etc."
+      ]
     },
     critical: {
       fr: [
@@ -1941,7 +1909,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le sort marque la paume du lanceur d'un sceau lumineux visible pendant des heures",
         "Un élément géomantique du bâtiment est perturbé, causant des fissures structurelles le long des lignes de mana",
         "Le lanceur sent le sort « se souvenir » d'un lancement précédent — un déjà-vu qui révèle que quelqu'un a altéré sa mémoire",
-        "La perception astrale s'active involontairement : le lanceur voit les deux plans simultanément et est submergé",
+        "La perception astrale s'active involontairement : le lanceur voit les deux plans simultanément et est submergé"
       ],
       en: [
         "The spell's effects are greatly weakened (base DV halved)",
@@ -1978,8 +1946,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The spell brands the caster's palm with a glowing sigil visible for hours",
         "A geomantic feature in the building is disrupted, causing structural cracks along mana lines",
         "The caster feels the spell 'remember' a previous casting — a déjà vu that reveals something was altered in their memory",
-        "Astral perception activates involuntarily: the caster sees both planes simultaneously and is overwhelmed",
-      ],
+        "Astral perception activates involuntarily: the caster sees both planes simultaneously and is overwhelmed"
+      ]
     },
     disaster: {
       fr: [
@@ -2007,7 +1975,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le domaine d'un puissant esprit libre chevauche la zone de lancement — l'esprit se manifeste, furieux",
         "Le sort détricote l'espace astral local : la zone devient une distorsion de mana pendant des jours",
         "La tradition magique du lanceur l'abandonne : l'esprit mentor rompt le lien, le totem lui tourne le dos",
-        "Tous les focus magiques dans un rayon de 50 mètres explosent simultanément, libérant leur énergie stockée",
+        "Tous les focus magiques dans un rayon de 50 mètres explosent simultanément, libérant leur énergie stockée"
       ],
       en: [
         "Creates a temporary astral rift, malevolent spirits can cross through",
@@ -2034,11 +2002,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "A domain of a powerful free spirit overlaps with the casting area — the spirit manifests, furious",
         "The spell unravels local astral space: the area becomes a mana warp for days",
         "The caster's magical tradition abandons them: mentor spirit severs the link, totem turns its back",
-        "Every magical focus within 50 meters shatters simultaneously, releasing their stored energy",
-      ],
-    },
+        "Every magical focus within 50 meters shatters simultaneously, releasing their stored energy"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // CONJURATION — Conjuration
   // ─────────────────────────────────────────────────────────────
@@ -2084,7 +2051,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'esprit attire l'attention d'un chat du quartier qui le fixe intensément et refuse de partir",
         "L'esprit insiste pour connaître le plan complet avant d'agir, ralentissant le groupe",
         "L'invocation provoque un léger tremblement du sol, comme un micro-séisme localisé",
-        "L'esprit invoqué est accompagné d'une aura de tristesse contagieuse qui affecte le moral du groupe",
+        "L'esprit invoqué est accompagné d'une aura de tristesse contagieuse qui affecte le moral du groupe"
       ],
       en: [
         "The summoned spirit has an annoying personality trait (e.g. pacifist spirit that refuses to fight)",
@@ -2126,8 +2093,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The spirit attracts the attention of a local cat that stares at it intensely and refuses to leave",
         "The spirit insists on knowing the full plan before acting, slowing down the group",
         "The summoning causes a slight ground tremor, like a localized micro-earthquake",
-        "The summoned spirit is accompanied by a contagious aura of sadness that affects the group's morale",
-      ],
+        "The summoned spirit is accompanied by a contagious aura of sadness that affects the group's morale"
+      ]
     },
     critical: {
       fr: [
@@ -2165,7 +2132,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'invocation crée un écho qui invoquera automatiquement un autre esprit dans 24 heures, que le conjurateur le veuille ou non",
         "L'esprit connaît un terrible secret sur le conjurateur et menace de le révéler",
         "Le cercle d'invocation reste actif et visible, agissant comme un phare pour les entités errantes",
-        "L'esprit exsude une brume surnaturelle qui réduit la visibilité dans la zone et perturbe les capteurs",
+        "L'esprit exsude une brume surnaturelle qui réduit la visibilité dans la zone et perturbe les capteurs"
       ],
       en: [
         "The spirit will do its best to 'creatively interpret' orders",
@@ -2202,8 +2169,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The summoning creates an echo that will automatically summon another spirit in 24 hours, whether the conjurer wants it or not",
         "The spirit knows a terrible secret about the conjurer and threatens to reveal it",
         "The summoning circle remains active and visible, acting as a beacon for wandering entities",
-        "The spirit exudes a supernatural mist that reduces visibility in the area and disrupts sensors",
-      ],
+        "The spirit exudes a supernatural mist that reduces visibility in the area and disrupts sensors"
+      ]
     },
     disaster: {
       fr: [
@@ -2231,7 +2198,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le conjurateur est maudit par l'esprit : désavantage permanent à tous les tests de conjuration jusqu'à ce qu'un rituel de purification soit accompli",
         "L'esprit se retourne et invoque à son tour le conjurateur dans le plan astral pour un duel à mort",
         "La brèche d'invocation devient un portail permanent vers un domaine spirituel cauchemardesque",
-        "L'esprit fusionne avec le corps du conjurateur, créant une abomination hybride incontrôlable",
+        "L'esprit fusionne avec le corps du conjurateur, créant une abomination hybride incontrôlable"
       ],
       en: [
         "The spirit escapes control and turns against the summoner",
@@ -2258,11 +2225,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The conjurer is cursed by the spirit: permanent disadvantage on all conjuration tests until a purification ritual is performed",
         "The spirit turns the tables and summons the conjurer into the astral plane for a fight to the death",
         "The summoning breach becomes a permanent portal to a nightmarish spiritual domain",
-        "The spirit merges with the conjurer's body, creating an uncontrollable hybrid abomination",
-      ],
-    },
+        "The spirit merges with the conjurer's body, creating an uncontrollable hybrid abomination"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // PERCEPTION — Perception
   // ─────────────────────────────────────────────────────────────
@@ -2308,7 +2274,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage remarque la mauvaise marque de véhicule dans le parking, perdant du temps",
         "La perception matricielle capte des échos de données anciennes mêlées aux données actuelles",
         "Le personnage est certain d'avoir vu quelqu'un le suivre, mais ce n'est que la paranoïa",
-        "Un miroir ou une surface réfléchissante crée une illusion de profondeur trompeuse",
+        "Un miroir ou une surface réfléchissante crée une illusion de profondeur trompeuse"
       ],
       en: [
         "Some information is correct but imprecise",
@@ -2350,8 +2316,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character notices the wrong vehicle brand in the parking lot, wasting time",
         "Matrix perception picks up echoes of old data mixed with current data",
         "The character is certain they saw someone following them, but it's just paranoia",
-        "A mirror or reflective surface creates a deceiving depth illusion",
-      ],
+        "A mirror or reflective surface creates a deceiving depth illusion"
+      ]
     },
     critical: {
       fr: [
@@ -2389,7 +2355,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'aura astrale de la zone est si perturbée que toute lecture d'aura donne des résultats contradictoires",
         "Le personnage repère un micro ou une caméra et devient paranoïaque : il soupçonne tout le monde d'être surveillé",
         "Un bruit de fond récurrent (ventilation, machine) masque les murmures d'une conversation critique",
-        "Le personnage est convaincu d'avoir vu un visage connu dans la foule, ce qui l'obsède et le déconcentre",
+        "Le personnage est convaincu d'avoir vu un visage connu dans la foule, ce qui l'obsède et le déconcentre"
       ],
       en: [
         "Spotted by the target",
@@ -2426,8 +2392,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The area's astral aura is so disturbed that any aura reading gives contradictory results",
         "The character spots a mic or camera and becomes paranoid: they suspect everyone is being monitored",
         "A recurring background noise (ventilation, machinery) masks the whispers of a critical conversation",
-        "The character is convinced they saw a familiar face in the crowd, which obsesses and distracts them",
-      ],
+        "The character is convinced they saw a familiar face in the crowd, which obsesses and distracts them"
+      ]
     },
     disaster: {
       fr: [
@@ -2459,7 +2425,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est convaincu d'avoir vu un fantôme ou un présage de mort : panique totale et fuite incontrôlée",
         "Le personnage est victime d'une illusion sensorielle complète : il agit dans un monde qui n'existe pas pendant 2 narrations",
         "Le personnage est identifié par la cible comme un shadowrunner connu : contrat lancé contre l'équipe entière",
-        "La surcharge perceptive provoque une syncope : le personnage s'effondre inconscient en terrain hostile",
+        "La surcharge perceptive provoque une syncope : le personnage s'effondre inconscient en terrain hostile"
       ],
       en: [
         "Spotted and captured by the target",
@@ -2490,11 +2456,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is convinced they saw a ghost or death omen: total panic and uncontrolled flight",
         "The character falls victim to a complete sensory illusion: they act in a world that doesn't exist for 2 narrations",
         "The character is identified by the target as a known shadowrunner: a contract is placed on the entire team",
-        "Perceptual overload causes a fainting spell: the character collapses unconscious in hostile territory",
-      ],
-    },
+        "Perceptual overload causes a fainting spell: the character collapses unconscious in hostile territory"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // SURVIVAL — Survie
   // ─────────────────────────────────────────────────────────────
@@ -2536,7 +2501,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le réseau de tunnels urbains ou les égouts ne correspondent pas aux plans disponibles",
         "Le personnage souffre du décalage horaire ou du changement d'altitude : nausées légères",
         "Un changement soudain de température rend l'équipement difficile à manipuler (mains engourdies)",
-        "Le campement est trop exposé au vent : le feu ne prend pas et l'abri vibre toute la nuit",
+        "Le campement est trop exposé au vent : le feu ne prend pas et l'abri vibre toute la nuit"
       ],
       en: [
         "Spends a significant part of the day finding provisions or water",
@@ -2574,8 +2539,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The urban tunnel network or sewers don't match available maps",
         "The character suffers from jet lag or altitude change: mild nausea",
         "A sudden temperature shift makes equipment hard to handle (numb hands)",
-        "The camp is too exposed to wind: the fire won't catch and the shelter rattles all night",
-      ],
+        "The camp is too exposed to wind: the fire won't catch and the shelter rattles all night"
+      ]
     },
     critical: {
       fr: [
@@ -2613,7 +2578,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Les provisions attiraient un essaim de criquets Éveillés qui dévorent tout sur leur passage",
         "Le personnage confond le nord magnétique et le nord géographique : déviation progressive du trajet",
         "Le premier secours échoue et le patient fait une réaction allergique au traitement improvisé",
-        "Le groupe est surpris par la marée ou la montée des eaux dans un tunnel : évacuation urgente",
+        "Le groupe est surpris par la marée ou la montée des eaux dans un tunnel : évacuation urgente"
       ],
       en: [
         "Eats something poisonous: the whole team suffers disadvantage for 8 hours",
@@ -2650,8 +2615,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The provisions attracted a swarm of Awakened locusts that devour everything in their path",
         "The character confuses magnetic north with geographic north: progressive route deviation",
         "First aid fails and the patient has an allergic reaction to the improvised treatment",
-        "The group is caught by the tide or rising water in a tunnel: urgent evacuation",
-      ],
+        "The group is caught by the tide or rising water in a tunnel: urgent evacuation"
+      ]
     },
     disaster: {
       fr: [
@@ -2683,7 +2648,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le groupe entier est victime d'une déshydratation critique : tous subissent une blessure grave, pas de combat possible",
         "Le terrain choisi pour l'abri est en réalité une zone inondable : noyade possible pendant la nuit",
         "Le personnage confond un animal Éveillé avec une proie ordinaire : la créature est beaucoup plus dangereuse que prévu",
-        "Le premier secours provoque une réaction en chaîne : hémorragie incontrôlable et choc hypovolémique",
+        "Le premier secours provoque une réaction en chaîne : hémorragie incontrôlable et choc hypovolémique"
       ],
       en: [
         "Gets lost, no chance of arriving on time",
@@ -2714,11 +2679,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The entire group suffers critical dehydration: everyone takes a serious wound, no combat possible",
         "The terrain chosen for shelter is actually a flood zone: drowning possible overnight",
         "The character mistakes an Awakened animal for ordinary prey: the creature is far more dangerous than expected",
-        "First aid causes a chain reaction: uncontrollable hemorrhage and hypovolemic shock",
-      ],
-    },
+        "First aid causes a chain reaction: uncontrollable hemorrhage and hypovolemic shock"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // INFLUENCE — Interaction sociale générale
   // ─────────────────────────────────────────────────────────────
@@ -2764,7 +2728,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Une tentative de name-dropping se retourne quand l'interlocuteur connaît la personne et ne l'aime pas",
         "Le logiciel de traduction du personnage bégaie, rendant une phrase polie légèrement offensante en Or'zet",
         "Un commentaire irréfléchi sur les Barrens offense le contact self-made qui y a grandi",
-        "Le personnage confond un geste de paix avec une invitation au combat dans la culture de l'interlocuteur",
+        "Le personnage confond un geste de paix avec une invitation au combat dans la culture de l'interlocuteur"
       ],
       en: [
         "The other party is uncomfortable: disadvantage on next interaction with them",
@@ -2806,8 +2770,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "An attempt to name-drop backfires when the other party knows the person and dislikes them",
         "The character's translator software hiccups, rendering a polite phrase as mildly offensive in Or'zet",
         "A thoughtless comment about the Barrens offends the self-made contact who grew up there",
-        "The character confuses a peace gesture with a combat invitation in the contact's culture",
-      ],
+        "The character confuses a peace gesture with a combat invitation in the contact's culture"
+      ]
     },
     critical: {
       fr: [
@@ -2845,7 +2809,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est pris en photo avec une personne compromettante sans s'en rendre compte : chantage potentiel",
         "L'interlocuteur révèle que la réputation du personnage le précède et qu'elle est très mauvaise",
         "Le personnage déclenche une dispute entre deux factions présentes en prenant parti sans le vouloir",
-        "L'interlocuteur active un brouilleur de communication : le personnage est coupé de son équipe",
+        "L'interlocuteur active un brouilleur de communication : le personnage est coupé de son équipe"
       ],
       en: [
         "The other party is uncomfortable: they try everything to end the interaction",
@@ -2882,8 +2846,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is photographed with a compromising individual without realizing it: potential blackmail",
         "The contact reveals that the character's reputation precedes them and it is very bad",
         "The character triggers a dispute between two factions present by inadvertently taking sides",
-        "The contact activates a communication jammer: the character is cut off from their team",
-      ],
+        "The contact activates a communication jammer: the character is cut off from their team"
+      ]
     },
     disaster: {
       fr: [
@@ -2911,7 +2875,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'interlocuteur est un technomancien qui efface instantanément toute la présence matricielle du personnage : identité numérique détruite",
         "Le personnage est piégé dans un contrat magique scellé par un mot prononcé par inadvertance : conséquences imprévisibles",
         "L'incident provoque une guerre ouverte dans les rues entre deux gangs : le quartier entier est une zone de combat",
-        "Le personnage est déclaré ennemi d'État par un gouvernement souverain amérindien : traqué sur tout le continent",
+        "Le personnage est déclaré ennemi d'État par un gouvernement souverain amérindien : traqué sur tout le continent"
       ],
       en: [
         "The other party feels insulted, provoking an extreme reaction from their corporation/group",
@@ -2938,11 +2902,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The contact is a technomancer who instantly erases the character's entire Matrix presence: digital identity destroyed",
         "The character is trapped in a magical contract sealed by a word spoken inadvertently: unpredictable consequences",
         "The incident triggers open warfare in the streets between two gangs: the entire neighborhood becomes a combat zone",
-        "The character is declared an enemy of state by a sovereign Amerindian government: hunted across the continent",
-      ],
-    },
+        "The character is declared an enemy of state by a sovereign Amerindian government: hunted across the continent"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // INFLUENCE — Interaction sociale (sous-catégorie)
   // ─────────────────────────────────────────────────────────────
@@ -2988,7 +2951,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Un excès de détails personnels met le contact professionnel mal à l'aise",
         "L'oreillette de traduction du personnage a un temps de retard, le faisant répondre à la mauvaise phrase",
         "Un cadeau bien intentionné s'avère être un objet tabou dans la tradition de l'interlocuteur",
-        "Le personnage utilise un geste de main ork dans un contexte elfique : malentendu culturel immédiat",
+        "Le personnage utilise un geste de main ork dans un contexte elfique : malentendu culturel immédiat"
       ],
       en: [
         "The other party is uncomfortable: disadvantage on next interaction with them",
@@ -3030,8 +2993,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "An overshare about personal life makes the professional contact uncomfortable",
         "The character's translator earpiece lags, causing them to respond to the wrong sentence",
         "A well-intentioned gift turns out to be a cultural taboo item for the contact's tradition",
-        "The character uses an ork hand gesture in an elven context: immediate cultural misunderstanding",
-      ],
+        "The character uses an ork hand gesture in an elven context: immediate cultural misunderstanding"
+      ]
     },
     critical: {
       fr: [
@@ -3069,7 +3032,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est pris en flagrant délit de mensonge par un logiciel d'analyse faciale intégré au mobilier",
         "L'interlocuteur exige un gage physique (arme, commlink) comme preuve de bonne foi : refuser brise la relation",
         "Un ancien rival du personnage surgit et révèle des détails compromettants devant tout le monde",
-        "L'interlocuteur enregistre la conversation et menace de la diffuser si le personnage ne coopère pas",
+        "L'interlocuteur enregistre la conversation et menace de la diffuser si le personnage ne coopère pas"
       ],
       en: [
         "The other party is uncomfortable: they try everything to end the interaction",
@@ -3106,8 +3069,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is caught lying by facial analysis software built into the furniture",
         "The contact demands a physical token (weapon, commlink) as proof of good faith: refusing breaks the relationship",
         "An old rival of the character appears and reveals compromising details in front of everyone",
-        "The contact records the conversation and threatens to broadcast it if the character does not cooperate",
-      ],
+        "The contact records the conversation and threatens to broadcast it if the character does not cooperate"
+      ]
     },
     disaster: {
       fr: [
@@ -3135,7 +3098,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est identifié par une IA de surveillance comme meneur d'un réseau criminel : mandat d'arrêt instantané",
         "L'incident déclenche une purge corporatiste dans le quartier : des innocents sont arrêtés à cause du personnage",
         "Le personnage est maudit par un chamane offensé : malchance persistante jusqu'à réparation rituelle",
-        "L'interlocuteur était un avatar de grand dragon testant le personnage : l'échec a des conséquences terrifiantes",
+        "L'interlocuteur était un avatar de grand dragon testant le personnage : l'échec a des conséquences terrifiantes"
       ],
       en: [
         "The other party feels insulted, provoking an extreme reaction from their corporation/group",
@@ -3162,11 +3125,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is identified by a surveillance AI as the leader of a criminal network: instant arrest warrant",
         "The incident triggers a corporate purge in the neighborhood: innocents are arrested because of the character",
         "The character is cursed by an offended shaman: persistent bad luck until ritual reparation",
-        "The contact was an avatar of a great dragon testing the character: the failure has terrifying consequences",
-      ],
-    },
+        "The contact was an avatar of a great dragon testing the character: the failure has terrifying consequences"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // INFLUENCE — Étiquette
   // ─────────────────────────────────────────────────────────────
@@ -3212,7 +3174,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Interrompt un ancien en plein récit dans une culture où l'ancienneté commande un respect absolu",
         "Ne reproduit pas un geste de salutation traditionnel, laissant l'interlocuteur en suspens",
         "Évoque la magie de manière désinvolte dans un rassemblement de sentiment anti-Éveillé : l'atmosphère se refroidit",
-        "Le personnage pose son verre sur un meuble précieux sans dessous de verre : l'hôte blêmit",
+        "Le personnage pose son verre sur un meuble précieux sans dessous de verre : l'hôte blêmit"
       ],
       en: [
         "Faux pas: lets slip that they have never been here before, without revealing they don't belong",
@@ -3254,8 +3216,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Interrupts an elder mid-story in a culture where seniority commands absolute respect",
         "Fails to reciprocate a traditional greeting gesture, leaving the contact hanging awkwardly",
         "Brings up magic casually in a gathering of anti-Awakened sentiment: the room chills",
-        "The character sets their glass on precious furniture without a coaster: the host pales",
-      ],
+        "The character sets their glass on precious furniture without a coaster: the host pales"
+      ]
     },
     critical: {
       fr: [
@@ -3293,7 +3255,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage boit dans la coupe cérémonielle réservée au chef de clan : sacrilège",
         "Le personnage prend une photo d'un document confidentiel posé sur la table par inadvertance : soupçonné d'espionnage",
         "Le badge du personnage affiche un département rival : la sécurité l'escorte hors de la zone restreinte",
-        "Le personnage tutoie un magnat corporatiste dans une langue où cela constitue une grave insulte",
+        "Le personnage tutoie un magnat corporatiste dans une langue où cela constitue une grave insulte"
       ],
       en: [
         "Faux pas: lets slip that they are not familiar with this social circle",
@@ -3330,8 +3292,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character drinks from the ceremonial cup reserved for the clan chief: sacrilege",
         "The character photographs a confidential document left on the table by mistake: suspected of espionage",
         "The character's badge displays a rival department: security escorts them out of the restricted area",
-        "The character uses informal address with a corporate magnate in a language where that is a grave insult",
-      ],
+        "The character uses informal address with a corporate magnate in a language where that is a grave insult"
+      ]
     },
     disaster: {
       fr: [
@@ -3359,7 +3321,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage renverse une urne funéraire dans un temple ancestral : les esprits gardiens se déchaînent",
         "L'erreur de protocole provoque l'annulation d'un traité de paix entre deux nations : le personnage est tenu responsable",
         "Le personnage est sacrifié symboliquement dans un rituel qu'il a rejoint involontairement en brisant un tabou",
-        "L'affront est si grave qu'un dragon ancien prend personnellement le personnage pour cible",
+        "L'affront est si grave qu'un dragon ancien prend personnellement le personnage pour cible"
       ],
       en: [
         "Insults a mission-related contact without realizing it",
@@ -3386,11 +3348,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character knocks over a funerary urn in an ancestral temple: guardian spirits are unleashed",
         "The protocol error causes the cancellation of a peace treaty between two nations: the character is held responsible",
         "The character is symbolically sacrificed in a ritual they involuntarily joined by breaking a taboo",
-        "The affront is so severe that an ancient dragon personally targets the character",
-      ],
-    },
+        "The affront is so severe that an ancient dragon personally targets the character"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // INFLUENCE — Négociation
   // ─────────────────────────────────────────────────────────────
@@ -3436,7 +3397,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'interlocuteur exige que le personnage assume un risque supplémentaire dans le cadre de l'accord",
         "La négociation traîne tellement que la fenêtre pour l'objectif de mission se réduit dangereusement",
         "L'interlocuteur insiste pour que l'échange ait lieu en personne, dans un endroit qu'il contrôle",
-        "Le personnage signe un accord sans remarquer que la devise de référence a changé depuis la dernière rencontre",
+        "Le personnage signe un accord sans remarquer que la devise de référence a changé depuis la dernière rencontre"
       ],
       en: [
         "The other party thinks they got cheated and makes it known",
@@ -3478,8 +3439,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The contact demands the character take on additional risk as part of the deal",
         "The negotiation drags on so long that the window for the mission objective narrows dangerously",
         "The contact insists on meeting in person for the exchange, in a location they control",
-        "The character signs a deal without noticing the reference currency has changed since the last meeting",
-      ],
+        "The character signs a deal without noticing the reference currency has changed since the last meeting"
+      ]
     },
     critical: {
       fr: [
@@ -3517,7 +3478,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'interlocuteur révèle que le contrat engage également les membres de l'équipe du personnage sans leur consentement",
         "Le personnage découvre que les biens négociés sont radioactifs : problème de stockage et de santé",
         "L'interlocuteur fait appel à un avocat corporatiste qui rend le contrat inextricable",
-        "Le contrat est signé mais l'interlocuteur refuse de livrer sans un paiement supplémentaire de sécurité",
+        "Le contrat est signé mais l'interlocuteur refuse de livrer sans un paiement supplémentaire de sécurité"
       ],
       en: [
         "Gets the desired price only by buying something else as well",
@@ -3554,8 +3515,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The contact reveals the contract also binds the character's team members without their consent",
         "The character discovers the negotiated goods are radioactive: storage and health problem",
         "The contact calls in a corporate lawyer who makes the contract inextricable",
-        "The contract is signed but the contact refuses to deliver without an additional security payment",
-      ],
+        "The contract is signed but the contact refuses to deliver without an additional security payment"
+      ]
     },
     disaster: {
       fr: [
@@ -3583,7 +3544,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le contrat signé est en réalité un accord d'extradition déguisé vers une mégacorporation hostile",
         "L'interlocuteur meurt empoisonné pendant la signature : le personnage est le suspect principal",
         "Le deal implique du trafic d'organes ou d'êtres vivants : le personnage est maintenant complice d'un crime contre l'humanité",
-        "Le contrat active une clause dormante qui transfère la propriété de tout l'équipement de l'équipe à l'interlocuteur",
+        "Le contrat active une clause dormante qui transfère la propriété de tout l'équipement de l'équipe à l'interlocuteur"
       ],
       en: [
         "The target thinks it's a bluff and gives false information",
@@ -3610,11 +3571,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The signed contract is actually a disguised extradition agreement to a hostile megacorporation",
         "The contact dies of poisoning during the signing: the character is the prime suspect",
         "The deal involves organ or human trafficking: the character is now complicit in a crime against humanity",
-        "The contract activates a dormant clause that transfers ownership of all team equipment to the contact",
-      ],
-    },
+        "The contract activates a dormant clause that transfers ownership of all team equipment to the contact"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // INFLUENCE — Intimidation
   // ─────────────────────────────────────────────────────────────
@@ -3660,7 +3620,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'intimidation laisse la cible avec une rancune qui resurgira au pire moment",
         "La menace est convaincante mais la cible est trop loyale pour trahir son employeur : impasse",
         "La réputation violente du personnage atteint quelqu'un qui ne respecte que la diplomatie : pont brûlé",
-        "La démonstration de force effraie un informateur potentiel qui quitte les lieux avant de pouvoir être interrogé",
+        "La démonstration de force effraie un informateur potentiel qui quitte les lieux avant de pouvoir être interrogé"
       ],
       en: [
         "A word or attitude lets the target understand their life is not in danger (they may still be intimidated by other means)",
@@ -3702,8 +3662,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character's intimidation leaves the target with a grudge that will surface at the worst possible time",
         "The threat is convincing but the target is too loyal to betray their employer: impasse",
         "The character's violent reputation reaches the ears of someone who respects only diplomacy: bridge burned",
-        "The display of force scares away a potential informant who leaves before they can be questioned",
-      ],
+        "The display of force scares away a potential informant who leaves before they can be questioned"
+      ]
     },
     critical: {
       fr: [
@@ -3741,7 +3701,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "La cible active un implant de détresse qui alerte une équipe de sécurité privée : arrivée imminente",
         "Le personnage brise accidentellement la mâchoire de la cible : impossible de parler pendant des semaines",
         "L'intimidation est filmée par un passant et uploadée en temps réel : identification en cours",
-        "La cible révèle sous la contrainte un faux emplacement de bombe : temps perdu sur une fausse piste",
+        "La cible révèle sous la contrainte un faux emplacement de bombe : temps perdu sur une fausse piste"
       ],
       en: [
         "The other party is uncomfortable: they try everything to end the interaction",
@@ -3778,8 +3738,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The target activates a distress implant that alerts a private security team: arrival imminent",
         "The character accidentally breaks the target's jaw: unable to speak for weeks",
         "The intimidation is filmed by a bystander and uploaded in real time: identification in progress",
-        "The target reveals a fake bomb location under duress: time wasted on a false lead",
-      ],
+        "The target reveals a fake bomb location under duress: time wasted on a false lead"
+      ]
     },
     disaster: {
       fr: [
@@ -3807,7 +3767,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "La cible est un esprit libre déguisé qui se révèle et attaque le personnage avec une puissance dévastatrice",
         "L'intimidation provoque une réaction en chaîne : la cible active un implant qui libère un virus dans le bâtiment",
         "La violence de la scène est captée par un satellite d'observation : une mégacorporation s'intéresse personnellement au personnage",
-        "La cible meurt et son corps se transforme en piège explosif : blessure incapacitante pour tous les proches",
+        "La cible meurt et son corps se transforme en piège explosif : blessure incapacitante pour tous les proches"
       ],
       en: [
         "The other party feels insulted, provoking an extreme reaction from their corporation/group",
@@ -3834,11 +3794,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The target is a free spirit in disguise that reveals itself and attacks the character with devastating power",
         "The intimidation triggers a chain reaction: the target activates an implant that releases a virus in the building",
         "The violence of the scene is captured by an observation satellite: a megacorporation takes personal interest in the character",
-        "The target dies and their body transforms into an explosive trap: incapacitating wound for everyone nearby",
-      ],
-    },
+        "The target dies and their body transforms into an explosive trap: incapacitating wound for everyone nearby"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // INFLUENCE — Bluff / Imposture
   // ─────────────────────────────────────────────────────────────
@@ -3884,7 +3843,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage accepte un rendez-vous de suivi qui nécessitera de maintenir le mensonge bien plus longtemps que prévu",
         "L'interlocuteur teste le personnage en citant mal un fait délibérément : le personnage corrige avec la mauvaise version",
         "Le modulateur vocal du personnage grésille faiblement en changeant de registre : à peine perceptible mais présent",
-        "Le maquillage du déguisement commence à couler sous l'effet de la chaleur : le personnage doit s'éclipser pour retoucher",
+        "Le maquillage du déguisement commence à couler sous l'effet de la chaleur : le personnage doit s'éclipser pour retoucher"
       ],
       en: [
         "The other party is suspicious: disadvantage on next interaction with them",
@@ -3926,8 +3885,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character agrees to a follow-up meeting that will require maintaining the lie much longer than planned",
         "The contact tests the character by deliberately misquoting something: the character corrects with the wrong version",
         "The character's voice modulator buzzes faintly when switching registers: barely perceptible but there",
-        "The disguise makeup starts running due to the heat: the character must slip away to touch up",
-      ],
+        "The disguise makeup starts running due to the heat: the character must slip away to touch up"
+      ]
     },
     critical: {
       fr: [
@@ -3965,7 +3924,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est piégé quand l'interlocuteur montre une vidéo de la vraie personne imitée, filmée ce matin même",
         "Le faux badge déclenche une vérification approfondie de 10 minutes : le personnage doit gagner du temps ou fuir",
         "Un chien de garde entraîné flaire le stress du personnage et commence à aboyer : attention attirée",
-        "Le personnage est mis en communication directe avec quelqu'un qui connaît intimement la personne imitée : improvisation désespérée",
+        "Le personnage est mis en communication directe avec quelqu'un qui connaît intimement la personne imitée : improvisation désespérée"
       ],
       en: [
         "The other party is suspicious: they alert their superiors as soon as the character leaves",
@@ -4002,8 +3961,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is trapped when the contact shows a video of the real impersonated person, filmed this very morning",
         "The fake badge triggers a thorough 10-minute verification: the character must stall or flee",
         "A trained guard dog smells the character's stress and starts barking: attention drawn",
-        "The character is put in direct communication with someone who intimately knows the impersonated person: desperate improvisation",
-      ],
+        "The character is put in direct communication with someone who intimately knows the impersonated person: desperate improvisation"
+      ]
     },
     disaster: {
       fr: [
@@ -4031,7 +3990,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est démasqué par une IA de sécurité qui compare sa voix avec des bases de données mondiales : identité réelle diffusée",
         "La personne imitée arrive en personne et confronte le personnage devant des dizaines de témoins armés",
         "Le bluff raté provoque l'activation d'un protocole de confinement biologique : le personnage est enfermé en quarantaine",
-        "L'interlocuteur était un chasseur de primes qui attendait que le personnage utilise cette fausse identité spécifique",
+        "L'interlocuteur était un chasseur de primes qui attendait que le personnage utilise cette fausse identité spécifique"
       ],
       en: [
         "Is discovered, provoking an extreme reaction from the corporation/group",
@@ -4058,11 +4017,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is unmasked by a security AI cross-referencing their voice against global databases: real identity broadcast",
         "The impersonated person arrives in person and confronts the character in front of dozens of armed witnesses",
         "The failed bluff triggers a biological containment protocol: the character is locked in quarantine",
-        "The contact was a bounty hunter waiting for the character to use this specific fake identity",
-      ],
-    },
+        "The contact was a bounty hunter waiting for the character to use this specific fake identity"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // NETWORKING — Réseau
   // ─────────────────────────────────────────────────────────────
@@ -4108,7 +4066,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le contact mentionne en passant que quelqu'un d'autre s'est renseigné sur le personnage récemment",
         "L'information est exacte mais incomplète : le détail crucial est derrière un autre paywall",
         "Le contact est plus nerveux que d'habitude et insiste sur un protocole de dead drop plus dangereux que la normale",
-        "Le contact insiste pour être payé en marchandises plutôt qu'en nuyens : échange compliqué",
+        "Le contact insiste pour être payé en marchandises plutôt qu'en nuyens : échange compliqué"
       ],
       en: [
         "A contact is fed up with constant requests: disadvantage on next Networking test",
@@ -4150,8 +4108,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The contact casually mentions that someone else has been asking about the character recently",
         "The information is accurate but incomplete: the crucial detail is behind another paywall",
         "The contact is more nervous than usual and insists on a deadlier-than-normal dead drop protocol",
-        "The contact insists on being paid in goods rather than nuyen: complicated exchange",
-      ],
+        "The contact insists on being paid in goods rather than nuyen: complicated exchange"
+      ]
     },
     critical: {
       fr: [
@@ -4189,7 +4147,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le fixer habituel a été remplacé par un inconnu : la confiance doit être établie à partir de zéro",
         "Le matériel livré contient un mouchard corporatiste activé : position de l'équipe compromise",
         "Le contact fournit des informations exactes mais périmées : la cible a déjà changé ses plans",
-        "Le réseau du personnage est attaqué par un virus ciblé : communications brouillées pendant 24 heures",
+        "Le réseau du personnage est attaqué par un virus ciblé : communications brouillées pendant 24 heures"
       ],
       en: [
         "The target is informed of the inquiries and prepares",
@@ -4226,8 +4184,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The usual fixer has been replaced by a stranger: trust must be built from scratch",
         "The delivered gear contains an activated corporate bug: team position compromised",
         "The contact provides accurate but outdated information: the target has already changed plans",
-        "The character's network is hit by a targeted virus: communications scrambled for 24 hours",
-      ],
+        "The character's network is hit by a targeted virus: communications scrambled for 24 hours"
+      ]
     },
     disaster: {
       fr: [
@@ -4255,7 +4213,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le contact fournit volontairement l'adresse de la planque de l'équipe à une faction ennemie : embuscade imminente",
         "Tous les contacts du personnage reçoivent simultanément un message les accusant de trahison : panique dans le réseau",
         "Le fixer du personnage est assassiné et remplacé par un double qui travaille pour l'ennemi",
-        "Le personnage découvre que son réseau entier est un honeypot élaboré construit par une IA corporatiste",
+        "Le personnage découvre que son réseau entier est un honeypot élaboré construit par une IA corporatiste"
       ],
       en: [
         "The target is informed of the inquiries and directly targets the character",
@@ -4282,11 +4240,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The contact deliberately provides the team's safehouse address to an enemy faction: ambush imminent",
         "All of the character's contacts simultaneously receive a message accusing them of betrayal: network-wide panic",
         "The character's fixer is assassinated and replaced by a double working for the enemy",
-        "The character discovers their entire network is actually an elaborate honeypot built by a corporate AI",
-      ],
-    },
+        "The character discovers their entire network is actually an elaborate honeypot built by a corporate AI"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // ASTRAL COMBAT — Combat astral
   // ─────────────────────────────────────────────────────────────
@@ -4332,7 +4289,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'effort de combat fait vaciller le lien avec un sort maintenu sur le plan physique",
         "Le personnage se retrouve momentanément face à une version astrale de lui-même — un reflet inversé",
         "L'atmosphère astrale locale s'alourdit, comme si le plan lui-même désapprouvait la violence",
-        "Le personnage perçoit un murmure ancien en langue oubliée, le distrayant pendant un instant critique",
+        "Le personnage perçoit un murmure ancien en langue oubliée, le distrayant pendant un instant critique"
       ],
       en: [
         "Momentary loss of focus: disadvantage on next astral test",
@@ -4374,8 +4331,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The effort of combat causes a sustained spell on the physical plane to waver",
         "The character momentarily faces an astral version of themselves — an inverted reflection",
         "The local astral atmosphere grows heavy, as if the plane itself disapproves of the violence",
-        "The character perceives an ancient murmur in a forgotten tongue, distracting them at a critical moment",
-      ],
+        "The character perceives an ancient murmur in a forgotten tongue, distracting them at a critical moment"
+      ]
     },
     critical: {
       fr: [
@@ -4413,7 +4370,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage réalise trop tard que l'adversaire est le gardien d'un artefact astral puissant",
         "L'aura du personnage est déchirée : toute sa magie est désavantagée jusqu'à une nuit de repos complet",
         "Le combat attire l'attention d'un grand esprit qui exige que les deux camps cessent les hostilités immédiatement",
-        "Le personnage est enveloppé dans un cocon de mana hostile qui l'immobilise pendant que l'adversaire se repositionne",
+        "Le personnage est enveloppé dans un cocon de mana hostile qui l'immobilise pendant que l'adversaire se repositionne"
       ],
       en: [
         "The astral adversary identifies the character's aura — it can find them again",
@@ -4450,8 +4407,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character realizes too late that the adversary is the guardian of a powerful astral artifact",
         "The character's aura is torn: all magic is at disadvantage until a full night's rest",
         "The combat draws the attention of a great spirit who demands both sides cease hostilities immediately",
-        "The character is enveloped in a cocoon of hostile mana that immobilizes them while the adversary repositions",
-      ],
+        "The character is enveloped in a cocoon of hostile mana that immobilizes them while the adversary repositions"
+      ]
     },
     disaster: {
       fr: [
@@ -4479,7 +4436,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le plan astral se cristallise autour du personnage, le piégeant dans une prison de mana solidifié",
         "Le combat libère une onde de choc astrale qui détruit toutes les barrières magiques de la zone",
         "L'adversaire marque l'âme du personnage : visible par tous les êtres astraux à jamais",
-        "Le personnage découvre que son corps physique a été déplacé pendant le combat astral — il est désormais introuvable",
+        "Le personnage découvre que son corps physique a été déplacé pendant le combat astral — il est désormais introuvable"
       ],
       en: [
         "Astral projection brutally interrupted: serious wound and disorientation",
@@ -4506,11 +4463,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The astral plane crystallizes around the character, trapping them in a prison of solidified mana",
         "The combat releases an astral shockwave that destroys all magical barriers in the area",
         "The adversary marks the character's soul: visible to all astral beings forever",
-        "The character discovers their physical body was moved during the astral combat — it is now nowhere to be found",
-      ],
-    },
+        "The character discovers their physical body was moved during the astral combat — it is now nowhere to be found"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // TECHNOMANCER — Technomancie
   // ─────────────────────────────────────────────────────────────
@@ -4556,7 +4512,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le technomancien laisse une empreinte de résonance sur chaque nœud qu'il visite pendant l'heure suivante",
         "Un vieux mot de passe du technomancien est diffusé en clair dans la Matrice locale",
         "La forme complexe s'exécute avec un léger décalage temporel, créant un effet d'écho numérique",
-        "Le technomancien ressent une vibration étrange dans ses os, comme si la résonance cherchait à s'échapper de son corps",
+        "Le technomancien ressent une vibration étrange dans ses os, comme si la résonance cherchait à s'échapper de son corps"
       ],
       en: [
         "Resonance echo: leaves a detectable trace in the Matrix",
@@ -4598,8 +4554,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The technomancer leaves a resonance fingerprint on every node they visit for the next hour",
         "An old password of the technomancer is broadcast in plain text on the local Matrix",
         "The complex form executes with a slight temporal offset, creating a digital echo effect",
-        "The technomancer feels a strange vibration in their bones, as if the resonance is trying to escape their body",
-      ],
+        "The technomancer feels a strange vibration in their bones, as if the resonance is trying to escape their body"
+      ]
     },
     critical: {
       fr: [
@@ -4637,7 +4593,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Un programme GOD de surveillance passive détecte l'anomalie de résonance et l'ajoute à une liste de surveillance",
         "Le technomancien est piégé dans une boucle de données : déconnexion nécessaire pour en sortir",
         "Le sprite se lie d'amitié avec une IA locale et refuse de la combattre ou de la tromper",
-        "Le technomancien reçoit une transmission cryptée d'un autre technomancien inconnu — un appel à l'aide ou un piège",
+        "Le technomancien reçoit une transmission cryptée d'un autre technomancien inconnu — un appel à l'aide ou un piège"
       ],
       en: [
         "The complex form partially backfires: reduced effect and mental feedback",
@@ -4674,8 +4630,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "A passive GOD surveillance program detects the resonance anomaly and adds it to a watch list",
         "The technomancer is trapped in a data loop: disconnection is needed to escape",
         "The sprite befriends a local AI and refuses to fight or deceive it",
-        "The technomancer receives an encrypted transmission from an unknown technomancer — a cry for help or a trap",
-      ],
+        "The technomancer receives an encrypted transmission from an unknown technomancer — a cry for help or a trap"
+      ]
     },
     disaster: {
       fr: [
@@ -4703,7 +4659,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le sprite compilé fusionne avec le living persona du technomancien, créant une entité hybride que le technomancien ne contrôle que partiellement",
         "La résonance attire une entité numérique lovecraftienne depuis les profondeurs de la Matrice — elle est incompréhensible et terrifiante",
         "Le technomancien est banni de la Matrice par un protocole ancien : toute tentative de reconnexion provoque une douleur insupportable",
-        "Le feedback est si violent qu'il affecte le monde physique : les lumières explosent, les écrans se fissurent, le métal se tord autour du technomancien",
+        "Le feedback est si violent qu'il affecte le monde physique : les lumières explosent, les écrans se fissurent, le métal se tord autour du technomancien"
       ],
       en: [
         "Partial convergence: the technomancer is spotted and tracked by GOD",
@@ -4730,11 +4686,10 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The compiled sprite merges with the technomancer's living persona, creating a hybrid entity the technomancer only partially controls",
         "The resonance attracts a Lovecraftian digital entity from the depths of the Matrix — it is incomprehensible and terrifying",
         "The technomancer is banned from the Matrix by an ancient protocol: every reconnection attempt causes unbearable pain",
-        "The feedback is so violent it affects the physical world: lights explode, screens crack, metal warps around the technomancer",
-      ],
-    },
+        "The feedback is so violent it affects the physical world: lights explode, screens crack, metal warps around the technomancer"
+      ]
+    }
   },
-
   // ─────────────────────────────────────────────────────────────
   // DEFAULT — Fallback for any unlisted skill
   // ─────────────────────────────────────────────────────────────
@@ -4780,7 +4735,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "L'action nécessite une compétence secondaire dans laquelle le personnage n'excelle pas : progression ralentie",
         "Une fluctuation de courant (baisse de tension, surtension) interfère avec les composants électroniques",
         "L'horloge interne du personnage est décalée : il croit avoir plus de temps qu'il n'en a réellement",
-        "Le sol vibre sous les pieds du personnage : un système souterrain s'est activé sans rapport avec l'action",
+        "Le sol vibre sous les pieds du personnage : un système souterrain s'est activé sans rapport avec l'action"
       ],
       en: [
         "The action takes longer than expected: loses next minor action",
@@ -4822,8 +4777,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The action requires a secondary skill the character is not great at: progress slows",
         "A power fluctuation (brownout, surge) interferes with electronic components",
         "The character's internal clock is off: they think they have more time than they do",
-        "The ground vibrates under the character's feet: an underground system has activated unrelated to the action",
-      ],
+        "The ground vibrates under the character's feet: an underground system has activated unrelated to the action"
+      ]
     },
     critical: {
       fr: [
@@ -4861,7 +4816,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage découvre trop tard que l'action a des conséquences sur un allié à distance",
         "L'échec active un mécanisme de défense dont le personnage ignorait l'existence",
         "Le résultat partiel est pire que l'absence de résultat : la situation s'est dégradée",
-        "L'action épuise le personnage : désavantage à toutes les actions physiques pour 1 narration",
+        "L'action épuise le personnage : désavantage à toutes les actions physiques pour 1 narration"
       ],
       en: [
         "The action fails and creates a new problem",
@@ -4898,8 +4853,8 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character discovers too late that the action has consequences for an ally at a distance",
         "The failure activates a defense mechanism the character did not know existed",
         "The partial result is worse than no result: the situation has deteriorated",
-        "The action exhausts the character: disadvantage on all physical actions for 1 narration",
-      ],
+        "The action exhausts the character: disadvantage on all physical actions for 1 narration"
+      ]
     },
     disaster: {
       fr: [
@@ -4927,7 +4882,7 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "Le personnage est frappé par un effet magique résiduel qui le transforme partiellement : mutation temporaire",
         "L'action catastrophique est interprétée par une IA comme un acte terroriste : réponse militaire immédiate",
         "L'échec crée un paradoxe temporel mineur : le personnage revit les 30 dernières secondes mais ne peut rien changer",
-        "Le personnage est aspiré dans une faille dimensionnelle créée par l'échec : disparu pendant 1d6 heures",
+        "Le personnage est aspiré dans une faille dimensionnelle créée par l'échec : disparu pendant 1d6 heures"
       ],
       en: [
         "Total catastrophe: the action fails in the worst possible way",
@@ -4954,9 +4909,13 @@ export const COMPLICATIONS: Record<string, ComplicationTable> = {
         "The character is struck by residual magical energy that partially transforms them: temporary mutation",
         "The catastrophic action is interpreted by an AI as a terrorist act: immediate military response",
         "The failure creates a minor temporal paradox: the character relives the last 30 seconds but cannot change anything",
-        "The character is sucked into a dimensional rift created by the failure: gone for 1d6 hours",
-      ],
-    },
-  },
-
+        "The character is sucked into a dimensional rift created by the failure: gone for 1d6 hours"
+      ]
+    }
+  }
 };
+export {
+  BY_THE_BOOK,
+  COMPLICATIONS
+};
+//# sourceMappingURL=complication-data-C1wnYYhS.mjs.map

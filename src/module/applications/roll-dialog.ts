@@ -293,8 +293,10 @@ export class RollDialog extends Application {
     
     // Update roll data
     this.rollData.skillName = skillName;
+    this.rollData.skillSlug = linkedSkillItem ? ((linkedSkillItem.system as any).slug || baseSkillName) : baseSkillName;
     this.rollData.specName = specName;
     this.rollData.linkedAttackSkill = baseSkillName;
+    this.rollData.linkedAttackSpecialization = weaponLinkedSpecialization || specName;
     this.rollData.linkedAttribute = linkedAttribute;
     this.rollData.skillLevel = skillLevel;
     this.rollData.specLevel = specLevel;
@@ -1232,8 +1234,10 @@ export class RollDialog extends Application {
       
       // Update roll data with weapon information
       this.rollData.skillName = skillName;
+      this.rollData.skillSlug = linkedSkillItem ? ((linkedSkillItem.system as any).slug || baseSkillName) : baseSkillName;
       this.rollData.specName = specName;
       this.rollData.linkedAttackSkill = baseSkillName;
+      this.rollData.linkedAttackSpecialization = weaponLinkedSpecialization || specName;
       this.rollData.linkedAttribute = linkedAttribute;
       this.rollData.skillLevel = skillLevel;
       this.rollData.specLevel = specLevel;
@@ -1281,9 +1285,10 @@ export class RollDialog extends Application {
         const attributeValue = (this.actor.system as any).attributes?.[selectedAttribute] || 0;
         const skillRating = skillSystem.rating || 0;
         const dicePool = attributeValue + skillRating;
-        
+
         // Update roll data
         this.rollData.skillName = item.name;
+        this.rollData.skillSlug = skillSystem.slug || '';
         this.rollData.specName = undefined;
         this.rollData.skillLevel = dicePool;
         this.rollData.specLevel = undefined;
@@ -1312,6 +1317,7 @@ export class RollDialog extends Application {
         // Update roll data
         this.rollData.specName = item.name;
         this.rollData.skillName = linkedSkillName;
+        this.rollData.skillSlug = parentSkill ? ((parentSkill.system as any).slug || '') : '';
         this.rollData.skillLevel = skillRating;
         this.rollData.specLevel = dicePool;
         this.rollData.linkedAttribute = selectedAttribute;

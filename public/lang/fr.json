@@ -45,7 +45,13 @@
                 "TRAITS": "Traits",
                 "THRESHOLD": "Seuil"
             },
-            "LINKED_VEHICLES": "Véhicules liés"
+            "LINKED_VEHICLES": "Véhicules liés",
+            "GENDER": {
+                "LABEL": "Genre",
+                "RANDOM": "Aléatoire",
+                "MALE": "Masculin",
+                "FEMALE": "Féminin"
+            }
         },
         "TOTAL_COST": "Coût Total",
         "NPC": {
@@ -1243,7 +1249,6 @@
             "RANDOM": "Aléatoire",
             "MALE": "Masculin",
             "FEMALE": "Féminin",
-            "NEUTRAL": "Neutre",
             "GENERATE_PORTRAIT": "Générer Portrait IA",
             "GENERATING_IMAGE": "Génération du portrait en cours...",
             "IMAGE_GENERATED": "Portrait généré avec succès !"

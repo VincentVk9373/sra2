@@ -73,9 +73,9 @@ export class NPCGeneratorDialog extends Dialog {
         <div class="npc-gen-field">
           <label>${i18n.localize('SRA2.NPC_GENERATOR.GENDER')}</label>
           <select name="gender">
+            <option value="random" selected>${i18n.localize('SRA2.NPC_GENERATOR.RANDOM')}</option>
             <option value="male">${i18n.localize('SRA2.NPC_GENERATOR.MALE')}</option>
             <option value="female">${i18n.localize('SRA2.NPC_GENERATOR.FEMALE')}</option>
-            <option value="neutral">${i18n.localize('SRA2.NPC_GENERATOR.NEUTRAL')}</option>
           </select>
         </div>
         <div class="npc-gen-field">

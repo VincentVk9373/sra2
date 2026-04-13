@@ -66,6 +66,16 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         max: 5,
         integer: true
       }),
+      gender: new fields.StringField({
+        required: true,
+        initial: 'random',
+        choices: {
+          "random": "SRA2.CHARACTER.GENDER.RANDOM",
+          "male": "SRA2.CHARACTER.GENDER.MALE",
+          "female": "SRA2.CHARACTER.GENDER.FEMALE"
+        },
+        label: "SRA2.CHARACTER.GENDER.LABEL"
+      }),
       connectionMode: new fields.StringField({
         required: true,
         initial: 'ar',
