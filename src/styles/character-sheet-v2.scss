@@ -532,12 +532,14 @@
                             z-index: 2;
                         }
 
+                        // Available point = filled; spent (checked) = empty
                         .box-circle {
                             width: 20px;
                             height: 20px;
-                            border: 2px solid #0f3460;
+                            border: 2px solid #9b59b6;
                             border-radius: 50%;
-                            background: rgba(255, 255, 255, 0.05);
+                            background: #9b59b6;
+                            box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
                             display: flex;
                             align-items: center;
                             justify-content: center;
@@ -545,14 +547,27 @@
                             position: relative;
                             z-index: 1;
 
+                            &::after {
+                                content: "";
+                                width: 10px;
+                                height: 10px;
+                                background: #fff;
+                                border-radius: 50%;
+                                position: absolute;
+                            }
+
                             &.temp-anarchy {
                                 border-style: dashed;
-                                background: rgba(155, 89, 182, 0.05);
                             }
 
                             &.plus-button {
                                 border: 0;
                                 background: rgba(75, 75, 75, 0.5);
+                                box-shadow: none;
+
+                                &::after {
+                                    content: none;
+                                }
                             }
                         }
 
@@ -570,45 +585,35 @@
                         }
 
                         input:checked + .box-circle {
-                            background: #9b59b6;
-                            border-color: #9b59b6;
-                            box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
+                            background: rgba(255, 255, 255, 0.05);
+                            border-color: #0f3460;
+                            box-shadow: none;
 
                             &::after {
-                                content: "";
-                                width: 10px;
-                                height: 10px;
-                                background: #fff;
-                                border-radius: 50%;
-                                position: absolute;
+                                content: none;
                             }
                         }
 
                         &.checked .box-circle {
-                            background: #9b59b6;
-                            border-color: #9b59b6;
-                            box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
+                            background: rgba(255, 255, 255, 0.05);
+                            border-color: #0f3460;
+                            box-shadow: none;
 
                             &::after {
-                                content: "";
-                                width: 10px;
-                                height: 10px;
-                                background: #fff;
-                                border-radius: 50%;
-                                position: absolute;
+                                content: none;
                             }
                         }
 
                         &:hover .box-circle:not(.plus-button) {
-                            border-color: #9b59b6;
-                            background: rgba(155, 89, 182, 0.1);
+                            background: #a569bd;
+                            border-color: #a569bd;
                             transform: scale(1.1);
                         }
 
                         input:checked + .box-circle:hover,
                         &.checked .box-circle:hover {
-                            background: #a569bd;
-                            border-color: #a569bd;
+                            background: rgba(155, 89, 182, 0.1);
+                            border-color: #9b59b6;
                         }
                     }
 
@@ -642,18 +647,12 @@
                     align-items: center;
                     gap: 0;
 
+                    // Available point = filled; spent (checked) = empty
                     .track-box.temp-anarchy {
                         .box-circle {
                             border-style: dashed;
                             border-color: #9b59b6;
-                            background: rgba(155, 89, 182, 0.05);
-                        }
-
-                        input:checked + .box-circle,
-                        &.checked .box-circle {
                             background: #9b59b6;
-                            border-color: #9b59b6;
-                            border-style: dashed;
                             box-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
 
                             &::after {
@@ -666,14 +665,26 @@
                             }
                         }
 
+                        input:checked + .box-circle,
+                        &.checked .box-circle {
+                            background: rgba(155, 89, 182, 0.05);
+                            border-color: #9b59b6;
+                            border-style: dashed;
+                            box-shadow: none;
+
+                            &::after {
+                                content: none;
+                            }
+                        }
+
                         &:hover .box-circle {
                             border-color: #a569bd;
-                            background: rgba(155, 89, 182, 0.1);
+                            background: #a569bd;
                         }
 
                         input:checked + .box-circle:hover,
                         &.checked .box-circle:hover {
-                            background: #a569bd;
+                            background: rgba(155, 89, 182, 0.1);
                             border-color: #a569bd;
                         }
                     }
