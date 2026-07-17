@@ -82,6 +82,12 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         choices: ['disconnected', 'offline', 'ar', 'cold-sim', 'hot-sim'],
         label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
       }),
+      astralState: new fields.StringField({
+        required: true,
+        initial: 'physical',
+        choices: ['physical', 'perception', 'projection'],
+        label: "SRA2.CHARACTER.ASTRAL_STATE.LABEL"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,

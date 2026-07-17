@@ -829,6 +829,19 @@ export class CharacterSheet extends ActorSheet {
       });
     });
 
+    // Set character astral state (physical / astral perception / astral projection)
+    bindClick('[data-action="set-character-astral-state"]', this._onSetAstralState.bind(this));
+    el.querySelectorAll<HTMLElement>('[data-action="show-astral-state-menu"], [data-action="show-astral-state-menu-header"]').forEach(elem => {
+      elem.addEventListener('click', (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const target = event.currentTarget as HTMLElement;
+        const menu = target.closest('.astral-state-selector')?.querySelector('.astral-state-menu') as HTMLElement
+          || target.closest('.astral-state-badge')?.querySelector('.astral-state-menu') as HTMLElement;
+        if (menu) menu.classList.toggle('visible');
+      });
+    });
+
     // Edit skill
     bindClick('[data-action="edit-skill"]', this._onEditSkill.bind(this));
 
@@ -1080,6 +1093,15 @@ export class CharacterSheet extends ActorSheet {
     if (!connectionMode) return;
 
     await this.actor.update({ 'system.connectionMode': connectionMode });
+  }
+
+  private async _onSetAstralState(event: Event): Promise<void> {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLElement;
+    const astralState = element.dataset.astralState;
+    if (!astralState) return;
+
+    await this.actor.update({ 'system.astralState': astralState });
   }
 
   private async _onSetVehicleControlMode(event: Event): Promise<void> {

@@ -105,6 +105,21 @@
                 </div>
             </div>
         </div>
+        <div class="astral-state-badge {{system.astralState}}" data-action="show-astral-state-menu-header">
+            <i class="fas {{astralStateIcon system.astralState}}"></i>
+            {{astralStateLabel system.astralState}}
+            <div class="astral-state-menu">
+                <div class="context-menu-item {{#if (eq system.astralState 'physical')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="physical">
+                    <i class="fas fa-person"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PHYSICAL"}}
+                </div>
+                <div class="context-menu-item {{#if (eq system.astralState 'perception')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="perception">
+                    <i class="fas fa-eye"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PERCEPTION"}}
+                </div>
+                <div class="context-menu-item {{#if (eq system.astralState 'projection')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="projection">
+                    <i class="fas fa-ghost"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PROJECTION"}}
+                </div>
+            </div>
+        </div>
     </header>
     <div>
         <div class="bookmarks-list-compact">
@@ -1457,6 +1472,23 @@
                             <span class="effect hot-sim"><i class="fas fa-heart-crack"></i> {{localize "SRA2.CONNECTION_MODE.EJECTION_SEVERE"}}</span>
                         </div>
                         {{/if}}
+                    </div>
+                    <div class="astral-state-selector {{system.astralState}}">
+                        <span class="astral-state-current" data-action="show-astral-state-menu">
+                            <i class="fas {{astralStateIcon system.astralState}}"></i>
+                            {{astralStateLabel system.astralState}}
+                        </span>
+                        <div class="astral-state-menu">
+                            <div class="context-menu-item {{#if (eq system.astralState 'physical')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="physical">
+                                <i class="fas fa-person"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PHYSICAL"}}
+                            </div>
+                            <div class="context-menu-item {{#if (eq system.astralState 'perception')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="perception">
+                                <i class="fas fa-eye"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PERCEPTION"}}
+                            </div>
+                            <div class="context-menu-item {{#if (eq system.astralState 'projection')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="projection">
+                                <i class="fas fa-ghost"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PROJECTION"}}
+                            </div>
+                        </div>
                     </div>
                     <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
                     {{#if (and geminiAvailable advancedMode)}}

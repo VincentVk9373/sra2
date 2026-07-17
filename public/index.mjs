@@ -184,6 +184,12 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         choices: ["disconnected", "offline", "ar", "cold-sim", "hot-sim"],
         label: "SRA2.FEATS.CYBERDECK.CONNECTION_MODE.LABEL"
       }),
+      astralState: new fields.StringField({
+        required: true,
+        initial: "physical",
+        choices: ["physical", "perception", "projection"],
+        label: "SRA2.CHARACTER.ASTRAL_STATE.LABEL"
+      }),
       damage: new fields.SchemaField({
         light: new fields.ArrayField(new fields.BooleanField({
           required: true,
@@ -7594,6 +7600,16 @@ class CharacterSheet extends ActorSheet {
         if (menu) menu.classList.toggle("visible");
       });
     });
+    bindClick('[data-action="set-character-astral-state"]', this._onSetAstralState.bind(this));
+    el.querySelectorAll('[data-action="show-astral-state-menu"], [data-action="show-astral-state-menu-header"]').forEach((elem) => {
+      elem.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const target = event.currentTarget;
+        const menu = target.closest(".astral-state-selector")?.querySelector(".astral-state-menu") || target.closest(".astral-state-badge")?.querySelector(".astral-state-menu");
+        if (menu) menu.classList.toggle("visible");
+      });
+    });
     bindClick('[data-action="edit-skill"]', this._onEditSkill.bind(this));
     bindClick('[data-action="delete-skill"]', this._onDeleteSkill.bind(this));
     bindClick('[data-action="edit-specialization"]', this._onEditSpecialization.bind(this));
@@ -7768,6 +7784,13 @@ class CharacterSheet extends ActorSheet {
     const connectionMode = element.dataset.connectionMode;
     if (!connectionMode) return;
     await this.actor.update({ "system.connectionMode": connectionMode });
+  }
+  async _onSetAstralState(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const astralState = element.dataset.astralState;
+    if (!astralState) return;
+    await this.actor.update({ "system.astralState": astralState });
   }
   async _onSetVehicleControlMode(event) {
     event.preventDefault();
@@ -23471,6 +23494,18 @@ class SRA2System {
         "hot-sim": "fa-fire"
       };
       return icons[value || "offline"] || "fa-power-off";
+    });
+    Handlebars.registerHelper("astralStateLabel", function(value) {
+      const key = `SRA2.CHARACTER.ASTRAL_STATE.${(value || "physical").toUpperCase()}`;
+      return game.i18n?.localize(key) || value;
+    });
+    Handlebars.registerHelper("astralStateIcon", function(value) {
+      const icons = {
+        "physical": "fa-person",
+        "perception": "fa-eye",
+        "projection": "fa-ghost"
+      };
+      return icons[value || "physical"] || "fa-person";
     });
     Handlebars.registerHelper("rangeLabel", function(value) {
       if (!value || value === "none") return "-";

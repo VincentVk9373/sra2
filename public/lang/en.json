@@ -33,6 +33,12 @@
             "CHARACTER_NAME": "Character Name"
         },
         "CHARACTER": {
+            "ASTRAL_STATE": {
+                "LABEL": "Astral State",
+                "PHYSICAL": "Physical",
+                "PERCEPTION": "Astral Perception",
+                "PROJECTION": "Astral Projection"
+            },
             "SECTION": {
                 "IDENTITY": "Identity",
                 "ATTRIBUTES": "Attributes",

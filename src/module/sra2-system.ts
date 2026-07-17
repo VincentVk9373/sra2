@@ -881,6 +881,20 @@ export class SRA2System {
       return icons[value || 'offline'] || 'fa-power-off';
     });
 
+    Handlebars.registerHelper('astralStateLabel', function (value: string) {
+      const key = `SRA2.CHARACTER.ASTRAL_STATE.${(value || 'physical').toUpperCase()}`;
+      return game.i18n?.localize(key) || value;
+    });
+
+    Handlebars.registerHelper('astralStateIcon', function (value: string) {
+      const icons: Record<string, string> = {
+        'physical': 'fa-person',
+        'perception': 'fa-eye',
+        'projection': 'fa-ghost'
+      };
+      return icons[value || 'physical'] || 'fa-person';
+    });
+
     Handlebars.registerHelper('rangeLabel', function (value: string) {
       if (!value || value === 'none') return '-';
       if (value === 'advantage') return 'av';

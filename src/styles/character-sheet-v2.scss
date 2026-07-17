@@ -118,6 +118,79 @@
             }
         }
 
+        .astral-state-badge {
+            display: none;
+            position: absolute;
+            bottom: -16px;
+            left: 8px;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 8px;
+            align-items: center;
+            gap: 0.2rem;
+            white-space: nowrap;
+            color: #b98cff;
+            background: rgba(156, 108, 255, 0.15);
+            border: 1px solid rgba(156, 108, 255, 0.3);
+            z-index: 2;
+            cursor: pointer;
+
+            &:hover {
+                background: rgba(156, 108, 255, 0.25);
+            }
+
+            // Muted default "physical" state
+            &.physical {
+                color: #666;
+                background: rgba(50, 50, 50, 0.6);
+                border-color: #444;
+
+                &:hover {
+                    background: rgba(50, 50, 50, 0.8);
+                }
+            }
+
+            .astral-state-menu {
+                display: none;
+                position: absolute;
+                bottom: 100%;
+                left: 0;
+                margin-bottom: 4px;
+                z-index: 100;
+                background: var(--sr-ui-bg-color-dark);
+                border: 1px solid var(--sr-ui-border-color);
+                border-radius: var(--sr-border-radius-md);
+                padding: 0.25rem;
+                min-width: 150px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+                &.visible {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .context-menu-item {
+                    padding: 0.3rem 0.5rem;
+                    cursor: pointer;
+                    border-radius: var(--sr-border-radius-sm);
+                    font-size: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    color: var(--sr-text-color-light);
+
+                    &:hover {
+                        background: rgba(156, 108, 255, 0.15);
+                    }
+
+                    &.active {
+                        color: #b98cff;
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+
         .avatar-section {
             position: relative;
             min-width: 64px;
@@ -1107,6 +1180,79 @@
             }
         }
 
+        .astral-state-selector {
+            z-index: 1;
+            top: 0;
+            left: 0;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+
+            // Default "physical" state is muted so it stays discreet for non-mages
+            &.physical .astral-state-current {
+                color: var(--sr-text-color-grey);
+                border-color: var(--sr-ui-border-color);
+            }
+
+            .astral-state-current {
+                flex: 0;
+                cursor: pointer;
+                padding: 0.2rem 0.5rem;
+                border-radius: var(--sr-border-radius-md);
+                font-size: 0.8rem;
+                color: #b98cff;
+                background: var(--sr-ui-bg-color-dark);
+                border: 1px solid rgba(156, 108, 255, 0.4);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                white-space: nowrap;
+
+                &:hover {
+                    background: var(--sr-ui-bg-color-dark);
+                }
+            }
+
+            .astral-state-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                z-index: 100;
+                background: var(--sr-ui-bg-color-dark);
+                border: 1px solid var(--sr-ui-border-color);
+                border-radius: var(--sr-border-radius-md);
+                padding: 0.25rem;
+                min-width: 150px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+                &.visible {
+                    display: block;
+                }
+
+                .context-menu-item {
+                    padding: 0.3rem 0.5rem;
+                    cursor: pointer;
+                    border-radius: var(--sr-border-radius-sm);
+                    font-size: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    color: var(--sr-text-color-light);
+
+                    &:hover {
+                        background: rgba(156, 108, 255, 0.15);
+                    }
+
+                    &.active {
+                        color: #b98cff;
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+
         .avatar-large-section {
             display: flex;
             align-items: center;
@@ -1720,6 +1866,10 @@
     }
 
     .connection-mode-badge {
+        display: inline-flex !important;
+    }
+
+    .astral-state-badge {
         display: inline-flex !important;
     }
 
