@@ -2852,30 +2852,17 @@ export class CharacterSheet extends ActorSheet {
     // Find actor's skill and specialization using unified helper
     const spellSpecType = isSpell ? (itemSystem.spellSpecializationType || 'combat') : undefined;
     
-    // Determine default attribute: if skill not found, use agility (except for "Combat rapproché" which uses strength)
+    // Determine default attribute. Derive it from the weapon's linked skill slug
+    // (world/compendium data or canonical map) so it is correct whether or not the
+    // actor owns the skill. If the skill IS owned, findAttackSkillAndSpec still uses
+    // the skill item's own linkedAttribute in priority.
     let defaultAttribute: string;
     if (isComplexForm) {
       defaultAttribute = 'logic';
     } else if (isSpell) {
       defaultAttribute = 'willpower';
     } else {
-      // Check if the skill exists in the actor's items (finalAttackSkill is now a slug from WEAPON_TYPES)
-      const skillExists = this.actor.items.some((i: any) =>
-        i.type === 'skill' && (i.system.slug === finalAttackSkill ||
-        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(finalAttackSkill))
-      );
-
-      if (!skillExists && finalAttackSkill) {
-        // Skill not found: use agility, except for close-combat which uses strength
-        if (finalAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
-          defaultAttribute = 'strength';
-        } else {
-          defaultAttribute = 'agility';
-        }
-      } else {
-        // Skill exists or no skill name: use strength (will be overridden by skill's linkedAttribute if skill found)
-        defaultAttribute = 'strength';
-      }
+      defaultAttribute = SheetHelpers.getDefaultAttributeForSkill(finalAttackSkill) || 'strength';
     }
     
     const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
@@ -3032,8 +3019,8 @@ export class CharacterSheet extends ActorSheet {
       featName: power.name
     }));
     
-    // Determine default attribute: use strength as default
-    const defaultAttribute = 'strength';
+    // Determine default attribute from the linked skill slug (falls back to strength)
+    const defaultAttribute = SheetHelpers.getDefaultAttributeForSkill(linkedAttackSkill) || 'strength';
     
     // Find attack skill/spec using unified helper (used for the dice roll)
     const attackSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(

@@ -7,6 +7,65 @@ import * as ItemSearch from '../../../item-search.js';
 import { RR_MAX, SKILL_SLUGS } from '../config/constants.js';
 
 /**
+ * Canonical skill-slug -> linked attribute fallback map.
+ *
+ * The authoritative source for a skill's linked attribute is the skill item
+ * itself (world / compendium), exposed at runtime via SRA2_SLUG_METADATA_CACHE.
+ * This static map is only a fallback for when that cache is unavailable
+ * (e.g. before it is built, or in unit tests). Values mirror the compendium.
+ */
+export const SKILL_ATTRIBUTE_MAP: Record<string, string> = {
+  // Slugs (canonical)
+  [SKILL_SLUGS.CLOSE_COMBAT]: 'agility',
+  [SKILL_SLUGS.RANGED_WEAPONS]: 'agility',
+  [SKILL_SLUGS.ATHLETICS]: 'strength',
+  [SKILL_SLUGS.STEALTH]: 'agility',
+  [SKILL_SLUGS.CRACKING]: 'logic',
+  [SKILL_SLUGS.ENGINEERING]: 'logic',
+  [SKILL_SLUGS.ELECTRONICS]: 'logic',
+  [SKILL_SLUGS.PILOTING]: 'agility',
+  [SKILL_SLUGS.SORCERY]: 'willpower',
+  [SKILL_SLUGS.CONJURATION]: 'willpower',
+  [SKILL_SLUGS.TECHNOMANCER]: 'logic',
+  [SKILL_SLUGS.INFLUENCE]: 'charisma',
+  [SKILL_SLUGS.PERCEPTION]: 'logic',
+  [SKILL_SLUGS.SURVIVAL]: 'willpower',
+  [SKILL_SLUGS.NETWORKING]: 'charisma',
+  [SKILL_SLUGS.ASTRAL_COMBAT]: 'willpower',
+  // FR names (normalized, for backward compat)
+  'athletisme': 'strength',
+  'combat rapproche': 'agility',
+  'armes a distance': 'agility',
+  'furtivite': 'agility',
+  'piratage': 'logic',
+  'ingenierie': 'logic',
+  'pilotage': 'agility',
+  'sorcellerie': 'willpower',
+  'technomancie': 'logic',
+  'survie': 'willpower',
+  'reseau': 'charisma',
+  'combat astral': 'willpower',
+};
+
+/**
+ * Resolve the default linked attribute for a skill identified by its slug
+ * (or, as a fallback, its name). Priority:
+ *   1. Authoritative per-skill data cached from world / compendium
+ *   2. Static SKILL_ATTRIBUTE_MAP (by slug, then by normalized name)
+ * Returns undefined when the skill is unknown, so callers can apply their own
+ * last-resort default.
+ */
+export function getDefaultAttributeForSkill(skillSlugOrName: string | undefined | null): string | undefined {
+  if (!skillSlugOrName) return undefined;
+  const metaCache = (globalThis as any).SRA2_SLUG_METADATA_CACHE;
+  const cachedAttribute = metaCache?.[skillSlugOrName]?.linkedAttribute;
+  if (cachedAttribute) return cachedAttribute;
+  if (SKILL_ATTRIBUTE_MAP[skillSlugOrName]) return SKILL_ATTRIBUTE_MAP[skillSlugOrName];
+  const normalized = ItemSearch.normalizeSearchText(skillSlugOrName);
+  return SKILL_ATTRIBUTE_MAP[normalized];
+}
+
+/**
  * Handle form submission with proper damage checkbox handling
  */
 export function handleSheetUpdate(actor: any, formData: any): any {
@@ -567,39 +626,8 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     }
   }
 
-  // Skill slug -> attribute map for phantom skills
-  const skillAttributeMap: Record<string, string> = {
-    // Slugs (canonical)
-    [SKILL_SLUGS.CLOSE_COMBAT]: 'strength',
-    [SKILL_SLUGS.RANGED_WEAPONS]: 'agility',
-    [SKILL_SLUGS.ATHLETICS]: 'strength',
-    [SKILL_SLUGS.STEALTH]: 'agility',
-    [SKILL_SLUGS.CRACKING]: 'logic',
-    [SKILL_SLUGS.ENGINEERING]: 'logic',
-    [SKILL_SLUGS.ELECTRONICS]: 'logic',
-    [SKILL_SLUGS.PILOTING]: 'agility',
-    [SKILL_SLUGS.SORCERY]: 'willpower',
-    [SKILL_SLUGS.CONJURATION]: 'willpower',
-    [SKILL_SLUGS.TECHNOMANCER]: 'logic',
-    [SKILL_SLUGS.INFLUENCE]: 'charisma',
-    [SKILL_SLUGS.PERCEPTION]: 'willpower',
-    [SKILL_SLUGS.SURVIVAL]: 'willpower',
-    [SKILL_SLUGS.NETWORKING]: 'charisma',
-    [SKILL_SLUGS.ASTRAL_COMBAT]: 'willpower',
-    // FR names (normalized, for backward compat)
-    'athletisme': 'strength',
-    'combat rapproche': 'strength',
-    'armes a distance': 'agility',
-    'furtivite': 'agility',
-    'piratage': 'logic',
-    'ingenierie': 'logic',
-    'pilotage': 'agility',
-    'sorcellerie': 'willpower',
-    'technomancie': 'logic',
-    'survie': 'willpower',
-    'reseau': 'charisma',
-    'combat astral': 'willpower',
-  };
+  // Skill slug -> attribute map for phantom skills (shared canonical fallback)
+  const skillAttributeMap = SKILL_ATTRIBUTE_MAP;
 
   // Helper to resolve linked skill and attribute for a specialization
   // Uses: 1) game.items template, 2) metadata cache (compendiums), 3) skillAttributeMap fallback
@@ -1369,7 +1397,7 @@ export function findAttackSkillAndSpec(
     );
 
     if (foundSkill) {
-      const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || defaultAttribute;
+      const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
       result.skillName = foundSkill.name;
       result.linkedAttribute = result.linkedAttribute || foundLinkedAttribute;
       const skillRating = (foundSkill.system as any).rating || 0;
@@ -1379,11 +1407,14 @@ export function findAttackSkillAndSpec(
       // For spells, try to find Sorcellerie in game.items
       _searchGameItemsForSorcellerie(actor, result);
     } else if (!isSpell) {
-      // Skill not found: use default attribute with skill rating of 0
+      // Skill not found: derive the attribute from the skill slug (world/compendium
+      // data or canonical map) so an unowned weapon skill still uses its correct
+      // attribute instead of falling back to Strength. Skill rating is 0.
       // If lookupBySlug, resolve the slug to a localized name from world items/compendiums
+      const resolvedAttribute = getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
       result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkill) : targetSkill;
-      result.linkedAttribute = result.linkedAttribute || defaultAttribute;
-      const attributeValue = (actor.system as any).attributes?.[defaultAttribute] || 0;
+      result.linkedAttribute = result.linkedAttribute || resolvedAttribute;
+      const attributeValue = (actor.system as any).attributes?.[resolvedAttribute] || 0;
       result.skillLevel = 0 + attributeValue; // Skill rating is 0 when skill doesn't exist
     }
   }

@@ -1057,18 +1057,12 @@ export class RollDialog extends Application {
         hasSkillRating = false;
       }
       
-      // If still not set and person doesn't have the skill rating, use default attribute logic
+      // If still not set and person doesn't have the skill rating, derive the
+      // default attribute from the linked skill slug (world/compendium data or
+      // canonical map) so an unowned weapon skill uses its correct attribute.
       if (!selectedAttribute && !hasSkillRating) {
-        // Person doesn't have the skill - use default attribute based on skill type
         const linkedAttackSkill = this.rollData.linkedAttackSkill || this.rollData.skillName;
-        
-        // If skill is close-combat, default to Strength
-        // Otherwise default to Agility
-        if (linkedAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
-          selectedAttribute = 'strength';
-        } else {
-          selectedAttribute = 'agility';
-        }
+        selectedAttribute = SheetHelpers.getDefaultAttributeForSkill(linkedAttackSkill) || 'agility';
       } else if (!selectedAttribute && attributeOptions.length > 0) {
         // Has skill but no linked attribute found, default to first attribute
         selectedAttribute = attributeOptions[0].value;

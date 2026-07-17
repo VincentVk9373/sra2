@@ -2896,6 +2896,47 @@ const ItemSearch = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   searchItemsOnActor,
   toggleSearchResults
 }, Symbol.toStringTag, { value: "Module" }));
+const SKILL_ATTRIBUTE_MAP = {
+  // Slugs (canonical)
+  [SKILL_SLUGS.CLOSE_COMBAT]: "agility",
+  [SKILL_SLUGS.RANGED_WEAPONS]: "agility",
+  [SKILL_SLUGS.ATHLETICS]: "strength",
+  [SKILL_SLUGS.STEALTH]: "agility",
+  [SKILL_SLUGS.CRACKING]: "logic",
+  [SKILL_SLUGS.ENGINEERING]: "logic",
+  [SKILL_SLUGS.ELECTRONICS]: "logic",
+  [SKILL_SLUGS.PILOTING]: "agility",
+  [SKILL_SLUGS.SORCERY]: "willpower",
+  [SKILL_SLUGS.CONJURATION]: "willpower",
+  [SKILL_SLUGS.TECHNOMANCER]: "logic",
+  [SKILL_SLUGS.INFLUENCE]: "charisma",
+  [SKILL_SLUGS.PERCEPTION]: "logic",
+  [SKILL_SLUGS.SURVIVAL]: "willpower",
+  [SKILL_SLUGS.NETWORKING]: "charisma",
+  [SKILL_SLUGS.ASTRAL_COMBAT]: "willpower",
+  // FR names (normalized, for backward compat)
+  "athletisme": "strength",
+  "combat rapproche": "agility",
+  "armes a distance": "agility",
+  "furtivite": "agility",
+  "piratage": "logic",
+  "ingenierie": "logic",
+  "pilotage": "agility",
+  "sorcellerie": "willpower",
+  "technomancie": "logic",
+  "survie": "willpower",
+  "reseau": "charisma",
+  "combat astral": "willpower"
+};
+function getDefaultAttributeForSkill(skillSlugOrName) {
+  if (!skillSlugOrName) return void 0;
+  const metaCache = globalThis.SRA2_SLUG_METADATA_CACHE;
+  const cachedAttribute = metaCache?.[skillSlugOrName]?.linkedAttribute;
+  if (cachedAttribute) return cachedAttribute;
+  if (SKILL_ATTRIBUTE_MAP[skillSlugOrName]) return SKILL_ATTRIBUTE_MAP[skillSlugOrName];
+  const normalized = normalizeSearchText(skillSlugOrName);
+  return SKILL_ATTRIBUTE_MAP[normalized];
+}
 function handleSheetUpdate(actor, formData) {
   console.log("handleSheetUpdate - DEBUG:", {
     "actor.id": actor?.id,
@@ -3272,38 +3313,7 @@ function getPhantomRRs(actor) {
       }
     }
   }
-  const skillAttributeMap = {
-    // Slugs (canonical)
-    [SKILL_SLUGS.CLOSE_COMBAT]: "strength",
-    [SKILL_SLUGS.RANGED_WEAPONS]: "agility",
-    [SKILL_SLUGS.ATHLETICS]: "strength",
-    [SKILL_SLUGS.STEALTH]: "agility",
-    [SKILL_SLUGS.CRACKING]: "logic",
-    [SKILL_SLUGS.ENGINEERING]: "logic",
-    [SKILL_SLUGS.ELECTRONICS]: "logic",
-    [SKILL_SLUGS.PILOTING]: "agility",
-    [SKILL_SLUGS.SORCERY]: "willpower",
-    [SKILL_SLUGS.CONJURATION]: "willpower",
-    [SKILL_SLUGS.TECHNOMANCER]: "logic",
-    [SKILL_SLUGS.INFLUENCE]: "charisma",
-    [SKILL_SLUGS.PERCEPTION]: "willpower",
-    [SKILL_SLUGS.SURVIVAL]: "willpower",
-    [SKILL_SLUGS.NETWORKING]: "charisma",
-    [SKILL_SLUGS.ASTRAL_COMBAT]: "willpower",
-    // FR names (normalized, for backward compat)
-    "athletisme": "strength",
-    "combat rapproche": "strength",
-    "armes a distance": "agility",
-    "furtivite": "agility",
-    "piratage": "logic",
-    "ingenierie": "logic",
-    "pilotage": "agility",
-    "sorcellerie": "willpower",
-    "technomancie": "logic",
-    "survie": "willpower",
-    "reseau": "charisma",
-    "combat astral": "willpower"
-  };
+  const skillAttributeMap = SKILL_ATTRIBUTE_MAP;
   function resolveSpecMetadata(originalSlug, displayName) {
     const specTemplate = findItemInGame("specialization", displayName);
     if (specTemplate) {
@@ -3740,7 +3750,7 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
       (i) => i.type === "skill" && (i.system?.slug === targetSkill || normalizeSearchText(i.name) === normalizeSearchText(targetSkill))
     );
     if (foundSkill) {
-      const foundLinkedAttribute = foundSkill.system.linkedAttribute || defaultAttribute;
+      const foundLinkedAttribute = foundSkill.system.linkedAttribute || getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
       result.skillName = foundSkill.name;
       result.linkedAttribute = result.linkedAttribute || foundLinkedAttribute;
       const skillRating = foundSkill.system.rating || 0;
@@ -3749,9 +3759,10 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     } else if (isSpell && game.items) {
       _searchGameItemsForSorcellerie(actor, result);
     } else if (!isSpell) {
+      const resolvedAttribute = getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
       result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkill) : targetSkill;
-      result.linkedAttribute = result.linkedAttribute || defaultAttribute;
-      const attributeValue = actor.system.attributes?.[defaultAttribute] || 0;
+      result.linkedAttribute = result.linkedAttribute || resolvedAttribute;
+      const attributeValue = actor.system.attributes?.[resolvedAttribute] || 0;
       result.skillLevel = 0 + attributeValue;
     }
   }
@@ -4145,6 +4156,7 @@ function formatNarrativeEffectsTooltip(narrativeEffects, description, rrEntries,
 }
 const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
+  SKILL_ATTRIBUTE_MAP,
   calculateAttackPool,
   calculateFinalDamageValue,
   calculateFinalNumericDamageValue,
@@ -4161,6 +4173,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   formatNarrativeEffectsTooltip,
   getCurrentActiveSection,
   getDamagePathFromInputName,
+  getDefaultAttributeForSkill,
   getLinkedAttribute,
   getPhantomRRs,
   getRRSources: getRRSources$1,
@@ -5094,11 +5107,7 @@ class RollDialog extends Application {
       }
       if (!selectedAttribute && !hasSkillRating) {
         const linkedAttackSkill = this.rollData.linkedAttackSkill || this.rollData.skillName;
-        if (linkedAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
-          selectedAttribute = "strength";
-        } else {
-          selectedAttribute = "agility";
-        }
+        selectedAttribute = getDefaultAttributeForSkill(linkedAttackSkill) || "agility";
       } else if (!selectedAttribute && attributeOptions.length > 0) {
         selectedAttribute = attributeOptions[0].value;
       }
@@ -9127,18 +9136,7 @@ class CharacterSheet extends ActorSheet {
     } else if (isSpell) {
       defaultAttribute = "willpower";
     } else {
-      const skillExists = this.actor.items.some(
-        (i) => i.type === "skill" && (i.system.slug === finalAttackSkill || normalizeSearchText(i.name) === normalizeSearchText(finalAttackSkill))
-      );
-      if (!skillExists && finalAttackSkill) {
-        if (finalAttackSkill === SKILL_SLUGS.CLOSE_COMBAT) {
-          defaultAttribute = "strength";
-        } else {
-          defaultAttribute = "agility";
-        }
-      } else {
-        defaultAttribute = "strength";
-      }
+      defaultAttribute = getDefaultAttributeForSkill(finalAttackSkill) || "strength";
     }
     const skillSpecResult = findAttackSkillAndSpec(
       this.actor,
@@ -9260,7 +9258,7 @@ class CharacterSheet extends ActorSheet {
       ...rrEntry,
       featName: power.name
     }));
-    const defaultAttribute = "strength";
+    const defaultAttribute = getDefaultAttributeForSkill(linkedAttackSkill) || "strength";
     const attackSkillSpecResult = findAttackSkillAndSpec(
       this.actor,
       linkedAttackSpec,
