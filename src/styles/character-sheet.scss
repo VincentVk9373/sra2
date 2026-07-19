@@ -4349,10 +4349,18 @@
   .bio-tab-content {
     display: none;
     &.active { display: block; }
+
+    prose-mirror.editor {
+      min-height: 250px;
+
+      .editor-container {
+        min-height: 250px;
+      }
+    }
   }
 
   .editor-content {
-    min-height: 80px;
+    min-height: 250px;
     color: #ccc;
     font-size: 0.85rem;
   }
