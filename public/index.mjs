@@ -4855,23 +4855,20 @@ class RollDialog extends Application {
       };
     };
     const riskProbabilities = getRiskProbabilities(this.riskDiceCount, context.totalRR);
-    const criticalGlitch = riskProbabilities.criticalGlitch;
-    const disaster = riskProbabilities.disaster;
-    let riskColorClass = "probability-extreme";
-    let riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME";
-    if (criticalGlitch < 2 && disaster < 0.2) {
-      riskColorClass = "probability-low";
-      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.LOW_TO_NO";
-    } else if (criticalGlitch < 7.5 && disaster < 1) {
-      riskColorClass = "probability-normal";
-      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.NORMAL";
-    } else if (criticalGlitch < 20 && disaster < 5) {
-      riskColorClass = "probability-high";
-      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.HIGH";
-    } else {
-      riskColorClass = "probability-extreme";
-      riskLevelTextKey = "SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME";
-    }
+    const getRiskClassFromProbs = (probs) => {
+      if (probs.criticalGlitch < 2 && probs.disaster < 0.2) return "probability-low";
+      if (probs.criticalGlitch < 7.5 && probs.disaster < 1) return "probability-normal";
+      if (probs.criticalGlitch < 20 && probs.disaster < 5) return "probability-high";
+      return "probability-extreme";
+    };
+    const riskLevelTextKeys = {
+      "probability-low": "SRA2.ROLL_DIALOG.RISK_LEVEL.LOW_TO_NO",
+      "probability-normal": "SRA2.ROLL_DIALOG.RISK_LEVEL.NORMAL",
+      "probability-high": "SRA2.ROLL_DIALOG.RISK_LEVEL.HIGH",
+      "probability-extreme": "SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME"
+    };
+    const riskColorClass = getRiskClassFromProbs(riskProbabilities);
+    const riskLevelTextKey = riskLevelTextKeys[riskColorClass] ?? "SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME";
     const riskLevelText = game.i18n?.localize(riskLevelTextKey) || riskLevelTextKey;
     context.riskProbabilities = {
       allGood: riskProbabilities.allGood.toFixed(1).replace(".", ","),
@@ -4897,18 +4894,17 @@ class RollDialog extends Application {
           return "green";
       }
     };
-    const diceColor = getDiceColorFromRiskClass(riskColorClass);
     context.diceList = [];
     context.riskDiceCount = this.riskDiceCount;
     context.riskLevelText = riskLevelText;
     context.riskColorClass = riskColorClass;
     for (let i = 0; i < dicePool; i++) {
+      const dieRiskClass = getRiskClassFromProbs(getRiskProbabilities(i + 1, context.totalRR));
       context.diceList.push({
         index: i,
         isRiskDice: i < this.riskDiceCount,
         // First N dice are risk dice
-        riskColor: diceColor
-        // Color based on risk level
+        riskColor: getDiceColorFromRiskClass(dieRiskClass)
       });
     }
     if (this.actor) {

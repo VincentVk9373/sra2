@@ -623,6 +623,10 @@
                                 color: #4caf50;
                             }
 
+                            &[data-risk-color="blue"] i {
+                                color: #2196f3;
+                            }
+
                             &[data-risk-color="yellow"] i {
                                 color: #ffeb3b;
                             }

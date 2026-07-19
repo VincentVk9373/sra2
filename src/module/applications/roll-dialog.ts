@@ -724,25 +724,22 @@ export class RollDialog extends Application {
     // Normal risk: <7.5% Critical glitch & <1% Disaster
     // High risk: <20% Critical glitch & <5% Disaster
     // Extreme risk: >20% Critical glitch or >5% Disaster
-    const criticalGlitch = riskProbabilities.criticalGlitch;
-    const disaster = riskProbabilities.disaster;
-    
+    const getRiskClassFromProbs = (probs: any): string => {
+      if (probs.criticalGlitch < 2 && probs.disaster < 0.2) return 'probability-low';
+      if (probs.criticalGlitch < 7.5 && probs.disaster < 1) return 'probability-normal';
+      if (probs.criticalGlitch < 20 && probs.disaster < 5) return 'probability-high';
+      return 'probability-extreme';
+    };
+    const riskLevelTextKeys: Record<string, string> = {
+      'probability-low': 'SRA2.ROLL_DIALOG.RISK_LEVEL.LOW_TO_NO',
+      'probability-normal': 'SRA2.ROLL_DIALOG.RISK_LEVEL.NORMAL',
+      'probability-high': 'SRA2.ROLL_DIALOG.RISK_LEVEL.HIGH',
+      'probability-extreme': 'SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME'
+    };
+
     // Same color for all 4 percentages based on the risk level
-    let riskColorClass = 'probability-extreme'; // Default to extreme risk
-    let riskLevelTextKey = 'SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME';
-    if (criticalGlitch < 2 && disaster < 0.2) {
-      riskColorClass = 'probability-low';
-      riskLevelTextKey = 'SRA2.ROLL_DIALOG.RISK_LEVEL.LOW_TO_NO';
-    } else if (criticalGlitch < 7.5 && disaster < 1) {
-      riskColorClass = 'probability-normal';
-      riskLevelTextKey = 'SRA2.ROLL_DIALOG.RISK_LEVEL.NORMAL';
-    } else if (criticalGlitch < 20 && disaster < 5) {
-      riskColorClass = 'probability-high';
-      riskLevelTextKey = 'SRA2.ROLL_DIALOG.RISK_LEVEL.HIGH';
-    } else {
-      riskColorClass = 'probability-extreme';
-      riskLevelTextKey = 'SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME';
-    }
+    const riskColorClass = getRiskClassFromProbs(riskProbabilities);
+    const riskLevelTextKey = riskLevelTextKeys[riskColorClass] ?? 'SRA2.ROLL_DIALOG.RISK_LEVEL.EXTREME';
     const riskLevelText = game.i18n?.localize(riskLevelTextKey) || riskLevelTextKey;
     
     // Format probabilities with comma as decimal separator
@@ -774,17 +771,19 @@ export class RollDialog extends Application {
       }
     };
     
-    const diceColor = getDiceColorFromRiskClass(riskColorClass);
     context.diceList = [];
     context.riskDiceCount = this.riskDiceCount;
     context.riskLevelText = riskLevelText;
     context.riskColorClass = riskColorClass;
-    
+
     for (let i = 0; i < dicePool; i++) {
-      context.diceList.push({ 
+      // Each die is colored by the risk level it would produce if selected:
+      // die at index i = risk level for (i + 1) risk dice at the current RR
+      const dieRiskClass = getRiskClassFromProbs(getRiskProbabilities(i + 1, context.totalRR));
+      context.diceList.push({
         index: i,
         isRiskDice: i < this.riskDiceCount,  // First N dice are risk dice
-        riskColor: diceColor  // Color based on risk level
+        riskColor: getDiceColorFromRiskClass(dieRiskClass)
       });
     }
 
