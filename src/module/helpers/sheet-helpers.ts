@@ -1614,9 +1614,31 @@ export interface AttackPoolResult {
 }
 
 /**
+ * Filter an item's own RR entries down to those that apply to the current roll.
+ * An entry applies if it has no target (generic RR for the item's own rolls),
+ * or if its target matches one of the roll's identifiers (skill, specialization
+ * or attribute — by slug or normalized name). Entries targeting another skill
+ * (e.g. a weapon granting Stealth RR to conceal it) must not boost the item's
+ * own attack roll: they apply to that skill's rolls via getRRSources instead.
+ *
+ * @param itemRRList - The item's rrList entries
+ * @param rollTargets - Identifiers of the current roll (names and/or slugs); undefined entries are ignored
+ */
+export function filterItemRRForRoll(itemRRList: any[], rollTargets: Array<string | undefined>): any[] {
+  const targets = rollTargets.filter((t): t is string => !!t);
+  const normalizedTargets = targets.map(t => ItemSearch.normalizeSearchText(t));
+
+  return itemRRList.filter((rrEntry: any) => {
+    const rrTarget = rrEntry.rrTarget || '';
+    if (!rrTarget) return true;
+    return targets.includes(rrTarget) || normalizedTargets.includes(ItemSearch.normalizeSearchText(rrTarget));
+  });
+}
+
+/**
  * Calculate attack pool (dice pool and RR) from skill/spec result and item RR
  * Unifies the RR calculation logic used in getData() and _rollWeaponOrSpell()
- * 
+ *
  * @param actor - The actor
  * @param skillSpecResult - Result from findAttackSkillAndSpec()
  * @param itemRRList - The item's rrList (from weapon/spell)
@@ -1684,8 +1706,27 @@ export function calculateAttackPool(
       });
   }
 
+  // Only keep the item's RR entries that apply to this roll: untargeted entries,
+  // or entries targeting the rolled skill/spec/attribute. A targeted entry only
+  // counts if that skill/spec is actually the one being used for the roll.
+  const findSlugByName = (type: 'skill' | 'specialization', name?: string): string | undefined => {
+    if (!name) return undefined;
+    const normalized = ItemSearch.normalizeSearchText(name);
+    const found = actor.items.find((i: any) => i.type === type && ItemSearch.normalizeSearchText(i.name) === normalized);
+    return found?.system?.slug || undefined;
+  };
+  const specInUse = (skillSpecResult.specName && skillSpecResult.specLevel !== undefined) ? skillSpecResult.specName : undefined;
+  const skillInUse = (skillSpecResult.skillName && skillSpecResult.skillLevel !== undefined) ? skillSpecResult.skillName : undefined;
+  const applicableItemRRList = filterItemRRForRoll(itemRRList, [
+    skillInUse,
+    findSlugByName('skill', skillInUse),
+    specInUse,
+    findSlugByName('specialization', specInUse),
+    skillSpecResult.linkedAttribute
+  ]);
+
   // Convert item RR list to same format as getRRSources (objects with rrValue)
-  const itemRRSources = itemRRList.map((rrEntry: any) => ({
+  const itemRRSources = applicableItemRRList.map((rrEntry: any) => ({
     featName: itemName,
     rrValue: rrEntry.rrValue || 0,
     rrLabel: rrEntry.rrLabel || undefined

@@ -3889,6 +3889,15 @@ function _searchGameItemsForSorcellerie(actor, result) {
     result.skillLevel = willpower;
   }
 }
+function filterItemRRForRoll(itemRRList, rollTargets) {
+  const targets = rollTargets.filter((t) => !!t);
+  const normalizedTargets = targets.map((t) => normalizeSearchText(t));
+  return itemRRList.filter((rrEntry) => {
+    const rrTarget = rrEntry.rrTarget || "";
+    if (!rrTarget) return true;
+    return targets.includes(rrTarget) || normalizedTargets.includes(normalizeSearchText(rrTarget));
+  });
+}
 function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName = "") {
   const totalDicePool = skillSpecResult.specLevel || skillSpecResult.skillLevel || 0;
   let skillRRSources = [];
@@ -3920,7 +3929,22 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
       return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
     });
   }
-  const itemRRSources = itemRRList.map((rrEntry) => ({
+  const findSlugByName = (type, name) => {
+    if (!name) return void 0;
+    const normalized = normalizeSearchText(name);
+    const found = actor.items.find((i) => i.type === type && normalizeSearchText(i.name) === normalized);
+    return found?.system?.slug || void 0;
+  };
+  const specInUse = skillSpecResult.specName && skillSpecResult.specLevel !== void 0 ? skillSpecResult.specName : void 0;
+  const skillInUse = skillSpecResult.skillName && skillSpecResult.skillLevel !== void 0 ? skillSpecResult.skillName : void 0;
+  const applicableItemRRList = filterItemRRForRoll(itemRRList, [
+    skillInUse,
+    findSlugByName("skill", skillInUse),
+    specInUse,
+    findSlugByName("specialization", specInUse),
+    skillSpecResult.linkedAttribute
+  ]);
+  const itemRRSources = applicableItemRRList.map((rrEntry) => ({
     featName: itemName,
     rrValue: rrEntry.rrValue || 0,
     rrLabel: rrEntry.rrLabel || void 0
@@ -4171,6 +4195,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   calculateSkillDicePool,
   calculateSpecDicePool,
   enrichFeats,
+  filterItemRRForRoll,
   findAttackSkillAndSpec,
   findDefenseSelection,
   findItemInGame,
@@ -4514,7 +4539,14 @@ class RollDialog extends Application {
       skillLevel = attributeValue + skillRating;
     }
     let rrList = [];
-    const weaponRRList = weaponSystem?.rrList || [];
+    const weaponRRList = filterItemRRForRoll(weaponSystem?.rrList || [], [
+      skillName,
+      linkedSkillItem?.name,
+      linkedSkillItem?.system?.slug || baseSkillName,
+      preferredSpecName,
+      preferredSpecName ? weaponLinkedSpecialization : void 0,
+      linkedAttribute
+    ]);
     const itemRRList = weaponRRList.map((rrEntry) => ({
       ...rrEntry,
       featName: selectedWeapon.name
@@ -4537,6 +4569,7 @@ class RollDialog extends Application {
         skillSpecRRList = [...skillRRSources, ...attributeRRSources];
       }
     }
+    skillSpecRRList = skillSpecRRList.filter((source) => source.featName !== selectedWeapon.name);
     rrList = [...itemRRList, ...skillSpecRRList];
     const meleeRange = selectedWeapon.meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || "none";
     const shortRange = selectedWeapon.shortRange || weaponSystem?.shortRange || wepTypeData?.short || "none";
@@ -5185,7 +5218,14 @@ class RollDialog extends Application {
         skillLevel = attributeValue + skillRating;
       }
       const { getRRSources: getRRSources2 } = SheetHelpers;
-      const weaponRRList = weaponSystem?.rrList || [];
+      const weaponRRList = filterItemRRForRoll(weaponSystem?.rrList || [], [
+        skillName,
+        linkedSkillItem?.name,
+        linkedSkillItem?.system?.slug || baseSkillName,
+        preferredSpecName,
+        preferredSpecName ? weaponLinkedSpecialization : void 0,
+        linkedAttribute
+      ]);
       const itemRRList = weaponRRList.map((rrEntry) => ({
         ...rrEntry,
         featName: selectedWeapon.name
@@ -5208,6 +5248,7 @@ class RollDialog extends Application {
           skillSpecRRList = [...skillRRSources, ...attributeRRSources];
         }
       }
+      skillSpecRRList = skillSpecRRList.filter((source) => source.featName !== selectedWeapon.name);
       const rrList = [...itemRRList, ...skillSpecRRList];
       const meleeRange = selectedWeapon.meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || "none";
       const shortRange = selectedWeapon.shortRange || weaponSystem?.shortRange || wepTypeData?.short || "none";

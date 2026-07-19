@@ -249,16 +249,26 @@ export class RollDialog extends Application {
     
     // Get RR sources
     let rrList: any[] = [];
-    
-    // Get RR from weapon itself
-    const weaponRRList = weaponSystem?.rrList || [];
+
+    // Get RR from weapon itself — only entries that apply to this attack roll
+    // (untargeted, or targeting the rolled skill/spec/attribute). Entries targeting
+    // another skill (e.g. Stealth RR to conceal the weapon) apply to that skill's
+    // rolls via getRRSources, not to the weapon's own attack.
+    const weaponRRList = SheetHelpers.filterItemRRForRoll(weaponSystem?.rrList || [], [
+      skillName,
+      linkedSkillItem?.name,
+      (linkedSkillItem?.system as any)?.slug || baseSkillName,
+      preferredSpecName,
+      preferredSpecName ? weaponLinkedSpecialization : undefined,
+      linkedAttribute
+    ]);
     const itemRRList = weaponRRList.map((rrEntry: any) => ({
       ...rrEntry,
       featName: selectedWeapon.name
     }));
-    
+
     let skillSpecRRList: any[] = [];
-    
+
     if (preferredSpecName) {
       // Use specialization
       specName = preferredSpecName;
@@ -282,9 +292,12 @@ export class RollDialog extends Application {
       }
     }
     
+    // Exclude the weapon's own entries from getRRSources results (already in itemRRList)
+    skillSpecRRList = skillSpecRRList.filter((source: any) => source.featName !== selectedWeapon.name);
+
     // Merge weapon RR with skill/spec/attribute RR
     rrList = [...itemRRList, ...skillSpecRRList];
-    
+
     // Get weapon ranges
     const meleeRange = (selectedWeapon as any).meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || 'none';
     const shortRange = (selectedWeapon as any).shortRange || weaponSystem?.shortRange || wepTypeData?.short || 'none';
@@ -1181,13 +1194,21 @@ export class RollDialog extends Application {
       // Get RR sources (weapon RR + skill/spec/attribute RR)
       const { getRRSources } = SheetHelpers;
       
-      // Get RR from weapon itself
-      const weaponRRList = weaponSystem?.rrList || [];
+      // Get RR from weapon itself — only entries that apply to this attack roll
+      // (untargeted, or targeting the rolled skill/spec/attribute)
+      const weaponRRList = SheetHelpers.filterItemRRForRoll(weaponSystem?.rrList || [], [
+        skillName,
+        linkedSkillItem?.name,
+        (linkedSkillItem?.system as any)?.slug || baseSkillName,
+        preferredSpecName,
+        preferredSpecName ? weaponLinkedSpecialization : undefined,
+        linkedAttribute
+      ]);
       const itemRRList = weaponRRList.map((rrEntry: any) => ({
         ...rrEntry,
         featName: selectedWeapon.name
       }));
-      
+
       let skillSpecRRList: any[] = [];
       
       // Simple logic: if weapon has a specialization and actor has it, use it
@@ -1215,6 +1236,9 @@ export class RollDialog extends Application {
         }
       }
       
+      // Exclude the weapon's own entries from getRRSources results (already in itemRRList)
+      skillSpecRRList = skillSpecRRList.filter((source: any) => source.featName !== selectedWeapon.name);
+
       // Merge weapon RR with skill/spec/attribute RR
       const rrList = [...itemRRList, ...skillSpecRRList];
 
