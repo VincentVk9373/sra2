@@ -352,25 +352,37 @@ export function prepareVehicleWeaponAttack(
     item.type === 'feat' && item.system.active === true
   );
   
-  // Calculate RR from active feats: autopilot-targeted entries always apply;
-  // untargeted (generic) entries apply from drone-level feats and from the
-  // rolled weapon itself, but another weapon's generic RR does not carry over
+  // Calculate RR from active weapon feats: autopilot-targeted entries always
+  // apply; the rolled weapon's own untargeted (generic) entries apply too,
+  // but another weapon's generic RR does not carry over
   const rrList: Array<{ featName: string; rrValue: number }> = [];
   activeFeats.forEach((feat: any) => {
     const featRRList = feat.system.rrList || [];
     const isOwnWeapon = (feat.id || feat._id) === (weapon.id || weapon._id);
-    const isDroneLevelFeat = feat.system.featType !== 'weapon';
     featRRList.forEach((rrEntry: any) => {
       const rrTarget = rrEntry.rrTarget || '';
       const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
-      const genericApplies = !rrTarget && (isOwnWeapon || isDroneLevelFeat);
-      if (targetsAutopilot || genericApplies) {
+      if (targetsAutopilot || (!rrTarget && isOwnWeapon)) {
         rrList.push({
           featName: feat.name,
           rrValue: rrEntry.rrValue || 0
         });
       }
     });
+  });
+
+  // Vehicle-level RR list: generic and autopilot-targeted entries apply to
+  // the vehicle's own rolls
+  const vehicleRRList = vehicleSystem.rrList || [];
+  vehicleRRList.forEach((rrEntry: any) => {
+    const rrTarget = rrEntry.rrTarget || '';
+    const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
+    if ((targetsAutopilot || !rrTarget) && (rrEntry.rrValue || 0) > 0) {
+      rrList.push({
+        featName: vehicleActor.name || 'Vehicle',
+        rrValue: rrEntry.rrValue || 0
+      });
+    }
   });
   
   // Also check weapon's own RR list (only when the weapon was not already

@@ -15,19 +15,19 @@ vi.mock('../models/item-feat.js', () => ({
 const { getRRSources, getLinkedVehicleActors, calculateAttackPool } = await import('../helpers/sheet-helpers.js');
 const { prepareVehicleWeaponAttack } = await import('../helpers/combat-helpers.js');
 
-const makeFeat = (name: string, rrList: any[], opts: any = {}) => ({
+const makeWeapon = (name: string, rrList: any[] = [], opts: any = {}) => ({
   id: opts.id || name,
   name,
   type: 'feat',
-  system: { active: true, featType: opts.featType || 'various', rrList, ...opts.system },
+  system: { active: true, featType: 'weapon', rrList, ...opts.system },
 });
 
-const makeVehicle = (name: string, uuid: string, items: any[]) => ({
+const makeVehicle = (name: string, uuid: string, opts: { items?: any[], rrList?: any[] } = {}) => ({
   uuid,
   type: 'vehicle',
   name,
-  items,
-  system: { attributes: { autopilot: 6 }, vehicleType: '' },
+  items: opts.items || [],
+  system: { attributes: { autopilot: 6 }, vehicleType: '', rrList: opts.rrList || [] },
 });
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ describe('getLinkedVehicleActors', () => {
   });
 
   it('resolves linked vehicles through game.actors and skips non-vehicles', () => {
-    const drone = makeVehicle('Lockheed', 'Actor.abc', []);
+    const drone = makeVehicle('Lockheed', 'Actor.abc');
     const npc = { uuid: 'Actor.def', type: 'npc' };
     (globalThis as any).game.actors = {
       find: (fn: any) => [drone, npc].find(fn),
@@ -55,11 +55,13 @@ describe('getLinkedVehicleActors', () => {
   });
 });
 
-describe('getRRSources with linked vehicles', () => {
-  const droneFeat = makeFeat('Optique avancée', [
-    { rrType: 'skill', rrTarget: 'perception', rrValue: 1 },
-  ]);
-  const drone = makeVehicle('Lockheed', 'Actor.abc', [droneFeat]);
+describe('getRRSources with linked vehicle rrList', () => {
+  const drone = makeVehicle('Lockheed', 'Actor.abc', {
+    rrList: [
+      { rrType: 'skill', rrTarget: 'perception', rrValue: 1, rrLabel: 'Surveillance' },
+      { rrType: 'skill', rrTarget: '', rrValue: 1 },
+    ],
+  });
 
   const actor = {
     items: [] as any[],
@@ -73,45 +75,44 @@ describe('getRRSources with linked vehicles', () => {
     };
   });
 
-  it("includes a linked drone's targeted RR in the owner's sources, labeled with the drone name", () => {
+  it("includes a linked drone's targeted RR in the owner's sources, with the drone as source", () => {
     const sources = getRRSources(actor, 'skill', 'perception');
     expect(sources).toEqual([
       {
-        featName: 'Optique avancée (Lockheed)',
+        featName: 'Lockheed',
         rrValue: 1,
-        rrLabel: undefined,
-        sourceFeatName: 'Optique avancée',
+        rrLabel: 'Surveillance',
+        sourceFeatName: 'Lockheed',
       },
     ]);
   });
 
-  it('ignores inactive drone feats', () => {
-    const inactive = makeFeat('Mod éteint', [{ rrType: 'skill', rrTarget: 'perception', rrValue: 2 }]);
-    inactive.system.active = false;
-    drone.items.push(inactive);
-    const sources = getRRSources(actor, 'skill', 'perception');
-    expect(sources).toHaveLength(1);
-    drone.items.pop();
+  it('does not match untargeted drone entries on skill lookups', () => {
+    const sources = getRRSources(actor, 'skill', 'furtivite');
+    expect(sources).toEqual([]);
   });
 
-  it('does not match untargeted drone entries on skill lookups', () => {
-    const generic = makeFeat('Gyrostab', [{ rrType: 'skill', rrTarget: '', rrValue: 1 }]);
-    drone.items.push(generic);
-    const sources = getRRSources(actor, 'skill', 'perception');
-    expect(sources).toHaveLength(1);
-    drone.items.pop();
+  it('still returns the actor own feat RR alongside drone RR', () => {
+    const actorWithFeat = {
+      items: [
+        {
+          type: 'feat',
+          name: 'Optique cyber',
+          system: { active: true, rrList: [{ rrType: 'skill', rrTarget: 'perception', rrValue: 1 }] },
+        },
+      ],
+      system: { linkedVehicles: ['Actor.abc'] },
+    };
+    const sources = getRRSources(actorWithFeat, 'skill', 'perception');
+    expect(sources.map((s: any) => s.featName).sort()).toEqual(['Lockheed', 'Optique cyber']);
   });
 });
 
-describe('calculateAttackPool double-count guard for drone weapons', () => {
-  it("excludes the rolled drone weapon's own targeted entries returned by getRRSources", () => {
-    // The drone weapon carries an RR targeting the skill used to control it.
-    // Its entries are passed via itemRRList AND surface through getRRSources
-    // (linked vehicle scan, suffixed name) — they must be counted only once.
-    const droneWeapon = makeFeat('Canon', [
-      { rrType: 'skill', rrTarget: 'ingenierie', rrValue: 1 },
-    ], { featType: 'weapon' });
-    const drone = makeVehicle('Lockheed', 'Actor.abc', [droneWeapon]);
+describe('calculateAttackPool with drone RR', () => {
+  it("counts a drone rrList entry targeting the control skill alongside the weapon's own RR", () => {
+    const drone = makeVehicle('Lockheed', 'Actor.abc', {
+      rrList: [{ rrType: 'skill', rrTarget: 'ingenierie', rrValue: 1 }],
+    });
     (globalThis as any).game.actors = {
       find: (fn: any) => [drone].find(fn),
       get: () => null,
@@ -132,49 +133,41 @@ describe('calculateAttackPool double-count guard for drone weapons', () => {
       linkedAttribute: undefined,
     } as any;
 
-    const itemRRList = droneWeapon.system.rrList.map((rr: any) => ({ ...rr, featName: 'Canon' }));
-    const result = calculateAttackPool(actor, skillSpecResult, itemRRList, 'Canon');
-
-    expect(result.totalRR).toBe(1);
-    expect(result.allRRSources).toHaveLength(1);
-  });
-
-  it("counts another drone feat's targeted entry alongside the weapon's own", () => {
-    const droneWeapon = makeFeat('Canon', [
-      { rrType: 'skill', rrTarget: 'ingenierie', rrValue: 1 },
-    ], { featType: 'weapon' });
-    const droneMod = makeFeat('Assist visée', [
-      { rrType: 'skill', rrTarget: 'ingenierie', rrValue: 1 },
-    ]);
-    const drone = makeVehicle('Lockheed', 'Actor.abc', [droneWeapon, droneMod]);
-    (globalThis as any).game.actors = {
-      find: (fn: any) => [drone].find(fn),
-      get: () => null,
-    };
-
-    const actor = {
-      items: [
-        { type: 'skill', name: 'Ingénierie', system: { slug: 'ingenierie' } },
-      ],
-      system: { linkedVehicles: ['Actor.abc'] },
-    };
-
-    const skillSpecResult = {
-      skillName: 'Ingénierie',
-      skillLevel: 6,
-      specName: undefined,
-      specLevel: undefined,
-      linkedAttribute: undefined,
-    } as any;
-
-    const itemRRList = droneWeapon.system.rrList.map((rr: any) => ({ ...rr, featName: 'Canon' }));
+    // The weapon itself carries a generic RR passed via itemRRList
+    const itemRRList = [{ rrType: 'skill', rrTarget: '', rrValue: 1, featName: 'Canon' }];
     const result = calculateAttackPool(actor, skillSpecResult, itemRRList, 'Canon');
 
     expect(result.totalRR).toBe(2);
-    expect(result.allRRSources.map((s: any) => s.featName).sort()).toEqual([
-      'Assist visée (Lockheed)',
-      'Canon',
-    ]);
+    expect(result.allRRSources.map((s: any) => s.featName).sort()).toEqual(['Canon', 'Lockheed']);
+  });
+
+  it('does not double count when the drone shares its name with the rolled item', () => {
+    const drone = makeVehicle('Canon', 'Actor.abc', {
+      rrList: [{ rrType: 'skill', rrTarget: 'ingenierie', rrValue: 1 }],
+    });
+    (globalThis as any).game.actors = {
+      find: (fn: any) => [drone].find(fn),
+      get: () => null,
+    };
+
+    const actor = {
+      items: [
+        { type: 'skill', name: 'Ingénierie', system: { slug: 'ingenierie' } },
+      ],
+      system: { linkedVehicles: ['Actor.abc'] },
+    };
+
+    const skillSpecResult = {
+      skillName: 'Ingénierie',
+      skillLevel: 6,
+      specName: undefined,
+      specLevel: undefined,
+      linkedAttribute: undefined,
+    } as any;
+
+    // itemName matches the drone name: the drone entry is excluded as "own item"
+    const result = calculateAttackPool(actor, skillSpecResult, [], 'Canon');
+    expect(result.totalRR).toBe(0);
   });
 });
 
@@ -183,46 +176,50 @@ describe('prepareVehicleWeaponAttack RR rules', () => {
   const genericRR = { rrType: 'skill', rrTarget: '', rrValue: 1 };
   const perceptionRR = { rrType: 'skill', rrTarget: 'perception', rrValue: 1 };
 
-  it('applies autopilot-targeted RR from any active feat', () => {
-    const weapon = makeFeat('Canon', [], { featType: 'weapon' });
-    const mod = makeFeat('Pilote amélioré', [autopilotRR]);
-    const vehicle = makeVehicle('Lockheed', 'Actor.abc', [weapon, mod]);
+  it('applies autopilot-targeted RR from any active weapon feat', () => {
+    const weapon = makeWeapon('Canon');
+    const otherWeapon = makeWeapon('Tourelle', [autopilotRR], { id: 'other' });
+    const vehicle = makeVehicle('Lockheed', 'Actor.abc', { items: [weapon, otherWeapon] });
 
     const { rrList } = prepareVehicleWeaponAttack(vehicle, weapon);
-    expect(rrList).toEqual([{ featName: 'Pilote amélioré', rrValue: 1 }]);
+    expect(rrList).toEqual([{ featName: 'Tourelle', rrValue: 1 }]);
   });
 
-  it("applies the rolled weapon's own generic RR, and drone-level generic RR, but not another weapon's", () => {
-    const weapon = makeFeat('Canon', [genericRR], { featType: 'weapon' });
-    const otherWeapon = makeFeat('Mitrailleuse', [genericRR], { featType: 'weapon', id: 'other' });
-    const mod = makeFeat('Gyrostab', [genericRR]);
-    const vehicle = makeVehicle('Lockheed', 'Actor.abc', [weapon, otherWeapon, mod]);
+  it("applies the rolled weapon's own generic RR but not another weapon's", () => {
+    const weapon = makeWeapon('Canon', [genericRR]);
+    const otherWeapon = makeWeapon('Mitrailleuse', [genericRR], { id: 'other' });
+    const vehicle = makeVehicle('Lockheed', 'Actor.abc', { items: [weapon, otherWeapon] });
 
     const { rrList } = prepareVehicleWeaponAttack(vehicle, weapon);
-    expect(rrList.map((rr: any) => rr.featName).sort()).toEqual(['Canon', 'Gyrostab']);
+    expect(rrList).toEqual([{ featName: 'Canon', rrValue: 1 }]);
   });
 
-  it('does not apply skill-targeted RR to the autopilot roll', () => {
-    const weapon = makeFeat('Canon', [], { featType: 'weapon' });
-    const mod = makeFeat('Optique avancée', [perceptionRR]);
-    const vehicle = makeVehicle('Lockheed', 'Actor.abc', [weapon, mod]);
+  it("applies the vehicle's generic and autopilot-targeted rrList entries, not skill-targeted ones", () => {
+    const weapon = makeWeapon('Canon');
+    const vehicle = makeVehicle('Lockheed', 'Actor.abc', {
+      items: [weapon],
+      rrList: [genericRR, autopilotRR, perceptionRR],
+    });
 
     const { rrList } = prepareVehicleWeaponAttack(vehicle, weapon);
-    expect(rrList).toEqual([]);
+    expect(rrList).toEqual([
+      { featName: 'Lockheed', rrValue: 1 },
+      { featName: 'Lockheed', rrValue: 1 },
+    ]);
   });
 
   it("counts an inactive rolled weapon's own autopilot/generic RR exactly once", () => {
-    const weapon = makeFeat('Canon', [autopilotRR, genericRR], { featType: 'weapon' });
+    const weapon = makeWeapon('Canon', [autopilotRR, genericRR]);
     weapon.system.active = false;
-    const vehicle = makeVehicle('Lockheed', 'Actor.abc', [weapon]);
+    const vehicle = makeVehicle('Lockheed', 'Actor.abc', { items: [weapon] });
 
     const { rrList } = prepareVehicleWeaponAttack(vehicle, weapon);
     expect(rrList).toHaveLength(2);
   });
 
   it("counts an active rolled weapon's autopilot RR exactly once (no double scan)", () => {
-    const weapon = makeFeat('Canon', [autopilotRR], { featType: 'weapon' });
-    const vehicle = makeVehicle('Lockheed', 'Actor.abc', [weapon]);
+    const weapon = makeWeapon('Canon', [autopilotRR]);
+    const vehicle = makeVehicle('Lockheed', 'Actor.abc', { items: [weapon] });
 
     const { rrList } = prepareVehicleWeaponAttack(vehicle, weapon);
     expect(rrList).toEqual([{ featName: 'Canon', rrValue: 1 }]);

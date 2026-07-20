@@ -465,17 +465,15 @@ export function getLinkedVehicleActors(actor: any): any[] {
 }
 
 /**
- * Active feats carried by the actor's linked vehicles, with a display label
- * suffixed by the vehicle name so RR sources show where the bonus comes from.
+ * RR entries declared on the actor's linked vehicles (system.rrList), with the
+ * vehicle name as source label so the roll dialog shows where the bonus comes from.
  */
-function getLinkedVehicleActiveFeats(actor: any): Array<{ feat: any, label: string }> {
-  const entries: Array<{ feat: any, label: string }> = [];
+function getLinkedVehicleRREntries(actor: any): Array<{ rrEntry: any, vehicleName: string }> {
+  const entries: Array<{ rrEntry: any, vehicleName: string }> = [];
   for (const vehicle of getLinkedVehicleActors(actor)) {
-    const vehicleFeats = vehicle.items?.filter?.((item: any) =>
-      item.type === 'feat' && item.system.active === true
-    ) || [];
-    for (const feat of vehicleFeats) {
-      entries.push({ feat, label: `${feat.name} (${vehicle.name})` });
+    const rrList = vehicle.system?.rrList || [];
+    for (const rrEntry of rrList) {
+      entries.push({ rrEntry, vehicleName: vehicle.name });
     }
   }
   return entries;
@@ -504,40 +502,49 @@ export function getRRSources(actor: any, itemType: 'skill' | 'specialization' | 
     itemSlug = specItem?.system?.slug || '';
   }
 
-  // Scan the actor's own feats, then the active feats of its linked vehicles
-  // (a drone's RR benefits its owner's rolls, labeled with the drone's name).
-  const featEntries: Array<{ feat: any, label?: string }> = feats.map((feat: any) => ({ feat }));
-  for (const vehicleEntry of getLinkedVehicleActiveFeats(actor)) {
-    featEntries.push({ feat: vehicleEntry.feat, label: vehicleEntry.label });
-  }
+  // Does this RR entry target the item being rolled?
+  const entryMatches = (rrEntry: any): boolean => {
+    const rrType = rrEntry.rrType;
+    const rrValue = rrEntry.rrValue || 0;
+    const rrTarget = rrEntry.rrTarget || '';
 
-  for (const { feat, label } of featEntries) {
+    if (rrType !== itemType || rrValue <= 0) return false;
+
+    // Compare by normalized name, by slug, or direct slug-to-slug (for phantom items not on actor)
+    const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
+    const matchByName = normalizedRRTarget === normalizedItemName;
+    const matchBySlug = itemSlug && rrTarget === itemSlug;
+    const matchByDirectSlug = !itemSlug && rrTarget === itemName;
+
+    return !!(matchByName || matchBySlug || matchByDirectSlug);
+  };
+
+  for (const feat of feats) {
     const featSystem = feat.system as any;
     const rrList = featSystem.rrList || [];
 
     for (const rrEntry of rrList) {
-      const rrType = rrEntry.rrType;
-      const rrValue = rrEntry.rrValue || 0;
-      const rrTarget = rrEntry.rrTarget || '';
-
-      if (rrType !== itemType || rrValue <= 0) continue;
-
-      // Compare by normalized name, by slug, or direct slug-to-slug (for phantom items not on actor)
-      const normalizedRRTarget = ItemSearch.normalizeSearchText(rrTarget);
-      const matchByName = normalizedRRTarget === normalizedItemName;
-      const matchBySlug = itemSlug && rrTarget === itemSlug;
-      const matchByDirectSlug = !itemSlug && rrTarget === itemName;
-
-      if (matchByName || matchBySlug || matchByDirectSlug) {
+      if (entryMatches(rrEntry)) {
         sources.push({
-          featName: label || feat.name,
-          rrValue: rrValue,
-          rrLabel: rrEntry.rrLabel || undefined,
-          // Raw feat name, used to exclude the rolled item's own entries
-          // from double counting even when the display name is suffixed
-          sourceFeatName: feat.name
+          featName: feat.name,
+          rrValue: rrEntry.rrValue || 0,
+          rrLabel: rrEntry.rrLabel || undefined
         });
       }
+    }
+  }
+
+  // RR entries declared on linked vehicles benefit the owner's rolls,
+  // with the vehicle's name as the source
+  for (const { rrEntry, vehicleName } of getLinkedVehicleRREntries(actor)) {
+    if (entryMatches(rrEntry)) {
+      sources.push({
+        featName: vehicleName,
+        rrValue: rrEntry.rrValue || 0,
+        rrLabel: rrEntry.rrLabel || undefined,
+        // Raw source name, used by double-count exclusions
+        sourceFeatName: vehicleName
+      });
     }
   }
 
@@ -585,19 +592,21 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
     if (i.system?.slug) existingSpecs.add(i.system.slug);
   });
 
-  // Get all active feats with RR entries (own feats + linked vehicles' feats)
+  // Get all RR carriers: the actor's active feats, plus the RR lists declared
+  // on its linked vehicles (labeled with the vehicle's name)
   const feats = actor.items.filter((item: any) =>
     item.type === 'feat' &&
     item.system.active === true
   );
-  const featEntries: Array<{ feat: any, label?: string }> = feats.map((feat: any) => ({ feat }));
-  for (const vehicleEntry of getLinkedVehicleActiveFeats(actor)) {
-    featEntries.push({ feat: vehicleEntry.feat, label: vehicleEntry.label });
+  const rrCarriers: Array<{ rrList: any[], label: string }> = feats.map((feat: any) => ({
+    rrList: (feat.system as any).rrList || [],
+    label: feat.name
+  }));
+  for (const vehicle of getLinkedVehicleActors(actor)) {
+    rrCarriers.push({ rrList: vehicle.system?.rrList || [], label: vehicle.name });
   }
 
-  for (const { feat, label } of featEntries) {
-    const featSystem = feat.system as any;
-    const rrList = featSystem.rrList || [];
+  for (const { rrList, label } of rrCarriers) {
 
     for (const rrEntry of rrList) {
       const rrType = rrEntry.rrType;
@@ -630,7 +639,7 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
         // Add source to existing phantom
         const phantom = phantomRRs.find(p => p.type === 'skill' && (p.name === rrTarget || ItemSearch.normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
-          phantom.sources.push({ featName: label || feat.name, rrValue });
+          phantom.sources.push({ featName: label, rrValue });
         }
       } else if (rrType === 'specialization' && !isExistingSpec) {
         if (!seenTargets.has(targetKey)) {
@@ -648,7 +657,7 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
         // Add source to existing phantom
         const phantom = phantomRRs.find(p => p.type === 'specialization' && (p.name === rrTarget || ItemSearch.normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
-          phantom.sources.push({ featName: label || feat.name, rrValue });
+          phantom.sources.push({ featName: label, rrValue });
         }
       }
     }

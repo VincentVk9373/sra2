@@ -32,6 +32,44 @@ export class VehicleDataModel extends foundry.abstract.TypeDataModel<any, Actor>
         },
         label: "SRA2.VEHICLE.CONTROL_MODE.LABEL"
       }),
+      // Risk Reduction entries carried by the vehicle itself. Targeted entries
+      // (skill/spec/attribute) benefit the owner's rolls; untargeted entries
+      // apply to the vehicle's own rolls (autopilot).
+      rrList: new fields.ArrayField(new fields.SchemaField({
+        rrType: new fields.StringField({
+          required: true,
+          initial: "skill",
+          choices: {
+            "attribute": "SRA2.FEATS.RR_TYPE.ATTRIBUTE",
+            "skill": "SRA2.FEATS.RR_TYPE.SKILL",
+            "specialization": "SRA2.FEATS.RR_TYPE.SPECIALIZATION"
+          },
+          label: "SRA2.FEATS.RR_TYPE.LABEL"
+        }),
+        rrValue: new fields.NumberField({
+          required: true,
+          initial: 1,
+          min: 0,
+          max: 3,
+          integer: true,
+          label: "SRA2.FEATS.RR_VALUE"
+        }),
+        rrTarget: new fields.StringField({
+          required: false,
+          initial: "",
+          nullable: false,
+          label: "SRA2.FEATS.RR_TARGET"
+        }),
+        rrLabel: new fields.StringField({
+          required: false,
+          initial: "",
+          nullable: false,
+          label: "SRA2.FEATS.RR_LABEL"
+        })
+      }), {
+        initial: [],
+        label: "SRA2.VEHICLE.RR_LIST"
+      }),
       // Custom vehicle base stats (only used when vehicleType is "custom-vehicle")
       customAutopilot: new fields.NumberField({
         required: true,

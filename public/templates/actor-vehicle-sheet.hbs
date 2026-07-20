@@ -67,6 +67,9 @@
       <button type="button" class="nav-item" data-section="combat" title="{{localize 'SRA2.VEHICLE.SECTION.COMBAT'}}">
         <i class="fas fa-shield-alt"></i>
       </button>
+      <button type="button" class="nav-item" data-section="rr" title="{{localize 'SRA2.VEHICLE.RR_LIST'}}">
+        <i class="fas fa-percentage"></i>
+      </button>
       <button type="button" class="nav-item" data-section="feats" title="{{localize 'SRA2.VEHICLE.SECTION.FEATS'}}">
         <i class="fas fa-star"></i>
       </button>
@@ -303,15 +306,12 @@
       <section class="content-section" data-section-content="weapons">
         <h2><i class="fas fa-crosshairs"></i> {{localize "SRA2.VEHICLE.SECTION.WEAPONS"}}</h2>
 
-        <section class="sheet-body weapons-section">
+        <section class="sheet-body">
+          <div class="weapons-section">
           <div class="weapons-controls">
             <button type="button" class="add-world-weapon-button" data-action="add-world-weapon"
               title="{{localize 'SRA2.VEHICLE.ADD_WEAPON'}}">
               <i class="fas fa-search"></i> {{localize "SRA2.VEHICLE.ADD_WEAPON"}}
-            </button>
-            <button type="button" class="add-world-feat-button" data-action="add-world-feat"
-              title="{{localize 'SRA2.VEHICLE.ADD_FEAT'}}">
-              <i class="fas fa-search"></i> {{localize "SRA2.VEHICLE.ADD_FEAT"}}
             </button>
           </div>
 
@@ -365,54 +365,7 @@
             <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
           </div>
           {{/if}}
-
-          <!-- Drone feats (mods/traits carrying RR) -->
-          <h3 class="vehicle-feats-title"><i class="fas fa-star"></i> {{localize "SRA2.VEHICLE.SECTION.FEATS"}}</h3>
-          {{#if otherFeats}}
-          <div class="weapons-section vehicle-feats-section">
-            <div class="weapons-list">
-              <div class="skills-header">
-                <div class="skill-header-name">{{localize "SRA2.FEATS.NAME"}}</div>
-                <div class="skill-header-rr">{{localize "SRA2.VEHICLE.RR"}}</div>
-                <div class="skill-header-actions"></div>
-              </div>
-              {{#each otherFeats}}
-              <div class="weapon-item npc-skill-item vehicle-feat-item" data-item-id="{{this._id}}">
-                <div class="weapon-name">
-                  <img class="weapon-img" src="{{this.img}}" alt="{{this.name}}" />
-                  <span>{{this.name}}</span>
-                </div>
-                <div class="skill-rr vehicle-feat-rr">
-                  {{#each this.rrEntries}}
-                  <span class="rr-value" title="{{#if this.rrLabel}}{{this.rrLabel}}{{else}}{{this.targetLabel}}{{/if}}">
-                    RR{{this.rrValue}} — {{this.targetLabel}}
-                  </span>
-                  {{/each}}
-                </div>
-                <div class="skill-controls">
-                  <label class="vehicle-feat-active-toggle" title="{{localize 'SRA2.FEATS.ACTIVE'}}">
-                    <input type="checkbox" class="vehicle-feat-active" data-item-id="{{this._id}}"
-                      {{#if this.system.active}}checked{{/if}} />
-                  </label>
-                  <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}"
-                    title="{{localize 'SRA2.FEATS.EDIT'}}">
-                    <i class="fas fa-edit"></i>
-                  </a>
-                  <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}"
-                    title="{{localize 'SRA2.FEATS.DELETE'}}">
-                    <i class="fas fa-trash"></i>
-                  </a>
-                </div>
-              </div>
-              {{/each}}
-            </div>
           </div>
-          <p class="hint vehicle-feats-hint">{{localize "SRA2.VEHICLE.FEATS_HINT"}}</p>
-          {{else}}
-          <div class="empty-skills">
-            <p>{{localize "SRA2.VEHICLE.FEATS_HINT"}}</p>
-          </div>
-          {{/if}}
         </section>
       </section>
 
@@ -474,6 +427,104 @@
                 </ul>
               </div>
             </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- RR Section -->
+      <section class="content-section" data-section-content="rr">
+        <h2><i class="fas fa-percentage"></i> {{localize "SRA2.VEHICLE.RR_LIST"}}</h2>
+
+        <section class="sheet-body">
+          <p class="hint rr-list-hint">{{localize "SRA2.VEHICLE.RR_LIST_HINT"}}</p>
+
+          <button type="button" data-action="add-rr-entry" title="{{localize 'SRA2.FEATS.ADD_RR_ENTRY'}}"
+            class="add-entry-button">
+            <i class="fas fa-plus"></i> {{localize "SRA2.FEATS.ADD_RR_ENTRY"}}
+          </button>
+
+          <div class="rr-entries-container">
+            {{#if rrEntries}}
+            {{#each rrEntries}}
+            <div class="rr-entry" data-rr-index="{{index}}">
+              <div class="rr-entry-header">
+                <span class="entry-number">{{localize "SRA2.FEATS.RR_ENTRY_NUMBER"}} {{add index 1}}</span>
+                <button type="button" data-action="remove-rr-entry" data-index="{{index}}"
+                  title="{{localize 'SRA2.FEATS.REMOVE_RR_ENTRY'}}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+
+              <div class="form-group">
+                <label>{{localize "SRA2.FEATS.RR_LABEL"}}</label>
+                <input type="text" name="system.rrList.{{index}}.rrLabel" value="{{rrLabel}}"
+                  placeholder="{{localize 'SRA2.FEATS.RR_LABEL_PLACEHOLDER'}}" />
+              </div>
+
+              <div class="form-group">
+                <label>{{localize "SRA2.FEATS.RR_TYPE.LABEL"}}</label>
+                <select name="system.rrList.{{index}}.rrType">
+                  <option value="skill" {{#if (eq rrType "skill" )}}selected{{/if}}>{{localize
+                    "SRA2.FEATS.RR_TYPE.SKILL"}}</option>
+                  <option value="attribute" {{#if (eq rrType "attribute" )}}selected{{/if}}>{{localize
+                    "SRA2.FEATS.RR_TYPE.ATTRIBUTE"}}</option>
+                  <option value="specialization" {{#if (eq rrType "specialization" )}}selected{{/if}}>{{localize
+                    "SRA2.FEATS.RR_TYPE.SPECIALIZATION"}}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>{{localize "SRA2.FEATS.RR_VALUE"}}</label>
+                <input type="number" name="system.rrList.{{index}}.rrValue" value="{{rrValue}}" min="0" max="3" />
+              </div>
+
+              <div class="form-group">
+                <label>{{localize "SRA2.FEATS.RR_TARGET"}}</label>
+                {{#if (eq rrType "attribute")}}
+                <select name="system.rrList.{{index}}.rrTarget">
+                  <option value="">{{localize "SRA2.FEATS.RR_TARGET_SELECT"}}</option>
+                  <option value="autopilot" {{#if (eq rrTarget "autopilot" )}}selected{{/if}}>{{localize
+                    "SRA2.VEHICLE.ATTRIBUTES.AUTOPILOT"}}</option>
+                  <option value="strength" {{#if (eq rrTarget "strength" )}}selected{{/if}}>{{localize
+                    "SRA2.ATTRIBUTES.STRENGTH"}}</option>
+                  <option value="agility" {{#if (eq rrTarget "agility" )}}selected{{/if}}>{{localize
+                    "SRA2.ATTRIBUTES.AGILITY"}}</option>
+                  <option value="willpower" {{#if (eq rrTarget "willpower" )}}selected{{/if}}>{{localize
+                    "SRA2.ATTRIBUTES.WILLPOWER"}}</option>
+                  <option value="logic" {{#if (eq rrTarget "logic" )}}selected{{/if}}>{{localize
+                    "SRA2.ATTRIBUTES.LOGIC"}}</option>
+                  <option value="charisma" {{#if (eq rrTarget "charisma" )}}selected{{/if}}>{{localize
+                    "SRA2.ATTRIBUTES.CHARISMA"}}</option>
+                </select>
+                {{else}}
+                <input type="hidden" name="system.rrList.{{index}}.rrTarget" value="{{rrTarget}}" />
+                <div class="rr-target-search-container" data-rr-index="{{index}}">
+                  {{#if rrTargetName}}
+                  <div class="rr-target-display">
+                    <i class="fas fa-link"></i>
+                    <span class="target-name">{{rrTargetName}}</span>
+                    <span class="target-type">({{rrTargetType}})</span>
+                    <a class="clear-link" data-action="clear-rr-target" data-index="{{index}}"
+                      title="{{localize 'SRA2.FEATS.CLEAR_RR_TARGET'}}">
+                      <i class="fas fa-times"></i>
+                    </a>
+                  </div>
+                  {{else}}
+                  <div class="rr-target-search-wrapper">
+                    <input type="text" class="rr-target-search-input"
+                      placeholder="{{localize 'SRA2.FEATS.SEARCH_TARGET_PLACEHOLDER'}}" data-rr-index="{{index}}"
+                      autocomplete="off" />
+                    <div class="rr-target-search-results"></div>
+                  </div>
+                  {{/if}}
+                </div>
+                {{/if}}
+              </div>
+            </div>
+            {{/each}}
+            {{else}}
+            <p class="no-entries">{{localize "SRA2.FEATS.NO_RR_ENTRIES"}}</p>
+            {{/if}}
           </div>
         </section>
       </section>

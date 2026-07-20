@@ -1,8 +1,28 @@
 import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import * as CombatHelpers from '../helpers/combat-helpers.js';
 import * as DiceRoller from '../helpers/dice-roller.js';
+import * as ItemSearch from '../../../item-search.js';
 import { VEHICLE_TYPES, WEAPON_TYPES } from '../models/item-feat.js';
 import { NARRATIVE_SAVE_DEBOUNCE, DELAYS } from '../config/constants.js';
+
+/**
+ * Check if a compendium pack matches the active language
+ */
+function isPackForActiveLanguage(pack: any): boolean {
+  const lang = game.i18n?.lang || 'en';
+  const collection = pack.collection || '';
+  if (collection.endsWith(`-${lang}`)) return true;
+  return false;
+}
+
+/**
+ * Get compendium packs filtered by active language, with fallback to all packs
+ */
+function getLanguagePacks(): any[] {
+  const allPacks = [...(game.packs as any)].filter((p: any) => p.documentName === 'Item');
+  const langPacks = allPacks.filter(isPackForActiveLanguage);
+  return langPacks.length > 0 ? langPacks : allPacks;
+}
 
 /**
  * Vehicle/Drone Sheet Application
@@ -161,21 +181,30 @@ export class VehicleSheet extends ActorSheet {
       let totalDicePool = autopilot; // Base dice pool from autopilot
       let totalRR = 0;
       
-      // Calculate RR from active feats: autopilot-targeted entries always apply;
-      // untargeted (generic) entries apply from drone-level feats and from the
-      // rolled weapon itself, but another weapon's generic RR does not carry over
+      // Calculate RR from active weapon feats: autopilot-targeted entries always
+      // apply; the rolled weapon's own untargeted (generic) entries apply too,
+      // but another weapon's generic RR does not carry over
       activeFeats.forEach((feat: any) => {
         const rrList = feat.system.rrList || [];
         const isOwnWeapon = (feat.id || feat._id) === (item.id || item._id);
-        const isDroneLevelFeat = feat.system.featType !== 'weapon';
         rrList.forEach((rrEntry: any) => {
           const rrTarget = rrEntry.rrTarget || '';
           const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
-          const genericApplies = !rrTarget && (isOwnWeapon || isDroneLevelFeat);
-          if (targetsAutopilot || genericApplies) {
+          if (targetsAutopilot || (!rrTarget && isOwnWeapon)) {
             totalRR += rrEntry.rrValue || 0;
           }
         });
+      });
+
+      // Vehicle-level RR list: generic and autopilot-targeted entries apply to
+      // the drone's own rolls
+      const vehicleRRList = (this.actor.system as any).rrList || [];
+      vehicleRRList.forEach((rrEntry: any) => {
+        const rrTarget = rrEntry.rrTarget || '';
+        const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
+        if (targetsAutopilot || !rrTarget) {
+          totalRR += rrEntry.rrValue || 0;
+        }
       });
       
       itemData.totalDicePool = totalDicePool;
@@ -197,34 +226,36 @@ export class VehicleSheet extends ActorSheet {
 
     context.weapons = weapons;
 
-    // Non-weapon feats (drone mods/traits carrying RR): targeted RR entries
-    // benefit the owner's rolls, untargeted entries apply to the drone's rolls
+    // Build RR entries array from the vehicle's own rrList (RR tab editor)
     const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
-    context.otherFeats = allFeats
-      .filter((feat: any) => feat.system.featType !== 'weapon')
-      .map((feat: any) => {
-        const rrEntries = ((feat.system.rrList || []) as any[])
-          .filter((rrEntry: any) => (rrEntry.rrValue || 0) > 0)
-          .map((rrEntry: any) => {
-            const rrTarget = rrEntry.rrTarget || '';
-            let targetLabel: string;
-            if (!rrTarget) {
-              targetLabel = game.i18n?.localize('SRA2.VEHICLE.RR_GENERIC') || '';
-            } else if (rrEntry.rrType === 'attribute') {
-              targetLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`) || rrTarget;
-            } else {
-              targetLabel = slugCache[rrTarget] || rrTarget;
-            }
-            return { rrValue: rrEntry.rrValue, rrLabel: rrEntry.rrLabel || '', targetLabel };
-          });
-        return {
-          _id: feat.id || feat._id,
-          name: feat.name,
-          img: feat.img,
-          system: feat.system,
-          rrEntries
-        };
-      });
+    context.rrEntries = [];
+    const vehicleRRList = (this.actor.system as any).rrList || [];
+    for (let i = 0; i < vehicleRRList.length; i++) {
+      const rrEntry = vehicleRRList[i];
+      const rrType = rrEntry.rrType;
+      const rrTarget = rrEntry.rrTarget || '';
+
+      const entry: any = {
+        index: i,
+        rrType,
+        rrValue: rrEntry.rrValue || 0,
+        rrTarget,
+        rrTargetName: rrTarget,
+        rrLabel: rrEntry.rrLabel || ''
+      };
+
+      if (rrType === 'skill' || rrType === 'specialization') {
+        entry.rrTargetType = rrType === 'skill'
+          ? game.i18n!.localize('SRA2.FEATS.RR_TYPE.SKILL')
+          : game.i18n!.localize('SRA2.FEATS.RR_TYPE.SPECIALIZATION');
+        // Resolve slug to display name (targets live on the owner, not here)
+        if (rrTarget && slugCache[rrTarget]) {
+          entry.rrTargetName = slugCache[rrTarget];
+        }
+      }
+
+      context.rrEntries.push(entry);
+    }
 
     return context;
   }
@@ -301,23 +332,16 @@ export class VehicleSheet extends ActorSheet {
       this._showItemBrowser('feat', true); // true = weapons only
     }));
 
-    // Add world feat (drone mods/traits, e.g. RR carriers)
-    el.querySelectorAll<HTMLElement>('.add-world-feat-button').forEach(elem => elem.addEventListener('click', async (event) => {
-      event.preventDefault();
-      const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
-      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
-      this._showItemBrowser('feat', false);
-    }));
-
-    // Toggle a drone feat's active state
-    el.querySelectorAll<HTMLInputElement>('.vehicle-feat-active').forEach(elem => elem.addEventListener('change', async (event) => {
-      const target = event.currentTarget as HTMLInputElement;
-      const itemId = target.dataset.itemId || '';
-      const item = this.actor.items.get(itemId);
-      if (item) {
-        await (item as any).update({ 'system.active': target.checked });
-      }
-    }));
+    // RR list editor (add / remove / clear target / search target)
+    el.querySelectorAll<HTMLElement>('[data-action="add-rr-entry"]').forEach(elem => elem.addEventListener('click', this._onAddRREntry.bind(this)));
+    el.querySelectorAll<HTMLElement>('[data-action="remove-rr-entry"]').forEach(elem => elem.addEventListener('click', this._onRemoveRREntry.bind(this)));
+    el.querySelectorAll<HTMLElement>('[data-action="clear-rr-target"]').forEach(elem => elem.addEventListener('click', this._onClearRRTarget.bind(this)));
+    el.querySelectorAll<HTMLElement>('.rr-target-search-input').forEach(elem => {
+      elem.addEventListener('input', this._onRRTargetSearch.bind(this));
+      elem.addEventListener('blur', this._onRRTargetSearchBlur.bind(this));
+    });
+    // The sheet does not submit on change: persist RR field edits directly
+    el.querySelectorAll<HTMLElement>('[name^="system.rrList."]').forEach(elem => elem.addEventListener('change', this._onRRFieldChange.bind(this)));
 
     // Roll weapon dice (using autopilot)
     el.querySelectorAll<HTMLElement>('.weapon-dice-pool').forEach(elem => elem.addEventListener('click', async (event) => {
@@ -694,6 +718,232 @@ export class VehicleSheet extends ActorSheet {
     }
   }
 
+  /** Timeout for RR target search debouncing */
+  private rrTargetSearchTimeout: any = null;
+
+  /** Remember the RR section as active before a re-render */
+  private _saveRRSection(): void {
+    this._activeSection = 'rr';
+  }
+
+  /**
+   * Persist a change to one RR entry field (the sheet has submitOnChange: false)
+   */
+  private async _onRRFieldChange(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement | HTMLSelectElement;
+    const match = (input.name || '').match(/^system\.rrList\.(\d+)\.(rrType|rrValue|rrTarget|rrLabel)$/);
+    if (!match) return;
+    this._saveRRSection();
+
+    const index = parseInt(match[1] || '0');
+    const field = match[2] as 'rrType' | 'rrValue' | 'rrTarget' | 'rrLabel';
+    const rrList = [...((this.actor.system as any).rrList || [])];
+    if (!rrList[index]) return;
+
+    let value: any = input.value;
+    if (field === 'rrValue') value = parseInt(input.value) || 0;
+
+    const entry: any = { ...rrList[index], [field]: value };
+    // Changing the type invalidates the previous target
+    if (field === 'rrType') entry.rrTarget = '';
+    rrList[index] = entry;
+
+    await (this.actor as any).update({ 'system.rrList': rrList });
+    this.render(false);
+  }
+
+  private async _onAddRREntry(event: Event): Promise<void> {
+    event.preventDefault();
+    this._saveRRSection();
+
+    const rrList = [...((this.actor.system as any).rrList || [])];
+    rrList.push({ rrType: 'skill', rrValue: 1, rrTarget: '' });
+
+    await (this.actor as any).update({ 'system.rrList': rrList });
+    this.render(false);
+  }
+
+  private async _onRemoveRREntry(event: Event): Promise<void> {
+    event.preventDefault();
+    this._saveRRSection();
+
+    const index = parseInt((event.currentTarget as HTMLElement).dataset.index || '0');
+    const rrList = [...((this.actor.system as any).rrList || [])];
+    rrList.splice(index, 1);
+
+    await (this.actor as any).update({ 'system.rrList': rrList });
+    this.render(false);
+  }
+
+  private async _onClearRRTarget(event: Event): Promise<void> {
+    event.preventDefault();
+    this._saveRRSection();
+
+    const index = parseInt((event.currentTarget as HTMLElement).dataset.index || '0');
+    const rrList = [...((this.actor.system as any).rrList || [])];
+    if (rrList[index]) {
+      rrList[index] = { ...rrList[index], rrTarget: '' };
+    }
+
+    await (this.actor as any).update({ 'system.rrList': rrList });
+    this.render(false);
+  }
+
+  /**
+   * Handle RR target search input (debounced)
+   */
+  private async _onRRTargetSearch(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement;
+    const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
+    const rrIndex = parseInt(input.dataset.rrIndex || '0');
+    const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.rr-target-search-results');
+    if (!resultsDiv) return;
+
+    if (this.rrTargetSearchTimeout) {
+      clearTimeout(this.rrTargetSearchTimeout);
+    }
+
+    if (searchTerm.length === 0) {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+
+    this.rrTargetSearchTimeout = setTimeout(async () => {
+      await this._performRRTargetSearch(searchTerm, rrIndex, resultsDiv);
+    }, DELAYS.SEARCH_DEBOUNCE);
+  }
+
+  /**
+   * Search skills/specializations in world items and compendiums
+   * (the targets live on the owner's sheet, not on the vehicle)
+   */
+  private async _performRRTargetSearch(searchTerm: string, rrIndex: number, resultsDiv: HTMLElement): Promise<void> {
+    const results: any[] = [];
+    const rrList = (this.actor.system as any).rrList || [];
+    const rrType = rrList[rrIndex]?.rrType;
+
+    if (!rrType || rrType === 'attribute') {
+      resultsDiv.style.display = 'none';
+      return;
+    }
+
+    // Search in world items
+    if (game.items) {
+      for (const item of game.items as any) {
+        if (item.type === rrType && ItemSearch.normalizeSearchText(item.name).includes(searchTerm)) {
+          results.push({
+            name: item.name,
+            slug: item.system?.slug || '',
+            source: game.i18n!.localize('SRA2.SKILLS.WORLD_ITEMS'),
+            type: rrType
+          });
+        }
+      }
+    }
+
+    // Search in compendiums (active language first, fallback to all)
+    for (const pack of getLanguagePacks()) {
+      const documents = await pack.getDocuments();
+      for (const doc of documents) {
+        if (doc.type === rrType && ItemSearch.normalizeSearchText(doc.name).includes(searchTerm)) {
+          const exists = results.some(r => r.name === doc.name);
+          if (!exists) {
+            results.push({
+              name: doc.name,
+              slug: doc.system?.slug || '',
+              source: pack.title,
+              type: rrType
+            });
+          }
+        }
+      }
+    }
+
+    this._displayRRTargetSearchResults(results, rrIndex, resultsDiv);
+  }
+
+  private _displayRRTargetSearchResults(results: any[], rrIndex: number, resultsDiv: HTMLElement): void {
+    let html = '';
+
+    if (results.length === 0) {
+      html = `
+        <div class="search-result-item no-results">
+          <div class="no-results-text">
+            ${game.i18n!.localize('SRA2.SKILLS.SEARCH_NO_RESULTS')}
+          </div>
+        </div>
+      `;
+    } else {
+      for (const result of results) {
+        const typeLabel = result.type === 'skill'
+          ? game.i18n!.localize('SRA2.FEATS.RR_TYPE.SKILL')
+          : game.i18n!.localize('SRA2.FEATS.RR_TYPE.SPECIALIZATION');
+
+        html += `
+          <div class="search-result-item" data-result-name="${result.name}" data-rr-index="${rrIndex}">
+            <div class="result-info">
+              <span class="result-name">${result.name}</span>
+              <span class="result-pack">${result.source} - ${typeLabel}</span>
+            </div>
+            <button class="add-rr-target-btn" data-target-name="${result.name}" data-target-slug="${result.slug}" data-rr-index="${rrIndex}">
+              ${game.i18n!.localize('SRA2.FEATS.SELECT')}
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+
+    resultsDiv.querySelectorAll<HTMLElement>('.add-rr-target-btn').forEach(elem => elem.addEventListener('click', this._onSelectRRTarget.bind(this)));
+    resultsDiv.querySelectorAll<HTMLElement>('.search-result-item:not(.no-results)').forEach(elem => elem.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('.add-rr-target-btn')) return;
+      const button = elem.querySelector<HTMLButtonElement>('.add-rr-target-btn');
+      if (button) button.click();
+    }));
+  }
+
+  private async _onSelectRRTarget(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    this._saveRRSection();
+
+    const button = event.currentTarget as HTMLButtonElement;
+    const targetName = button.dataset.targetName;
+    const targetSlug = button.dataset.targetSlug;
+    const rrIndex = parseInt(button.dataset.rrIndex || '0');
+
+    if (!targetName) return;
+
+    const rrTarget = targetSlug || targetName;
+    const rrList = [...((this.actor.system as any).rrList || [])];
+    if (rrList[rrIndex]) {
+      rrList[rrIndex] = { ...rrList[rrIndex], rrTarget };
+    }
+
+    await (this.actor as any).update({ 'system.rrList': rrList });
+    this.render(false);
+
+    ui.notifications?.info(game.i18n!.format('SRA2.FEATS.LINKED_TO_TARGET', { name: targetName }));
+  }
+
+  private _onRRTargetSearchBlur(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    const blurEvent = event as FocusEvent;
+
+    setTimeout(() => {
+      const resultsDiv = input.parentElement?.querySelector<HTMLElement>('.rr-target-search-results');
+      if (resultsDiv) {
+        const relatedTarget = blurEvent.relatedTarget as HTMLElement;
+        if (relatedTarget && resultsDiv.contains(relatedTarget)) return;
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && resultsDiv.contains(activeElement)) return;
+        resultsDiv.style.display = 'none';
+      }
+    }, DELAYS.SEARCH_HIDE);
+  }
+
   /**
    * Show item browser dialog
    */
@@ -767,18 +1017,21 @@ export class VehicleSheet extends ActorSheet {
       return super._onDrop(event);
     }
     
-    // Only allow feats (weapons and drone-level feats carrying RR)
+    // Only allow weapons (feats of type weapon)
     if (data.type === 'Item') {
       const item = await Item.fromDropData(data);
       if (item && item.type === 'feat') {
-        // Create the item on the actor
-        // The sheet will auto-render, and activateListeners will restore the section
-        await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
+        const featType = (item.system as any).featType;
+        if (featType === 'weapon') {
+          // Create the item on the actor
+          // The sheet will auto-render, and activateListeners will restore the section
+          await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
 
-        return false; // Prevent default behavior
-      } else if (item) {
-        ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_FEATS_ALLOWED'));
-        return false; // Prevent default behavior
+          return false; // Prevent default behavior
+        } else {
+          ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_WEAPONS_ALLOWED'));
+          return false; // Prevent default behavior
+        }
       }
     }
     
