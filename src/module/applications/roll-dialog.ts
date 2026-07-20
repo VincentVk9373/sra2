@@ -293,7 +293,7 @@ export class RollDialog extends Application {
     }
     
     // Exclude the weapon's own entries from getRRSources results (already in itemRRList)
-    skillSpecRRList = skillSpecRRList.filter((source: any) => source.featName !== selectedWeapon.name);
+    skillSpecRRList = skillSpecRRList.filter((source: any) => (source.sourceFeatName || source.featName) !== selectedWeapon.name);
 
     // Merge weapon RR with skill/spec/attribute RR
     rrList = [...itemRRList, ...skillSpecRRList];

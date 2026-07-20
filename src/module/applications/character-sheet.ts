@@ -2436,9 +2436,25 @@ export class CharacterSheet extends ActorSheet {
       const vehicleName = vehicleActor.name || 'Vehicle';
       const autopilotLabel = game.i18n!.localize('SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT');
       
-      // Get RR sources for autopilot (from vehicle's RR sources if any)
+      // Get RR sources for autopilot: autopilot-targeted entries from any active
+      // feat, plus untargeted (generic) entries from drone-level (non-weapon) feats
       const rrSources: Array<{featName: string, rrValue: number, rrType?: string, rrTarget?: string}> = [];
-      
+      const vehicleActiveFeats = vehicleActor.items.filter((item: any) =>
+        item.type === 'feat' && item.system.active === true
+      );
+      vehicleActiveFeats.forEach((feat: any) => {
+        const featRRList = feat.system.rrList || [];
+        const isDroneLevelFeat = feat.system.featType !== 'weapon';
+        featRRList.forEach((rrEntry: any) => {
+          const rrTarget = rrEntry.rrTarget || '';
+          const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
+          const genericApplies = !rrTarget && isDroneLevelFeat;
+          if ((targetsAutopilot || genericApplies) && (rrEntry.rrValue || 0) > 0) {
+            rrSources.push({ featName: feat.name, rrValue: rrEntry.rrValue || 0 });
+          }
+        });
+      });
+
       DiceRoller.handleRollRequest({
         itemType: 'attribute',
         itemName: `${autopilotLabel} (${vehicleName})`,
@@ -2490,6 +2506,23 @@ export class CharacterSheet extends ActorSheet {
         ...rrEntry,
         featName: weapon.name
       }));
+
+      // Drone-level (non-weapon) feats: their untargeted (generic) RR entries
+      // apply to rolls made through the drone, so include them in the owner's
+      // roll. Targeted entries flow through getRRSources (linked vehicles scan).
+      const droneFeats = vehicleActor.items.filter((item: any) =>
+        item.type === 'feat' && item.system.active === true && (item.system as any).featType !== 'weapon'
+      );
+      droneFeats.forEach((feat: any) => {
+        ((feat.system as any).rrList || []).forEach((rrEntry: any) => {
+          if (!(rrEntry.rrTarget || '') && (rrEntry.rrValue || 0) > 0) {
+            itemRRList.push({
+              ...rrEntry,
+              featName: `${feat.name} (${vehicleActor.name})`
+            });
+          }
+        });
+      });
       
       // For vehicle/drone weapons controlled by owner, use engineering slug
       const finalAttackSkill = SKILL_SLUGS.ENGINEERING;

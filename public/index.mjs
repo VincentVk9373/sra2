@@ -3183,6 +3183,45 @@ async function handleVehicleActorDrop(event, actor) {
   }
   return false;
 }
+function getLinkedVehicleActors(actor) {
+  const linkedVehicleUuids = actor?.system?.linkedVehicles || [];
+  if (!Array.isArray(linkedVehicleUuids) || linkedVehicleUuids.length === 0) return [];
+  const vehicles = [];
+  for (const vehicleUuid of linkedVehicleUuids) {
+    try {
+      let vehicleActor = null;
+      if (typeof foundry !== "undefined" && foundry.utils?.fromUuidSync) {
+        try {
+          vehicleActor = foundry.utils.fromUuidSync(vehicleUuid);
+        } catch (_e) {
+        }
+      }
+      if (!vehicleActor && typeof game !== "undefined" && game.actors) {
+        vehicleActor = game.actors.find((a) => a.uuid === vehicleUuid);
+        if (!vehicleActor) {
+          const parts = vehicleUuid.split(".");
+          if (parts.length >= 2) vehicleActor = game.actors.get(parts[parts.length - 1]);
+        }
+      }
+      if (vehicleActor?.type === "vehicle") vehicles.push(vehicleActor);
+    } catch (error) {
+      console.warn(`SRA2 | Failed to resolve linked vehicle ${vehicleUuid}:`, error);
+    }
+  }
+  return vehicles;
+}
+function getLinkedVehicleActiveFeats(actor) {
+  const entries = [];
+  for (const vehicle of getLinkedVehicleActors(actor)) {
+    const vehicleFeats = vehicle.items?.filter?.(
+      (item) => item.type === "feat" && item.system.active === true
+    ) || [];
+    for (const feat2 of vehicleFeats) {
+      entries.push({ feat: feat2, label: `${feat2.name} (${vehicle.name})` });
+    }
+  }
+  return entries;
+}
 function getRRSources$1(actor, itemType, itemName) {
   const sources = [];
   const feats = actor.items.filter(
@@ -3197,7 +3236,11 @@ function getRRSources$1(actor, itemType, itemName) {
     const specItem = actor.items.find((i) => i.type === "specialization" && normalizeSearchText(i.name) === normalizedItemName);
     itemSlug = specItem?.system?.slug || "";
   }
-  for (const feat2 of feats) {
+  const featEntries = feats.map((feat2) => ({ feat: feat2 }));
+  for (const vehicleEntry of getLinkedVehicleActiveFeats(actor)) {
+    featEntries.push({ feat: vehicleEntry.feat, label: vehicleEntry.label });
+  }
+  for (const { feat: feat2, label } of featEntries) {
     const featSystem = feat2.system;
     const rrList = featSystem.rrList || [];
     for (const rrEntry of rrList) {
@@ -3211,9 +3254,12 @@ function getRRSources$1(actor, itemType, itemName) {
       const matchByDirectSlug = !itemSlug && rrTarget === itemName;
       if (matchByName || matchBySlug || matchByDirectSlug) {
         sources.push({
-          featName: feat2.name,
+          featName: label || feat2.name,
           rrValue,
-          rrLabel: rrEntry.rrLabel || void 0
+          rrLabel: rrEntry.rrLabel || void 0,
+          // Raw feat name, used to exclude the rolled item's own entries
+          // from double counting even when the display name is suffixed
+          sourceFeatName: feat2.name
         });
       }
     }
@@ -3240,7 +3286,11 @@ function getPhantomRRs(actor) {
   const feats = actor.items.filter(
     (item) => item.type === "feat" && item.system.active === true
   );
-  for (const feat2 of feats) {
+  const featEntries = feats.map((feat2) => ({ feat: feat2 }));
+  for (const vehicleEntry of getLinkedVehicleActiveFeats(actor)) {
+    featEntries.push({ feat: vehicleEntry.feat, label: vehicleEntry.label });
+  }
+  for (const { feat: feat2, label } of featEntries) {
     const featSystem = feat2.system;
     const rrList = featSystem.rrList || [];
     for (const rrEntry of rrList) {
@@ -3268,7 +3318,7 @@ function getPhantomRRs(actor) {
         }
         const phantom = phantomRRs.find((p) => p.type === "skill" && (p.name === rrTarget || normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
-          phantom.sources.push({ featName: feat2.name, rrValue });
+          phantom.sources.push({ featName: label || feat2.name, rrValue });
         }
       } else if (rrType === "specialization" && !isExistingSpec) {
         if (!seenTargets.has(targetKey)) {
@@ -3286,7 +3336,7 @@ function getPhantomRRs(actor) {
         }
         const phantom = phantomRRs.find((p) => p.type === "specialization" && (p.name === rrTarget || normalizeSearchText(p.name) === normalizedTarget));
         if (phantom) {
-          phantom.sources.push({ featName: feat2.name, rrValue });
+          phantom.sources.push({ featName: label || feat2.name, rrValue });
         }
       }
     }
@@ -3910,7 +3960,7 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
     );
     if (specExists) {
       specRRSources = getRRSources$1(actor, "specialization", skillSpecResult.specName).filter((source) => {
-        return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
+        return normalizedItemName === "" || normalizeSearchText(source.sourceFeatName || source.featName) !== normalizedItemName;
       });
     }
   }
@@ -3920,13 +3970,13 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
     );
     if (skillExists) {
       skillRRSources = getRRSources$1(actor, "skill", skillSpecResult.skillName).filter((source) => {
-        return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
+        return normalizedItemName === "" || normalizeSearchText(source.sourceFeatName || source.featName) !== normalizedItemName;
       });
     }
   }
   if (skillSpecResult.linkedAttribute) {
     attributeRRSources = getRRSources$1(actor, "attribute", skillSpecResult.linkedAttribute).filter((source) => {
-      return normalizedItemName === "" || normalizeSearchText(source.featName) !== normalizedItemName;
+      return normalizedItemName === "" || normalizeSearchText(source.sourceFeatName || source.featName) !== normalizedItemName;
     });
   }
   const findSlugByName = (type, name) => {
@@ -3945,7 +3995,7 @@ function calculateAttackPool(actor, skillSpecResult, itemRRList = [], itemName =
     skillSpecResult.linkedAttribute
   ]);
   const itemRRSources = applicableItemRRList.map((rrEntry) => ({
-    featName: itemName,
+    featName: rrEntry.featName || itemName,
     rrValue: rrEntry.rrValue || 0,
     rrLabel: rrEntry.rrLabel || void 0
   }));
@@ -4206,6 +4256,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   getDamagePathFromInputName,
   getDefaultAttributeForSkill,
   getLinkedAttribute,
+  getLinkedVehicleActors,
   getPhantomRRs,
   getRRSources: getRRSources$1,
   getSpecializationsForSkill,
@@ -4569,7 +4620,7 @@ class RollDialog extends Application {
         skillSpecRRList = [...skillRRSources, ...attributeRRSources];
       }
     }
-    skillSpecRRList = skillSpecRRList.filter((source) => source.featName !== selectedWeapon.name);
+    skillSpecRRList = skillSpecRRList.filter((source) => (source.sourceFeatName || source.featName) !== selectedWeapon.name);
     rrList = [...itemRRList, ...skillSpecRRList];
     const meleeRange = selectedWeapon.meleeRange || weaponSystem?.meleeRange || wepTypeData?.melee || "none";
     const shortRange = selectedWeapon.shortRange || weaponSystem?.shortRange || wepTypeData?.short || "none";
@@ -6629,8 +6680,13 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
   const rrList = [];
   activeFeats.forEach((feat2) => {
     const featRRList = feat2.system.rrList || [];
+    const isOwnWeapon = (feat2.id || feat2._id) === (weapon.id || weapon._id);
+    const isDroneLevelFeat = feat2.system.featType !== "weapon";
     featRRList.forEach((rrEntry) => {
-      if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
+      const rrTarget = rrEntry.rrTarget || "";
+      const targetsAutopilot = rrEntry.rrType === "attribute" && rrTarget === "autopilot";
+      const genericApplies = !rrTarget && (isOwnWeapon || isDroneLevelFeat);
+      if (targetsAutopilot || genericApplies) {
         rrList.push({
           featName: feat2.name,
           rrValue: rrEntry.rrValue || 0
@@ -6638,15 +6694,21 @@ function prepareVehicleWeaponAttack(vehicleActor, weapon) {
       }
     });
   });
-  const weaponRRList = weaponSystem.rrList || [];
-  weaponRRList.forEach((rrEntry) => {
-    if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
-      rrList.push({
-        featName: weapon.name,
-        rrValue: rrEntry.rrValue || 0
-      });
-    }
-  });
+  const weaponAlreadyScanned = activeFeats.some(
+    (feat2) => (feat2.id || feat2._id) === (weapon.id || weapon._id)
+  );
+  if (!weaponAlreadyScanned) {
+    const weaponRRList = weaponSystem.rrList || [];
+    weaponRRList.forEach((rrEntry) => {
+      const rrTarget = rrEntry.rrTarget || "";
+      if (rrEntry.rrType === "attribute" && rrTarget === "autopilot" || !rrTarget) {
+        rrList.push({
+          featName: weapon.name,
+          rrValue: rrEntry.rrValue || 0
+        });
+      }
+    });
+  }
   const baseDamageValue = parseInt(weaponSystem.damageValue || "0") || 0;
   let damageValueBonus = parseInt(weaponSystem.damageValueBonus || "0") || 0;
   const weaponType = weaponSystem.weaponType || "";
@@ -8855,6 +8917,21 @@ class CharacterSheet extends ActorSheet {
       const vehicleName = vehicleActor.name || "Vehicle";
       const autopilotLabel = game.i18n.localize("SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT");
       const rrSources = [];
+      const vehicleActiveFeats = vehicleActor.items.filter(
+        (item) => item.type === "feat" && item.system.active === true
+      );
+      vehicleActiveFeats.forEach((feat2) => {
+        const featRRList = feat2.system.rrList || [];
+        const isDroneLevelFeat = feat2.system.featType !== "weapon";
+        featRRList.forEach((rrEntry) => {
+          const rrTarget = rrEntry.rrTarget || "";
+          const targetsAutopilot = rrEntry.rrType === "attribute" && rrTarget === "autopilot";
+          const genericApplies = !rrTarget && isDroneLevelFeat;
+          if ((targetsAutopilot || genericApplies) && (rrEntry.rrValue || 0) > 0) {
+            rrSources.push({ featName: feat2.name, rrValue: rrEntry.rrValue || 0 });
+          }
+        });
+      });
       handleRollRequest({
         itemType: "attribute",
         itemName: `${autopilotLabel} (${vehicleName})`,
@@ -8893,6 +8970,19 @@ class CharacterSheet extends ActorSheet {
         ...rrEntry,
         featName: weapon.name
       }));
+      const droneFeats = vehicleActor.items.filter(
+        (item) => item.type === "feat" && item.system.active === true && item.system.featType !== "weapon"
+      );
+      droneFeats.forEach((feat2) => {
+        (feat2.system.rrList || []).forEach((rrEntry) => {
+          if (!(rrEntry.rrTarget || "") && (rrEntry.rrValue || 0) > 0) {
+            itemRRList.push({
+              ...rrEntry,
+              featName: `${feat2.name} (${vehicleActor.name})`
+            });
+          }
+        });
+      });
       const finalAttackSkill = SKILL_SLUGS.ENGINEERING;
       const finalAttackSpec = "spec_remote-controlled-weapons";
       const finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
@@ -10066,8 +10156,13 @@ class VehicleSheet extends ActorSheet {
       let totalRR = 0;
       activeFeats.forEach((feat2) => {
         const rrList = feat2.system.rrList || [];
+        const isOwnWeapon = (feat2.id || feat2._id) === (item.id || item._id);
+        const isDroneLevelFeat = feat2.system.featType !== "weapon";
         rrList.forEach((rrEntry) => {
-          if (rrEntry.rrType === "attribute" && rrEntry.rrTarget === "autopilot") {
+          const rrTarget = rrEntry.rrTarget || "";
+          const targetsAutopilot = rrEntry.rrType === "attribute" && rrTarget === "autopilot";
+          const genericApplies = !rrTarget && (isOwnWeapon || isDroneLevelFeat);
+          if (targetsAutopilot || genericApplies) {
             totalRR += rrEntry.rrValue || 0;
           }
         });
@@ -10084,6 +10179,28 @@ class VehicleSheet extends ActorSheet {
     );
     const weapons = rawWeapons.map((weapon) => calculateWeaponStats(weapon));
     context.weapons = weapons;
+    const slugCache = globalThis.SRA2_SKILL_SLUG_CACHE || {};
+    context.otherFeats = allFeats.filter((feat2) => feat2.system.featType !== "weapon").map((feat2) => {
+      const rrEntries = (feat2.system.rrList || []).filter((rrEntry) => (rrEntry.rrValue || 0) > 0).map((rrEntry) => {
+        const rrTarget = rrEntry.rrTarget || "";
+        let targetLabel;
+        if (!rrTarget) {
+          targetLabel = game.i18n?.localize("SRA2.VEHICLE.RR_GENERIC") || "";
+        } else if (rrEntry.rrType === "attribute") {
+          targetLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`) || rrTarget;
+        } else {
+          targetLabel = slugCache[rrTarget] || rrTarget;
+        }
+        return { rrValue: rrEntry.rrValue, rrLabel: rrEntry.rrLabel || "", targetLabel };
+      });
+      return {
+        _id: feat2.id || feat2._id,
+        name: feat2.name,
+        img: feat2.img,
+        system: feat2.system,
+        rrEntries
+      };
+    });
     return context;
   }
   activateListeners(html) {
@@ -10140,6 +10257,20 @@ class VehicleSheet extends ActorSheet {
       const activeNavItem = el.querySelector(".section-nav .nav-item.active");
       this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
       this._showItemBrowser("feat", true);
+    }));
+    el.querySelectorAll(".add-world-feat-button").forEach((elem) => elem.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const activeNavItem = el.querySelector(".section-nav .nav-item.active");
+      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
+      this._showItemBrowser("feat", false);
+    }));
+    el.querySelectorAll(".vehicle-feat-active").forEach((elem) => elem.addEventListener("change", async (event) => {
+      const target = event.currentTarget;
+      const itemId = target.dataset.itemId || "";
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        await item.update({ "system.active": target.checked });
+      }
     }));
     el.querySelectorAll(".weapon-dice-pool").forEach((elem) => elem.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -10471,14 +10602,11 @@ class VehicleSheet extends ActorSheet {
     if (data.type === "Item") {
       const item = await Item.fromDropData(data);
       if (item && item.type === "feat") {
-        const featType = item.system.featType;
-        if (featType === "weapon") {
-          await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
-          return false;
-        } else {
-          ui.notifications?.warn(game.i18n.localize("SRA2.VEHICLE.ONLY_WEAPONS_ALLOWED"));
-          return false;
-        }
+        await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+        return false;
+      } else if (item) {
+        ui.notifications?.warn(game.i18n.localize("SRA2.VEHICLE.ONLY_FEATS_ALLOWED"));
+        return false;
       }
     }
     return super._onDrop(event);

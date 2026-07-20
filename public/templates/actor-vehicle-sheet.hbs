@@ -309,6 +309,10 @@
               title="{{localize 'SRA2.VEHICLE.ADD_WEAPON'}}">
               <i class="fas fa-search"></i> {{localize "SRA2.VEHICLE.ADD_WEAPON"}}
             </button>
+            <button type="button" class="add-world-feat-button" data-action="add-world-feat"
+              title="{{localize 'SRA2.VEHICLE.ADD_FEAT'}}">
+              <i class="fas fa-search"></i> {{localize "SRA2.VEHICLE.ADD_FEAT"}}
+            </button>
           </div>
 
           {{#if weapons}}
@@ -359,6 +363,54 @@
           {{else}}
           <div class="empty-skills">
             <p>{{localize "SRA2.FEATS.DRAG_DROP"}}</p>
+          </div>
+          {{/if}}
+
+          <!-- Drone feats (mods/traits carrying RR) -->
+          <h3 class="vehicle-feats-title"><i class="fas fa-star"></i> {{localize "SRA2.VEHICLE.SECTION.FEATS"}}</h3>
+          {{#if otherFeats}}
+          <div class="weapons-section vehicle-feats-section">
+            <div class="weapons-list">
+              <div class="skills-header">
+                <div class="skill-header-name">{{localize "SRA2.FEATS.NAME"}}</div>
+                <div class="skill-header-rr">{{localize "SRA2.VEHICLE.RR"}}</div>
+                <div class="skill-header-actions"></div>
+              </div>
+              {{#each otherFeats}}
+              <div class="weapon-item npc-skill-item vehicle-feat-item" data-item-id="{{this._id}}">
+                <div class="weapon-name">
+                  <img class="weapon-img" src="{{this.img}}" alt="{{this.name}}" />
+                  <span>{{this.name}}</span>
+                </div>
+                <div class="skill-rr vehicle-feat-rr">
+                  {{#each this.rrEntries}}
+                  <span class="rr-value" title="{{#if this.rrLabel}}{{this.rrLabel}}{{else}}{{this.targetLabel}}{{/if}}">
+                    RR{{this.rrValue}} — {{this.targetLabel}}
+                  </span>
+                  {{/each}}
+                </div>
+                <div class="skill-controls">
+                  <label class="vehicle-feat-active-toggle" title="{{localize 'SRA2.FEATS.ACTIVE'}}">
+                    <input type="checkbox" class="vehicle-feat-active" data-item-id="{{this._id}}"
+                      {{#if this.system.active}}checked{{/if}} />
+                  </label>
+                  <a class="feat-edit" data-action="edit-feat" data-item-id="{{this._id}}"
+                    title="{{localize 'SRA2.FEATS.EDIT'}}">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a class="feat-delete" data-action="delete-feat" data-item-id="{{this._id}}"
+                    title="{{localize 'SRA2.FEATS.DELETE'}}">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+          <p class="hint vehicle-feats-hint">{{localize "SRA2.VEHICLE.FEATS_HINT"}}</p>
+          {{else}}
+          <div class="empty-skills">
+            <p>{{localize "SRA2.VEHICLE.FEATS_HINT"}}</p>
           </div>
           {{/if}}
         </section>

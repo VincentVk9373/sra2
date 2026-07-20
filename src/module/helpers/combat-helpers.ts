@@ -352,12 +352,19 @@ export function prepareVehicleWeaponAttack(
     item.type === 'feat' && item.system.active === true
   );
   
-  // Calculate RR from active feats (only autopilot attribute RR applies)
+  // Calculate RR from active feats: autopilot-targeted entries always apply;
+  // untargeted (generic) entries apply from drone-level feats and from the
+  // rolled weapon itself, but another weapon's generic RR does not carry over
   const rrList: Array<{ featName: string; rrValue: number }> = [];
   activeFeats.forEach((feat: any) => {
     const featRRList = feat.system.rrList || [];
+    const isOwnWeapon = (feat.id || feat._id) === (weapon.id || weapon._id);
+    const isDroneLevelFeat = feat.system.featType !== 'weapon';
     featRRList.forEach((rrEntry: any) => {
-      if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === 'autopilot') {
+      const rrTarget = rrEntry.rrTarget || '';
+      const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
+      const genericApplies = !rrTarget && (isOwnWeapon || isDroneLevelFeat);
+      if (targetsAutopilot || genericApplies) {
         rrList.push({
           featName: feat.name,
           rrValue: rrEntry.rrValue || 0
@@ -366,16 +373,23 @@ export function prepareVehicleWeaponAttack(
     });
   });
   
-  // Also check weapon's own RR list and enrich with featName
-  const weaponRRList = weaponSystem.rrList || [];
-  weaponRRList.forEach((rrEntry: any) => {
-    if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === 'autopilot') {
-      rrList.push({
-        featName: weapon.name,
-        rrValue: rrEntry.rrValue || 0
-      });
-    }
-  });
+  // Also check weapon's own RR list (only when the weapon was not already
+  // scanned as an active feat above, to avoid double counting)
+  const weaponAlreadyScanned = activeFeats.some((feat: any) =>
+    (feat.id || feat._id) === (weapon.id || weapon._id)
+  );
+  if (!weaponAlreadyScanned) {
+    const weaponRRList = weaponSystem.rrList || [];
+    weaponRRList.forEach((rrEntry: any) => {
+      const rrTarget = rrEntry.rrTarget || '';
+      if ((rrEntry.rrType === 'attribute' && rrTarget === 'autopilot') || !rrTarget) {
+        rrList.push({
+          featName: weapon.name,
+          rrValue: rrEntry.rrValue || 0
+        });
+      }
+    });
+  }
   
   // Calculate final damage value (base + bonus) - same logic as character-sheet.ts
   const baseDamageValue = parseInt(weaponSystem.damageValue || '0') || 0;

@@ -161,11 +161,18 @@ export class VehicleSheet extends ActorSheet {
       let totalDicePool = autopilot; // Base dice pool from autopilot
       let totalRR = 0;
       
-      // Calculate RR from active feats
+      // Calculate RR from active feats: autopilot-targeted entries always apply;
+      // untargeted (generic) entries apply from drone-level feats and from the
+      // rolled weapon itself, but another weapon's generic RR does not carry over
       activeFeats.forEach((feat: any) => {
         const rrList = feat.system.rrList || [];
+        const isOwnWeapon = (feat.id || feat._id) === (item.id || item._id);
+        const isDroneLevelFeat = feat.system.featType !== 'weapon';
         rrList.forEach((rrEntry: any) => {
-          if (rrEntry.rrType === 'attribute' && rrEntry.rrTarget === 'autopilot') {
+          const rrTarget = rrEntry.rrTarget || '';
+          const targetsAutopilot = rrEntry.rrType === 'attribute' && rrTarget === 'autopilot';
+          const genericApplies = !rrTarget && (isOwnWeapon || isDroneLevelFeat);
+          if (targetsAutopilot || genericApplies) {
             totalRR += rrEntry.rrValue || 0;
           }
         });
@@ -182,13 +189,42 @@ export class VehicleSheet extends ActorSheet {
       return itemData;
     };
     
-    // Filter and process weapons (only weapons allowed for vehicles)
-    const rawWeapons = allFeats.filter((feat: any) => 
+    // Filter and process weapons
+    const rawWeapons = allFeats.filter((feat: any) =>
       feat.system.featType === 'weapon'
     );
     const weapons = rawWeapons.map((weapon: any) => calculateWeaponStats(weapon));
-    
+
     context.weapons = weapons;
+
+    // Non-weapon feats (drone mods/traits carrying RR): targeted RR entries
+    // benefit the owner's rolls, untargeted entries apply to the drone's rolls
+    const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
+    context.otherFeats = allFeats
+      .filter((feat: any) => feat.system.featType !== 'weapon')
+      .map((feat: any) => {
+        const rrEntries = ((feat.system.rrList || []) as any[])
+          .filter((rrEntry: any) => (rrEntry.rrValue || 0) > 0)
+          .map((rrEntry: any) => {
+            const rrTarget = rrEntry.rrTarget || '';
+            let targetLabel: string;
+            if (!rrTarget) {
+              targetLabel = game.i18n?.localize('SRA2.VEHICLE.RR_GENERIC') || '';
+            } else if (rrEntry.rrType === 'attribute') {
+              targetLabel = game.i18n?.localize(`SRA2.ATTRIBUTES.${rrTarget.toUpperCase()}`) || rrTarget;
+            } else {
+              targetLabel = slugCache[rrTarget] || rrTarget;
+            }
+            return { rrValue: rrEntry.rrValue, rrLabel: rrEntry.rrLabel || '', targetLabel };
+          });
+        return {
+          _id: feat.id || feat._id,
+          name: feat.name,
+          img: feat.img,
+          system: feat.system,
+          rrEntries
+        };
+      });
 
     return context;
   }
@@ -263,6 +299,24 @@ export class VehicleSheet extends ActorSheet {
       const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
       this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
       this._showItemBrowser('feat', true); // true = weapons only
+    }));
+
+    // Add world feat (drone mods/traits, e.g. RR carriers)
+    el.querySelectorAll<HTMLElement>('.add-world-feat-button').forEach(elem => elem.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const activeNavItem = el.querySelector('.section-nav .nav-item.active') as HTMLElement | null;
+      this._activeSection = activeNavItem ? activeNavItem.dataset.section || null : null;
+      this._showItemBrowser('feat', false);
+    }));
+
+    // Toggle a drone feat's active state
+    el.querySelectorAll<HTMLInputElement>('.vehicle-feat-active').forEach(elem => elem.addEventListener('change', async (event) => {
+      const target = event.currentTarget as HTMLInputElement;
+      const itemId = target.dataset.itemId || '';
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        await (item as any).update({ 'system.active': target.checked });
+      }
     }));
 
     // Roll weapon dice (using autopilot)
@@ -713,21 +767,18 @@ export class VehicleSheet extends ActorSheet {
       return super._onDrop(event);
     }
     
-    // Only allow weapons (feats of type weapon)
+    // Only allow feats (weapons and drone-level feats carrying RR)
     if (data.type === 'Item') {
       const item = await Item.fromDropData(data);
       if (item && item.type === 'feat') {
-        const featType = (item.system as any).featType;
-        if (featType === 'weapon') {
-          // Create the item on the actor
-          // The sheet will auto-render, and activateListeners will restore the section
-          await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
-          
-          return false; // Prevent default behavior
-        } else {
-          ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_WEAPONS_ALLOWED'));
-          return false; // Prevent default behavior
-        }
+        // Create the item on the actor
+        // The sheet will auto-render, and activateListeners will restore the section
+        await this.actor.createEmbeddedDocuments('Item', [(item as any).toObject()]);
+
+        return false; // Prevent default behavior
+      } else if (item) {
+        ui.notifications?.warn(game.i18n!.localize('SRA2.VEHICLE.ONLY_FEATS_ALLOWED'));
+        return false; // Prevent default behavior
       }
     }
     

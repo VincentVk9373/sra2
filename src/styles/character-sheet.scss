@@ -2759,8 +2759,11 @@
 
       .weapons-controls {
         margin-bottom: 1rem;
+        display: flex;
+        gap: 0.5rem;
 
-        .add-world-weapon-button {
+        .add-world-weapon-button,
+        .add-world-feat-button {
           padding: 0.75rem 1rem;
           background: linear-gradient(135deg, var(--sr-ui-color-active) 0%, #4dd0e1 100%);
           color: #fff;
@@ -2786,6 +2789,51 @@
 
           &:active {
             transform: translateY(0);
+          }
+        }
+      }
+
+      /* Drone feats (mods/traits carrying RR) */
+      .vehicle-feats-title {
+        margin: 1.25rem 0 0.25rem;
+        color: var(--sr-text-color-light);
+
+        i {
+          color: var(--sr-ui-color-active);
+        }
+      }
+
+      .vehicle-feats-hint {
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+
+      .vehicle-feats-section {
+        .weapons-list {
+
+          .skills-header,
+          .weapon-item {
+            grid-template-columns: 1fr minmax(180px, 280px) 110px;
+          }
+
+          .vehicle-feat-rr {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+
+            .rr-value {
+              font-size: 0.8rem;
+              white-space: nowrap;
+            }
+          }
+
+          .skill-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
           }
         }
       }
