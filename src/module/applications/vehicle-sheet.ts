@@ -615,6 +615,11 @@ export class VehicleSheet extends ActorSheet {
         SheetHelpers.restoreActiveSection(form, activeSection);
       }
     }));
+
+    // Section tabs are <button>: FormApplication#_disableFields disables them on
+    // a non-editable sheet, which would leave navigation dead. They only switch
+    // the visible section, so restore them.
+    SheetHelpers.enableSectionNavigation(html);
   }
 
   /**

@@ -1,3 +1,4 @@
+import * as SheetHelpers from '../helpers/sheet-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import * as ItemSearch from '../../../item-search.js';
 import { DELAYS } from '../config/constants.js';
@@ -238,6 +239,11 @@ export class FeatSheet extends ItemSheet {
         }
       });
     }, { signal });
+
+    // Section tabs are <button>: FormApplication#_disableFields disables them on
+    // a non-editable sheet (an item in a locked compendium), which would leave
+    // navigation dead. They only switch the visible section, so restore them.
+    SheetHelpers.enableSectionNavigation(html);
   }
   
   /**
