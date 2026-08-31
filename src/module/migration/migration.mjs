@@ -10,14 +10,14 @@ export class Migration {
   async migrate() { return () => { } };
 
   async applyItemsUpdates(computeUpdates = (items) => []) {
-    await game.actors.forEach(async (actor) => {
+    for (const actor of game.actors) {
       const actorItemUpdates = computeUpdates(actor.items);
       if (actorItemUpdates.length > 0) {
         const message = game.i18n.format('SRA2.MIGRATION.APPLYING_ACTOR_ITEMS', { name: actor.name });
         console.log(SYSTEM.LOG.HEAD, this.code, message, actorItemUpdates);
         await actor.updateEmbeddedDocuments('Item', actorItemUpdates);
       }
-    })
+    }
 
     const itemUpdates = computeUpdates(game.items);
     if (itemUpdates.length > 0) {
@@ -43,7 +43,7 @@ export class Migrations {
     })
   }
 
-  migrate() {
+  async migrate() {
     const currentVersion = game.settings.get(SYSTEM.id, CURRENT_SYSTEM_VERSION)
     if (foundry.utils.isNewerVersion(game.system.version, currentVersion)) {
       //if (true) {
@@ -55,11 +55,11 @@ export class Migrations {
 
       if (migrations.length > 0) {
         migrations.sort((a, b) => foundry.utils.isNewerVersion(a.version, b.version) ? 1 : foundry.utils.isNewerVersion(b.version, a.version) ? -1 : 0)
-        migrations.forEach(async m => {
+        for (const m of migrations) {
           const message = game.i18n.format('SRA2.MIGRATION.EXECUTING', { code: m.code, currentVersion: currentVersion, targetVersion: m.version });
           this.$notify(message);
           await m.migrate()
-        })
+        }
         const message = game.i18n.format('SRA2.MIGRATION.DONE', { version: game.system.version });
         this.$notify(message)
       }
