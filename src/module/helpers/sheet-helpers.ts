@@ -1217,6 +1217,36 @@ export function getCurrentActiveSection(html: JQuery | HTMLElement): string | nu
   return activeNavItem ? (activeNavItem.dataset.section || null) : null;
 }
 
+/**
+ * Re-enable the section-navigation buttons of a non-editable sheet.
+ *
+ * When a sheet is not editable — an item opened from a locked compendium being
+ * the common case — `FormApplication#_disableFields` runs from
+ * `super.activateListeners()` and sets `disabled` on every descendant
+ * `input`, `select`, `textarea` **and `button`**.
+ *
+ * The section tabs are `<button class="nav-item">` elements, so they are
+ * disabled along with the genuine form controls: the sheet opens stuck on its
+ * first section and the tabs do not respond, with nothing logged to explain it.
+ *
+ * These buttons only toggle which section is visible; they never mutate the
+ * document, so re-enabling them restores navigation while leaving the sheet
+ * exactly as read-only as before.
+ *
+ * Must be called *after* `super.activateListeners()`, which is what disables
+ * them.
+ *
+ * @param html - The sheet's root element.
+ */
+export function enableSectionNavigation(html: JQuery | HTMLElement): void {
+  const el = html instanceof HTMLElement ? html : html[0] as HTMLElement;
+  if (!el) return;
+  el.querySelectorAll<HTMLButtonElement>('.section-nav .nav-item[disabled]')
+    .forEach(button => {
+      button.disabled = false;
+    });
+}
+
 // ============================================================================
 // FEAT ENRICHMENT
 // ============================================================================
