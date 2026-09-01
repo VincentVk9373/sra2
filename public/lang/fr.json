@@ -1207,7 +1207,8 @@
             "EDIT": "Éditer",
             "DELETE": "Supprimer",
             "LEVEL": "Niveau :",
-            "ADVANCED_MODE": "Mode Avancé"
+            "ADVANCED_MODE": "Mode Avancé",
+            "NPC_MODE": "Mode PNJ (seuil de réussite au lieu du jet de dés)"
         },
         "RR": {
             "PHANTOM_TOOLTIP": "RR disponible sans compétence - jet sur attribut",

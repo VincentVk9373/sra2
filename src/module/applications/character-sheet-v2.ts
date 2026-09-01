@@ -43,6 +43,9 @@ export class CharacterSheetV2 extends CharacterSheet {
     // Add advanced mode flag to context
     context.advancedMode = this._advancedMode;
 
+    // Add NPC mode flag to context (persisted per-actor via flag)
+    context.npcMode = (this.actor as any).getFlag('sra2', 'npcMode') ?? false;
+
     // Check if Gemini portrait generation is available
     try {
       const { isGeminiConfigured } = await import('../helpers/gemini-image.js');
@@ -148,6 +151,11 @@ export class CharacterSheetV2 extends CharacterSheet {
       elem.addEventListener('click', this._onToggleAdvancedMode.bind(this));
     });
 
+    // Handle toggle NPC mode (success threshold instead of dice roll)
+    el.querySelectorAll<HTMLElement>('[data-action="toggle-npc-mode"]').forEach(elem => {
+      elem.addEventListener('click', this._onToggleNpcMode.bind(this));
+    });
+
     // Handle skill rating changes in advanced mode
     el.querySelectorAll<HTMLElement>('.skill-rating-input').forEach(elem => {
       elem.addEventListener('change', this._onUpdateSkillRating.bind(this));
@@ -232,6 +240,18 @@ export class CharacterSheetV2 extends CharacterSheet {
   private _onToggleAdvancedMode(event: Event): void {
     event.preventDefault();
     this._advancedMode = !this._advancedMode;
+    this.render(false);
+  }
+
+  /**
+   * Toggle "NPC mode": when active, rolls made from this sheet use the
+   * NPC success threshold (dicePool / 3 + 1 + RR) instead of rolling dice.
+   * Persisted on the actor via a flag so it survives reopening the sheet.
+   */
+  private async _onToggleNpcMode(event: Event): Promise<void> {
+    event.preventDefault();
+    const current = (this.actor as any).getFlag('sra2', 'npcMode') ?? false;
+    await (this.actor as any).setFlag('sra2', 'npcMode', !current);
     this.render(false);
   }
 
