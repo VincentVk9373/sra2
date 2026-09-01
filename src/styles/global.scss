@@ -1229,6 +1229,68 @@ select {
         }
     }
 
+    .reroll-button {
+        margin-top: 0.4rem;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        min-height: 2.5rem;
+        background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%);
+        border: 2px solid #e65100;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(255, 167, 38, 0.4);
+
+        i {
+            font-size: 1.1rem;
+        }
+
+        &:hover {
+            background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
+            border-color: #e65100;
+            box-shadow: 0 4px 12px rgba(255, 167, 38, 0.6);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(255, 167, 38, 0.4);
+        }
+    }
+
+    .reroll-button:disabled,
+    .apply-damage-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: grayscale(60%);
+
+        &:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    }
+
+    .rerolled-banner {
+        margin: 0.4rem 0;
+        padding: 0.4rem 0.6rem;
+        background: rgba(120, 120, 120, 0.2);
+        border: 1px solid rgba(120, 120, 120, 0.5);
+        border-radius: 4px;
+        color: #cfcfcf;
+        font-size: 0.85rem;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
     .apply-cyberdeck-malus-button {
         margin-top: 0.4rem;
         width: 100%;
