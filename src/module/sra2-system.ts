@@ -850,6 +850,14 @@ export class SRA2System {
       return JSON.stringify(context);
     });
 
+    // Minimal {uuid, tokenUuid} refs for every target of a roll, used by the
+    // reroll button to rebuild the full defenders list (multi-target attacks).
+    // Deliberately excludes names/images: those can contain characters
+    // (quotes, apostrophes) that would break the single-quoted HTML attribute.
+    Handlebars.registerHelper('defenderRefs', function (defenders: any[]) {
+      return JSON.stringify((defenders || []).map((d: any) => ({ uuid: d?.uuid, tokenUuid: d?.tokenUuid })));
+    });
+
     Handlebars.registerHelper('controlModeLabel', function (value: string) {
       const key = `SRA2.VEHICLE.CONTROL_MODE.${(value || 'autonomous').toUpperCase()}`;
       return game.i18n?.localize(key) || value;
@@ -999,6 +1007,25 @@ export class SRA2System {
           } finally {
             setTimeout(() => button.disabled = false, 1000);
           }
+        });
+      });
+
+      // Reroll button handler: replay the exact same roll (same dice pool, risk
+      // dice, advantage/disadvantage mode) and keep the original complication
+      // if there was one.
+      msgEl.querySelectorAll<HTMLElement>('.reroll-button').forEach(origBtn => {
+        const btn = origBtn.cloneNode(true) as HTMLElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
+          event.preventDefault();
+          let defendersRefs: Array<{ uuid?: string; tokenUuid?: string }> | undefined;
+          try {
+            const raw = (event.currentTarget as HTMLElement).dataset.defenders;
+            defendersRefs = raw ? JSON.parse(raw) : undefined;
+          } catch (e) {
+            console.warn('SRA2 | Reroll: could not parse defenders refs', e);
+          }
+          await DiceRoller.executeReroll(message.id, defendersRefs);
         });
       });
 
