@@ -1173,6 +1173,8 @@
             "CANNOT_REROLL": "Ce jet n'a pas lancé de dés (mode PNJ), impossible de le relancer",
             "CANNOT_REROLL_TWICE": "Ce jet est déjà le résultat d'une relance, il ne peut pas être relancé une seconde fois",
             "REROLL_NO_ACTOR": "Impossible de retrouver l'acteur pour relancer ce jet",
+            "SUPERSEDED_BY_REROLL": "Ce résultat a été remplacé par une relance",
+            "REROLLED_BANNER": "Ce jet a été relancé — voir le nouveau résultat ci-dessous",
             "AOE_NONE": "Pas de zone",
             "RISK_REDUCTION": "Réduction de risque",
             "RR": "RR",

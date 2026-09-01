@@ -519,8 +519,15 @@ export async function executeReroll(
   }
 
   // A reroll can only be done once (règle p.77): refuse to reroll a result
-  // that is itself already the product of a reroll.
+  // that is itself already the product of a reroll...
   if (previousResult.isReroll) {
+    ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE'));
+    return;
+  }
+
+  // ...and also refuse to reroll the same original a second time (its
+  // "rerolled" flag was set the first time this ran, see below).
+  if (flags.rerolled) {
     ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE'));
     return;
   }
@@ -557,6 +564,13 @@ export async function executeReroll(
   }
 
   await executeRoll(attacker, defenders, attackerToken, rollData, previousResult.complication);
+
+  // Mark the ORIGINAL message as superseded now that the reroll succeeded:
+  // this both prevents rerolling the same original a second time (a reroll
+  // can only be used once per roll, règle p.77) and stops "Apply Damage"
+  // being clicked on the stale result after a fresher one exists. Applied
+  // last, after executeRoll(), so a failed reroll doesn't lock the original.
+  await message.setFlag('sra2', 'rerolled', true);
 }
 
 /**

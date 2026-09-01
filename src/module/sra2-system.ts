@@ -1029,6 +1029,24 @@ export class SRA2System {
         });
       });
 
+      // A message whose result was superseded by a reroll (règle p.77: one
+      // reroll max) must not be actionable a second time: lock its reroll
+      // and apply-damage buttons so a stale result can't be rerolled again
+      // or have its damage applied after a fresher result already exists.
+      if ((message.flags as any)?.sra2?.rerolled) {
+        msgEl.querySelectorAll<HTMLButtonElement>('.reroll-button, .apply-damage-button').forEach(btn => {
+          btn.disabled = true;
+          btn.title = game.i18n!.localize('SRA2.ROLL_DIALOG.SUPERSEDED_BY_REROLL');
+        });
+        if (!msgEl.querySelector('.rerolled-banner')) {
+          const banner = document.createElement('div');
+          banner.className = 'rerolled-banner';
+          banner.innerHTML = `<i class="fas fa-history"></i> ${game.i18n!.localize('SRA2.ROLL_DIALOG.REROLLED_BANNER')}`;
+          const rollResultsEl = msgEl.querySelector('.roll-results');
+          (rollResultsEl?.parentElement ?? msgEl).insertBefore(banner, rollResultsEl ? rollResultsEl.nextSibling : msgEl.firstChild);
+        }
+      }
+
       // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
       // Use event delegation on msgEl
       msgEl.addEventListener('mouseenter', (event: any) => {

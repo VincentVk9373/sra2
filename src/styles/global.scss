@@ -1265,6 +1265,32 @@ select {
         }
     }
 
+    .reroll-button:disabled,
+    .apply-damage-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: grayscale(60%);
+
+        &:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    }
+
+    .rerolled-banner {
+        margin: 0.4rem 0;
+        padding: 0.4rem 0.6rem;
+        background: rgba(120, 120, 120, 0.2);
+        border: 1px solid rgba(120, 120, 120, 0.5);
+        border-radius: 4px;
+        color: #cfcfcf;
+        font-size: 0.85rem;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
     .apply-cyberdeck-malus-button {
         margin-top: 0.4rem;
         width: 100%;

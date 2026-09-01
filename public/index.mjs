@@ -6102,6 +6102,10 @@ async function executeReroll(messageId, defendersRefs) {
     ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
     return;
   }
+  if (flags.rerolled) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
+    return;
+  }
   if ((previousResult.normalDice?.length ?? 0) === 0 && (previousResult.riskDice?.length ?? 0) === 0) {
     ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL"));
     return;
@@ -6125,6 +6129,7 @@ async function executeReroll(messageId, defendersRefs) {
     if (defender.actor || defender.token) defenders = [defender];
   }
   await executeRoll(attacker, defenders, attackerToken, rollData, previousResult.complication);
+  await message.setFlag("sra2", "rerolled", true);
 }
 function buildDefenderData(defender, defenderToken) {
   if (!defender) return null;
@@ -24060,6 +24065,19 @@ class SRA2System {
           await executeReroll(message.id, defendersRefs);
         });
       });
+      if (message.flags?.sra2?.rerolled) {
+        msgEl.querySelectorAll(".reroll-button, .apply-damage-button").forEach((btn) => {
+          btn.disabled = true;
+          btn.title = game.i18n.localize("SRA2.ROLL_DIALOG.SUPERSEDED_BY_REROLL");
+        });
+        if (!msgEl.querySelector(".rerolled-banner")) {
+          const banner = document.createElement("div");
+          banner.className = "rerolled-banner";
+          banner.innerHTML = `<i class="fas fa-history"></i> ${game.i18n.localize("SRA2.ROLL_DIALOG.REROLLED_BANNER")}`;
+          const rollResultsEl = msgEl.querySelector(".roll-results");
+          (rollResultsEl?.parentElement ?? msgEl).insertBefore(banner, rollResultsEl ? rollResultsEl.nextSibling : msgEl.firstChild);
+        }
+      }
       msgEl.addEventListener("mouseenter", (event) => {
         const target = event.target;
         const btn = target.closest(".defend-button, .counter-attack-button");
