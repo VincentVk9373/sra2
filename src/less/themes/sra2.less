@@ -80,12 +80,23 @@
   @sheet-background: "/systems/sra2/img/interface/sra2/sra2_background_window_dark.webp";
 
 
-  //Apply cation of common theme variables
-  body.sr-theme-sra2.theme-dark {
-    .theme-vars();
-  }
-
-  body.sr-theme-sra2.theme-light {
+  // Application of common theme variables.
+  //
+  // Bound to body.sr-theme-sra2 alone, deliberately without a core theme class.
+  // Foundry clears theme-light/theme-dark from <body> when the client's theme
+  // setting is "Default" and the browser reports no colour-scheme preference,
+  // and these variables have to survive that: styles such as
+  // .sra2-item-sheet's `linear-gradient(..., var(--sr-ui-bg-color-dark), ...)`
+  // resolve to an invalid gradient once the variables are undefined, which —
+  // combined with the global `.window-content { background: none }` — leaves
+  // sheets with no background at all.
+  //
+  // .theme-vars() is theme-agnostic, so the two former rules
+  // (body.sr-theme-sra2.theme-dark and .theme-light) emitted identical
+  // declarations; collapsing them to the shared selector changes nothing in
+  // either theme and only adds the no-theme-class case. Theme-specific
+  // overrides, if ever needed, can still be layered on top.
+  body.sr-theme-sra2 {
     .theme-vars();
   }
 }
