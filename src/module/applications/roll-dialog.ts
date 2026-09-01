@@ -324,6 +324,8 @@ export class RollDialog extends Application {
     this.rollData.mediumRange = mediumRange;
     this.rollData.longRange = longRange;
     this.rollData.weaponType = wepTypeName;
+
+    DiceRoller.applyNpcThresholdIfActive(this.rollData, this.actor);
   }
   
   /**
@@ -363,6 +365,8 @@ export class RollDialog extends Application {
     this.rollData.damageValueBonus = 0;
     this.rollData.rrList = rrList;
     this.rollData.selectedWeaponId = undefined;
+
+    DiceRoller.applyNpcThresholdIfActive(this.rollData, this.actor);
   }
 
   static override get defaultOptions(): any {
@@ -1271,6 +1275,8 @@ export class RollDialog extends Application {
       this.rollData.mediumRange = mediumRange;
       this.rollData.longRange = longRange;
       this.rollData.weaponType = wepTypeName;
+
+      DiceRoller.applyNpcThresholdIfActive(this.rollData, this.actor);
 
       // Re-render to update the UI
       this.render();

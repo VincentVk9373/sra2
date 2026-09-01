@@ -243,6 +243,45 @@
                 }
             }
 
+            .npc-mode-btn {
+                position: absolute;
+                top: -8px;
+                left: -8px;
+                width: 28px;
+                height: 28px;
+                border-radius: var(--sr-border-radius-round);
+                background: var(--sr-ui-scrollbar-thumb);
+                border: 2px solid var(--sr-ui-color);
+                color: var(--sr-ui-color);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                transition: all 0.2s ease;
+                z-index: 10;
+
+                i {
+                    margin-right: 0;
+                }
+
+                &.active {
+                    background: #b3261e;
+                    border-color: #b3261e;
+                    color: white;
+                    box-shadow: 0 0 12px rgba(179, 38, 30, 0.8);
+                }
+
+                &:hover {
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+
+                &:active {
+                    transform: scale(0.95);
+                }
+            }
+
             .metatype-compact {
                 position: absolute;
                 top: 68px;
