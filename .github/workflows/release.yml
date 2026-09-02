@@ -58,10 +58,7 @@ jobs:
             
             // Update download URL to point to the new release
             system.download = 'https://github.com/VincentVk9373/sra2/releases/download/$TAG/foundry-sra2-$TAG.zip';
-            
-            // Add versioned download entry for history
-            system['download-$VERSION'] = system.download;
-            
+
             fs.writeFileSync(systemPath, JSON.stringify(system, null, 2) + '\n');
             console.log('✅ Updated system.json');
             console.log('   Version:', system.version);
