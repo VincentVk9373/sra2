@@ -12,7 +12,7 @@ declare const ChatMessage: any;
 import * as ItemSearch from '../../../item-search.js';
 import * as SheetHelpers from './sheet-helpers.js';
 import { RR_MAX, SUCCESS_THRESHOLDS, RISK_DICE_SUCCESS_MULTIPLIER, SKILL_SLUGS } from '../config/constants.js';
-import { resolveTokenUuid, resolveActorUuid } from './actor-uuid-resolver.js';
+import { resolveTokenUuid, resolveActorUuid, loadCombatantFromFlags } from './actor-uuid-resolver.js';
 import { RollDialog } from '../applications/roll-dialog.js';
 import { buildNormalAppearance, buildRiskAppearance } from './dice-so-nice.js';
 
@@ -320,6 +320,8 @@ export interface RollResult {
   finalRR: number;
   remainingFailures: number;
   complication: 'none' | 'minor' | 'critical' | 'disaster';
+  /** True when this result comes from executeReroll() — a reroll of a reroll is not allowed (règle p.77). */
+  isReroll?: boolean;
 }
 
 /**
@@ -332,7 +334,8 @@ export async function executeRoll(
   attacker: any,
   defenders: DefenderEntry[],
   attackerToken: any,
-  rollData: RollRequestData
+  rollData: RollRequestData,
+  forcedComplication?: RollResult['complication']
 ): Promise<void> {
   if (!attacker) {
     console.error('No attacker provided for roll');
@@ -453,6 +456,15 @@ export async function executeRoll(
     complication = 'disaster';
   }
 
+  // On a reroll (règle p.77), only the FIRST roll's complication counts:
+  // a complication produced by the reroll's own dice is ignored entirely,
+  // even when the original roll had none. forcedComplication is only ever
+  // passed (always defined, possibly 'none') by executeReroll(); a normal
+  // roll leaves it undefined and this has no effect.
+  if (forcedComplication !== undefined) {
+    complication = forcedComplication;
+  }
+
     rollResult = {
     normalDice: normalResults,
     riskDice: riskResults,
@@ -462,12 +474,103 @@ export async function executeRoll(
     criticalFailures: criticalFailures,
     finalRR: finalRR,
     remainingFailures: remainingFailures,
-    complication: complication
+    complication: complication,
+    // A reroll can only be done once (règle p.77): mark this result as
+    // itself a reroll so the chat card doesn't offer to reroll it again.
+    isReroll: forcedComplication !== undefined
   };
   }
 
   // Step 5: Create chat message(s) — one per defender (or one with no target for skill rolls)
   await createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult);
+}
+
+/**
+ * Replay a past roll exactly as it was configured — same dice pool, risk
+ * dice count, and advantage/disadvantage mode — and create a new chat
+ * message with the new dice results. Per the reroll rule (p.77), only the
+ * ORIGINAL roll's complication counts: it carries over unchanged, and any
+ * complication the reroll's own dice would trigger is ignored entirely —
+ * even when the original roll had none. Not available for NPC-mode rolls
+ * (fixed threshold, no dice were ever rolled).
+ *
+ * @param messageId    ID of the chat message holding the original roll (flags.sra2.rollData/rollResult)
+ * @param defendersRefs Optional list of {uuid, tokenUuid} for every original target
+ *                      (multi-target attacks); falls back to the single defender
+ *                      kept on the message flags when omitted (defense/counter-attack/skill rolls)
+ */
+export async function executeReroll(
+  messageId: string,
+  defendersRefs?: Array<{ uuid?: string; tokenUuid?: string }>
+): Promise<void> {
+  const message = (game as any).messages?.get(messageId);
+  if (!message) {
+    console.error('SRA2 | Reroll: chat message not found', messageId);
+    return;
+  }
+
+  const flags = (message.flags as any)?.sra2;
+  const rollData: RollRequestData | undefined = flags?.rollData;
+  const previousResult: RollResult | undefined = flags?.rollResult;
+
+  if (!rollData || !previousResult) {
+    console.error('SRA2 | Reroll: missing roll data on message', messageId);
+    return;
+  }
+
+  // A reroll can only be done once (règle p.77): refuse to reroll a result
+  // that is itself already the product of a reroll...
+  if (previousResult.isReroll) {
+    ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE'));
+    return;
+  }
+
+  // ...and also refuse to reroll the same original a second time (its
+  // "rerolled" flag was set the first time this ran, see below).
+  if (flags.rerolled) {
+    ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE'));
+    return;
+  }
+
+  if ((previousResult.normalDice?.length ?? 0) === 0 && (previousResult.riskDice?.length ?? 0) === 0) {
+    ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL'));
+    return;
+  }
+
+  const { actor: attacker, token: attackerToken } = loadCombatantFromFlags(
+    { actorUuid: flags.attackerUuid, tokenUuid: flags.attackerTokenUuid, actorId: flags.attackerId },
+    'Reroll Attacker'
+  );
+
+  if (!attacker) {
+    ui.notifications?.error(game.i18n!.localize('SRA2.ROLL_DIALOG.REROLL_NO_ACTOR'));
+    return;
+  }
+
+  // Rebuild the full defenders list from the refs captured on the original
+  // chat card (multi-target attacks); fall back to the single defender kept
+  // on the message flags otherwise (defense/counter-attack/skill rolls).
+  let defenders: DefenderEntry[] = [];
+  if (defendersRefs && defendersRefs.length > 0) {
+    defenders = defendersRefs
+      .map(ref => loadCombatantFromFlags({ actorUuid: ref.uuid, tokenUuid: ref.tokenUuid }, 'Reroll Defender'))
+      .filter(d => d.actor || d.token);
+  } else if (flags.defenderUuid || flags.defenderTokenUuid || flags.defenderId) {
+    const defender = loadCombatantFromFlags(
+      { actorUuid: flags.defenderUuid, tokenUuid: flags.defenderTokenUuid, actorId: flags.defenderId },
+      'Reroll Defender'
+    );
+    if (defender.actor || defender.token) defenders = [defender];
+  }
+
+  await executeRoll(attacker, defenders, attackerToken, rollData, previousResult.complication);
+
+  // Mark the ORIGINAL message as superseded now that the reroll succeeded:
+  // this both prevents rerolling the same original a second time (a reroll
+  // can only be used once per roll, règle p.77) and stops "Apply Damage"
+  // being clicked on the stale result after a fresher one exists. Applied
+  // last, after executeRoll(), so a failed reroll doesn't lock the original.
+  await message.setFlag('sra2', 'rerolled', true);
 }
 
 /**

@@ -3703,6 +3703,13 @@ function getCurrentActiveSection(html) {
   const activeNavItem = el.querySelector(".section-nav .nav-item.active");
   return activeNavItem ? activeNavItem.dataset.section || null : null;
 }
+function enableSectionNavigation(html) {
+  const el = html instanceof HTMLElement ? html : html[0];
+  if (!el) return;
+  el.querySelectorAll(".section-nav .nav-item[disabled]").forEach((button) => {
+    button.disabled = false;
+  });
+}
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat2) => {
     feat2.rrEntries = [];
@@ -4288,6 +4295,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   calculateRawDamageString,
   calculateSkillDicePool,
   calculateSpecDicePool,
+  enableSectionNavigation,
   enrichFeats,
   filterItemRRForRoll,
   findAttackSkillAndSpec,
@@ -5975,7 +5983,7 @@ function handleRollRequest(data) {
   const dialog = new RollDialog(data);
   dialog.render(true);
 }
-async function executeRoll(attacker, defenders, attackerToken, rollData) {
+async function executeRoll(attacker, defenders, attackerToken, rollData, forcedComplication) {
   if (!attacker) {
     console.error("No attacker provided for roll");
     return;
@@ -6065,6 +6073,9 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
     } else if (remainingFailures >= 3) {
       complication = "disaster";
     }
+    if (forcedComplication !== void 0) {
+      complication = forcedComplication;
+    }
     rollResult = {
       normalDice: normalResults,
       riskDice: riskResults,
@@ -6074,10 +6085,59 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       criticalFailures,
       finalRR,
       remainingFailures,
-      complication
+      complication,
+      // A reroll can only be done once (règle p.77): mark this result as
+      // itself a reroll so the chat card doesn't offer to reroll it again.
+      isReroll: forcedComplication !== void 0
     };
   }
   await createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult);
+}
+async function executeReroll(messageId, defendersRefs) {
+  const message = game.messages?.get(messageId);
+  if (!message) {
+    console.error("SRA2 | Reroll: chat message not found", messageId);
+    return;
+  }
+  const flags = message.flags?.sra2;
+  const rollData = flags?.rollData;
+  const previousResult = flags?.rollResult;
+  if (!rollData || !previousResult) {
+    console.error("SRA2 | Reroll: missing roll data on message", messageId);
+    return;
+  }
+  if (previousResult.isReroll) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
+    return;
+  }
+  if (flags.rerolled) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
+    return;
+  }
+  if ((previousResult.normalDice?.length ?? 0) === 0 && (previousResult.riskDice?.length ?? 0) === 0) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL"));
+    return;
+  }
+  const { actor: attacker, token: attackerToken } = loadCombatantFromFlags(
+    { actorUuid: flags.attackerUuid, tokenUuid: flags.attackerTokenUuid, actorId: flags.attackerId },
+    "Reroll Attacker"
+  );
+  if (!attacker) {
+    ui.notifications?.error(game.i18n.localize("SRA2.ROLL_DIALOG.REROLL_NO_ACTOR"));
+    return;
+  }
+  let defenders = [];
+  if (defendersRefs && defendersRefs.length > 0) {
+    defenders = defendersRefs.map((ref) => loadCombatantFromFlags({ actorUuid: ref.uuid, tokenUuid: ref.tokenUuid }, "Reroll Defender")).filter((d) => d.actor || d.token);
+  } else if (flags.defenderUuid || flags.defenderTokenUuid || flags.defenderId) {
+    const defender = loadCombatantFromFlags(
+      { actorUuid: flags.defenderUuid, tokenUuid: flags.defenderTokenUuid, actorId: flags.defenderId },
+      "Reroll Defender"
+    );
+    if (defender.actor || defender.token) defenders = [defender];
+  }
+  await executeRoll(attacker, defenders, attackerToken, rollData, previousResult.complication);
+  await message.setFlag("sra2", "rerolled", true);
 }
 function buildDefenderData(defender, defenderToken) {
   if (!defender) return null;
@@ -6637,6 +6697,7 @@ const DiceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   RISK_DICE_BY_RR,
   RISK_THRESHOLDS,
   buildRRSourcesHtml,
+  executeReroll,
   executeRoll,
   getRRSources,
   getRRSourcesForActor,
@@ -10517,6 +10578,7 @@ class VehicleSheet extends ActorSheet {
         restoreActiveSection(form, activeSection);
       }
     }));
+    enableSectionNavigation(html);
   }
   /**
    * Handle section navigation
@@ -11326,6 +11388,7 @@ class FeatSheet extends ItemSheet {
         }
       });
     }, { signal });
+    enableSectionNavigation(html);
   }
   /**
    * Handle section navigation
@@ -20311,14 +20374,14 @@ class Migration {
     };
   }
   async applyItemsUpdates(computeUpdates = (items) => []) {
-    await game.actors.forEach(async (actor) => {
+    for (const actor of game.actors) {
       const actorItemUpdates = computeUpdates(actor.items);
       if (actorItemUpdates.length > 0) {
         const message = game.i18n.format("SRA2.MIGRATION.APPLYING_ACTOR_ITEMS", { name: actor.name });
         console.log(SYSTEM.LOG.HEAD, this.code, message, actorItemUpdates);
         await actor.updateEmbeddedDocuments("Item", actorItemUpdates);
       }
-    });
+    }
     const itemUpdates = computeUpdates(game.items);
     if (itemUpdates.length > 0) {
       const message = game.i18n.localize("SRA2.MIGRATION.APPLYING_ITEMS");
@@ -20337,7 +20400,7 @@ class Migrations {
       default: "0.0.0"
     });
   }
-  migrate() {
+  async migrate() {
     const currentVersion = game.settings.get(SYSTEM.id, CURRENT_SYSTEM_VERSION);
     if (foundry.utils.isNewerVersion(game.system.version, currentVersion)) {
       let migrations = [];
@@ -20349,11 +20412,11 @@ class Migrations {
       });
       if (migrations.length > 0) {
         migrations.sort((a, b) => foundry.utils.isNewerVersion(a.version, b.version) ? 1 : foundry.utils.isNewerVersion(b.version, a.version) ? -1 : 0);
-        migrations.forEach(async (m) => {
+        for (const m of migrations) {
           const message2 = game.i18n.format("SRA2.MIGRATION.EXECUTING", { code: m.code, currentVersion, targetVersion: m.version });
           this.$notify(message2);
           await m.migrate();
-        });
+        }
         const message = game.i18n.format("SRA2.MIGRATION.DONE", { version: game.system.version });
         this.$notify(message);
       } else {
@@ -23873,6 +23936,9 @@ class SRA2System {
     Handlebars.registerHelper("json", function(context) {
       return JSON.stringify(context);
     });
+    Handlebars.registerHelper("defenderRefs", function(defenders) {
+      return JSON.stringify((defenders || []).map((d) => ({ uuid: d?.uuid, tokenUuid: d?.tokenUuid })));
+    });
     Handlebars.registerHelper("controlModeLabel", function(value) {
       const key = `SRA2.VEHICLE.CONTROL_MODE.${(value || "autonomous").toUpperCase()}`;
       return game.i18n?.localize(key) || value;
@@ -23994,6 +24060,34 @@ class SRA2System {
           }
         });
       });
+      msgEl.querySelectorAll(".reroll-button").forEach((origBtn) => {
+        const btn = origBtn.cloneNode(true);
+        origBtn.replaceWith(btn);
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          let defendersRefs;
+          try {
+            const raw = event.currentTarget.dataset.defenders;
+            defendersRefs = raw ? JSON.parse(raw) : void 0;
+          } catch (e) {
+            console.warn("SRA2 | Reroll: could not parse defenders refs", e);
+          }
+          await executeReroll(message.id, defendersRefs);
+        });
+      });
+      if (message.flags?.sra2?.rerolled) {
+        msgEl.querySelectorAll(".reroll-button, .apply-damage-button").forEach((btn) => {
+          btn.disabled = true;
+          btn.title = game.i18n.localize("SRA2.ROLL_DIALOG.SUPERSEDED_BY_REROLL");
+        });
+        if (!msgEl.querySelector(".rerolled-banner")) {
+          const banner = document.createElement("div");
+          banner.className = "rerolled-banner";
+          banner.innerHTML = `<i class="fas fa-history"></i> ${game.i18n.localize("SRA2.ROLL_DIALOG.REROLLED_BANNER")}`;
+          const rollResultsEl = msgEl.querySelector(".roll-results");
+          (rollResultsEl?.parentElement ?? msgEl).insertBefore(banner, rollResultsEl ? rollResultsEl.nextSibling : msgEl.firstChild);
+        }
+      }
       msgEl.addEventListener("mouseenter", (event) => {
         const target = event.target;
         const btn = target.closest(".defend-button, .counter-attack-button");
@@ -24730,7 +24824,7 @@ class SRA2System {
     this.setupNPCGeneratorButton();
     await this.buildSkillSlugCache();
     const migrations = new Migrations();
-    migrations.migrate();
+    await migrations.migrate();
     await this.migrateFeatsToArrayFormat();
     await this.migrateAnarchyNimbusToSpent();
   }
