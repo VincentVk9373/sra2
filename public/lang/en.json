@@ -1207,7 +1207,8 @@
             "EDIT": "Edit",
             "DELETE": "Delete",
             "LEVEL": "Level:",
-            "ADVANCED_MODE": "Advanced Mode"
+            "ADVANCED_MODE": "Advanced Mode",
+            "NPC_MODE": "NPC Mode (success threshold instead of dice roll)"
         },
         "RR": {
             "PHANTOM_TOOLTIP": "RR available without skill - rolls on attribute",

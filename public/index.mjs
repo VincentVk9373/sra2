@@ -3703,6 +3703,13 @@ function getCurrentActiveSection(html) {
   const activeNavItem = el.querySelector(".section-nav .nav-item.active");
   return activeNavItem ? activeNavItem.dataset.section || null : null;
 }
+function enableSectionNavigation(html) {
+  const el = html instanceof HTMLElement ? html : html[0];
+  if (!el) return;
+  el.querySelectorAll(".section-nav .nav-item[disabled]").forEach((button) => {
+    button.disabled = false;
+  });
+}
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat2) => {
     feat2.rrEntries = [];
@@ -4288,6 +4295,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   calculateRawDamageString,
   calculateSkillDicePool,
   calculateSpecDicePool,
+  enableSectionNavigation,
   enrichFeats,
   filterItemRRForRoll,
   findAttackSkillAndSpec,
@@ -4689,6 +4697,7 @@ class RollDialog extends Application {
     this.rollData.mediumRange = mediumRange;
     this.rollData.longRange = longRange;
     this.rollData.weaponType = wepTypeName;
+    applyNpcThresholdIfActive(this.rollData, this.actor);
   }
   /**
    * Select Combat rapproché skill for counter-attack
@@ -4720,6 +4729,7 @@ class RollDialog extends Application {
     this.rollData.damageValueBonus = 0;
     this.rollData.rrList = rrList;
     this.rollData.selectedWeaponId = void 0;
+    applyNpcThresholdIfActive(this.rollData, this.actor);
   }
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -5368,6 +5378,7 @@ class RollDialog extends Application {
       this.rollData.mediumRange = mediumRange;
       this.rollData.longRange = longRange;
       this.rollData.weaponType = wepTypeName;
+      applyNpcThresholdIfActive(this.rollData, this.actor);
       this.render();
     }));
     el.querySelectorAll(".skill-dropdown").forEach((elem) => elem.addEventListener("change", (event) => {
@@ -5972,8 +5983,24 @@ function handleRollRequest(data) {
     itemActive: data.itemActive,
     rrList: data.rrList
   });
+  applyNpcThresholdIfActive(data);
   const dialog = new RollDialog(data);
   dialog.render(true);
+}
+function computeNpcThreshold(dicePool, rrList) {
+  const totalRR = Math.min(
+    RR_MAX,
+    (rrList || []).reduce((sum, r) => sum + (r?.rrValue || 0), 0)
+  );
+  return Math.round(dicePool / 3) + totalRR + 1;
+}
+function applyNpcThresholdIfActive(data, actor) {
+  const resolvedActor = actor ?? (data.actorId ? game.actors?.get(data.actorId) : void 0);
+  const npcMode = resolvedActor?.getFlag?.("sra2", "npcMode") ?? false;
+  if (!npcMode) return;
+  const dicePool = data.specLevel ?? data.skillLevel;
+  if (typeof dicePool !== "number") return;
+  data.threshold = computeNpcThreshold(dicePool, data.rrList);
 }
 async function executeRoll(attacker, defenders, attackerToken, rollData) {
   if (!attacker) {
@@ -6636,7 +6663,9 @@ const DiceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   __proto__: null,
   RISK_DICE_BY_RR,
   RISK_THRESHOLDS,
+  applyNpcThresholdIfActive,
   buildRRSourcesHtml,
+  computeNpcThreshold,
   executeRoll,
   getRRSources,
   getRRSourcesForActor,
@@ -9599,6 +9628,7 @@ class CharacterSheetV2 extends CharacterSheet {
   async getData() {
     const context = await super.getData();
     context.advancedMode = this._advancedMode;
+    context.npcMode = this.actor.getFlag("sra2", "npcMode") ?? false;
     try {
       const { isGeminiConfigured: isGeminiConfigured2 } = await Promise.resolve().then(() => geminiImage);
       context.geminiAvailable = isGeminiConfigured2();
@@ -9680,6 +9710,9 @@ class CharacterSheetV2 extends CharacterSheet {
     el.querySelectorAll('[data-action="toggle-advanced-mode"]').forEach((elem) => {
       elem.addEventListener("click", this._onToggleAdvancedMode.bind(this));
     });
+    el.querySelectorAll('[data-action="toggle-npc-mode"]').forEach((elem) => {
+      elem.addEventListener("click", this._onToggleNpcMode.bind(this));
+    });
     el.querySelectorAll(".skill-rating-input").forEach((elem) => {
       elem.addEventListener("change", this._onUpdateSkillRating.bind(this));
     });
@@ -9748,6 +9781,17 @@ class CharacterSheetV2 extends CharacterSheet {
   _onToggleAdvancedMode(event) {
     event.preventDefault();
     this._advancedMode = !this._advancedMode;
+    this.render(false);
+  }
+  /**
+   * Toggle "NPC mode": when active, rolls made from this sheet use the
+   * NPC success threshold (dicePool / 3 + 1 + RR) instead of rolling dice.
+   * Persisted on the actor via a flag so it survives reopening the sheet.
+   */
+  async _onToggleNpcMode(event) {
+    event.preventDefault();
+    const current = this.actor.getFlag("sra2", "npcMode") ?? false;
+    await this.actor.setFlag("sra2", "npcMode", !current);
     this.render(false);
   }
   /**
@@ -10517,6 +10561,7 @@ class VehicleSheet extends ActorSheet {
         restoreActiveSection(form, activeSection);
       }
     }));
+    enableSectionNavigation(html);
   }
   /**
    * Handle section navigation
@@ -11326,6 +11371,7 @@ class FeatSheet extends ItemSheet {
         }
       });
     }, { signal });
+    enableSectionNavigation(html);
   }
   /**
    * Handle section navigation
@@ -20311,14 +20357,14 @@ class Migration {
     };
   }
   async applyItemsUpdates(computeUpdates = (items) => []) {
-    await game.actors.forEach(async (actor) => {
+    for (const actor of game.actors) {
       const actorItemUpdates = computeUpdates(actor.items);
       if (actorItemUpdates.length > 0) {
         const message = game.i18n.format("SRA2.MIGRATION.APPLYING_ACTOR_ITEMS", { name: actor.name });
         console.log(SYSTEM.LOG.HEAD, this.code, message, actorItemUpdates);
         await actor.updateEmbeddedDocuments("Item", actorItemUpdates);
       }
-    });
+    }
     const itemUpdates = computeUpdates(game.items);
     if (itemUpdates.length > 0) {
       const message = game.i18n.localize("SRA2.MIGRATION.APPLYING_ITEMS");
@@ -20337,7 +20383,7 @@ class Migrations {
       default: "0.0.0"
     });
   }
-  migrate() {
+  async migrate() {
     const currentVersion = game.settings.get(SYSTEM.id, CURRENT_SYSTEM_VERSION);
     if (foundry.utils.isNewerVersion(game.system.version, currentVersion)) {
       let migrations = [];
@@ -20349,11 +20395,11 @@ class Migrations {
       });
       if (migrations.length > 0) {
         migrations.sort((a, b) => foundry.utils.isNewerVersion(a.version, b.version) ? 1 : foundry.utils.isNewerVersion(b.version, a.version) ? -1 : 0);
-        migrations.forEach(async (m) => {
+        for (const m of migrations) {
           const message2 = game.i18n.format("SRA2.MIGRATION.EXECUTING", { code: m.code, currentVersion, targetVersion: m.version });
           this.$notify(message2);
           await m.migrate();
-        });
+        }
         const message = game.i18n.format("SRA2.MIGRATION.DONE", { version: game.system.version });
         this.$notify(message);
       } else {
@@ -24081,6 +24127,7 @@ class SRA2System {
             attackRollData: rollData
           };
           const { RollDialog: RollDialog2 } = applications;
+          applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
           const dialog = new RollDialog2(defenseRollData);
           if (attackerToken) dialog.targetToken = attackerToken;
           dialog.render(true);
@@ -24256,6 +24303,7 @@ class SRA2System {
             attackRollData: rollData
           };
           const { RollDialog: RollDialog2 } = applications;
+          applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
           const dialog = new RollDialog2(defenseRollData);
           if (attackerToken) dialog.targetToken = attackerToken;
           dialog.render(true);
@@ -24390,6 +24438,7 @@ class SRA2System {
             meleeRange: "ok"
           };
           const { RollDialog: RollDialog2 } = applications;
+          applyNpcThresholdIfActive(cyberCounterRollData, defenderActorForRoll);
           const dialog = new RollDialog2(cyberCounterRollData);
           if (attackerToken) dialog.targetToken = attackerToken;
           dialog.render(true);
@@ -24730,7 +24779,7 @@ class SRA2System {
     this.setupNPCGeneratorButton();
     await this.buildSkillSlugCache();
     const migrations = new Migrations();
-    migrations.migrate();
+    await migrations.migrate();
     await this.migrateFeatsToArrayFormat();
     await this.migrateAnarchyNimbusToSpent();
   }

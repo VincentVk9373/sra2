@@ -1101,6 +1101,7 @@ export class SRA2System {
         };
 
         const { RollDialog } = applications;
+        DiceRoller.applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
         const dialog = new RollDialog(defenseRollData);
         // Override any stale canvas target with the known original attacker token
         if (attackerToken) (dialog as any).targetToken = attackerToken;
@@ -1307,6 +1308,7 @@ export class SRA2System {
         };
 
         const { RollDialog } = applications;
+        DiceRoller.applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
         const dialog = new RollDialog(defenseRollData);
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
@@ -1460,6 +1462,7 @@ export class SRA2System {
         };
 
         const { RollDialog } = applications;
+        DiceRoller.applyNpcThresholdIfActive(cyberCounterRollData, defenderActorForRoll);
         const dialog = new RollDialog(cyberCounterRollData);
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);

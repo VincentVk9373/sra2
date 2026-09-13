@@ -7,6 +7,9 @@
             <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="{{localize 'SRA2.COMMON.ADVANCED_MODE'}}">
                 <i class="fas fa-cog"></i>
             </button>
+            <button type="button" class="npc-mode-btn {{#if npcMode}}active{{/if}}" data-action="toggle-npc-mode" title="{{localize 'SRA2.COMMON.NPC_MODE'}}">
+                <i class="fas fa-robot"></i>
+            </button>
         </div>
         <div class="name">
             <h1 class="charname"><input name="name" type="text" value="{{actor.name}}"
