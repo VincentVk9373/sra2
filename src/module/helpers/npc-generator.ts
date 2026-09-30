@@ -854,7 +854,7 @@ function generateImagePrompt(
 let compendiumCache: Record<string, any[]> = {};
 
 /** Get the active language ('fr' or 'en') */
-function getLang(): 'fr' | 'en' {
+export function getLang(): 'fr' | 'en' {
   return (game.i18n?.lang === 'fr') ? 'fr' : 'en';
 }
 

@@ -1247,6 +1247,7 @@
             "GENERATE": "Générer",
             "GENERATING": "Génération en cours...",
             "SUCCESS": "{count} Runner(s) généré(s) avec succès",
+            "ERROR": "Erreur lors de la génération du PNJ",
             "POWER_LEVEL": "Niveau de puissance",
             "ARCHETYPE": "Archétype",
             "METATYPE": "Métatype",

@@ -1247,6 +1247,7 @@
             "GENERATE": "Generate",
             "GENERATING": "Generating...",
             "SUCCESS": "{count} Runner(s) generated successfully",
+            "ERROR": "An error occurred while generating the Runner",
             "POWER_LEVEL": "Power Level",
             "ARCHETYPE": "Archetype",
             "METATYPE": "Metatype",
