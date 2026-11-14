@@ -82,6 +82,11 @@
       "lang": "fr",
       "name": "Français",
       "path": "lang/fr.json"
+    },
+    {
+      "lang": "de",
+      "name": "Deutsch",
+      "path": "lang/de.json"
     }
   ],
   "packs": [
