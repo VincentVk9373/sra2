@@ -1,0 +1,34 @@
+{
+  "folder": "xL17mVTtofGU6Wr9",
+  "name": "Feuerwaffen",
+  "type": "skill",
+  "_id": "hYWpTubhE2FAuhJl",
+  "img": "systems/sra2/icons/weapons/Ares-viper-Silvergun.svg",
+  "system": {
+    "description": "",
+    "rating": 2,
+    "linkedAttribute": "agility",
+    "bookmarked": false,
+    "reference": "",
+    "slug": "ranged-weapons"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!hYWpTubhE2FAuhJl"
+}
