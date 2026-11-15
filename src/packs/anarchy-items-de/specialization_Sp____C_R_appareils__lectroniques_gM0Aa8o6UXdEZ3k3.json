@@ -1,0 +1,34 @@
+{
+  "folder": "kKwx2vcWEEbV2AEx",
+  "name": "Spez: B&R Elektronikgeräte",
+  "type": "specialization",
+  "_id": "gM0Aa8o6UXdEZ3k3",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "linkedSkill": "engineering",
+    "linkedAttribute": "logic",
+    "description": "",
+    "bookmarked": false,
+    "reference": "",
+    "slug": "spec_personal-electronics"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!gM0Aa8o6UXdEZ3k3"
+}

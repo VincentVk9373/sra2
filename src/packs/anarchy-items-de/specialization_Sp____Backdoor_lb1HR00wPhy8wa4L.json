@@ -1,0 +1,34 @@
+{
+  "folder": "kKwx2vcWEEbV2AEx",
+  "name": "Spez: Backdoor",
+  "type": "specialization",
+  "_id": "lb1HR00wPhy8wa4L",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "linkedSkill": "cracking",
+    "linkedAttribute": "logic",
+    "description": "",
+    "bookmarked": false,
+    "reference": "",
+    "slug": "spec_backdoor"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!lb1HR00wPhy8wa4L"
+}

@@ -91,6 +91,16 @@
   ],
   "packs": [
     {
+      "name": "anarchy-items-de",
+      "label": "Anarchy Items (DE)",
+      "type": "Item",
+      "system": "sra2",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
       "name": "anarchy-items-en",
       "label": "Anarchy Items (EN)",
       "type": "Item",
