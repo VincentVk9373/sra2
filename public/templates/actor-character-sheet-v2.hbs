@@ -3,7 +3,18 @@
 <form class="{{cssClass}} sra2-character-sheet-v2" autocomplete="off">
     <header class="sheet-header {{#if hasSevereDamage}}has-severe-damage{{/if}}">
         <div class="avatar-section">
-            <img class="profile-img" src="{{actor.prototypeToken.texture.src}}" data-edit="prototypeToken.texture.src" title="{{actor.name}}" />
+            <div class="profile-img">
+                {{#if tokenInfo }}
+                    {{#if tokenInfo.isVideo }}
+                    {{!-- using data-edit on videos resets the token when closing the character sheet for some reason --}}
+                    <video src="{{tokenInfo.src}}" title="{{actor.name}}" autoplay muted playsinline disablepictureinpicture loop />
+                    {{else}}
+                    <img src="{{tokenInfo.src}}" data-edit="prototypeToken.texture.src" title="{{actor.name}}" />
+                    {{/if}}
+                {{else}}
+                    <i class="fas fa-image" data-edit="prototypeToken.texture.src"></i>
+                {{/if}}
+            </div>
             <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="{{localize 'SRA2.COMMON.ADVANCED_MODE'}}">
                 <i class="fas fa-cog"></i>
             </button>
@@ -121,7 +132,7 @@
             </div>
         </div>
     </header>
-    <div>
+    <div class="sheet-content">
         <div class="bookmarks-list-compact">
             <div class="bookmarks-header">
                 <i class="fas fa-star"></i>
@@ -1436,7 +1447,7 @@
             <div>
                 <section class="char-section avatar-large-section">
                     <div class="connection-mode-selector">
-                        <span class="connection-mode-current {{#if (or (eq system.connectionMode 'disconnected') (eq system.connectionMode 'offline'))}}offline{{/if}}" data-action="show-connection-mode-menu">
+                        <span class="connection-mode-current {{system.connectionMode}}" data-action="show-connection-mode-menu">
                             <i class="fas {{connectionModeIcon system.connectionMode}}"></i>
                             {{connectionModeLabel system.connectionMode}}
                         </span>
@@ -1756,49 +1767,6 @@
                 {{/if}}
             </div>
         </section>
-        <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">
-            <div class="footer-content">
-                        {{#if advancedMode}}
-                        <div class="footer-reference">
-                            <label class="reference-label">{{localize "SRA2.COMMON.REFERENCE"}}:</label>
-                            <input type="text" name="system.reference" value="{{system.reference}}" class="reference-input" placeholder="p.XX" />
-                        </div>
-                        {{else if system.reference}}
-                        <div class="footer-reference">
-                            <span class="reference-value">{{system.reference}}</span>
-                        </div>
-                        {{/if}}
-                <div class="footer-keywords">
-                    <div class="keywords-list">
-                        {{#if system.keywords.keyword1}}
-                        <span class="keyword-tag">{{system.keywords.keyword1}} / </span>
-                        {{/if}}
-                        {{#if system.keywords.keyword2}}
-                        <span class="keyword-tag">{{system.keywords.keyword2}} / </span>
-                        {{/if}}
-                        {{#if system.keywords.keyword3}}
-                        <span class="keyword-tag">{{system.keywords.keyword3}} / </span>
-                        {{/if}}
-                        {{#if system.keywords.keyword4}}
-                        <span class="keyword-tag">{{system.keywords.keyword4}} / </span>
-                        {{/if}}
-                        {{#if system.keywords.keyword5}}
-                        <span class="keyword-tag">{{system.keywords.keyword5}}</span>
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="footer-price">
-                    <div class="footer-cash">
-                        <span class="yen-symbol">{{localize "SRA2.RESOURCES.CASH"}} : </span>
-                        <input type="text" name="system.resources.yens" value="{{formatNumber system.resources.yens}}" class="cash-input" />
-                        <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span>
-                    </div>
-                    <span class="cost-label">{{localize "SRA2.RESOURCES.COST"}} : </span>
-                    <span class="price-value">{{formatNumber system.totalCost}} <span class="yen-symbol">{{localize
-                            "SRA2.RESOURCES.YENS"}}</span></span>
-                </div>
-            </div>
-        </footer>
         <div class="bio-section">
             <div class="bio-tabs">
                 <button type="button" class="bio-tab active" data-tab="background">{{localize "SRA2.BIO"}}</button>
@@ -1818,5 +1786,49 @@
         </div>
         {{/if}}
     </div>
-</form>
+    <footer class="sheet-footer {{#if hasSevereDamage}}has-severe-damage{{/if}}">
+        <div class="footer-content">
+                    {{#if advancedMode}}
+                    <div class="footer-reference">
+                        <label class="reference-label">{{localize "SRA2.COMMON.REFERENCE"}}:</label>
+                        <input type="text" name="system.reference" value="{{system.reference}}" class="reference-input" placeholder="p.XX" />
+                    </div>
+                    {{else if system.reference}}
+                    <div class="footer-reference">
+                        <span class="reference-value">{{system.reference}}</span>
+                    </div>
+                    {{/if}}
+            <div class="footer-keywords">
+                <div class="keywords-list">
+                    {{#if system.keywords.keyword1}}
+                    <span class="keyword-tag">{{system.keywords.keyword1}} / </span>
+                    {{/if}}
+                    {{#if system.keywords.keyword2}}
+                    <span class="keyword-tag">{{system.keywords.keyword2}} / </span>
+                    {{/if}}
+                    {{#if system.keywords.keyword3}}
+                    <span class="keyword-tag">{{system.keywords.keyword3}} / </span>
+                    {{/if}}
+                    {{#if system.keywords.keyword4}}
+                    <span class="keyword-tag">{{system.keywords.keyword4}} / </span>
+                    {{/if}}
+                    {{#if system.keywords.keyword5}}
+                    <span class="keyword-tag">{{system.keywords.keyword5}}</span>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="footer-price">
+                <div class="footer-cash">
+                    <span class="yen-symbol">{{localize "SRA2.RESOURCES.CASH"}} : </span>
+                    <input type="text" name="system.resources.yens" value="{{formatNumber system.resources.yens}}" class="cash-input" />
+                    <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span>
+                </div>
+                <div class="footer-cost">
+                    <span class="cost-label">{{localize "SRA2.RESOURCES.COST"}} : </span>
+                    <span class="price-value">{{formatNumber system.totalCost}} </span>
+                    <span class="yen-symbol">{{localize "SRA2.RESOURCES.YENS"}}</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 </form>
