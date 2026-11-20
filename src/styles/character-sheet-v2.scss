@@ -1,11 +1,58 @@
 /* Character Sheet V2 Styles */
 /* Nouvelle version de la fiche de personnage avec un style différent */
 
+// Setup mixins for Connection and Astral state colors
+@mixin badge-colors($hover: true) {
+    background: var(--sr-ui-bg-color-dark);
+    color: var(--sr-ui-color-active);
+    border-color: var(--sr-ui-border-color);
+
+    @if $hover {
+        &:hover {
+            background: var(--sr-ui-bg-color-hover);
+        }
+    }
+}
+
+@mixin default-connection-colors($hover: true) {
+    @include badge-colors($hover);
+}
+
+@mixin offline-connection-colors($hover: true) {
+    @include badge-colors($hover);
+    background: #222;
+    color: #999;
+    border-color: #444;
+}
+
+@mixin hot-sim-connection-colors($hover: true) {
+    @include badge-colors($hover);
+    color: #ff6b7a;
+}
+
+@mixin physical-state-colors($hover: true) {
+    @include badge-colors($hover);
+    color: var(--sr-text-color-grey);
+}
+
+@mixin astral-state-colors($hover: true) {
+    @include badge-colors($hover);
+    color: #b98cff;
+    border-color: rgba(156, 108, 255, 0.4);
+}
+
+
+// Remove padding from this window so we can easily setup the header & footer
+.window-content:has(.sra2-character-sheet-v2) {
+    padding: 0;
+}
+
 .sra2-character-sheet-v2 {
     color: #e0e0e0;
     font-family: var(--sr-font-body);
-    display: grid;
-    grid-template-rows: 80px 1fr;
+    display: flex;
+    flex-direction: column;
+    overflow: clip;
     container-type: size;
     container-name: character-sheet;
 
@@ -16,6 +63,8 @@
     --yellow: rgb(242, 188, 0);
     --bg-blue: #202a3e;
 
+
+
     /* Severe damage indicator - red background */
     .sheet-header.has-severe-damage,
     .sheet-body.has-severe-damage,
@@ -23,19 +72,15 @@
         background-color: rgba(255, 0, 0, 0.1) !important;
     }
 
+    $headerBorder: 1px solid var(--blue);
     .sheet-header {
+        height: 80px;
         display: flex;
-        grid-template-columns: 76px 1fr auto;
-        padding: 0 8px;
-        position: sticky;
-        top: 0;
         background-image: var(--sr-window-background);
         background-repeat: no-repeat;
         background-position: center;
         background-size: cover;
-        z-index: 1;
-
-        position: relative;
+        padding: 0 1rem;
 
         .connection-mode-badge {
             display: none;
@@ -48,34 +93,17 @@
             align-items: center;
             gap: 0.2rem;
             white-space: nowrap;
-            color: var(--sr-ui-color-active);
-            background: rgba(0, 212, 255, 0.15);
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid;
             z-index: 2;
             cursor: pointer;
+            @include default-connection-colors;
 
-            &:hover {
-                background: rgba(0, 212, 255, 0.25);
-            }
-
-            &.offline {
-                color: #666;
-                background: rgba(50, 50, 50, 0.6);
-                border-color: #444;
-
-                &:hover {
-                    background: rgba(50, 50, 50, 0.8);
-                }
+            &.offline, &.disconnected {
+                @include offline-connection-colors;
             }
 
             &.hot-sim {
-                color: #ff6b7a;
-                background: rgba(255, 71, 87, 0.15);
-                border-color: rgba(255, 71, 87, 0.3);
-
-                &:hover {
-                    background: rgba(255, 71, 87, 0.25);
-                }
+                @include hot-sim-connection-colors;
             }
 
             .connection-mode-menu {
@@ -129,25 +157,14 @@
             align-items: center;
             gap: 0.2rem;
             white-space: nowrap;
-            color: #b98cff;
-            background: rgba(156, 108, 255, 0.15);
-            border: 1px solid rgba(156, 108, 255, 0.3);
+            border: 1px solid;
             z-index: 2;
             cursor: pointer;
-
-            &:hover {
-                background: rgba(156, 108, 255, 0.25);
-            }
+            @include astral-state-colors;
 
             // Muted default "physical" state
             &.physical {
-                color: #666;
-                background: rgba(50, 50, 50, 0.6);
-                border-color: #444;
-
-                &:hover {
-                    background: rgba(50, 50, 50, 0.8);
-                }
+                @include physical-state-colors;
             }
 
             .astral-state-menu {
@@ -184,7 +201,7 @@
                     }
 
                     &.active {
-                        color: #b98cff;
+                        color: var(--sr-ui-color-active);
                         font-weight: 600;
                     }
                 }
@@ -194,14 +211,27 @@
         .avatar-section {
             position: relative;
             min-width: 64px;
+            max-width: 76px;
+            max-height: 76px;
+            align-self: end;
 
             .profile-img {
-                border-radius: 8px 0 8px 0;
+                img {
+                    border-radius: 8px 0 8px 0;
+                }
+                // Fallback / broken img icon
+                i {
+                    width: 64px;
+                    height: 64px;
+                    font-size: 48px;
+                    text-align: center;
+                    cursor: pointer;
+                }
             }
 
             .advanced-mode-btn {
                 position: absolute;
-                top: -8px;
+                top: -2px;
                 right: -8px;
                 width: 28px;
                 height: 28px;
@@ -234,7 +264,7 @@
                     box-shadow: none;
 
                     i {
-                        box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+                        box-shadow: 0 0 8px rgba(0, 212, 255, 1);
                     }
                 }
 
@@ -265,7 +295,7 @@
 
                     &:hover {
                         transform: scale(1.1);
-                        box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+                        box-shadow: 0 0 8px rgba(0, 212, 255, 1);
                     }
                 }
 
@@ -278,42 +308,44 @@
             }
         }
 
-        .charname {
-            flex: 1;
-            border-bottom: 1px solid var(--blue);
-            padding-bottom: 12px;
-            font-family: var(--sr-font-title-alt);
+        .name {
+            display: flex;
+            height: 100%;
+            border-bottom: $headerBorder;
 
-            input {
-                padding-left: 8px;
-                letter-spacing: 2px;
-                width: 100%;
-                font-size: 2rem;
-                font-weight: bold;
-                border: none;
-                background: transparent;
-                color: #ffd700;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-                margin: 0;
+            .charname {
+                align-self: center;
+                font-family: var(--sr-font-title-alt);
 
-                &:focus {
-                    outline: 1px solid #00d4ff;
-                    background: rgba(0, 212, 255, 0.1);
+                input {
+                    letter-spacing: 2px;
+                    width: 100%;
+                    font-size: 2rem;
+                    font-weight: bold;
+                    border: none;
+                    background: transparent;
+                    color: #ffd700;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+                    &:focus {
+                        outline: 1px solid #00d4ff;
+                        background: rgba(0, 212, 255, 0.1);
+                    }
                 }
             }
         }
 
         .damage-anarchy-tracker {
+            height: 100%;
             flex: 1;
             min-width: 380px;
             font-family: var(--sr-font-title);
-            border-bottom: 1px solid var(--blue);
             display: flex;
             align-items: end;
             flex-wrap: nowrap;
             flex-direction: column;
-            justify-content: end;
-            padding-bottom: 12px;
+            justify-content: center;
+            border-bottom: $headerBorder;
 
             .damage-track {
                 display: flex;
@@ -695,20 +727,19 @@
 
     .bookmarks-list-compact {
         display: none;
-        padding: 8px 365px 8px 8px;
-        background: rgba(15, 52, 96, 0.3);
         font-size: 0.85rem;
-        gap: 8px;
+        gap: 0.5rem;
         align-items: baseline;
+        overflow-y: scroll;
 
         .bookmarks-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
             justify-content: center;
             color: var(--yellow);
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
             font-family: var(--sr-font-title);
 
             i {
@@ -719,14 +750,14 @@
         .bookmarks-items {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 0.5rem;
         }
 
         .bookmark-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
             background: rgba(0, 212, 255, 0.1);
             border: 1px solid var(--blue);
             border-radius: 4px;
@@ -752,25 +783,34 @@
         .bookmarks-empty {
             color: var(--sr-text-color-grey);
             font-style: italic;
-            padding: 4px 0;
+            padding: 0.25rem 0;
         }
     }
 
+    .sheet-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        overflow-y: scroll;
+        padding: 0 1rem;
+    }
+
     .sheet-body {
+        flex: 1;
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
-        padding: 4px 8px 18px 8px;
+        margin-top: 0.5rem;
+        gap: 0.5rem;
 
         section.char-section {
-            margin-bottom: 12px;
+            margin-bottom: 1rem;
 
             header {
-                margin-bottom: 4px;
+                margin-bottom: 0.25rem;
                 border-top: 1px solid var(--sr-header-border);
                 border-bottom: 1px solid var(--sr-header-border);
                 background-color: var(--sr-header-bg);
-                padding: 4px 4px 4px 8px;
+                padding: 0.25rem 0.25rem 0.25rem 0.5rem;
                 font-size: 1.1rem;
                 color: var(--sr-text-color-light);
                 font-weight: bold;
@@ -788,7 +828,7 @@
 
                 div:nth-child(3) {
                     display: flex;
-                    margin-left: 8px;
+                    margin-left: 0.5rem;
                     align-items: center;
                     justify-content: center;
                     font-size: 1rem;
@@ -832,7 +872,7 @@
                     font-weight: bold;
                     display: grid;
                     grid-template-columns: 1fr 0fr 0fr;
-                    padding-right: 6px;
+                    padding-right: 0.25rem;
                     position: relative;
 
                     /* Advanced mode info row */
@@ -845,7 +885,7 @@
                         justify-content: space-between;
 
                         &.spe {
-                            padding-left: 20px;
+                            padding-left: 1.25rem;
                         }
 
                         .advanced-level,
@@ -907,11 +947,11 @@
                     .name-wrapper {
                         cursor: pointer;
                         display: block;
-                        gap: 8px;
+                        gap: 0.5rem;
                         transition: all 0.5s;
                         position: relative; // Required for context-menu positioning
                         width: 100%;
-                        padding-right: 8px;
+                        padding-right: 0.5rem;
 
                         &:hover {
                             color: gold !important;
@@ -927,7 +967,7 @@
                             font-size: 0.8rem;
                             font-weight: bold;
                             transform: rotate(90deg) translateX(-1px);
-                            margin-right: 4px;
+                            margin-right: 0.25rem;
                         }
 
                         .name {
@@ -957,7 +997,7 @@
 
                     .dice {
                         display: flex;
-                        gap: 4px;
+                        gap: 0.25rem;
                         align-items: center;
                         justify-content: center;
                         font-size: 1rem;
@@ -1006,7 +1046,7 @@
 
                     .rr {
                         display: flex;
-                        margin-left: 12px;
+                        margin-left: 0.5rem;
                         align-items: center;
                         justify-content: center;
                         color: var(--yellow);
@@ -1087,7 +1127,7 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 4px;
+                    gap: 0.25rem;
                     flex-direction: rows;
                 }
             }
@@ -1107,21 +1147,19 @@
                 padding: 0.2rem 0.5rem;
                 border-radius: var(--sr-border-radius-md);
                 font-size: 0.8rem;
-                color: var(--sr-ui-color-active);
-                background: var(--sr-ui-bg-color-dark);
-                border: 1px solid var(--sr-ui-border-color);
+                border: 1px solid;
                 display: inline-flex;
                 align-items: center;
                 gap: 0.3rem;
                 white-space: nowrap;
+                @include default-connection-colors;
 
-                &.offline {
-                    color: #666;
-                    border-color: #444;
+                &.offline, &.disconnected {
+                    @include offline-connection-colors;
                 }
 
-                &:hover {
-                    background: var(--sr-ui-bg-color-dark);
+                &.hot-sim {
+                    @include hot-sim-connection-colors;
                 }
             }
 
@@ -1184,8 +1222,7 @@
                     white-space: nowrap;
 
                     &.hot-sim {
-                        background: var(--sr-ui-bg-color-dark);
-                        color: #ff6b7a;
+                        @include hot-sim-connection-colors(false);
                     }
                 }
             }
@@ -1202,8 +1239,7 @@
 
             // Default "physical" state is muted so it stays discreet for non-mages
             &.physical .astral-state-current {
-                color: var(--sr-text-color-grey);
-                border-color: var(--sr-ui-border-color);
+                @include physical-state-colors;
             }
 
             .astral-state-current {
@@ -1211,18 +1247,14 @@
                 cursor: pointer;
                 padding: 0.2rem 0.5rem;
                 border-radius: var(--sr-border-radius-md);
+                border: 1px solid;
                 font-size: 0.8rem;
-                color: #b98cff;
-                background: var(--sr-ui-bg-color-dark);
-                border: 1px solid rgba(156, 108, 255, 0.4);
                 display: inline-flex;
                 align-items: center;
                 gap: 0.3rem;
                 white-space: nowrap;
 
-                &:hover {
-                    background: var(--sr-ui-bg-color-dark);
-                }
+                @include astral-state-colors;
             }
 
             .astral-state-menu {
@@ -1292,10 +1324,14 @@
         .thresholds-table {
             border: none;
             margin: 0;
+            white-space: nowrap;
+
+            tr th {
+                padding-left: 0.25rem;
+            }
 
             .threshold-title {
                 font-size: 1.1rem;
-                padding-left: 8px;
                 color: var(--sr-text-color-light);
                 font-weight: 700;
                 font-family: var(--sr-font-title);
@@ -1306,7 +1342,7 @@
             .catchphrase-input-wrapper {
                 input {
                     width: 100%;
-                    height: 30px;
+                    height: 2rem;
                     border-top: none;
                     border-left: none;
                     border-right: none;
@@ -1338,7 +1374,7 @@
         .behaviors-fields-compact {
             input {
                 width: 100%;
-                height: 30px;
+                height: 2rem;
                 border-top: none;
                 border-left: none;
                 border-right: none;
@@ -1417,17 +1453,15 @@
     }
 
     .sheet-footer {
-        position: absolute;
         width: 100%;
-        bottom: 0;
-        left: 0;
-        background-color: rgba(57, 77, 115, 0.8);
+        background-color: rgba(57, 77, 115, 1);
+        flex: 0 0 20px;
         line-height: 20px;
 
         .footer-content {
             border-top: 1px solid var(--blue);
-            margin: 0 8px;
-            width: calc(100% - 28px);
+            margin: 0 1.5rem 0 1rem;
+            width: 100%;
             color: var(--sr-text-color-light);
             font-size: 0.8rem;
             font-style: italic;
@@ -1435,7 +1469,7 @@
             flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 0.5rem;
 
             .footer-cash {
                 font-weight: bold;
@@ -1476,7 +1510,7 @@
             .footer-reference {
                 display: flex;
                 align-items: center;
-                gap: 4px;
+                gap: 0.25rem;
                 font-style: normal;
                 color: var(--neutral-light);
 
@@ -1488,7 +1522,7 @@
                 .reference-input {
                     width: 80px;
                     height: 18px;
-                    padding: 0 4px;
+                    padding: 0 0.25rem;
                     text-align: left;
                     background: transparent;
                     border: none;
@@ -1514,14 +1548,14 @@
 
             .footer-price {
                 font-weight: bold;
-                margin-right: 12px;
+                margin-right: 0.5rem;
                 color: gold;
                 font-size: 0.8rem;
                 font-style: normal;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 8px;
+                gap: 0.5rem;
                 flex-direction: row;
                 flex-wrap: wrap;
             }
@@ -1888,20 +1922,32 @@
         display: none !important;
     }
 
+    .sheet-content {
+        flex-direction: row !important;
+    }
+    .sheet-body {
+        display: flex !important;
+        flex: 0 !important;
+    }
+
     .thresholds-section {
-        display: block !important;
-        position: absolute;
-        top: 113px;
-        right: 7px;
-        width: 360px;
+        display: flex !important;
+        flex: 1 !important;
 
         tr th {
             display: none;
+        }
+        tr td {
+            padding: 0.25rem;
         }
 
         thead {
             border: 0;
         }
+    }
+
+    .bio-section {
+        display: none !important;
     }
 
     .sheet-footer {
@@ -1910,12 +1956,15 @@
 
     .bookmarks-list-compact {
         display: flex !important;
+        flex: 1 !important;
     }
 }
 
 // Container query pour mode ultra compact (< 160px): cacher seuils, avatar et nom, remplacer par bookmarks dans le header
 @container character-sheet (max-height: 160px) {
     .sheet-header {
+        padding: 0 !important;
+
         .avatar-section {
             display: none !important;
         }
@@ -1934,25 +1983,14 @@
     }
 
     .bookmarks-list-compact {
-        display: flex !important;
-        position: absolute;
-        top: 26px;
-        left: 8px;
-        right: auto;
-        padding: 8px 0 !important;
-        background: transparent !important;
-        max-width: calc(100% - 400px);
-        z-index: 2;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px;
+        gap: 0.25rem;
 
         .bookmarks-header {
             display: none;
         }
 
         .bookmark-item {
-            padding: 2px 6px;
+            padding: 2px 0.25rem;
             font-size: 0.75rem;
         }
     }

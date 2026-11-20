@@ -51,6 +51,11 @@ export class CharacterSheetV2 extends CharacterSheet {
       context.geminiAvailable = false;
     }
 
+    const src: string = this.actor.prototypeToken.texture.src ?? "";
+    if (src != "") {
+      context.tokenInfo = { src, isVideo: foundry.helpers.media.VideoHelper.hasVideoExtension(src) };
+    }
+
     return context;
   }
 
@@ -436,9 +441,9 @@ export class CharacterSheetV2 extends CharacterSheet {
               <span class="result-pack">${result.source}</span>
             </div>
             ${result.alreadyExists
-              ? `<span class="already-exists-label">${game.i18n!.localize('SRA2.SEARCH.ALREADY_ON_SHEET')}</span>`
-              : `<button type="button" class="add-item-btn" data-uuid="${result.uuid}">${buttonText}</button>`
-            }
+            ? `<span class="already-exists-label">${game.i18n!.localize('SRA2.SEARCH.ALREADY_ON_SHEET')}</span>`
+            : `<button type="button" class="add-item-btn" data-uuid="${result.uuid}">${buttonText}</button>`
+          }
           </div>
         `;
       }
