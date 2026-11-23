@@ -1013,19 +1013,36 @@ export class SRA2System {
       // Reroll button handler: replay the exact same roll (same dice pool, risk
       // dice, advantage/disadvantage mode) and keep the original complication
       // if there was one.
-      msgEl.querySelectorAll<HTMLElement>('.reroll-button').forEach(origBtn => {
-        const btn = origBtn.cloneNode(true) as HTMLElement;
+      // Only the message author (or a GM) may reroll it: hide the button for
+      // everyone else.
+      const userCanReroll = DiceRoller.canReroll(message);
+      msgEl.querySelectorAll<HTMLButtonElement>('.reroll-button').forEach(origBtn => {
+        if (!userCanReroll) {
+          origBtn.remove();
+          return;
+        }
+        const btn = origBtn.cloneNode(true) as HTMLButtonElement;
         origBtn.replaceWith(btn);
         btn.addEventListener('click', async (event: any) => {
           event.preventDefault();
+          if (btn.disabled) return;
+          // Disable immediately so a double click can't trigger two rerolls.
+          btn.disabled = true;
           let defendersRefs: Array<{ uuid?: string; tokenUuid?: string }> | undefined;
           try {
-            const raw = (event.currentTarget as HTMLElement).dataset.defenders;
+            const raw = btn.dataset.defenders;
             defendersRefs = raw ? JSON.parse(raw) : undefined;
           } catch (e) {
             console.warn('SRA2 | Reroll: could not parse defenders refs', e);
           }
-          await DiceRoller.executeReroll(message.id, defendersRefs);
+          let rerolled = false;
+          try {
+            rerolled = await DiceRoller.executeReroll(message.id, defendersRefs);
+          } finally {
+            // On success the message re-renders with the "rerolled" lock;
+            // on failure, let the user try again.
+            if (!rerolled) btn.disabled = false;
+          }
         });
       });
 

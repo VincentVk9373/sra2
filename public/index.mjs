@@ -6094,29 +6094,46 @@ async function executeRoll(attacker, defenders, attackerToken, rollData, forcedC
   await createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult);
 }
 async function executeReroll(messageId, defendersRefs) {
+  if (rerollsInFlight.has(messageId)) return false;
+  rerollsInFlight.add(messageId);
+  try {
+    return await doReroll(messageId, defendersRefs);
+  } finally {
+    rerollsInFlight.delete(messageId);
+  }
+}
+const rerollsInFlight = /* @__PURE__ */ new Set();
+function canReroll(message) {
+  return !!message?.canUserModify?.(game.user, "update");
+}
+async function doReroll(messageId, defendersRefs) {
   const message = game.messages?.get(messageId);
   if (!message) {
     console.error("SRA2 | Reroll: chat message not found", messageId);
-    return;
+    return false;
+  }
+  if (!canReroll(message)) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.REROLL_NOT_ALLOWED"));
+    return false;
   }
   const flags = message.flags?.sra2;
   const rollData = flags?.rollData;
   const previousResult = flags?.rollResult;
   if (!rollData || !previousResult) {
     console.error("SRA2 | Reroll: missing roll data on message", messageId);
-    return;
+    return false;
   }
   if (previousResult.isReroll) {
     ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
-    return;
+    return false;
   }
   if (flags.rerolled) {
     ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
-    return;
+    return false;
   }
   if ((previousResult.normalDice?.length ?? 0) === 0 && (previousResult.riskDice?.length ?? 0) === 0) {
     ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL"));
-    return;
+    return false;
   }
   const { actor: attacker, token: attackerToken } = loadCombatantFromFlags(
     { actorUuid: flags.attackerUuid, tokenUuid: flags.attackerTokenUuid, actorId: flags.attackerId },
@@ -6124,7 +6141,7 @@ async function executeReroll(messageId, defendersRefs) {
   );
   if (!attacker) {
     ui.notifications?.error(game.i18n.localize("SRA2.ROLL_DIALOG.REROLL_NO_ACTOR"));
-    return;
+    return false;
   }
   let defenders = [];
   if (defendersRefs && defendersRefs.length > 0) {
@@ -6138,6 +6155,7 @@ async function executeReroll(messageId, defendersRefs) {
   }
   await executeRoll(attacker, defenders, attackerToken, rollData, previousResult.complication);
   await message.setFlag("sra2", "rerolled", true);
+  return true;
 }
 function buildDefenderData(defender, defenderToken) {
   if (!defender) return null;
@@ -6448,6 +6466,7 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
   ChatMessage.applyRollMode(messageData, foundryRollMode);
   delete messageData.type;
   await ChatMessage.create(messageData);
+  if (rollResult.isReroll) return;
   if (rollResult.complication !== "none") {
     whisperComplicationSuggestions(rollData, rollResult);
   }
@@ -6697,6 +6716,7 @@ const DiceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   RISK_DICE_BY_RR,
   RISK_THRESHOLDS,
   buildRRSourcesHtml,
+  canReroll,
   executeReroll,
   executeRoll,
   getRRSources,
@@ -24060,19 +24080,31 @@ class SRA2System {
           }
         });
       });
+      const userCanReroll = canReroll(message);
       msgEl.querySelectorAll(".reroll-button").forEach((origBtn) => {
+        if (!userCanReroll) {
+          origBtn.remove();
+          return;
+        }
         const btn = origBtn.cloneNode(true);
         origBtn.replaceWith(btn);
         btn.addEventListener("click", async (event) => {
           event.preventDefault();
+          if (btn.disabled) return;
+          btn.disabled = true;
           let defendersRefs;
           try {
-            const raw = event.currentTarget.dataset.defenders;
+            const raw = btn.dataset.defenders;
             defendersRefs = raw ? JSON.parse(raw) : void 0;
           } catch (e) {
             console.warn("SRA2 | Reroll: could not parse defenders refs", e);
           }
-          await executeReroll(message.id, defendersRefs);
+          let rerolled = false;
+          try {
+            rerolled = await executeReroll(message.id, defendersRefs);
+          } finally {
+            if (!rerolled) btn.disabled = false;
+          }
         });
       });
       if (message.flags?.sra2?.rerolled) {

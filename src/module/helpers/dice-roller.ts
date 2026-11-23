@@ -502,11 +502,43 @@ export async function executeRoll(
 export async function executeReroll(
   messageId: string,
   defendersRefs?: Array<{ uuid?: string; tokenUuid?: string }>
-): Promise<void> {
+): Promise<boolean> {
+  // Guard against double clicks: the "rerolled" flag is only set once the new
+  // roll exists, so a second click before that would otherwise reroll twice.
+  if (rerollsInFlight.has(messageId)) return false;
+  rerollsInFlight.add(messageId);
+  try {
+    return await doReroll(messageId, defendersRefs);
+  } finally {
+    rerollsInFlight.delete(messageId);
+  }
+}
+
+/** Message IDs whose reroll is currently being resolved (see executeReroll). */
+const rerollsInFlight = new Set<string>();
+
+/**
+ * Whether the current user may reroll this chat message: only its author or
+ * a GM. This matches who can update the message, which is required to set
+ * the "rerolled" flag that locks the original roll.
+ */
+export function canReroll(message: any): boolean {
+  return !!message?.canUserModify?.(game.user, 'update');
+}
+
+async function doReroll(
+  messageId: string,
+  defendersRefs?: Array<{ uuid?: string; tokenUuid?: string }>
+): Promise<boolean> {
   const message = (game as any).messages?.get(messageId);
   if (!message) {
     console.error('SRA2 | Reroll: chat message not found', messageId);
-    return;
+    return false;
+  }
+
+  if (!canReroll(message)) {
+    ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.REROLL_NOT_ALLOWED'));
+    return false;
   }
 
   const flags = (message.flags as any)?.sra2;
@@ -515,26 +547,26 @@ export async function executeReroll(
 
   if (!rollData || !previousResult) {
     console.error('SRA2 | Reroll: missing roll data on message', messageId);
-    return;
+    return false;
   }
 
   // A reroll can only be done once (règle p.77): refuse to reroll a result
   // that is itself already the product of a reroll...
   if (previousResult.isReroll) {
     ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE'));
-    return;
+    return false;
   }
 
   // ...and also refuse to reroll the same original a second time (its
   // "rerolled" flag was set the first time this ran, see below).
   if (flags.rerolled) {
     ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE'));
-    return;
+    return false;
   }
 
   if ((previousResult.normalDice?.length ?? 0) === 0 && (previousResult.riskDice?.length ?? 0) === 0) {
     ui.notifications?.warn(game.i18n!.localize('SRA2.ROLL_DIALOG.CANNOT_REROLL'));
-    return;
+    return false;
   }
 
   const { actor: attacker, token: attackerToken } = loadCombatantFromFlags(
@@ -544,7 +576,7 @@ export async function executeReroll(
 
   if (!attacker) {
     ui.notifications?.error(game.i18n!.localize('SRA2.ROLL_DIALOG.REROLL_NO_ACTOR'));
-    return;
+    return false;
   }
 
   // Rebuild the full defenders list from the refs captured on the original
@@ -571,6 +603,7 @@ export async function executeReroll(
   // being clicked on the stale result after a fresher one exists. Applied
   // last, after executeRoll(), so a failed reroll doesn't lock the original.
   await message.setFlag('sra2', 'rerolled', true);
+  return true;
 }
 
 /**
@@ -984,6 +1017,11 @@ async function createRollChatMessage(
   ChatMessage.applyRollMode(messageData, foundryRollMode);
   delete messageData.type; // V14: applyRollMode injects legacy `type` field, remove it
   await ChatMessage.create(messageData);
+
+  // A reroll carries over the ORIGINAL roll's complication (règle p.77): its
+  // side effects (GM suggestions whisper, drain wounds) were already applied
+  // when the original roll was resolved, so they must not be applied again.
+  if (rollResult.isReroll) return;
 
   // Whisper complication suggestions to GM if applicable
   if (rollResult.complication !== 'none') {
