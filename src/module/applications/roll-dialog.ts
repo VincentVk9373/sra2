@@ -1446,7 +1446,13 @@ export class RollDialog extends Application {
           }
         }
       }
-      
+
+      // NPC mode: recompute the threshold from the new dice pool and the full
+      // rrList. The generic recalculation in updateRRForSkill/Spec ignores the
+      // weapon's own RR, and the pure-attribute branch above doesn't recompute
+      // it at all, which would leave a stale threshold.
+      DiceRoller.applyNpcThresholdIfActive(this.rollData, this.actor);
+
       // Re-render to update UI
       this.render();
     }));

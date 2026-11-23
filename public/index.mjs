@@ -5491,6 +5491,7 @@ class RollDialog extends Application {
           }
         }
       }
+      applyNpcThresholdIfActive(this.rollData, this.actor);
       this.render();
     }));
     el.querySelectorAll(".rr-checkbox").forEach((elem) => elem.addEventListener("change", (event) => {
@@ -5998,7 +5999,7 @@ function applyNpcThresholdIfActive(data, actor) {
   const resolvedActor = actor ?? (data.actorId ? game.actors?.get(data.actorId) : void 0);
   const npcMode = resolvedActor?.getFlag?.("sra2", "npcMode") ?? false;
   if (!npcMode) return;
-  const dicePool = data.specLevel ?? data.skillLevel;
+  const dicePool = data.specLevel ?? data.skillLevel ?? (data.linkedAttribute ? resolvedActor?.system?.attributes?.[data.linkedAttribute] : void 0);
   if (typeof dicePool !== "number") return;
   data.threshold = computeNpcThreshold(dicePool, data.rrList);
 }

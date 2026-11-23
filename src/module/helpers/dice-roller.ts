@@ -340,7 +340,10 @@ export function applyNpcThresholdIfActive(data: RollRequestData, actor?: any): v
   const npcMode = resolvedActor?.getFlag?.('sra2', 'npcMode') ?? false;
   if (!npcMode) return;
 
-  const dicePool = data.specLevel ?? data.skillLevel;
+  // Same dice pool resolution as RollDialog.getData(): spec, then skill,
+  // then the bare attribute for pure attribute rolls.
+  const dicePool = data.specLevel ?? data.skillLevel ??
+    (data.linkedAttribute ? resolvedActor?.system?.attributes?.[data.linkedAttribute] : undefined);
   if (typeof dicePool !== 'number') return;
 
   data.threshold = computeNpcThreshold(dicePool, data.rrList);
