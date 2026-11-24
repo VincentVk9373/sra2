@@ -5996,7 +5996,7 @@ function computeNpcThreshold(dicePool, rrList) {
   return Math.round(dicePool / 3) + totalRR + 1;
 }
 function applyNpcThresholdIfActive(data, actor) {
-  const resolvedActor = actor ?? (data.actorId ? game.actors?.get(data.actorId) : void 0);
+  const resolvedActor = actor ?? (data.actorUuid ? fromUuidSync(data.actorUuid) : void 0) ?? (data.actorId ? game.actors?.get(data.actorId) : void 0);
   const npcMode = resolvedActor?.getFlag?.("sra2", "npcMode") ?? false;
   if (!npcMode) return;
   const dicePool = data.specLevel ?? data.skillLevel ?? (data.linkedAttribute ? resolvedActor?.system?.attributes?.[data.linkedAttribute] : void 0);
@@ -7276,7 +7276,7 @@ class CharacterSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "character"],
       template: "systems/sra2/templates/actor-character-sheet.hbs",
       width: 900,
-      height: 750,
+      height: 800,
       tabs: [],
       dragDrop: [
         { dragSelector: ".metatype-item", dropSelector: null },
@@ -10216,7 +10216,7 @@ class VehicleSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "vehicle"],
       template: "systems/sra2/templates/actor-vehicle-sheet.hbs",
       width: 800,
-      height: 700,
+      height: 750,
       tabs: [],
       dragDrop: [
         { dragSelector: ".item", dropSelector: ".sheet-body" }
@@ -10977,7 +10977,7 @@ class IceSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "ice"],
       template: "systems/sra2/templates/actor-ice-sheet.hbs",
       width: 600,
-      height: 840,
+      height: 890,
       tabs: [],
       dragDrop: [],
       submitOnChange: false
@@ -11069,7 +11069,7 @@ class ServerSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "server"],
       template: "systems/sra2/templates/actor-server-sheet.hbs",
       width: 700,
-      height: 800,
+      height: 850,
       tabs: [],
       dragDrop: [{ dragSelector: ".ice-row", dropSelector: ".sheet-content" }],
       submitOnChange: false
