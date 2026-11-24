@@ -58,15 +58,15 @@ const CONJURATION_SPEC_SLUGS = [
 const MAGIC_SPEC_SLUGS = [...SORCERY_SPEC_SLUGS, ...CONJURATION_SPEC_SLUGS, 'spec_astral-combat'];
 
 function isMagicFocus(template: FeatTemplate): boolean {
-  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0]!.rrTarget);
 }
 
 function isSorceryFocus(template: FeatTemplate): boolean {
-  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0]!.rrTarget);
 }
 
 function isConjurationFocus(template: FeatTemplate): boolean {
-  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0]!.rrTarget);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -107,7 +107,7 @@ function pickRandom<T>(array: T[], count: number = 1): T[] {
 }
 
 function pickOne<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
+  return array[Math.floor(Math.random() * array.length)]!;
 }
 
 function generateItemId(): string {
@@ -127,7 +127,7 @@ function generateName(
   lastName: string;
   streetName: string;
 } {
-  const origins = Object.keys(FIRST_NAMES.male);
+  const origins = Object.keys(FIRST_NAMES.male!);
   const origin1 = pickOne(origins);
   // 50% chance of mixed heritage for last name
   const origin2 = Math.random() < 0.5 ? origin1 : pickOne(origins);
@@ -135,16 +135,16 @@ function generateName(
   const genderKey =
     gender === "female" ? "female" : gender === "neutral" ? "neutral" : "male";
   const firstNamePool =
-    FIRST_NAMES[genderKey]?.[origin1] ?? FIRST_NAMES.male[origin1];
+    FIRST_NAMES[genderKey]?.[origin1] ?? FIRST_NAMES.male![origin1];
   const lastNamePool = LAST_NAMES[origin2] ?? LAST_NAMES.anglo;
 
-  const firstName = pickOne(firstNamePool);
-  const lastName = pickOne(lastNamePool);
+  const firstName = pickOne(firstNamePool!);
+  const lastName = pickOne(lastNamePool!);
 
   // Street name from theme, with 20% chance of picking from 'general' instead
   const themePool = STREET_NAMES[streetNameTheme] ?? STREET_NAMES.general;
   const streetPool = Math.random() < 0.2 ? STREET_NAMES.general : themePool;
-  const streetName = pickOne(streetPool);
+  const streetName = pickOne(streetPool!);
 
   return {
     displayName: `${streetName} (${firstName} ${lastName})`,
@@ -180,7 +180,8 @@ function distributeAttributes(
 
   // Max out the top N attributes based on power level
   for (let i = 0; i < powerLevel.maxedAttributes && i < priority.length; i++) {
-    attrs[priority[i]] = maxes[priority[i]];
+    const attr = priority[i]!;
+    attrs[attr] = maxes[attr];
   }
 
   // Distribute remaining points with priority weighting
@@ -196,16 +197,17 @@ function distributeAttributes(
 
   for (let pass = 0; pass < 3 && remaining > 0; pass++) {
     for (let i = 0; i < priority.length && remaining > 0; i++) {
-      const attr = priority[i];
+      const attr = priority[i]!;
       const max = maxes[attr];
-      if (attrs[attr] >= max) continue;
+      const current = attrs[attr]!;
+      if (current >= max) continue;
 
       const share = Math.max(
         1,
-        Math.round((weights[i] / totalWeight) * remaining),
+        Math.round((weights[i]! / totalWeight) * remaining),
       );
-      const canAdd = Math.min(share, max - attrs[attr], remaining);
-      attrs[attr] += canAdd;
+      const canAdd = Math.min(share, max - current, remaining);
+      attrs[attr] = current + canAdd;
       remaining -= canAdd;
     }
   }
@@ -214,7 +216,7 @@ function distributeAttributes(
   for (const attr of priority) {
     if (Math.random() < 0.3) {
       const delta = Math.random() < 0.5 ? 1 : -1;
-      const newVal = attrs[attr] + delta;
+      const newVal = attrs[attr]! + delta;
       if (newVal >= 2 && newVal <= maxes[attr]) {
         attrs[attr] = newVal;
       }
@@ -223,7 +225,7 @@ function distributeAttributes(
 
   // Enforce minimum 2 for all attributes (no runner has 1 without RP justification)
   for (const attr of Object.keys(attrs)) {
-    if (attrs[attr] < 2) attrs[attr] = 2;
+    if (attrs[attr]! < 2) attrs[attr] = 2;
   }
 
   // Enforce maxedAttributes limit: count how many are at max, reduce excess
@@ -243,7 +245,7 @@ function distributeAttributes(
   // Every level costs 10000, except the last (max) which costs 20000
   let cost = 0;
   for (const attr of Object.keys(attrs)) {
-    const val = attrs[attr];
+    const val = attrs[attr]!;
     const max = maxes[attr as keyof typeof maxes];
     for (let i = 1; i <= val; i++) {
       cost += i === max ? 20000 : 10000;
@@ -303,15 +305,15 @@ function distributeSkills(
     rating = Math.max(1, Math.min(rating, skillMax));
 
     // Enforce minimum for base runner skills
-    if (slug in BASE_SKILLS && rating < BASE_SKILLS[slug]) {
-      rating = BASE_SKILLS[slug];
+    if (slug in BASE_SKILLS && rating < BASE_SKILLS[slug]!) {
+      rating = BASE_SKILLS[slug]!;
     }
 
     // Apply noise
     if (Math.random() < 0.3) {
       rating += Math.random() < 0.5 ? 1 : -1;
       rating = Math.max(
-        slug in BASE_SKILLS ? BASE_SKILLS[slug] : 1,
+        slug in BASE_SKILLS ? BASE_SKILLS[slug]! : 1,
         Math.min(rating, skillMax),
       );
     }
@@ -329,7 +331,7 @@ function distributeSkills(
     } else {
       // Reduce rating to fit (but not below base minimum)
       let reducedRating = rating;
-      const minRating = slug in BASE_SKILLS ? BASE_SKILLS[slug] : 1;
+      const minRating = slug in BASE_SKILLS ? BASE_SKILLS[slug]! : 1;
       while (reducedRating >= minRating) {
         let reducedCost = 0;
         for (let i = 1; i <= reducedRating; i++) {
@@ -456,10 +458,10 @@ function generateFeats(
       : archetype.primarySkills["close-combat"]
         ? AWAKENED_TEMPLATES[3]
         : AWAKENED_TEMPLATES[0];
-    addFeat(awakenedType);
+    addFeat(awakenedType!);
   }
   if (archetype.isEmerged) {
-    addFeat(EMERGED_TEMPLATES[0]);
+    addFeat(EMERGED_TEMPLATES[0]!);
   }
 
   // 2. Cyberware (non-magic archetypes)
@@ -546,7 +548,7 @@ function generateFeats(
       Math.abs(a.armorValue - targetArmor),
   );
   if (armorOptions.length > 0) {
-    addFeat(armorOptions[armorOptions.length - 1]);
+    addFeat(armorOptions[armorOptions.length - 1]!);
   }
 
   // 8. Weapons — at least 1 primary, try for 2
@@ -700,11 +702,11 @@ function generatePersonality(
   const categories = Object.keys(keywordsTable);
   const keywords: string[] = [];
   for (const cat of categories) {
-    keywords.push(pickOne(keywordsTable[cat]));
+    keywords.push(pickOne(keywordsTable[cat]!));
   }
 
   // Replace keywords to match the actual metatype + gender
-  const metatypeName = isEn ? metatype.nameEn : metatype.nameFr;
+  const metatypeName = isEn ? metatype?.nameEn : metatype?.nameFr;
   const genderLabel = isEn
     ? (gender === 'female' ? 'Woman' : 'Man')
     : (gender === 'female' ? 'Femme' : 'Homme');
@@ -712,7 +714,7 @@ function generatePersonality(
     keywords[0] = `${metatypeName} — ${genderLabel}`;
   }
   // Force the "role" keyword (index 2) to match the archetype
-  const archetypeLabel = isEn ? archetype.labelEn : archetype.labelFr;
+  const archetypeLabel = isEn ? archetype!.labelEn : archetype!.labelFr;
   keywords[2] = archetypeLabel;
 
   const behaviors = pickRandom(isEn ? BEHAVIORS_EN : BEHAVIORS, 4);
@@ -792,7 +794,7 @@ function generateImagePrompt(
   // Extract ALL flavor traits from bio
   const traitMatches = flavorBg.matchAll(/<strong>[^<]*:<\/strong>\s*([^<]+)/g);
   for (const match of traitMatches) {
-    parts.push(match[1].trim());
+    parts.push(match[1]!.trim());
   }
 
   // Behaviors — pick the most visually evocative ones
@@ -934,7 +936,7 @@ function findCompendiumItem(
 // ═══════════════════════════════════════════════════════════════
 
 function buildMetatypeItem(
-  metatypeKey: string,
+  _metatypeKey: string,
   metatype: MetatypeProfile,
   compendiumItems?: any[],
 ): any {
@@ -1252,7 +1254,7 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
 
   const archetype = ARCHETYPES[archetypeKey];
   const metatype = METATYPES[metatypeKey];
-  const powerLevel = POWER_LEVELS[options.powerLevel] ?? POWER_LEVELS.runner;
+  const powerLevel = POWER_LEVELS[options.powerLevel] ?? POWER_LEVELS.runner!;
 
   if (!archetype || !metatype) {
     ui.notifications?.error("Archétype ou métatype invalide");
@@ -1368,7 +1370,7 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
     );
     if (upgradeable.length === 0) break;
     upgradeable.sort((a, b) => b.rating - a.rating);
-    const skill = upgradeable[0];
+    const skill = upgradeable[0]!;
     const upgradeCost = skill.rating < 5 ? 2500 : 5000;
     if (upgradeCost > surplus) break;
     skill.rating += 1;
@@ -1391,7 +1393,7 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
     // Find attributes below max, excluding those that would exceed maxedAttributes limit
     const canAddNewMax = currentMaxed + attrUpgrades < powerLevel.maxedAttributes;
     const upgradeable = archetype.primaryAttributes.filter((attr) => {
-      const current = attrResult.attributes[attr];
+      const current = attrResult.attributes[attr]!;
       const max = metatype.maxes[attr];
       if (current >= max) return false;
       // If upgrading would reach max and we can't add a new maxed attribute, skip
@@ -1399,13 +1401,13 @@ async function generateSingleNPC(options: NPCGeneratorOptions): Promise<void> {
       return true;
     });
     if (upgradeable.length === 0) break;
-    const attr = upgradeable[0];
-    attrResult.attributes[attr] += 1;
+    const attr = upgradeable[0]!;
+    attrResult.attributes[attr] = attrResult.attributes[attr]! + 1;
     attrUpgrades++;
     // Recompute attribute cost AFTER the change
     attrResult.cost = 0;
     for (const a of Object.keys(attrResult.attributes)) {
-      const val = attrResult.attributes[a];
+      const val = attrResult.attributes[a]!;
       const max = metatype.maxes[a as keyof typeof metatype.maxes];
       for (let i = 1; i <= val; i++) {
         attrResult.cost += i === max ? 20000 : 10000;

@@ -21,7 +21,7 @@ export class ServerSheet extends ActorSheet {
   }
 
   override async _renderOuter(...args: any[]): Promise<JQuery> {
-    const html = await super._renderOuter(...args);
+    const html = await super._renderOuter(...(args as []));
     ServerSheet.openSheets.set(this.actor.id!, this);
     return html;
   }

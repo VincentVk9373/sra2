@@ -366,7 +366,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
 
     const strength = (this as any).attributes?.strength || 1;
     const willpower = (this as any).attributes?.willpower || 1;
-    const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
+    // NOTE: featBonuses.bonusMatrixThreshold is computed but not applied to the
+    // matrix thresholds below (they only depend on the firewall).
+    const { bonusPhysicalThreshold, bonusMentalThreshold, totalEssenceCost } = featBonuses;
 
     // Active cyberdeck firewall for matrix thresholds
     let firewall = 0;

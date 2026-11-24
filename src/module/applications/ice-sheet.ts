@@ -72,7 +72,7 @@ export class IceSheet extends ActorSheet {
   /**
    * Handle server index change - update actor and re-render
    */
-  private async _onServerIndexChange(event: Event): Promise<void> {
+  private async _onServerIndexChange(_event: Event): Promise<void> {
     // Submit the full form first to preserve name/img changes
     await this.submit();
   }

@@ -566,7 +566,7 @@ export const SPEC_DEFINITIONS: Record<string, { nameFr: string; linkedSkill: str
   'spec_lockpicking':         { nameFr: 'Spé : Crochetage',            linkedSkill: 'stealth',       linkedAttribute: 'agility' },
   'spec_backdoor':            { nameFr: 'Spé : Backdoor',              linkedSkill: 'cracking',      linkedAttribute: 'logic' },
   'spec_brute-force':         { nameFr: 'Spé : Force brute',           linkedSkill: 'cracking',      linkedAttribute: 'logic' },
-  'spec_complex-forms':         { nameFr: 'Spé : Cybercombat',           linkedSkill: 'cracking',      linkedAttribute: 'logic' },
+  'spec_cybercombat':         { nameFr: 'Spé : Cybercombat',           linkedSkill: 'cracking',      linkedAttribute: 'logic' },
   'spec_electronic-warfare':  { nameFr: 'Spé : Guerre électronique',   linkedSkill: 'cracking',      linkedAttribute: 'logic' },
   'spec_cybernetics':         { nameFr: 'Spé : C/R implants cybernétiques', linkedSkill: 'engineering', linkedAttribute: 'logic' },
   'spec_cr-drones':           { nameFr: 'Spé : C/R drones',            linkedSkill: 'engineering',   linkedAttribute: 'logic' },
