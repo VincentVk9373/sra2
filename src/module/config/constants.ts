@@ -183,7 +183,6 @@ export const SPEC_SLUGS = {
   REMOTE_CONTROLLED_WEAPONS: 'spec_remote-controlled-weapons',
   RIFLES: 'spec_rifles',
   RUNNING: 'spec_running',
-  SHOTGUNS: 'spec_shotguns',
   SMGS: 'spec_smgs',
   SOCIAL_PERCEPTION: 'spec_social-perception',
   STEALTH: 'spec_stealth',

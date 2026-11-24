@@ -101,7 +101,8 @@ export const WEAPON_TYPES = {
   },
   "shotguns": {
     vd: 8, melee: "disadvantage", short: "ok", medium: "disadvantage", long: "none",
-    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_shotguns",
+    // No dedicated specialization: shotguns fall under Spec: Rifles
+    linkedSkill: "ranged-weapons", linkedSpecialization: "spec_rifles",
     linkedDefenseSkill: "athletics", linkedDefenseSpecialization: "spec_ranged-defense"
   },
   "sniper-rifles": { 

@@ -57,6 +57,8 @@ import { Migration_13_4_0 } from "./migration/migration-13.4.0.mjs";
 import { Migration_13_4_4 } from "./migration/migration-13.4.4.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_4_5 } from "./migration/migration-13.4.5.mjs";
+// @ts-ignore - JavaScript module without type declarations
+import { Migration_14_4_2 } from "./migration/migration-14.4.2.mjs";
 import { registerGeminiSetting } from "./helpers/gemini-image.js";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
@@ -232,6 +234,7 @@ export class SRA2System {
       declareMigration(new Migration_13_4_0());
       declareMigration(new Migration_13_4_4());
       declareMigration(new Migration_13_4_5());
+      declareMigration(new Migration_14_4_2());
     });
   }
 

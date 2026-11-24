@@ -554,7 +554,6 @@ export const SPEC_DEFINITIONS: Record<string, { nameFr: string; linkedSkill: str
   'spec_defense':             { nameFr: 'Spé : Défense',               linkedSkill: 'close-combat',  linkedAttribute: 'agility' },
   'spec_pistols':             { nameFr: 'Spé : Pistolets',             linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
   'spec_rifles':              { nameFr: 'Spé : Fusils',                linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
-  'spec_shotguns':            { nameFr: 'Spé : Shotguns',              linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
   'spec_smgs':                { nameFr: 'Spé : Mitraillettes',         linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
   'spec_heavy-weapons':       { nameFr: 'Spé : Armes lourdes',         linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
   'spec_thrown-weapons':      { nameFr: 'Spé : Armes de jet',          linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
