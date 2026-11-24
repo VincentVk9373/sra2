@@ -3,6 +3,13 @@
 .sr-checkbox-base() {
   background: none;
   position: relative;
+  // The icons below are absolutely positioned, so they no longer give the
+  // (appearance: none) checkbox its size as in Foundry core: size it
+  // explicitly, otherwise it collapses to 0 width and the icon overlaps the
+  // neighbouring label (e.g. the module management list).
+  flex: none;
+  width: var(--checkbox-size, 1.25em);
+  height: var(--checkbox-size, 1.25em);
 
   &:focus {
     background: none;
