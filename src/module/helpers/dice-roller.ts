@@ -336,7 +336,11 @@ export function computeNpcThreshold(dicePool: number, rrList: any[] | undefined)
  * rrList changes: initial roll request, weapon selection, attribute change...
  */
 export function applyNpcThresholdIfActive(data: RollRequestData, actor?: any): void {
-  const resolvedActor = actor ?? (data.actorId ? (game.actors as any)?.get(data.actorId) : undefined);
+  // Prefer the UUID: for an unlinked token the NPC flag lives on the token's
+  // synthetic actor, which game.actors.get(actorId) (the base actor) misses.
+  const resolvedActor = actor
+    ?? (data.actorUuid ? (fromUuidSync as any)(data.actorUuid) : undefined)
+    ?? (data.actorId ? (game.actors as any)?.get(data.actorId) : undefined);
   const npcMode = resolvedActor?.getFlag?.('sra2', 'npcMode') ?? false;
   if (!npcMode) return;
 
