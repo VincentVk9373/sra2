@@ -13,7 +13,7 @@ export class ServerSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'server'],
       template: 'systems/sra2/templates/actor-server-sheet.hbs',
       width: 700,
-      height: 800,
+      height: 850,
       tabs: [],
       dragDrop: [{ dragSelector: '.ice-row', dropSelector: '.sheet-content' }],
       submitOnChange: false,
@@ -21,7 +21,7 @@ export class ServerSheet extends ActorSheet {
   }
 
   override async _renderOuter(...args: any[]): Promise<JQuery> {
-    const html = await super._renderOuter(...args);
+    const html = await super._renderOuter(...(args as []));
     ServerSheet.openSheets.set(this.actor.id!, this);
     return html;
   }

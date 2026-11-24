@@ -440,11 +440,13 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
     let firewall = 0;
     let isEmerged = false;
+    let hasMatrixPersona = false;
     if (parent?.items) {
       const activeCyberdeck = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
       );
       if (activeCyberdeck?.system) {
+        hasMatrixPersona = true;
         const baseFirewall = activeCyberdeck.system.firewall || 1;
         const firewallMalus = activeCyberdeck.system.firewallMalus || 0;
         firewall = Math.max(0, baseFirewall - firewallMalus);
@@ -454,6 +456,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       );
       if (activeEmerged) {
         isEmerged = true;
+        hasMatrixPersona = true;
         const virtualFirewall = willpower;
         const charisma = this.attributes?.charisma || 1;
         this.virtualPersona = { firewall: virtualFirewall, attack: charisma };
@@ -463,6 +466,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       }
     }
     this.isEmerged = isEmerged;
+    const matrixBonus = hasMatrixPersona ? bonusMatrixThreshold : 0;
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -480,9 +484,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: firewall + matrixBonus,
+        severe: firewall * 2 + matrixBonus,
+        incapacitating: firewall * 3 + matrixBonus
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -3703,6 +3707,13 @@ function getCurrentActiveSection(html) {
   const activeNavItem = el.querySelector(".section-nav .nav-item.active");
   return activeNavItem ? activeNavItem.dataset.section || null : null;
 }
+function enableSectionNavigation(html) {
+  const el = html instanceof HTMLElement ? html : html[0];
+  if (!el) return;
+  el.querySelectorAll(".section-nav .nav-item[disabled]").forEach((button) => {
+    button.disabled = false;
+  });
+}
 function enrichFeats(feats, actorStrength, calculateFinalDamageValueFn, actor) {
   return feats.map((feat2) => {
     feat2.rrEntries = [];
@@ -4288,6 +4299,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   calculateRawDamageString,
   calculateSkillDicePool,
   calculateSpecDicePool,
+  enableSectionNavigation,
   enrichFeats,
   filterItemRRForRoll,
   findAttackSkillAndSpec,
@@ -4438,7 +4450,7 @@ function resolveDefenseSkillData(defenderActor, rollData, isVehicle) {
         linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
         const attrVal = defenderActor.system?.attributes?.[linkedAttribute] ?? 0;
         skillLevel = attrVal + (linkedSkill.system.rating ?? 0);
-        specLevel = skillLevel + 2;
+        specLevel = (skillLevel ?? 0) + 2;
       }
     }
   } else if (finalSkill) {
@@ -4689,6 +4701,7 @@ class RollDialog extends Application {
     this.rollData.mediumRange = mediumRange;
     this.rollData.longRange = longRange;
     this.rollData.weaponType = wepTypeName;
+    applyNpcThresholdIfActive(this.rollData, this.actor);
   }
   /**
    * Select Combat rapproché skill for counter-attack
@@ -4720,6 +4733,7 @@ class RollDialog extends Application {
     this.rollData.damageValueBonus = 0;
     this.rollData.rrList = rrList;
     this.rollData.selectedWeaponId = void 0;
+    applyNpcThresholdIfActive(this.rollData, this.actor);
   }
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -5368,6 +5382,7 @@ class RollDialog extends Application {
       this.rollData.mediumRange = mediumRange;
       this.rollData.longRange = longRange;
       this.rollData.weaponType = wepTypeName;
+      applyNpcThresholdIfActive(this.rollData, this.actor);
       this.render();
     }));
     el.querySelectorAll(".skill-dropdown").forEach((elem) => elem.addEventListener("change", (event) => {
@@ -5480,6 +5495,7 @@ class RollDialog extends Application {
           }
         }
       }
+      applyNpcThresholdIfActive(this.rollData, this.actor);
       this.render();
     }));
     el.querySelectorAll(".rr-checkbox").forEach((elem) => elem.addEventListener("change", (event) => {
@@ -5972,10 +5988,26 @@ function handleRollRequest(data) {
     itemActive: data.itemActive,
     rrList: data.rrList
   });
+  applyNpcThresholdIfActive(data);
   const dialog = new RollDialog(data);
   dialog.render(true);
 }
-async function executeRoll(attacker, defenders, attackerToken, rollData) {
+function computeNpcThreshold(dicePool, rrList) {
+  const totalRR = Math.min(
+    RR_MAX,
+    (rrList || []).reduce((sum, r) => sum + (r?.rrValue || 0), 0)
+  );
+  return Math.round(dicePool / 3) + totalRR + 1;
+}
+function applyNpcThresholdIfActive(data, actor) {
+  const resolvedActor = actor ?? (data.actorUuid ? fromUuidSync(data.actorUuid) : void 0) ?? (data.actorId ? game.actors?.get(data.actorId) : void 0);
+  const npcMode = resolvedActor?.getFlag?.("sra2", "npcMode") ?? false;
+  if (!npcMode) return;
+  const dicePool = data.specLevel ?? data.skillLevel ?? (data.linkedAttribute ? resolvedActor?.system?.attributes?.[data.linkedAttribute] : void 0);
+  if (typeof dicePool !== "number") return;
+  data.threshold = computeNpcThreshold(dicePool, data.rrList);
+}
+async function executeRoll(attacker, defenders, attackerToken, rollData, forcedComplication) {
   if (!attacker) {
     console.error("No attacker provided for roll");
     return;
@@ -6065,6 +6097,9 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
     } else if (remainingFailures >= 3) {
       complication = "disaster";
     }
+    if (forcedComplication !== void 0) {
+      complication = forcedComplication;
+    }
     rollResult = {
       normalDice: normalResults,
       riskDice: riskResults,
@@ -6074,10 +6109,77 @@ async function executeRoll(attacker, defenders, attackerToken, rollData) {
       criticalFailures,
       finalRR,
       remainingFailures,
-      complication
+      complication,
+      // A reroll can only be done once (règle p.77): mark this result as
+      // itself a reroll so the chat card doesn't offer to reroll it again.
+      isReroll: forcedComplication !== void 0
     };
   }
   await createRollChatMessage(attacker, defenders, attackerToken, rollData, rollResult);
+}
+async function executeReroll(messageId, defendersRefs) {
+  if (rerollsInFlight.has(messageId)) return false;
+  rerollsInFlight.add(messageId);
+  try {
+    return await doReroll(messageId, defendersRefs);
+  } finally {
+    rerollsInFlight.delete(messageId);
+  }
+}
+const rerollsInFlight = /* @__PURE__ */ new Set();
+function canReroll(message) {
+  return !!message?.canUserModify?.(game.user, "update");
+}
+async function doReroll(messageId, defendersRefs) {
+  const message = game.messages?.get(messageId);
+  if (!message) {
+    console.error("SRA2 | Reroll: chat message not found", messageId);
+    return false;
+  }
+  if (!canReroll(message)) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.REROLL_NOT_ALLOWED"));
+    return false;
+  }
+  const flags = message.flags?.sra2;
+  const rollData = flags?.rollData;
+  const previousResult = flags?.rollResult;
+  if (!rollData || !previousResult) {
+    console.error("SRA2 | Reroll: missing roll data on message", messageId);
+    return false;
+  }
+  if (previousResult.isReroll) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
+    return false;
+  }
+  if (flags.rerolled) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL_TWICE"));
+    return false;
+  }
+  if ((previousResult.normalDice?.length ?? 0) === 0 && (previousResult.riskDice?.length ?? 0) === 0) {
+    ui.notifications?.warn(game.i18n.localize("SRA2.ROLL_DIALOG.CANNOT_REROLL"));
+    return false;
+  }
+  const { actor: attacker, token: attackerToken } = loadCombatantFromFlags(
+    { actorUuid: flags.attackerUuid, tokenUuid: flags.attackerTokenUuid, actorId: flags.attackerId },
+    "Reroll Attacker"
+  );
+  if (!attacker) {
+    ui.notifications?.error(game.i18n.localize("SRA2.ROLL_DIALOG.REROLL_NO_ACTOR"));
+    return false;
+  }
+  let defenders = [];
+  if (defendersRefs && defendersRefs.length > 0) {
+    defenders = defendersRefs.map((ref) => loadCombatantFromFlags({ actorUuid: ref.uuid, tokenUuid: ref.tokenUuid }, "Reroll Defender")).filter((d) => d.actor || d.token);
+  } else if (flags.defenderUuid || flags.defenderTokenUuid || flags.defenderId) {
+    const defender = loadCombatantFromFlags(
+      { actorUuid: flags.defenderUuid, tokenUuid: flags.defenderTokenUuid, actorId: flags.defenderId },
+      "Reroll Defender"
+    );
+    if (defender.actor || defender.token) defenders = [defender];
+  }
+  await executeRoll(attacker, defenders, attackerToken, rollData, previousResult.complication);
+  await message.setFlag("sra2", "rerolled", true);
+  return true;
 }
 function buildDefenderData(defender, defenderToken) {
   if (!defender) return null;
@@ -6388,6 +6490,7 @@ async function createRollChatMessage(attacker, defenders, attackerToken, rollDat
   ChatMessage.applyRollMode(messageData, foundryRollMode);
   delete messageData.type;
   await ChatMessage.create(messageData);
+  if (rollResult.isReroll) return;
   if (rollResult.complication !== "none") {
     whisperComplicationSuggestions(rollData, rollResult);
   }
@@ -6636,7 +6739,11 @@ const DiceRoller = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePr
   __proto__: null,
   RISK_DICE_BY_RR,
   RISK_THRESHOLDS,
+  applyNpcThresholdIfActive,
   buildRRSourcesHtml,
+  canReroll,
+  computeNpcThreshold,
+  executeReroll,
   executeRoll,
   getRRSources,
   getRRSourcesForActor,
@@ -7173,7 +7280,7 @@ class CharacterSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "character"],
       template: "systems/sra2/templates/actor-character-sheet.hbs",
       width: 900,
-      height: 750,
+      height: 800,
       tabs: [],
       dragDrop: [
         { dragSelector: ".metatype-item", dropSelector: null },
@@ -8075,7 +8182,6 @@ class CharacterSheet extends ActorSheet {
     );
     if (!phantom) return;
     const linkedAttribute = phantom.linkedAttribute;
-    this.actor.system.attributes?.[linkedAttribute] || 0;
     let rrList = [...phantom.sources];
     let associatedSkill = null;
     if (phantom.linkedSkillOnActor && phantom.linkedSkillName) {
@@ -9169,7 +9275,7 @@ class CharacterSheet extends ActorSheet {
     handleRollRequest({
       itemType: "cyberdeck-attack",
       itemName: cyberdeck.name || "",
-      itemId: cyberdeck.id,
+      itemId: cyberdeck.id ?? void 0,
       itemRating: cyberdeckSystem.rating || 0,
       itemActive: cyberdeckSystem.active,
       // Cybercombat uses Cracking (Cybercombat) + Volonté
@@ -9599,6 +9705,7 @@ class CharacterSheetV2 extends CharacterSheet {
   async getData() {
     const context = await super.getData();
     context.advancedMode = this._advancedMode;
+    context.npcMode = this.actor.getFlag("sra2", "npcMode") ?? false;
     try {
       const { isGeminiConfigured: isGeminiConfigured2 } = await Promise.resolve().then(() => geminiImage);
       context.geminiAvailable = isGeminiConfigured2();
@@ -9680,6 +9787,9 @@ class CharacterSheetV2 extends CharacterSheet {
     el.querySelectorAll('[data-action="toggle-advanced-mode"]').forEach((elem) => {
       elem.addEventListener("click", this._onToggleAdvancedMode.bind(this));
     });
+    el.querySelectorAll('[data-action="toggle-npc-mode"]').forEach((elem) => {
+      elem.addEventListener("click", this._onToggleNpcMode.bind(this));
+    });
     el.querySelectorAll(".skill-rating-input").forEach((elem) => {
       elem.addEventListener("change", this._onUpdateSkillRating.bind(this));
     });
@@ -9748,6 +9858,17 @@ class CharacterSheetV2 extends CharacterSheet {
   _onToggleAdvancedMode(event) {
     event.preventDefault();
     this._advancedMode = !this._advancedMode;
+    this.render(false);
+  }
+  /**
+   * Toggle "NPC mode": when active, rolls made from this sheet use the
+   * NPC success threshold (dicePool / 3 + 1 + RR) instead of rolling dice.
+   * Persisted on the actor via a flag so it survives reopening the sheet.
+   */
+  async _onToggleNpcMode(event) {
+    event.preventDefault();
+    const current = this.actor.getFlag("sra2", "npcMode") ?? false;
+    await this.actor.setFlag("sra2", "npcMode", !current);
     this.render(false);
   }
   /**
@@ -10098,7 +10219,7 @@ class VehicleSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "vehicle"],
       template: "systems/sra2/templates/actor-vehicle-sheet.hbs",
       width: 800,
-      height: 700,
+      height: 750,
       tabs: [],
       dragDrop: [
         { dragSelector: ".item", dropSelector: ".sheet-body" }
@@ -10517,6 +10638,7 @@ class VehicleSheet extends ActorSheet {
         restoreActiveSection(form, activeSection);
       }
     }));
+    enableSectionNavigation(html);
   }
   /**
    * Handle section navigation
@@ -10858,7 +10980,7 @@ class IceSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "ice"],
       template: "systems/sra2/templates/actor-ice-sheet.hbs",
       width: 600,
-      height: 840,
+      height: 890,
       tabs: [],
       dragDrop: [],
       submitOnChange: false
@@ -10897,7 +11019,7 @@ class IceSheet extends ActorSheet {
   /**
    * Handle server index change - update actor and re-render
    */
-  async _onServerIndexChange(event) {
+  async _onServerIndexChange(_event) {
     await this.submit();
   }
   /**
@@ -10950,7 +11072,7 @@ class ServerSheet extends ActorSheet {
       classes: ["sra2", "sheet", "actor", "server"],
       template: "systems/sra2/templates/actor-server-sheet.hbs",
       width: 700,
-      height: 800,
+      height: 850,
       tabs: [],
       dragDrop: [{ dragSelector: ".ice-row", dropSelector: ".sheet-content" }],
       submitOnChange: false
@@ -11326,6 +11448,7 @@ class FeatSheet extends ItemSheet {
         }
       });
     }, { signal });
+    enableSectionNavigation(html);
   }
   /**
    * Handle section navigation
@@ -14047,7 +14170,7 @@ const SPEC_DEFINITIONS = {
   "spec_lockpicking": { nameFr: "Spé : Crochetage", linkedSkill: "stealth", linkedAttribute: "agility" },
   "spec_backdoor": { nameFr: "Spé : Backdoor", linkedSkill: "cracking", linkedAttribute: "logic" },
   "spec_brute-force": { nameFr: "Spé : Force brute", linkedSkill: "cracking", linkedAttribute: "logic" },
-  "spec_complex-forms": { nameFr: "Spé : Cybercombat", linkedSkill: "cracking", linkedAttribute: "logic" },
+  "spec_cybercombat": { nameFr: "Spé : Cybercombat", linkedSkill: "cracking", linkedAttribute: "logic" },
   "spec_electronic-warfare": { nameFr: "Spé : Guerre électronique", linkedSkill: "cracking", linkedAttribute: "logic" },
   "spec_cybernetics": { nameFr: "Spé : C/R implants cybernétiques", linkedSkill: "engineering", linkedAttribute: "logic" },
   "spec_cr-drones": { nameFr: "Spé : C/R drones", linkedSkill: "engineering", linkedAttribute: "logic" },
@@ -18624,13 +18747,13 @@ const CONJURATION_SPEC_SLUGS = [
 ];
 const MAGIC_SPEC_SLUGS = [...SORCERY_SPEC_SLUGS, ...CONJURATION_SPEC_SLUGS, "spec_astral-combat"];
 function isMagicFocus(template) {
-  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0].rrTarget);
 }
 function isSorceryFocus(template) {
-  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0].rrTarget);
 }
 function isConjurationFocus(template) {
-  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0].rrTarget);
 }
 async function generateNPCs(options) {
   const count = Math.max(1, Math.min(5, options.count));
@@ -18684,7 +18807,8 @@ function distributeAttributes(archetype, metatype, powerLevel) {
   const maxes = metatype.maxes;
   const priority = archetype.primaryAttributes;
   for (let i = 0; i < powerLevel.maxedAttributes && i < priority.length; i++) {
-    attrs[priority[i]] = maxes[priority[i]];
+    const attr = priority[i];
+    attrs[attr] = maxes[attr];
   }
   const targetPoints = powerLevel.budget <= 3e5 ? 12 : powerLevel.budget <= 375e3 ? 14 : 16;
   const currentPoints = Object.values(attrs).reduce((s, v) => s + v, 0);
@@ -18695,13 +18819,14 @@ function distributeAttributes(archetype, metatype, powerLevel) {
     for (let i = 0; i < priority.length && remaining > 0; i++) {
       const attr = priority[i];
       const max = maxes[attr];
-      if (attrs[attr] >= max) continue;
+      const current = attrs[attr];
+      if (current >= max) continue;
       const share = Math.max(
         1,
         Math.round(weights[i] / totalWeight * remaining)
       );
-      const canAdd = Math.min(share, max - attrs[attr], remaining);
-      attrs[attr] += canAdd;
+      const canAdd = Math.min(share, max - current, remaining);
+      attrs[attr] = current + canAdd;
       remaining -= canAdd;
     }
   }
@@ -19025,7 +19150,7 @@ function generatePersonality(metatypeKey, archetypeKey, gender) {
   for (const cat of categories) {
     keywords.push(pickOne(keywordsTable[cat]));
   }
-  const metatypeName = isEn ? metatype.nameEn : metatype.nameFr;
+  const metatypeName = isEn ? metatype?.nameEn : metatype?.nameFr;
   const genderLabel = isEn ? gender === "female" ? "Woman" : "Man" : gender === "female" ? "Femme" : "Homme";
   if (metatype) {
     keywords[0] = `${metatypeName} — ${genderLabel}`;
@@ -19174,7 +19299,7 @@ function findCompendiumItem(compendiumItems, type, slug) {
     (item) => item.type === type && item.system?.slug === slug
   ) ?? null;
 }
-function buildMetatypeItem(metatypeKey, metatype, compendiumItems) {
+function buildMetatypeItem(_metatypeKey, metatype, compendiumItems) {
   if (compendiumItems) {
     const compMetatype = compendiumItems.find(
       (it) => it.type === "metatype" && (it.name === metatype.nameFr || it.name === metatype.nameEn)
@@ -19538,7 +19663,7 @@ async function generateSingleNPC(options) {
     });
     if (upgradeable.length === 0) break;
     const attr = upgradeable[0];
-    attrResult.attributes[attr] += 1;
+    attrResult.attributes[attr] = attrResult.attributes[attr] + 1;
     attrUpgrades++;
     attrResult.cost = 0;
     for (const a of Object.keys(attrResult.attributes)) {
@@ -20311,14 +20436,14 @@ class Migration {
     };
   }
   async applyItemsUpdates(computeUpdates = (items) => []) {
-    await game.actors.forEach(async (actor) => {
+    for (const actor of game.actors) {
       const actorItemUpdates = computeUpdates(actor.items);
       if (actorItemUpdates.length > 0) {
         const message = game.i18n.format("SRA2.MIGRATION.APPLYING_ACTOR_ITEMS", { name: actor.name });
         console.log(SYSTEM.LOG.HEAD, this.code, message, actorItemUpdates);
         await actor.updateEmbeddedDocuments("Item", actorItemUpdates);
       }
-    });
+    }
     const itemUpdates = computeUpdates(game.items);
     if (itemUpdates.length > 0) {
       const message = game.i18n.localize("SRA2.MIGRATION.APPLYING_ITEMS");
@@ -20337,7 +20462,7 @@ class Migrations {
       default: "0.0.0"
     });
   }
-  migrate() {
+  async migrate() {
     const currentVersion = game.settings.get(SYSTEM.id, CURRENT_SYSTEM_VERSION);
     if (foundry.utils.isNewerVersion(game.system.version, currentVersion)) {
       let migrations = [];
@@ -20349,11 +20474,11 @@ class Migrations {
       });
       if (migrations.length > 0) {
         migrations.sort((a, b) => foundry.utils.isNewerVersion(a.version, b.version) ? 1 : foundry.utils.isNewerVersion(b.version, a.version) ? -1 : 0);
-        migrations.forEach(async (m) => {
+        for (const m of migrations) {
           const message2 = game.i18n.format("SRA2.MIGRATION.EXECUTING", { code: m.code, currentVersion, targetVersion: m.version });
           this.$notify(message2);
           await m.migrate();
-        });
+        }
         const message = game.i18n.format("SRA2.MIGRATION.DONE", { version: game.system.version });
         this.$notify(message);
       } else {
@@ -23873,6 +23998,9 @@ class SRA2System {
     Handlebars.registerHelper("json", function(context) {
       return JSON.stringify(context);
     });
+    Handlebars.registerHelper("defenderRefs", function(defenders) {
+      return JSON.stringify((defenders || []).map((d) => ({ uuid: d?.uuid, tokenUuid: d?.tokenUuid })));
+    });
     Handlebars.registerHelper("controlModeLabel", function(value) {
       const key = `SRA2.VEHICLE.CONTROL_MODE.${(value || "autonomous").toUpperCase()}`;
       return game.i18n?.localize(key) || value;
@@ -23994,6 +24122,46 @@ class SRA2System {
           }
         });
       });
+      const userCanReroll = canReroll(message);
+      msgEl.querySelectorAll(".reroll-button").forEach((origBtn) => {
+        if (!userCanReroll) {
+          origBtn.remove();
+          return;
+        }
+        const btn = origBtn.cloneNode(true);
+        origBtn.replaceWith(btn);
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          if (btn.disabled) return;
+          btn.disabled = true;
+          let defendersRefs;
+          try {
+            const raw = btn.dataset.defenders;
+            defendersRefs = raw ? JSON.parse(raw) : void 0;
+          } catch (e) {
+            console.warn("SRA2 | Reroll: could not parse defenders refs", e);
+          }
+          let rerolled = false;
+          try {
+            rerolled = await executeReroll(message.id, defendersRefs);
+          } finally {
+            if (!rerolled) btn.disabled = false;
+          }
+        });
+      });
+      if (message.flags?.sra2?.rerolled) {
+        msgEl.querySelectorAll(".reroll-button, .apply-damage-button").forEach((btn) => {
+          btn.disabled = true;
+          btn.title = game.i18n.localize("SRA2.ROLL_DIALOG.SUPERSEDED_BY_REROLL");
+        });
+        if (!msgEl.querySelector(".rerolled-banner")) {
+          const banner = document.createElement("div");
+          banner.className = "rerolled-banner";
+          banner.innerHTML = `<i class="fas fa-history"></i> ${game.i18n.localize("SRA2.ROLL_DIALOG.REROLLED_BANNER")}`;
+          const rollResultsEl = msgEl.querySelector(".roll-results");
+          (rollResultsEl?.parentElement ?? msgEl).insertBefore(banner, rollResultsEl ? rollResultsEl.nextSibling : msgEl.firstChild);
+        }
+      }
       msgEl.addEventListener("mouseenter", (event) => {
         const target = event.target;
         const btn = target.closest(".defend-button, .counter-attack-button");
@@ -24081,6 +24249,7 @@ class SRA2System {
             attackRollData: rollData
           };
           const { RollDialog: RollDialog2 } = applications;
+          applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
           const dialog = new RollDialog2(defenseRollData);
           if (attackerToken) dialog.targetToken = attackerToken;
           dialog.render(true);
@@ -24256,6 +24425,7 @@ class SRA2System {
             attackRollData: rollData
           };
           const { RollDialog: RollDialog2 } = applications;
+          applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
           const dialog = new RollDialog2(defenseRollData);
           if (attackerToken) dialog.targetToken = attackerToken;
           dialog.render(true);
@@ -24390,6 +24560,7 @@ class SRA2System {
             meleeRange: "ok"
           };
           const { RollDialog: RollDialog2 } = applications;
+          applyNpcThresholdIfActive(cyberCounterRollData, defenderActorForRoll);
           const dialog = new RollDialog2(cyberCounterRollData);
           if (attackerToken) dialog.targetToken = attackerToken;
           dialog.render(true);
@@ -24730,7 +24901,7 @@ class SRA2System {
     this.setupNPCGeneratorButton();
     await this.buildSkillSlugCache();
     const migrations = new Migrations();
-    migrations.migrate();
+    await migrations.migrate();
     await this.migrateFeatsToArrayFormat();
     await this.migrateAnarchyNimbusToSpent();
   }

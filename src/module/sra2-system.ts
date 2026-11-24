@@ -45,6 +45,7 @@ import { Migration_13_0_12 } from "./migration/migration-13.0.12.mjs";
 import { Migration_13_0_28 } from "./migration/migration-13.0.28.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_1_1 } from "./migration/migration-13.1.1.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { Migration_13_1_3 } from "./migration/migration-13.1.3.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_2_4 } from "./migration/migration-13.2.4.mjs";
@@ -54,8 +55,9 @@ import { Migration_13_3_2 } from "./migration/migration-13.3.2.mjs";
 import { Migration_13_4_0 } from "./migration/migration-13.4.0.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_4_4 } from "./migration/migration-13.4.4.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { Migration_13_4_5 } from "./migration/migration-13.4.5.mjs";
-import { registerGeminiSetting, isGeminiConfigured, generateActorImage } from "./helpers/gemini-image.js";
+import { registerGeminiSetting } from "./helpers/gemini-image.js";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
@@ -177,7 +179,8 @@ export class SRA2System {
     // Hooks.once('setup', () => this.initializeBabele()); // Deactivated
     
     Hooks.once('init', () => this.onInit());
-    Hooks.once('diceSoNiceReady', (dice3d: any) => registerDiceSoNice(dice3d));
+    // Module hook (Dice So Nice), not part of the core HookConfig typings
+    (Hooks as any).once('diceSoNiceReady', (dice3d: any) => registerDiceSoNice(dice3d));
   }
 
   onInit(): void {
@@ -752,7 +755,7 @@ export class SRA2System {
       const actorId = tokenDoc.actorId;
       if (!actorId) return;
       const actor = game.actors?.get(actorId);
-      if (!actor || actor.type !== 'ice') return;
+      if (!actor || (actor as any).type !== 'ice') return;
       for (const [, sheet] of applications.ServerSheet.openSheets) {
         setTimeout(() => sheet.render(false), 100);
       }
@@ -848,6 +851,14 @@ export class SRA2System {
     // Helper to stringify JSON
     Handlebars.registerHelper('json', function (context: any) {
       return JSON.stringify(context);
+    });
+
+    // Minimal {uuid, tokenUuid} refs for every target of a roll, used by the
+    // reroll button to rebuild the full defenders list (multi-target attacks).
+    // Deliberately excludes names/images: those can contain characters
+    // (quotes, apostrophes) that would break the single-quoted HTML attribute.
+    Handlebars.registerHelper('defenderRefs', function (defenders: any[]) {
+      return JSON.stringify((defenders || []).map((d: any) => ({ uuid: d?.uuid, tokenUuid: d?.tokenUuid })));
     });
 
     Handlebars.registerHelper('controlModeLabel', function (value: string) {
@@ -1002,6 +1013,60 @@ export class SRA2System {
         });
       });
 
+      // Reroll button handler: replay the exact same roll (same dice pool, risk
+      // dice, advantage/disadvantage mode) and keep the original complication
+      // if there was one.
+      // Only the message author (or a GM) may reroll it: hide the button for
+      // everyone else.
+      const userCanReroll = DiceRoller.canReroll(message);
+      msgEl.querySelectorAll<HTMLButtonElement>('.reroll-button').forEach(origBtn => {
+        if (!userCanReroll) {
+          origBtn.remove();
+          return;
+        }
+        const btn = origBtn.cloneNode(true) as HTMLButtonElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
+          event.preventDefault();
+          if (btn.disabled) return;
+          // Disable immediately so a double click can't trigger two rerolls.
+          btn.disabled = true;
+          let defendersRefs: Array<{ uuid?: string; tokenUuid?: string }> | undefined;
+          try {
+            const raw = btn.dataset.defenders;
+            defendersRefs = raw ? JSON.parse(raw) : undefined;
+          } catch (e) {
+            console.warn('SRA2 | Reroll: could not parse defenders refs', e);
+          }
+          let rerolled = false;
+          try {
+            rerolled = await DiceRoller.executeReroll(message.id, defendersRefs);
+          } finally {
+            // On success the message re-renders with the "rerolled" lock;
+            // on failure, let the user try again.
+            if (!rerolled) btn.disabled = false;
+          }
+        });
+      });
+
+      // A message whose result was superseded by a reroll (règle p.77: one
+      // reroll max) must not be actionable a second time: lock its reroll
+      // and apply-damage buttons so a stale result can't be rerolled again
+      // or have its damage applied after a fresher result already exists.
+      if ((message.flags as any)?.sra2?.rerolled) {
+        msgEl.querySelectorAll<HTMLButtonElement>('.reroll-button, .apply-damage-button').forEach(btn => {
+          btn.disabled = true;
+          btn.title = game.i18n!.localize('SRA2.ROLL_DIALOG.SUPERSEDED_BY_REROLL');
+        });
+        if (!msgEl.querySelector('.rerolled-banner')) {
+          const banner = document.createElement('div');
+          banner.className = 'rerolled-banner';
+          banner.innerHTML = `<i class="fas fa-history"></i> ${game.i18n!.localize('SRA2.ROLL_DIALOG.REROLLED_BANNER')}`;
+          const rollResultsEl = msgEl.querySelector('.roll-results');
+          (rollResultsEl?.parentElement ?? msgEl).insertBefore(banner, rollResultsEl ? rollResultsEl.nextSibling : msgEl.firstChild);
+        }
+      }
+
       // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
       // Use event delegation on msgEl
       msgEl.addEventListener('mouseenter', (event: any) => {
@@ -1101,6 +1166,7 @@ export class SRA2System {
         };
 
         const { RollDialog } = applications;
+        DiceRoller.applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
         const dialog = new RollDialog(defenseRollData);
         // Override any stale canvas target with the known original attacker token
         if (attackerToken) (dialog as any).targetToken = attackerToken;
@@ -1224,7 +1290,7 @@ export class SRA2System {
         let skillLevel: number;
         let specLevel: number | undefined;
         let rrTarget: string;
-        let rrItemType: string;
+        let rrItemType: 'skill' | 'specialization' | 'attribute';
         let defLinkedAttribute: string;
 
         if (cyberSpecDef && pirSkillDef) {
@@ -1307,6 +1373,7 @@ export class SRA2System {
         };
 
         const { RollDialog } = applications;
+        DiceRoller.applyNpcThresholdIfActive(defenseRollData, defenderActorForRoll);
         const dialog = new RollDialog(defenseRollData);
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
@@ -1359,7 +1426,7 @@ export class SRA2System {
         let skillLevel: number;
         let specLevel: number | undefined;
         let caRRTarget: string;
-        let caRRItemType: string;
+        let caRRItemType: 'skill' | 'specialization' | 'attribute';
         let caItemType: string;
         let attackValue: number;
         let caLinkedAttribute: string;
@@ -1460,6 +1527,7 @@ export class SRA2System {
         };
 
         const { RollDialog } = applications;
+        DiceRoller.applyNpcThresholdIfActive(cyberCounterRollData, defenderActorForRoll);
         const dialog = new RollDialog(cyberCounterRollData);
         if (attackerToken) (dialog as any).targetToken = attackerToken;
         dialog.render(true);
@@ -1951,7 +2019,8 @@ export class SRA2System {
     Hooks.on('changeSidebarTab', (app: any) => {
       if (app.tabName === 'actors') setTimeout(injectButton, 100);
     });
-    Hooks.on('renderSidebarTab', (app: any) => {
+    // Deprecated hook, absent from the current HookConfig typings
+    (Hooks as any).on('renderSidebarTab', (app: any) => {
       if (app.tabName === 'actors') setTimeout(injectButton, 100);
     });
     // Catch re-renders from actor creation/deletion

@@ -21,7 +21,7 @@ export class CharacterSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'character'],
       template: 'systems/sra2/templates/actor-character-sheet.hbs',
       width: 900,
-      height: 750,
+      height: 800,
       tabs: [],
       dragDrop: [
         { dragSelector: '.metatype-item', dropSelector: null },
@@ -1092,7 +1092,7 @@ export class CharacterSheet extends ActorSheet {
     const connectionMode = element.dataset.connectionMode;
     if (!connectionMode) return;
 
-    await this.actor.update({ 'system.connectionMode': connectionMode });
+    await this.actor.update({ 'system.connectionMode': connectionMode } as any);
   }
 
   private async _onSetAstralState(event: Event): Promise<void> {
@@ -1101,7 +1101,7 @@ export class CharacterSheet extends ActorSheet {
     const astralState = element.dataset.astralState;
     if (!astralState) return;
 
-    await this.actor.update({ 'system.astralState': astralState });
+    await this.actor.update({ 'system.astralState': astralState } as any);
   }
 
   private async _onSetVehicleControlMode(event: Event): Promise<void> {
@@ -1267,7 +1267,6 @@ export class CharacterSheet extends ActorSheet {
     if (!phantom) return;
 
     const linkedAttribute = phantom.linkedAttribute;
-    const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
 
     // Collect RR: phantom sources + skill/attribute RR if actor has the linked skill
     let rrList = [...phantom.sources];
@@ -1275,7 +1274,7 @@ export class CharacterSheet extends ActorSheet {
 
     if (phantom.linkedSkillOnActor && phantom.linkedSkillName) {
       associatedSkill = this.actor.items.find((i: any) =>
-        i.type === 'skill' && (i.system?.slug === phantom.linkedSkillName || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantom.linkedSkillName))
+        i.type === 'skill' && (i.system?.slug === phantom.linkedSkillName || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(phantom.linkedSkillName!))
       );
     }
 
@@ -2699,7 +2698,7 @@ export class CharacterSheet extends ActorSheet {
     DiceRoller.handleRollRequest({
       itemType: 'cyberdeck-attack',
       itemName: cyberdeck.name || '',
-      itemId: cyberdeck.id,
+      itemId: cyberdeck.id ?? undefined,
       itemRating: cyberdeckSystem.rating || 0,
       itemActive: cyberdeckSystem.active,
 

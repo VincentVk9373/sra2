@@ -11,7 +11,7 @@ export class IceSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'ice'],
       template: 'systems/sra2/templates/actor-ice-sheet.hbs',
       width: 600,
-      height: 840,
+      height: 890,
       tabs: [],
       dragDrop: [],
       submitOnChange: false,
@@ -72,7 +72,7 @@ export class IceSheet extends ActorSheet {
   /**
    * Handle server index change - update actor and re-render
    */
-  private async _onServerIndexChange(event: Event): Promise<void> {
+  private async _onServerIndexChange(_event: Event): Promise<void> {
     // Submit the full form first to preserve name/img changes
     await this.submit();
   }
