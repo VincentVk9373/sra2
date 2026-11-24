@@ -239,6 +239,8 @@ export class SRA2System {
     // Register custom document classes
     CONFIG.Actor.documentClass = documents.SRA2Actor;
     CONFIG.Item.documentClass = documents.SRA2Item as any;
+    // Type preselected in the "Create Item" dialog (otherwise the first declared type, skill)
+    (CONFIG.Item as any).defaultType = 'feat';
 
     // Register Actor data models
     CONFIG.Actor.dataModels = {
