@@ -366,18 +366,20 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
 
     const strength = (this as any).attributes?.strength || 1;
     const willpower = (this as any).attributes?.willpower || 1;
-    // NOTE: featBonuses.bonusMatrixThreshold is computed but not applied to the
-    // matrix thresholds below (they only depend on the firewall).
-    const { bonusPhysicalThreshold, bonusMentalThreshold, totalEssenceCost } = featBonuses;
+    const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
 
     // Active cyberdeck firewall for matrix thresholds
     let firewall = 0;
     let isEmerged = false;
+    // Matrix threshold bonuses only apply when the character actually has a
+    // matrix persona (active cyberdeck or emerged virtual persona).
+    let hasMatrixPersona = false;
     if (parent?.items) {
       const activeCyberdeck = parent.items.find((item: any) =>
         item.type === 'feat' && item.system.featType === 'cyberdeck' && item.system.active === true
       );
       if (activeCyberdeck?.system) {
+        hasMatrixPersona = true;
         const baseFirewall = activeCyberdeck.system.firewall || 1;
         const firewallMalus = activeCyberdeck.system.firewallMalus || 0;
         firewall = Math.max(0, baseFirewall - firewallMalus);
@@ -389,6 +391,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       );
       if (activeEmerged) {
         isEmerged = true;
+        hasMatrixPersona = true;
         const virtualFirewall = willpower;
         const charisma = (this as any).attributes?.charisma || 1;
         (this as any).virtualPersona = { firewall: virtualFirewall, attack: charisma };
@@ -399,6 +402,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       }
     }
     (this as any).isEmerged = isEmerged;
+    const matrixBonus = hasMatrixPersona ? bonusMatrixThreshold : 0;
 
     (this as any).damageThresholds = {
       withoutArmor: {
@@ -417,9 +421,9 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
         incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: firewall + matrixBonus,
+        severe: firewall * 2 + matrixBonus,
+        incapacitating: firewall * 3 + matrixBonus
       }
     };
 

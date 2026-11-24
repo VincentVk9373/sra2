@@ -437,14 +437,16 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     this.armorCost = totalArmorLevel * 2500;
     const strength = this.attributes?.strength || 1;
     const willpower = this.attributes?.willpower || 1;
-    const { bonusPhysicalThreshold, bonusMentalThreshold, totalEssenceCost } = featBonuses;
+    const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
     let firewall = 0;
     let isEmerged = false;
+    let hasMatrixPersona = false;
     if (parent?.items) {
       const activeCyberdeck = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
       );
       if (activeCyberdeck?.system) {
+        hasMatrixPersona = true;
         const baseFirewall = activeCyberdeck.system.firewall || 1;
         const firewallMalus = activeCyberdeck.system.firewallMalus || 0;
         firewall = Math.max(0, baseFirewall - firewallMalus);
@@ -454,6 +456,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       );
       if (activeEmerged) {
         isEmerged = true;
+        hasMatrixPersona = true;
         const virtualFirewall = willpower;
         const charisma = this.attributes?.charisma || 1;
         this.virtualPersona = { firewall: virtualFirewall, attack: charisma };
@@ -463,6 +466,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       }
     }
     this.isEmerged = isEmerged;
+    const matrixBonus = hasMatrixPersona ? bonusMatrixThreshold : 0;
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -480,9 +484,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: firewall + matrixBonus,
+        severe: firewall * 2 + matrixBonus,
+        incapacitating: firewall * 3 + matrixBonus
       }
     };
     const maxEssence = this.maxEssence || 6;
