@@ -222,6 +222,17 @@ Icons are derived from original icons provided under [Creative Commons 3.0 BY li
 - **Carmody** - Discord: carmody.
 - **Asimov** - Discord: asimov_
 
+## Contributors
+
+Thanks to everyone who contributed code, fixes and translations:
+
+- **badaz** - GitHub: [badaz](https://github.com/badaz)
+- **L34ndr3** - GitHub: [l34ndr3-web](https://github.com/l34ndr3-web)
+- **kenken-trpg** - GitHub: [kenken-trpg](https://github.com/kenken-trpg)
+- **headcrash2k** - GitHub: [headcrash2k](https://github.com/headcrash2k) - German localization
+- **Kyle-B** - GitHub: [Kyle-B](https://github.com/Kyle-B)
+- **Ackinty** - GitHub: [ackinty](https://github.com/ackinty)
+
 ---
 
 # Technical Documentation
