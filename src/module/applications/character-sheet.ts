@@ -687,21 +687,21 @@ export class CharacterSheet extends ActorSheet {
     context.unlinkedSpecializations = unlinkedSpecializations
       .sort((a: any, b: any) => a.name.localeCompare(b.name))
       .map((spec: any) => {
-      const linkedAttribute = spec.system?.linkedAttribute || 'strength';
-      spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
+        const linkedAttribute = spec.system?.linkedAttribute || 'strength';
+        spec.linkedAttributeLabel = game.i18n!.localize(`SRA2.ATTRIBUTES.${linkedAttribute.toUpperCase()}`);
 
-      // Calculate RR for this specialization (spec RR + attribute RR, max 3)
-      // Note: unlinked specializations don't have a parent skill, so only attribute + spec RR
-      const specRR = this.calculateRR('specialization', spec.name);
-      const attributeRR = (attributesRR as any)[linkedAttribute] || 0;
-      spec.rr = Math.min(3, specRR + attributeRR);
+        // Calculate RR for this specialization (spec RR + attribute RR, max 3)
+        // Note: unlinked specializations don't have a parent skill, so only attribute + spec RR
+        const specRR = this.calculateRR('specialization', spec.name);
+        const attributeRR = (attributesRR as any)[linkedAttribute] || 0;
+        spec.rr = Math.min(3, specRR + attributeRR);
 
-      // Calculate total dice pool (attribute only, since no skill linked)
-      const attributeValue = (this.actor.system as any).attributes[linkedAttribute] || 0;
-      spec.totalDicePool = attributeValue;
+        // Calculate total dice pool (attribute only, since no skill linked)
+        const attributeValue = (this.actor.system as any).attributes[linkedAttribute] || 0;
+        spec.totalDicePool = attributeValue;
 
-      return spec;
-    });
+        return spec;
+      });
 
     // Add orphan specializations (skill specified but not on actor) - sorted alphabetically
     // These are displayed in red/strikethrough to indicate they're unusable
@@ -1043,9 +1043,9 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const vehicleUuid = element.dataset.vehicleUuid;
-    
+
     if (!vehicleUuid) return;
-    
+
     try {
       const vehicleActor = await fromUuid(vehicleUuid as any) as any;
       if (vehicleActor && vehicleActor.sheet) {
@@ -1064,14 +1064,14 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const vehicleUuid = element.dataset.vehicleUuid;
-    
+
     if (!vehicleUuid) return;
-    
+
     const linkedVehicles = (this.actor.system as any).linkedVehicles || [];
     const updatedLinkedVehicles = linkedVehicles.filter((uuid: string) => uuid !== vehicleUuid);
-    
+
     await (this.actor as any).update({ 'system.linkedVehicles': updatedLinkedVehicles });
-    
+
     // Optionally unlink the vehicle's token prototype (set actorLink to false)
     try {
       const vehicleActor = await fromUuid(vehicleUuid as any) as any;
@@ -1082,7 +1082,7 @@ export class CharacterSheet extends ActorSheet {
       console.warn('Could not update vehicle token prototype:', error);
       // Continue anyway - unlinking from character is more important
     }
-    
+
     ui.notifications?.info(game.i18n!.localize('SRA2.FEATS.VEHICLE_UNLINKED'));
   }
 
@@ -1124,7 +1124,7 @@ export class CharacterSheet extends ActorSheet {
   /**
    * Get detailed RR sources for a given skill, specialization, or attribute
    */
-  private getRRSources(itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{featName: string, rrValue: number}> {
+  private getRRSources(itemType: 'skill' | 'specialization' | 'attribute', itemName: string): Array<{ featName: string, rrValue: number }> {
     return SheetHelpers.getRRSources(this.actor, itemType, itemName);
   }
 
@@ -1143,7 +1143,7 @@ export class CharacterSheet extends ActorSheet {
     const element = event.currentTarget as HTMLInputElement;
     const itemId = element.dataset.itemId;
     const newRating = parseInt(element.value);
-    
+
     if (!itemId || isNaN(newRating)) return;
 
     const item = this.actor.items.get(itemId);
@@ -1160,7 +1160,7 @@ export class CharacterSheet extends ActorSheet {
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
     const effectiveRating = parseInt(element.dataset.effectiveRating || '0');
-    
+
     if (!itemId) return;
 
     const specialization = this.actor.items.get(itemId);
@@ -1170,11 +1170,11 @@ export class CharacterSheet extends ActorSheet {
     const linkedAttribute = specSystem.linkedAttribute || 'strength';
     const linkedSkillName = specSystem.linkedSkill;
     const attributeValue = (this.actor.system as any).attributes?.[linkedAttribute] || 0;
-    
+
     // Get the linked skill to get its rating
     const linkedSkill = linkedSkillName ? this.actor.items.find((i: any) => i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName)) : null;
     const skillRating = linkedSkill ? (linkedSkill.system as any).rating || 0 : 0;
-    
+
     // Get RR sources
     const specRRSources = this.getRRSources('specialization', specialization.name);
     const attributeRRSources = this.getRRSources('attribute', linkedAttribute);
@@ -1221,7 +1221,7 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const attributeName = element.dataset.attribute;
-    
+
     if (!attributeName) return;
 
     const attributeValue = (this.actor.system as any).attributes?.[attributeName] || 0;
@@ -1353,7 +1353,7 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    
+
     if (!itemId) return;
 
     const skill = this.actor.items.get(itemId);
@@ -1399,7 +1399,7 @@ export class CharacterSheet extends ActorSheet {
   protected override _onDragStart(event: DragEvent): void {
     const itemId = (event.currentTarget as HTMLElement).dataset.itemId;
     const vehicleUuid = (event.currentTarget as HTMLElement).dataset.vehicleUuid;
-    
+
     // Check if this is a linked vehicle actor
     if (vehicleUuid) {
       const dragData = {
@@ -1409,7 +1409,7 @@ export class CharacterSheet extends ActorSheet {
       event.dataTransfer?.setData('text/plain', JSON.stringify(dragData));
       return;
     }
-    
+
     if (!itemId) return;
 
     const item = this.actor.items.get(itemId);
@@ -1431,11 +1431,11 @@ export class CharacterSheet extends ActorSheet {
     // First try to handle item drops (feats, skills, etc.)
     const handled = await SheetHelpers.handleItemDrop(event, this.actor);
     if (handled) return undefined;
-    
+
     // Then try to handle vehicle actor drops
     const vehicleHandled = await SheetHelpers.handleVehicleActorDrop(event, this.actor);
     if (vehicleHandled) return undefined;
-    
+
     return super._onDrop(event);
   }
 
@@ -1443,7 +1443,7 @@ export class CharacterSheet extends ActorSheet {
    * Handle skill search input
    */
   private searchTimeout: any = null;
-  
+
   private async _onSkillSearch(event: Event): Promise<void> {
     const input = event.currentTarget as HTMLInputElement;
     const searchTerm = ItemSearch.normalizeSearchText(input.value.trim());
@@ -1458,18 +1458,18 @@ export class CharacterSheet extends ActorSheet {
   private async _performSkillSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
     // Store search term for potential creation
     this.lastSearchTerm = searchTerm;
-    
+
     // Use the helper function to search everywhere
-    const existingItemsCheck = (itemName: string) => 
+    const existingItemsCheck = (itemName: string) =>
       ItemSearch.itemExistsOnActor(this.actor, 'skill', itemName);
-    
+
     const results = await ItemSearch.searchItemsEverywhere(
       'skill',
       searchTerm,
       undefined,
       existingItemsCheck
     );
-    
+
     // Display results
     this._displaySkillSearchResults(results, resultsDiv);
   }
@@ -1478,20 +1478,20 @@ export class CharacterSheet extends ActorSheet {
    * Display skill search results
    */
   private lastSearchTerm: string = '';
-  
+
   private _displaySkillSearchResults(results: any[], resultsDiv: HTMLElement): void {
     // Check if exact match exists on the actor
     const formattedSearchTerm = this.lastSearchTerm
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    
-    const exactMatchOnActor = this.actor.items.find((i: any) => 
+
+    const exactMatchOnActor = this.actor.items.find((i: any) =>
       i.type === 'skill' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(this.lastSearchTerm)
     );
-    
+
     let html = '';
-    
+
     // If no results at all, show only the create button with message
     if (results.length === 0) {
       html = `
@@ -1509,7 +1509,7 @@ export class CharacterSheet extends ActorSheet {
       for (const result of results) {
         const disabledClass = result.alreadyExists ? 'disabled' : '';
         const buttonText = result.alreadyExists ? '✓' : game.i18n!.localize('SRA2.SKILLS.ADD_SKILL');
-        
+
         html += `
           <div class="search-result-item ${disabledClass}">
             <div class="result-info">
@@ -1522,7 +1522,7 @@ export class CharacterSheet extends ActorSheet {
           </div>
         `;
       }
-      
+
       // Add create button if exact match doesn't exist on actor
       if (!exactMatchOnActor) {
         html += `
@@ -1538,10 +1538,10 @@ export class CharacterSheet extends ActorSheet {
         `;
       }
     }
-    
+
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = 'block';
-    
+
     // Attach click handlers to buttons
     resultsDiv.querySelectorAll<HTMLElement>('.add-skill-btn').forEach(btn => {
       btn.addEventListener('click', this._onAddSkillFromSearch.bind(this));
@@ -1585,38 +1585,38 @@ export class CharacterSheet extends ActorSheet {
   private async _onAddSkillFromSearch(event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const button = event.currentTarget as HTMLButtonElement;
     const uuid = button.dataset.uuid;
-    
+
     if (!uuid) return;
-    
+
     // Get the skill from the compendium
     const skill = await fromUuid(uuid as any) as any;
-    
+
     if (!skill) {
       ui.notifications?.error(game.i18n!.localize('SRA2.SKILLS.NOT_FOUND'));
       return;
     }
-    
+
     // Check if skill already exists
     const existingSkill = this.actor.items.find((i: any) =>
       i.type === 'skill' && (i.name === skill.name || (skill.system?.slug && i.system?.slug === skill.system.slug))
     );
-    
+
     if (existingSkill) {
       ui.notifications?.warn(game.i18n!.format('SRA2.SKILLS.ALREADY_EXISTS', { name: skill.name }));
       return;
     }
-    
+
     // Add the skill to the actor
     await this.actor.createEmbeddedDocuments('Item', [skill.toObject()]);
-    
+
     // Mark button as added
     button.textContent = '✓';
     button.disabled = true;
     button.closest('.search-result-item')?.classList.add('disabled');
-    
+
     ui.notifications?.info(`${skill.name} ${game.i18n!.localize('SRA2.SKILLS.ADD_SKILL')}`);
   }
 
@@ -1645,18 +1645,18 @@ export class CharacterSheet extends ActorSheet {
   private async _onCreateNewSkill(event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const button = event.currentTarget as HTMLButtonElement;
     const skillName = button.dataset.skillName;
-    
+
     if (!skillName) return;
-    
+
     // Capitalize first letter of each word
     const formattedName = skillName
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    
+
     // Create the new skill with default values
     const skillData = {
       name: formattedName,
@@ -1667,13 +1667,13 @@ export class CharacterSheet extends ActorSheet {
         description: ''
       }
     } as any;
-    
+
     // Add the skill to the actor
     const createdItems = await this.actor.createEmbeddedDocuments('Item', [skillData]) as any;
-    
+
     if (createdItems && createdItems.length > 0) {
       const newSkill = createdItems[0] as any;
-      
+
       // Clear the search input and hide results
       const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
       const searchInput = sheetEl?.querySelector('.skill-search-input') as HTMLInputElement;
@@ -1692,7 +1692,7 @@ export class CharacterSheet extends ActorSheet {
           newSkill.sheet.render(true);
         }, DELAYS.SHEET_RENDER);
       }
-      
+
       ui.notifications?.info(game.i18n!.format('SRA2.SKILLS.SKILL_CREATED', { name: formattedName }));
     }
   }
@@ -1700,10 +1700,10 @@ export class CharacterSheet extends ActorSheet {
   /**
    * FEAT SEARCH FUNCTIONS
    */
-  
+
   private featSearchTimeout: any = null;
   private lastFeatSearchTerm: string = '';
-  
+
   /**
    * Handle feat search input
    */
@@ -1721,7 +1721,7 @@ export class CharacterSheet extends ActorSheet {
   private async _performFeatSearch(searchTerm: string, resultsDiv: HTMLElement): Promise<void> {
     // Store search term for potential creation
     this.lastFeatSearchTerm = searchTerm;
-    
+
     // Use searchItemsEverywhere to search across actor, world, and compendiums
     const searchResults = await ItemSearch.searchItemsEverywhere(
       'feat',
@@ -1729,12 +1729,12 @@ export class CharacterSheet extends ActorSheet {
       this.actor,
       (itemName: string) => {
         // Check if feat already exists on actor
-        return this.actor.items.some((i: any) => 
+        return this.actor.items.some((i: any) =>
           i.type === 'feat' && i.name === itemName
         );
       }
     );
-    
+
     // Convert SearchResult[] to the format expected by _displayFeatSearchResults
     const results: any[] = [];
     for (const result of searchResults) {
@@ -1748,7 +1748,7 @@ export class CharacterSheet extends ActorSheet {
       } catch (error) {
         console.warn('Could not load item for featType:', error);
       }
-      
+
       results.push({
         name: result.name,
         uuid: result.uuid,
@@ -1757,7 +1757,7 @@ export class CharacterSheet extends ActorSheet {
         exists: result.alreadyExists || false
       });
     }
-    
+
     // Display results
     this._displayFeatSearchResults(results, resultsDiv);
   }
@@ -1771,13 +1771,13 @@ export class CharacterSheet extends ActorSheet {
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    
-    const exactMatchOnActor = this.actor.items.find((i: any) => 
+
+    const exactMatchOnActor = this.actor.items.find((i: any) =>
       i.type === 'feat' && ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(this.lastFeatSearchTerm)
     );
-    
+
     let html = '';
-    
+
     // If no results at all, show only the create button with message and type selector
     if (results.length === 0) {
       html = `
@@ -1808,7 +1808,7 @@ export class CharacterSheet extends ActorSheet {
         const disabledClass = result.exists ? 'disabled' : '';
         const buttonText = result.exists ? '✓' : game.i18n!.localize('SRA2.FEATS.ADD_FEAT');
         const featTypeLabel = game.i18n!.localize(`SRA2.FEATS.FEAT_TYPE.${result.featType.toUpperCase().replace('-', '_')}`);
-        
+
         html += `
           <div class="search-result-item ${disabledClass}">
             <div class="result-info">
@@ -1821,7 +1821,7 @@ export class CharacterSheet extends ActorSheet {
           </div>
         `;
       }
-      
+
       // Add create button if exact match doesn't exist on actor
       if (!exactMatchOnActor) {
         html += `
@@ -1848,10 +1848,10 @@ export class CharacterSheet extends ActorSheet {
         `;
       }
     }
-    
+
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = 'block';
-    
+
     // Attach click handlers
     resultsDiv.querySelectorAll<HTMLElement>('.add-feat-btn').forEach(btn => {
       btn.addEventListener('click', this._onAddFeatFromSearch.bind(this));
@@ -1897,38 +1897,38 @@ export class CharacterSheet extends ActorSheet {
   private async _onAddFeatFromSearch(event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const button = event.currentTarget as HTMLButtonElement;
     const uuid = button.dataset.uuid;
-    
+
     if (!uuid) return;
-    
+
     // Get the feat from the compendium
     const feat = await fromUuid(uuid as any) as any;
-    
+
     if (!feat) {
       ui.notifications?.error(game.i18n!.localize('SRA2.FEATS.NOT_FOUND'));
       return;
     }
-    
+
     // Check if feat already exists
-    const existingFeat = this.actor.items.find((i: any) => 
+    const existingFeat = this.actor.items.find((i: any) =>
       i.type === 'feat' && i.name === feat.name
     );
-    
+
     if (existingFeat) {
       ui.notifications?.warn(game.i18n!.format('SRA2.FEATS.ALREADY_EXISTS', { name: feat.name }));
       return;
     }
-    
+
     // Add the feat to the actor
     await this.actor.createEmbeddedDocuments('Item', [feat.toObject()]);
-    
+
     // Mark button as added
     button.textContent = '✓';
     button.disabled = true;
     button.closest('.search-result-item')?.classList.add('disabled');
-    
+
     ui.notifications?.info(`${feat.name} ${game.i18n!.localize('SRA2.FEATS.ADD_FEAT')}`);
   }
 
@@ -1958,7 +1958,7 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const catchphrase = element.dataset.catchphrase;
-    
+
     if (!catchphrase) return;
 
     // Create the chat message
@@ -1966,20 +1966,20 @@ export class CharacterSheet extends ActorSheet {
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       content: `<div class="sra2-catchphrase">${catchphrase}</div>`
     };
-    
+
     await ChatMessage.create(messageData as any);
   }
-  
+
   /**
    * Handle damage tracker checkbox changes
    */
   private async _onDamageChange(event: Event): Promise<void> {
     event.stopPropagation(); // Prevent form auto-submit to avoid double update
-    
+
     const input = event.currentTarget as HTMLInputElement;
     const name = input.name;
     const checked = input.checked;
-    
+
     // Get current damage from actor data (read from _source for persisted values)
     const actorSource = (this.actor as any)._source;
     const currentDamage = actorSource?.system?.damage || (this.actor.system as any).damage || {
@@ -1987,20 +1987,20 @@ export class CharacterSheet extends ActorSheet {
       severe: [false],
       incapacitating: false
     };
-    
+
     // Use helper to parse and update damage
     const updatedDamage = SheetHelpers.parseDamageCheckboxChange(name, checked, currentDamage);
     if (!updatedDamage) return;
-    
+
     // Update the actor with the complete damage object
     await this.actor.update({
       'system.damage': updatedDamage
     } as any, { render: false });
-    
+
     // Force re-render to update CSS classes in template
     this.render(false);
   }
-  
+
   /**
    * Handle cyberdeck damage tracker checkbox changes
    */
@@ -2064,19 +2064,19 @@ export class CharacterSheet extends ActorSheet {
 
   private async _onCyberdeckDamageChange(event: Event): Promise<void> {
     event.stopPropagation(); // Prevent form auto-submit to avoid double update
-    
+
     const input = event.currentTarget as HTMLInputElement;
     const name = input.name;
     const checked = input.checked;
-    
+
     // Extract item ID from name (format: items.{itemId}.system.cyberdeckDamage.xxx)
     const itemIdMatch = name.match(/^items\.([^.]+)\./);
     if (!itemIdMatch || !itemIdMatch[1]) return;
-    
+
     const itemId = itemIdMatch[1];
     const item = this.actor.items.get(itemId);
     if (!item) return;
-    
+
     // Get current cyberdeckDamage from item data (read from _source for persisted values)
     const itemSource = (item as any)._source;
     const currentDamage = itemSource?.system?.cyberdeckDamage || (item.system as any).cyberdeckDamage || {
@@ -2084,16 +2084,16 @@ export class CharacterSheet extends ActorSheet {
       severe: [false],
       incapacitating: false
     };
-    
+
     // Use helper to parse and update damage
     const updatedDamage = SheetHelpers.parseDamageCheckboxChange(name, checked, currentDamage);
     if (!updatedDamage) return;
-    
+
     // Update the item with the complete cyberdeckDamage object
     await item.update({
       'system.cyberdeckDamage': updatedDamage
     } as any, { render: false });
-    
+
     // Force re-render to update CSS classes in template
     this.render(false);
   }
@@ -2155,34 +2155,34 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _onAnarchyChange(event: Event): Promise<void> {
     event.stopPropagation(); // Prevent form auto-submit to avoid double update
-    
+
     const input = event.currentTarget as HTMLInputElement;
     const name = input.name;
     const checked = input.checked;
-    
+
     // Parse the name to extract the index
     // Expected format: system.anarchySpent.0, system.anarchySpent.1, etc.
     const match = name.match(/^system\.anarchySpent\.(\d+)$/);
     if (!match || !match[1]) return;
-    
+
     const index = parseInt(match[1], 10);
-    
+
     // Ensure anarchySpent array exists
     const currentAnarchySpent = (this.actor.system as any).anarchySpent || [false, false, false];
     const anarchySpent = [...currentAnarchySpent];
-    
+
     // Ensure array has minimum length
     while (anarchySpent.length < 3) {
       anarchySpent.push(false);
     }
-    
+
     // Update the appropriate index
     if (index >= 0 && index < anarchySpent.length) {
       anarchySpent[index] = checked;
-      
+
       // Update the actor
       await (this.actor as any).update({ 'system.anarchySpent': anarchySpent }, { render: false });
-      
+
       // Force re-render to update CSS classes in template (e.g., {{#if this}}checked{{/if}})
       this.render(false);
     }
@@ -2194,27 +2194,27 @@ export class CharacterSheet extends ActorSheet {
   private async _onTempAnarchyChange(event: Event): Promise<void> {
     event.stopPropagation();
     event.preventDefault();
-    
+
     const tempAnarchy = (this.actor.system as any).tempAnarchy || 0;
-    
+
     // Decrement temp anarchy (minimum 0)
     const newTempAnarchy = Math.max(0, tempAnarchy - 1);
-    
+
     // Adjust tempAnarchySpent array to match new value
     const currentTempAnarchySpent = (this.actor.system as any).tempAnarchySpent || [];
     const tempAnarchySpent = [...currentTempAnarchySpent];
-    
+
     // Remove the last element
     if (tempAnarchySpent.length > newTempAnarchy) {
       tempAnarchySpent.pop();
     }
-    
+
     // Update the actor
-    await (this.actor as any).update({ 
+    await (this.actor as any).update({
       'system.tempAnarchy': newTempAnarchy,
-      'system.tempAnarchySpent': tempAnarchySpent 
+      'system.tempAnarchySpent': tempAnarchySpent
     }, { render: false });
-    
+
     // Force re-render
     this.render(false);
   }
@@ -2225,24 +2225,24 @@ export class CharacterSheet extends ActorSheet {
   private async _onAddTempAnarchy(event: Event): Promise<void> {
     event.stopPropagation();
     event.preventDefault();
-    
+
     const tempAnarchy = (this.actor.system as any).tempAnarchy || 0;
     const newTempAnarchy = tempAnarchy + 1;
-    
+
     // Extend tempAnarchySpent array
     const currentTempAnarchySpent = (this.actor.system as any).tempAnarchySpent || [];
     const tempAnarchySpent = [...currentTempAnarchySpent, false];
-    
+
     // Update the actor
-    await (this.actor as any).update({ 
+    await (this.actor as any).update({
       'system.tempAnarchy': newTempAnarchy,
-      'system.tempAnarchySpent': tempAnarchySpent 
+      'system.tempAnarchySpent': tempAnarchySpent
     }, { render: false });
-    
+
     // Force re-render
     this.render(false);
   }
-  
+
   /**
    * Handle toggling bookmark on an item
    */
@@ -2250,11 +2250,11 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    
+
     // With event delegation, find the closest element with data-action="toggle-bookmark"
     const target = event.target as HTMLElement;
     let element = target.closest('[data-action="toggle-bookmark"]') as HTMLElement;
-    
+
     // If target is the icon itself, get the parent link
     if (!element && target.tagName === 'I' && target.parentElement) {
       element = target.parentElement as HTMLElement;
@@ -2262,16 +2262,16 @@ export class CharacterSheet extends ActorSheet {
         element = element.closest('[data-action="toggle-bookmark"]') as HTMLElement;
       }
     }
-    
+
     if (!element) return;
-    
+
     const itemId = element.dataset.itemId;
     if (!itemId) return;
-    
+
     // Use the shared helper
     await SheetHelpers.toggleItemBookmark(this.actor, itemId, this);
   }
-  
+
   /**
    * Handle clicking on a bookmarked item in the header
    */
@@ -2280,18 +2280,18 @@ export class CharacterSheet extends ActorSheet {
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
     const itemType = element.dataset.itemType;
-    
+
     if (!itemId) return;
-    
+
     const item = this.actor.items.get(itemId);
     if (!item) return;
-    
+
     // Roll the item based on its type
     if (itemType === 'skill') {
       // Call _onRollSkill with a fake event containing the item ID
-      const fakeEvent = { 
-        preventDefault: () => {}, 
-        currentTarget: { dataset: { itemId: itemId } } 
+      const fakeEvent = {
+        preventDefault: () => { },
+        currentTarget: { dataset: { itemId: itemId } }
       } as any;
       await this._onRollSkill(fakeEvent);
     } else if (itemType === 'specialization') {
@@ -2300,37 +2300,37 @@ export class CharacterSheet extends ActorSheet {
       const linkedSkillName = specSystem.linkedSkill;
       const parentSkill = this.actor.items.find((i: any) => i.type === 'skill' && (i.name === linkedSkillName || i.system?.slug === linkedSkillName));
       const effectiveRating = parentSkill ? (parentSkill.system as any).rating || 0 : 0;
-      
-      const fakeEvent = { 
-        preventDefault: () => {}, 
-        currentTarget: { 
-          dataset: { 
+
+      const fakeEvent = {
+        preventDefault: () => { },
+        currentTarget: {
+          dataset: {
             itemId: itemId,
             effectiveRating: effectiveRating.toString()
-          } 
-        } 
+          }
+        }
       } as any;
       await this._onRollSpecialization(fakeEvent);
     } else if (itemType === 'feat') {
       const featType = (item.system as any).featType;
       const isSpell = (item.system as any).isSpell === true;
-      
+
       // If isSpell is true, treat as spell regardless of featType
       if (isSpell || featType === 'spell') {
-        const fakeEvent = { 
-          preventDefault: () => {}, 
-          currentTarget: { dataset: { itemId: itemId } } 
+        const fakeEvent = {
+          preventDefault: () => { },
+          currentTarget: { dataset: { itemId: itemId } }
         } as any;
         await this._onRollSpell(fakeEvent);
       } else if (featType === 'weapon') {
         const fakeEvent = {
-          preventDefault: () => {},
+          preventDefault: () => { },
           currentTarget: { dataset: { itemId: itemId } }
         } as any;
         await this._onRollWeapon(fakeEvent);
       } else if (featType === 'cyberdeck') {
         const fakeEvent = {
-          preventDefault: () => {},
+          preventDefault: () => { },
           currentTarget: { dataset: { itemId: itemId } }
         } as any;
         await this._onRollCyberdeckAttack(fakeEvent);
@@ -2346,12 +2346,12 @@ export class CharacterSheet extends ActorSheet {
     const element = event.currentTarget as HTMLElement;
     const vehicleUuid = element.dataset.vehicleUuid;
     const weaponId = element.dataset.weaponId;
-    
+
     if (!vehicleUuid || !weaponId) {
       console.error("SRA2 | Missing vehicle UUID or weapon ID");
       return;
     }
-    
+
     await this._onRollVehicleWeapon(vehicleUuid, weaponId);
   }
 
@@ -2363,12 +2363,12 @@ export class CharacterSheet extends ActorSheet {
     const element = event.currentTarget as HTMLElement;
     const vehicleUuid = element.dataset.vehicleUuid;
     const weaponId = element.dataset.weaponId;
-    
+
     if (!vehicleUuid || !weaponId) {
       console.error("SRA2 | Missing vehicle UUID or weapon ID");
       return;
     }
-    
+
     try {
       // Get vehicle actor
       const vehicleActor = await fromUuid(vehicleUuid as any) as any;
@@ -2376,27 +2376,27 @@ export class CharacterSheet extends ActorSheet {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_VEHICLE'));
         return;
       }
-      
+
       // Get weapon from vehicle
       const weapon = vehicleActor.items.get(weaponId);
       if (!weapon || (weapon.system as any).featType !== 'weapon') {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_WEAPON'));
         return;
       }
-      
+
       const autopilot = (vehicleActor.system as any)?.attributes?.autopilot || 0;
       if (autopilot <= 0) {
         ui.notifications?.warn(game.i18n!.localize('SRA2.ATTRIBUTES.NO_DICE'));
         return;
       }
-      
+
       // Prepare complete weapon roll request data using combat-helpers
       const rollRequestData = CombatHelpers.prepareVehicleWeaponRollRequest(
         vehicleActor,
         weapon,
         WEAPON_TYPES
       );
-      
+
       // Call dice roller with prepared data
       DiceRoller.handleRollRequest(rollRequestData);
     } catch (error) {
@@ -2412,12 +2412,12 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const vehicleUuid = element.dataset.vehicleUuid;
-    
+
     if (!vehicleUuid) {
       console.error("SRA2 | Missing vehicle UUID");
       return;
     }
-    
+
     try {
       // Get vehicle actor
       const vehicleActor = await fromUuid(vehicleUuid as any) as any;
@@ -2425,19 +2425,19 @@ export class CharacterSheet extends ActorSheet {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_VEHICLE'));
         return;
       }
-      
+
       const autopilot = (vehicleActor.system as any)?.attributes?.autopilot || 0;
       if (autopilot <= 0) {
         ui.notifications?.warn(game.i18n!.localize('SRA2.ATTRIBUTES.NO_DICE'));
         return;
       }
-      
+
       const vehicleName = vehicleActor.name || 'Vehicle';
       const autopilotLabel = game.i18n!.localize('SRA2.FEATS.VEHICLE.AUTOPILOT_SHORT');
-      
+
       // Get RR sources for autopilot from the vehicle's own RR list:
       // autopilot-targeted and untargeted (generic) entries apply
-      const rrSources: Array<{featName: string, rrValue: number, rrType?: string, rrTarget?: string}> = [];
+      const rrSources: Array<{ featName: string, rrValue: number, rrType?: string, rrTarget?: string }> = [];
       const vehicleRRList = (vehicleActor.system as any).rrList || [];
       vehicleRRList.forEach((rrEntry: any) => {
         const rrTarget = rrEntry.rrTarget || '';
@@ -2475,21 +2475,21 @@ export class CharacterSheet extends ActorSheet {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_VEHICLE'));
         return;
       }
-      
+
       // Get weapon from vehicle
       const weapon = vehicleActor.items.get(weaponId);
       if (!weapon || (weapon.system as any).featType !== 'weapon') {
         ui.notifications?.error(game.i18n!.localize('SRA2.VEHICLE.INVALID_WEAPON'));
         return;
       }
-      
+
       // Use _rollWeaponOrSpell logic but with character stats and CRR
       const itemSystem = weapon.system as any;
       const weaponType = itemSystem.weaponType;
-      
+
       // Get CRR (Contrôle Récupération Réduction) for mounted weapons
       const crr = itemSystem.crr || 0;
-      
+
       // Get item RR list
       // Pass item's own RR list - all RR in itemSystem.rrList come directly from the weapon itself
       // (enrichFeats doesn't modify itemSystem.rrList, it only creates feat.rrEntries)
@@ -2511,7 +2511,7 @@ export class CharacterSheet extends ActorSheet {
           });
         }
       });
-      
+
       // For vehicle/drone weapons controlled by owner, use engineering slug
       const finalAttackSkill = SKILL_SLUGS.ENGINEERING;
       const finalAttackSpec = 'spec_remote-controlled-weapons';
@@ -2519,7 +2519,7 @@ export class CharacterSheet extends ActorSheet {
       // Defense is always athletics slug for drone weapons
       const finalDefenseSkill = SKILL_SLUGS.ATHLETICS;
       const finalDefenseSpec = 'spec_ranged-defense';
-      
+
       // Find character's attack skill and specialization using unified helper
       const attackSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(
         this.actor,
@@ -2541,41 +2541,41 @@ export class CharacterSheet extends ActorSheet {
         finalDefenseSkill,
         { defaultAttribute: 'agility', lookupBySlug: true }
       );
-      
+
       const defenseSkillName = defenseSkillSpecResult.skillName;
       const defenseSkillLevel = defenseSkillSpecResult.skillLevel;
       const defenseSpecName = defenseSkillSpecResult.specName;
       const defenseSpecLevel = defenseSkillSpecResult.specLevel;
       const defenseLinkedAttribute = defenseSkillSpecResult.linkedAttribute;
-      
+
       // Calculate final damage value using helper
       const baseDamageValue = itemSystem.damageValue || '0';
       let damageValueBonus = itemSystem.damageValueBonus || 0;
-      
+
       // Add bonus from active feats that match the weapon's type
-      const activeFeats = this.actor.items.filter((item: any) => 
-        item.type === 'feat' && 
+      const activeFeats = this.actor.items.filter((item: any) =>
+        item.type === 'feat' &&
         item.system.active === true &&
         item.system.weaponDamageBonus > 0 &&
         item.system.weaponTypeBonus === weaponType
       );
-      
+
       activeFeats.forEach((activeFeat: any) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
-      
+
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
-      
+
       // Calculate final numeric damage value (resolved with actor attributes)
       const actorAttributes = (this.actor.system as any)?.attributes || {};
       const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
-        baseDamageValue, 
-        actorAttributes, 
+        baseDamageValue,
+        actorAttributes,
         damageValueBonus
       );
       const finalDamageValue = finalNumericDamage.toString();
-      
+
       // Calculate attack pool with all RR sources using unified helper
       const poolResult = SheetHelpers.calculateAttackPool(
         this.actor,
@@ -2584,7 +2584,7 @@ export class CharacterSheet extends ActorSheet {
         weapon.name
       );
       const allRRSources = poolResult.allRRSources;
-      
+
       // Add CRR as a special RR entry if > 0
       if (crr > 0) {
         allRRSources.push({
@@ -2594,7 +2594,7 @@ export class CharacterSheet extends ActorSheet {
           featName: weapon.name
         });
       }
-      
+
       DiceRoller.handleRollRequest({
         itemType: 'weapon',
         weaponType: weaponType,
@@ -2602,14 +2602,14 @@ export class CharacterSheet extends ActorSheet {
         itemId: weapon.id,
         itemRating: itemSystem.rating || 0,
         itemActive: itemSystem.active,
-        
+
         // Merged linked skills (for fallback selection in dialog)
         linkedAttackSkill: finalAttackSkill, // 'Ingénierie'
         linkedAttackSpecialization: finalAttackSpec,
         linkedDefenseSkill: finalDefenseSkill,
         linkedDefenseSpecialization: finalDefenseSpec,
         linkedAttribute: attackLinkedAttribute,
-        
+
         // Weapon properties
         isWeaponFocus: itemSystem.isWeaponFocus || false,
         damageValue: finalDamageValue,
@@ -2617,28 +2617,28 @@ export class CharacterSheet extends ActorSheet {
         shortRange: itemSystem.shortRange,
         mediumRange: itemSystem.mediumRange,
         longRange: itemSystem.longRange,
-        
+
         // Attack skill/spec from character (based on weapon links) - these are used for selection
         skillName: attackSkillName,
         skillLevel: attackSkillLevel,
         specName: attackSpecName,
         specLevel: attackSpecLevel,
-        
+
         // Defense skill/spec from character (based on weapon links) - these are used for defense selection
         defenseSkillName: defenseSkillName,
         defenseSkillLevel: defenseSkillLevel,
         defenseSpecName: defenseSpecName,
         defenseSpecLevel: defenseSpecLevel,
         defenseLinkedAttribute: defenseLinkedAttribute,
-        
+
         // Actor information (character, not vehicle)
         actorId: this.actor.id ?? undefined,
         actorUuid: this.actor.uuid,
         actorName: this.actor.name || '',
-        
+
         // RR List (merged: item RR + skill/spec/attribute RR + CRR)
         rrList: allRRSources,
-        
+
         // Mark as vehicle weapon
         isVehicleWeapon: true,
         vehicleUuid: vehicleUuid,
@@ -2742,7 +2742,7 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    
+
     if (!itemId) {
       console.error("SRA2 | No weapon ID found");
       return;
@@ -2761,7 +2761,7 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    
+
     if (!itemId) {
       console.error("SRA2 | No spell ID found");
       return;
@@ -2799,7 +2799,7 @@ export class CharacterSheet extends ActorSheet {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const itemId = element.dataset.itemId;
-    
+
     if (!itemId) {
       console.error("SRA2 | No power ID found");
       return;
@@ -2821,14 +2821,14 @@ export class CharacterSheet extends ActorSheet {
     const isComplexForm = type === 'complex-form';
     const isSpell = type === 'spell' || itemSystem.isSpell === true || isComplexForm;
     const spellType = isSpell ? (itemSystem.spellType || 'indirect') : null;
-    
+
     // Get weapon type and linked skills
     const weaponType = itemSystem.weaponType;
     let weaponLinkedSkill = '';
     let weaponLinkedSpecialization = '';
     let weaponLinkedDefenseSkill = '';
     let weaponLinkedDefenseSpecialization = '';
-    
+
     if (weaponType && weaponType !== 'custom-weapon') {
       // Pre-defined weapon: get from WEAPON_TYPES
       const weaponStats = WEAPON_TYPES[weaponType as keyof typeof WEAPON_TYPES];
@@ -2854,7 +2854,7 @@ export class CharacterSheet extends ActorSheet {
     let finalAttackSpec = weaponLinkedSpecialization || itemSystem.linkedAttackSpecialization || '';
     let finalDefenseSkill = weaponLinkedDefenseSkill || itemSystem.linkedDefenseSkill || '';
     let finalDefenseSpec = weaponLinkedDefenseSpecialization || itemSystem.linkedDefenseSpecialization || '';
-    
+
     if (isSpell) {
       if (isComplexForm) {
         // Complex form: force skill to technomancer slug
@@ -2894,7 +2894,7 @@ export class CharacterSheet extends ActorSheet {
 
     // Find actor's skill and specialization using unified helper
     const spellSpecType = isSpell ? (itemSystem.spellSpecializationType || 'combat') : undefined;
-    
+
     // Determine default attribute. Derive it from the weapon's linked skill slug
     // (world/compendium data or canonical map) so it is correct whether or not the
     // actor owns the skill. If the skill IS owned, findAttackSkillAndSpec still uses
@@ -2907,7 +2907,7 @@ export class CharacterSheet extends ActorSheet {
     } else {
       defaultAttribute = SheetHelpers.getDefaultAttributeForSkill(finalAttackSkill) || 'strength';
     }
-    
+
     const skillSpecResult = SheetHelpers.findAttackSkillAndSpec(
       this.actor,
       finalAttackSpec,
@@ -2919,7 +2919,7 @@ export class CharacterSheet extends ActorSheet {
         lookupBySlug: true
       }
     );
-    
+
     const attackSkillName = skillSpecResult.skillName;
     const attackSkillLevel = skillSpecResult.skillLevel;
     const attackSpecName = skillSpecResult.specName;
@@ -2929,7 +2929,7 @@ export class CharacterSheet extends ActorSheet {
     // Calculate final damage value (base + bonus)
     // For spells, damage value is calculated differently
     let finalDamageValue: string;
-    
+
     if (isSpell) {
       if (spellType === 'direct') {
         finalDamageValue = '0';
@@ -2940,29 +2940,29 @@ export class CharacterSheet extends ActorSheet {
     } else {
       const baseDamageValue = itemSystem.damageValue || '0';
       let damageValueBonus = itemSystem.damageValueBonus || 0;
-      
+
       // Add bonus from active feats that match the weapon's type
       // This applies to all weapons, including adept power weapons
       const weaponType = itemSystem.weaponType || '';
-      const activeFeats = this.actor.items.filter((item: any) => 
-        item.type === 'feat' && 
+      const activeFeats = this.actor.items.filter((item: any) =>
+        item.type === 'feat' &&
         item.system.active === true &&
         item.system.weaponDamageBonus > 0 &&
         item.system.weaponTypeBonus === weaponType
       );
-      
+
       activeFeats.forEach((activeFeat: any) => {
         damageValueBonus += activeFeat.system.weaponDamageBonus || 0;
       });
-      
+
       // Limit total bonus to 2 maximum
       damageValueBonus = Math.min(damageValueBonus, 2);
-      
+
       // Calculate final numeric damage value (resolved with actor attributes)
       const actorAttributes = (this.actor.system as any)?.attributes || {};
       const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
-        baseDamageValue, 
-        actorAttributes, 
+        baseDamageValue,
+        actorAttributes,
         damageValueBonus
       );
       finalDamageValue = finalNumericDamage.toString();
@@ -2996,14 +2996,14 @@ export class CharacterSheet extends ActorSheet {
       itemId: item.id,
       itemRating: itemSystem.rating || 0,
       itemActive: itemSystem.active,
-      
+
       // Merged linked skills
       linkedAttackSkill: finalAttackSkill,
       linkedAttackSpecialization: finalAttackSpec,
       linkedDefenseSkill: finalDefenseSkill,
       linkedDefenseSpecialization: finalDefenseSpec,
       linkedAttribute: attackLinkedAttribute,
-      
+
       // Weapon properties
       isWeaponFocus: itemSystem.isWeaponFocus || false,
       damageValue: finalDamageValue,  // FINAL damage value (base + bonus, or VOL for indirect spells, or 0 for direct spells)
@@ -3017,21 +3017,21 @@ export class CharacterSheet extends ActorSheet {
       shortRange: isSpell ? 'ok' : (itemSystem.shortRange || 'none'),
       mediumRange: isSpell ? 'ok' : (itemSystem.mediumRange || 'none'),
       longRange: isSpell ? 'ok' : (itemSystem.longRange || 'none'),
-      
+
       // Attack skill/spec from actor (based on weapon links)
       skillName: attackSkillName,
       skillLevel: attackSkillLevel,
       specName: attackSpecName,
       specLevel: attackSpecLevel,
-      
+
       // Actor information
       actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || '',
-      
+
       // RR List (merged: item RR + skill/spec/attribute RR)
       rrList: allRRSources,
-      
+
       // Spell-specific properties
       spellType: isSpell ? spellType : undefined,  // 'direct' or 'indirect' for spells
       isSpellDirect: isSpell && spellType === 'direct',  // Flag for direct spells (no defense)
@@ -3048,23 +3048,23 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _rollPower(power: any): Promise<void> {
     const powerSystem = power.system as any;
-    
+
     // Get linked attack and defense skills
     const linkedAttackSkill = powerSystem.linkedAttackSkill || '';
     const linkedAttackSpec = powerSystem.linkedAttackSpecialization || '';
     const linkedDefenseSkill = powerSystem.linkedDefenseSkill || '';
     const linkedDefenseSpec = powerSystem.linkedDefenseSpecialization || '';
-    
+
     // Get all RR sources for the power
     const rawPowerRRList = powerSystem.rrList || [];
     const powerRRList = rawPowerRRList.map((rrEntry: any) => ({
       ...rrEntry,
       featName: power.name
     }));
-    
+
     // Determine default attribute from the linked skill slug (falls back to strength)
     const defaultAttribute = SheetHelpers.getDefaultAttributeForSkill(linkedAttackSkill) || 'strength';
-    
+
     // Find attack skill/spec using unified helper (used for the dice roll)
     const attackSkillSpecResult = SheetHelpers.findAttackSkillAndSpec(
       this.actor,
@@ -3072,7 +3072,7 @@ export class CharacterSheet extends ActorSheet {
       linkedAttackSkill,
       { defaultAttribute }
     );
-    
+
     // Calculate dice pool with all RR sources using unified helper
     const poolResult = SheetHelpers.calculateAttackPool(
       this.actor,
@@ -3081,58 +3081,58 @@ export class CharacterSheet extends ActorSheet {
       power.name
     );
     const allRRSources = poolResult.allRRSources;
-    
+
     // Calculate damage value (base + bonus)
     const baseDamageValue = powerSystem.damageValue || '0';
     let damageValueBonus = powerSystem.damageValueBonus || 0;
-    
+
     // Limit total bonus to 2 maximum
     damageValueBonus = Math.min(damageValueBonus, 2);
-    
+
     // Calculate final numeric damage value (resolved with actor attributes)
     const actorAttributes = (this.actor.system as any)?.attributes || {};
     const finalNumericDamage = SheetHelpers.calculateFinalNumericDamageValue(
-      baseDamageValue, 
-      actorAttributes, 
+      baseDamageValue,
+      actorAttributes,
       damageValueBonus
     );
     const finalDamageValue = finalNumericDamage.toString();
-    
+
     DiceRoller.handleRollRequest({
       itemType: 'power',
       itemName: power.name,
       itemId: power.id,
       itemRating: powerSystem.rating || 0,
       itemActive: powerSystem.active,
-      
+
       // Attack skill/spec (used for the dice roll)
       skillName: attackSkillSpecResult.skillName,
       skillLevel: attackSkillSpecResult.skillLevel,
       specName: attackSkillSpecResult.specName,
       specLevel: attackSkillSpecResult.specLevel,
       linkedAttribute: attackSkillSpecResult.linkedAttribute,
-      
+
       // Merged linked skills (for attack/defense)
       linkedAttackSkill: linkedAttackSkill,
       linkedAttackSpecialization: linkedAttackSpec,
       linkedDefenseSkill: linkedDefenseSkill,
       linkedDefenseSpecialization: linkedDefenseSpec,
-      
+
       // Weapon properties
       damageValue: finalDamageValue,
       meleeRange: powerSystem.meleeRange || 'none',
       shortRange: powerSystem.shortRange || 'none',
       mediumRange: powerSystem.mediumRange || 'none',
       longRange: powerSystem.longRange || 'none',
-      
+
       // Actor information
       actorId: this.actor.id ?? undefined,
       actorUuid: this.actor.uuid,
       actorName: this.actor.name || '',
-      
+
       // RR List
       rrList: allRRSources,
-      
+
       // Mark as power
       isPower: true
     });
@@ -3144,22 +3144,22 @@ export class CharacterSheet extends ActorSheet {
   private async _onCreateNewFeat(event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const button = event.currentTarget as HTMLButtonElement;
     const featName = button.dataset.featName;
-    
+
     if (!featName) return;
-    
+
     // Get the feat type from the selector
     const selector = button.parentElement?.querySelector('.feat-type-selector, .feat-type-selector-inline') as HTMLSelectElement;
     const featType = selector ? selector.value : 'equipment';
-    
+
     // Capitalize first letter of each word
     const formattedName = featName
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    
+
     // Create the new feat with default values
     const featData = {
       name: formattedName,
@@ -3181,13 +3181,13 @@ export class CharacterSheet extends ActorSheet {
         essenceCost: 0
       }
     } as any;
-    
+
     // Add the feat to the actor
     const createdItems = await this.actor.createEmbeddedDocuments('Item', [featData]) as any;
-    
+
     if (createdItems && createdItems.length > 0) {
       const newFeat = createdItems[0] as any;
-      
+
       // Clear the search input and hide results
       const sheetEl = this.element instanceof HTMLElement ? this.element : (this.element as any)?.[0] as HTMLElement;
       const searchInput = sheetEl?.querySelector('.feat-search-input') as HTMLInputElement;
@@ -3199,14 +3199,14 @@ export class CharacterSheet extends ActorSheet {
       if (resultsDiv) {
         resultsDiv.style.display = 'none';
       }
-      
+
       // Open the feat sheet for editing
       if (newFeat && newFeat.sheet) {
         setTimeout(() => {
           newFeat.sheet.render(true);
         }, DELAYS.SHEET_RENDER);
       }
-      
+
       ui.notifications?.info(game.i18n!.format('SRA2.FEATS.FEAT_CREATED', { name: formattedName }));
     }
   }
@@ -3216,22 +3216,22 @@ export class CharacterSheet extends ActorSheet {
    */
   private async _onSwitchSheet(event: Event): Promise<void> {
     event.preventDefault();
-    
+
     // Dynamic import to avoid circular dependency (character-sheet ↔ character-sheet-v2)
     const { CharacterSheetV2 } = await import('./character-sheet-v2.js');
 
     // Determine target sheet class based on current sheet type
     const isV2 = this instanceof CharacterSheetV2;
-    
+
     // Store actor reference and close current sheet
     const actor = this.actor;
     await this.close();
-    
+
     // Create a new sheet instance with the target class
     // Use CharacterSheet if currently V2, otherwise use CharacterSheetV2
     const targetSheetClass = isV2 ? CharacterSheet : CharacterSheetV2;
     const newSheet = new targetSheetClass(actor);
-    
+
     // Reopen the sheet with the new class
     setTimeout(() => {
       newSheet.render(true);

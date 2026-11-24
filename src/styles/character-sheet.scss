@@ -4348,8 +4348,8 @@
 }
 /* Bio / Notes section */
 .bio-section {
-  margin: 0.5rem 0 0 0;
-  padding: 0.5rem 1rem 1rem 1rem;
+  margin: 0 0 0.5rem 0;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
@@ -4380,26 +4380,27 @@
     display: none;
     &.active { display: block; }
 
-    prose-mirror.editor {
-      min-height: 250px;
-
-      .editor-container {
-        min-height: 250px;
-      }
+    .prosemirror.editor {
+      flex: 1;
     }
   }
 
   .editor-content {
-    min-height: 250px;
+    display: flex;
+    flex-direction: column;
     color: #ccc;
     font-size: 0.85rem;
+
+    .editor-container {
+      min-height: 250px;
+    }
   }
 }
 
 /* GM-only description section */
 .gm-description-section {
-  margin: 0;
-  padding: 0.5rem 1rem 2rem 1rem;
+  margin: 0 0 0.5rem 0;
+  padding: 0.5rem;
   background: rgba(180, 50, 50, 0.08);
   border: 1px dashed rgba(180, 50, 50, 0.4);
   border-radius: 6px;
@@ -4418,17 +4419,5 @@
     i {
       font-size: 0.8rem;
     }
-  }
-
-  textarea {
-    width: 100%;
-    min-height: 80px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(180, 50, 50, 0.3);
-    border-radius: 4px;
-    color: #ccc;
-    padding: 0.5rem;
-    resize: vertical;
-    font-size: 0.85rem;
   }
 }
