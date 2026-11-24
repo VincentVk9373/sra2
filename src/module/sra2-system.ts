@@ -850,6 +850,14 @@ export class SRA2System {
       return JSON.stringify(context);
     });
 
+    // Minimal {uuid, tokenUuid} refs for every target of a roll, used by the
+    // reroll button to rebuild the full defenders list (multi-target attacks).
+    // Deliberately excludes names/images: those can contain characters
+    // (quotes, apostrophes) that would break the single-quoted HTML attribute.
+    Handlebars.registerHelper('defenderRefs', function (defenders: any[]) {
+      return JSON.stringify((defenders || []).map((d: any) => ({ uuid: d?.uuid, tokenUuid: d?.tokenUuid })));
+    });
+
     Handlebars.registerHelper('controlModeLabel', function (value: string) {
       const key = `SRA2.VEHICLE.CONTROL_MODE.${(value || 'autonomous').toUpperCase()}`;
       return game.i18n?.localize(key) || value;
@@ -1001,6 +1009,60 @@ export class SRA2System {
           }
         });
       });
+
+      // Reroll button handler: replay the exact same roll (same dice pool, risk
+      // dice, advantage/disadvantage mode) and keep the original complication
+      // if there was one.
+      // Only the message author (or a GM) may reroll it: hide the button for
+      // everyone else.
+      const userCanReroll = DiceRoller.canReroll(message);
+      msgEl.querySelectorAll<HTMLButtonElement>('.reroll-button').forEach(origBtn => {
+        if (!userCanReroll) {
+          origBtn.remove();
+          return;
+        }
+        const btn = origBtn.cloneNode(true) as HTMLButtonElement;
+        origBtn.replaceWith(btn);
+        btn.addEventListener('click', async (event: any) => {
+          event.preventDefault();
+          if (btn.disabled) return;
+          // Disable immediately so a double click can't trigger two rerolls.
+          btn.disabled = true;
+          let defendersRefs: Array<{ uuid?: string; tokenUuid?: string }> | undefined;
+          try {
+            const raw = btn.dataset.defenders;
+            defendersRefs = raw ? JSON.parse(raw) : undefined;
+          } catch (e) {
+            console.warn('SRA2 | Reroll: could not parse defenders refs', e);
+          }
+          let rerolled = false;
+          try {
+            rerolled = await DiceRoller.executeReroll(message.id, defendersRefs);
+          } finally {
+            // On success the message re-renders with the "rerolled" lock;
+            // on failure, let the user try again.
+            if (!rerolled) btn.disabled = false;
+          }
+        });
+      });
+
+      // A message whose result was superseded by a reroll (règle p.77: one
+      // reroll max) must not be actionable a second time: lock its reroll
+      // and apply-damage buttons so a stale result can't be rerolled again
+      // or have its damage applied after a fresher result already exists.
+      if ((message.flags as any)?.sra2?.rerolled) {
+        msgEl.querySelectorAll<HTMLButtonElement>('.reroll-button, .apply-damage-button').forEach(btn => {
+          btn.disabled = true;
+          btn.title = game.i18n!.localize('SRA2.ROLL_DIALOG.SUPERSEDED_BY_REROLL');
+        });
+        if (!msgEl.querySelector('.rerolled-banner')) {
+          const banner = document.createElement('div');
+          banner.className = 'rerolled-banner';
+          banner.innerHTML = `<i class="fas fa-history"></i> ${game.i18n!.localize('SRA2.ROLL_DIALOG.REROLLED_BANNER')}`;
+          const rollResultsEl = msgEl.querySelector('.roll-results');
+          (rollResultsEl?.parentElement ?? msgEl).insertBefore(banner, rollResultsEl ? rollResultsEl.nextSibling : msgEl.firstChild);
+        }
+      }
 
       // Hover ping: when hovering a defend/counter-attack button, ping the target on canvas
       // Use event delegation on msgEl
