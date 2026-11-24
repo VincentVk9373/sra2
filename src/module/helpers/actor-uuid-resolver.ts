@@ -203,7 +203,7 @@ export function resolveDefenseSkillData(defenderActor: any, rollData: any, isVeh
         linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || 'strength';
         const attrVal   = (defenderActor.system as any)?.attributes?.[linkedAttribute!] ?? 0;
         skillLevel = attrVal + ((linkedSkill.system as any).rating ?? 0);
-        specLevel  = skillLevel + 2;
+        specLevel  = (skillLevel ?? 0) + 2;
       }
     }
   } else if (finalSkill) {
