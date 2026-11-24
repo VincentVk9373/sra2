@@ -108,3 +108,55 @@ describe('findAttackSkillAndSpec — issue #116 (missing specialization)', () =>
     expect(res.linkedAttribute).toBe('agility'); // never Strength
   });
 });
+
+describe('findAttackSkillAndSpec — references by name / spec only (custom weapons)', () => {
+  beforeEach(() => {
+    (globalThis as any).SRA2_SLUG_METADATA_CACHE = {
+      'ranged-weapons': { linkedAttribute: 'agility' },
+      'spec_pistols': { linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' },
+    };
+    (globalThis as any).SRA2_SKILL_SLUG_CACHE = { 'ranged-weapons': 'Ranged Weapons', 'spec_pistols': 'Spec: Pistols' };
+    (globalThis as any).SRA2_NAME_TO_SLUG_CACHE = {
+      'armes a distance': 'ranged-weapons',
+      'ranged weapons': 'ranged-weapons',
+      'spec: pistols': 'spec_pistols',
+    };
+  });
+  afterEach(() => {
+    delete (globalThis as any).SRA2_SKILL_SLUG_CACHE;
+    delete (globalThis as any).SRA2_NAME_TO_SLUG_CACHE;
+  });
+
+  it('falls back to the spec linked skill when no skill is given and the spec is not owned', () => {
+    const actor = makeActor(
+      [makeSkill('ranged-weapons', 'Ranged Weapons', 'agility', 2)],
+      { strength: 5, agility: 3 }
+    );
+    const res = findAttackSkillAndSpec(actor, 'spec_pistols', '', { defaultAttribute: 'strength' });
+    expect(res.skillName).toBe('Ranged Weapons');
+    expect(res.linkedAttribute).toBe('agility');
+    expect(res.skillLevel).toBe(2 + 3);
+  });
+
+  it('matches a skill given by its name in another language', () => {
+    const actor = makeActor(
+      [makeSkill('ranged-weapons', 'Ranged Weapons', 'agility', 2)],
+      { strength: 5, agility: 3 }
+    );
+    const res = findAttackSkillAndSpec(actor, '', 'Armes à distance', { defaultAttribute: 'strength' });
+    expect(res.skillName).toBe('Ranged Weapons');
+    expect(res.skillLevel).toBe(2 + 3);
+  });
+
+  it('matches an owned spec referenced by its display name', () => {
+    const actor = makeActor(
+      [
+        makeSkill('ranged-weapons', 'Ranged Weapons', 'agility', 2),
+        { type: 'specialization', name: 'Spé : Pistolets', system: { slug: 'spec_pistols', linkedSkill: 'ranged-weapons', linkedAttribute: 'agility' } },
+      ],
+      { strength: 5, agility: 3 }
+    );
+    const res = findAttackSkillAndSpec(actor, 'Spec: Pistols', 'ranged-weapons', { defaultAttribute: 'strength' });
+    expect(res.specName).toBe('Spé : Pistolets');
+  });
+});

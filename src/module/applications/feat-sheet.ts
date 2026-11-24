@@ -352,15 +352,15 @@ export class FeatSheet extends ItemSheet {
       
       // Check if it's a skill or specialization matching the RR type
       if (item.type === 'skill' && rrType === 'skill') {
-        // Store the skill name (not ID) so the feat can be prepared in advance
-        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        // Store the skill slug (not ID) so the feat can be prepared in advance
+        rrList[index] = { ...rrList[index], rrTarget: item.system?.slug || item.name };
         await this.item.update({ 'system.rrList': rrList } as any);
         this.render(false);
         ui.notifications?.info(game.i18n!.format('SRA2.FEATS.LINKED_TO_TARGET', { name: item.name }));
         return;
       } else if (item.type === 'specialization' && rrType === 'specialization') {
-        // Store the specialization name (not ID) so the feat can be prepared in advance
-        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        // Store the specialization slug (not ID) so the feat can be prepared in advance
+        rrList[index] = { ...rrList[index], rrTarget: item.system?.slug || item.name };
         await this.item.update({ 'system.rrList': rrList } as any);
         this.render(false);
         ui.notifications?.info(game.i18n!.format('SRA2.FEATS.LINKED_TO_TARGET', { name: item.name }));

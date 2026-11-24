@@ -66,6 +66,22 @@ export function getDefaultAttributeForSkill(skillSlugOrName: string | undefined 
 }
 
 /**
+ * Resolve a skill/specialization reference to its slug. References may be a
+ * slug ('spec_media') or a display name in any language ('Spec: Media',
+ * 'Spé : Médiatique') — e.g. RR targets set by drag & drop, or free-text
+ * weapon skill/spec fields. Returns the input unchanged if it can't be resolved.
+ */
+export function resolveSkillOrSpecSlug(value: string | undefined | null): string {
+  if (!value) return '';
+  const metaCache = (globalThis as any).SRA2_SLUG_METADATA_CACHE || {};
+  const slugCache = (globalThis as any).SRA2_SKILL_SLUG_CACHE || {};
+  if (metaCache[value] || slugCache[value]) return value;
+  const nameToSlug = (globalThis as any).SRA2_NAME_TO_SLUG_CACHE || {};
+  const normalized = value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  return nameToSlug[normalized] || value;
+}
+
+/**
  * Handle form submission with proper damage checkbox handling
  */
 export function handleSheetUpdate(actor: any, formData: any): any {
@@ -724,7 +740,9 @@ export function getPhantomRRs(actor: any): PhantomRR[] {
   // Calculate final RR values and determine linked attribute
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
-    const originalSlug = phantomSlugs.get(phantom) || phantom.name;
+    // Prefer the slug resolved above: the original rrTarget may be a display
+    // name (set by drag & drop), which the metadata cache doesn't know.
+    const originalSlug = phantom.slug || phantomSlugs.get(phantom) || phantom.name;
 
     if (phantom.type === 'specialization') {
       // For phantom specs, resolve linked skill/attribute from templates or metadata cache
@@ -1466,6 +1484,9 @@ export function findAttackSkillAndSpec(
 
   const { isSpell = false, spellSpecType = 'combat', defaultAttribute = 'strength', lookupBySlug = false } = options;
 
+  // Skill/spec references may be slugs or display names in any language
+  const targetSpecSlug = resolveSkillOrSpecSlug(targetSpec);
+
   // Try to find the linked attack specialization first
   if (targetSpec) {
     const normalizedTargetSpec = normalizeForComparison(targetSpec);
@@ -1473,7 +1494,7 @@ export function findAttackSkillAndSpec(
     const foundSpec = actor.items.find((i: any) => {
       if (i.type !== 'specialization') return false;
       // Match by slug first, then by normalized name
-      if (i.system?.slug === targetSpec) return true;
+      if (i.system?.slug === targetSpec || (i.system?.slug && i.system.slug === targetSpecSlug)) return true;
       const normalizedItemName = normalizeForComparison(i.name);
       return normalizedItemName === normalizedTargetSpec;
     });
@@ -1491,15 +1512,25 @@ export function findAttackSkillAndSpec(
     }
   }
 
+  // If the specialization isn't owned and no skill is given (e.g. a custom
+  // weapon with only a specialization), fall back to the spec's linked skill
+  // instead of rolling the bare default attribute.
+  const specMeta = targetSpecSlug ? (globalThis as any).SRA2_SLUG_METADATA_CACHE?.[targetSpecSlug] : undefined;
+  if (!targetSkill && !isSpell && specMeta?.linkedSkill) {
+    targetSkill = specMeta.linkedSkill;
+  }
+  const targetSkillSlug = resolveSkillOrSpecSlug(targetSkill);
+
   // If no specialization found, try to find the linked attack skill
   if (!result.specName && !result.skillLevel && targetSkill) {
     const foundSkill = actor.items.find((i: any) =>
       i.type === 'skill' &&
-      (i.system?.slug === targetSkill || ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill))
+      (i.system?.slug === targetSkill || (i.system?.slug && i.system.slug === targetSkillSlug) ||
+        ItemSearch.normalizeSearchText(i.name) === ItemSearch.normalizeSearchText(targetSkill))
     );
 
     if (foundSkill) {
-      const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
+      const foundLinkedAttribute = (foundSkill.system as any).linkedAttribute || getDefaultAttributeForSkill(targetSkillSlug) || defaultAttribute;
       result.skillName = foundSkill.name;
       result.linkedAttribute = result.linkedAttribute || foundLinkedAttribute;
       const skillRating = (foundSkill.system as any).rating || 0;
@@ -1513,8 +1544,8 @@ export function findAttackSkillAndSpec(
       // data or canonical map) so an unowned weapon skill still uses its correct
       // attribute instead of falling back to Strength. Skill rating is 0.
       // If lookupBySlug, resolve the slug to a localized name from world items/compendiums
-      const resolvedAttribute = getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
-      result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkill) : targetSkill;
+      const resolvedAttribute = getDefaultAttributeForSkill(targetSkillSlug) || specMeta?.linkedAttribute || defaultAttribute;
+      result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkillSlug) : targetSkill;
       result.linkedAttribute = result.linkedAttribute || resolvedAttribute;
       const attributeValue = (actor.system as any).attributes?.[resolvedAttribute] || 0;
       result.skillLevel = 0 + attributeValue; // Skill rating is 0 when skill doesn't exist
