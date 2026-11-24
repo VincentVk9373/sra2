@@ -303,8 +303,54 @@ export function handleRollRequest(data: RollRequestData): void {
     rrList: data.rrList
   });
 
+  // NPC mode: if the actor making the roll has NPC mode enabled and the
+  // dice pool is already known at this point, skip the dice roll entirely
+  // and use the fixed NPC success threshold instead.
+  applyNpcThresholdIfActive(data);
+
   const dialog = new RollDialog(data);
   dialog.render(true);
+}
+
+/**
+ * Compute the Shadowrun Anarchy 2 "NPC success threshold" for a given dice
+ * pool and list of RR entries: Math.round(dicePool / 3) + totalRR + 1.
+ * totalRR is capped at RR_MAX, matching updateRRForSkill/Spec in roll-dialog.ts
+ * and calculateNPCThreshold() in combat-helpers.ts.
+ */
+export function computeNpcThreshold(dicePool: number, rrList: any[] | undefined): number {
+  const totalRR = Math.min(
+    RR_MAX,
+    (rrList || []).reduce((sum: number, r: any) => sum + (r?.rrValue || 0), 0)
+  );
+  return Math.round(dicePool / 3) + totalRR + 1;
+}
+
+/**
+ * If the actor rolling (resolved from the given actor, or from data.actorId)
+ * has NPC mode enabled (toggle on the character sheet) and the dice pool is
+ * already known, set data.threshold so the dialog/executeRoll skip the dice
+ * roll and use this fixed number of successes instead. No-op otherwise.
+ *
+ * Call this anywhere a RollRequestData's dicePool (skillLevel/specLevel) or
+ * rrList changes: initial roll request, weapon selection, attribute change...
+ */
+export function applyNpcThresholdIfActive(data: RollRequestData, actor?: any): void {
+  // Prefer the UUID: for an unlinked token the NPC flag lives on the token's
+  // synthetic actor, which game.actors.get(actorId) (the base actor) misses.
+  const resolvedActor = actor
+    ?? (data.actorUuid ? (fromUuidSync as any)(data.actorUuid) : undefined)
+    ?? (data.actorId ? (game.actors as any)?.get(data.actorId) : undefined);
+  const npcMode = resolvedActor?.getFlag?.('sra2', 'npcMode') ?? false;
+  if (!npcMode) return;
+
+  // Same dice pool resolution as RollDialog.getData(): spec, then skill,
+  // then the bare attribute for pure attribute rolls.
+  const dicePool = data.specLevel ?? data.skillLevel ??
+    (data.linkedAttribute ? resolvedActor?.system?.attributes?.[data.linkedAttribute] : undefined);
+  if (typeof dicePool !== 'number') return;
+
+  data.threshold = computeNpcThreshold(dicePool, data.rrList);
 }
 
 /**

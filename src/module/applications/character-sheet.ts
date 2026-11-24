@@ -21,7 +21,7 @@ export class CharacterSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'character'],
       template: 'systems/sra2/templates/actor-character-sheet.hbs',
       width: 900,
-      height: 750,
+      height: 800,
       tabs: [],
       dragDrop: [
         { dragSelector: '.metatype-item', dropSelector: null },
