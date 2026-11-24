@@ -2985,6 +2985,15 @@ function getDefaultAttributeForSkill(skillSlugOrName) {
   const normalized = normalizeSearchText(skillSlugOrName);
   return SKILL_ATTRIBUTE_MAP[normalized];
 }
+function resolveSkillOrSpecSlug(value) {
+  if (!value) return "";
+  const metaCache = globalThis.SRA2_SLUG_METADATA_CACHE || {};
+  const slugCache = globalThis.SRA2_SKILL_SLUG_CACHE || {};
+  if (metaCache[value] || slugCache[value]) return value;
+  const nameToSlug = globalThis.SRA2_NAME_TO_SLUG_CACHE || {};
+  const normalized = value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  return nameToSlug[normalized] || value;
+}
 function handleSheetUpdate(actor, formData) {
   console.log("handleSheetUpdate - DEBUG:", {
     "actor.id": actor?.id,
@@ -3433,7 +3442,7 @@ function getPhantomRRs(actor) {
   }
   for (const phantom of phantomRRs) {
     phantom.rr = Math.min(RR_MAX, phantom.sources.reduce((total, s) => total + s.rrValue, 0));
-    const originalSlug = phantomSlugs.get(phantom) || phantom.name;
+    const originalSlug = phantom.slug || phantomSlugs.get(phantom) || phantom.name;
     if (phantom.type === "specialization") {
       const specMeta = resolveSpecMetadata(originalSlug, phantom.name);
       const linkedSkillSlug = specMeta.linkedSkill;
@@ -3839,11 +3848,12 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     linkedAttribute: void 0
   };
   const { isSpell = false, spellSpecType = "combat", defaultAttribute = "strength", lookupBySlug = false } = options;
+  const targetSpecSlug = resolveSkillOrSpecSlug(targetSpec);
   if (targetSpec) {
     const normalizedTargetSpec = normalizeForComparison(targetSpec);
     const foundSpec = actor.items.find((i) => {
       if (i.type !== "specialization") return false;
-      if (i.system?.slug === targetSpec) return true;
+      if (i.system?.slug === targetSpec || i.system?.slug && i.system.slug === targetSpecSlug) return true;
       const normalizedItemName = normalizeForComparison(i.name);
       return normalizedItemName === normalizedTargetSpec;
     });
@@ -3856,12 +3866,17 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
       }
     }
   }
+  const specMeta = targetSpecSlug ? globalThis.SRA2_SLUG_METADATA_CACHE?.[targetSpecSlug] : void 0;
+  if (!targetSkill && !isSpell && specMeta?.linkedSkill) {
+    targetSkill = specMeta.linkedSkill;
+  }
+  const targetSkillSlug = resolveSkillOrSpecSlug(targetSkill);
   if (!result.specName && !result.skillLevel && targetSkill) {
     const foundSkill = actor.items.find(
-      (i) => i.type === "skill" && (i.system?.slug === targetSkill || normalizeSearchText(i.name) === normalizeSearchText(targetSkill))
+      (i) => i.type === "skill" && (i.system?.slug === targetSkill || i.system?.slug && i.system.slug === targetSkillSlug || normalizeSearchText(i.name) === normalizeSearchText(targetSkill))
     );
     if (foundSkill) {
-      const foundLinkedAttribute = foundSkill.system.linkedAttribute || getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
+      const foundLinkedAttribute = foundSkill.system.linkedAttribute || getDefaultAttributeForSkill(targetSkillSlug) || defaultAttribute;
       result.skillName = foundSkill.name;
       result.linkedAttribute = result.linkedAttribute || foundLinkedAttribute;
       const skillRating = foundSkill.system.rating || 0;
@@ -3870,8 +3885,8 @@ function findAttackSkillAndSpec(actor, targetSpec, targetSkill, options = {}) {
     } else if (isSpell && game.items) {
       _searchGameItemsForSorcellerie(actor, result);
     } else if (!isSpell) {
-      const resolvedAttribute = getDefaultAttributeForSkill(targetSkill) || defaultAttribute;
-      result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkill) : targetSkill;
+      const resolvedAttribute = getDefaultAttributeForSkill(targetSkillSlug) || specMeta?.linkedAttribute || defaultAttribute;
+      result.skillName = lookupBySlug ? _resolveSkillNameFromSlug(targetSkillSlug) : targetSkill;
       result.linkedAttribute = result.linkedAttribute || resolvedAttribute;
       const attributeValue = actor.system.attributes?.[resolvedAttribute] || 0;
       result.skillLevel = 0 + attributeValue;
@@ -4326,6 +4341,7 @@ const SheetHelpers = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.define
   organizeSpecializationsBySkill,
   parseDamageCheckboxChange,
   parseDamageValue,
+  resolveSkillOrSpecSlug,
   restoreActiveSection,
   toggleItemBookmark
 }, Symbol.toStringTag, { value: "Module" }));
@@ -11526,13 +11542,13 @@ class FeatSheet extends ItemSheet {
       const rrList = [...this.item.system.rrList || []];
       const rrType = rrList[index]?.rrType;
       if (item.type === "skill" && rrType === "skill") {
-        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        rrList[index] = { ...rrList[index], rrTarget: item.system?.slug || item.name };
         await this.item.update({ "system.rrList": rrList });
         this.render(false);
         ui.notifications?.info(game.i18n.format("SRA2.FEATS.LINKED_TO_TARGET", { name: item.name }));
         return;
       } else if (item.type === "specialization" && rrType === "specialization") {
-        rrList[index] = { ...rrList[index], rrTarget: item.name };
+        rrList[index] = { ...rrList[index], rrTarget: item.system?.slug || item.name };
         await this.item.update({ "system.rrList": rrList });
         this.render(false);
         ui.notifications?.info(game.i18n.format("SRA2.FEATS.LINKED_TO_TARGET", { name: item.name }));
@@ -23577,6 +23593,7 @@ class SRA2System {
   registerDataModels() {
     CONFIG.Actor.documentClass = SRA2Actor;
     CONFIG.Item.documentClass = SRA2Item;
+    CONFIG.Item.defaultType = "feat";
     CONFIG.Actor.dataModels = {
       character: CharacterDataModel,
       vehicle: VehicleDataModel,
