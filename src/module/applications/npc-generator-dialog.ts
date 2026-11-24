@@ -4,7 +4,7 @@
  */
 
 import { ARCHETYPES, METATYPES, POWER_LEVELS } from '../config/npc-generator-data.js';
-import { generateNPCs, type NPCGeneratorOptions } from '../helpers/npc-generator.js';
+import { generateNPCs, getLang, type NPCGeneratorOptions } from '../helpers/npc-generator.js';
 
 export class NPCGeneratorDialog extends Dialog {
   constructor(callback: (options: NPCGeneratorOptions) => void) {
@@ -36,24 +36,27 @@ export class NPCGeneratorDialog extends Dialog {
 
   private static buildContent(): string {
     const i18n = game.i18n!;
+    const isEn = getLang() === 'en';
 
     // Power levels
     let powerOptions = '';
     for (const [key, pl] of Object.entries(POWER_LEVELS)) {
       const selected = key === 'runner' ? 'selected' : '';
-      powerOptions += `<option value="${key}" ${selected}>${pl.labelFr} (${pl.budget.toLocaleString('fr-FR')} ¥)</option>`;
+      const label = isEn ? pl.labelEn : pl.labelFr;
+      const budget = pl.budget.toLocaleString(isEn ? 'en-US' : 'fr-FR');
+      powerOptions += `<option value="${key}" ${selected}>${label} (${budget} ¥)</option>`;
     }
 
     // Archetypes
     let archetypeOptions = `<option value="random">${i18n.localize('SRA2.NPC_GENERATOR.RANDOM')}</option>`;
     for (const [key, arch] of Object.entries(ARCHETYPES)) {
-      archetypeOptions += `<option value="${key}">${arch.labelFr}</option>`;
+      archetypeOptions += `<option value="${key}">${isEn ? arch.labelEn : arch.labelFr}</option>`;
     }
 
     // Metatypes
     let metatypeOptions = `<option value="random">${i18n.localize('SRA2.NPC_GENERATOR.RANDOM')}</option>`;
     for (const [key, mt] of Object.entries(METATYPES)) {
-      metatypeOptions += `<option value="${key}">${mt.nameFr}</option>`;
+      metatypeOptions += `<option value="${key}">${isEn ? mt.nameEn : mt.nameFr}</option>`;
     }
 
     return `
@@ -108,7 +111,7 @@ export class NPCGeneratorDialog extends Dialog {
           );
         } catch (err) {
           console.error('NPC Generator error:', err);
-          ui.notifications?.error('Erreur lors de la génération du PNJ');
+          ui.notifications?.error(game.i18n!.localize('SRA2.NPC_GENERATOR.ERROR'));
         }
         resolve();
       });
