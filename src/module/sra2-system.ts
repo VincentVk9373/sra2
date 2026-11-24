@@ -45,6 +45,7 @@ import { Migration_13_0_12 } from "./migration/migration-13.0.12.mjs";
 import { Migration_13_0_28 } from "./migration/migration-13.0.28.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_1_1 } from "./migration/migration-13.1.1.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { Migration_13_1_3 } from "./migration/migration-13.1.3.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_2_4 } from "./migration/migration-13.2.4.mjs";
@@ -54,8 +55,9 @@ import { Migration_13_3_2 } from "./migration/migration-13.3.2.mjs";
 import { Migration_13_4_0 } from "./migration/migration-13.4.0.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_13_4_4 } from "./migration/migration-13.4.4.mjs";
+// @ts-ignore - JavaScript module without type declarations
 import { Migration_13_4_5 } from "./migration/migration-13.4.5.mjs";
-import { registerGeminiSetting, isGeminiConfigured, generateActorImage } from "./helpers/gemini-image.js";
+import { registerGeminiSetting } from "./helpers/gemini-image.js";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
@@ -177,7 +179,8 @@ export class SRA2System {
     // Hooks.once('setup', () => this.initializeBabele()); // Deactivated
     
     Hooks.once('init', () => this.onInit());
-    Hooks.once('diceSoNiceReady', (dice3d: any) => registerDiceSoNice(dice3d));
+    // Module hook (Dice So Nice), not part of the core HookConfig typings
+    (Hooks as any).once('diceSoNiceReady', (dice3d: any) => registerDiceSoNice(dice3d));
   }
 
   onInit(): void {
@@ -752,7 +755,7 @@ export class SRA2System {
       const actorId = tokenDoc.actorId;
       if (!actorId) return;
       const actor = game.actors?.get(actorId);
-      if (!actor || actor.type !== 'ice') return;
+      if (!actor || (actor as any).type !== 'ice') return;
       for (const [, sheet] of applications.ServerSheet.openSheets) {
         setTimeout(() => sheet.render(false), 100);
       }
@@ -1287,7 +1290,7 @@ export class SRA2System {
         let skillLevel: number;
         let specLevel: number | undefined;
         let rrTarget: string;
-        let rrItemType: string;
+        let rrItemType: 'skill' | 'specialization' | 'attribute';
         let defLinkedAttribute: string;
 
         if (cyberSpecDef && pirSkillDef) {
@@ -1423,7 +1426,7 @@ export class SRA2System {
         let skillLevel: number;
         let specLevel: number | undefined;
         let caRRTarget: string;
-        let caRRItemType: string;
+        let caRRItemType: 'skill' | 'specialization' | 'attribute';
         let caItemType: string;
         let attackValue: number;
         let caLinkedAttribute: string;
@@ -2016,7 +2019,8 @@ export class SRA2System {
     Hooks.on('changeSidebarTab', (app: any) => {
       if (app.tabName === 'actors') setTimeout(injectButton, 100);
     });
-    Hooks.on('renderSidebarTab', (app: any) => {
+    // Deprecated hook, absent from the current HookConfig typings
+    (Hooks as any).on('renderSidebarTab', (app: any) => {
       if (app.tabName === 'actors') setTimeout(injectButton, 100);
     });
     // Catch re-renders from actor creation/deletion

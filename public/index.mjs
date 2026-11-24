@@ -440,11 +440,13 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
     const { bonusPhysicalThreshold, bonusMentalThreshold, bonusMatrixThreshold, totalEssenceCost } = featBonuses;
     let firewall = 0;
     let isEmerged = false;
+    let hasMatrixPersona = false;
     if (parent?.items) {
       const activeCyberdeck = parent.items.find(
         (item) => item.type === "feat" && item.system.featType === "cyberdeck" && item.system.active === true
       );
       if (activeCyberdeck?.system) {
+        hasMatrixPersona = true;
         const baseFirewall = activeCyberdeck.system.firewall || 1;
         const firewallMalus = activeCyberdeck.system.firewallMalus || 0;
         firewall = Math.max(0, baseFirewall - firewallMalus);
@@ -454,6 +456,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       );
       if (activeEmerged) {
         isEmerged = true;
+        hasMatrixPersona = true;
         const virtualFirewall = willpower;
         const charisma = this.attributes?.charisma || 1;
         this.virtualPersona = { firewall: virtualFirewall, attack: charisma };
@@ -463,6 +466,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       }
     }
     this.isEmerged = isEmerged;
+    const matrixBonus = hasMatrixPersona ? bonusMatrixThreshold : 0;
     this.damageThresholds = {
       withoutArmor: {
         light: strength + bonusPhysicalThreshold,
@@ -480,9 +484,9 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
         incapacitating: willpower + bonusMentalThreshold + DAMAGE_STEP * 2
       },
       matrix: {
-        light: firewall,
-        severe: firewall * 2,
-        incapacitating: firewall * 3
+        light: firewall + matrixBonus,
+        severe: firewall * 2 + matrixBonus,
+        incapacitating: firewall * 3 + matrixBonus
       }
     };
     const maxEssence = this.maxEssence || 6;
@@ -4446,7 +4450,7 @@ function resolveDefenseSkillData(defenderActor, rollData, isVehicle) {
         linkedAttribute = spec.system.linkedAttribute || linkedSkill.system.linkedAttribute || "strength";
         const attrVal = defenderActor.system?.attributes?.[linkedAttribute] ?? 0;
         skillLevel = attrVal + (linkedSkill.system.rating ?? 0);
-        specLevel = skillLevel + 2;
+        specLevel = (skillLevel ?? 0) + 2;
       }
     }
   } else if (finalSkill) {
@@ -8178,7 +8182,6 @@ class CharacterSheet extends ActorSheet {
     );
     if (!phantom) return;
     const linkedAttribute = phantom.linkedAttribute;
-    this.actor.system.attributes?.[linkedAttribute] || 0;
     let rrList = [...phantom.sources];
     let associatedSkill = null;
     if (phantom.linkedSkillOnActor && phantom.linkedSkillName) {
@@ -9272,7 +9275,7 @@ class CharacterSheet extends ActorSheet {
     handleRollRequest({
       itemType: "cyberdeck-attack",
       itemName: cyberdeck.name || "",
-      itemId: cyberdeck.id,
+      itemId: cyberdeck.id ?? void 0,
       itemRating: cyberdeckSystem.rating || 0,
       itemActive: cyberdeckSystem.active,
       // Cybercombat uses Cracking (Cybercombat) + Volonté
@@ -11016,7 +11019,7 @@ class IceSheet extends ActorSheet {
   /**
    * Handle server index change - update actor and re-render
    */
-  async _onServerIndexChange(event) {
+  async _onServerIndexChange(_event) {
     await this.submit();
   }
   /**
@@ -14167,7 +14170,7 @@ const SPEC_DEFINITIONS = {
   "spec_lockpicking": { nameFr: "Spé : Crochetage", linkedSkill: "stealth", linkedAttribute: "agility" },
   "spec_backdoor": { nameFr: "Spé : Backdoor", linkedSkill: "cracking", linkedAttribute: "logic" },
   "spec_brute-force": { nameFr: "Spé : Force brute", linkedSkill: "cracking", linkedAttribute: "logic" },
-  "spec_complex-forms": { nameFr: "Spé : Cybercombat", linkedSkill: "cracking", linkedAttribute: "logic" },
+  "spec_cybercombat": { nameFr: "Spé : Cybercombat", linkedSkill: "cracking", linkedAttribute: "logic" },
   "spec_electronic-warfare": { nameFr: "Spé : Guerre électronique", linkedSkill: "cracking", linkedAttribute: "logic" },
   "spec_cybernetics": { nameFr: "Spé : C/R implants cybernétiques", linkedSkill: "engineering", linkedAttribute: "logic" },
   "spec_cr-drones": { nameFr: "Spé : C/R drones", linkedSkill: "engineering", linkedAttribute: "logic" },
@@ -18744,13 +18747,13 @@ const CONJURATION_SPEC_SLUGS = [
 ];
 const MAGIC_SPEC_SLUGS = [...SORCERY_SPEC_SLUGS, ...CONJURATION_SPEC_SLUGS, "spec_astral-combat"];
 function isMagicFocus(template) {
-  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && MAGIC_SPEC_SLUGS.includes(template.rrList[0].rrTarget);
 }
 function isSorceryFocus(template) {
-  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && SORCERY_SPEC_SLUGS.includes(template.rrList[0].rrTarget);
 }
 function isConjurationFocus(template) {
-  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0]?.rrTarget);
+  return template.rrList.length > 0 && CONJURATION_SPEC_SLUGS.includes(template.rrList[0].rrTarget);
 }
 async function generateNPCs(options) {
   const count = Math.max(1, Math.min(5, options.count));
@@ -18804,7 +18807,8 @@ function distributeAttributes(archetype, metatype, powerLevel) {
   const maxes = metatype.maxes;
   const priority = archetype.primaryAttributes;
   for (let i = 0; i < powerLevel.maxedAttributes && i < priority.length; i++) {
-    attrs[priority[i]] = maxes[priority[i]];
+    const attr = priority[i];
+    attrs[attr] = maxes[attr];
   }
   const targetPoints = powerLevel.budget <= 3e5 ? 12 : powerLevel.budget <= 375e3 ? 14 : 16;
   const currentPoints = Object.values(attrs).reduce((s, v) => s + v, 0);
@@ -18815,13 +18819,14 @@ function distributeAttributes(archetype, metatype, powerLevel) {
     for (let i = 0; i < priority.length && remaining > 0; i++) {
       const attr = priority[i];
       const max = maxes[attr];
-      if (attrs[attr] >= max) continue;
+      const current = attrs[attr];
+      if (current >= max) continue;
       const share = Math.max(
         1,
         Math.round(weights[i] / totalWeight * remaining)
       );
-      const canAdd = Math.min(share, max - attrs[attr], remaining);
-      attrs[attr] += canAdd;
+      const canAdd = Math.min(share, max - current, remaining);
+      attrs[attr] = current + canAdd;
       remaining -= canAdd;
     }
   }
@@ -19145,7 +19150,7 @@ function generatePersonality(metatypeKey, archetypeKey, gender) {
   for (const cat of categories) {
     keywords.push(pickOne(keywordsTable[cat]));
   }
-  const metatypeName = isEn ? metatype.nameEn : metatype.nameFr;
+  const metatypeName = isEn ? metatype?.nameEn : metatype?.nameFr;
   const genderLabel = isEn ? gender === "female" ? "Woman" : "Man" : gender === "female" ? "Femme" : "Homme";
   if (metatype) {
     keywords[0] = `${metatypeName} — ${genderLabel}`;
@@ -19294,7 +19299,7 @@ function findCompendiumItem(compendiumItems, type, slug) {
     (item) => item.type === type && item.system?.slug === slug
   ) ?? null;
 }
-function buildMetatypeItem(metatypeKey, metatype, compendiumItems) {
+function buildMetatypeItem(_metatypeKey, metatype, compendiumItems) {
   if (compendiumItems) {
     const compMetatype = compendiumItems.find(
       (it) => it.type === "metatype" && (it.name === metatype.nameFr || it.name === metatype.nameEn)
@@ -19658,7 +19663,7 @@ async function generateSingleNPC(options) {
     });
     if (upgradeable.length === 0) break;
     const attr = upgradeable[0];
-    attrResult.attributes[attr] += 1;
+    attrResult.attributes[attr] = attrResult.attributes[attr] + 1;
     attrUpgrades++;
     attrResult.cost = 0;
     for (const a of Object.keys(attrResult.attributes)) {

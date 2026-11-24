@@ -16,11 +16,6 @@ const config: UserConfig = {
             },
         }
     },
-    test: {
-        setupFiles: ['./vitest.setup.ts'],
-        globals: true,
-        environment: 'jsdom',
-    },
     build: {
         outDir: 'dist',
         emptyOutDir: true,
