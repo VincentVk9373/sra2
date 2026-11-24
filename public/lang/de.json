@@ -1169,6 +1169,13 @@
             "RANGE_NONE": "Keine",
             "AOE_ZONE": "Wirkungsbereich (3m/Zone)",
             "AOE_THRESHOLD_BONUS": "auf den Verteidigungsschwellenwert",
+            "REROLL": "Neu würfeln",
+            "CANNOT_REROLL": "Für diesen Wurf wurden keine Würfel geworfen (NSC-Modus), er kann nicht neu gewürfelt werden",
+            "CANNOT_REROLL_TWICE": "Dieser Wurf ist bereits das Ergebnis eines Neuwurfs und kann nicht erneut gewürfelt werden",
+            "REROLL_NOT_ALLOWED": "Nur der Urheber dieses Wurfs oder ein Spielleiter kann ihn neu würfeln",
+            "REROLL_NO_ACTOR": "Der Akteur für diesen Neuwurf wurde nicht gefunden",
+            "SUPERSEDED_BY_REROLL": "Dieses Ergebnis wurde durch einen Neuwurf ersetzt",
+            "REROLLED_BANNER": "Dieser Wurf wurde neu gewürfelt – siehe das neue Ergebnis unten",
             "AOE_NONE": "Kein Bereich",
             "RISK_REDUCTION": "Risikoreduzierung",
             "RR": "RR",
@@ -1207,7 +1214,8 @@
             "EDIT": "Bearbeiten",
             "DELETE": "Löschen",
             "LEVEL": "Stufe:",
-            "ADVANCED_MODE": "Erweiterter Modus"
+            "ADVANCED_MODE": "Erweiterter Modus",
+            "NPC_MODE": "NSC-Modus (Schwellenwert statt Würfelwurf)"
         },
         "RR": {
             "PHANTOM_TOOLTIP": "RR ohne Fertigkeit verfügbar - würfelt auf Attribut",
@@ -1247,6 +1255,7 @@
             "GENERATE": "Generieren",
             "GENERATING": "Generiere...",
             "SUCCESS": "{count} Runner erfolgreich generiert",
+            "ERROR": "Beim Generieren des Runners ist ein Fehler aufgetreten",
             "POWER_LEVEL": "Machtniveau",
             "ARCHETYPE": "Archetyp",
             "METATYPE": "Metatyp",
