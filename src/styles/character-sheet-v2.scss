@@ -219,14 +219,6 @@
                 img {
                     border-radius: 8px 0 8px 0;
                 }
-                // Fallback / broken img icon
-                i {
-                    width: 64px;
-                    height: 64px;
-                    font-size: 48px;
-                    text-align: center;
-                    cursor: pointer;
-                }
             }
 
             .advanced-mode-btn {
@@ -275,7 +267,7 @@
 
             .npc-mode-btn {
                 position: absolute;
-                top: -8px;
+                top: -2px;
                 left: -8px;
                 width: 28px;
                 height: 28px;

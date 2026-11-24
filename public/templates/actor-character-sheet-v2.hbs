@@ -7,12 +7,13 @@
                 {{#if tokenInfo }}
                     {{#if tokenInfo.isVideo }}
                     {{!-- using data-edit on videos resets the token when closing the character sheet for some reason --}}
-                    <video src="{{tokenInfo.src}}" title="{{actor.name}}" autoplay muted playsinline disablepictureinpicture loop />
+                    <video src="{{tokenInfo.src}}" title="{{actor.name}}" autoplay muted playsinline disablepictureinpicture loop></video>
                     {{else}}
                     <img src="{{tokenInfo.src}}" data-edit="prototypeToken.texture.src" title="{{actor.name}}" />
                     {{/if}}
                 {{else}}
-                    <i class="fas fa-image" data-edit="prototypeToken.texture.src"></i>
+                    {{!-- Foundry only binds the image picker to img[data-edit] --}}
+                    <img src="icons/svg/mystery-man.svg" data-edit="prototypeToken.texture.src" title="{{actor.name}}" />
                 {{/if}}
             </div>
             <button type="button" class="advanced-mode-btn {{#if advancedMode}}active{{/if}}" data-action="toggle-advanced-mode" title="{{localize 'SRA2.COMMON.ADVANCED_MODE'}}">
