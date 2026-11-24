@@ -1,0 +1,34 @@
+{
+  "folder": "kKwx2vcWEEbV2AEx",
+  "name": "Spez: Persönliche Geräte",
+  "type": "specialization",
+  "_id": "HWtnHOMORF9t3Fnl",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "linkedSkill": "electronics",
+    "linkedAttribute": "logic",
+    "description": "",
+    "bookmarked": false,
+    "reference": "",
+    "slug": "spec_personal-devices"
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.346",
+    "systemId": "sra2",
+    "systemVersion": "13.0.14",
+    "createdTime": 1766095445994,
+    "modifiedTime": 1766095445994,
+    "lastModifiedBy": "F3lXq8iBrCRfMlEL"
+  },
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "F3lXq8iBrCRfMlEL": 3
+  },
+  "_key": "!items!HWtnHOMORF9t3Fnl"
+}
