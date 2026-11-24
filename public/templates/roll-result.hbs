@@ -103,6 +103,15 @@
             <i class="fas fa-bullseye"></i> {{localize "SRA2.ROLL_DIALOG.AOE_ZONE"}}: {{aoeZone}} (+{{aoeZone}} {{localize "SRA2.ROLL_DIALOG.AOE_THRESHOLD_BONUS"}})
         </div>
         {{/if}}
+
+        <!-- Reroll: replay the exact same roll (same dice pool, risk dice, mode).
+             Hidden for NPC-mode rolls (no dice were rolled) and for results
+             that are themselves already a reroll (règle p.77: one reroll max). -->
+        {{#if (and (or rollResult.normalDice.length rollResult.riskDice.length) (not rollResult.isReroll))}}
+        <button type="button" class="reroll-button" data-defenders='{{{defenderRefs defenders}}}'>
+            <i class="fas fa-redo"></i> {{localize "SRA2.ROLL_DIALOG.REROLL"}}
+        </button>
+        {{/if}}
     </div>
 
     <!-- Defense Result -->
