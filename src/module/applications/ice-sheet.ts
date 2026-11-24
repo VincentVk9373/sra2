@@ -11,7 +11,7 @@ export class IceSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'ice'],
       template: 'systems/sra2/templates/actor-ice-sheet.hbs',
       width: 600,
-      height: 840,
+      height: 890,
       tabs: [],
       dragDrop: [],
       submitOnChange: false,

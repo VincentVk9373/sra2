@@ -35,7 +35,7 @@ export class VehicleSheet extends ActorSheet {
       classes: ['sra2', 'sheet', 'actor', 'vehicle'],
       template: 'systems/sra2/templates/actor-vehicle-sheet.hbs',
       width: 800,
-      height: 700,
+      height: 750,
       tabs: [],
       dragDrop: [
         { dragSelector: '.item', dropSelector: '.sheet-body' }
