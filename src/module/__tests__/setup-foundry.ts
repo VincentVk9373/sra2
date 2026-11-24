@@ -25,10 +25,22 @@ class TypeDataModelStub {
   }
 }
 
-/** A field records its options; the schemas are declared, not exercised. */
-const field =
-  (type: string) =>
-  (...args: unknown[]) => ({ fieldType: type, options: args[0] ?? {} });
+/**
+ * A field records its options; the schemas are declared, not exercised.
+ * The models instantiate fields with `new fields.StringField(...)`, so each
+ * stub must be a constructor (a class), not a plain function.
+ */
+const field = (type: string) =>
+  class FieldStub {
+    readonly fieldType = type;
+    readonly options: unknown;
+    readonly args: unknown[];
+
+    constructor(...args: unknown[]) {
+      this.args = args;
+      this.options = args[args.length - 1] ?? {};
+    }
+  };
 
 const foundryStub = {
   abstract: {
