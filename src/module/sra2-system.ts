@@ -62,7 +62,7 @@ import { Migration_14_4_2 } from "./migration/migration-14.4.2.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_14_5_0 } from "./migration/migration-14.5.0.mjs";
 import { registerGeminiSetting } from "./helpers/gemini-image.js";
-import { registerAstralVisionHooks, registerAstralCanvasClasses } from "./canvas/astral-vision.js";
+import { registerAstralVisionHooks, registerAstralCanvasClasses, registerAstralSettings } from "./canvas/astral-vision.js";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
@@ -195,6 +195,7 @@ export class SRA2System {
     }
 
     this.registerThemeSetting();
+    registerAstralSettings();
     registerAstralCanvasClasses();
     registerAstralVisionHooks();
     this.registerGroupAnarchySetting();

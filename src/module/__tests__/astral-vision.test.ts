@@ -54,32 +54,37 @@ describe('astral helpers', () => {
     expect(perceivesAstral(makeToken('m', 0))).toBe(false);
   });
 
-  it('every living being has an aura; vehicles and ICE have none', () => {
+  it('what is not alive has no aura: a lifeless shape', () => {
     const being = (type: string) => ({ actor: { type, items: [], system: {} }, document: { getFlag: () => undefined } });
-    expect(getTokenAura(being('character'))).toEqual({ active: false, vitality: 1 });
-    expect(getTokenAura(being('vehicle'))).toBeNull();
-    expect(getTokenAura(being('ice'))).toBeNull();
-    expect(getTokenAura({ document: { getFlag: () => undefined } })).toBeNull();
+    expect(getTokenAura(being('character')).look).toBe('aura');
+    expect(getTokenAura(being('vehicle')).look).toBe('lifeless');
+    expect(getTokenAura(being('ice')).look).toBe('lifeless');
+    expect(getTokenAura({ document: { getFlag: () => undefined } }).look).toBe('lifeless');
   });
 
   it('awakened and ordinary beings show the same plain aura', () => {
     const awakened = { type: 'feat', system: { featType: 'awakened', active: true, astralProjection: true } };
-    expect(getTokenAura(makeToken('o', 0))).toEqual({ active: false, vitality: 1 });
-    expect(getTokenAura(makeToken('a', 0, { feats: [awakened] }))).toEqual({ active: false, vitality: 1 });
+    expect(getTokenAura(makeToken('o', 0))).toEqual({ look: 'aura', vitality: 1 });
+    expect(getTokenAura(makeToken('a', 0, { feats: [awakened] }))).toEqual({ look: 'aura', vitality: 1 });
   });
 
   it('only beings active on the astral plane show as an astral form', () => {
     const trait = (system: any) => ({ type: 'feat', system: { featType: 'trait', active: true, ...system } });
-    expect(getTokenAura(makeToken('p', 0, { astralState: 'perception' }))?.active).toBe(true);
-    expect(getTokenAura(makeToken('f', 0, { form: 'body' }))?.active).toBe(true);
-    expect(getTokenAura(makeToken('d', 0, { feats: [trait({ dualNature: true })] }))?.active).toBe(true);
-    expect(getTokenAura(makeToken('s', 0, { feats: [trait({ astralBeing: true })], astralState: 'astral' }))?.active).toBe(true);
-    expect(getTokenAura(makeToken('m', 0, { feats: [trait({ astralBeing: true })] }))?.active).toBe(true); // materialised: dual
-    expect(getTokenAura(makeToken('b', 0, { astralState: 'projection' }))?.active).toBe(false); // vacant body
+    expect(getTokenAura(makeToken('p', 0, { astralState: 'perception' })).look).toBe('astral');
+    expect(getTokenAura(makeToken('f', 0, { form: 'body' })).look).toBe('astral');
+    expect(getTokenAura(makeToken('d', 0, { feats: [trait({ dualNature: true })] })).look).toBe('astral');
+    expect(getTokenAura(makeToken('s', 0, { feats: [trait({ astralBeing: true })], astralState: 'astral' })).look).toBe('astral');
+    expect(getTokenAura(makeToken('m', 0, { feats: [trait({ astralBeing: true })] })).look).toBe('astral'); // materialised: dual
+    expect(getTokenAura(makeToken('b', 0, { astralState: 'projection' })).look).toBe('aura'); // vacant body
   });
 
-  it('the aura darkens as soon as Essence drops below 6, down to black at 0', () => {
-    const vitality = (system: any) => getTokenAura({ actor: { type: 'character', items: [], system }, document: { getFlag: () => undefined } })?.vitality;
+  it('Essence does not show in an aura, unless the house rule setting is on', () => {
+    const vitality = (system: any) => getTokenAura({ actor: { type: 'character', items: [], system }, document: { getFlag: () => undefined } }).vitality;
+    expect(vitality({ currentEssence: 6 })).toBe(1);
+    expect(vitality({ currentEssence: 2 })).toBe(1);
+    expect(vitality({ currentEssence: 0 })).toBe(1);
+
+    (globalThis as any).game.settings = { get: (scope: string, key: string) => scope === 'sra2' && key === 'astralAuraEssence' };
     expect(vitality({ currentEssence: 6 })).toBe(1);
     expect(vitality({ currentEssence: 3 })).toBe(0.5);
     expect(vitality({ currentEssence: 0 })).toBe(0);

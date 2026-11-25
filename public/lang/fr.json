@@ -1117,6 +1117,10 @@
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
             },
+            "AURA_ESSENCE": {
+                "TITLE": "Auras : montrer la perte d'Essence (règle maison)",
+                "DESC": "Sur le plan astral, l'aura d'un être s'assombrit et se couvre de taches noires dès que son Essence passe sous 6. Selon les règles, l'Essence ne se lit qu'avec un test d'observation astrale : laissez décoché pour les suivre."
+            },
             "GEMINI": {
                 "TITLE": "Clé API Gemini",
                 "DESC": "Clé API Google Gemini pour la génération d'images de portraits. Laissez vide pour désactiver."

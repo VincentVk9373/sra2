@@ -1117,6 +1117,10 @@
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
             },
+            "AURA_ESSENCE": {
+                "TITLE": "Auras: show the loss of Essence (house rule)",
+                "DESC": "On the astral plane, a being's aura darkens and gets covered in dark blotches as soon as its Essence drops below 6. By the rules, Essence can only be read with an astral observation test: leave unchecked to follow them."
+            },
             "GEMINI": {
                 "TITLE": "Gemini API Key",
                 "DESC": "Google Gemini API key for portrait image generation. Leave empty to disable."

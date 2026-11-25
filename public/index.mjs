@@ -7305,6 +7305,8 @@ const FLAG_ASTRAL_FORM_TOKEN = "astralFormTokenId";
 const OPTION_ASTRAL_SYNC = "sra2AstralSync";
 const AURA_COLOR = [0.45, 0.7, 0.95];
 const ASTRAL_FORM_COLOR = [0.9, 0.55, 1];
+const LIFELESS_COLOR = [0.07, 0.11, 0.3];
+const SETTING_AURA_ESSENCE = "astralAuraEssence";
 const AURA_ANIMATION_SPEED = 2.5;
 const AURA_FULL_ESSENCE = 6;
 const TINT_DESATURATION = 0.35;
@@ -7357,12 +7359,22 @@ function getAstralStates(actor) {
 function canEnterAstralState(actor, state) {
   return getAstralStates(actor).includes(state);
 }
+function aurasShowEssence() {
+  try {
+    return game.settings?.get(FLAG_SCOPE, SETTING_AURA_ESSENCE) === true;
+  } catch (err) {
+    return false;
+  }
+}
 function getTokenAura(token) {
   const actor = token?.actor;
-  if (!actor || actor.type !== "character") return null;
-  const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
-  const vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
-  return { active: perceivesAstral(token), vitality };
+  if (!actor || actor.type !== "character") return { look: "lifeless", vitality: 1 };
+  let vitality = 1;
+  if (aurasShowEssence()) {
+    const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
+    vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
+  }
+  return { look: perceivesAstral(token) ? "astral" : "aura", vitality };
 }
 function isAstralSightBlocked(origin, destination) {
   const backends = CONFIG.Canvas.polygonBackends;
@@ -7403,6 +7415,7 @@ uniform float vitality;
 uniform float time;
 uniform float zoom;
 uniform float presence;
+uniform float alive;
 
 const float PI = 3.14159265359;
 const float DIST = 6.0;
@@ -7432,7 +7445,7 @@ void main(void) {
     noise(np * 0.32 + vec2(time * 0.11, time * 0.07)) + 0.5 * noise(np * 0.7 - vec2(time * 0.05, time * 0.13)),
     noise(np * 0.32 + vec2(31.7 - time * 0.09, 12.3 + time * 0.1)) + 0.5 * noise(np * 0.7 + vec2(7.1 + time * 0.12, -time * 0.06))
   ) / 1.5 - 0.5;
-  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence);
+  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence) * alive;
   vec4 src = texture2D(uSampler, uv) * inside(uv);
 
   // How much of the shape lies around this pixel (1 deep inside, 0 far away)
@@ -7448,18 +7461,18 @@ void main(void) {
 
   // Slow breathing, slower and fainter as life drains away
   float beat = 0.5 + 0.5 * sin(time * mix(0.55, 1.1, vitality));
-  float pulse = mix(mix(0.6, 0.86, vitality), 1.0, beat);
+  float pulse = mix(1.0, mix(mix(0.6, 0.86, vitality), 1.0, beat), alive);
 
   // The shape: aura colour with wide, soft waves of light and a brighter
   // rim; only a faint trace of the original drawing is left
   vec3 rgb = src.a > 0.0 ? src.rgb / src.a : vec3(0.0);
   float lum = dot(rgb, vec3(0.299, 0.587, 0.114));
   float shade = mix(0.9, 1.03, smoothstep(0.05, 0.85, lum));
-  float flow = 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06));
-  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
+  float flow = mix(1.0, 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06)), alive);
+  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near)) * mix(0.4, 1.0, alive);
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
-  // A plain aura is faint; an astral form blazes
-  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
+  // A plain aura is faint; an astral form blazes; what is not alive is a still, dark shape
+  vec3 body = life * shade * flow * rim * pulse * mix(mix(1.0, 0.55, alive), 1.3, presence);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -7470,7 +7483,7 @@ void main(void) {
 
   // Halo outside the shape, its width drifting too (a dark smoke when there is no life left)
   float drift = 0.75 + 0.5 * noise(np * 0.4 + vec2(-time * 0.07, time * 0.09));
-  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift;
+  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift * alive;
   halo = min(1.0 - src.a, halo);
 
   gl_FragColor = vec4(body * src.a, src.a) + vec4(life * halo, halo);
@@ -7603,7 +7616,7 @@ function getAstralAuraFilterClass() {
   if (AstralAuraFilterClass) return AstralAuraFilterClass;
   class AstralAuraFilter extends PIXI.Filter {
     constructor() {
-      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0 });
+      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0, alive: 1 });
       this.padding = 30;
     }
     /** Start time of this token's animation, in seconds: tokens don't move in sync */
@@ -7639,8 +7652,9 @@ function setAura(token, aura) {
     filter.timeOffset = auraTimeOffset(token.id);
     auraFilters.set(mesh, filter);
   }
-  filter.uniforms.auraColor = aura.active ? ASTRAL_FORM_COLOR : AURA_COLOR;
-  filter.uniforms.presence = aura.active ? 1 : 0;
+  filter.uniforms.auraColor = aura.look === "astral" ? ASTRAL_FORM_COLOR : aura.look === "aura" ? AURA_COLOR : LIFELESS_COLOR;
+  filter.uniforms.presence = aura.look === "astral" ? 1 : 0;
+  filter.uniforms.alive = aura.look === "lifeless" ? 0 : 1;
   filter.uniforms.vitality = aura.vitality;
   if (!filters.includes(filter)) mesh.filters = [filter, ...filters];
 }
@@ -7833,6 +7847,17 @@ const scheduleAstralFormVisibilityRefresh = foundry.utils.debounce(() => {
     if (isAstralFormToken(token)) token.renderFlags.set({ refreshVisibility: true });
   }
 }, 50);
+function registerAstralSettings() {
+  game.settings.register(FLAG_SCOPE, SETTING_AURA_ESSENCE, {
+    name: "SRA2.SETTINGS.AURA_ESSENCE.TITLE",
+    hint: "SRA2.SETTINGS.AURA_ESSENCE.DESC",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => scheduleAuraRefresh()
+  });
+}
 function registerAstralVisionHooks() {
   Hooks.on("canvasReady", () => {
     if (pulseRegistered) return;
@@ -24397,6 +24422,7 @@ class SRA2System {
       game.system.api = { applications, models, documents };
     }
     this.registerThemeSetting();
+    registerAstralSettings();
     registerAstralCanvasClasses();
     registerAstralVisionHooks();
     this.registerGroupAnarchySetting();

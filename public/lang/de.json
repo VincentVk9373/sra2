@@ -1117,6 +1117,10 @@
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
             },
+            "AURA_ESSENCE": {
+                "TITLE": "Auren: Essenzverlust anzeigen (Hausregel)",
+                "DESC": "Auf der Astralebene verdunkelt sich die Aura eines Wesens und bekommt dunkle Flecken, sobald seine Essenz unter 6 fällt. Nach den Regeln lässt sich die Essenz nur mit einer Probe auf astrale Beobachtung lesen: deaktiviert lassen, um ihnen zu folgen."
+            },
             "GEMINI": {
                 "TITLE": "Gemini-API-Schlüssel",
                 "DESC": "Google-Gemini-API-Schlüssel für die Porträtgenerierung. Leer lassen zum Deaktivieren."

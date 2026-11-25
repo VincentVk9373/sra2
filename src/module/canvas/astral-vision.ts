@@ -5,11 +5,13 @@
  *   perceives the astral plane (astral perception, or an astral form). It is
  *   a client-side colour filter on the canvas, so it works whether or not
  *   token vision is enabled.
- * - For such viewers every living being loses its details and becomes a
- *   softly undulating shape: a faint aura for a being that is only physical,
- *   a blazing one for an astral form (a being active on the astral plane).
- *   Awakened and ordinary beings look the same: telling them apart takes an
- *   astral observation test. The shape darkens and decays as Essence drops.
+ * - For such viewers tokens lose their details and show only what anyone
+ *   sees at a glance on the astral plane: a faint, softly undulating aura
+ *   for a living being that is only physical, a blazing shape for an astral
+ *   form (a being active on the astral plane), a still dark shape for what
+ *   is not alive. Awakened and ordinary beings look the same, and Essence
+ *   does not show: both take an astral observation test (a world setting
+ *   can show the loss of Essence as a house rule).
  *   Nothing shows through anything solid: astral sight is blocked by any
  *   wall that blocks movement OR sight, so a window blocks it too.
  * - Astral projection: the body token stays, an astral form token is created
@@ -54,6 +56,10 @@ const OPTION_ASTRAL_SYNC = 'sra2AstralSync';
  */
 const AURA_COLOR = [0.45, 0.7, 0.95];
 const ASTRAL_FORM_COLOR = [0.9, 0.55, 1.0];
+/** What is not alive (vehicles, drones…) has no aura: a dark, still shape */
+const LIFELESS_COLOR = [0.07, 0.11, 0.3];
+/** World setting (house rule): auras show the loss of Essence */
+const SETTING_AURA_ESSENCE = 'astralAuraEssence';
 /** Speed of the aura animation (undulation, breathing, decay): 1 = slowest, dreamier */
 const AURA_ANIMATION_SPEED = 2.5;
 /** Essence of an intact aura: below it the aura darkens, down to black at 0 */
@@ -152,20 +158,37 @@ export function canEnterAstralState(actor: any, state: string): boolean {
   return getAstralStates(actor).includes(state);
 }
 
+/** House rule setting: do auras show the loss of Essence? (By the rules that takes a test.) */
+function aurasShowEssence(): boolean {
+  try {
+    return game.settings?.get(FLAG_SCOPE, SETTING_AURA_ESSENCE) === true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export type AuraLook = 'lifeless' | 'aura' | 'astral';
+
 /**
- * The aura a token shows on the astral plane, the same for every viewer; null
- * for what is not alive (vehicles, drones, ICE…).
- * - active: the being is present on the astral plane (astral perception,
- *   astral form of a projection, dual nature, spirit), which shows as a much
- *   stronger shape than the plain aura of a being that is only physical.
- * - vitality: from 1 (Essence intact) down to 0 (no Essence left).
+ * How a token looks on the astral plane, the same for every viewer: what
+ * anyone sees at a glance, without an astral observation test.
+ * - lifeless: not a living being (vehicle, drone, ICE…), no aura.
+ * - aura: a living being that is only physical. Awakened or ordinary, it
+ *   looks the same.
+ * - astral: a being active on the astral plane (astral perception, astral
+ *   form of a projection, dual nature, spirit), a much stronger shape.
+ * Vitality is 1 unless the house rule setting shows the loss of Essence:
+ * then it goes from 1 (Essence intact) down to 0 (no Essence left).
  */
-export function getTokenAura(token: any): { active: boolean; vitality: number } | null {
+export function getTokenAura(token: any): { look: AuraLook; vitality: number } {
   const actor = token?.actor;
-  if (!actor || actor.type !== 'character') return null;
-  const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
-  const vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
-  return { active: perceivesAstral(token), vitality };
+  if (!actor || actor.type !== 'character') return { look: 'lifeless', vitality: 1 };
+  let vitality = 1;
+  if (aurasShowEssence()) {
+    const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
+    vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
+  }
+  return { look: perceivesAstral(token) ? 'astral' : 'aura', vitality };
 }
 
 /**
@@ -194,8 +217,9 @@ function astralViewers(): any[] {
 /**
  * Fragment shader of the astral look of a token: the texture's details are
  * replaced by a shape in the aura colour, with a halo around it, swaying and
- * breathing slowly like something seen in a dream. As vitality drops the
- * colour goes to black, the breathing slows down and dark blotches eat the shape.
+ * breathing slowly like something seen in a dream. What is not alive is a
+ * still, dark shape without halo. As vitality drops the colour goes to
+ * black, the breathing slows down and dark blotches eat the shape.
  *
  * The vertex shader is PIXI's default filter one with an explicit mediump
  * precision: both shaders declare inputSize, and the program does not link
@@ -226,6 +250,7 @@ uniform float vitality;
 uniform float time;
 uniform float zoom;
 uniform float presence;
+uniform float alive;
 
 const float PI = 3.14159265359;
 const float DIST = 6.0;
@@ -255,7 +280,7 @@ void main(void) {
     noise(np * 0.32 + vec2(time * 0.11, time * 0.07)) + 0.5 * noise(np * 0.7 - vec2(time * 0.05, time * 0.13)),
     noise(np * 0.32 + vec2(31.7 - time * 0.09, 12.3 + time * 0.1)) + 0.5 * noise(np * 0.7 + vec2(7.1 + time * 0.12, -time * 0.06))
   ) / 1.5 - 0.5;
-  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence);
+  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence) * alive;
   vec4 src = texture2D(uSampler, uv) * inside(uv);
 
   // How much of the shape lies around this pixel (1 deep inside, 0 far away)
@@ -271,18 +296,18 @@ void main(void) {
 
   // Slow breathing, slower and fainter as life drains away
   float beat = 0.5 + 0.5 * sin(time * mix(0.55, 1.1, vitality));
-  float pulse = mix(mix(0.6, 0.86, vitality), 1.0, beat);
+  float pulse = mix(1.0, mix(mix(0.6, 0.86, vitality), 1.0, beat), alive);
 
   // The shape: aura colour with wide, soft waves of light and a brighter
   // rim; only a faint trace of the original drawing is left
   vec3 rgb = src.a > 0.0 ? src.rgb / src.a : vec3(0.0);
   float lum = dot(rgb, vec3(0.299, 0.587, 0.114));
   float shade = mix(0.9, 1.03, smoothstep(0.05, 0.85, lum));
-  float flow = 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06));
-  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
+  float flow = mix(1.0, 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06)), alive);
+  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near)) * mix(0.4, 1.0, alive);
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
-  // A plain aura is faint; an astral form blazes
-  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
+  // A plain aura is faint; an astral form blazes; what is not alive is a still, dark shape
+  vec3 body = life * shade * flow * rim * pulse * mix(mix(1.0, 0.55, alive), 1.3, presence);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -293,7 +318,7 @@ void main(void) {
 
   // Halo outside the shape, its width drifting too (a dark smoke when there is no life left)
   float drift = 0.75 + 0.5 * noise(np * 0.4 + vec2(-time * 0.07, time * 0.09));
-  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift;
+  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift * alive;
   halo = min(1.0 - src.a, halo);
 
   gl_FragColor = vec4(body * src.a, src.a) + vec4(life * halo, halo);
@@ -454,7 +479,7 @@ function getAstralAuraFilterClass(): any {
   if (AstralAuraFilterClass) return AstralAuraFilterClass;
   class AstralAuraFilter extends PIXI.Filter {
     constructor() {
-      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0 });
+      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0, alive: 1 });
       (this as any).padding = 30;
     }
 
@@ -484,7 +509,7 @@ export function auraTimeOffset(tokenId: string): number {
 const auraFilters = new WeakMap<object, any>();
 
 /** Give a token its astral look (aura shape), or restore its normal one */
-function setAura(token: any, aura: { active: boolean; vitality: number } | null): void {
+function setAura(token: any, aura: { look: AuraLook; vitality: number } | null): void {
   const mesh = token.mesh;
   if (!mesh) return;
   let filter = auraFilters.get(mesh);
@@ -499,8 +524,9 @@ function setAura(token: any, aura: { active: boolean; vitality: number } | null)
     filter.timeOffset = auraTimeOffset(token.id);
     auraFilters.set(mesh, filter);
   }
-  filter.uniforms.auraColor = aura.active ? ASTRAL_FORM_COLOR : AURA_COLOR;
-  filter.uniforms.presence = aura.active ? 1 : 0;
+  filter.uniforms.auraColor = aura.look === 'astral' ? ASTRAL_FORM_COLOR : aura.look === 'aura' ? AURA_COLOR : LIFELESS_COLOR;
+  filter.uniforms.presence = aura.look === 'astral' ? 1 : 0;
+  filter.uniforms.alive = aura.look === 'lifeless' ? 0 : 1;
   filter.uniforms.vitality = aura.vitality;
   // First in the chain: Foundry's own filters apply to the astral shape
   if (!filters.includes(filter)) mesh.filters = [filter, ...filters];
@@ -786,6 +812,19 @@ const scheduleAstralFormVisibilityRefresh = foundry.utils.debounce(() => {
     if (isAstralFormToken(token)) token.renderFlags.set({ refreshVisibility: true });
   }
 }, 50);
+
+/** Register the world settings of the astral plane (call during init) */
+export function registerAstralSettings(): void {
+  game.settings.register(FLAG_SCOPE, SETTING_AURA_ESSENCE, {
+    name: 'SRA2.SETTINGS.AURA_ESSENCE.TITLE',
+    hint: 'SRA2.SETTINGS.AURA_ESSENCE.DESC',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => scheduleAuraRefresh(),
+  });
+}
 
 /** Register hooks (call once at startup) */
 export function registerAstralVisionHooks(): void {
