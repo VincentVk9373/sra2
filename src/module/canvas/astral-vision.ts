@@ -8,8 +8,8 @@
  * - For such viewers tokens lose their details and show only what anyone
  *   sees at a glance on the astral plane: a faint, softly undulating aura
  *   for a living being that is only physical, a blazing shape for an astral
- *   form (a being active on the astral plane), a still dark shape for what
- *   is not alive. Awakened and ordinary beings look the same, and Essence
+ *   form (a being active on the astral plane), a still black-and-white
+ *   picture for what is not alive. Awakened and ordinary beings look the same, and Essence
  *   does not show: both take an astral observation test (a world setting
  *   can show the loss of Essence as a house rule).
  *   Nothing shows through anything solid: astral sight is blocked by any
@@ -56,8 +56,6 @@ const OPTION_ASTRAL_SYNC = 'sra2AstralSync';
  */
 const AURA_COLOR = [0.45, 0.7, 0.95];
 const ASTRAL_FORM_COLOR = [0.9, 0.55, 1.0];
-/** What is not alive (vehicles, drones…) has no aura: a dark, still shape */
-const LIFELESS_COLOR = [0.07, 0.11, 0.3];
 /** World setting (house rule): auras show the loss of Essence */
 const SETTING_AURA_ESSENCE = 'astralAuraEssence';
 /** Speed of the aura animation (undulation, breathing, decay): 1 = slowest, dreamier */
@@ -172,7 +170,8 @@ export type AuraLook = 'lifeless' | 'aura' | 'astral';
 /**
  * How a token looks on the astral plane, the same for every viewer: what
  * anyone sees at a glance, without an astral observation test.
- * - lifeless: not a living being (vehicle, drone, ICE…), no aura.
+ * - lifeless: not a living being (vehicle, drone, ICE…), no aura: shown in
+ *   black and white.
  * - aura: a living being that is only physical. Awakened or ordinary, it
  *   looks the same.
  * - astral: a being active on the astral plane (astral perception, astral
@@ -217,8 +216,8 @@ function astralViewers(): any[] {
 /**
  * Fragment shader of the astral look of a token: the texture's details are
  * replaced by a shape in the aura colour, with a halo around it, swaying and
- * breathing slowly like something seen in a dream. What is not alive is a
- * still, dark shape without halo. As vitality drops the colour goes to
+ * breathing slowly like something seen in a dream. What is not alive keeps
+ * its drawing, still and in black and white, without halo. As vitality drops the colour goes to
  * black, the breathing slows down and dark blotches eat the shape.
  *
  * The vertex shader is PIXI's default filter one with an explicit mediump
@@ -304,10 +303,12 @@ void main(void) {
   float lum = dot(rgb, vec3(0.299, 0.587, 0.114));
   float shade = mix(0.9, 1.03, smoothstep(0.05, 0.85, lum));
   float flow = mix(1.0, 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06)), alive);
-  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near)) * mix(0.4, 1.0, alive);
+  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
-  // A plain aura is faint; an astral form blazes; what is not alive is a still, dark shape
-  vec3 body = life * shade * flow * rim * pulse * mix(mix(1.0, 0.55, alive), 1.3, presence);
+  // A plain aura is faint; an astral form blazes
+  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
+  // What is not alive has no aura: its own drawing, still, in black and white
+  body = mix(vec3(lum), body, alive);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -524,7 +525,7 @@ function setAura(token: any, aura: { look: AuraLook; vitality: number } | null):
     filter.timeOffset = auraTimeOffset(token.id);
     auraFilters.set(mesh, filter);
   }
-  filter.uniforms.auraColor = aura.look === 'astral' ? ASTRAL_FORM_COLOR : aura.look === 'aura' ? AURA_COLOR : LIFELESS_COLOR;
+  filter.uniforms.auraColor = aura.look === 'astral' ? ASTRAL_FORM_COLOR : AURA_COLOR;
   filter.uniforms.presence = aura.look === 'astral' ? 1 : 0;
   filter.uniforms.alive = aura.look === 'lifeless' ? 0 : 1;
   filter.uniforms.vitality = aura.vitality;

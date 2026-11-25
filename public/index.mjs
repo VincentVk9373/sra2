@@ -7305,7 +7305,6 @@ const FLAG_ASTRAL_FORM_TOKEN = "astralFormTokenId";
 const OPTION_ASTRAL_SYNC = "sra2AstralSync";
 const AURA_COLOR = [0.45, 0.7, 0.95];
 const ASTRAL_FORM_COLOR = [0.9, 0.55, 1];
-const LIFELESS_COLOR = [0.07, 0.11, 0.3];
 const SETTING_AURA_ESSENCE = "astralAuraEssence";
 const AURA_ANIMATION_SPEED = 2.5;
 const AURA_FULL_ESSENCE = 6;
@@ -7469,10 +7468,12 @@ void main(void) {
   float lum = dot(rgb, vec3(0.299, 0.587, 0.114));
   float shade = mix(0.9, 1.03, smoothstep(0.05, 0.85, lum));
   float flow = mix(1.0, 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06)), alive);
-  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near)) * mix(0.4, 1.0, alive);
+  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
-  // A plain aura is faint; an astral form blazes; what is not alive is a still, dark shape
-  vec3 body = life * shade * flow * rim * pulse * mix(mix(1.0, 0.55, alive), 1.3, presence);
+  // A plain aura is faint; an astral form blazes
+  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
+  // What is not alive has no aura: its own drawing, still, in black and white
+  body = mix(vec3(lum), body, alive);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -7652,7 +7653,7 @@ function setAura(token, aura) {
     filter.timeOffset = auraTimeOffset(token.id);
     auraFilters.set(mesh, filter);
   }
-  filter.uniforms.auraColor = aura.look === "astral" ? ASTRAL_FORM_COLOR : aura.look === "aura" ? AURA_COLOR : LIFELESS_COLOR;
+  filter.uniforms.auraColor = aura.look === "astral" ? ASTRAL_FORM_COLOR : AURA_COLOR;
   filter.uniforms.presence = aura.look === "astral" ? 1 : 0;
   filter.uniforms.alive = aura.look === "lifeless" ? 0 : 1;
   filter.uniforms.vitality = aura.vitality;
