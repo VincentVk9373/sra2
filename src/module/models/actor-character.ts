@@ -85,7 +85,7 @@ export class CharacterDataModel extends foundry.abstract.TypeDataModel<any, Acto
       astralState: new fields.StringField({
         required: true,
         initial: 'physical',
-        choices: ['physical', 'perception', 'projection'],
+        choices: ['physical', 'perception', 'projection', 'astral'],
         label: "SRA2.CHARACTER.ASTRAL_STATE.LABEL"
       }),
       damage: new fields.SchemaField({

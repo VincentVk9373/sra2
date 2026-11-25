@@ -14,6 +14,14 @@
         }
     },
     "SRA2": {
+        "ASTRAL": {
+            "FORM": "astral form",
+            "AURA": {
+                "MUNDANE": "Mundane",
+                "AWAKENED": "Awakened"
+            },
+            "FORM_SYNC_ERROR": "Could not create or remove the astral form token"
+        },
         "SHEET": {
             "CHARACTER": "Detailed",
             "CHARACTER_V2": "In Run",
@@ -37,7 +45,10 @@
                 "LABEL": "Astral State",
                 "PHYSICAL": "Physical",
                 "PERCEPTION": "Astral Perception",
-                "PROJECTION": "Astral Projection"
+                "PROJECTION": "Astral Projection",
+                "DUAL": "Dual Nature",
+                "MATERIALIZED": "Materialized",
+                "ASTRAL": "Astral Form"
             },
             "SECTION": {
                 "IDENTITY": "Identity",
@@ -929,6 +940,14 @@
                 "SECTION_TITLE": "Awakened Abilities",
                 "ASTRAL_PERCEPTION": "Astral Perception",
                 "ASTRAL_PROJECTION": "Astral Projection",
+                "ASTRAL_TITLE": "Astral plane",
+                "DUAL_NATURE": "Dual nature",
+                "DUAL_NATURE_HINT": "Always present on both planes: perceives the astral plane without having to switch it on.",
+                "ASTRAL_BEING": "Astral being (spirit, elemental)",
+                "ASTRAL_BEING_HINT": "Can leave the physical plane for its astral form (invisible without astral perception, moves through walls), then materialize.",
+                "AURA_MASKING": "Initiate: chooses the aura shown",
+                "AURA_MASKING_HINT": "On the astral plane everyone (GM included) sees the chosen aura instead of the true one.",
+                "SHOWN_AURA": "Aura shown",
                 "SORCERY": "Sorcery",
                 "CONJURATION": "Conjuration",
                 "ADEPT": "Adept",
