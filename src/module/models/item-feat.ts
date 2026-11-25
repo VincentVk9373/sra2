@@ -712,21 +712,6 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: false,
         label: "SRA2.FEATS.AWAKENED.ASTRAL_BEING"
       }),
-      // Initiate: chooses the aura shown on the astral plane instead of the true one
-      auraMasking: new fields.BooleanField({
-        required: true,
-        initial: false,
-        label: "SRA2.FEATS.AWAKENED.AURA_MASKING"
-      }),
-      shownAura: new fields.StringField({
-        required: true,
-        initial: "mundane",
-        choices: {
-          "mundane": "SRA2.ASTRAL.AURA.MUNDANE",
-          "awakened": "SRA2.ASTRAL.AURA.AWAKENED"
-        },
-        label: "SRA2.FEATS.AWAKENED.SHOWN_AURA"
-      }),
       sorcery: new fields.BooleanField({
         required: true,
         initial: false,

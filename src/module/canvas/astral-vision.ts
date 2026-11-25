@@ -6,12 +6,12 @@
  *   a client-side colour filter on the canvas, so it works whether or not
  *   token vision is enabled.
  * - For such viewers every living being loses its details and becomes a
- *   softly undulating shape in the colour of its aura (mundane or awakened),
- *   darkening and decaying as its Essence drops — as long as nothing solid
- *   stands between them: astral sight is blocked by any wall that blocks
- *   movement OR sight, so a window (sight-transparent wall) blocks it too.
- *   An initiate chooses which aura it shows; everyone, GM included, sees
- *   that shown aura.
+ *   softly undulating shape: a faint aura for a being that is only physical,
+ *   a blazing one for an astral form (a being active on the astral plane).
+ *   Awakened and ordinary beings look the same: telling them apart takes an
+ *   astral observation test. The shape darkens and decays as Essence drops.
+ *   Nothing shows through anything solid: astral sight is blocked by any
+ *   wall that blocks movement OR sight, so a window blocks it too.
  * - Astral projection: the body token stays, an astral form token is created
  *   next to it; the form is hidden from mundane viewers, moves through walls
  *   and its own sight is blocked by anything solid (windows included).
@@ -46,16 +46,18 @@ const FLAG_ASTRAL_FORM_TOKEN = 'astralFormTokenId';
 /** Delete option: the astral form is removed by the state sync, not by a user */
 const OPTION_ASTRAL_SYNC = 'sra2AstralSync';
 
-/** Aura colours (RGB) by kind of being */
-export type AuraKind = 'mundane' | 'awakened';
-const AURA_COLORS: Record<AuraKind, number[]> = {
-  mundane: [0.5, 0.78, 1.0],
-  awakened: [0.78, 0.42, 1.0],
-};
+/**
+ * Aura colours (RGB). Nothing tells an awakened being from an ordinary one
+ * at a glance (that takes an astral observation test): the only visible
+ * difference is between a plain aura and an astral form, i.e. a being that
+ * is active on the astral plane.
+ */
+const AURA_COLOR = [0.45, 0.7, 0.95];
+const ASTRAL_FORM_COLOR = [0.9, 0.55, 1.0];
 /** Speed of the aura animation (undulation, breathing, decay): 1 = slowest, dreamier */
 const AURA_ANIMATION_SPEED = 2.5;
-/** Below this Essence an aura darkens, down to black at 0 */
-const AURA_FULL_ESSENCE = 5;
+/** Essence of an intact aura: below it the aura darkens, down to black at 0 */
+const AURA_FULL_ESSENCE = 6;
 
 /** Canvas tint: share of grey mixed in, and colour multiplier (R, G, B) */
 const TINT_DESATURATION = 0.35;
@@ -150,37 +152,20 @@ export function canEnterAstralState(actor: any, state: string): boolean {
   return getAstralStates(actor).includes(state);
 }
 
-/** The aura a being really has; null for what is not alive (vehicles, drones, ICE…) */
-export function getTrueAuraKind(actor: any): AuraKind | null {
-  if (!actor || actor.type !== 'character') return null;
-  // Dual-natured beings and spirits have the aura of an awakened one
-  const abilities = getAstralAbilities(actor);
-  if (abilities.astralBeing || abilities.dual) return 'awakened';
-  const magical = (actor.items ?? []).some((i: any) =>
-    i.type === 'feat' &&
-    (i.system?.featType === 'awakened' || i.system?.featType === 'power') &&
-    i.system?.active !== false
-  );
-  return magical ? 'awakened' : 'mundane';
-}
-
 /**
- * The aura a being shows on the astral plane, the same for every viewer (GM
- * included): its kind — the true one, or the one an initiate chose to show —
- * and its vitality, from 1 (Essence intact) down to 0 (no Essence left).
+ * The aura a token shows on the astral plane, the same for every viewer; null
+ * for what is not alive (vehicles, drones, ICE…).
+ * - active: the being is present on the astral plane (astral perception,
+ *   astral form of a projection, dual nature, spirit), which shows as a much
+ *   stronger shape than the plain aura of a being that is only physical.
+ * - vitality: from 1 (Essence intact) down to 0 (no Essence left).
  */
-export function getShownAura(actor: any): { kind: AuraKind; vitality: number } | null {
-  const trueKind = getTrueAuraKind(actor);
-  if (!trueKind) return null;
-  const mask = (actor.items ?? []).find((i: any) =>
-    i.type === 'feat' && i.system?.featType === 'awakened' && i.system?.active !== false &&
-    i.system?.auraMasking === true
-  );
-  const shown = mask?.system?.shownAura;
-  const kind: AuraKind = shown && shown in AURA_COLORS ? shown : trueKind;
+export function getTokenAura(token: any): { active: boolean; vitality: number } | null {
+  const actor = token?.actor;
+  if (!actor || actor.type !== 'character') return null;
   const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
   const vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
-  return { kind, vitality };
+  return { active: perceivesAstral(token), vitality };
 }
 
 /**
@@ -240,6 +225,7 @@ uniform vec3 auraColor;
 uniform float vitality;
 uniform float time;
 uniform float zoom;
+uniform float presence;
 
 const float PI = 3.14159265359;
 const float DIST = 6.0;
@@ -269,14 +255,14 @@ void main(void) {
     noise(np * 0.32 + vec2(time * 0.11, time * 0.07)) + 0.5 * noise(np * 0.7 - vec2(time * 0.05, time * 0.13)),
     noise(np * 0.32 + vec2(31.7 - time * 0.09, 12.3 + time * 0.1)) + 0.5 * noise(np * 0.7 + vec2(7.1 + time * 0.12, -time * 0.06))
   ) / 1.5 - 0.5;
-  vec2 uv = vTextureCoord + sway * px * 7.0;
+  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence);
   vec4 src = texture2D(uSampler, uv) * inside(uv);
 
   // How much of the shape lies around this pixel (1 deep inside, 0 far away)
   float near = 0.0;
   for (float i = 0.0; i < ANGLES; i++) {
     float angle = i * 2.0 * PI / ANGLES;
-    vec2 dir = vec2(cos(angle), sin(angle)) * px * 1.6;
+    vec2 dir = vec2(cos(angle), sin(angle)) * px * mix(1.3, 2.3, presence);
     for (float d = 1.0; d <= DIST; d++) {
       near += (DIST - d + 1.0) * smoothstep(0.5, 1.0, shapeAlpha(uv + dir * d));
     }
@@ -295,7 +281,8 @@ void main(void) {
   float flow = 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06));
   float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
-  vec3 body = life * shade * flow * rim * pulse;
+  // A plain aura is faint; an astral form blazes
+  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -306,7 +293,7 @@ void main(void) {
 
   // Halo outside the shape, its width drifting too (a dark smoke when there is no life left)
   float drift = 0.75 + 0.5 * noise(np * 0.4 + vec2(-time * 0.07, time * 0.09));
-  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * 2.4 * pulse * drift;
+  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift;
   halo = min(1.0 - src.a, halo);
 
   gl_FragColor = vec4(body * src.a, src.a) + vec4(life * halo, halo);
@@ -467,8 +454,8 @@ function getAstralAuraFilterClass(): any {
   if (AstralAuraFilterClass) return AstralAuraFilterClass;
   class AstralAuraFilter extends PIXI.Filter {
     constructor() {
-      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1 });
-      (this as any).padding = 20;
+      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0 });
+      (this as any).padding = 30;
     }
 
     /** Start time of this token's animation, in seconds: tokens don't move in sync */
@@ -493,11 +480,11 @@ export function auraTimeOffset(tokenId: string): number {
   return hash / 100;
 }
 
-/** One filter per token mesh (each has its own colour, vitality and start time) */
+/** One filter per token mesh (each has its own look, vitality and start time) */
 const auraFilters = new WeakMap<object, any>();
 
 /** Give a token its astral look (aura shape), or restore its normal one */
-function setAura(token: any, aura: { kind: AuraKind; vitality: number } | null): void {
+function setAura(token: any, aura: { active: boolean; vitality: number } | null): void {
   const mesh = token.mesh;
   if (!mesh) return;
   let filter = auraFilters.get(mesh);
@@ -512,7 +499,8 @@ function setAura(token: any, aura: { kind: AuraKind; vitality: number } | null):
     filter.timeOffset = auraTimeOffset(token.id);
     auraFilters.set(mesh, filter);
   }
-  filter.uniforms.auraColor = AURA_COLORS[aura.kind];
+  filter.uniforms.auraColor = aura.active ? ASTRAL_FORM_COLOR : AURA_COLOR;
+  filter.uniforms.presence = aura.active ? 1 : 0;
   filter.uniforms.vitality = aura.vitality;
   // First in the chain: Foundry's own filters apply to the astral shape
   if (!filters.includes(filter)) mesh.filters = [filter, ...filters];
@@ -553,7 +541,7 @@ export function refreshAstralAuras(): void {
   const viewers = astralViewers();
   setCanvasTint(viewers.length > 0);
   for (const token of canvas.tokens.placeables) {
-    const aura = viewers.length > 0 && token.visible ? getShownAura(token.actor) : null;
+    const aura = viewers.length > 0 && token.visible ? getTokenAura(token) : null;
     const inAstralSight = !!aura &&
       viewers.some(viewer => viewer === token || !isAstralSightBlocked(viewer.center, token.center));
     setAura(token, inAstralSight ? aura : null);

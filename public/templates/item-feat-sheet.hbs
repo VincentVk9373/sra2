@@ -1077,23 +1077,6 @@
 
           <div class="form-group checkbox-group">
             <label>
-              <input type="checkbox" name="system.auraMasking" {{checked system.auraMasking}} />
-              {{localize "SRA2.FEATS.AWAKENED.AURA_MASKING"}}
-            </label>
-            <p class="notes">{{localize "SRA2.FEATS.AWAKENED.AURA_MASKING_HINT"}}</p>
-          </div>
-          {{#if system.auraMasking}}
-          <div class="form-group">
-            <label>{{localize "SRA2.FEATS.AWAKENED.SHOWN_AURA"}}</label>
-            <select name="system.shownAura">
-              <option value="mundane" {{#if (eq system.shownAura "mundane")}}selected{{/if}}>{{localize "SRA2.ASTRAL.AURA.MUNDANE"}}</option>
-              <option value="awakened" {{#if (eq system.shownAura "awakened")}}selected{{/if}}>{{localize "SRA2.ASTRAL.AURA.AWAKENED"}}</option>
-            </select>
-          </div>
-          {{/if}}
-
-          <div class="form-group checkbox-group">
-            <label>
               <input type="checkbox" name="system.sorcery" {{checked system.sorcery}} />
               {{localize "SRA2.FEATS.AWAKENED.SORCERY"}}
             </label>

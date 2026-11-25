@@ -16,10 +16,6 @@
     "SRA2": {
         "ASTRAL": {
             "FORM": "Astralgestalt",
-            "AURA": {
-                "MUNDANE": "Mundan",
-                "AWAKENED": "Erwacht"
-            },
             "FORM_SYNC_ERROR": "Das Token der Astralgestalt konnte nicht erstellt oder entfernt werden"
         },
         "SHEET": {
@@ -945,9 +941,6 @@
                 "DUAL_NATURE_HINT": "Ständig auf beiden Ebenen präsent: nimmt die Astralebene wahr, ohne es aktivieren zu müssen.",
                 "ASTRAL_BEING": "Astralwesen (Geist, Elementar)",
                 "ASTRAL_BEING_HINT": "Kann die physische Ebene für seine Astralgestalt verlassen (ohne astrale Wahrnehmung unsichtbar, bewegt sich durch Wände) und sich dann materialisieren.",
-                "AURA_MASKING": "Initiat: wählt die gezeigte Aura",
-                "AURA_MASKING_HINT": "Auf der Astralebene sehen alle (auch die SL) die gewählte Aura statt der echten.",
-                "SHOWN_AURA": "Gezeigte Aura",
                 "SORCERY": "Hexerei",
                 "CONJURATION": "Beschwörung",
                 "ADEPT": "Adept",

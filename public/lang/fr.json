@@ -16,10 +16,6 @@
     "SRA2": {
         "ASTRAL": {
             "FORM": "forme astrale",
-            "AURA": {
-                "MUNDANE": "Mondain",
-                "AWAKENED": "Éveillé"
-            },
             "FORM_SYNC_ERROR": "Impossible de créer ou de supprimer le token de la forme astrale"
         },
         "SHEET": {
@@ -812,9 +808,6 @@
                 "DUAL_NATURE_HINT": "Présent en permanence sur les deux plans : perçoit l'astral sans avoir à l'activer.",
                 "ASTRAL_BEING": "Être astral (esprit, élémentaire)",
                 "ASTRAL_BEING_HINT": "Peut quitter le plan physique pour sa forme astrale (invisible sans perception astrale, traverse les murs), puis se matérialiser.",
-                "AURA_MASKING": "Initié : choisit l'aura qu'il montre",
-                "AURA_MASKING_HINT": "Sur le plan astral, tout le monde (MJ compris) voit l'aura choisie à la place de la vraie.",
-                "SHOWN_AURA": "Aura montrée",
                 "SORCERY": "Sorcellerie",
                 "CONJURATION": "Conjuration",
                 "ADEPT": "Adepte",

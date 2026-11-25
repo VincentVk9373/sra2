@@ -1385,21 +1385,6 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         initial: false,
         label: "SRA2.FEATS.AWAKENED.ASTRAL_BEING"
       }),
-      // Initiate: chooses the aura shown on the astral plane instead of the true one
-      auraMasking: new fields.BooleanField({
-        required: true,
-        initial: false,
-        label: "SRA2.FEATS.AWAKENED.AURA_MASKING"
-      }),
-      shownAura: new fields.StringField({
-        required: true,
-        initial: "mundane",
-        choices: {
-          "mundane": "SRA2.ASTRAL.AURA.MUNDANE",
-          "awakened": "SRA2.ASTRAL.AURA.AWAKENED"
-        },
-        label: "SRA2.FEATS.AWAKENED.SHOWN_AURA"
-      }),
       sorcery: new fields.BooleanField({
         required: true,
         initial: false,
@@ -7318,12 +7303,10 @@ const FLAG_SCOPE = "sra2";
 const FLAG_ASTRAL_FORM = "astralForm";
 const FLAG_ASTRAL_FORM_TOKEN = "astralFormTokenId";
 const OPTION_ASTRAL_SYNC = "sra2AstralSync";
-const AURA_COLORS = {
-  mundane: [0.5, 0.78, 1],
-  awakened: [0.78, 0.42, 1]
-};
+const AURA_COLOR = [0.45, 0.7, 0.95];
+const ASTRAL_FORM_COLOR = [0.9, 0.55, 1];
 const AURA_ANIMATION_SPEED = 2.5;
-const AURA_FULL_ESSENCE = 5;
+const AURA_FULL_ESSENCE = 6;
 const TINT_DESATURATION = 0.35;
 const TINT_COLOR = [0.92, 0.78, 1.15];
 const ASTRAL_FORM_ALPHA = 0.8;
@@ -7374,26 +7357,12 @@ function getAstralStates(actor) {
 function canEnterAstralState(actor, state) {
   return getAstralStates(actor).includes(state);
 }
-function getTrueAuraKind(actor) {
+function getTokenAura(token) {
+  const actor = token?.actor;
   if (!actor || actor.type !== "character") return null;
-  const abilities = getAstralAbilities(actor);
-  if (abilities.astralBeing || abilities.dual) return "awakened";
-  const magical = (actor.items ?? []).some(
-    (i) => i.type === "feat" && (i.system?.featType === "awakened" || i.system?.featType === "power") && i.system?.active !== false
-  );
-  return magical ? "awakened" : "mundane";
-}
-function getShownAura(actor) {
-  const trueKind = getTrueAuraKind(actor);
-  if (!trueKind) return null;
-  const mask = (actor.items ?? []).find(
-    (i) => i.type === "feat" && i.system?.featType === "awakened" && i.system?.active !== false && i.system?.auraMasking === true
-  );
-  const shown = mask?.system?.shownAura;
-  const kind = shown && shown in AURA_COLORS ? shown : trueKind;
   const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
   const vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
-  return { kind, vitality };
+  return { active: perceivesAstral(token), vitality };
 }
 function isAstralSightBlocked(origin, destination) {
   const backends = CONFIG.Canvas.polygonBackends;
@@ -7433,6 +7402,7 @@ uniform vec3 auraColor;
 uniform float vitality;
 uniform float time;
 uniform float zoom;
+uniform float presence;
 
 const float PI = 3.14159265359;
 const float DIST = 6.0;
@@ -7462,14 +7432,14 @@ void main(void) {
     noise(np * 0.32 + vec2(time * 0.11, time * 0.07)) + 0.5 * noise(np * 0.7 - vec2(time * 0.05, time * 0.13)),
     noise(np * 0.32 + vec2(31.7 - time * 0.09, 12.3 + time * 0.1)) + 0.5 * noise(np * 0.7 + vec2(7.1 + time * 0.12, -time * 0.06))
   ) / 1.5 - 0.5;
-  vec2 uv = vTextureCoord + sway * px * 7.0;
+  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence);
   vec4 src = texture2D(uSampler, uv) * inside(uv);
 
   // How much of the shape lies around this pixel (1 deep inside, 0 far away)
   float near = 0.0;
   for (float i = 0.0; i < ANGLES; i++) {
     float angle = i * 2.0 * PI / ANGLES;
-    vec2 dir = vec2(cos(angle), sin(angle)) * px * 1.6;
+    vec2 dir = vec2(cos(angle), sin(angle)) * px * mix(1.3, 2.3, presence);
     for (float d = 1.0; d <= DIST; d++) {
       near += (DIST - d + 1.0) * smoothstep(0.5, 1.0, shapeAlpha(uv + dir * d));
     }
@@ -7488,7 +7458,8 @@ void main(void) {
   float flow = 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06));
   float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
-  vec3 body = life * shade * flow * rim * pulse;
+  // A plain aura is faint; an astral form blazes
+  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -7499,7 +7470,7 @@ void main(void) {
 
   // Halo outside the shape, its width drifting too (a dark smoke when there is no life left)
   float drift = 0.75 + 0.5 * noise(np * 0.4 + vec2(-time * 0.07, time * 0.09));
-  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * 2.4 * pulse * drift;
+  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift;
   halo = min(1.0 - src.a, halo);
 
   gl_FragColor = vec4(body * src.a, src.a) + vec4(life * halo, halo);
@@ -7632,8 +7603,8 @@ function getAstralAuraFilterClass() {
   if (AstralAuraFilterClass) return AstralAuraFilterClass;
   class AstralAuraFilter extends PIXI.Filter {
     constructor() {
-      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1 });
-      this.padding = 20;
+      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0 });
+      this.padding = 30;
     }
     /** Start time of this token's animation, in seconds: tokens don't move in sync */
     timeOffset = 0;
@@ -7668,7 +7639,8 @@ function setAura(token, aura) {
     filter.timeOffset = auraTimeOffset(token.id);
     auraFilters.set(mesh, filter);
   }
-  filter.uniforms.auraColor = AURA_COLORS[aura.kind];
+  filter.uniforms.auraColor = aura.active ? ASTRAL_FORM_COLOR : AURA_COLOR;
+  filter.uniforms.presence = aura.active ? 1 : 0;
   filter.uniforms.vitality = aura.vitality;
   if (!filters.includes(filter)) mesh.filters = [filter, ...filters];
 }
@@ -7701,7 +7673,7 @@ function refreshAstralAuras() {
   const viewers = astralViewers();
   setCanvasTint(viewers.length > 0);
   for (const token of canvas.tokens.placeables) {
-    const aura = viewers.length > 0 && token.visible ? getShownAura(token.actor) : null;
+    const aura = viewers.length > 0 && token.visible ? getTokenAura(token) : null;
     const inAstralSight = !!aura && viewers.some((viewer) => viewer === token || !isAstralSightBlocked(viewer.center, token.center));
     setAura(token, inAstralSight ? aura : null);
   }

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 // The module creates debounced functions at import time
 (globalThis as any).foundry.utils = { debounce: (fn: any) => fn };
 
-const { isAstralFormToken, perceivesAstral, getTrueAuraKind, getShownAura, computeDiscCutout, auraTimeOffset, canSeeAstralForm, getAstralAbilities, getAstralStates, canEnterAstralState } =
+const { isAstralFormToken, perceivesAstral, getTokenAura, computeDiscCutout, auraTimeOffset, canSeeAstralForm, getAstralAbilities, getAstralStates, canEnterAstralState } =
   await import('../canvas/astral-vision.js');
 
 /** Walls as [ax, ay, bx, by, blocksMove, blocksSight]; a collision test per polygon type */
@@ -24,7 +24,7 @@ function makeToken(id: string, x: number, opts: { astralState?: string; form?: s
   return {
     id, center: { x, y: 0 }, controlled: !!opts.controlled, isOwner: !!opts.isOwner,
     document: { getFlag: (scope: string, key: string) => flags[scope]?.[key] },
-    actor: { system: { astralState: opts.astralState ?? 'physical' }, items: opts.feats ?? [] },
+    actor: { type: 'character', system: { astralState: opts.astralState ?? 'physical' }, items: opts.feats ?? [] },
   };
 }
 
@@ -54,38 +54,34 @@ describe('astral helpers', () => {
     expect(perceivesAstral(makeToken('m', 0))).toBe(false);
   });
 
-  it('every living being has an aura, by kind; vehicles and ICE have none', () => {
-    const feat = (featType: string, system: any = {}) => ({ type: 'feat', system: { featType, active: true, ...system } });
-    const being = (...items: any[]) => ({ type: 'character', items, system: {} });
-    expect(getTrueAuraKind(being())).toBe('mundane');
-    expect(getTrueAuraKind(being(feat('weapon')))).toBe('mundane');
-    expect(getTrueAuraKind(being(feat('awakened')))).toBe('awakened');
-    expect(getTrueAuraKind(being(feat('power')))).toBe('awakened');
-    expect(getTrueAuraKind(being(feat('awakened', { active: false })))).toBe('mundane');
-    expect(getTrueAuraKind(being(feat('trait', { dualNature: true })))).toBe('awakened'); // dual: awakened aura
-    expect(getTrueAuraKind(being(feat('power', { astralBeing: true })))).toBe('awakened'); // spirit: awakened aura
-    expect(getTrueAuraKind({ type: 'vehicle', items: [] })).toBeNull();
-    expect(getTrueAuraKind({ type: 'ice', items: [] })).toBeNull();
-    expect(getShownAura({ type: 'vehicle', items: [] })).toBeNull();
+  it('every living being has an aura; vehicles and ICE have none', () => {
+    const being = (type: string) => ({ actor: { type, items: [], system: {} }, document: { getFlag: () => undefined } });
+    expect(getTokenAura(being('character'))).toEqual({ active: false, vitality: 1 });
+    expect(getTokenAura(being('vehicle'))).toBeNull();
+    expect(getTokenAura(being('ice'))).toBeNull();
+    expect(getTokenAura({ document: { getFlag: () => undefined } })).toBeNull();
   });
 
-  it('an initiate shows the aura it chose, an inactive feat masks nothing', () => {
-    const awakened = (system: any) => ({ type: 'feat', system: { featType: 'awakened', active: true, ...system } });
-    const mage = (system: any) => ({ type: 'character', system: {}, items: [awakened(system)] });
-    expect(getShownAura(mage({}))?.kind).toBe('awakened');
-    expect(getShownAura(mage({ auraMasking: true, shownAura: 'mundane' }))?.kind).toBe('mundane');
-    expect(getShownAura(mage({ auraMasking: true, shownAura: 'awakened' }))?.kind).toBe('awakened');
-    expect(getShownAura(mage({ auraMasking: false, shownAura: 'mundane' }))?.kind).toBe('awakened');
-    expect(getShownAura(mage({ auraMasking: true, shownAura: 'mundane', active: false }))?.kind).toBe('mundane'); // not awakened any more
-    expect(getShownAura(mage({ auraMasking: true, shownAura: 'bogus' }))?.kind).toBe('awakened');
-    expect(getShownAura(mage({ auraMasking: true, shownAura: 'spirit' }))?.kind).toBe('awakened'); // no such aura
+  it('awakened and ordinary beings show the same plain aura', () => {
+    const awakened = { type: 'feat', system: { featType: 'awakened', active: true, astralProjection: true } };
+    expect(getTokenAura(makeToken('o', 0))).toEqual({ active: false, vitality: 1 });
+    expect(getTokenAura(makeToken('a', 0, { feats: [awakened] }))).toEqual({ active: false, vitality: 1 });
   });
 
-  it('the aura keeps its full strength down to Essence 5, then darkens to black at 0', () => {
-    const vitality = (system: any) => getShownAura({ type: 'character', items: [], system })?.vitality;
+  it('only beings active on the astral plane show as an astral form', () => {
+    const trait = (system: any) => ({ type: 'feat', system: { featType: 'trait', active: true, ...system } });
+    expect(getTokenAura(makeToken('p', 0, { astralState: 'perception' }))?.active).toBe(true);
+    expect(getTokenAura(makeToken('f', 0, { form: 'body' }))?.active).toBe(true);
+    expect(getTokenAura(makeToken('d', 0, { feats: [trait({ dualNature: true })] }))?.active).toBe(true);
+    expect(getTokenAura(makeToken('s', 0, { feats: [trait({ astralBeing: true })], astralState: 'astral' }))?.active).toBe(true);
+    expect(getTokenAura(makeToken('m', 0, { feats: [trait({ astralBeing: true })] }))?.active).toBe(true); // materialised: dual
+    expect(getTokenAura(makeToken('b', 0, { astralState: 'projection' }))?.active).toBe(false); // vacant body
+  });
+
+  it('the aura darkens as soon as Essence drops below 6, down to black at 0', () => {
+    const vitality = (system: any) => getTokenAura({ actor: { type: 'character', items: [], system }, document: { getFlag: () => undefined } })?.vitality;
     expect(vitality({ currentEssence: 6 })).toBe(1);
-    expect(vitality({ currentEssence: 5 })).toBe(1);
-    expect(vitality({ currentEssence: 2.5 })).toBe(0.5);
+    expect(vitality({ currentEssence: 3 })).toBe(0.5);
     expect(vitality({ currentEssence: 0 })).toBe(0);
     expect(vitality({})).toBe(1);
   });
@@ -188,7 +184,6 @@ describe('dual-natured and astral beings on the canvas', () => {
     const dual = [trait({ dualNature: true })];
     expect(perceivesAstral(makeToken('d', 0, { feats: dual }))).toBe(true);
     expect(perceivesAstral(makeToken('b', 0, { feats: dual, astralState: 'projection' }))).toBe(false);
-    expect(getTrueAuraKind({ type: 'character', items: dual })).toBe('awakened');
   });
 
   it('an astral being in astral form is an astral form token; materialised it is dual', () => {
