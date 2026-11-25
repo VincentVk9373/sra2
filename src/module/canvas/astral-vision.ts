@@ -8,8 +8,8 @@
  * - For such viewers tokens lose their details and show only what anyone
  *   sees at a glance on the astral plane: a faint, softly undulating aura
  *   for a living being that is only physical, a blazing shape for an astral
- *   form (a being active on the astral plane), a still black-and-white
- *   picture for what is not alive. Awakened and ordinary beings look the same, and Essence
+ *   form (a being active on the astral plane), a still, muted drawing that
+ *   blends into the scenery for what is not alive. Awakened and ordinary beings look the same, and Essence
  *   does not show: both take an astral observation test (a world setting
  *   can show the loss of Essence as a house rule).
  *   Nothing shows through anything solid: astral sight is blocked by any
@@ -170,8 +170,8 @@ export type AuraLook = 'lifeless' | 'aura' | 'astral';
 /**
  * How a token looks on the astral plane, the same for every viewer: what
  * anyone sees at a glance, without an astral observation test.
- * - lifeless: not a living being (vehicle, drone, ICE…), no aura: shown in
- *   black and white.
+ * - lifeless: not a living being (vehicle, drone, ICE…), no aura: it blends
+ *   into the scenery.
  * - aura: a living being that is only physical. Awakened or ordinary, it
  *   looks the same.
  * - astral: a being active on the astral plane (astral perception, astral
@@ -217,7 +217,7 @@ function astralViewers(): any[] {
  * Fragment shader of the astral look of a token: the texture's details are
  * replaced by a shape in the aura colour, with a halo around it, swaying and
  * breathing slowly like something seen in a dream. What is not alive keeps
- * its drawing, still and in black and white, without halo. As vitality drops the colour goes to
+ * its drawing, still and in muted tones that blend into the map, without halo. As vitality drops the colour goes to
  * black, the breathing slows down and dark blotches eat the shape.
  *
  * The vertex shader is PIXI's default filter one with an explicit mediump
@@ -307,8 +307,10 @@ void main(void) {
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
   // A plain aura is faint; an astral form blazes
   vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
-  // What is not alive has no aura: its own picture, still, in black and white
-  body = mix(vec3(lum), body, alive);
+  // What is not alive has no aura and blends into the scenery: its drawing
+  // in muted tones, dark lines lifted enough to stay readable on a dark map
+  vec3 still = mix(vec3(0.13, 0.16, 0.24), vec3(0.4, 0.45, 0.56), smoothstep(0.1, 0.9, lum));
+  body = mix(still, body, alive);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -322,7 +324,9 @@ void main(void) {
   float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift * alive;
   halo = min(1.0 - src.a, halo);
 
-  gl_FragColor = vec4(body * src.a, src.a) + vec4(life * halo, halo);
+  // …and what is not alive is half transparent, part of the background
+  float opacity = mix(0.8, 1.0, alive);
+  gl_FragColor = vec4(body * src.a, src.a) * opacity + vec4(life * halo, halo);
 }`;
 
 /**
@@ -515,9 +519,7 @@ function setAura(token: any, aura: { look: AuraLook; vitality: number } | null):
   if (!mesh) return;
   let filter = auraFilters.get(mesh);
   const filters: any[] = mesh.filters ?? [];
-  // What is not alive keeps its whole picture: without the white disc a line
-  // drawing would be black on a dark map
-  setCutout(token, !!aura && aura.look !== 'lifeless');
+  setCutout(token, !!aura);
   if (!aura) {
     if (filter && filters.includes(filter)) mesh.filters = filters.filter(f => f !== filter);
     return;

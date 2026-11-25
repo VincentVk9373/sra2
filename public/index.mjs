@@ -7472,8 +7472,10 @@ void main(void) {
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
   // A plain aura is faint; an astral form blazes
   vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
-  // What is not alive has no aura: its own picture, still, in black and white
-  body = mix(vec3(lum), body, alive);
+  // What is not alive has no aura and blends into the scenery: its drawing
+  // in muted tones, dark lines lifted enough to stay readable on a dark map
+  vec3 still = mix(vec3(0.13, 0.16, 0.24), vec3(0.4, 0.45, 0.56), smoothstep(0.1, 0.9, lum));
+  body = mix(still, body, alive);
 
   // Decay: dark blotches creeping over the shape
   // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
@@ -7487,7 +7489,9 @@ void main(void) {
   float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift * alive;
   halo = min(1.0 - src.a, halo);
 
-  gl_FragColor = vec4(body * src.a, src.a) + vec4(life * halo, halo);
+  // …and what is not alive is half transparent, part of the background
+  float opacity = mix(0.8, 1.0, alive);
+  gl_FragColor = vec4(body * src.a, src.a) * opacity + vec4(life * halo, halo);
 }`;
 function computeDiscCutout(rgba, width, height) {
   const cx = width / 2, cy = height / 2, radius = Math.min(width, height) / 2;
@@ -7643,7 +7647,7 @@ function setAura(token, aura) {
   if (!mesh) return;
   let filter = auraFilters.get(mesh);
   const filters = mesh.filters ?? [];
-  setCutout(token, !!aura && aura.look !== "lifeless");
+  setCutout(token, !!aura);
   if (!aura) {
     if (filter && filters.includes(filter)) mesh.filters = filters.filter((f) => f !== filter);
     return;
