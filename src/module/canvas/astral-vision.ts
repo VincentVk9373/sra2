@@ -307,7 +307,7 @@ void main(void) {
   vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
   // A plain aura is faint; an astral form blazes
   vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
-  // What is not alive has no aura: its own drawing, still, in black and white
+  // What is not alive has no aura: its own picture, still, in black and white
   body = mix(vec3(lum), body, alive);
 
   // Decay: dark blotches creeping over the shape
@@ -515,7 +515,9 @@ function setAura(token: any, aura: { look: AuraLook; vitality: number } | null):
   if (!mesh) return;
   let filter = auraFilters.get(mesh);
   const filters: any[] = mesh.filters ?? [];
-  setCutout(token, !!aura);
+  // What is not alive keeps its whole picture: without the white disc a line
+  // drawing would be black on a dark map
+  setCutout(token, !!aura && aura.look !== 'lifeless');
   if (!aura) {
     if (filter && filters.includes(filter)) mesh.filters = filters.filter(f => f !== filter);
     return;
