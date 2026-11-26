@@ -120,21 +120,21 @@
                 </div>
             </div>
         </div>
-        <div class="astral-state-badge {{system.astralState}}" data-action="show-astral-state-menu-header">
-            <i class="fas {{astralStateIcon system.astralState}}"></i>
-            {{astralStateLabel system.astralState}}
+        {{#if showAstralState}}
+        <div class="astral-state-badge {{astralState.current.css}}" {{#if astralState.hasMenu}}data-action="show-astral-state-menu-header"{{/if}}>
+            <i class="fas {{astralState.current.icon}}"></i>
+            {{localize astralState.current.label}}
+            {{#if astralState.hasMenu}}
             <div class="astral-state-menu">
-                <div class="context-menu-item {{#if (eq system.astralState 'physical')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="physical">
-                    <i class="fas fa-person"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PHYSICAL"}}
+                {{#each astralState.options}}
+                <div class="context-menu-item {{#if this.active}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="{{this.state}}">
+                    <i class="fas {{this.icon}}"></i> {{localize this.label}}
                 </div>
-                <div class="context-menu-item {{#if (eq system.astralState 'perception')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="perception">
-                    <i class="fas fa-eye"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PERCEPTION"}}
-                </div>
-                <div class="context-menu-item {{#if (eq system.astralState 'projection')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="projection">
-                    <i class="fas fa-ghost"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PROJECTION"}}
-                </div>
+                {{/each}}
             </div>
+            {{/if}}
         </div>
+        {{/if}}
     </header>
     <div class="sheet-content">
         <div class="bookmarks-list-compact">
@@ -1488,23 +1488,23 @@
                         </div>
                         {{/if}}
                     </div>
-                    <div class="astral-state-selector {{system.astralState}}">
-                        <span class="astral-state-current" data-action="show-astral-state-menu">
-                            <i class="fas {{astralStateIcon system.astralState}}"></i>
-                            {{astralStateLabel system.astralState}}
+                    {{#if showAstralState}}
+                    <div class="astral-state-selector {{astralState.current.css}}">
+                        <span class="astral-state-current" {{#if astralState.hasMenu}}data-action="show-astral-state-menu"{{/if}}>
+                            <i class="fas {{astralState.current.icon}}"></i>
+                            {{localize astralState.current.label}}
                         </span>
+                        {{#if astralState.hasMenu}}
                         <div class="astral-state-menu">
-                            <div class="context-menu-item {{#if (eq system.astralState 'physical')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="physical">
-                                <i class="fas fa-person"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PHYSICAL"}}
+                            {{#each astralState.options}}
+                            <div class="context-menu-item {{#if this.active}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="{{this.state}}">
+                                <i class="fas {{this.icon}}"></i> {{localize this.label}}
                             </div>
-                            <div class="context-menu-item {{#if (eq system.astralState 'perception')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="perception">
-                                <i class="fas fa-eye"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PERCEPTION"}}
-                            </div>
-                            <div class="context-menu-item {{#if (eq system.astralState 'projection')}}active{{/if}}" data-action="set-character-astral-state" data-astral-state="projection">
-                                <i class="fas fa-ghost"></i> {{localize "SRA2.CHARACTER.ASTRAL_STATE.PROJECTION"}}
-                            </div>
+                            {{/each}}
                         </div>
+                        {{/if}}
                     </div>
+                    {{/if}}
                     <img class="profile-img-large" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
                     {{#if (and geminiAvailable advancedMode)}}
                     <button type="button" class="gemini-generate-btn" data-action="generate-gemini-portrait" title="{{localize 'SRA2.NPC_GENERATOR.GENERATE_PORTRAIT'}}">

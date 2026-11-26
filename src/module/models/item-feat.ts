@@ -700,6 +700,18 @@ export class FeatDataModel extends foundry.abstract.TypeDataModel<any, Item> {
         initial: false,
         label: "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"
       }),
+      // Dual-natured being: present on both planes, always perceives the astral
+      dualNature: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.DUAL_NATURE"
+      }),
+      // Astral being (spirit, elemental): can leave the physical plane for its astral form
+      astralBeing: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ASTRAL_BEING"
+      }),
       sorcery: new fields.BooleanField({
         required: true,
         initial: false,

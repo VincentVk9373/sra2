@@ -14,6 +14,10 @@
         }
     },
     "SRA2": {
+        "ASTRAL": {
+            "FORM": "Astralgestalt",
+            "FORM_SYNC_ERROR": "Das Token der Astralgestalt konnte nicht erstellt oder entfernt werden"
+        },
         "SHEET": {
             "CHARACTER": "Detailliert",
             "CHARACTER_V2": "Im Run",
@@ -37,7 +41,10 @@
                 "LABEL": "Astraler Zustand",
                 "PHYSICAL": "Physisch",
                 "PERCEPTION": "Astrale Wahrnehmung",
-                "PROJECTION": "Astrale Projektion"
+                "PROJECTION": "Astrale Projektion",
+                "DUAL": "Duale Natur",
+                "MATERIALIZED": "Materialisiert",
+                "ASTRAL": "Astralgestalt"
             },
             "SECTION": {
                 "IDENTITY": "Identität",
@@ -929,6 +936,11 @@
                 "SECTION_TITLE": "Erwachte Fähigkeiten",
                 "ASTRAL_PERCEPTION": "Astrale Wahrnehmung",
                 "ASTRAL_PROJECTION": "Astrale Projektion",
+                "ASTRAL_TITLE": "Astralebene",
+                "DUAL_NATURE": "Duale Natur",
+                "DUAL_NATURE_HINT": "Ständig auf beiden Ebenen präsent: nimmt die Astralebene wahr, ohne es aktivieren zu müssen.",
+                "ASTRAL_BEING": "Astralwesen (Geist, Elementar)",
+                "ASTRAL_BEING_HINT": "Kann die physische Ebene für seine Astralgestalt verlassen (ohne astrale Wahrnehmung unsichtbar, bewegt sich durch Wände) und sich dann materialisieren.",
                 "SORCERY": "Hexerei",
                 "CONJURATION": "Beschwörung",
                 "ADEPT": "Adept",
@@ -1104,6 +1116,10 @@
                 "SRA2": "Shadowrun Anarchy 2",
                 "SR6": "Shadowrun 6",
                 "SR5": "Shadowrun 5"
+            },
+            "AURA_ESSENCE": {
+                "TITLE": "Auren: Essenzverlust anzeigen (Hausregel)",
+                "DESC": "Auf der Astralebene verdunkelt sich die Aura eines Wesens und bekommt dunkle Flecken, sobald seine Essenz unter 6 fällt. Nach den Regeln lässt sich die Essenz nur mit einer Probe auf astrale Beobachtung lesen: deaktiviert lassen, um ihnen zu folgen."
             },
             "GEMINI": {
                 "TITLE": "Gemini-API-Schlüssel",

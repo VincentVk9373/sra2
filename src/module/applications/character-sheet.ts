@@ -5,6 +5,7 @@ import * as CombatHelpers from '../helpers/combat-helpers.js';
 import { WEAPON_TYPES } from '../models/item-feat.js';
 import { DELAYS, RR_MAX, SKILL_SLUGS } from '../config/constants.js';
 import { debounceSearchInput, handleSearchFocus, handleSearchBlur } from '../helpers/search-utils.js';
+import { getAstralAbilities, getAstralStates, canEnterAstralState } from '../canvas/astral-vision.js';
 
 /**
  * Character Sheet Application
@@ -607,6 +608,8 @@ export class CharacterSheet extends ActorSheet {
     context.hasActiveCyberdeck = hasActiveCyberdeck;
     context.hasMatrixAccess = hasActiveCyberdeck || hasActiveEmerged;
 
+    this._prepareAstralStateContext(context);
+
     // Get bookmarked items (skills, specializations, weapons, spells)
     const bookmarkedItems = this.actor.items.filter((item: any) =>
       (item.type === 'skill' || item.type === 'specialization' || item.type === 'feat') &&
@@ -829,7 +832,7 @@ export class CharacterSheet extends ActorSheet {
       });
     });
 
-    // Set character astral state (physical / astral perception / astral projection)
+    // Set character astral state (the states offered depend on the actor's feats)
     bindClick('[data-action="set-character-astral-state"]', this._onSetAstralState.bind(this));
     el.querySelectorAll<HTMLElement>('[data-action="show-astral-state-menu"], [data-action="show-astral-state-menu-header"]').forEach(elem => {
       elem.addEventListener('click', (event: Event) => {
@@ -1095,11 +1098,38 @@ export class CharacterSheet extends ActorSheet {
     await this.actor.update({ 'system.connectionMode': connectionMode } as any);
   }
 
+  /**
+   * Astral state badge: the current state and the states the actor's feats
+   * allow. "physical" reads as "dual nature" or "materialised" for beings that
+   * are dual-natured in the flesh. The badge is hidden for mundane characters,
+   * but stays while a state is active so they can always return to physical.
+   */
+  private _prepareAstralStateContext(context: any): void {
+    const abilities = getAstralAbilities(this.actor);
+    const current: string = (this.actor.system as any).astralState ?? 'physical';
+    const physical = abilities.astralBeing ? { label: 'MATERIALIZED', icon: 'fa-person', css: 'dual' }
+      : abilities.dual ? { label: 'DUAL', icon: 'fa-yin-yang', css: 'dual' }
+      : { label: 'PHYSICAL', icon: 'fa-person', css: 'physical' };
+    const displays: Record<string, { label: string; icon: string; css: string }> = {
+      physical,
+      perception: { label: 'PERCEPTION', icon: 'fa-eye', css: 'perception' },
+      projection: { label: 'PROJECTION', icon: 'fa-ghost', css: 'projection' },
+      astral: { label: 'ASTRAL', icon: 'fa-ghost', css: 'astral' },
+    };
+    const toOption = (state: string) => {
+      const display = displays[state] ?? physical;
+      return { state, icon: display.icon, css: display.css, label: `SRA2.CHARACTER.ASTRAL_STATE.${display.label}`, active: state === current };
+    };
+    const options = getAstralStates(this.actor).map(toOption);
+    context.astralState = { current: toOption(current), options, hasMenu: options.some(option => !option.active) };
+    context.showAstralState = options.length > 1 || abilities.dual || current !== 'physical';
+  }
+
   private async _onSetAstralState(event: Event): Promise<void> {
     event.preventDefault();
     const element = event.currentTarget as HTMLElement;
     const astralState = element.dataset.astralState;
-    if (!astralState) return;
+    if (!astralState || !canEnterAstralState(this.actor, astralState)) return;
 
     await this.actor.update({ 'system.astralState': astralState } as any);
   }

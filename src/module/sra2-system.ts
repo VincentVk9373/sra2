@@ -59,7 +59,10 @@ import { Migration_13_4_4 } from "./migration/migration-13.4.4.mjs";
 import { Migration_13_4_5 } from "./migration/migration-13.4.5.mjs";
 // @ts-ignore - JavaScript module without type declarations
 import { Migration_14_4_2 } from "./migration/migration-14.4.2.mjs";
+// @ts-ignore - JavaScript module without type declarations
+import { Migration_14_5_0 } from "./migration/migration-14.5.0.mjs";
 import { registerGeminiSetting } from "./helpers/gemini-image.js";
+import { registerAstralVisionHooks, registerAstralCanvasClasses, registerAstralSettings } from "./canvas/astral-vision.js";
 // @ts-ignore - JavaScript module without type declarations
 import { HOOKS } from "./hooks.mjs";
 
@@ -192,6 +195,9 @@ export class SRA2System {
     }
 
     this.registerThemeSetting();
+    registerAstralSettings();
+    registerAstralCanvasClasses();
+    registerAstralVisionHooks();
     this.registerGroupAnarchySetting();
     this.registerGeminiSetting();
 
@@ -235,6 +241,7 @@ export class SRA2System {
       declareMigration(new Migration_13_4_4());
       declareMigration(new Migration_13_4_5());
       declareMigration(new Migration_14_4_2());
+      declareMigration(new Migration_14_5_0());
     });
   }
 
@@ -895,20 +902,6 @@ export class SRA2System {
         'hot-sim': 'fa-fire'
       };
       return icons[value || 'offline'] || 'fa-power-off';
-    });
-
-    Handlebars.registerHelper('astralStateLabel', function (value: string) {
-      const key = `SRA2.CHARACTER.ASTRAL_STATE.${(value || 'physical').toUpperCase()}`;
-      return game.i18n?.localize(key) || value;
-    });
-
-    Handlebars.registerHelper('astralStateIcon', function (value: string) {
-      const icons: Record<string, string> = {
-        'physical': 'fa-person',
-        'perception': 'fa-eye',
-        'projection': 'fa-ghost'
-      };
-      return icons[value || 'physical'] || 'fa-person';
     });
 
     Handlebars.registerHelper('rangeLabel', function (value: string) {

@@ -187,7 +187,7 @@ class CharacterDataModel extends foundry.abstract.TypeDataModel {
       astralState: new fields.StringField({
         required: true,
         initial: "physical",
-        choices: ["physical", "perception", "projection"],
+        choices: ["physical", "perception", "projection", "astral"],
         label: "SRA2.CHARACTER.ASTRAL_STATE.LABEL"
       }),
       damage: new fields.SchemaField({
@@ -1372,6 +1372,18 @@ class FeatDataModel extends foundry.abstract.TypeDataModel {
         required: true,
         initial: false,
         label: "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"
+      }),
+      // Dual-natured being: present on both planes, always perceives the astral
+      dualNature: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.DUAL_NATURE"
+      }),
+      // Astral being (spirit, elemental): can leave the physical plane for its astral form
+      astralBeing: new fields.BooleanField({
+        required: true,
+        initial: false,
+        label: "SRA2.FEATS.AWAKENED.ASTRAL_BEING"
       }),
       sorcery: new fields.BooleanField({
         required: true,
@@ -7287,6 +7299,672 @@ function handleSearchBlur(relatedTarget, resultsDiv, hideDelay) {
     resultsDiv.style.display = "none";
   }, hideDelay);
 }
+const FLAG_SCOPE = "sra2";
+const FLAG_ASTRAL_FORM = "astralForm";
+const FLAG_ASTRAL_FORM_TOKEN = "astralFormTokenId";
+const OPTION_ASTRAL_SYNC = "sra2AstralSync";
+const AURA_COLOR = [0.45, 0.7, 0.95];
+const ASTRAL_FORM_COLOR = [0.9, 0.55, 1];
+const SETTING_AURA_ESSENCE = "astralAuraEssence";
+const AURA_ANIMATION_SPEED = 2.5;
+const AURA_FULL_ESSENCE = 6;
+const TINT_DESATURATION = 0.35;
+const TINT_COLOR = [0.92, 0.78, 1.15];
+const ASTRAL_FORM_ALPHA = 0.8;
+const PULSE_MIN = 0.5;
+const PULSE_PERIOD_MS = 2e3;
+let canvasTintFilter = null;
+function isAstrallyProjected(actor) {
+  return actor?.system?.astralState === "projection";
+}
+function isProjectionFormToken(token) {
+  const doc = token?.document ?? token;
+  return !!doc?.getFlag?.(FLAG_SCOPE, FLAG_ASTRAL_FORM);
+}
+function isAstralFormToken(token) {
+  return isProjectionFormToken(token) || token?.actor?.system?.astralState === "astral";
+}
+function perceivesAstral(token) {
+  if (isAstralFormToken(token)) return true;
+  const actor = token?.actor;
+  const state = actor?.system?.astralState ?? "physical";
+  if (state === "perception") return true;
+  if (state !== "physical") return false;
+  const abilities = getAstralAbilities(actor);
+  return abilities.dual || abilities.astralBeing;
+}
+const ASTRAL_FEAT_TYPES = ["awakened", "power", "trait"];
+function getAstralAbilities(actor) {
+  const feats = (actor?.items ?? []).filter(
+    (i) => i.type === "feat" && ASTRAL_FEAT_TYPES.includes(i.system?.featType) && i.system?.active !== false
+  );
+  const has = (key) => feats.some((i) => i.system?.[key] === true);
+  const projection = has("astralProjection");
+  return {
+    perception: projection || has("astralPerception"),
+    projection,
+    dual: has("dualNature"),
+    astralBeing: has("astralBeing")
+  };
+}
+function getAstralStates(actor) {
+  const abilities = getAstralAbilities(actor);
+  if (abilities.astralBeing) return ["physical", "astral"];
+  const states = ["physical"];
+  if (abilities.perception && !abilities.dual) states.push("perception");
+  if (abilities.projection) states.push("projection");
+  return states;
+}
+function canEnterAstralState(actor, state) {
+  return getAstralStates(actor).includes(state);
+}
+function aurasShowEssence() {
+  try {
+    return game.settings?.get(FLAG_SCOPE, SETTING_AURA_ESSENCE) === true;
+  } catch (err) {
+    return false;
+  }
+}
+function getTokenAura(token) {
+  const actor = token?.actor;
+  if (!actor || actor.type !== "character") return { look: "lifeless", vitality: 1 };
+  let vitality = 1;
+  if (aurasShowEssence()) {
+    const essence = Number(actor.system?.currentEssence ?? actor.system?.maxEssence ?? AURA_FULL_ESSENCE);
+    vitality = Math.min(1, Math.max(0, (Number.isFinite(essence) ? essence : AURA_FULL_ESSENCE) / AURA_FULL_ESSENCE));
+  }
+  return { look: perceivesAstral(token) ? "astral" : "aura", vitality };
+}
+function isAstralSightBlocked(origin, destination) {
+  const backends = CONFIG.Canvas.polygonBackends;
+  const level = canvas.level;
+  for (const type of ["move", "sight"]) {
+    const backend = backends[type];
+    if (backend?.testCollision(origin, destination, { type, mode: "any", level })) return true;
+  }
+  return false;
+}
+function currentViewers() {
+  const tokens = canvas.tokens?.placeables ?? [];
+  const controlled = tokens.filter((t) => t.controlled);
+  if (controlled.length > 0 || game.user?.isGM) return controlled;
+  return tokens.filter((t) => t.isOwner && t.document?.sight?.enabled);
+}
+function astralViewers() {
+  return currentViewers().filter((t) => perceivesAstral(t));
+}
+const ASTRAL_AURA_VERTEX = `
+precision mediump float;
+attribute vec2 aVertexPosition;
+uniform mat3 projectionMatrix;
+uniform vec4 inputSize;
+uniform vec4 outputFrame;
+varying vec2 vTextureCoord;
+
+void main(void) {
+  vec2 position = aVertexPosition * max(outputFrame.zw, vec2(0.0)) + outputFrame.xy;
+  gl_Position = vec4((projectionMatrix * vec3(position, 1.0)).xy, 0.0, 1.0);
+  vTextureCoord = aVertexPosition * (outputFrame.zw * inputSize.zw);
+}`;
+const ASTRAL_AURA_FRAGMENT = `
+precision mediump float;
+varying vec2 vTextureCoord;
+uniform sampler2D uSampler;
+uniform vec4 inputSize;
+uniform vec4 inputClamp;
+uniform vec3 auraColor;
+uniform float vitality;
+uniform float time;
+uniform float zoom;
+uniform float presence;
+uniform float alive;
+
+const float PI = 3.14159265359;
+const float DIST = 6.0;
+const float ANGLES = 10.0;
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float inside(vec2 uv) {
+  return step(3.5, step(inputClamp.x, uv.x) + step(inputClamp.y, uv.y) + step(uv.x, inputClamp.z) + step(uv.y, inputClamp.w));
+}
+float shapeAlpha(vec2 uv) {
+  return texture2D(uSampler, uv).a * inside(uv);
+}
+
+void main(void) {
+  vec2 px = inputSize.zw * zoom;
+  vec2 np = vTextureCoord * inputSize.xy / (zoom * 11.0);
+
+  // A dream world: the whole shape sways, wide, slow and slightly chaotic
+  vec2 sway = vec2(
+    noise(np * 0.32 + vec2(time * 0.11, time * 0.07)) + 0.5 * noise(np * 0.7 - vec2(time * 0.05, time * 0.13)),
+    noise(np * 0.32 + vec2(31.7 - time * 0.09, 12.3 + time * 0.1)) + 0.5 * noise(np * 0.7 + vec2(7.1 + time * 0.12, -time * 0.06))
+  ) / 1.5 - 0.5;
+  vec2 uv = vTextureCoord + sway * px * mix(5.0, 9.0, presence) * alive;
+  vec4 src = texture2D(uSampler, uv) * inside(uv);
+
+  // How much of the shape lies around this pixel (1 deep inside, 0 far away)
+  float near = 0.0;
+  for (float i = 0.0; i < ANGLES; i++) {
+    float angle = i * 2.0 * PI / ANGLES;
+    vec2 dir = vec2(cos(angle), sin(angle)) * px * mix(1.3, 2.3, presence);
+    for (float d = 1.0; d <= DIST; d++) {
+      near += (DIST - d + 1.0) * smoothstep(0.5, 1.0, shapeAlpha(uv + dir * d));
+    }
+  }
+  near /= ANGLES * DIST * (DIST + 1.0) / 2.0;
+
+  // Slow breathing, slower and fainter as life drains away
+  float beat = 0.5 + 0.5 * sin(time * mix(0.55, 1.1, vitality));
+  float pulse = mix(1.0, mix(mix(0.6, 0.86, vitality), 1.0, beat), alive);
+
+  // The shape: aura colour with wide, soft waves of light and a brighter
+  // rim; only a faint trace of the original drawing is left
+  vec3 rgb = src.a > 0.0 ? src.rgb / src.a : vec3(0.0);
+  float lum = dot(rgb, vec3(0.299, 0.587, 0.114));
+  float shade = mix(0.9, 1.03, smoothstep(0.05, 0.85, lum));
+  float flow = mix(1.0, 0.88 + 0.24 * noise(np * 0.45 + vec2(time * 0.08, -time * 0.06)), alive);
+  float rim = 1.0 + 0.9 * (1.0 - smoothstep(0.55, 1.0, near));
+  vec3 life = auraColor * mix(0.04, 1.0, pow(vitality, 1.3));
+  // A plain aura is faint; an astral form blazes
+  vec3 body = life * shade * flow * rim * pulse * mix(0.55, 1.3, presence);
+  // What is not alive has no aura and blends into the scenery: its drawing
+  // in muted tones, dark lines lifted enough to stay readable on a dark map
+  vec3 still = mix(vec3(0.13, 0.16, 0.24), vec3(0.4, 0.45, 0.56), smoothstep(0.1, 0.9, lum));
+  body = mix(still, body, alive);
+
+  // Decay: dark blotches creeping over the shape
+  // (the noise mostly lies in 0.2..0.85: spread the blotches evenly over the Essence range)
+  float n = 0.6 * noise(np + vec2(0.0, time * 0.12)) + 0.4 * noise(np * 2.3 - vec2(time * 0.09, 0.0));
+  float edge = mix(0.2, 0.85, vitality);
+  float decay = smoothstep(edge - 0.08, edge + 0.12, n) * (1.0 - smoothstep(0.9, 1.0, vitality));
+  body = mix(body, vec3(0.0), decay * 0.92);
+
+  // Halo outside the shape, its width drifting too (a dark smoke when there is no life left)
+  float drift = 0.75 + 0.5 * noise(np * 0.4 + vec2(-time * 0.07, time * 0.09));
+  float halo = near * (1.0 - smoothstep(0.35, 1.0, src.a)) * mix(1.1, 3.4, presence) * pulse * drift * alive;
+  halo = min(1.0 - src.a, halo);
+
+  // …and what is not alive is half transparent, part of the background
+  float opacity = mix(0.8, 1.0, alive);
+  gl_FragColor = vec4(body * src.a, src.a) * opacity + vec4(life * halo, halo);
+}`;
+function computeDiscCutout(rgba, width, height) {
+  const cx = width / 2, cy = height / 2, radius = Math.min(width, height) / 2;
+  if (radius < 16) return null;
+  const alphaAt = (x, y) => rgba[4 * (y * width + x) + 3];
+  const isWhite = (i) => {
+    const r = rgba[4 * i], g = rgba[4 * i + 1], b = rgba[4 * i + 2];
+    const min = Math.min(r, g, b);
+    return rgba[4 * i + 3] > 200 && min >= 225 && Math.max(r, g, b) - min <= 24;
+  };
+  for (const [x, y] of [[0, 0], [width - 1, 0], [0, height - 1], [width - 1, height - 1]]) {
+    if (alphaAt(x, y) > 32) return null;
+  }
+  const ANGLES = 64;
+  const pixelAt = (angle, r) => {
+    const x = Math.min(width - 1, Math.max(0, Math.round(cx + Math.cos(angle) * r - 0.5)));
+    const y = Math.min(height - 1, Math.max(0, Math.round(cy + Math.sin(angle) * r - 0.5)));
+    return y * width + x;
+  };
+  let opaqueRim = 0;
+  for (let k = 0; k < ANGLES; k++) if (rgba[4 * pixelAt(k * 2 * Math.PI / ANGLES, radius * 0.93) + 3] > 200) opaqueRim++;
+  if (opaqueRim < ANGLES * 0.9) return null;
+  const edges = [];
+  for (let k = 0; k < ANGLES; k++) {
+    const angle = k * 2 * Math.PI / ANGLES;
+    for (let r = radius * 0.99; r >= radius * 0.6; r -= 1) {
+      if ([0, 1, 2, 3, 4].every((step) => isWhite(pixelAt(angle, r - step)))) {
+        edges.push(r);
+        break;
+      }
+    }
+  }
+  if (edges.length < ANGLES * 0.6) return null;
+  edges.sort((a, b) => a - b);
+  const median = edges[Math.floor(edges.length / 2)];
+  const inner = Math.max(edges[Math.floor(edges.length * 0.2)], median - radius * 0.06) - 1.5;
+  const innerSq = inner * inner;
+  const distSq = (i) => {
+    const dx = i % width + 0.5 - cx, dy = Math.floor(i / width) + 0.5 - cy;
+    return dx * dx + dy * dy;
+  };
+  const background = new Uint8Array(width * height);
+  const queue = [];
+  const seedSq = (inner - 3) * (inner - 3);
+  for (let i = 0; i < width * height; i++) {
+    const d = distSq(i);
+    if (d <= innerSq && d >= seedSq && isWhite(i)) {
+      background[i] = 1;
+      queue.push(i);
+    }
+  }
+  while (queue.length > 0) {
+    const i = queue.pop();
+    const x = i % width;
+    for (const j of [x > 0 ? i - 1 : -1, x < width - 1 ? i + 1 : -1, i - width, i + width]) {
+      if (j < 0 || j >= width * height || background[j] || distSq(j) > innerSq || !isWhite(j)) continue;
+      background[j] = 1;
+      queue.push(j);
+    }
+  }
+  const alpha = new Uint8ClampedArray(width * height);
+  let kept = 0, area = 0;
+  for (let i = 0; i < width * height; i++) {
+    if (distSq(i) > innerSq) continue;
+    area++;
+    if (background[i]) continue;
+    let a = rgba[4 * i + 3];
+    const x = i % width;
+    const touchesBackground = x > 0 && background[i - 1] || x < width - 1 && background[i + 1] || i >= width && background[i - width] || i + width < width * height && background[i + width];
+    if (touchesBackground) {
+      const min = Math.min(rgba[4 * i], rgba[4 * i + 1], rgba[4 * i + 2]);
+      a *= Math.min(1, Math.max(0.2, (255 - min) / 70));
+    }
+    alpha[i] = a;
+    if (a > 0) kept++;
+  }
+  if (kept < area * 0.03 || kept > area * 0.97) return null;
+  return alpha;
+}
+const cutoutTextures = /* @__PURE__ */ new WeakMap();
+const CUTOUT_MAX_PIXELS = 1024 * 1024;
+function getCutoutTexture(texture) {
+  const base = texture?.baseTexture;
+  if (!base?.valid) return null;
+  if (cutoutTextures.has(base)) return cutoutTextures.get(base);
+  let cutout = null;
+  try {
+    const source = base.resource?.source;
+    const width = base.realWidth, height = base.realHeight;
+    const wholeImage = texture.frame?.width === base.width && texture.frame?.height === base.height;
+    const isVideo = typeof HTMLVideoElement !== "undefined" && source instanceof HTMLVideoElement;
+    if (source && !isVideo && wholeImage && width * height <= CUTOUT_MAX_PIXELS) {
+      const element = document.createElement("canvas");
+      element.width = width;
+      element.height = height;
+      const context = element.getContext("2d", { willReadFrequently: true });
+      context.drawImage(source, 0, 0, width, height);
+      const image = context.getImageData(0, 0, width, height);
+      const alpha = computeDiscCutout(image.data, width, height);
+      if (alpha) {
+        for (let i = 0; i < alpha.length; i++) image.data[4 * i + 3] = alpha[i];
+        context.putImageData(image, 0, 0);
+        cutout = PIXI.Texture.from(element, { resolution: base.resolution });
+      }
+    }
+  } catch (err) {
+    cutout = null;
+  }
+  cutoutTextures.set(base, cutout);
+  return cutout;
+}
+const shownCutouts = /* @__PURE__ */ new WeakMap();
+function setCutout(token, active) {
+  const mesh = token.mesh;
+  const shown = shownCutouts.get(mesh);
+  const cutout = active && !token.hasDynamicRing ? getCutoutTexture(token.texture) : null;
+  if (cutout) {
+    if (mesh.texture !== cutout) mesh.texture = cutout;
+    shownCutouts.set(mesh, cutout);
+  } else if (shown) {
+    if (mesh.texture === shown) mesh.texture = token.texture ?? PIXI.Texture.EMPTY;
+    shownCutouts.delete(mesh);
+  }
+}
+let AstralAuraFilterClass = null;
+function getAstralAuraFilterClass() {
+  if (AstralAuraFilterClass) return AstralAuraFilterClass;
+  class AstralAuraFilter extends PIXI.Filter {
+    constructor() {
+      super(ASTRAL_AURA_VERTEX, ASTRAL_AURA_FRAGMENT, { auraColor: [1, 1, 1], vitality: 1, time: 0, zoom: 1, presence: 0, alive: 1 });
+      this.padding = 30;
+    }
+    /** Start time of this token's animation, in seconds: tokens don't move in sync */
+    timeOffset = 0;
+    apply(filterManager, input, output, clearMode) {
+      const uniforms = this.uniforms;
+      uniforms.zoom = Math.min(2, Math.max(0.35, canvas.stage?.worldTransform?.d ?? 1));
+      uniforms.time = this.timeOffset + (canvas.photosensitiveMode ? 0 : canvas.app.ticker.lastTime / 1e3 * AURA_ANIMATION_SPEED % 3600);
+      filterManager.applyFilter(this, input, output, clearMode);
+    }
+  }
+  AstralAuraFilterClass = AstralAuraFilter;
+  return AstralAuraFilterClass;
+}
+function auraTimeOffset(tokenId) {
+  let hash = 0;
+  for (const char of String(tokenId ?? "")) hash = (hash * 31 + char.charCodeAt(0)) % 6e4;
+  return hash / 100;
+}
+const auraFilters = /* @__PURE__ */ new WeakMap();
+function setAura(token, aura) {
+  const mesh = token.mesh;
+  if (!mesh) return;
+  let filter = auraFilters.get(mesh);
+  const filters = mesh.filters ?? [];
+  setCutout(token, !!aura);
+  if (!aura) {
+    if (filter && filters.includes(filter)) mesh.filters = filters.filter((f) => f !== filter);
+    return;
+  }
+  if (!filter) {
+    filter = new (getAstralAuraFilterClass())();
+    filter.timeOffset = auraTimeOffset(token.id);
+    auraFilters.set(mesh, filter);
+  }
+  filter.uniforms.auraColor = aura.look === "astral" ? ASTRAL_FORM_COLOR : AURA_COLOR;
+  filter.uniforms.presence = aura.look === "astral" ? 1 : 0;
+  filter.uniforms.alive = aura.look === "lifeless" ? 0 : 1;
+  filter.uniforms.vitality = aura.vitality;
+  if (!filters.includes(filter)) mesh.filters = [filter, ...filters];
+}
+function getCanvasTintFilter() {
+  if (!canvasTintFilter) {
+    const d = TINT_DESATURATION;
+    const grey = [0.3, 0.59, 0.11];
+    const matrix = [];
+    for (let c = 0; c < 3; c++) {
+      for (let i = 0; i < 3; i++) matrix.push(TINT_COLOR[c] * ((1 - d) * (i === c ? 1 : 0) + d * grey[i]));
+      matrix.push(0, 0);
+    }
+    matrix.push(0, 0, 0, 1, 0);
+    canvasTintFilter = new PIXI.ColorMatrixFilter();
+    canvasTintFilter.matrix = matrix;
+  }
+  return canvasTintFilter;
+}
+function setCanvasTint(active) {
+  const group = canvas.environment;
+  if (!group) return;
+  const filter = getCanvasTintFilter();
+  const filters = group.filters ?? [];
+  const has = filters.includes(filter);
+  if (active && !has) group.filters = [...filters, filter];
+  else if (!active && has) group.filters = filters.filter((f) => f !== filter);
+}
+function refreshAstralAuras() {
+  if (!canvas?.ready) return;
+  const viewers = astralViewers();
+  setCanvasTint(viewers.length > 0);
+  for (const token of canvas.tokens.placeables) {
+    const aura = viewers.length > 0 && token.visible ? getTokenAura(token) : null;
+    const inAstralSight = !!aura && viewers.some((viewer) => viewer === token || !isAstralSightBlocked(viewer.center, token.center));
+    setAura(token, inAstralSight ? aura : null);
+  }
+}
+function canSeeAstralForm(target) {
+  if (target.controlled) return true;
+  if (target.isOwner && !game.user?.isGM) return true;
+  const viewers = currentViewers();
+  if (viewers.length === 0 && game.user?.isGM) return true;
+  const bodyTokenId = target.document?.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId;
+  return viewers.some(
+    (v) => v.id === bodyTokenId || // a body always sees its own astral form
+    perceivesAstral(v) && !isAstralSightBlocked(v.center, target.center)
+  );
+}
+function selectNewAstralForm(tokenDoc) {
+  const bodyTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId;
+  const body = bodyTokenId ? canvas.tokens?.get(bodyTokenId) : null;
+  if (!body?.controlled) return;
+  setTimeout(() => {
+    const form = canvas.tokens?.get(tokenDoc.id);
+    if (form?.isOwner) form.control({ releaseOthers: true });
+  }, 100);
+}
+function registerAstralCanvasClasses() {
+  const BaseToken = CONFIG.Token.objectClass;
+  class SRA2Token extends BaseToken {
+    get isVisible() {
+      const visible = super.isVisible;
+      if (!visible || !isAstralFormToken(this)) return visible;
+      if (this.isPreview) return true;
+      return canSeeAstralForm(this);
+    }
+    /** An astral form sheds no light on the physical plane */
+    _isLightSource() {
+      if (isAstralFormToken(this)) return false;
+      return super._isLightSource();
+    }
+    constrainMovementPath(waypoints, options = {}) {
+      if (isAstralFormToken(this)) options = { ...options, ignoreWalls: true };
+      return super.constrainMovementPath(waypoints, options);
+    }
+  }
+  CONFIG.Token.objectClass = SRA2Token;
+  const { NONE, NORMAL } = globalThis.CONST.EDGE_SENSE_TYPES;
+  const isSeeThroughSolid = (edge) => edge.move !== NONE && edge.sight !== NORMAL;
+  const BaseSweep = CONFIG.Canvas.polygonBackends.sight;
+  class AstralSightPolygon extends BaseSweep {
+    _testEdgeInclusion(edge, edgeTypes) {
+      const config = this.config;
+      if (config?.sra2Astral && isSeeThroughSolid(edge)) {
+        const type = config.type;
+        config.type = "move";
+        try {
+          return super._testEdgeInclusion(edge, edgeTypes);
+        } finally {
+          config.type = type;
+        }
+      }
+      return super._testEdgeInclusion(edge, edgeTypes);
+    }
+    _identifyEdges() {
+      super._identifyEdges();
+      if (!this.config?.sra2Astral) return;
+      for (const edge of this.edges) {
+        if (isSeeThroughSolid(edge)) edge.sight = NORMAL;
+      }
+    }
+  }
+  CONFIG.Canvas.polygonBackends.sight = AstralSightPolygon;
+  const BaseVisionSource = CONFIG.Canvas.visionSourceClass;
+  class SRA2VisionSource extends BaseVisionSource {
+    _getPolygonConfiguration() {
+      const config = super._getPolygonConfiguration();
+      if (isAstralFormToken(this.object)) {
+        config.sra2Astral = true;
+        config.useThreshold = false;
+      }
+      return config;
+    }
+  }
+  CONFIG.Canvas.visionSourceClass = SRA2VisionSource;
+}
+function actorTokensForUser(actor, userId) {
+  if (actor.isToken) return actor.token ? [actor.token] : [];
+  if (actor.system?.astralState !== "projection") return actor.getDependentTokens();
+  const sceneId = game.users?.get(userId)?.viewedScene;
+  const scene = sceneId ? game.scenes?.get(sceneId) : null;
+  return scene ? actor.getDependentTokens({ scenes: scene }) : [];
+}
+async function syncAstralFormTokens(actor, userId) {
+  for (const tokenDoc of actorTokensForUser(actor, userId)) {
+    const scene = tokenDoc.parent;
+    if (!scene?.tokens.has(tokenDoc.id)) continue;
+    const state = tokenDoc.actor?.system?.astralState;
+    const form = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM);
+    if (form) {
+      if (state === "projection") continue;
+      const body = scene.tokens.get(form.bodyTokenId);
+      await tokenDoc.delete({ [OPTION_ASTRAL_SYNC]: true });
+      if (body) {
+        await body.unsetFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+        if (body.actor && body.actor.system?.astralState !== state) await body.actor.update({ "system.astralState": state });
+      }
+      continue;
+    }
+    const formTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+    const existingForm = (formTokenId ? scene.tokens.get(formTokenId) : null) ?? scene.tokens.find((t) => t.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId === tokenDoc.id) ?? null;
+    if (state === "projection") {
+      if (existingForm) continue;
+      const data = tokenDoc.toObject();
+      delete data._id;
+      data.x += scene.grid.size * (tokenDoc.width ?? 1);
+      data.name = `${tokenDoc.name} (${game.i18n.localize("SRA2.ASTRAL.FORM")})`;
+      data.alpha = ASTRAL_FORM_ALPHA;
+      if (data.flags?.[FLAG_SCOPE]) delete data.flags[FLAG_SCOPE][FLAG_ASTRAL_FORM_TOKEN];
+      foundry.utils.setProperty(data, `flags.${FLAG_SCOPE}.${FLAG_ASTRAL_FORM}`, { bodyTokenId: tokenDoc.id });
+      const [created] = await scene.createEmbeddedDocuments("Token", [data], { sra2SkipFeatChoice: true });
+      if (created) await tokenDoc.setFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN, created.id);
+    } else if (formTokenId || existingForm) {
+      if (existingForm) await existingForm.delete({ [OPTION_ASTRAL_SYNC]: true });
+      if (formTokenId) await tokenDoc.unsetFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+    }
+  }
+}
+const astralFormSyncQueue = /* @__PURE__ */ new Map();
+function queueAstralFormSync(actor, userId) {
+  const key = actor.uuid ?? actor.id;
+  const previous = astralFormSyncQueue.get(key) ?? Promise.resolve();
+  const run = previous.catch(() => void 0).then(() => syncAstralFormTokens(actor, userId));
+  astralFormSyncQueue.set(key, run);
+  const release = () => {
+    if (astralFormSyncQueue.get(key) === run) astralFormSyncQueue.delete(key);
+  };
+  run.then(release, release);
+  return run;
+}
+async function onAstralFormDeleted(tokenDoc) {
+  const bodyTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId;
+  const body = bodyTokenId ? tokenDoc.parent?.tokens.get(bodyTokenId) : null;
+  if (!body) return;
+  if (body.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN)) await body.unsetFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+  if (isAstrallyProjected(body.actor)) await body.actor.update({ "system.astralState": "physical" });
+}
+async function onProjectingBodyDeleted(tokenDoc, formTokenId) {
+  const form = tokenDoc.parent?.tokens.get(formTokenId);
+  if (form) await form.delete({ [OPTION_ASTRAL_SYNC]: true });
+  const actor = tokenDoc.actorLink ? game.actors?.get(tokenDoc.actorId) : null;
+  if (actor && isAstrallyProjected(actor)) await actor.update({ "system.astralState": "physical" });
+}
+function isAstralFormRunner(userId) {
+  const gm = game.users?.activeGM;
+  return gm ? gm.isSelf : userId === game.user?.id;
+}
+function refreshAstralVisibility() {
+  if (!canvas?.ready) return;
+  canvas.perception.update({ initializeVision: true, refreshVision: true });
+  for (const token of canvas.tokens.placeables) {
+    token.renderFlags.set({ refreshVisibility: true, refreshState: true });
+    const light = token.document?.light;
+    if (light?.dim || light?.bright) token.initializeLightSource();
+  }
+}
+let pulseElapsedMs = 0;
+let pulseRegistered = false;
+function animateAstralForms() {
+  if (!canvas?.ready || !canvas.tokens) return;
+  pulseElapsedMs += canvas.app.ticker.deltaMS;
+  for (const token of canvas.tokens.placeables) {
+    if (!token.visible || !token.mesh || !isAstralFormToken(token)) continue;
+    const elapsed = pulseElapsedMs + auraTimeOffset(token.id) * 1e3;
+    const wave = 0.5 + 0.5 * Math.sin(elapsed / PULSE_PERIOD_MS * 2 * Math.PI);
+    const factor = PULSE_MIN + (1 - PULSE_MIN) * wave;
+    const opacity = isProjectionFormToken(token) ? 1 : ASTRAL_FORM_ALPHA;
+    token.mesh.alpha = token.alpha * (token.document.alpha ?? 1) * opacity * factor;
+  }
+}
+function debounceWithMaxWait(callback, delay, maxWait) {
+  let timer = null;
+  let firstCall = 0;
+  return () => {
+    const now = Date.now();
+    if (timer === null) firstCall = now;
+    else clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      callback();
+    }, Math.max(0, Math.min(delay, firstCall + maxWait - now)));
+  };
+}
+const REFRESH_DELAY_MS = 50;
+const REFRESH_MAX_WAIT_MS = 150;
+const scheduleAuraRefresh = debounceWithMaxWait(() => refreshAstralAuras(), REFRESH_DELAY_MS, REFRESH_MAX_WAIT_MS);
+const scheduleAstralFormVisibilityRefresh = debounceWithMaxWait(() => {
+  for (const token of canvas.tokens?.placeables ?? []) {
+    if (isAstralFormToken(token)) token.renderFlags.set({ refreshVisibility: true });
+  }
+}, REFRESH_DELAY_MS, REFRESH_MAX_WAIT_MS);
+function registerAstralSettings() {
+  game.settings.register(FLAG_SCOPE, SETTING_AURA_ESSENCE, {
+    name: "SRA2.SETTINGS.AURA_ESSENCE.TITLE",
+    hint: "SRA2.SETTINGS.AURA_ESSENCE.DESC",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => scheduleAuraRefresh()
+  });
+}
+function registerAstralVisionHooks() {
+  Hooks.on("canvasReady", () => {
+    if (pulseRegistered) return;
+    canvas.app.ticker.add(animateAstralForms);
+    pulseRegistered = true;
+  });
+  for (const hook of ["sightRefresh", "createWall", "updateWall", "deleteWall"]) {
+    Hooks.on(hook, () => scheduleAstralFormVisibilityRefresh());
+  }
+  for (const hook of ["sightRefresh", "controlToken", "createWall", "updateWall", "deleteWall", "createToken", "deleteToken"]) {
+    Hooks.on(hook, () => scheduleAuraRefresh());
+  }
+  Hooks.on("refreshToken", (_token, flags) => {
+    if (flags?.refreshVisibility || flags?.refreshPosition || flags?.refreshMesh) scheduleAuraRefresh();
+    if (flags?.refreshPosition) scheduleAstralFormVisibilityRefresh();
+  });
+  Hooks.on("preUpdateActor", (_actor, changes) => {
+    if (["projection", "astral"].includes(foundry.utils.getProperty(changes, "system.astralState"))) {
+      foundry.utils.setProperty(changes, "system.connectionMode", "disconnected");
+    }
+  });
+  Hooks.on("updateActor", (actor, changes, _options, userId) => {
+    if (changes?.system?.maxEssence !== void 0) scheduleAuraRefresh();
+    if (changes?.system?.astralState === void 0) return;
+    if (isAstralFormRunner(userId)) {
+      queueAstralFormSync(actor, userId).catch((err) => {
+        console.error("SRA2 | Astral projection: could not sync the astral form token", err);
+        ui.notifications?.error(game.i18n.localize("SRA2.ASTRAL.FORM_SYNC_ERROR"));
+      });
+    }
+    refreshAstralVisibility();
+    scheduleAuraRefresh();
+  });
+  Hooks.on("createToken", (tokenDoc) => {
+    if (isProjectionFormToken(tokenDoc)) selectNewAstralForm(tokenDoc);
+  });
+  Hooks.on("deleteToken", (tokenDoc, options, userId) => {
+    if (options?.[OPTION_ASTRAL_SYNC]) return;
+    if (!isAstralFormRunner(userId)) return;
+    const formTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+    const ending = isProjectionFormToken(tokenDoc) ? onAstralFormDeleted(tokenDoc) : formTokenId ? onProjectingBodyDeleted(tokenDoc, formTokenId) : null;
+    ending?.catch((err) => console.error("SRA2 | Astral projection: could not end the projection", err));
+  });
+  Hooks.on("controlToken", () => {
+    for (const token of canvas.tokens?.placeables ?? []) token.renderFlags.set({ refreshVisibility: true });
+  });
+  const onItemChange = (item, userId) => {
+    const actor = item.parent;
+    if (actor?.documentName !== "Actor") return;
+    scheduleAuraRefresh();
+    if (userId !== game.user?.id || item.type !== "feat") return;
+    const state = actor.system?.astralState;
+    if (state && state !== "physical" && !canEnterAstralState(actor, state)) {
+      actor.update({ "system.astralState": "physical" }).catch((err) => console.error("SRA2 | Astral state: could not return to physical", err));
+    }
+  };
+  Hooks.on("createItem", (item, _options, userId) => onItemChange(item, userId));
+  Hooks.on("updateItem", (item, _changes, _options, userId) => onItemChange(item, userId));
+  Hooks.on("deleteItem", (item, _options, userId) => onItemChange(item, userId));
+}
 class CharacterSheet extends ActorSheet {
   /** Active section for tabbed navigation */
   _activeSection = "identity";
@@ -7751,6 +8429,7 @@ class CharacterSheet extends ActorSheet {
     const hasActiveEmerged = allFeats.some((f) => f.system.featType === "emerged" && f.system.active === true);
     context.hasActiveCyberdeck = hasActiveCyberdeck;
     context.hasMatrixAccess = hasActiveCyberdeck || hasActiveEmerged;
+    this._prepareAstralStateContext(context);
     const bookmarkedItems = this.actor.items.filter(
       (item) => (item.type === "skill" || item.type === "specialization" || item.type === "feat") && item.system.bookmarked === true
     );
@@ -8061,11 +8740,35 @@ class CharacterSheet extends ActorSheet {
     if (!connectionMode) return;
     await this.actor.update({ "system.connectionMode": connectionMode });
   }
+  /**
+   * Astral state badge: the current state and the states the actor's feats
+   * allow. "physical" reads as "dual nature" or "materialised" for beings that
+   * are dual-natured in the flesh. The badge is hidden for mundane characters,
+   * but stays while a state is active so they can always return to physical.
+   */
+  _prepareAstralStateContext(context) {
+    const abilities = getAstralAbilities(this.actor);
+    const current = this.actor.system.astralState ?? "physical";
+    const physical = abilities.astralBeing ? { label: "MATERIALIZED", icon: "fa-person", css: "dual" } : abilities.dual ? { label: "DUAL", icon: "fa-yin-yang", css: "dual" } : { label: "PHYSICAL", icon: "fa-person", css: "physical" };
+    const displays = {
+      physical,
+      perception: { label: "PERCEPTION", icon: "fa-eye", css: "perception" },
+      projection: { label: "PROJECTION", icon: "fa-ghost", css: "projection" },
+      astral: { label: "ASTRAL", icon: "fa-ghost", css: "astral" }
+    };
+    const toOption = (state) => {
+      const display = displays[state] ?? physical;
+      return { state, icon: display.icon, css: display.css, label: `SRA2.CHARACTER.ASTRAL_STATE.${display.label}`, active: state === current };
+    };
+    const options = getAstralStates(this.actor).map(toOption);
+    context.astralState = { current: toOption(current), options, hasMenu: options.some((option) => !option.active) };
+    context.showAstralState = options.length > 1 || abilities.dual || current !== "physical";
+  }
   async _onSetAstralState(event) {
     event.preventDefault();
     const element = event.currentTarget;
     const astralState = element.dataset.astralState;
-    if (!astralState) return;
+    if (!astralState || !canEnterAstralState(this.actor, astralState)) return;
     await this.actor.update({ "system.astralState": astralState });
   }
   async _onSetVehicleControlMode(event) {
@@ -23185,6 +23888,97 @@ class Migration_14_4_2 extends Migration {
     console.log(`SRA2 | Migration 14.4.2 complete — ${total} item(s) fixed`);
   }
 }
+const DUAL_NATURE_NAMES = ["Nature duale", "Dual Nature", "Duale Natur", "Двойственная природа"];
+const ASTRAL_BEING_NAMES = [
+  "Matérialisation",
+  "Materialization",
+  "Materialisierung",
+  "Материализация",
+  "Forme astrale",
+  "Astral Form",
+  "Astralgestalt",
+  "Астральная форма"
+];
+const FEAT_TYPES = ["trait", "power"];
+class Migration_14_5_0 extends Migration {
+  get code() {
+    return "migration-14.5.0";
+  }
+  get version() {
+    return "14.5.0";
+  }
+  _normalize(text) {
+    if (!text) return "";
+    return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  }
+  _matches(name, names) {
+    const normalized = this._normalize(name);
+    return names.some((n) => this._normalize(n) === normalized);
+  }
+  /** Feat updates: check the astral ability matching the feat's name */
+  _computeFeatUpdates(items) {
+    const updates = [];
+    for (const item of items) {
+      if (item.type !== "feat" || !FEAT_TYPES.includes(item.system?.featType)) continue;
+      const update = {};
+      if (!item.system.dualNature && this._matches(item.name, DUAL_NATURE_NAMES)) update["system.dualNature"] = true;
+      if (!item.system.astralBeing && this._matches(item.name, ASTRAL_BEING_NAMES)) update["system.astralBeing"] = true;
+      if (Object.keys(update).length > 0) updates.push({ _id: item.id, ...update });
+    }
+    return updates;
+  }
+  async _migrateEmbedded(owner, label) {
+    const updates = this._computeFeatUpdates(owner.items);
+    if (updates.length > 0) {
+      await owner.updateEmbeddedDocuments("Item", updates);
+      console.log(`SRA2 | Migration 14.5.0: ${updates.length} feat(s) flagged on ${label}`);
+    }
+    return updates.length;
+  }
+  async migrate() {
+    console.log("SRA2 | Starting migration 14.5.0: astral abilities of dual-natured and astral beings");
+    let total = 0;
+    for (const actor of game.actors) {
+      total += await this._migrateEmbedded(actor, `actor "${actor.name}"`);
+    }
+    for (const scene of game.scenes) {
+      for (const token of scene.tokens) {
+        if (token.actorLink) continue;
+        try {
+          if (token.actor) total += await this._migrateEmbedded(token.actor, `token "${token.name}" (scene "${scene.name}")`);
+        } catch (e) {
+          console.warn(`SRA2 | Migration 14.5.0: failed on token "${token.name}" (scene "${scene.name}")`, e);
+        }
+      }
+    }
+    const worldUpdates = this._computeFeatUpdates(game.items);
+    if (worldUpdates.length > 0) await Item.updateDocuments(worldUpdates);
+    total += worldUpdates.length;
+    for (const pack of game.packs) {
+      if (pack.metadata?.packageType !== "world") continue;
+      if (pack.documentName !== "Item" && pack.documentName !== "Actor") continue;
+      const wasLocked = pack.locked;
+      if (wasLocked) await pack.configure({ locked: false });
+      try {
+        const documents2 = await pack.getDocuments();
+        if (pack.documentName === "Actor") {
+          for (const actor of documents2) {
+            total += await this._migrateEmbedded(actor, `compendium actor "${actor.name}"`);
+          }
+        } else {
+          const packUpdates = this._computeFeatUpdates(documents2);
+          if (packUpdates.length > 0) await Item.updateDocuments(packUpdates, { pack: pack.collection });
+          total += packUpdates.length;
+        }
+      } catch (e) {
+        console.warn(`SRA2 | Migration 14.5.0: failed on pack "${pack.title}"`, e);
+      } finally {
+        if (wasLocked) await pack.configure({ locked: true });
+      }
+    }
+    console.log(`SRA2 | Migration 14.5.0 complete — ${total} feat(s) flagged`);
+  }
+}
 const GEMINI_SETTING = "geminiApiKey";
 function isGeminiConfigured() {
   try {
@@ -23688,6 +24482,9 @@ class SRA2System {
       game.system.api = { applications, models, documents };
     }
     this.registerThemeSetting();
+    registerAstralSettings();
+    registerAstralCanvasClasses();
+    registerAstralVisionHooks();
     this.registerGroupAnarchySetting();
     this.registerGeminiSetting();
     setSidebarIcons();
@@ -23727,6 +24524,7 @@ class SRA2System {
       declareMigration(new Migration_13_4_4());
       declareMigration(new Migration_13_4_5());
       declareMigration(new Migration_14_4_2());
+      declareMigration(new Migration_14_5_0());
     });
   }
   registerDataModels() {
@@ -24190,18 +24988,6 @@ class SRA2System {
         "hot-sim": "fa-fire"
       };
       return icons[value || "offline"] || "fa-power-off";
-    });
-    Handlebars.registerHelper("astralStateLabel", function(value) {
-      const key = `SRA2.CHARACTER.ASTRAL_STATE.${(value || "physical").toUpperCase()}`;
-      return game.i18n?.localize(key) || value;
-    });
-    Handlebars.registerHelper("astralStateIcon", function(value) {
-      const icons = {
-        "physical": "fa-person",
-        "perception": "fa-eye",
-        "projection": "fa-ghost"
-      };
-      return icons[value || "physical"] || "fa-person";
     });
     Handlebars.registerHelper("rangeLabel", function(value) {
       if (!value || value === "none") return "-";

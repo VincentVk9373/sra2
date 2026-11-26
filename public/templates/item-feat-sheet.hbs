@@ -1,3 +1,35 @@
+{{!-- Astral abilities, shared by the awakened, power and trait feats --}}
+{{#*inline "astralAbilities"}}
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.astralPerception" {{checked system.astralPerception}} {{#if system.astralProjection}}disabled{{/if}} />
+              {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}
+            </label>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.astralProjection" {{checked system.astralProjection}} />
+              {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"}}
+            </label>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.dualNature" {{checked system.dualNature}} />
+              {{localize "SRA2.FEATS.AWAKENED.DUAL_NATURE"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.AWAKENED.DUAL_NATURE_HINT"}}</p>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="system.astralBeing" {{checked system.astralBeing}} />
+              {{localize "SRA2.FEATS.AWAKENED.ASTRAL_BEING"}}
+            </label>
+            <p class="notes">{{localize "SRA2.FEATS.AWAKENED.ASTRAL_BEING_HINT"}}</p>
+          </div>
+{{/inline}}
 <form class="{{cssClass}} sra2-item-sheet sra2-feat-sheet" autocomplete="off">
   <header class="sheet-header">
     <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
@@ -179,6 +211,9 @@
             </label>
             <p class="notes">{{localize "SRA2.FEATS.IS_FIRST_FEAT_HINT"}}</p>
           </div>
+
+          <h3><i class="fas fa-om"></i> {{localize "SRA2.FEATS.AWAKENED.ASTRAL_TITLE"}}</h3>
+          {{> astralAbilities}}
           {{/if}}
 
           {{#if (eq system.featType "cyberware")}}
@@ -846,6 +881,9 @@
           <h2><i class="fas fa-gears"></i> {{localize "SRA2.FEATS.FEAT_TYPE.POWER"}}</h2>
           <p class="notes">{{localize "SRA2.FEATS.POWER.SECTION_HINT"}}</p>
 
+          <h3><i class="fas fa-om"></i> {{localize "SRA2.FEATS.AWAKENED.ASTRAL_TITLE"}}</h3>
+          {{> astralAbilities}}
+
           <div class="form-group">
             <label>{{localize "SRA2.FEATS.WEAPON.LINKED_ATTACK_SKILL"}}</label>
             <div class="power-skill-search-container" data-field="linkedAttackSkill">
@@ -1035,19 +1073,7 @@
           data-section-content="awakened">
           <h2><i class="fas fa-om"></i> {{localize "SRA2.FEATS.AWAKENED.SECTION_TITLE"}}</h2>
 
-          <div class="form-group checkbox-group">
-            <label>
-              <input type="checkbox" name="system.astralPerception" {{checked system.astralPerception}} {{#if system.astralProjection}}disabled{{/if}} />
-              {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PERCEPTION"}}
-            </label>
-          </div>
-
-          <div class="form-group checkbox-group">
-            <label>
-              <input type="checkbox" name="system.astralProjection" {{checked system.astralProjection}} />
-              {{localize "SRA2.FEATS.AWAKENED.ASTRAL_PROJECTION"}}
-            </label>
-          </div>
+          {{> astralAbilities}}
 
           <div class="form-group checkbox-group">
             <label>
