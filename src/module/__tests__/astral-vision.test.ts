@@ -1,9 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// The module creates debounced functions at import time
-(globalThis as any).foundry.utils = { debounce: (fn: any) => fn };
-
-const { isAstralFormToken, perceivesAstral, getTokenAura, computeDiscCutout, auraTimeOffset, canSeeAstralForm, getAstralAbilities, getAstralStates, canEnterAstralState } =
+const { debounceWithMaxWait, isAstralFormToken, perceivesAstral, getTokenAura, computeDiscCutout, auraTimeOffset, canSeeAstralForm, getAstralAbilities, getAstralStates, canEnterAstralState } =
   await import('../canvas/astral-vision.js');
 
 /** Walls as [ax, ay, bx, by, blocksMove, blocksSight]; a collision test per polygon type */
@@ -19,11 +16,11 @@ function crosses(o: any, d: any, wall: Array<number | boolean>): boolean {
     side(ax!, ay!, bx!, by!, o.x, o.y) !== side(ax!, ay!, bx!, by!, d.x, d.y);
 }
 
-function makeToken(id: string, x: number, opts: { astralState?: string; form?: string; controlled?: boolean; isOwner?: boolean; feats?: any[] } = {}) {
+function makeToken(id: string, x: number, opts: { astralState?: string; form?: string; controlled?: boolean; isOwner?: boolean; sight?: boolean; feats?: any[] } = {}) {
   const flags: any = opts.form ? { sra2: { astralForm: { bodyTokenId: opts.form } } } : {};
   return {
     id, center: { x, y: 0 }, controlled: !!opts.controlled, isOwner: !!opts.isOwner,
-    document: { getFlag: (scope: string, key: string) => flags[scope]?.[key] },
+    document: { sight: { enabled: opts.sight ?? true }, getFlag: (scope: string, key: string) => flags[scope]?.[key] },
     actor: { type: 'character', system: { astralState: opts.astralState ?? 'physical' }, items: opts.feats ?? [] },
   };
 }
@@ -130,6 +127,16 @@ describe('canSeeAstralForm', () => {
     tokens = [f, makeToken('mine', 0, { isOwner: true })];
     expect(canSeeAstralForm(f)).toBe(false);
     tokens = [f, makeToken('mine', 0, { isOwner: true, astralState: 'perception' })];
+    expect(canSeeAstralForm(f)).toBe(true);
+  });
+
+  it('with nothing selected, a player only looks through owned tokens that have sight', () => {
+    isGM = false;
+    const f = form();
+    tokens = [f, makeToken('blind', 0, { isOwner: true, sight: false, astralState: 'perception' })];
+    expect(canSeeAstralForm(f)).toBe(false);
+    // Selecting it makes it the viewer, sight or not
+    tokens = [f, makeToken('blind', 0, { isOwner: true, sight: false, controlled: true, astralState: 'perception' })];
     expect(canSeeAstralForm(f)).toBe(true);
   });
 });
@@ -269,5 +276,38 @@ describe('aura animation', () => {
     expect(new Set(offsets).size).toBe(ids.length);
     for (const offset of offsets) { expect(offset).toBeGreaterThanOrEqual(0); expect(offset).toBeLessThan(600); }
     expect(auraTimeOffset(ids[0]!)).toBe(offsets[0]);
+  });
+});
+
+describe('delayed refresh', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  it('runs once, shortly after the last call of a burst', () => {
+    const callback = vi.fn();
+    const schedule = debounceWithMaxWait(callback, 50, 150);
+    schedule();
+    vi.advanceTimersByTime(30);
+    schedule();
+    vi.advanceTimersByTime(49);
+    expect(callback).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(callback).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(500);
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
+  it('still runs regularly while calls keep coming (a token on the move)', () => {
+    const callback = vi.fn();
+    const schedule = debounceWithMaxWait(callback, 50, 150);
+    // One call per frame for a second: a plain debounce would never fire
+    for (let elapsed = 0; elapsed < 1000; elapsed += 16) {
+      schedule();
+      vi.advanceTimersByTime(16);
+    }
+    expect(callback.mock.calls.length).toBeGreaterThanOrEqual(5);
+    const during = callback.mock.calls.length;
+    vi.advanceTimersByTime(50); // and a last time once the movement stops
+    expect(callback).toHaveBeenCalledTimes(during + 1);
   });
 });

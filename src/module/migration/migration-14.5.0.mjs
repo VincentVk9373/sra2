@@ -21,8 +21,8 @@ const FEAT_TYPES = ['trait', 'power'];
  * - a trait/power named "Dual Nature" gets the dual nature checkbox;
  * - a trait/power named "Materialization" (spirits) or "Astral Form"
  *   (watchers) gets the astral being checkbox.
- * World actors, world items and world compendiums are updated. System and
- * module compendiums are not touched.
+ * World actors, unlinked tokens placed on scenes, world items and world
+ * compendiums are updated. System and module compendiums are not touched.
  */
 export class Migration_14_5_0 extends Migration {
   get code() {
@@ -72,6 +72,19 @@ export class Migration_14_5_0 extends Migration {
     // World actors
     for (const actor of game.actors) {
       total += await this._migrateEmbedded(actor, `actor "${actor.name}"`);
+    }
+
+    // Unlinked tokens placed on scenes: the feats their token overrides are
+    // their own copies (the others follow the actor migrated above)
+    for (const scene of game.scenes) {
+      for (const token of scene.tokens) {
+        if (token.actorLink) continue;
+        try {
+          if (token.actor) total += await this._migrateEmbedded(token.actor, `token "${token.name}" (scene "${scene.name}")`);
+        } catch (e) {
+          console.warn(`SRA2 | Migration 14.5.0: failed on token "${token.name}" (scene "${scene.name}")`, e);
+        }
+      }
     }
 
     // World items

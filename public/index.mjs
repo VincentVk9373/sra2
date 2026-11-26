@@ -7384,11 +7384,14 @@ function isAstralSightBlocked(origin, destination) {
   }
   return false;
 }
-function astralViewers() {
+function currentViewers() {
   const tokens = canvas.tokens?.placeables ?? [];
-  let viewers = tokens.filter((t) => t.controlled);
-  if (viewers.length === 0 && !game.user?.isGM) viewers = tokens.filter((t) => t.isOwner && t.document?.sight?.enabled);
-  return viewers.filter((t) => perceivesAstral(t));
+  const controlled = tokens.filter((t) => t.controlled);
+  if (controlled.length > 0 || game.user?.isGM) return controlled;
+  return tokens.filter((t) => t.isOwner && t.document?.sight?.enabled);
+}
+function astralViewers() {
+  return currentViewers().filter((t) => perceivesAstral(t));
 }
 const ASTRAL_AURA_VERTEX = `
 precision mediump float;
@@ -7700,12 +7703,8 @@ function refreshAstralAuras() {
 function canSeeAstralForm(target) {
   if (target.controlled) return true;
   if (target.isOwner && !game.user?.isGM) return true;
-  const tokens = canvas.tokens?.placeables ?? [];
-  let viewers = tokens.filter((t) => t.controlled);
-  if (viewers.length === 0) {
-    if (game.user?.isGM) return true;
-    viewers = tokens.filter((t) => t.isOwner);
-  }
+  const viewers = currentViewers();
+  if (viewers.length === 0 && game.user?.isGM) return true;
   const bodyTokenId = target.document?.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId;
   return viewers.some(
     (v) => v.id === bodyTokenId || // a body always sees its own astral form
@@ -7729,6 +7728,11 @@ function registerAstralCanvasClasses() {
       if (!visible || !isAstralFormToken(this)) return visible;
       if (this.isPreview) return true;
       return canSeeAstralForm(this);
+    }
+    /** An astral form sheds no light on the physical plane */
+    _isLightSource() {
+      if (isAstralFormToken(this)) return false;
+      return super._isLightSource();
     }
     constrainMovementPath(waypoints, options = {}) {
       if (isAstralFormToken(this)) options = { ...options, ignoreWalls: true };
@@ -7777,6 +7781,7 @@ function registerAstralCanvasClasses() {
 }
 function actorTokensForUser(actor, userId) {
   if (actor.isToken) return actor.token ? [actor.token] : [];
+  if (actor.system?.astralState !== "projection") return actor.getDependentTokens();
   const sceneId = game.users?.get(userId)?.viewedScene;
   const scene = sceneId ? game.scenes?.get(sceneId) : null;
   return scene ? actor.getDependentTokens({ scenes: scene }) : [];
@@ -7816,12 +7821,30 @@ async function syncAstralFormTokens(actor, userId) {
     }
   }
 }
+const astralFormSyncQueue = /* @__PURE__ */ new Map();
+function queueAstralFormSync(actor, userId) {
+  const key = actor.uuid ?? actor.id;
+  const previous = astralFormSyncQueue.get(key) ?? Promise.resolve();
+  const run = previous.catch(() => void 0).then(() => syncAstralFormTokens(actor, userId));
+  astralFormSyncQueue.set(key, run);
+  const release = () => {
+    if (astralFormSyncQueue.get(key) === run) astralFormSyncQueue.delete(key);
+  };
+  run.then(release, release);
+  return run;
+}
 async function onAstralFormDeleted(tokenDoc) {
   const bodyTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId;
   const body = bodyTokenId ? tokenDoc.parent?.tokens.get(bodyTokenId) : null;
   if (!body) return;
   if (body.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN)) await body.unsetFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
   if (isAstrallyProjected(body.actor)) await body.actor.update({ "system.astralState": "physical" });
+}
+async function onProjectingBodyDeleted(tokenDoc, formTokenId) {
+  const form = tokenDoc.parent?.tokens.get(formTokenId);
+  if (form) await form.delete({ [OPTION_ASTRAL_SYNC]: true });
+  const actor = tokenDoc.actorLink ? game.actors?.get(tokenDoc.actorId) : null;
+  if (actor && isAstrallyProjected(actor)) await actor.update({ "system.astralState": "physical" });
 }
 function isAstralFormRunner(userId) {
   const gm = game.users?.activeGM;
@@ -7830,7 +7853,11 @@ function isAstralFormRunner(userId) {
 function refreshAstralVisibility() {
   if (!canvas?.ready) return;
   canvas.perception.update({ initializeVision: true, refreshVision: true });
-  for (const token of canvas.tokens.placeables) token.renderFlags.set({ refreshVisibility: true, refreshState: true });
+  for (const token of canvas.tokens.placeables) {
+    token.renderFlags.set({ refreshVisibility: true, refreshState: true });
+    const light = token.document?.light;
+    if (light?.dim || light?.bright) token.initializeLightSource();
+  }
 }
 let pulseElapsedMs = 0;
 let pulseRegistered = false;
@@ -7846,12 +7873,27 @@ function animateAstralForms() {
     token.mesh.alpha = token.alpha * (token.document.alpha ?? 1) * opacity * factor;
   }
 }
-const scheduleAuraRefresh = foundry.utils.debounce(() => refreshAstralAuras(), 50);
-const scheduleAstralFormVisibilityRefresh = foundry.utils.debounce(() => {
+function debounceWithMaxWait(callback, delay, maxWait) {
+  let timer = null;
+  let firstCall = 0;
+  return () => {
+    const now = Date.now();
+    if (timer === null) firstCall = now;
+    else clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      callback();
+    }, Math.max(0, Math.min(delay, firstCall + maxWait - now)));
+  };
+}
+const REFRESH_DELAY_MS = 50;
+const REFRESH_MAX_WAIT_MS = 150;
+const scheduleAuraRefresh = debounceWithMaxWait(() => refreshAstralAuras(), REFRESH_DELAY_MS, REFRESH_MAX_WAIT_MS);
+const scheduleAstralFormVisibilityRefresh = debounceWithMaxWait(() => {
   for (const token of canvas.tokens?.placeables ?? []) {
     if (isAstralFormToken(token)) token.renderFlags.set({ refreshVisibility: true });
   }
-}, 50);
+}, REFRESH_DELAY_MS, REFRESH_MAX_WAIT_MS);
 function registerAstralSettings() {
   game.settings.register(FLAG_SCOPE, SETTING_AURA_ESSENCE, {
     name: "SRA2.SETTINGS.AURA_ESSENCE.TITLE",
@@ -7877,6 +7919,7 @@ function registerAstralVisionHooks() {
   }
   Hooks.on("refreshToken", (_token, flags) => {
     if (flags?.refreshVisibility || flags?.refreshPosition || flags?.refreshMesh) scheduleAuraRefresh();
+    if (flags?.refreshPosition) scheduleAstralFormVisibilityRefresh();
   });
   Hooks.on("preUpdateActor", (_actor, changes) => {
     if (["projection", "astral"].includes(foundry.utils.getProperty(changes, "system.astralState"))) {
@@ -7887,7 +7930,7 @@ function registerAstralVisionHooks() {
     if (changes?.system?.maxEssence !== void 0) scheduleAuraRefresh();
     if (changes?.system?.astralState === void 0) return;
     if (isAstralFormRunner(userId)) {
-      syncAstralFormTokens(actor, userId).catch((err) => {
+      queueAstralFormSync(actor, userId).catch((err) => {
         console.error("SRA2 | Astral projection: could not sync the astral form token", err);
         ui.notifications?.error(game.i18n.localize("SRA2.ASTRAL.FORM_SYNC_ERROR"));
       });
@@ -7900,8 +7943,10 @@ function registerAstralVisionHooks() {
   });
   Hooks.on("deleteToken", (tokenDoc, options, userId) => {
     if (options?.[OPTION_ASTRAL_SYNC]) return;
-    if (!isProjectionFormToken(tokenDoc) || !isAstralFormRunner(userId)) return;
-    onAstralFormDeleted(tokenDoc).catch((err) => console.error("SRA2 | Astral projection: could not end the projection", err));
+    if (!isAstralFormRunner(userId)) return;
+    const formTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+    const ending = isProjectionFormToken(tokenDoc) ? onAstralFormDeleted(tokenDoc) : formTokenId ? onProjectingBodyDeleted(tokenDoc, formTokenId) : null;
+    ending?.catch((err) => console.error("SRA2 | Astral projection: could not end the projection", err));
   });
   Hooks.on("controlToken", () => {
     for (const token of canvas.tokens?.placeables ?? []) token.renderFlags.set({ refreshVisibility: true });
@@ -23895,6 +23940,16 @@ class Migration_14_5_0 extends Migration {
     let total = 0;
     for (const actor of game.actors) {
       total += await this._migrateEmbedded(actor, `actor "${actor.name}"`);
+    }
+    for (const scene of game.scenes) {
+      for (const token of scene.tokens) {
+        if (token.actorLink) continue;
+        try {
+          if (token.actor) total += await this._migrateEmbedded(token.actor, `token "${token.name}" (scene "${scene.name}")`);
+        } catch (e) {
+          console.warn(`SRA2 | Migration 14.5.0: failed on token "${token.name}" (scene "${scene.name}")`, e);
+        }
+      }
     }
     const worldUpdates = this._computeFeatUpdates(game.items);
     if (worldUpdates.length > 0) await Item.updateDocuments(worldUpdates);

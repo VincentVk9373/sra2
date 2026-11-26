@@ -204,13 +204,20 @@ export function isAstralSightBlocked(origin: any, destination: any): boolean {
   return false;
 }
 
+/**
+ * Tokens the current user looks through: the selection or, for a player with
+ * nothing selected, the tokens they own that have sight.
+ */
+function currentViewers(): any[] {
+  const tokens: any[] = canvas.tokens?.placeables ?? [];
+  const controlled = tokens.filter(t => t.controlled);
+  if (controlled.length > 0 || game.user?.isGM) return controlled;
+  return tokens.filter(t => t.isOwner && t.document?.sight?.enabled);
+}
+
 /** Tokens through which the current user looks at the astral plane */
 function astralViewers(): any[] {
-  const tokens: any[] = canvas.tokens?.placeables ?? [];
-  let viewers = tokens.filter(t => t.controlled);
-  // Players with nothing controlled see through the tokens they own
-  if (viewers.length === 0 && !game.user?.isGM) viewers = tokens.filter(t => t.isOwner && t.document?.sight?.enabled);
-  return viewers.filter(t => perceivesAstral(t));
+  return currentViewers().filter(t => perceivesAstral(t));
 }
 
 /**
@@ -592,12 +599,8 @@ export function refreshAstralAuras(): void {
 export function canSeeAstralForm(target: any): boolean {
   if (target.controlled) return true;
   if (target.isOwner && !game.user?.isGM) return true;
-  const tokens: any[] = canvas.tokens?.placeables ?? [];
-  let viewers = tokens.filter(t => t.controlled);
-  if (viewers.length === 0) {
-    if (game.user?.isGM) return true;
-    viewers = tokens.filter(t => t.isOwner);
-  }
+  const viewers = currentViewers();
+  if (viewers.length === 0 && game.user?.isGM) return true;
   const bodyTokenId = target.document?.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM)?.bodyTokenId;
   return viewers.some(v =>
     v.id === bodyTokenId || // a body always sees its own astral form
@@ -633,6 +636,12 @@ export function registerAstralCanvasClasses(): void {
       if (!visible || !isAstralFormToken(this)) return visible;
       if ((this as any).isPreview) return true;
       return canSeeAstralForm(this);
+    }
+
+    /** An astral form sheds no light on the physical plane */
+    _isLightSource(): boolean {
+      if (isAstralFormToken(this)) return false;
+      return super._isLightSource();
     }
 
     constrainMovementPath(waypoints: any, options: any = {}): any {
@@ -688,11 +697,14 @@ export function registerAstralCanvasClasses(): void {
 
 /**
  * Tokens of an actor to sync after a change made by a user: the token itself
- * for a token actor, otherwise the actor's tokens in the scene that user is
- * viewing (the GM running the sync may be looking at another scene).
+ * for a token actor. For a linked actor, going into projection only concerns
+ * the scene that user is viewing (the GM running the sync may be looking at
+ * another one, and the actor's tokens on other scenes must not all get a
+ * form); leaving it cleans every scene, wherever the form was left.
  */
 function actorTokensForUser(actor: any, userId: string): any[] {
   if (actor.isToken) return actor.token ? [actor.token] : [];
+  if (actor.system?.astralState !== 'projection') return actor.getDependentTokens();
   const sceneId = game.users?.get(userId)?.viewedScene;
   const scene = sceneId ? game.scenes?.get(sceneId) : null;
   return scene ? actor.getDependentTokens({ scenes: scene }) : [];
@@ -748,6 +760,24 @@ async function syncAstralFormTokens(actor: any, userId: string): Promise<void> {
   }
 }
 
+/** Pending syncs per actor: each one starts once the previous one is done */
+const astralFormSyncQueue = new Map<string, Promise<void>>();
+
+/**
+ * Run the sync of an actor's astral form after the ones already running for
+ * it: quick state changes would otherwise overlap, each one deciding before
+ * the previous one has created or deleted its token.
+ */
+function queueAstralFormSync(actor: any, userId: string): Promise<void> {
+  const key = actor.uuid ?? actor.id;
+  const previous = astralFormSyncQueue.get(key) ?? Promise.resolve();
+  const run = previous.catch(() => undefined).then(() => syncAstralFormTokens(actor, userId));
+  astralFormSyncQueue.set(key, run);
+  const release = () => { if (astralFormSyncQueue.get(key) === run) astralFormSyncQueue.delete(key); };
+  run.then(release, release);
+  return run;
+}
+
 /**
  * A user deleting an astral form token ends the projection: the body goes
  * back to physical.
@@ -758,6 +788,18 @@ async function onAstralFormDeleted(tokenDoc: any): Promise<void> {
   if (!body) return;
   if (body.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN)) await body.unsetFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
   if (isAstrallyProjected(body.actor)) await body.actor.update({ 'system.astralState': 'physical' });
+}
+
+/**
+ * A user deleting the body of a projecting character ends the projection:
+ * the astral form goes with it, and a linked actor (which outlives its
+ * token) is back to physical.
+ */
+async function onProjectingBodyDeleted(tokenDoc: any, formTokenId: string): Promise<void> {
+  const form = tokenDoc.parent?.tokens.get(formTokenId);
+  if (form) await form.delete({ [OPTION_ASTRAL_SYNC]: true });
+  const actor = tokenDoc.actorLink ? game.actors?.get(tokenDoc.actorId) : null;
+  if (actor && isAstrallyProjected(actor)) await actor.update({ 'system.astralState': 'physical' });
 }
 
 /**
@@ -774,7 +816,12 @@ function refreshAstralVisibility(): void {
   if (!canvas?.ready) return;
   canvas.perception.update({ initializeVision: true, refreshVision: true });
   // refreshState also restores the opacity of a token that stopped pulsing
-  for (const token of canvas.tokens.placeables) token.renderFlags.set({ refreshVisibility: true, refreshState: true });
+  for (const token of canvas.tokens.placeables) {
+    token.renderFlags.set({ refreshVisibility: true, refreshState: true });
+    // A token carrying a light stops or resumes emitting it with its astral form
+    const light = token.document?.light;
+    if (light?.dim || light?.bright) token.initializeLightSource();
+  }
 }
 
 /* -------------------------------------------- */
@@ -801,22 +848,47 @@ function animateAstralForms(): void {
 }
 
 /**
- * Debounced refresh: token visibility and wall edges are only up to date
- * once Foundry has finished its own perception update, so recompute the
- * auras shortly after the last relevant change.
+ * Debounce that still runs during a steady stream of calls: the callback
+ * runs `delay` ms after the last call, and at the latest `maxWait` ms after
+ * the first one. A plain debounce would wait for a moving token to stop.
  */
-const scheduleAuraRefresh = foundry.utils.debounce(() => refreshAstralAuras(), 50);
+export function debounceWithMaxWait(callback: () => void, delay: number, maxWait: number): () => void {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let firstCall = 0;
+  return () => {
+    const now = Date.now();
+    if (timer === null) firstCall = now;
+    else clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      callback();
+    }, Math.max(0, Math.min(delay, firstCall + maxWait - now)));
+  };
+}
+
+const REFRESH_DELAY_MS = 50;
+const REFRESH_MAX_WAIT_MS = 150;
+
+/**
+ * Delayed refresh: token visibility and wall edges are only up to date
+ * once Foundry has finished its own perception update, so recompute the
+ * auras shortly after the last relevant change, and regularly while a token
+ * is moving.
+ */
+const scheduleAuraRefresh = debounceWithMaxWait(() => refreshAstralAuras(), REFRESH_DELAY_MS, REFRESH_MAX_WAIT_MS);
 
 /**
  * Astral forms' visibility depends on walls and on every viewer's position,
- * which Foundry doesn't track for them: re-test it after vision updates and
- * wall changes. (Only sets render flags; refreshToken doesn't loop back here.)
+ * which Foundry doesn't track for them: re-test it after vision updates,
+ * wall changes and token moves (a viewer without a vision source triggers no
+ * vision update). Only sets the visibility render flag, which is not one of
+ * those that bring refreshToken back here.
  */
-const scheduleAstralFormVisibilityRefresh = foundry.utils.debounce(() => {
+const scheduleAstralFormVisibilityRefresh = debounceWithMaxWait(() => {
   for (const token of canvas.tokens?.placeables ?? []) {
     if (isAstralFormToken(token)) token.renderFlags.set({ refreshVisibility: true });
   }
-}, 50);
+}, REFRESH_DELAY_MS, REFRESH_MAX_WAIT_MS);
 
 /** Register the world settings of the astral plane (call during init) */
 export function registerAstralSettings(): void {
@@ -846,6 +918,7 @@ export function registerAstralVisionHooks(): void {
   }
   Hooks.on('refreshToken', (_token: any, flags: any) => {
     if (flags?.refreshVisibility || flags?.refreshPosition || flags?.refreshMesh) scheduleAuraRefresh();
+    if (flags?.refreshPosition) scheduleAstralFormVisibilityRefresh();
   });
   // Leaving the physical plane disconnects the character from the Matrix
   Hooks.on('preUpdateActor', (_actor: any, changes: any) => {
@@ -857,7 +930,7 @@ export function registerAstralVisionHooks(): void {
     if (changes?.system?.maxEssence !== undefined) scheduleAuraRefresh(); // the aura darkens with Essence
     if (changes?.system?.astralState === undefined) return;
     if (isAstralFormRunner(userId)) {
-      syncAstralFormTokens(actor, userId).catch((err: any) => {
+      queueAstralFormSync(actor, userId).catch((err: any) => {
         console.error('SRA2 | Astral projection: could not sync the astral form token', err);
         ui.notifications?.error(game.i18n.localize('SRA2.ASTRAL.FORM_SYNC_ERROR'));
       });
@@ -870,8 +943,11 @@ export function registerAstralVisionHooks(): void {
   });
   Hooks.on('deleteToken', (tokenDoc: any, options: any, userId: string) => {
     if (options?.[OPTION_ASTRAL_SYNC]) return; // removed by the sync, which handles the body itself
-    if (!isProjectionFormToken(tokenDoc) || !isAstralFormRunner(userId)) return;
-    onAstralFormDeleted(tokenDoc).catch((err: any) => console.error('SRA2 | Astral projection: could not end the projection', err));
+    if (!isAstralFormRunner(userId)) return;
+    const formTokenId = tokenDoc.getFlag(FLAG_SCOPE, FLAG_ASTRAL_FORM_TOKEN);
+    const ending = isProjectionFormToken(tokenDoc) ? onAstralFormDeleted(tokenDoc)
+      : formTokenId ? onProjectingBodyDeleted(tokenDoc, formTokenId) : null;
+    ending?.catch((err: any) => console.error('SRA2 | Astral projection: could not end the projection', err));
   });
   // Selection decides who looks at the astral plane
   Hooks.on('controlToken', () => {
